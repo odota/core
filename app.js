@@ -12,7 +12,8 @@ var express = require('express'),
     matchid_deffereds = {};
 
 var app = express(),
-    config = require("./config");
+    config = require("./config"),
+    _cwd = config.cwd;
 
 // all environments
 app.set('port', 3100);
@@ -95,18 +96,18 @@ var onSteamLogOn = function onSteamLogOn(){
     },
     onSteamSentry = function onSteamSentry(sentry) {
         util.log("Received sentry.");
-        require('fs').writeFileSync('sentry', sentry);
+        require('fs').writeFileSync(_cwd + 'sentry', sentry);
     },
     onSteamServers = function onSteamServers(servers) {
         util.log("Received servers.");
-        fs.writeFile('servers', JSON.stringify(servers));
+        fs.writeFile(_cwd + 'servers', JSON.stringify(servers));
     };
 
 bot.logOn({
     "accountName": config.steam_user,
     "password": config.steam_pass,
     "authCode": config.steam_guard_code,
-    "shaSentryfile": fs.readFileSync('sentry')
+    "shaSentryfile": fs.readFileSync(_cwd + 'sentry')
 });
 bot.on("loggedOn", onSteamLogOn)
     .on('sentry', onSteamSentry)
