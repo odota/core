@@ -1,0 +1,43 @@
+doctype 5
+html
+    head
+        title= title
+        link(rel='stylesheet', href='/css/bootstrap.min.css')
+    body
+        div.container
+            h1.text-center= title
+            hr
+            div.row
+                div.span2
+                    ul.nav.nav-list
+                        li.nav-header
+
+                        li.nav-header matchurls
+                        li
+                            small Stick a matchid in and get the replay URL. Ez.
+                        li
+                            hr
+                        li.nav-header
+                            :markdown
+                                © [RJ](https://rjackson.me), PROBABLY
+                div.span10.text-center
+                    if error
+                        div.alert.alert-block.alert-error.text-left
+                            h4 Request took too long!
+                            p This could be because:
+                            ul
+                                li the match ID is invalid
+                                li the bot does not have access to the match ID
+                                li or the bot is under heavy load.
+                            p Double check the match ID is valid, and try again later!
+
+                    if matchurl
+                        div.alert.alert-block.alert-success
+                            p Aw yis I found the replay for match #{matchid}
+                            a.btn.btn-large(href= matchurl) DOWNLOAD REPLAY
+                    form
+                        input(type="text", name="matchid", placeholder="Match ID")
+                        br
+                        button.btn(type="submit") I would very much appreciate a download url please.
+                    div.offset1.span8
+                        p <strong>The page may take a long time to load</strong> because of how the back-end gathers replay data. If you spam F5 you will be forced to fulfil /u/croatianpride's destiny.
