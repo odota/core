@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   app.use(express.errorHandler());
 // }
 
-app.get('/', function(req, res){
+app.get('/tools/matchurls', function(req, res){
     if (!dota_ready) {
         res.render('notready', { title: 'match urls!' });
     }
