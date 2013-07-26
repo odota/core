@@ -21,7 +21,7 @@ html
                             :markdown
                                 © [RJ](https://rjackson.me), PROBABLY
                 div.span10.text-center
-                    if error
+                    if error == "timeout"
                         div.alert.alert-block.alert-error.text-left
                             h4 Request took too long!
                             p This could be because:
@@ -29,7 +29,11 @@ html
                                 li the match ID is invalid
                                 li the bot does not have access to the match ID
                                 li or the bot is under heavy load.
-                            p Double check the match ID is valid, and try again later!
+                            p Double check the match ID, and try again!
+                    if error == "invalid"
+                        div.alert.alert-block.alert-error.text-left
+                            h4 Invalid match id!
+                            p Double check the match ID, and try again!
 
                     if matchurl
                         div.alert.alert-block.alert-success

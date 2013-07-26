@@ -5,9 +5,10 @@ var express = require('express'),
     util = require("util"),
     fs = require("fs"),
     dota2 = require("dota2"),
+    deferred = require("deferred"),
+    MongoClient = require("mongodb").MongoClient,
     bot = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(bot, true),
-    deferred = require("deferred"),
     dota_ready = false,
     matchid_deffereds = {};
 
@@ -37,29 +38,57 @@ app.get('/tools/matchurls', function(req, res){
     }
     else {
         if (req.query.matchid) {
-            if (!matchid_deffereds[req.query.matchid]) {
-                matchid_deffereds[req.query.matchid] = new deferred();
-                matchid_deffereds[req.query.matchid].pms = matchid_deffereds[req.query.matchid].promise();
-                Dota2.matchDetailsRequest(req.query.matchid);
+            if (!isNaN(req.query.matchid) && parseInt(req.query.matchid, 10) < 1024000000000) {
+                MongoClient.connect('mongodb://127.0.0.1:27017/matchurls', function(err, db) {
+                    if(err) throw err;
+                    var matchCollection = db.collection('matches'),
+                        match = matchCollection.findOne({"id": parseInt(req.query.matchid, 10)}, function(err, doc){
+                        if(err) throw err;
+                        if (doc) {
+                            db.close();
+                            res.render('index', {
+                                title: 'match urls!',
+                                matchid: req.query.matchid,
+                                matchurl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", doc.cluster, doc.id, doc.salt)
+                            });
+                        }
+                        else {
+                            if (!matchid_deffereds[req.query.matchid]) {
+                                matchid_deffereds[req.query.matchid] = new deferred();
+                                matchid_deffereds[req.query.matchid].pms = matchid_deffereds[req.query.matchid].promise();
+                                Dota2.matchDetailsRequest(req.query.matchid);
+                            }
+
+                            matchid_deffereds[req.query.matchid].pms.then(function(data){
+                                matchCollection.insert({"id": data.match.matchId, "cluster": data.match.cluster, "salt": data.match.replaySalt}, function(err){ console.log(err); });
+                                db.close();
+                                res.render('index', {
+                                    title: 'match urls!',
+                                    matchid: req.query.matchid,
+                                    matchurl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.match.cluster, data.match.matchId, data.match.replaySalt)
+                                });
+                                delete matchid_deffereds[req.query.matchid];
+                            });
+                            setTimeout(function(){
+                                delete matchid_deffereds[req.query.matchid];
+                            }, 1000 * 120);
+
+                            setTimeout(function(){
+                                res.render('index', {
+                                    title: 'match urls!',
+                                    error: "timeout"
+                                });
+                            }, config.request_timeout);
+                        }
+                    });
+                });
             }
-
-            matchid_deffereds[req.query.matchid].pms.then(function(data){
+            else {
                 res.render('index', {
                     title: 'match urls!',
-                    matchid: req.query.matchid,
-                    matchurl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.match.cluster, data.match.matchId, data.match.replaySalt)
+                    error: "invalid"
                 });
-            });
-            setTimeout(function(){
-                delete matchid_deffereds[req.query.matchid];
-            }, 1000 * 120);
-
-            setTimeout(function(){
-                res.render('index', {
-                    title: 'match urls!',
-                    error: true
-                });
-            }, config.request_timeout);
+            }
         }
         else {
             res.render('index', { title: 'match urls!' });
