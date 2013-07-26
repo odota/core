@@ -7,5 +7,9 @@ config.steam_pass = "";
 config.steam_guard_code = "";
 
 config.request_timeout = 1000 * 30;
+config.steam_response_timeout = 1000 * 30;
+
+config.mongodb_host = "localhost";
+config.mongodb_port = 27017;
 
 module.exports = config;

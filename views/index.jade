@@ -30,15 +30,36 @@ html
                                 li the bot does not have access to the match ID
                                 li or the bot is under heavy load.
                             p Double check the match ID, and try again!
-                    if error == "invalid"
+
+                    else if error == "invalid"
                         div.alert.alert-block.alert-error.text-left
                             h4 Invalid match id!
                             p Double check the match ID, and try again!
 
-                    if matchurl
+                    else if error == "notready"
+                        div.alert.alert-block.text-left
+                            h4 Not ready!
+                            p Sorry!  My back-end isn't ready to fetch new data. Try again in 5 minutes.
+
+                    if replayState == "REPLAY_AVAILABLE"
                         div.alert.alert-block.alert-success
                             p Aw yis I found the replay for match #{matchid}
-                            a.btn.btn-large(href= matchurl) DOWNLOAD REPLAY
+                            div.input-append
+                                input.span6(type="text", value= replayUrl)
+                                a.btn.btn-primary(href= replayUrl)
+                                    i.icon-download-alt.icon-white
+                                    span &nbsp;DOWNLOAD
+
+                    else if replayState == "REPLAY_NOT_RECORDED"
+                        div.alert.alert-block.alert-info
+                            p No replay was recorded for #{matchid} :(
+                            input.span7(type="text", disabled, value= replayUrl)
+
+                    else if replayState == "REPLAY_EXPIRED"
+                        div.alert.alert-block.alert-info
+                            p The replay for match #{matchid} has expired. :(
+                            input.span7(type="text", disabled, value= replayUrl)
+
                     form
                         input(type="text", name="matchid", placeholder="Match ID")
                         br

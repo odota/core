@@ -1,20 +1,20 @@
 var express = require('express'),
     http = require('http'),
     path = require('path'),
-    steam = require("steam"),
     util = require("util"),
-    fs = require("fs"),
-    dota2 = require("dota2"),
-    deferred = require("deferred"),
-    MongoClient = require("mongodb").MongoClient,
-    bot = new steam.SteamClient(),
-    Dota2 = new dota2.Dota2Client(bot, true),
-    dota_ready = false,
-    matchid_deffereds = {};
+    Steam = require("./MatchProvider-steam").MatchProvider,
+    MongoDB = require("./MatchProvider-mongodb").MatchProvider,
+    config = require("./config");
 
 var app = express(),
-    config = require("./config"),
-    _cwd = config.cwd;
+    steam = new Steam(
+        config.steam_user,
+        config.steam_pass,
+        config.steam_name,
+        config.steam_guard_code,
+        config.cwd,
+        config.steam_response_timeout),
+    mongodb = new MongoDB(config.mongodb_host, config.mongodb_port);
 
 // all environments
 app.set('port', 3100);
@@ -33,65 +33,72 @@ app.use(express.static(path.join(__dirname, 'public')));
 // }
 
 app.get('/tools/matchurls', function(req, res){
-    if (!dota_ready) {
-        res.render('notready', { title: 'match urls!' });
+    var matchId = req.query.matchid;
+    if (!matchId) {
+        // No match ID, display regular index.
+        res.render('index', { title: 'match urls!' });
+        res.end();
     }
     else {
-        if (req.query.matchid) {
-            if (!isNaN(req.query.matchid) && parseInt(req.query.matchid, 10) < 1024000000000) {
-                MongoClient.connect('mongodb://127.0.0.1:27017/matchurls', function(err, db) {
-                    if(err) throw err;
-                    var matchCollection = db.collection('matches'),
-                        match = matchCollection.findOne({"id": parseInt(req.query.matchid, 10)}, function(err, doc){
-                        if(err) throw err;
-                        if (doc) {
-                            db.close();
-                            res.render('index', {
-                                title: 'match urls!',
-                                matchid: req.query.matchid,
-                                matchurl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", doc.cluster, doc.id, doc.salt)
-                            });
-                        }
-                        else {
-                            if (!matchid_deffereds[req.query.matchid]) {
-                                matchid_deffereds[req.query.matchid] = new deferred();
-                                matchid_deffereds[req.query.matchid].pms = matchid_deffereds[req.query.matchid].promise();
-                                Dota2.matchDetailsRequest(req.query.matchid);
-                            }
+        if (!isNaN(matchId) && parseInt(matchId, 10) < 1024000000000) {
+            matchId = parseInt(matchId, 10);
 
-                            matchid_deffereds[req.query.matchid].pms.then(function(data){
-                                matchCollection.insert({"id": data.match.matchId, "cluster": data.match.cluster, "salt": data.match.replaySalt}, function(err){ console.log(err); });
-                                db.close();
-                                res.render('index', {
-                                    title: 'match urls!',
-                                    matchid: req.query.matchid,
-                                    matchurl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.match.cluster, data.match.matchId, data.match.replaySalt)
-                                });
-                                delete matchid_deffereds[req.query.matchid];
-                            });
-                            setTimeout(function(){
-                                delete matchid_deffereds[req.query.matchid];
-                            }, 1000 * 120);
+            mongodb.findByMatchId(matchId, function(err, data) {
+                if (err) throw err;
 
-                            setTimeout(function(){
-                                res.render('index', {
-                                    title: 'match urls!',
-                                    error: "timeout"
-                                });
-                            }, config.request_timeout);
-                        }
+                if (data) {
+                    // We have this appid data already in mongodb, so just serve from there.
+                    res.render('index', {
+                        title: 'match urls!',
+                        matchid: matchId,
+                        replayState: data.state,
+                        replayUrl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt)
                     });
-                });
-            }
-            else {
-                res.render('index', {
-                    title: 'match urls!',
-                    error: "invalid"
-                });
-            }
+                    res.end();
+                }
+                else if (steam.ready) {
+                    // We need new data from Dota.
+                    steam.getMatchDetails(matchId, function(err, data) {
+                        if (err) throw err;
+
+                        // Save the new data to Mongo
+                        mongodb.save(data, function(err, cb){});
+
+                        res.render('index', {
+                            title: 'match urls!',
+                            matchid: matchId,
+                            replayState: data.state,
+                            replayUrl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt)
+                        });
+                        res.end();
+                    });
+
+                    // If Dota hasn't responded by 'request_timeout' then send a timeout page.
+                    setTimeout(function(){
+                        res.render('index', {
+                            title: 'match urls!',
+                            error: "timeout"
+                        });
+                        res.end();
+                    }, config.request_timeout);
+                }
+                else {
+                    // We need new data from Dota, and Dota is not ready.
+                    res.render('index', {
+                        title: 'match urls!',
+                        error: "notready"
+                    });
+                    res.end();
+                }
+            });
         }
         else {
-            res.render('index', { title: 'match urls!' });
+            // Match ID failed validation.
+            res.render('index', {
+                title: 'match urls!',
+                error: "invalid"
+            });
+            res.end();
         }
     }
 });
@@ -99,45 +106,3 @@ app.get('/tools/matchurls', function(req, res){
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
-global.config = require("./config");
-
-/* Steam logic */
-var onSteamLogOn = function onSteamLogOn(){
-        bot.setPersonaState(steam.EPersonaState.Busy); // to display your bot's status as "Online"
-        bot.setPersonaName(config.steam_name); // to change its nickname
-        util.log("Logged on.");
-
-        Dota2.launch();
-        Dota2.on("ready", function() {
-        util.log("Dotto ready");
-            dota_ready = true;
-        });
-
-        Dota2.on("matchData", function (matchId, matchData) {
-            if (!matchid_deffereds[matchId]) return;
-            matchid_deffereds[matchId].resolve(matchData);
-        });
-
-        Dota2.on("unhandled", function(kMsg) {
-            util.log("UNHANDLED MESSAGE " + kMsg);
-        });
-    },
-    onSteamSentry = function onSteamSentry(sentry) {
-        util.log("Received sentry.");
-        require('fs').writeFileSync(_cwd + 'sentry', sentry);
-    },
-    onSteamServers = function onSteamServers(servers) {
-        util.log("Received servers.");
-        fs.writeFile(_cwd + 'servers', JSON.stringify(servers));
-    };
-
-bot.logOn({
-    "accountName": config.steam_user,
-    "password": config.steam_pass,
-    "authCode": config.steam_guard_code,
-    "shaSentryfile": fs.readFileSync(_cwd + 'sentry')
-});
-bot.on("loggedOn", onSteamLogOn)
-    .on('sentry', onSteamSentry)
-    .on('servers', onSteamServers);
