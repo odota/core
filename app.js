@@ -32,6 +32,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   app.use(express.errorHandler());
 // }
 
+app.get('/', function(req, res){
+    res.redirect("/tools/matchurls");
+});
+
 app.get('/tools/matchurls', function(req, res){
     var matchId = req.query.matchid;
     if (!matchId) {
