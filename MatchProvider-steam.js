@@ -8,7 +8,7 @@ var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_tim
     this.steam_response_timeout = steam_response_timeout || 1000 * 30;
 
     this.ready = false;
-    this.bot = new steam.SteamClient(),
+    this.bot = new steam.SteamClient();
     this.Dota2 = new dota2.Dota2Client(this.bot, true);
     this.match_deferreds = {}; // Prevents F5DoS.
 
@@ -22,11 +22,6 @@ var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_tim
         self.Dota2.on("ready", function() {
             util.log("Dota 2 ready");
             self.ready = true;
-        });
-
-        self.Dota2.on("matchData", function (matchId, matchData) {
-            if (!self.match_deferreds[matchId]) return;
-            self.match_deferreds[matchId].resolve(matchData);
         });
 
         self.Dota2.on("unhandled", function(kMsg) {
@@ -76,21 +71,30 @@ var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_tim
 
 MatchProvider.prototype.getMatchDetails = function getMatchDetails(matchId, callback) {
     if (!this.ready) { callback("GC not ready"); return; }
+    var self = this;
 
     // F5DoS protection; if we're waiting for a response for this Match ID then don't send a new request.
     if (!this.match_deferreds[matchId]) {
         this.match_deferreds[matchId] = new deferred();
         this.match_deferreds[matchId].pms = this.match_deferreds[matchId].promise();
-        this.Dota2.matchDetailsRequest(matchId);
+        this.Dota2.matchDetailsRequest(matchId, function(err, body){
+            if (!self.match_deferreds[matchId]) return;
+            self.match_deferreds[matchId].resolve(body);
+        });
     }
 
-    var self = this;
     this.match_deferreds[matchId].pms.then(function (data){
         delete self.match_deferreds[matchId];
-        callback(null, { id: data.match.matchId,
-            cluster: data.match.cluster,
-            salt: data.match.replaySalt,
-            state: data.match.replayState });
+        if (data.result != 1) {
+            callback("invalid");
+        }
+        else {
+            callback(null, { id: matchId,
+                cluster: data.match.cluster,
+                salt: data.match.replaySalt,
+                state: data.match.replayState
+            });
+        }
     });
 
     // Time out request after so long - GC doesn't tell us match ids when it returns bad status',

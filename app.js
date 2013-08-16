@@ -63,18 +63,25 @@ app.get('/tools/matchurls', function(req, res){
                 else if (steam.ready) {
                     // We need new data from Dota.
                     steam.getMatchDetails(matchId, function(err, data) {
-                        if (err) throw err;
+                        if (err) {
+                            res.render('index', {
+                                title: 'match urls!',
+                                error: err
+                            });
+                            res.end();
+                        }
+                        else {
+                            // Save the new data to Mongo
+                            mongodb.save(data, function(err, cb){});
 
-                        // Save the new data to Mongo
-                        mongodb.save(data, function(err, cb){});
-
-                        res.render('index', {
-                            title: 'match urls!',
-                            matchid: matchId,
-                            replayState: data.state,
-                            replayUrl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt)
-                        });
-                        res.end();
+                            res.render('index', {
+                                title: 'match urls!',
+                                matchid: matchId,
+                                replayState: data.state,
+                                replayUrl: util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt)
+                            });
+                            res.end();
+                        }
                     });
 
                     // If Dota hasn't responded by 'request_timeout' then send a timeout page.
