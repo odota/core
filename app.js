@@ -102,7 +102,11 @@ function tryToGetReplay(id) {
                         console.log("finished decompressing " + fileName)
                         var cp = spawn(
                             "java",
-                            ["-jar", "../StatsParsing/target/stats-0.1.0.jar", config.replaysFolder + path.basename(fileName, ".bz2")]
+                            ["-jar",
+                             "../StatsParsing/target/stats-0.1.0.jar",
+                             config.replaysFolder + path.basename(fileName, ".bz2"),
+                             id
+                            ]
                         );
                         
                         cp.stdout.on('data', function (data) {
