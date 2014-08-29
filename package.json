@@ -12,6 +12,7 @@
     "jade": "*",
     "marked": "*",
     "deferred": "*",
-    "mongodb": "*"
+    "mongodb": "*",
+    "request": "*"
   }
 }
