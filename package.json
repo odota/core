@@ -1,17 +1,17 @@
 {
-  "name": "matchurls",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "start": "node app.js"
-  },
-  "dependencies": {
-    "steam": ">= 0.6.0",
-    "dota2": "https://github.com/RJacksonm1/node-dota2/tarball/master",
-    "jade": "*",
-    "marked": "*",
-    "deferred": "*",
-    "mongodb": "*",
-    "request": "*"
-  }
+    "name": "Dota2ApiGetter",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "steam": ">= 0.6.0",
+        "dota2": "https://github.com/RJacksonm1/node-dota2/tarball/master",
+        "deferred": "0.7.1",
+        "monk": "0.9.0",
+        "request": "2.40.0",
+        "winston": "0.7.3",
+        "winston-mail": "0.2.8"
+    }
 }

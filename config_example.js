@@ -23,4 +23,7 @@ config.matchCount = 2;
 
 config.replaysFolder = "";
 
+config.logFile = 'api.log';
+config.logEmail = '';
+
 module.exports = config;
