@@ -1,3 +1,18 @@
+var express = require('express')
+var app = express();
+var url="https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=DA85A654988D9545EA290F969D6FF975&account_id=76561198048632981"
+
+app.set('port', (process.env.PORT || 5000))
+app.use(express.static(__dirname + '/public'))
+
+app.get('/', function(request, response) {
+    response.send('Hello World!')
+})
+
+app.listen(app.get('port'), function() {
+    console.log("Node app is running at localhost:" + app.get('port'))
+})
+
 var request = require('request'),
     path = require("path"),
     fs = require("fs"),
@@ -5,44 +20,19 @@ var request = require('request'),
     Steam = require("./MatchProvider-steam").MatchProvider,
     db = require('monk')('localhost/dota'),
     spawn = require('child_process').spawn,
-    winston = require('winston'),
-    Mail = require('winston-mail').Mail,
     config = require("./config");
 
 var steam = new Steam(
-        config.steam_user,
-        config.steam_pass,
-        config.steam_name,
-        config.steam_guard_code,
-        config.cwd,
-        config.steam_response_timeout),
+    config.steam_user,
+    config.steam_pass,
+    config.steam_name,
+    config.steam_guard_code,
+    __dirname,
+    config.steam_response_timeout),
     logger = new (winston.Logger)
-    matches = db.get('matchStats'),
+matches = db.get('matchStats'),
     baseURL = "https://api.steampowered.com/IDOTA2Match_570/",
     matchCount = config.matchCount;
-
-logger.add(
-    winston.transports.Console,
-    {
-        timestamp: true
-    }
-)
-
-logger.add(
-    winston.transports.File,
-    {
-        filename: config.logFile,
-        level: "info"
-    }
-)
-
-logger.add(
-    Mail,
-    {
-        to: config.logEmail,
-        level: "error"
-	}
-)
 
 /**
  * Generates Match History URL
@@ -102,7 +92,7 @@ function requestGetMatchDetails(id) {
 function tryToGetReplayUrl(id, callback) {
     matches.findOne({match_id: id}, function(err, data){
         if (err) callback(err)
-        
+
         if (data.replay_url) {
             callback(null, data.replay_url)
         } else {
@@ -172,7 +162,7 @@ function decompressAndParseReplay(err, fileName) {
 function downloadFile(err, url) {
     if (err) decompressAndParseReplay(true)
     else {
-    	var fileName = url.substr(url.lastIndexOf("/") + 1)
+        var fileName = url.substr(url.lastIndexOf("/") + 1)
         var file = fs.createWriteStream(config.replaysFolder + fileName)
         logger.log('info', 'Trying to download file from %s, named %s', url, fileName)
         http.get(url, function(res) {
@@ -190,10 +180,7 @@ function downloadFile(err, url) {
 }
 
 function getMatches() {
-    config.account_ids.forEach(function(id, i) {
-        setTimeout(requestGetMatchHistory, (i + 1) * 1000 * matchCount, id, matchCount);
-    })
-    
+    setTimeout(requestGetMatchHistory, (i + 1) * 1000 * matchCount, "102344608", matchCount);
     setTimeout(getMatches, config.account_ids.length + 1 * 1000 * matchCount + 1000);
 }
 
