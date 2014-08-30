@@ -1,7 +1,6 @@
-matchurls
-=========
-
-The little bit of code behind [matchurls](https://rjackson.me/tools/matchurls).  It is both an expressjs website and a Steam / Dota bot (via [node-steam](https://github.com/seishun/node-steam) and [node-dota2](https://github.com/RJacksonm1/node-dota2)), and uses MongoDB as a data store; a matchid is looked up in the database first, and if it is not present we send a request to the Dota 2 Game Coordinator, and then save the response to the database.
+This is a fork of [matchurls](https://rjackson.me/tools/matchurls). It makes DOTA 2 API calls
+to get your most recently played games and download the replay. The replay is sent to a parser
+to get interesting stats. All of this is stored in a MongoDB database.
 
 
 Requires
