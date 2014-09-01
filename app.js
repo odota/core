@@ -18,8 +18,12 @@ var steam = new Steam(
         config.steam_response_timeout),
     logger = new (winston.Logger)
     matches = db.get('matchStats'),
+    heroes = db.get('heroes'),
     baseURL = "https://api.steampowered.com/IDOTA2Match_570/",
     matchCount = config.matchCount;
+
+heroes.index('id', {unique: true})
+matches.index('match_id', {unique: true})
 
 logger.add(
     winston.transports.Console,
@@ -43,6 +47,14 @@ logger.add(
         level: "error"
 	}
 )
+
+/**
+ * Generates Get Heroes URL
+ */
+function generateGetHeroesURL(){
+    return "https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="
+   	+ config.steam_api_key + "&language=en_us";
+}
 
 /**
  * Generates Match History URL
@@ -92,6 +104,23 @@ function requestGetMatchDetails(id) {
             matches.insert(result).success(function(){
                 setTimeout(tryToGetReplayUrl, 120000, id, downloadFile)
             })
+        }
+    })
+}
+
+/**
+ * Makes request for heroes list
+ */
+function requestGetHeroes() {
+    logger.log("info", "getHeroes called")
+    request(generateGetHeroesURL(), function(err, res, body){
+        if (!err && res.statusCode == 200) {
+            var result = JSON.parse(body).result
+            if (result.count > 100) {
+            	result.heroes.forEach(function(elem){
+                    heroes.insert(elem);
+                })
+            }    
         }
     })
 }
@@ -215,3 +244,4 @@ function getMissingReplays() {
 
 setTimeout(getMatches, 5000)
 setInterval(getMissingReplays, 30000)
+setInterval(requestGetHeroes, 86400) //Update heroes once a day
