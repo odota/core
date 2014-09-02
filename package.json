@@ -12,6 +12,7 @@
         "monk": "0.9.0",
         "request": "2.40.0",
         "express":"*",
-        "cheerio":"*"
+        "cheerio":"*",
+        "async": "0.9.0"
     }
 }

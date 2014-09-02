@@ -19,10 +19,12 @@ var steam = new Steam(
     logger = new (winston.Logger)
     matches = db.get('matchStats'),
     heroes = db.get('heroes'),
+    items = db.get('items'),
     baseURL = "https://api.steampowered.com/IDOTA2Match_570/",
     matchCount = config.matchCount;
 
 heroes.index('id', {unique: true})
+items.index('id', {unique: true})
 matches.index('match_id', {unique: true})
 
 logger.add(
@@ -121,6 +123,24 @@ function requestGetHeroes() {
                     heroes.insert(elem);
                 })
             }    
+        }
+    })
+}
+
+/**
+ * Makes request for items list
+ */
+function requestGetItems() {
+    logger.log("info", "getItems called")
+    request("http://www.dota2.com/jsfeed/itemdata", function(err, res, body){
+        if (!err && res.statusCode == 200) {
+            var result = JSON.parse(body).itemdata
+            for (var property in result) {
+            	if (result.hasOwnProperty(property)) {
+                	items.insert(result[property]);
+                }
+            }
+            
         }
     })
 }
@@ -245,3 +265,4 @@ function getMissingReplays() {
 setTimeout(getMatches, 5000)
 setInterval(getMissingReplays, 30000)
 setInterval(requestGetHeroes, 86400) //Update heroes once a day
+setInterval(requestGetItems, 86400) //Update heroes once a day
