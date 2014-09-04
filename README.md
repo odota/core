@@ -17,3 +17,11 @@ Configuration
 * Run once and have Steam yell at you for a Steam Guard code: `node app`
 * Edit config with provide Steam Guard code
 * Run again and bam, it works. Probably.
+
+YASP Match Parsing
+==================
+
+Powered by [clarity](https://github.com/skadistats/clarity), this application gets some interesting
+information from Dota 2 replays and saves them to a MongoDB server.
+
+Build: `mvn package`

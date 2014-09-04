@@ -43,6 +43,12 @@ app.route('/').get(function(req, res){
     })
 })
 
+app.route('/todo').get(function(req, res){
+    res.render(
+        'todo.jade'
+    )
+})
+
 app.route('/matches/:id').get(function(req, res){
     util.getMatch(+req.params.id).success(function(doc){
         if (!doc) res.status(404).send('Could not find this match!')
