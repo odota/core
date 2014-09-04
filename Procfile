@@ -1,0 +1,1 @@
+web: mvn -f parser package;node app.js

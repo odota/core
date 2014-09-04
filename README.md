@@ -1,27 +1,33 @@
 YASP - Yet Another (Dota) Stats Page
 ====
 
-This is a fork of [matchurls](https://rjackson.me/tools/matchurls). It makes DOTA 2 API calls
-to get your most recently played games and downloads the replays. The replays are sent to a parser
-to get interesting stats. All of this is stored in a MongoDB database.
+An attempt to provide awesome replay-parsed stats for free!  
 
 Requires
 
 * node.js v0.10
 * MongoDB
+* Java 1.7
 
 Configuration
 
 * Install node dependencies: `npm install`
-* Set up config: `vim config_example.js`, `:w config.js`.
-* Run once and have Steam yell at you for a Steam Guard code: `node app`
-* Edit config with provide Steam Guard code
-* Run again and bam, it works. Probably.
+* Set up config.env file (Steam Guard code may be required)
+* Start up your MongoDB
+* Run `nf start web` with Foreman, which builds the parser and runs the app
 
-YASP Match Parsing
-==================
+Obtaining Replays
+====
+This application contains code from [matchurls](https://rjackson.me/tools/matchurls). It makes DOTA 2 API calls
+to get your most recently played games and downloads the replays. The replays are sent to a parser
+to get interesting stats. All of this is stored in a MongoDB database.
 
-Powered by [clarity](https://github.com/skadistats/clarity), this application gets some interesting
-information from Dota 2 replays and saves them to a MongoDB server.
+Match Parser
+====
+Powered by [clarity](https://github.com/skadistats/clarity), which does the actual parsing of replays.
 
-Build: `mvn package`
+TODO
+====
+* Get matches on page load, or poll?  How many matches to look back?
+* parse asynchronously on match page load.  how to deal with attempted re-download overwriting files?
+* don't have java write to db, output and have node handling db ops

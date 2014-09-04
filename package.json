@@ -17,6 +17,7 @@
         "jade": "1.5.0",
         "moment": "2.8.2",
         "async": "0.9.0",
-        "winston": "0.7.3"
+        "winston": "0.7.3",
+        "seek-bzip": "*"
     }
 }
