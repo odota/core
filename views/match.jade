@@ -1,0 +1,90 @@
+doctype html
+html
+  head
+    title= match.match_id
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css')
+    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css')
+    link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Roboto:400,700')
+    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
+    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
+    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
+    script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
+    script.
+       var lh = !{JSON.stringify(match.lastHits)}
+       var denies = !{JSON.stringify(match.denies)}
+       var gold = !{JSON.stringify(match.gold)}
+       var xp = !{JSON.stringify(match.xp)}
+       var levels = !{JSON.stringify(match.levels)}
+       var time = !{JSON.stringify(match.time)}
+       var names = !{JSON.stringify(match.playerNames)}
+    style.
+      * {font-family: 'Roboto', sans-serif;}
+      .items img {
+         width: 35px;
+      }
+  body
+      include ./header.jade
+      .container
+        h1 Match #{match.match_id}
+        .row
+          .col-md-6
+          .col-md-6
+            table.table.table-condensed
+              tr
+                td Duration
+                td Game Mode
+              tr
+                td= moment().startOf('day').seconds(match.duration).format("H:mm")
+                td= mode
+                
+        .row
+          .col-md-12
+            h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+            table.table.table-hover.table-responsive.text-center
+                  tr
+                    td Player
+                    td Hero
+                    td Last Hits
+                    td Denies
+                    td Gold
+                    td GPM
+                    td XPM
+                    td HD
+                    td TD
+                    td HH
+                    td Items
+                  - each player, i in match.players
+                   tr(class = i < 5 ? "success" : "danger")
+                     td= match.playerNames[i]
+                     td: img(
+                             src='http://cdn.dota2.com/apps/dota2/images/heroes/' + playerInfo[i].hero.name.replace('npc_dota_hero_', "") + "_sb.png",
+                             alt=playerInfo[i].localized_name
+                             )
+                     td= player.last_hits
+                     td= player.denies
+                     td= player.gold
+                     td= player.gold_per_min
+                     td= player.xp_per_min
+                     td= player.hero_damage
+                     td= player.tower_damage
+                     td= player.hero_healing
+                     td.items.text-left
+                      - each item in playerInfo[i].items
+                        if item
+                          img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+        .row
+          h1.text-center Gold Earned
+            p: button.btn#gold Toggle
+          #chart-gold
+          h1.text-center Experience
+            p: button.btn#exp Toggle
+          #chart-xp
+          h1.text-center Levels
+          #chart-levels
+          h1.text-center Last Hits
+          #chart-lh
+          h1.text-center Denies
+          #chart-denies
+          script(type='text/javascript', src='../public/js/chart.js')
+          
+     include ./footer.jade
