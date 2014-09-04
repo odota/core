@@ -1,217 +1,184 @@
-var request = require('request'),
-    path = require("path"),
-    fs = require("fs"),
-    http = require('http'),
-    Steam = require("./MatchProvider-steam").MatchProvider,
-    db = require('monk')('localhost/dota'),
-    spawn = require('child_process').spawn,
-    winston = require('winston'),
-    Mail = require('winston-mail').Mail,
-    config = require("./config");
+var express = require('express'),
+    path = require('path'),
+    async = require('async'),
+    matchService = require('./MatchService'),
+    util = require('./util');
 
-var steam = new Steam(
-        config.steam_user,
-        config.steam_pass,
-        config.steam_name,
-        config.steam_guard_code,
-        config.cwd,
-        config.steam_response_timeout),
-    logger = new (winston.Logger)
-    matches = db.get('matchStats'),
-    baseURL = "https://api.steampowered.com/IDOTA2Match_570/",
-    matchCount = config.matchCount;
+var app = express(),
+    modes = {
+        "0": "None",
+        "1": "All Pick",
+        "2": "Captain's Mode",
+        "3": "Random Draft",
+        "4": "Single Draft",
+        "5": "All Random",
+        "6": "Intro",
+        "7": "Diretide",
+        "8": "Reverse Captain's Mode",
+        "9": "The Greeviling",
+        "10": "Tutorial",
+        "11": "Mid Only",
+        "12": "Least Played",
+        "13": "New Player Pool",
+        "14": "Compendium Matchmaking",
+        "16": "Captain's Draft"   
+    };
 
-logger.add(
-    winston.transports.Console,
-    {
-        timestamp: true
-    }
-)
+matchService()
 
-logger.add(
-    winston.transports.File,
-    {
-        filename: config.logFile,
-        level: "info"
-    }
-)
+app.use("/public", express.static(path.join(__dirname, '/public')))
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+app.locals.moment = require('moment')
 
-logger.add(
-    Mail,
-    {
-        to: config.logEmail,
-        level: "error"
-	}
-)
-
-/**
- * Generates Match History URL
- */
-function generateGetMatchHistoryURL(account_ID, num) {
-    return baseURL + "GetMatchHistory/V001/?key=" + config.steam_api_key
-    + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
-    + (num != "undefined" ? "&matches_requested=" + num : "");
-}
-
-/**
- * Generates Match Details URL
- */
-function generateGetMatchDetailsURL(match_id) {
-    return baseURL + "GetMatchDetails/V001/?key=" + config.steam_api_key
-    + "&match_id=" + match_id;
-}
-
-/**
- * Makes request for match history
- */
-function requestGetMatchHistory(id, num) {
-    logger.log("info", "requestGetMatchHistory called")
-    request(generateGetMatchHistoryURL(id, num), function(err, res, body){
-        if (!err && res.statusCode == 200) {
-            var j = JSON.parse(body);
-            j.result.matches.forEach(function(match, i) {
-                matches.findOne({match_id: match.match_id}, function(err, data) {
-                    if (err) throw err
-                    if (!data) {
-                        setTimeout(requestGetMatchDetails, i * 1000, match.match_id)
-                    }
-                })
-            })
-        }
-    })
-}
-
-/**
- * Makes request for match details
- */
-function requestGetMatchDetails(id) {
-    logger.log("info", "requestGetMatchDetails called")
-    request(generateGetMatchDetailsURL(id), function(err, res, body){
-        if (!err && res.statusCode == 200) {
-            var result = JSON.parse(body).result
-            matches.insert(result).success(function(){
-                setTimeout(tryToGetReplayUrl, 120000, id, downloadFile)
-            })
-        }
-    })
-}
-
-/**
- * Gets replay URL, either from steam or from database if we already have it
- */
-function tryToGetReplayUrl(id, callback) {
-    matches.findOne({match_id: id}, function(err, data){
-        if (err) callback(err)
-        
-        if (data.replay_url) {
-            callback(null, data.replay_url)
-        } else {
-            if (steam.ready) {
-                steam.getMatchDetails(id, function(err, data) {
-                    if (!err && data) {
-                        var result= {};
-                        result.replay_url = util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt);
-                        result.salt = data.salt
-                        matches.update({match_id: id}, {$set: result}, function(){})
-                        callback(null, replay.replay_url)
-                    } else {
-                        callback(true)
-                    }
-                })
-            } else {
-                callback(true)
+app.route('/').get(function(req, res){
+    util.getAllMatches().success(function(doc){
+        res.render(
+            'index.jade',
+            {
+                title: 'Stats',
+                matches: doc
             }
-        }
-    })    
-}
-
-/**
- * Decompresses the bzip2 replay file and then sends file to parser
- */
-function decompressAndParseReplay(err, fileName) {
-    if (!err) {
-        var bz = spawn("bzip2", ["-d", config.replaysFolder + fileName]);
-
-        bz.stdout.on('data', function (data) {
-            logger.log('info', '[BZ] stdout: %s - %s', data, fileName);
-        });
-
-        bz.stderr.on('data', function (data) {
-            logger.log('error', '[BZ] error: %s - %s', data, fileName);
-        });
-
-        bz.on('exit', function() {
-            logger.log("info", "[BZ] finished decompressing %s", fileName)
-            var cp = spawn(
-                "java",
-                ["-jar",
-                 "stats-0.1.0.jar",
-                 config.replaysFolder + path.basename(fileName, ".bz2")
-                ]
-            );
-
-            cp.stdout.on('data', function (data) {
-                logger.log('info', '[PARSER] stdout: %s - %s', data, fileName);
-            });
-
-            cp.stderr.on('data', function (data) {
-                logger.log('error', '[PARSER] error: %s - %s', data, fileName);
-            });
-
-            cp.on('close', function (code) {
-                logger.log('info', '[PARSER] exited with code %s - %s', code, fileName);
-            });        
-        })    
-
-    }
-}
-
-/**
- * Downloads replay file from specified url
- */
-function downloadFile(err, url) {
-    if (err) decompressAndParseReplay(true)
-    else {
-    	var fileName = url.substr(url.lastIndexOf("/") + 1)
-        var file = fs.createWriteStream(config.replaysFolder + fileName)
-        logger.log('info', 'Trying to download file from %s, named %s', url, fileName)
-        http.get(url, function(res) {
-            if (res.statusCode !== 200) {
-                logger.log("warn", "[DL] failed to download %s", fileName)
-                decompressAndParseReplay(true)
-            }
-            res.pipe(file);
-            file.on('finish', function() {
-                logger.log('info', 'File downloaded - %s', fileName)
-                file.close(decompressAndParseReplay(false, fileName));
-            })
-        });    
-    }
-}
-
-function getMatches() {
-    config.account_ids.forEach(function(id, i) {
-        setTimeout(requestGetMatchHistory, (i + 1) * 1000 * matchCount, id, matchCount);
+        )
     })
-    
-    setTimeout(getMatches, config.account_ids.length + 1 * 1000 * matchCount + 1000);
-}
+})
 
-function getMissingReplays() {
-    logger.log('info', 'Trying to find missing replays.');
-    matches.find({"playerNames": {$exists:false}}, {"sort": ['match_id', 'desc'], "limit": 10}, function(err, docs){
-        if (err) throw err;
+app.route('/matches/:id').get(function(req, res){
+    util.getMatch(+req.params.id).success(function(doc){
+        if (!doc) res.status(404).send('Could not find this match!')
         else {
-            logger.log('info', 'Found %s matches needing replay parsing.', docs.length);
-            docs.forEach(function(doc, i) {
-                if (doc.replay_url) setTimeout(downloadFile, i*5000, false, doc.replay_url)
-                else {
-                    setTimeout(tryToGetReplayUrl, i*5000, doc.match_id, downloadFile)
+            async.map(doc.players, util.getPlayerInfo, function(err, results){
+                if (!err) {
+                    res.render(
+                        'match.jade',
+                        {
+                            match: doc,
+                            mode: modes[doc.game_mode],
+                            playerInfo: results
+                        }
+                    )     
+                } else {
+                    res.status(500).send('Something bad happened when trying to get match info.')    
                 }
-            })
+            })   
+        }
+    })
+})
+
+var $ = require('cheerio')
+var request = require('request')
+var db = require('monk')('localhost/dota');
+var matchPlayers = db.get('matchPlayers');
+var host = "http://www.dotabuff.com";
+var player_id;
+var callCount = 0;
+
+app.route('/players/:player_id').get(function(req, res) { 
+    player_id = req.params.player_id;
+    getCounts(req.query.update, function(result){        
+        res.send(result);
+    });
+});
+
+function getCounts (fullUpdate, callback) {
+    getMatches(host+"/players/"+player_id+"/matches", fullUpdate, function(){
+        matchPlayers.find({players: { $elemMatch: { id: player_id }}}, function(err, data){
+            console.log(data.length);
+            var counts = {};
+            for (i=0;i<data.length;i++){
+                for (j=0;j<data[i].players.length; j++){
+                    var player = data[i].players[j]
+                    if (player.id==player_id){
+                        var playerResult = player.winner;
+                    }
+                }
+                for (j=0;j<data[i].players.length; j++){
+                    var player = data[i].players[j]
+                    if (player.winner == playerResult){
+                        if (!counts[player.id]){
+                            counts[player.id]={};
+                            counts[player.id]["win"]=0;
+                            counts[player.id]["lose"]=0;
+                        }
+                        if (player.winner){
+                            counts[player.id]["win"]+=1;
+                        }
+                        else{
+                            counts[player.id]["lose"]+=1;
+                        }
+                    }
+                }
+            }
+            callback(counts);
+        });
+    });
+}
+
+function getMatches(player_url, paginate, callback){
+    callCount++;
+    request(player_url, function processMatches (err, resp, html) {
+        if (err) return console.error(err)
+        var parsedHTML = $.load(html);
+        if (paginate){
+            var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+        }
+        parsedHTML('td[class=cell-xlarge]').map(function(i, matchCell) {
+            var match_url = host+$(matchCell).children().first().attr('href');  
+            matchPlayers.findOne({match_id: getIdFromPath(match_url)}, function(err, data) {
+                if (err) throw err
+                if (!data) {
+                    request(match_url, function (err, resp, html) {
+                        if (err) return console.error(err)
+                        var matchHTML = $.load(html)
+                        var radiant_win=matchHTML('.match-result').hasClass('radiant');
+                        var match_object = {};
+                        match_object.match_id = getIdFromPath(match_url);
+                        match_object.players=[];
+                        matchHTML('a[class=player-radiant]').map(function(i, link) {
+                            player_object={};
+                            player_object.id=getIdFromPath($(link).attr('href'));
+                            player_object.winner=radiant_win;
+                            match_object.players.push(player_object);
+                        })
+                        matchHTML('a[class=player-dire]').map(function(i, link) {
+                            player_object={};
+                            player_object.id=getIdFromPath($(link).attr('href'));
+                            player_object.winner=!radiant_win;
+                            match_object.players.push(player_object);                        
+                        })
+                        console.log("adding match %s", match_object.match_id);
+                        matchPlayers.insert(match_object);
+                    });
+                }
+                else{
+                    console.log("found match %s", getIdFromPath(match_url));
+                }
+            });      
+        });
+        if (nextPath){
+            getMatches(host+nextPath, true, callback);
+        }
+        callCount--;
+        if (callCount == 0 && callback){
+            callback();
         }
     });
 }
 
-setTimeout(getMatches, 5000)
-setInterval(getMissingReplays, 30000)
+
+function getIdFromPath(input){
+    return input.split(/[/]+/).pop();
+}
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}
+
+var server = app.listen(3000, function() {
+    console.log('Listening on port %d', server.address().port)
+})
