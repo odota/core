@@ -12,9 +12,9 @@ Requires
 Configuration
 
 * Install node dependencies: `npm install`
-* Set up config.env file (Steam Guard code may be required)
 * Start up your MongoDB
-* Run `nf start web` with Foreman, which builds the parser and runs the app
+* Create a sentry and .env file
+* Run `nf start`, which builds the parser and runs the app with environment variables (via Foreman)
 
 Obtaining Replays
 ====

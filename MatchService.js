@@ -166,6 +166,8 @@ function tryToGetReplayUrl(id, callback) {
 function downloadAndParse(err, url) {
     if (err) return;
     var fileName = url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
+    var replayPath = process.env.REPLAY_PATH || "./";
+    var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
     if (!fs.existsSync(fileName)){
         logger.log('info', 'Trying to download file from %s, named %s', url, fileName)
         http.get(url, function(res) {
@@ -188,14 +190,14 @@ function downloadAndParse(err, url) {
 
                 var Bunzip = require('seek-bzip');
                 var decompressed = Bunzip.decode(buf);
-                fs.writeFileSync(fileName, decompressed); 
+                fs.writeFileSync(replayPath + fileName, decompressed); 
 
-                logger.log('info', "parsing %s", fileName);
+                logger.log('info', "[PARSER] starting parse: %s", fileName);
                 var cp = spawn(
                     "java",
                     ["-jar",
-                     "parser/target/stats-0.1.0.jar",
-                     fileName
+                     parserFile,
+                     replayPath + fileName
                     ]
                 );
 
@@ -209,8 +211,6 @@ function downloadAndParse(err, url) {
 
                 cp.on('close', function (code) {
                     logger.log('info', '[PARSER] exited with code %s - %s', code, fileName);
-                    //maybe upload/move it somewhere for permanent storage?
-                    fs.unlink(fileName);
                 });      
             });
         });    
