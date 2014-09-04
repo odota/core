@@ -3,6 +3,7 @@ config.js
 node_modules
 replays
 *.log
+sentry
 servers
 *.dem
 *.bz2
