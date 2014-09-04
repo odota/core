@@ -9,7 +9,7 @@ function parseFile(file, cb) {
     var cp = spawn(
                 "java",
                 ["-jar",
-                 "stats-0.1.0.jar",
+                 config.parserPath,
                  config.replaysFolder + file
                 ]
             );

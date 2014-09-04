@@ -1123,3 +1123,135 @@
 {"level":"info","message":"Trying to download file from http://replay123.valve.net/570/868209774_1694134146.dem.bz2, named 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T04:10:06.531Z"}
 {"level":"info","message":"Trying to download file from http://replay124.valve.net/570/870061127_63067944.dem.bz2, named 870061127_63067944.dem.bz2","timestamp":"2014-09-04T04:10:11.532Z"}
 {"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T04:10:12.511Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T05:15:45.973Z"}
+{"level":"info","message":"Found 4 matches needing replay parsing.","timestamp":"2014-09-04T05:15:45.991Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868161840_1578172147.dem.bz2, named 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:45.994Z"}
+{"level":"info","message":"File downloaded - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:47.025Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/yasp/replays/868161840_1578172147.dem already exists.\n - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:47.065Z"}
+{"level":"info","message":"[BZ] finished decompressing 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:47.067Z"}
+{"level":"error","message":"[PARSER] error: Error: Unable to access jarfile parser/target/stats-0.1.0.jar\n - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:47.097Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:15:47.098Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868188043_160416926.dem.bz2, named 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:50.993Z"}
+{"level":"info","message":"File downloaded - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:53.634Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/yasp/replays/868188043_160416926.dem already exists.\n - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:53.682Z"}
+{"level":"info","message":"[BZ] finished decompressing 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:53.683Z"}
+{"level":"error","message":"[PARSER] error: Error: Unable to access jarfile parser/target/stats-0.1.0.jar\n - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:53.722Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:15:53.723Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/868209774_1694134146.dem.bz2, named 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:15:55.992Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T05:19:12.779Z"}
+{"level":"info","message":"Found 4 matches needing replay parsing.","timestamp":"2014-09-04T05:19:12.823Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868161840_1578172147.dem.bz2, named 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:12.825Z"}
+{"level":"info","message":"File downloaded - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:13.059Z"}
+{"level":"info","message":"[BZ] finished decompressing 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:13.107Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/yasp/replays/868161840_1578172147.dem already exists.\n - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:13.147Z"}
+{"level":"error","message":"[PARSER] error: Error: Unable to access jarfile parser/target/stats-0.1.0.jar\n - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:13.148Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:19:13.148Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868188043_160416926.dem.bz2, named 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:19:17.824Z"}
+{"level":"info","message":"File downloaded - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:19:19.185Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/yasp/replays/868188043_16{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T05:23:16.749Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868161840_1578172147.dem.bz2, named 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:23:16.760Z"}
+{"level":"info","message":"File downloaded - 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:23:17.127Z"}
+{"level":"info","message":"[BZ] finished decompressing 868161840_1578172147.dem.bz2","timestamp":"2014-09-04T05:23:18.993Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/868188043_160416926.dem.bz2, named 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:23:21.759Z"}
+{"level":"info","message":"File downloaded - 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:23:22.106Z"}
+{"level":"info","message":"[BZ] finished decompressing 868188043_160416926.dem.bz2","timestamp":"2014-09-04T05:23:25.349Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/868209774_1694134146.dem.bz2, named 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:23:26.768Z"}
+{"level":"info","message":"File downloaded - 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:23:29.911Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/870061127_63067944.dem.bz2, named 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:23:31.767Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T05:26:56.820Z"}
+{"level":"info","message":"requestGetMatchDetails called","timestamp":"2014-09-04T05:27:06.630Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T05:27:07.814Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T05:27:11.813Z"}
+{"level":"info","message":"Found 3 matches needing replay parsing.","timestamp":"2014-09-04T05:27:11.827Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/868209774_1694134146.dem.bz2, named 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:27:16.830Z"}
+{"level":"info","message":"File downloaded - 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:27:17.241Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T05:27:18.817Z"}
+{"level":"info","message":"[BZ] finished decompressing 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:27:19.884Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/870061127_63067944.dem.bz2, named 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:21.831Z"}
+{"level":"info","message":"File downloaded - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:22.506Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:27.651Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/yasp/replays/870061127_63067944.dem.bz2, output file = /home/codio/workspace/yasp/replays/870061127_63067944.dem\nbzip2: Deleting output file /home/codio/workspace/yasp/replays/870061127_63067944.dem, if it exists.\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:27.652Z"}
+{"level":"info","message":"[BZ] finished decompressing 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:27.734Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T05:27:29.919Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:33.119Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/yasp/replays/870061127_63067944.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:54)\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:33.120Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T05:27:33.134Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T05:27:46.300Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T05:27:46.368Z"}
+{"level":"info","message":"Found 3 matches needing replay parsing.","timestamp":"2014-09-04T05:27:46.452Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/864346255_1213924029.dem.bz2, named 864346255_1213924029.dem.bz2","timestamp":"2014-09-04T05:27:46.454Z"}
+{"level":"info","message":"File downloaded - 864346255_1213924029.dem.bz2","timestamp":"2014-09-04T05:27:48.421Z"}
+{"level":"info","message":"[BZ] finished decompressing 864346255_1213924029.dem.bz2","timestamp":"2014-09-04T05:27:50.735Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/868209774_1694134146.dem.bz2, named 868209774_1694134146.dem.bz2","timestamp":"2014-09-04T05:27:53.528Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:07:28.678Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:07:39.678Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:07:43.670Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-09-04T06:07:43.685Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/870061127_63067944.dem.bz2, named 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:07:43.687Z"}
+{"level":"info","message":"File downloaded - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:07:44.382Z"}
+{"level":"info","message":"[BZ] finished decompressing 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:07:47.955Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:07:50.673Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:08:01.798Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:08:13.096Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:08:14.796Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-09-04T06:08:14.951Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/870061127_63067944.dem.bz2, named 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:14.956Z"}
+{"level":"info","message":"File downloaded - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:15.882Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/yasp/replays/870061127_63067944.dem already exists.\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:15.919Z"}
+{"level":"info","message":"[BZ] finished decompressing 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:15.922Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:08:25.345Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:08:37.478Z"}
+{"level":"info","message":"getHeroes called","timestamp":"2014-09-04T06:08:40.767Z"}
+{"level":"info","message":"getItems called","timestamp":"2014-09-04T06:08:40.771Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:08:44.888Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 56.172s\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:44.898Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:08:44.934Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:08:45.028Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:08:51.085Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:09:02.734Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:09:13.202Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:09:19.449Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:09:19.479Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 69.896s\n - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:09:28.706Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 870061127_63067944.dem.bz2","timestamp":"2014-09-04T06:09:29.246Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:09:29.440Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:09:40.442Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:09:49.450Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:09:49.456Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:09:51.445Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:02.450Z"}
+{"level":"info","message":"getHeroes called","timestamp":"2014-09-04T06:10:07.173Z"}
+{"level":"info","message":"getItems called","timestamp":"2014-09-04T06:10:07.174Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:13.450Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:10:19.455Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:10:19.457Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:24.449Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:35.450Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:46.455Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:10:49.456Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:10:49.457Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:10:57.459Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:11:08.453Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:11:19.459Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:11:19.461Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:11:19.462Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:11:30.457Z"}
+{"level":"info","message":"getHeroes called","timestamp":"2014-09-04T06:11:33.576Z"}
+{"level":"info","message":"getItems called","timestamp":"2014-09-04T06:11:33.577Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:11:41.465Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:11:49.466Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:11:49.467Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:11:52.459Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:03.461Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:14.460Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:12:19.468Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:12:19.469Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:25.462Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:36.464Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:47.466Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:12:49.470Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:12:49.471Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-09-04T06:12:58.467Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:13:40.301Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-09-04T06:14:10.304Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-09-04T06:14:10.306Z"}
