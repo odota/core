@@ -13,7 +13,7 @@ var steam = new Steam(
         config.steam_pass,
         config.steam_name,
         config.steam_guard_code,
-        "./",
+        config.cwd,
         config.steam_response_timeout),
     logger = new (winston.Logger),
     matches = db.get('matchStats'),

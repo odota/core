@@ -4,7 +4,7 @@ config.steam_name = "";
 config.steam_user = "";
 config.steam_pass = "";
 config.steam_guard_code = "";
-config.cwd = "/home/codio/workspace/Dota2ApiGetter/"; // Because node-forever is silly.
+config.cwd = "";
 config.steam_api_key = "";
 
 config.account_ids = [""];
@@ -14,6 +14,7 @@ config.matchCount = 5;
 config.replaysFolder = "";
 
 config.parserPath = "";
+
 config.logFile = "";
 
 config.request_timeout = 1000 * 30;
