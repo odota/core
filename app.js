@@ -1,10 +1,8 @@
 var express = require('express'),
     path = require('path'),
     async = require('async'),
-    morgan = require('morgan'),
     matchService = require('./MatchService'),
-    util = require('./util'),
-    fs = require('fs');
+    util = require('./util');
     
 var app = express(),
     modes = {
@@ -24,13 +22,11 @@ var app = express(),
         "13": "New Player Pool",
         "14": "Compendium Matchmaking",
         "16": "Captain's Draft"   
-    },
-    accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
+    };
 
 matchService()
 
 app.use("/public", express.static(path.join(__dirname, '/public')))
-app.use(morgan('combined', {stream: accessLogStream}))
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = require('moment')

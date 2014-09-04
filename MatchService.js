@@ -194,7 +194,7 @@ function decompressAndParseReplay(err, fileName) {
             var cp = spawn(
                 "java",
                 ["-jar",
-                 "../StatsParsing/target/stats-0.1.0.jar",
+                 config.parserPath,
                  config.replaysFolder + path.basename(fileName, ".bz2")
                 ]
             );
