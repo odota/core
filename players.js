@@ -14,7 +14,7 @@ app.use(express.static(__dirname + '/public'))
 
 app.route('/players/:player_id').get(function(request, response) { 
     player_id = request.params.player_id;
-    getCounts( function(result){        
+    getCounts(request.query.update, function(result){        
         response.send(result);
     });
 });
@@ -23,8 +23,8 @@ app.listen(app.get('port'), function() {
     console.log("Node app is running at localhost:" + app.get('port'))
 })
 
-function getCounts (callback) {
-    getMatches(host+"/players/"+player_id+"/matches", function(){
+function getCounts (fullUpdate, callback) {
+    getMatches(host+"/players/"+player_id+"/matches", fullUpdate, function(){
         matchPlayers.find({players: { $elemMatch: { id: player_id }}}, function(err, data){
             console.log(data.length);
             var counts = {};
@@ -57,12 +57,14 @@ function getCounts (callback) {
     });
 }
 
-function getMatches(player_url, callback){
+function getMatches(player_url, paginate, callback){
     callCount++;
     request(player_url, function processMatches (err, resp, html) {
         if (err) return console.error(err)
         var parsedHTML = $.load(html);
-        var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+        if (paginate){
+            var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+        }
         parsedHTML('td[class=cell-xlarge]').map(function(i, matchCell) {
             var match_url = host+$(matchCell).children().first().attr('href');  
             matchPlayers.findOne({match_id: getIdFromPath(match_url)}, function(err, data) {
@@ -97,7 +99,7 @@ function getMatches(player_url, callback){
             });      
         });
         if (nextPath){
-            getMatches(host+nextPath, callback);
+            getMatches(host+nextPath, true, callback);
         }
         callCount--;
         if (callCount == 0 && callback){
