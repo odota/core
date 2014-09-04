@@ -249,3 +249,811 @@
 {"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:15.888Z"}
 {"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:18.890Z"}
 {"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:21.892Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:24.894Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:27.894Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:30.896Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:26:32.884Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T13:26:32.888Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:33.898Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:36.902Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:39.902Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:42.905Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:45.906Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:48.908Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:51.911Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:54.911Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:26:57.914Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:00.917Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:27:02.886Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T13:27:02.889Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866349537_340111400.dem.bz2, named 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:02.891Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:03.916Z"}
+{"level":"info","message":"File downloaded - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:04.066Z"}
+{"level":"info","message":"[BZ] finished decompressing 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:06.612Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:06.919Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:07.890Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:08.275Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:09.934Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:11.504Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:12.923Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:16.077Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:18.927Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:25.714Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:30.634Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:36.780Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:27:36.834Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T13:27:36.893Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866349537_340111400.dem.bz2, named 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:36.899Z"}
+{"level":"info","message":"File downloaded - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:38.023Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866349537_340111400.dem already exists.\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:38.061Z"}
+{"level":"info","message":"[BZ] finished decompressing 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:27:38.067Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:38.858Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:41.870Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:41.896Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:45.998Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:46.081Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:46.143Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:27:46.156Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:51.780Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:27:53.895Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:01.022Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:06.913Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:28:07.092Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T13:28:07.157Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866349537_340111400.dem.bz2, named 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:07.162Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 61.106s\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:08.182Z"}
+{"level":"info","message":"File downloaded - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:08.239Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866349537_340111400.dem already exists.\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:08.321Z"}
+{"level":"info","message":"[BZ] finished decompressing 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:08.324Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:08.458Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:09.037Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:13.621Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866349537_340111400.dem.bz2, named 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:13.679Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:13.697Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:14.313Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:14.379Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:14.421Z"}
+{"level":"info","message":"File downloaded - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:14.849Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866349537_340111400.dem already exists.\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:15.013Z"}
+{"level":"info","message":"[BZ] finished decompressing 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:28:15.016Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:15.589Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:20.257Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:20.342Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:20.368Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:22.208Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:31.955Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:36.888Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:28:37.187Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-08-31T13:28:37.297Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:37.307Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:37.715Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:37.808Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:28:37.828Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:39.435Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:46.840Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:51.886Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:28:56.929Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:01.954Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:04.141Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:29:07.920Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:08.109Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-08-31T13:29:08.227Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:08.235Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:15.458Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:20.594Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:20.966Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:21.194Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:21.214Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:25.915Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:28.234Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:31.467Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:37.048Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:29:38.046Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-08-31T13:29:38.067Z"}
+{"level":"info","message":"Trying to download file from http://replay122.valve.net/570/866412130_329425858.dem.bz2, named 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:38.071Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:42.281Z"}
+{"level":"info","message":"File downloaded - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:42.784Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866412130_329425858.dem already exists.\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:42.947Z"}
+{"level":"info","message":"[BZ] finished decompressing 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:42.964Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:46.369Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:50.031Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 158.349s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:50.596Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:29:51.083Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:29:55.586Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:00.704Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:05.470Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:07.789Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:30:08.062Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:30:11.163Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:17.368Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:23.298Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:39.521Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:30:39.704Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:30:39.803Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:45.813Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:48.751Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:30:57.172Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:02.323Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:07.673Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:31:12.602Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:12.942Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:31:13.084Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:17.273Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:23.540Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:30.348Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:33.307Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:42.326Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:31:42.838Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:31:42.894Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:48.052Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:51.725Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:31:59.619Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:06.778Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 268.463s\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:32:07.322Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:32:07.927Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:09.053Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:12.158Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:32:12.855Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:32:12.905Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:17.453Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:22.738Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:28.517Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 281.142s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:32:28.963Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:32:29.195Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:34.408Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:36.564Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:40.365Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:45.781Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:32:45.936Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:32:46.062Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:51.542Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:32:56.677Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:02.204Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:07.818Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:10.028Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:14.248Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:33:19.962Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:20.118Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:33:20.206Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:22.211Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:27.363Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:30.322Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:32.586Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:36.757Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:44.768Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:50.956Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:33:51.246Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:33:51.303Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:55.518Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:33:57.622Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:00.631Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:10.532Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 349.385s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:10.726Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 349.949s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:10.727Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 357.027s\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:34:10.728Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:34:11.193Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:11.279Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:11.511Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:12.718Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 332.887s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:15.354Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:15.534Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:15.722Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:19.941Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:34:21.301Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:22.047Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:34:22.289Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:25.065Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:28.595Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:31.935Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:35.571Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 375.369s\n - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:34:36.066Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866349537_340111400.dem.bz2","timestamp":"2014-08-31T13:34:36.199Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:41.380Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:43.480Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 316.648s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:48.590Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:48.670Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:49.848Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:34:51.424Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:34:51.439Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 295.215s\n - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:51.642Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866412130_329425858.dem.bz2","timestamp":"2014-08-31T13:34:51.730Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:52.866Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:55.868Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:34:58.871Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:01.872Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:04.874Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:07.877Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:10.879Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:13.881Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:16.884Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:19.885Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:35:21.426Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:35:21.428Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:22.887Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:25.887Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:28.893Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:31.894Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:34.895Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:37.897Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:40.900Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:43.898Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:46.902Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:49.904Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:35:51.428Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:35:51.430Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:52.905Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:55.906Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:35:58.909Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:01.911Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:04.911Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:07.916Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:10.918Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:13.918Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:16.921Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:19.923Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:36:21.428Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:36:21.429Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:22.924Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:25.926Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:28.932Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:31.930Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:34.932Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:37.933Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:40.935Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:43.936Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:46.937Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:49.940Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:36:51.429Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:36:51.430Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:52.941Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:55.942Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:36:58.946Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:01.946Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:04.948Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:07.950Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:10.952Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:13.954Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:16.954Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:19.957Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:37:21.429Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:37:21.431Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:22.957Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:25.958Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:28.962Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:31.962Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:34.964Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:37.965Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:40.966Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:43.968Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:46.971Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:49.970Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:37:51.430Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:37:51.431Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:52.974Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:55.977Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:37:58.979Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:01.981Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:04.983Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:07.984Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:10.987Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:13.989Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:16.990Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:19.993Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:38:21.430Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:38:21.432Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:22.994Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:25.994Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:28.998Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:31.999Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:35.001Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:38.002Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:41.003Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:44.004Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:47.005Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:50.005Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:38:51.433Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:38:51.434Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:53.006Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:56.009Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:38:59.010Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:02.013Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:05.015Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:08.014Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:11.018Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:14.019Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:17.021Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:20.022Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:39:21.434Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:39:21.436Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:23.022Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:26.022Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:29.026Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:32.026Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:35.028Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:38.028Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:41.029Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:44.032Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:47.033Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:50.034Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:39:51.436Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:39:51.437Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:53.035Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:56.037Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:39:59.039Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:02.042Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:05.044Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:08.046Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:11.046Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:14.047Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:17.050Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:20.051Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T13:40:21.437Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T13:40:21.438Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:23.052Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:26.055Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:29.057Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:32.059Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:35.061Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:38.062Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:41.064Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T13:40:44.065Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:06:24.052Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:39.279Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:42.281Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:45.283Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:48.284Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:51.285Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:54.287Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:10:57.289Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:00.290Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:11:02.277Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:11:02.280Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:03.290Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:06.292Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:09.292Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:12.295Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:15.297Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:18.298Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:21.299Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:24.301Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:27.301Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:30.304Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:11:32.279Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:11:32.280Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:33.304Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:36.307Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:39.309Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:42.310Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:45.313Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:48.314Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:51.318Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:54.320Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:11:57.322Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:00.322Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:12:02.281Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:12:02.282Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:03.325Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:06.326Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:09.328Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:12.328Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:15.330Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:18.333Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:32.817Z"}
+{"level":"info","message":"requestGetMatchDetails called","timestamp":"2014-08-31T21:12:35.501Z"}
+{"level":"info","message":"requestGetMatchDetails called","timestamp":"2014-08-31T21:12:36.500Z"}
+{"level":"info","message":"requestGetMatchDetails called","timestamp":"2014-08-31T21:12:37.500Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:38.817Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:44.822Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:50.820Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:12:52.814Z"}
+{"level":"info","message":"Found 3 matches needing replay parsing.","timestamp":"2014-08-31T21:12:52.818Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:12:56.824Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:02.822Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:08.824Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:14.829Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:20.830Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:13:22.816Z"}
+{"level":"info","message":"Found 3 matches needing replay parsing.","timestamp":"2014-08-31T21:13:22.822Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866140314_1600790456.dem.bz2, named 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:13:22.823Z"}
+{"level":"info","message":"File downloaded - 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:13:23.942Z"}
+{"level":"info","message":"[BZ] finished decompressing 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:13:25.903Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:26.831Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:27.824Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:29.597Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:32.029Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem, if it exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:32.036Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:32.043Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:32.824Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:32.831Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:33.152Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem (No such file or directory)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:33.154Z"}
+{"level":"error","message":"[PARSER] error: \tat java.io.FileInputStream.open(Native Method)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:33.157Z"}
+{"level":"error","message":"[PARSER] error: \tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:33.158Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:33.201Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:35.768Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:36.543Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:36.544Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:36.546Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:40.889Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\" java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:40.908Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:40.912Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 18.643s\n - 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:13:45.300Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:13:45.398Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:47.179Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:13:52.820Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:13:52.847Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:52.852Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:53.158Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:53.426Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:54.142Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem, if it exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:54.735Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:54.739Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:55.688Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:55.688Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:13:55.699Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:57.852Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:58.353Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\nbzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:59.030Z"}
+{"level":"error","message":"[BZ] error: bzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:59.030Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:59.033Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:13:59.180Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\" java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:59.699Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:13:59.706Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:05.184Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:11.182Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:17.184Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:14:22.825Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:14:22.832Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:22.835Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:23.184Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:23.676Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:24.355Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem, if it exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:24.357Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:24.362Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:25.014Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:25.015Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:25.026Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:27.834Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:28.155Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\nbzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:28.831Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:28.835Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:29.187Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:29.506Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:29.507Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:29.518Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:14:35.194Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:36.196Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:36.493Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:37.185Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:37.188Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:37.189Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:37.252Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:14:37.644Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:38.058Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:38.058Z"}
+{"level":"error","message":"[PARSER] error: \tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:38.059Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:14:38.072Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866140314_1600790456.dem.bz2, named 866140314_1600790456.dem.bz2","timestamp":"2014-08-31T21:14:38.107Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:19:41.608Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:19:47.610Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:19:53.615Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:19:59.614Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:20:01.606Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:20:01.611Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:01.614Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:01.920Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:04.699Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem, if it exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:04.706Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:04.709Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:05.611Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:05.613Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:05.614Z"}
+{"level":"error","message":"[PARSER] error: \tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:05.619Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:05.629Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:06.613Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:06.991Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:08.249Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:08.250Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:08.252Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:09.005Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method) - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:09.006Z"}
+{"level":"error","message":"[PARSER] error: \n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:09.006Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:09.025Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:11.619Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:17.620Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:23.626Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:29.626Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:20:31.609Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:20:31.613Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:31.615Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:31.938Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:32.822Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem, if it exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:32.823Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:32.825Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\" java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:33.629Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:20:33.647Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:35.627Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:36.614Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:36.844Z"}
+{"level":"error","message":"[BZ] error: \nbzip2: I/O or other error, bailing out.  Possible reason follows.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:37.580Z"}
+{"level":"error","message":"[BZ] error: bzip2: No space left on device\n\tInput file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem.bz2, output file = /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem\nbzip2: Deleting output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem, if it exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:37.581Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:37.583Z"}
+{"level":"error","message":"[PARSER] error: Exception in thread \"main\"  - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:38.316Z"}
+{"level":"error","message":"[PARSER] error: java.io.FileNotFoundException: /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem (No such file or directory)\n\tat java.io.FileInputStream.open(Native Method)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:146)\n\tat java.io.FileInputStream.<init>(FileInputStream.java:101)\n\tat skadistats.clarity.Clarity.tickIteratorForFile(Clarity.java:34)\n\tat albert.stats.Main.main(Main.java:70)\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:38.317Z"}
+{"level":"info","message":"[PARSER] exited with code 1 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:20:38.331Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:41.630Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:47.632Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:20:53.633Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:21:17.608Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:21:23.611Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:21:29.611Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:21:35.610Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:21:37.604Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:21:37.608Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:21:37.610Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:22:42.782Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:22:48.786Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:22:54.787Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:00.786Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:23:02.779Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:23:02.784Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:02.787Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:03.531Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:06.000Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:06.787Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:07.786Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:09.260Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:12.250Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:12.905Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:25.232Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:30.458Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:23:33.709Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:23:33.887Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:33.890Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:34.290Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem already exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:34.329Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:23:34.362Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:36.512Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:40.423Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:41.773Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:41.845Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem already exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:23:41.878Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:44.225Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:50.923Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:23:57.099Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:02.867Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:24:04.874Z"}
+{"level":"info","message":"Found 2 matches needing replay parsing.","timestamp":"2014-08-31T21:24:05.048Z"}
+{"level":"info","message":"Trying to download file from http://replay124.valve.net/570/866207174_894496500.dem.bz2, named 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:05.054Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:09.962Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:10.052Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 63.692s\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:10.104Z"}
+{"level":"info","message":"File downloaded - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:10.262Z"}
+{"level":"info","message":"[BZ] finished decompressing 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:10.412Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866207174_894496500.dem already exists.\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:10.457Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:24:10.460Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:11.160Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem already exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:11.284Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:11.286Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:17.839Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:24.845Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:35.373Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:24:35.622Z"}
+{"level":"info","message":"Found 1 matches needing replay parsing.","timestamp":"2014-08-31T21:24:35.790Z"}
+{"level":"info","message":"Trying to download file from http://replay123.valve.net/570/866307893_1584866020.dem.bz2, named 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:35.794Z"}
+{"level":"info","message":"File downloaded - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:36.496Z"}
+{"level":"error","message":"[BZ] error: bzip2: Output file /home/codio/workspace/Dota2ApiGetter/replays/866307893_1584866020.dem already exists.\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:36.549Z"}
+{"level":"info","message":"[BZ] finished decompressing 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:36.561Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:40.926Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 83.168s\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:41.565Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:24:41.814Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:46.684Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:24:56.796Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:04.045Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:25:08.540Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:25:08.822Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:08.900Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:18.580Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:28.201Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:36.911Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:25:39.888Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:25:40.060Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:25:50.642Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:01.561Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:06.803Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 142.73s\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:07.731Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:07.869Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:26:10.821Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:26:11.034Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:15.362Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 156.168s\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:26:15.606Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:26:15.621Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:22.603Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:28.497Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:33.713Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 148.115s\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:40.812Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:26:40.899Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:40.918Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:26:40.926Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:45.973Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:51.222Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 131.183s\n - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:52.347Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866307893_1584866020.dem.bz2","timestamp":"2014-08-31T21:26:52.437Z"}
+{"level":"info","message":"[PARSER] stdout: total time taken: 161.037s\n - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:26:52.762Z"}
+{"level":"info","message":"[PARSER] exited with code 0 - 866207174_894496500.dem.bz2","timestamp":"2014-08-31T21:26:52.865Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:26:57.113Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:03.118Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:09.117Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:27:10.904Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:27:10.928Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:15.113Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:21.120Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:27.118Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:33.122Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:39.123Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:27:40.907Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:27:40.909Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:45.126Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:51.126Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:27:57.131Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:03.131Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:09.135Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:28:10.911Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:28:10.913Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:15.135Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:21.138Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:27.140Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:33.141Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:39.142Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:28:40.913Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:28:40.914Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:45.142Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:51.144Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:28:57.146Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:03.147Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:09.147Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:29:10.913Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:29:10.914Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:15.150Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:21.155Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:27.157Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:33.159Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:39.160Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:29:40.914Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:29:40.915Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:45.167Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:51.167Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:29:57.167Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:03.167Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:09.170Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:30:10.915Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:30:10.917Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:15.171Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:21.172Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:27.177Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:33.179Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:39.176Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:30:40.918Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:30:40.919Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:45.180Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:51.182Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:30:57.184Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:03.186Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:09.187Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:31:10.919Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:31:10.920Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:15.189Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:21.190Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:27.194Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:33.194Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:39.198Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:31:40.921Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:31:40.922Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:45.200Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:51.201Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:31:57.204Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:03.203Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:09.204Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:32:10.922Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:32:10.923Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:15.206Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:21.206Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:27.209Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:33.212Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:39.215Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:32:40.924Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:32:40.925Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:45.214Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:51.216Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:32:57.217Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:03.218Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:09.222Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:33:10.925Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:33:10.926Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:15.223Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:21.225Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:27.227Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:33.231Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:39.230Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:33:40.925Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:33:40.927Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:45.235Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:51.234Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:33:57.237Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:03.241Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:09.239Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:34:10.928Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:34:10.929Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:15.241Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:21.242Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:27.246Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:33.245Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:39.247Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:34:40.930Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:34:40.931Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:45.250Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:51.249Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:34:57.250Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:03.251Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:09.255Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:35:10.930Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:35:10.931Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:15.258Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:21.258Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:27.258Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:33.262Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:39.263Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:35:40.933Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:35:40.934Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:45.266Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:51.270Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:35:57.273Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:03.271Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:09.275Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:36:10.934Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:36:10.935Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:15.276Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:21.276Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:27.279Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:33.281Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:39.282Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:36:40.934Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:36:40.935Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:45.282Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:51.284Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:36:57.288Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:03.286Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:09.291Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:37:10.936Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:37:10.937Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:15.296Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:21.296Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:27.296Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:33.296Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:39.298Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:37:40.936Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:37:40.937Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:45.300Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:51.300Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:37:57.303Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:03.301Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:09.302Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:38:10.937Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:38:10.938Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:15.305Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:21.307Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:27.309Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:33.311Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:39.313Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:38:40.938Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:38:40.939Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:45.313Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:51.318Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:38:57.319Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:39:03.319Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:39:09.318Z"}
+{"level":"info","message":"Trying to find missing replays.","timestamp":"2014-08-31T21:39:10.940Z"}
+{"level":"info","message":"Found 0 matches needing replay parsing.","timestamp":"2014-08-31T21:39:10.941Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:39:15.322Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:39:21.322Z"}
+{"level":"info","message":"requestGetMatchHistory called","timestamp":"2014-08-31T21:39:27.326Z"}
