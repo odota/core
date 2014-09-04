@@ -14,8 +14,6 @@ config.replaysFolder = "";
 
 config.parserPath = "";
 config.logFile = "";
-config.logEmail = "";
-
 
 config.request_timeout = 1000 * 30;
 config.steam_response_timeout = 1000 * 30;

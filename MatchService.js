@@ -6,7 +6,6 @@ var request = require('request'),
     db = require('monk')('localhost/dota'),
     spawn = require('child_process').spawn,
     winston = require('winston'),
-    Mail = require('winston-mail').Mail,
     config = require("./config");
 
 var steam = new Steam(
@@ -40,14 +39,6 @@ logger.add(
         filename: config.logFile,
         level: "info"
     }
-)
-
-logger.add(
-    Mail,
-    {
-        to: config.logEmail,
-        level: "error"
-	}
 )
 
 /**
