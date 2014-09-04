@@ -266,5 +266,5 @@ module.exports = function run() {
     setTimeout(getMatches, 5000)
     setInterval(getMissingReplays, 30000)
     setInterval(requestGetHeroes, 86400) //Update heroes once a day
-    setInterval(requestGetItems, 86400) //Update heroes once a day   
+    setInterval(requestGetItems, 86400) //Update items once a day   
 }

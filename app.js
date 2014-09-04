@@ -4,8 +4,7 @@ var express = require('express'),
     morgan = require('morgan'),
     matchService = require('./MatchService'),
     util = require('./util'),
-    fs = require('fs'),
-    config = require("./config");
+    fs = require('fs');
     
 var app = express(),
     modes = {
