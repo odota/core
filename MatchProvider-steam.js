@@ -4,7 +4,9 @@ var fs = require("fs"),
     dota2 = require("dota2"),
     deferred = require("deferred");
 
-var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_timeout) {
+var MatchProvider = function(user, pass, name, authcode, steam_response_timeout) {
+    this.cwd = __dirname+'/';
+    this.name = name || user;
     this.steam_response_timeout = steam_response_timeout || 1000 * 30;
 
     this.ready = false;
@@ -28,28 +30,28 @@ var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_tim
             util.log("Unhandled message: " + kMsg);
         });
     },
-    onSteamSentry = function onSteamSentry(newSentry) {
-        util.log("Received sentry.");
-        fs.writeFileSync(cwd + "sentry", newSentry);
-    },
-    onSteamServers = function onSteamServers(servers) {
-        util.log("Received servers.");
-        fs.writeFile(cwd + 'servers', JSON.stringify(servers));
-    },
-    onSteamError = function onSteamError(e) {
-        if (e.cause == "logonFail") {
-            switch (e.eresult) {
-                case steam.EResult.InvalidPassword:
-                    throw "Error: Steam cannot log on - Invalid password.";
-                case steam.EResult.AccountLogonDenied:
-                    throw "Error: Steam cannot log on - Account logon denied (Steam Guard code required)";
-                case steam.EResult.InvalidLoginAuthCode:
-                    throw "Error: Steam cannot log on - Invalid Steam Guard code (remove whats set in config.js to have a new one sent)";
-                case steam.EResult.AlreadyLoggedInElsewhere :
-                    throw "Error: Steam cannot log on - Account already logged in elsewhere.";
+        onSteamSentry = function onSteamSentry(newSentry) {
+            util.log("Received sentry.");
+            fs.writeFileSync(this.cwd + "sentry", newSentry);
+        },
+        onSteamServers = function onSteamServers(servers) {
+            util.log("Received servers.");
+            fs.writeFile("servers", JSON.stringify(servers));
+        },
+        onSteamError = function onSteamError(e) {
+            if (e.cause == "logonFail") {
+                switch (e.eresult) {
+                    case steam.EResult.InvalidPassword:
+                        throw "Error: Steam cannot log on - Invalid password.";
+                    case steam.EResult.AccountLogonDenied:
+                        throw "Error: Steam cannot log on - Account logon denied (Steam Guard code required)";
+                    case steam.EResult.InvalidLoginAuthCode:
+                        throw "Error: Steam cannot log on - Invalid Steam Guard code (remove whats set in config.js to have a new one sent)";
+                    case steam.EResult.AlreadyLoggedInElsewhere :
+                        throw "Error: Steam cannot log on - Account already logged in elsewhere.";
+                }
             }
-        }
-    };
+        };
 
     // node-steam's logOn now requires an object that is a valid protobuf
     // payload so we must omit authCode or shaSentryFile if ours are empty.
@@ -57,16 +59,16 @@ var MatchProvider = function(user, pass, name, authcode, cwd, steam_response_tim
         "accountName": user,
         "password": pass
     },
-        sentry = fs.readFileSync(cwd + "sentry");
+        sentry = fs.readFileSync(this.cwd + "sentry");
 
     if (authcode) logOnDetails.authCode = authcode;
     if (sentry.length) logOnDetails.shaSentryfile = sentry;
 
     this.bot.logOn(logOnDetails);
     this.bot.on("loggedOn", onSteamLogOn)
-        .on('sentry', onSteamSentry)
-        .on('servers', onSteamServers)
-        .on('error', onSteamError);
+    .on('sentry', onSteamSentry)
+    .on('servers', onSteamServers)
+    .on('error', onSteamError);
 };
 
 MatchProvider.prototype.getMatchDetails = function getMatchDetails(matchId, callback) {
@@ -90,10 +92,10 @@ MatchProvider.prototype.getMatchDetails = function getMatchDetails(matchId, call
         }
         else {
             callback(null, { id: matchId,
-                cluster: data.match.cluster,
-                salt: data.match.replaySalt,
-                state: data.match.replayState
-            });
+                            cluster: data.match.cluster,
+                            salt: data.match.replaySalt,
+                            state: data.match.replayState
+                           });
         }
     });
 
