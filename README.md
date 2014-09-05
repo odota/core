@@ -1,4 +1,4 @@
-YASP - Yet Another (Dota) Stats Page
+YASP - YASP: Another Stats Page
 ====
 
 An attempt to provide awesome replay-parsed stats for free!  
