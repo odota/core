@@ -1,2 +1,2 @@
-web: npm start
-worker: node MatchService.js
+web: node app.js
+worker: npm start

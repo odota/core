@@ -1,5 +1,5 @@
 /*
- * Utility for re-parsing matches that have already been parsed once (necessary when parser updated)
+ * Utility for re-parsing all downloaded replays
  */
 var fs = require('fs'),
     async = require('async'),
