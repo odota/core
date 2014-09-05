@@ -1,14 +1,14 @@
 var $ = require('cheerio'),
     request = require('request'),
-    db = require('monk')(process.env.MONGOHQ_URL),
+    db = require('./db.js'),
     teammates = db.get('teammates'),
     host = "http://www.dotabuff.com";
 var callCount = 0;
+
 /*
  * Gets the teammate counts for a particular player
  * fullUpdate param determines whether the full history is scraped.
  */
-
 function getCounts (player_id, fullUpdate, callback) {
     getMatches(host+"/players/"+player_id+"/matches", fullUpdate, function(){
         teammates.find({players: { $elemMatch: { id: player_id }}}, function(err, data){

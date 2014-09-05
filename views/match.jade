@@ -34,9 +34,8 @@ html
                 td Duration
                 td Game Mode
               tr
-                td= moment().startOf('day').seconds(match.duration).format("H:mm")
+                td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                 td= gameModes[match.game_mode]
-                
         .row
           .col-md-12
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"

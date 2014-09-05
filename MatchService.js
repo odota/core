@@ -3,17 +3,16 @@ var request = require('request'),
     fs = require("fs"),
     http = require('http'),
     Steam = require("./MatchProvider-steam").MatchProvider,
-    db = require('monk')(process.env.MONGOHQ_URL),
     spawn = require('child_process').spawn,
-    winston = require('winston');
-
-var steam = new Steam(
-    process.env.STEAM_USER,
-    process.env.STEAM_PASS,
-    process.env.STEAM_NAME,
-    process.env.STEAM_GUARD_CODE,
-    process.env.STEAM_RESPONSE_TIMEOUT),
+    winston = require('winston'),
+    steam = new Steam(
+        process.env.STEAM_USER,
+        process.env.STEAM_PASS,
+        process.env.STEAM_NAME,
+        process.env.STEAM_GUARD_CODE,
+        process.env.STEAM_RESPONSE_TIMEOUT),
     logger = new (winston.Logger),
+    db = require('./db.js'),
     matches = db.get('matchStats'),
     heroes = db.get('heroes'),
     items = db.get('items'),
@@ -168,8 +167,8 @@ function downloadAndParse(err, url) {
     var fileName = url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
     var replayPath = process.env.REPLAY_PATH || "./";
     var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
-    if (!fs.existsSync(fileName)){
-        logger.log('info', 'Trying to download file from %s, named %s', url, fileName)
+    if (!fs.exists(replayPath+fileName)){
+        logger.log('info', 'Trying to download file from %s', url)
         http.get(url, function(res) {
             if (res.statusCode !== 200) {
                 logger.log("warn", "[DL] failed to download %s", fileName)
@@ -221,8 +220,9 @@ function downloadAndParse(err, url) {
 function getMatches() {
     var account_ids = ["102344608"];
     account_ids.forEach(function(id, i) {
-        requestGetMatchHistory(id, 3);
-    })
+        requestGetMatchHistory(id, 2);
+    });
+    getMissingReplays();
 }
 
 function getMissingReplays() {
@@ -239,9 +239,7 @@ function getMissingReplays() {
 }
 
 module.exports = function run() {
-    setInterval(getMatches, 15000)
-    //just call trytogetreplayurl on page loads
-    setInterval(getMissingReplays, 30000)
-    setInterval(requestGetHeroes, 86400) //Update heroes once a day (howard: milliseconds bro! this is once every 86.4 seconds)
-    setInterval(requestGetItems, 86400) //Update items once a day   
+    requestGetHeroes();
+    requestGetItems();
+    setInterval(getMatches, 10000) 
 }
