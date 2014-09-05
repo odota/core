@@ -19,16 +19,25 @@ Configuration
 
 Obtaining Replays
 ====
-This application contains code from [matchurls](https://rjackson.me/tools/matchurls). It makes DOTA 2 API calls
-to get your most recently played games and downloads the replays. The replays are sent to a parser
-to get interesting stats. All of this is stored in a MongoDB database.
-
-Match Parser
-====
-Powered by [clarity](https://github.com/skadistats/clarity), which does the actual parsing of replays.
+This application contains code from [matchurls](https://rjackson.me/tools/matchurls). 
+It makes DOTA 2 API callsn to get your most recently played games and downloads the replays. 
+The replays are sent to a parser to get interesting stats. 
+All of this is stored in a MongoDB database.  
+Match parsing powered by [clarity](https://github.com/skadistats/clarity).
 
 TODO
 ====
-* Get matches on page load, or poll?  How many matches to look back?
-* parse asynchronously on match page load.  how to deal with attempted re-download overwriting files?
+* Maintain list of users tracked (visiting a player page adds somebody)
+* Poll for latest matches for users on this list.  Just get the last 10 or so
+* Immediately try to parse these replays
 * don't have java write to db, output and have node handling db ops
+* Fix parsing trying to parse when replay isn't ready
+* Fix match page breaking when replay hasn't been parsed (due to lack of player names)
+* Make player names API request on page request, update/instert names
+* Add tower/racks info
+* Add hero position info
+* Add rune info
+* Add ward info
+* Add chat log
+* Add combat log
+* Add some system to add new player ids to track

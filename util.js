@@ -1,5 +1,5 @@
 var async = require('async'),
-    db = require('monk')(process.env.MONGOHQ_URL),
+    db = require('./db.js'),
 	matches = db.get('matchStats'),
     heroes = db.get('heroes'),
     items = db.get('items');

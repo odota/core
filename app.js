@@ -1,5 +1,4 @@
 var express = require('express'),
-    db = require('monk')(process.env.MONGOHQ_URL),
     path = require('path'),
     async = require('async'),
     matchService = require('./MatchService'),
@@ -80,6 +79,7 @@ app.route('/players/:player_id').get(function(req, res) {
     });
 });
 
-var server = app.listen(3000, function() {
-    console.log('Listening on port %d', server.address().port)
-})
+var port = Number(process.env.PORT || 5000);
+app.listen(port, function() {
+  console.log("Listening on " + port);
+});
