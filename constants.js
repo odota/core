@@ -1,5 +1,7 @@
 var constants = exports;
 
+//TODO use require to grab web data, hashify it for efficiency
+
 constants.gameModes = {
         "0": "None",
         "1": "All Pick",

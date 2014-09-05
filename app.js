@@ -3,9 +3,8 @@ var express = require('express'),
     async = require('async'),
     matchService = require('./MatchService'),
     util = require('./util'),
-	teammates = require('./teammates')
-
-var app = express()
+    teammates = require('./teammates'),
+    app = express();
 
 matchService()
 
@@ -46,7 +45,8 @@ app.route('/matches/:id').get(function(req, res){
                             playerInfo: results
                         }
                     )
-                } else {
+                } 
+                else {
                     res.status(500).send('Something bad happened when trying to get match info.')    
                 }
             })
@@ -62,5 +62,5 @@ app.route('/players/:player_id').get(function(req, res) {
 
 var port = Number(process.env.PORT || 5000);
 app.listen(port, function() {
-  console.log("Listening on " + port);
+    console.log("Listening on " + port);
 });
