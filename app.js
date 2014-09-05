@@ -1,38 +1,13 @@
 var express = require('express'),
-    path = require('path'),
     async = require('async'),
+    path = require('path'),
     util = require('./util'),
     app = express(),
     request = require('request'),
-    constants = require('./constants');
+    constants = require("./constants.json");
 
-//initialize hero and item constants
-request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-        var array = JSON.parse(body).result;
-        var lookup={}
-        for (var i = 0, len = array.length; i < len; i++) {
-            lookup[array[i].id] = array[i];
-        }
-        console.log("getting heroes");
-        constants.heroes = lookup;
-    }
-})
-request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-        var objects = JSON.parse(body).itemdata;
-        var lookup={}
-        for(var key in objects) {
-            lookup[objects[key].id] = objects[key];
-        }
-        console.log("getting items");
-        constants.items = lookup;
-    }
-})
-
-//start getting matches
-var MatchService = require('./MatchService');
-MatchService()
+//update constants
+async.series([util.updateHeroes, util.updateItems, util.writeConstants])
 
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.set('views', path.join(__dirname, 'views'))
@@ -62,8 +37,7 @@ app.route('/matches/:id').get(function(req, res){
     util.getMatch(+req.params.id).success(function(doc){
         if (!doc) res.status(404).send('Could not find this match!')
         else {
-            console.log(doc.players)
-            res.render('match.jade',{match: doc})
+            res.render('match.jade',{match: doc, playerInfo: util.extractPlayerInfo(doc)})
         }
     })
 })

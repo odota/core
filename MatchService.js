@@ -1,5 +1,5 @@
-var request = require('request'),
-    path = require("path"),
+var request = require('request');
+var path = require("path"),
     fs = require("fs"),
     http = require('http'),
     Steam = require("./MatchProvider-steam").MatchProvider,
@@ -13,25 +13,16 @@ var request = require('request'),
         process.env.STEAM_RESPONSE_TIMEOUT),
     logger = new (winston.Logger),
     util = require('./util'),
-    constants = require('./constants'),
-    baseURL = constants.baseURL,
-    db = util.db,
-    matches = util.matches;
+    constants = require('./constants.json'),
+    matches = util.db.get('matchStats');
 
 matches.index('match_id', {unique: true})
-
-logger.add(
-    winston.transports.Console,
-    {
-        timestamp: true
-    }
-)
 
 /**
  * Generates Match History URL
  */
 function generateGetMatchHistoryURL(account_ID, num) {
-    return baseURL + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
+    return constants.baseURL + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
     + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
     + (num != "undefined" ? "&matches_requested=" + num : "");
 }
@@ -40,7 +31,7 @@ function generateGetMatchHistoryURL(account_ID, num) {
  * Generates Match Details URL
  */
 function generateGetMatchDetailsURL(match_id) {
-    return baseURL + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
+    return constants.baseURL + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
     + "&match_id=" + match_id;
 }
 
@@ -88,7 +79,7 @@ function tryToGetReplayUrl(id, callback) {
         }
         // Already have the replay url
         if (data.replay_url) {
-            callback(null, data.replay_url)
+            callback(null, data.replay_url, parse)
         } 
         else{
             if (steam.ready) {
@@ -117,17 +108,15 @@ function tryToGetReplayUrl(id, callback) {
 /**
  * Downloads replay file from specified url
  */
-function downloadAndParse(err, url) {
-    if (err) return;
-    var fileName = url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
-    var replayPath = "./replays/";
-    var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
-    if (!fs.existsSync(replayPath+fileName)){
+function download(err, url, cb) {
+    if (err){ cb(err) }
+    var fileName = "./replays/"+url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
+    if (!fs.existsSync(fileName)){
         logger.log('info', 'Downloading file from %s', url)
         http.get(url, function(res) {
             if (res.statusCode !== 200) {
-                logger.log("warn", "[DL] failed to download %s", fileName)
-                return;
+                logger.log("warn", "[DL] failed to download from %s", url)
+                cb(true, null)
             }
 
             var data = [], dataLen = 0; 
@@ -144,47 +133,56 @@ function downloadAndParse(err, url) {
                 } 
 
                 var Bunzip = require('seek-bzip');
-                var decompressed = Bunzip.decode(buf);
+                var decomp= Bunzip.decode(buf);
                 logger.log('info', '[DL] writing decompressed file');
-                fs.writeFileSync(replayPath + fileName, decompressed); 
-
-                //separate into new function
-                logger.log('info', "[PARSER] starting parse: %s", fileName);
-                var cp = spawn(
-                    "java",
-                    ["-jar",
-                     parserFile,
-                     replayPath + fileName
-                    ]
-                );
-
-                cp.stdout.on('data', function (data) {
-                    //parsed result should go here
-                    //insert data from stdout into database
-                    logger.log('info', '[PARSER] stdout: %s - %s', data, fileName);
-                });
-
-                cp.stderr.on('data', function (data) {
-                    //informational data should go here
-                    logger.log('error', '[PARSER] stderr: %s - %s', data, fileName);
-                });
-
-                cp.on('close', function (code) {
-                    logger.log('info', '[PARSER] exited with code %s - %s', code, fileName);
-                });      
+                fs.writeFileSync(fileName, decomp);
+                cb(false, fileName);
             });
         });    
     }
+    else{
+        //file already exists
+        cb(false, fileName)
+    }
 }
 
+function parse(err, fileName){
+    if (err){
+        console.log(err);
+    } 
+    var parserFile = "./parser/target/stats-0.1.0.jar";
+
+    logger.log('info', "[PARSER] starting parse: %s", fileName);
+    var cp = spawn(
+        "java",
+        ["-jar",
+         parserFile,
+         fileName
+        ]
+    );
+
+    cp.stdout.on('data', function (data) {
+        //JSON output of parse should output here
+        logger.log('info', '[PARSER] stdout: %s - %s', data, fileName);
+    });
+
+    cp.stderr.on('data', function (data) {
+        logger.log('error', '[PARSER] stderr: %s - %s', data, fileName);
+    });
+
+    cp.on('close', function (code) {
+        //insert data from stdout into database
+        //maybe delete/move the replay file too
+        logger.log('info', '[PARSER] exited with code %s - %s', code, fileName);
+    }); 
+}
 
 function getMatches() {
     //add a trackedUsers database to determine users to follow
     var account_ids = ["102344608", "88367253"];
-    account_ids.forEach(function(id, i) {
+    account_ids.forEach(function(id) {
         requestGetMatchHistory(id, 2);
     });
-    parseNewReplays();
 }
 
 function parseNewReplays() {
@@ -196,16 +194,10 @@ function parseNewReplays() {
         else {
             logger.log('info', 'Found %s matches needing parse', docs.length);
             docs.forEach(function(doc, i) {
-                //if !downloaded
-                //download
-                //check if replay file exists (download could fail if too new)
-                //parse the replay
-                setTimeout(tryToGetReplayUrl, i*5000, doc.match_id, downloadAndParse)
+                tryToGetReplayUrl(doc.match_id, download);
             })
         }
     });
 }
 
-module.exports = function run() {
-    setInterval(getMatches, constants.match_poll_interval);
-}
+setInterval(getMatches, constants.match_poll_interval);
