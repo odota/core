@@ -183,6 +183,7 @@ function getMatches() {
     account_ids.forEach(function(id) {
         requestGetMatchHistory(id, 2);
     });
+    parseNewReplays();
 }
 
 function parseNewReplays() {
