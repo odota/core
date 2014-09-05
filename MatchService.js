@@ -165,15 +165,16 @@ function tryToGetReplayUrl(id, callback) {
 function downloadAndParse(err, url) {
     if (err) return;
     var fileName = url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
-    var replayPath = process.env.REPLAY_PATH || "./";
+    var replayPath = "./replays/";
     var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
-    if (!fs.exists(replayPath+fileName)){
+    if (!fs.existsSync(replayPath+fileName)){
         logger.log('info', 'Trying to download file from %s', url)
         http.get(url, function(res) {
             if (res.statusCode !== 200) {
                 logger.log("warn", "[DL] failed to download %s", fileName)
                 return;
             }
+            
             var data = [], dataLen = 0; 
 
             res.on('data', function(chunk) {
@@ -189,8 +190,10 @@ function downloadAndParse(err, url) {
 
                 var Bunzip = require('seek-bzip');
                 var decompressed = Bunzip.decode(buf);
+                logger.log('info', '[DL] writing decompressed file');
                 fs.writeFileSync(replayPath + fileName, decompressed); 
 
+                //separate into new function
                 logger.log('info', "[PARSER] starting parse: %s", fileName);
                 var cp = spawn(
                     "java",
@@ -201,11 +204,14 @@ function downloadAndParse(err, url) {
                 );
 
                 cp.stdout.on('data', function (data) {
+                    //parsed result should go here
+                    //insert data from stdout into database
                     logger.log('info', '[PARSER] stdout: %s - %s', data, fileName);
                 });
 
                 cp.stderr.on('data', function (data) {
-                    logger.log('error', '[PARSER] error: %s - %s', data, fileName);
+                    //informational data should go here
+                    logger.log('error', '[PARSER] stderr: %s - %s', data, fileName);
                 });
 
                 cp.on('close', function (code) {
@@ -218,20 +224,27 @@ function downloadAndParse(err, url) {
 
 
 function getMatches() {
-    var account_ids = ["102344608"];
+    //add a trackedUsers database to determine users to follow
+    var account_ids = ["102344608", "88367253"];
     account_ids.forEach(function(id, i) {
         requestGetMatchHistory(id, 2);
     });
-    getMissingReplays();
+    parseNewReplays();
 }
 
-function getMissingReplays() {
-    logger.log('info', 'Trying to find missing replays.');
+function parseNewReplays() {
+    logger.log('info', 'Parsing replays for new matches.');
+    // Currently identifies unparsed games by playerNames field
+    //get only games within the last 7 days, otherwise replay expired
     matches.find({"playerNames": {$exists:false}}, {"sort": ['match_id', 'desc'], "limit": 10}, function(err, docs){
         if (err) throw err;
         else {
-            logger.log('info', 'Found %s matches needing replay parsing.', docs.length);
+            logger.log('info', 'Found %s matches needing parse', docs.length);
             docs.forEach(function(doc, i) {
+                //if !downloaded
+                //download
+                //check if replay file exists (download could fail if too new)
+                //parse the replay
                 setTimeout(tryToGetReplayUrl, i*5000, doc.match_id, downloadAndParse)
             })
         }
@@ -241,5 +254,4 @@ function getMissingReplays() {
 module.exports = function run() {
     requestGetHeroes();
     requestGetItems();
-    setInterval(getMatches, 10000) 
-}
+    setInterval(getMatches, 15000) 

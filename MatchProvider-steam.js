@@ -32,7 +32,7 @@ var MatchProvider = function(user, pass, name, authcode, steam_response_timeout)
     },
         onSteamSentry = function onSteamSentry(newSentry) {
             util.log("Received sentry.");
-            fs.writeFileSync(this.cwd + "sentry", newSentry);
+            fs.writeFileSync("sentry", newSentry);
         },
         onSteamServers = function onSteamServers(servers) {
             util.log("Received servers.");
@@ -53,7 +53,7 @@ var MatchProvider = function(user, pass, name, authcode, steam_response_timeout)
             }
         };
 
-    if (!fs.exists(this.cwd + "sentry")){
+    if (!fs.existsSync(this.cwd + "sentry")){
         fs.openSync(this.cwd + "sentry", 'w')
     }
 
