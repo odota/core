@@ -12,14 +12,12 @@ var request = require('request'),
         process.env.STEAM_GUARD_CODE,
         process.env.STEAM_RESPONSE_TIMEOUT),
     logger = new (winston.Logger),
-    db = require('./util').db,
-    matches = db.get('matchStats'),
-    heroes = db.get('heroes'),
-    items = db.get('items'),
-    baseURL = "https://api.steampowered.com/IDOTA2Match_570/"
+    util = require('./util'),
+    constants = require('./constants'),
+    baseURL = constants.baseURL,
+    db = util.db,
+    matches = util.matches;
 
-heroes.index('id', {unique: true})
-items.index('id', {unique: true})
 matches.index('match_id', {unique: true})
 
 logger.add(
@@ -28,14 +26,6 @@ logger.add(
         timestamp: true
     }
 )
-
-/**
- * Generates Get Heroes URL
- */
-function generateGetHeroesURL(){
-    return "https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="
-    + process.env.STEAM_API_KEY + "&language=en_us";
-}
 
 /**
  * Generates Match History URL
@@ -57,9 +47,9 @@ function generateGetMatchDetailsURL(match_id) {
 /**
  * Makes request for match history
  */
-function requestGetMatchHistory(id, num) {
+function requestGetMatchHistory(player_id, num) {
     logger.log("info", "requestGetMatchHistory called")
-    request(generateGetMatchHistoryURL(id, num), function(err, res, body){
+    request(generateGetMatchHistoryURL(player_id, num), function(err, res, body){
         if (!err && res.statusCode == 200) {
             var j = JSON.parse(body);
             j.result.matches.forEach(function(match, i) {
@@ -77,47 +67,12 @@ function requestGetMatchHistory(id, num) {
 /**
  * Makes request for match details
  */
-function requestGetMatchDetails(id) {
+function requestGetMatchDetails(match_id) {
     logger.log("info", "requestGetMatchDetails called")
-    request(generateGetMatchDetailsURL(id), function(err, res, body){
+    request(generateGetMatchDetailsURL(match_id), function(err, res, body){
         if (!err && res.statusCode == 200) {
             var result = JSON.parse(body).result
             matches.insert(result);
-        }
-    })
-}
-
-/**
- * Makes request for heroes list
- */
-function requestGetHeroes() {
-    logger.log("info", "getHeroes called")
-    request(generateGetHeroesURL(), function(err, res, body){
-        if (!err && res.statusCode == 200) {
-            var result = JSON.parse(body).result
-            if (result.count > 100) {
-                result.heroes.forEach(function(elem){
-                    heroes.insert(elem);
-                })
-            }    
-        }
-    })
-}
-
-/**
- * Makes request for items list
- */
-function requestGetItems() {
-    logger.log("info", "getItems called")
-    request("http://www.dota2.com/jsfeed/itemdata", function(err, res, body){
-        if (!err && res.statusCode == 200) {
-            var result = JSON.parse(body).itemdata
-            for (var property in result) {
-                if (result.hasOwnProperty(property)) {
-                    items.insert(result[property]);
-                }
-            }
-
         }
     })
 }
@@ -168,13 +123,13 @@ function downloadAndParse(err, url) {
     var replayPath = "./replays/";
     var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
     if (!fs.existsSync(replayPath+fileName)){
-        logger.log('info', 'Trying to download file from %s', url)
+        logger.log('info', 'Downloading file from %s', url)
         http.get(url, function(res) {
             if (res.statusCode !== 200) {
                 logger.log("warn", "[DL] failed to download %s", fileName)
                 return;
             }
-            
+
             var data = [], dataLen = 0; 
 
             res.on('data', function(chunk) {
@@ -235,7 +190,7 @@ function getMatches() {
 function parseNewReplays() {
     logger.log('info', 'Parsing replays for new matches.');
     // Currently identifies unparsed games by playerNames field
-    //get only games within the last 7 days, otherwise replay expired
+    //try only games within the last 7 days, otherwise replay expired
     matches.find({"playerNames": {$exists:false}}, {"sort": ['match_id', 'desc'], "limit": 10}, function(err, docs){
         if (err) throw err;
         else {
@@ -252,6 +207,5 @@ function parseNewReplays() {
 }
 
 module.exports = function run() {
-    requestGetHeroes();
-    requestGetItems();
-    setInterval(getMatches, 15000) 
+    setInterval(getMatches, constants.match_poll_interval);
+}

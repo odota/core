@@ -1,5 +1,5 @@
 /*
- * Utility for re-parsing matches already in db after a parser update without re-downloading files
+ * Utility for re-parsing matches that have already been parsed once (necessary when parser updated)
  */
 var fs = require('fs'),
     async = require('async'),

@@ -2,8 +2,8 @@ var $ = require('cheerio'),
     request = require('request'),
     db = require('./util').db,
     teammates = db.get('teammates'),
-    host = "http://www.dotabuff.com";
-var callCount = 0;
+    host = "http://www.dotabuff.com",
+    callCount = 0;
 
 /*
  * Gets the teammate counts for a particular player
@@ -94,7 +94,6 @@ function getMatches(player_url, paginate, callback){
     });
 }
 
-
 function getIdFromPath(input){
     return input.split(/[/]+/).pop();
 }
@@ -104,6 +103,5 @@ function isEmpty(obj) {
         if(obj.hasOwnProperty(prop))
             return false;
     }
-
     return true;
 }
