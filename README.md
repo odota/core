@@ -13,17 +13,17 @@ Configuration
 
 * Install node dependencies: `npm install`
 * Get Foreman `npm install -g foreman`
-* Start up your MongoDB
-* Create a sentry and .env file
+* Get MongoDB `parts install mongodb;parts start mongodb`
+* Create .env file with STEAM_USER, STEAM_PASSWORD, STEAM_API_KEY
 * Run `nf start`, which builds the parser and runs the app with environment variables
 
 Obtaining Replays
 ====
-This application contains code from [matchurls](https://rjackson.me/tools/matchurls). 
-It makes DOTA 2 API callsn to get your most recently played games and downloads the replays. 
-The replays are sent to a parser to get interesting stats. 
+This application contains code from [matchurls](https://rjackson.me/tools/matchurls).  
+It makes DOTA 2 API callsn to get your most recently played games and downloads the replays.  
+The replays are sent to a parser to get interesting stats.  
 All of this is stored in a MongoDB database.  
-Match parsing powered by [clarity](https://github.com/skadistats/clarity).
+Match parsing powered by [clarity](https://github.com/skadistats/clarity).  
 
 TODO
 ====

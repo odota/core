@@ -35,7 +35,7 @@ html
                 td Game Mode
               tr
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                td= gameModes[match.game_mode]
+                td= constants.gameModes[match.game_mode]
         .row
           .col-md-12
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
@@ -46,8 +46,8 @@ html
                     td K
                     td D
                     td A
-                    td Last Hits
-                    td Denies
+                    td LH
+                    td DN
                     td Gold
                     td GPM
                     td XPM
@@ -58,10 +58,7 @@ html
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td= match.playerNames ? match.playerNames[i] : player.account_id
-                     td: img(
-                             src='http://cdn.dota2.com/apps/dota2/images/heroes/' + playerInfo[i].hero.name.replace('npc_dota_hero_', "") + "_sb.png",
-                             alt=playerInfo[i].localized_name
-                             )
+                     //-td: img(src="http://cdn.dota2.com/apps/dota2/images/heroes/" + constants.heroes[player.hero_id].name.replace('npc_dota_hero_', "") + "_sb.png", alt=constants.heroes[player.hero_id].localized_name)
                      td= player.kills
                      td= player.deaths
                      td= player.assists
@@ -74,17 +71,17 @@ html
                      td= player.tower_damage
                      td= player.hero_healing
                      td.items.text-left
-                      - each item, j in playerInfo[i].items
-                        if item && j < 6
-                          img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-                   if player.hero_id === 80
-                     tr(class = i < 5 ? "success" : "danger")
-                       td TEH BEAR
-                       td(colspan = "12")
-                       td.items.text-left
-                        - each item, j in playerInfo[i].items
-                         if item && j > 6
-                          img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                     - for (var i = 0; i < 6; ++i) {
+                       //if player["item_"+i]
+                         //-img(src='http://cdn.dota2.com/apps/dota2/images/items/' + constants.items[player["item_"+i]].img, alt=constants.items[player["item_"+i]].dname)
+                     - }  
+                     if player.additional_units
+                       p TEH BEAR:
+                     - for (var i = 0; i < 6; ++i) {
+                       //if player[additional_units][0]["item_"+i]
+                         //-img(src='http://cdn.dota2.com/apps/dota2/images/items/' + constants.items[player[additional_units][0]["item_"+i]].img, alt=constants.items[player[additional_units][0]["item_"+i]].dname)
+                     - }  
+                      
         .row
           h1.text-center Gold Earned
             p: button.btn#gold Toggle
