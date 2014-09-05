@@ -57,7 +57,7 @@ html
                     td Items
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
-                     td= match.playerNames[i]
+                     td= match.playerNames ? match.playerNames[i] : player.account_id
                      td: img(
                              src='http://cdn.dota2.com/apps/dota2/images/heroes/' + playerInfo[i].hero.name.replace('npc_dota_hero_', "") + "_sb.png",
                              alt=playerInfo[i].localized_name
