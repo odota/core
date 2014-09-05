@@ -53,12 +53,17 @@ var MatchProvider = function(user, pass, name, authcode, steam_response_timeout)
             }
         };
 
+    if (!fs.exists(this.cwd + "sentry")){
+        fs.openSync(this.cwd + "sentry", 'w')
+    }
+
     // node-steam's logOn now requires an object that is a valid protobuf
     // payload so we must omit authCode or shaSentryFile if ours are empty.
     var logOnDetails = {
         "accountName": user,
         "password": pass
     },
+
         sentry = fs.readFileSync(this.cwd + "sentry");
 
     if (authcode) logOnDetails.authCode = authcode;

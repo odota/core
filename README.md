@@ -12,9 +12,10 @@ Requires
 Configuration
 
 * Install node dependencies: `npm install`
+* Get Foreman `npm install -g foreman`
 * Start up your MongoDB
 * Create a sentry and .env file
-* Run `nf start`, which builds the parser and runs the app with environment variables (via Foreman)
+* Run `nf start`, which builds the parser and runs the app with environment variables
 
 Obtaining Replays
 ====

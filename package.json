@@ -4,6 +4,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
+        "prestart": "mvn -f parser/pom.xml package",
         "start": "node app.js"
     },
     "dependencies": {
@@ -18,7 +19,6 @@
         "moment": "2.8.2",
         "async": "0.9.0",
         "winston": "0.7.3",
-        "seek-bzip": "*",
-        "foreman": "*"
+        "seek-bzip": "*"
     }
 }
