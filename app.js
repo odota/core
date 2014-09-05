@@ -5,32 +5,15 @@ var express = require('express'),
     util = require('./util'),
 	teammates = require('./teammates')
 
-var app = express(),
-    modes = {
-        "0": "None",
-        "1": "All Pick",
-        "2": "Captain's Mode",
-        "3": "Random Draft",
-        "4": "Single Draft",
-        "5": "All Random",
-        "6": "Intro",
-        "7": "Diretide",
-        "8": "Reverse Captain's Mode",
-        "9": "The Greeviling",
-        "10": "Tutorial",
-        "11": "Mid Only",
-        "12": "Least Played",
-        "13": "New Player Pool",
-        "14": "Compendium Matchmaking",
-        "16": "Captain's Draft"   
-    };
+var app = express()
 
 matchService()
 
 app.use("/public", express.static(path.join(__dirname, '/public')))
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment')
+app.locals.gameModes = require('./constants').gameModes
 
 app.route('/').get(function(req, res){
     util.getAllMatches().success(function(doc){
@@ -60,18 +43,16 @@ app.route('/matches/:id').get(function(req, res){
                         'match.jade',
                         {
                             match: doc,
-                            mode: modes[doc.game_mode],
                             playerInfo: results
                         }
-                    )     
+                    )
                 } else {
                     res.status(500).send('Something bad happened when trying to get match info.')    
                 }
-            })   
+            })
         }
     })
 })
-
 
 app.route('/players/:player_id').get(function(req, res) { 
     teammates.getCounts(req.params.player_id, req.query.update, function(result){        
