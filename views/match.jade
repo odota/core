@@ -69,8 +69,16 @@ html
                      td= player.tower_damage
                      td= player.hero_healing
                      td.items.text-left
-                      - each item in playerInfo[i].items
-                        if item
+                      - each item, j in playerInfo[i].items
+                        if item && j < 6
+                          img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                   if player.hero_id === 80
+                     tr(class = i < 5 ? "success" : "danger")
+                       td TEH BEAR
+                       td(colspan = "9")
+                       td.items.text-left
+                        - each item, j in playerInfo[i].items
+                         if item && j > 6
                           img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
         .row
           h1.text-center Gold Earned
