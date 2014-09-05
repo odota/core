@@ -21,6 +21,13 @@ util.getPlayerInfo = function(player, cb) {
                 items.push(player["item_" + i])
             }
             
+            //Bear
+            if (player.hero_id === 80 && player.additional_units[0]) {
+            	for(var i = 0; player.additional_units[0]["item_" + i] !== undefined; i++) {
+                    items.push(player.additional_units[0]["item_" + i])
+                }	    
+            }
+            
             async.map(items, util.getItemInfo, function(err, results) {
                 if (err) cb(err)
                 else {
