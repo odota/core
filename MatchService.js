@@ -4,19 +4,18 @@ var path = require("path"),
     http = require('http'),
     Steam = require("./MatchProvider-steam").MatchProvider,
     spawn = require('child_process').spawn,
-    winston = require('winston'),
     steam = new Steam(
         process.env.STEAM_USER,
         process.env.STEAM_PASS,
         process.env.STEAM_NAME,
         process.env.STEAM_GUARD_CODE,
         process.env.STEAM_RESPONSE_TIMEOUT),
-    logger = new (winston.Logger),
-    util = require('./util'),
     constants = require('./constants.json'),
-    matches = util.db.get('matchStats');
+    matches = require('./util').db.get('matchStats');
 
 matches.index('match_id', {unique: true})
+
+setInterval(getMatches, constants.match_poll_interval);
 
 /**
  * Generates Match History URL
@@ -39,7 +38,7 @@ function generateGetMatchDetailsURL(match_id) {
  * Makes request for match history
  */
 function requestGetMatchHistory(player_id, num) {
-    logger.log("info", "requestGetMatchHistory called")
+    console.log("requestGetMatchHistory called")
     request(generateGetMatchHistoryURL(player_id, num), function(err, res, body){
         if (!err && res.statusCode == 200) {
             var j = JSON.parse(body);
@@ -59,7 +58,7 @@ function requestGetMatchHistory(player_id, num) {
  * Makes request for match details
  */
 function requestGetMatchDetails(match_id) {
-    logger.log("info", "requestGetMatchDetails called")
+    console.log("requestGetMatchDetails called")
     request(generateGetMatchDetailsURL(match_id), function(err, res, body){
         if (!err && res.statusCode == 200) {
             var result = JSON.parse(body).result
@@ -71,35 +70,36 @@ function requestGetMatchDetails(match_id) {
 /**
  * Gets replay URL, either from steam or from database if we already have it
  */
-function tryToGetReplayUrl(id, callback) {
+function tryToGetReplayUrl(id, cb) {
     matches.findOne({match_id: id}, function(err, data){
         // Error occurred
         if (err) {
-            callback(err)
+            cb(err)
         }
         // Already have the replay url
         if (data.replay_url) {
-            callback(null, data.replay_url, parse)
+            cb(false, data.replay_url, parse)
         } 
         else{
             if (steam.ready) {
                 steam.getMatchDetails(id, function(err, data) {
                     if (!err && data) {
-                        var result= {};
+                        console.log(data)
+                        var result={};
                         result.replay_url = util.format("http://replay%s.valve.net/570/%s_%s.dem.bz2", data.cluster, data.id, data.salt);
                         result.salt = data.salt
-                        matches.update({match_id: id}, {$set: result}, function(){})
-                        callback(null, replay.replay_url)
-                    } 
+                        matches.update({match_id: id}, {$set: result})
+                        cb(false, result.replay_url, parse)
+                    }
                     else {
-                        // Something went wrong
-                        callback(true)
+                        console.log("Error occurred during match details request")
+                        cb(true)
                     }
                 })
             } 
             else {
-                // Steam's not ready
-                callback(true)
+                console.log("steam is not ready")
+                cb(true)
             }
         }
     })
@@ -109,14 +109,15 @@ function tryToGetReplayUrl(id, callback) {
  * Downloads replay file from specified url
  */
 function download(err, url, cb) {
-    if (err){ cb(err) }
+    if (err){ return; }
     var fileName = "./replays/"+url.substr(url.lastIndexOf("/") + 1).slice(0,-4);
     if (!fs.existsSync(fileName)){
-        logger.log('info', 'Downloading file from %s', url)
+        fs.openSync(fileName, 'w')
+        console.log('Downloading file from %s', url)
         http.get(url, function(res) {
             if (res.statusCode !== 200) {
-                logger.log("warn", "[DL] failed to download from %s", url)
-                cb(true, null)
+                console.log("[DL] failed to download from %s", url)
+                return;
             }
 
             var data = [], dataLen = 0; 
@@ -134,25 +135,25 @@ function download(err, url, cb) {
 
                 var Bunzip = require('seek-bzip');
                 var decomp= Bunzip.decode(buf);
-                logger.log('info', '[DL] writing decompressed file');
+                console.log('[DL] writing decompressed file %s', fileName);
                 fs.writeFileSync(fileName, decomp);
-                cb(false, fileName);
+                cb(fileName);
             });
         });    
     }
     else{
-        //file already exists
-        cb(false, fileName)
+        //file already exists, don't parse this
+        //it could be in mid-parse/mid-download
+        //use the utility to re-parse all present files
+        console.log("%s already exists", fileName)
     }
+
 }
 
-function parse(err, fileName){
-    if (err){
-        console.log(err);
-    } 
+function parse(fileName){
     var parserFile = "./parser/target/stats-0.1.0.jar";
 
-    logger.log('info', "[PARSER] starting parse: %s", fileName);
+    console.log("[PARSER] starting parse: %s", fileName);
     var cp = spawn(
         "java",
         ["-jar",
@@ -163,17 +164,17 @@ function parse(err, fileName){
 
     cp.stdout.on('data', function (data) {
         //JSON output of parse should output here
-        logger.log('info', '[PARSER] stdout: %s - %s', data, fileName);
+        console.log('[PARSER] stdout: %s - %s', data, fileName);
     });
 
     cp.stderr.on('data', function (data) {
-        logger.log('error', '[PARSER] stderr: %s - %s', data, fileName);
+        console.log('[PARSER] stderr: %s - %s', data, fileName);
     });
 
     cp.on('close', function (code) {
         //insert data from stdout into database
         //maybe delete/move the replay file too
-        logger.log('info', '[PARSER] exited with code %s - %s', code, fileName);
+        console.log('[PARSER] exited with code %s - %s', code, fileName);
     }); 
 }
 
@@ -181,24 +182,23 @@ function getMatches() {
     //add a trackedUsers database to determine users to follow
     var account_ids = ["102344608", "88367253"];
     account_ids.forEach(function(id) {
-        requestGetMatchHistory(id, 2);
+        requestGetMatchHistory(id, 10);
     });
     parseNewReplays();
 }
 
 function parseNewReplays() {
-    logger.log('info', 'Parsing replays for new matches.');
-    // Currently identifies unparsed games by playerNames field
-    //try only games within the last 7 days, otherwise replay expired
-    matches.find({"playerNames": {$exists:false}}, {"sort": ['match_id', 'desc'], "limit": 10}, function(err, docs){
+    var moment = require('moment')
+    var cutoff = moment().subtract(7, 'days').format('X')
+    console.log ("Looking for unparsed games since %s", cutoff);
+    matches.find({"playerNames": {$exists:false}},{"start_time":{ $gt: cutoff }}, function(err, docs){
         if (err) throw err;
         else {
-            logger.log('info', 'Found %s matches needing parse', docs.length);
+            console.log('Found %s matches needing parse', docs.length);
             docs.forEach(function(doc, i) {
+                console.log(doc.match_id)
                 tryToGetReplayUrl(doc.match_id, download);
             })
         }
     });
 }
-
-setInterval(getMatches, constants.match_poll_interval);

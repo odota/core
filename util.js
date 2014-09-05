@@ -1,10 +1,19 @@
+var util = exports;
 var request = require('request');
 var constants = require('./constants.json');
 
-exports.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota"),
-    matches = exports.db.get('matchStats');
+util.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota"),
+    matches = util.db.get('matchStats');
 
-exports.extractPlayerInfo = function(match) {
+util.getMatch = function(id) {
+    return matches.findOne({"match_id": id})
+}
+
+util.getAllMatches = function() {
+    return matches.find({}, {sort: {match_id: -1}})
+}
+
+util.extractPlayerInfo = function(match) {
     var playerInfoList= []
     for (var j=0; j<match.players.length;j++){
         var player = match.players[j];
@@ -28,18 +37,18 @@ exports.extractPlayerInfo = function(match) {
 /**
  * Gets a single match from db
  */
-exports.getMatch = function(id) {
+util.getMatch = function(id) {
     return matches.findOne({"match_id": id})
 }
 
 /**
  * Gets all matches from db
  */
-exports.getAllMatches = function() {
+util.getAllMatches = function() {
     return matches.find({}, {sort: {match_id: -1}})
 }
 
-exports.updateHeroes = function updateHeroes(cb){
+util.updateHeroes = function updateHeroes(cb){
     request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
         if (!error && response.statusCode == 200) {
             console.log("updating heroes");
@@ -54,7 +63,7 @@ exports.updateHeroes = function updateHeroes(cb){
     })
 }
 
-exports.updateItems = function updateItems(cb){
+util.updateItems = function updateItems(cb){
     request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
         if (!error && response.statusCode == 200) {
             console.log("updating items");
@@ -69,7 +78,7 @@ exports.updateItems = function updateItems(cb){
     })
 }
 
-exports.writeConstants = function writeConstants(cb){    
+util.writeConstants = function writeConstants(cb){    
     var fs = require('fs');
     console.log("writing constants file");
     fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4));

@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "prestart": "mvn -f parser/pom.xml package",
-        "start": "node app.js"
+        "start": "node MatchService.js"
     },
     "dependencies": {
         "steam": ">= 0.6.0",
