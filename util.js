@@ -4,18 +4,19 @@ var constants = require('./constants.json')
 var fs = require('fs')
 
 util.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
-var matches = util.db.get('matchStats');
+util.matches = util.db.get('matchStats');
+util.matches.index('match_id', {unique: true});
 
 /**
  * Gets a single match from db
  */
 util.getMatch = function(id) {
-    return matches.findOne({"match_id": id})
+    return util.matches.findOne({"match_id": id})
 }
 
 /**
  * Gets all matches from db
  */
 util.getAllMatches = function() {
-    return matches.find({}, {sort: {match_id: -1}})
+    return util.matches.find({}, {sort: {match_id: -1}})
 }

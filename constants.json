@@ -543,7 +543,6 @@
     },
     "runes": {},
     "baseURL": "https://api.steampowered.com/IDOTA2Match_570/",
-    "match_poll_interval": 15000,
     "gameModes": {
         "0": "Unknown",
         "1": "All Pick",
