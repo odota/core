@@ -1,20 +1,22 @@
-var request = require('request');
-var path = require("path"),
+var request = require('request'),
+    path = require("path"),
     fs = require("fs"),
     http = require('http'),
     Steam = require("./MatchProvider-steam").MatchProvider,
     spawn = require('child_process').spawn,
-    steam = new Steam(
-        process.env.STEAM_USER,
-        process.env.STEAM_PASS,
-        process.env.STEAM_NAME,
-        process.env.STEAM_GUARD_CODE,
-        process.env.STEAM_RESPONSE_TIMEOUT),
     constants = require('./constants.json'),
+    moment = require('moment'),
+    Bunzip = require('seek-bzip'),
     matches = require('./util').db.get('matchStats');
 
-matches.index('match_id', {unique: true})
+var steam = new Steam(
+    process.env.STEAM_USER,
+    process.env.STEAM_PASS,
+    process.env.STEAM_NAME,
+    process.env.STEAM_GUARD_CODE,
+    process.env.STEAM_RESPONSE_TIMEOUT);
 
+matches.index('match_id', {unique: true});
 setInterval(getMatches, constants.match_poll_interval);
 
 /**
@@ -127,13 +129,10 @@ function download(err, url, cb) {
                 dataLen += chunk.length;
             }).on('end', function() {
                 var buf = new Buffer(dataLen);
-
                 for (var i=0, len = data.length, pos = 0; i < len; i++) { 
                     data[i].copy(buf, pos); 
                     pos += data[i].length; 
                 } 
-
-                var Bunzip = require('seek-bzip');
                 var decomp= Bunzip.decode(buf);
                 console.log('[DL] writing decompressed file %s', fileName);
                 fs.writeFileSync(fileName, decomp);
@@ -163,7 +162,7 @@ function parse(fileName){
     );
 
     cp.stdout.on('data', function (data) {
-        //JSON output of parse should output here
+        //TODO JSON output of parse should output here
         console.log('[PARSER] stdout: %s - %s', data, fileName);
     });
 
@@ -172,14 +171,14 @@ function parse(fileName){
     });
 
     cp.on('close', function (code) {
-        //insert data from stdout into database
+        //TODO insert data from stdout into database
         //maybe delete/move the replay file too
         console.log('[PARSER] exited with code %s - %s', code, fileName);
     }); 
 }
 
 function getMatches() {
-    //add a trackedUsers database to determine users to follow
+    //TODO add a trackedUsers database to determine users to follow
     var account_ids = ["102344608", "88367253"];
     account_ids.forEach(function(id) {
         requestGetMatchHistory(id, 10);
@@ -188,7 +187,6 @@ function getMatches() {
 }
 
 function parseNewReplays() {
-    var moment = require('moment')
     var cutoff = moment().subtract(7, 'days').format('X')
     console.log ("Looking for unparsed games since %s", cutoff);
     matches.find({"playerNames": {$exists:false}},{"start_time":{ $gt: cutoff }}, function(err, docs){
