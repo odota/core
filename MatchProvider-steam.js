@@ -76,7 +76,7 @@ var MatchProvider = function(user, pass, name, authcode, steam_response_timeout)
     .on('error', onSteamError);
 };
 
-MatchProvider.prototype.getMatchDetails = function getMatchDetails(matchId, callback) {
+MatchProvider.prototype.getReplayDetails = function getReplayDetails(matchId, callback) {
     if (!this.ready) { callback("GC not ready"); return; }
     var self = this;
 

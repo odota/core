@@ -4,8 +4,9 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "prestart": "mvn -f parser/pom.xml package",
-        "start": "node MatchService.js"
+        "preworker": "mvn -f parser/pom.xml package",
+        "worker": "node MatchService.js",
+        "start": "node app.js"
     },
     "dependencies": {
         "steam": ">= 0.6.0",

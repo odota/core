@@ -58,7 +58,8 @@ html
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td= match.playerNames ? match.playerNames[i] : player.account_id
-                     td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + playerInfo[i].hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=playerInfo[i].hero.localized_name )
+                     - var hero = constants.heroes[player.hero_id]
+                     td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
                      td= player.kills
                      td= player.deaths
                      td= player.assists
@@ -71,15 +72,18 @@ html
                      td= player.tower_damage
                      td= player.hero_healing
                      td.items.text-left
-                       each item in playerInfo[i].items
-                         if item
-                           img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-                       if playerInfo[i].additional_items
-                         p MAN BEAR
-                         p BEAR BEAR
-                         each item in playerInfo[i].additional_items
+                       each val, index in player
+                         - if (index.slice(0, 5)==="item_")
+                           - var item = constants.items[val]
                            if item
-                            img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                             img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                         - if (index === "additional_units")
+                           hr(style='margin:10px;')
+                           each val, index in player.additional_units[0]
+                             - var item = constants.items[val]
+                             if item
+                               img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                           
         .row
           h1.text-center Gold Earned
             p: button.btn#gold Toggle
