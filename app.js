@@ -3,7 +3,40 @@ var express = require('express'),
     async = require('async'),
     fs = require('fs');
 
-async.parallel({"heroes":getHeroes, "items":getItems}, function(err, results){
+async.parallel({
+    "heroes":function (cb){
+        request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                console.log("[CONSTANTS] got latest hero data")
+                var array = JSON.parse(body).result.heroes;
+                var lookup={}
+                for (var i = 0; i < array.length;i++) {
+                    lookup[array[i].id] = array[i];
+                }
+                cb(null, lookup)
+            }
+            else{
+                cb(error)
+            }
+        })
+    }, 
+    "items":function (cb){
+        request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                console.log("[CONSTANTS] got latest item data")
+                var objects = JSON.parse(body).itemdata;
+                var lookup={}
+                for(var key in objects) {
+                    lookup[objects[key].id] = objects[key];
+                }
+                cb(null, lookup)
+            }
+            else{
+                cb(error)
+            }
+        })
+    }
+}, function(err, results){
     if (err){
         console.log(err)
     }
@@ -11,7 +44,7 @@ async.parallel({"heroes":getHeroes, "items":getItems}, function(err, results){
         var constants = require('./constants.json');
         constants.heroes = results.heroes;
         constants.items = results.items;
-        console.log("writing constants file")
+        console.log("[CONSTANTS] writing constants file")
         fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4));
     }
 
@@ -65,38 +98,3 @@ async.parallel({"heroes":getHeroes, "items":getItems}, function(err, results){
         console.log("Listening on " + port);
     });
 })
-
-function getHeroes(cb){
-    request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log("updating heroes");
-            var array = JSON.parse(body).result.heroes;
-            var lookup={}
-            for (var i = 0; i < array.length;i++) {
-                lookup[array[i].id] = array[i];
-            }
-            cb(null, lookup)
-        }
-        else{
-            console.log("error occurred");
-            cb(error)
-        }
-    })
-}
-function getItems(cb){
-    request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log("updating items");
-            var objects = JSON.parse(body).itemdata;
-            var lookup={}
-            for(var key in objects) {
-                lookup[objects[key].id] = objects[key];
-            }
-            cb(null, lookup)
-        }
-        else{
-            console.log("error occurred");
-            cb(error)
-        }
-    })
-}
