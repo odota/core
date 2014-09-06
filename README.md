@@ -28,8 +28,8 @@ Match parsing powered by [clarity](https://github.com/skadistats/clarity).
 TODO
 ====
 * Maintain list of users tracked (visiting a player page adds somebody)
-* Poll for latest matches for users on this list.  Just get the last 10 or so
-* Immediately try to parse these replays
+* Poll for latest matches for users on this list (by time or #matches)
+* Repeatedly attempt to parse unparsed matches
 * don't have java write to db, output and have node handling db ops
 * Fix parsing trying to parse when replay isn't ready
 * Fix match page breaking when replay hasn't been parsed (due to lack of player names)

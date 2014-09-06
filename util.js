@@ -1,6 +1,7 @@
 var util = exports;
 var request = require('request');
 var constants = require('./constants.json');
+var fs = require('fs');
 
 util.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota"),
     matches = util.db.get('matchStats');
@@ -79,8 +80,38 @@ util.updateItems = function updateItems(cb){
 }
 
 util.writeConstants = function writeConstants(cb){    
-    var fs = require('fs');
     console.log("writing constants file");
     fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4));
     cb()
 }
+
+/*
+ * Utility for re-parsing all downloaded replays
+var fs = require('fs'),
+    async = require('async'),
+    spawn = require('child_process').spawn;
+
+var files = fs.readdirSync("./replays/")
+
+function parseFile(file, cb) {
+    var cp = spawn(
+        "java",
+        ["-jar",
+         "./parser/target/stats-0.1.0.jar",
+         "./replays/" + file
+        ]
+    );
+
+    cp.stderr.on('data', function (data) {
+        cb(data)
+    });
+
+    cp.on('close', function (code) {
+        cb(null, code)
+    });
+}
+
+async.eachSeries(files, parseFile, function(err) {
+    console.log(err)
+})
+ */
