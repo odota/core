@@ -7,12 +7,6 @@
 	<packaging>jar</packaging>
 	<name>yasp-parser</name>
 	<description>Gets the stats I want</description>
-	
-	<properties>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 
 	<developers>
 		<developer>
