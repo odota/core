@@ -4,7 +4,6 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "compile": "mvn -f parser/pom.xml package",
         "worker": "node MatchService.js",
         "start": "node app.js"
     },
