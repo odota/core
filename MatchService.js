@@ -89,7 +89,7 @@ function getReplayUrl(id, cb) {
         if (err){cb(err)}
         else{
             if (match.replay_url) {
-                cb(null, data.replay_url)
+                cb(null, match.replay_url)
             }
             else{
                 if (steam.ready) {
