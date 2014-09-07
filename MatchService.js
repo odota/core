@@ -197,7 +197,7 @@ function downloadWithRetry(url, timeout, cb){
 function parse(match, cb){
     var fileName = match.file_name
     var match_id = match.match_id
-    var parserFile = "./parser/target/stats-0.1.0.jar";
+    var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
 
     console.log("[PARSER] Parsing replay %s", fileName);
     var cp = spawn(
