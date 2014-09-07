@@ -133,7 +133,7 @@ function getReplayUrl(id, cb) {
                     if (err) {cb(err);}
                     var result={};
                     result.replay_url = "http://replay"+data.cluster+".valve.net/570/"+data.id+"_"+data.salt+".dem.bz2";
-                    result.file_name = "./replays/"+result.replay_url.substr(result.replay_url.lastIndexOf("/") + 1).slice(0, -4);
+                    result.file_name = replay_dir+result.replay_url.substr(result.replay_url.lastIndexOf("/") + 1).slice(0, -4);
                     matches.update({match_id: id}, {$set: result})
                     console.log("[DL] got replay_url from GC")
                     cb(null, result.replay_url)
