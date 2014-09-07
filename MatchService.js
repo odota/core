@@ -18,6 +18,9 @@ var replay_dir = process.env.REPLAY_DIR || "./replays/"
 var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
 var num_matches = 8
 
+if (!fs.existsSync(replay_dir)){
+    fs.mkdir(replay_dir);
+}
 //reset matches that were in queue when the app last exited
 matches.update( { parse_status: { $mod: [ 2, 1 ] }} , { $inc: { parse_status: -1 } }, { multi: true } )
 //matches.update({}, {parse_status: 0}, { multi: true })
