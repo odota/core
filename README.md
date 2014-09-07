@@ -24,16 +24,6 @@ It makes DOTA 2 API calls to get your most recently played games and downloads t
 The replays are sent to a parser powered by [clarity](https://github.com/skadistats/clarity) to get interesting stats.  
 Augmented match data is stored in MongoDB.
 
-Update Flow
-====
-The application attempts to run this workflow, waits for a delay (5 seconds), and repeats  
-For the list of registered users, get their X latest matches (currently 6, but can be varied)  
-Any matches not already in the database are added  
-Query the database for any matches without augmented data (currently a check for playerNames, which is added during replay parsing)  
-The matches returned here must also be newer than a week, or the replay will be expired
-For these matches, do three things for each, getMatchDetails, then downloadReplay, then parseReplay  
-Do this vertically, so stay in a thread until all three are done for a particular match.
-
 TODO
 ====
 * Maintain list of users tracked (visiting a player page adds somebody)
@@ -47,6 +37,4 @@ TODO
 * Add ward info
 * Add chat log
 * Add combat log
-* Add some system to add new player ids to track
 * match regions
-* provide mechanism to reparse all replays
