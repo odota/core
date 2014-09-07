@@ -5,12 +5,12 @@
 	<artifactId>stats</artifactId>
 	<version>0.1.0</version>
 	<packaging>jar</packaging>
-	<name>dota stats parsing</name>
+	<name>yasp-parser</name>
 	<description>Gets the stats I want</description>
 	
 	<properties>
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+		<maven.compiler.source>1.6</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -42,11 +42,6 @@
 			<artifactId>clarity</artifactId>
 			<version>1.1-SNAPSHOT</version>
 		</dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>2.12.3</version>
-        </dependency>
 	</dependencies>
 
 	<build>

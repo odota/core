@@ -29,6 +29,7 @@ function poll() {
     aq.push(account_ids, function(err){})
 
     matches.find({}, function(err, docs) {
+        if (err){throw err}
         docs.forEach(function(doc){
             if (doc.parse_status == 0){
                 matches.update({match_id: doc.match_id}, {$set: {parse_status : 1}})
