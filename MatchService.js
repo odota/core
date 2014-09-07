@@ -15,7 +15,8 @@ var steam = new gc(
 var gq = async.queue(getMatchDetails, 1)
 var dq = async.queue(download, 1);
 var pq = async.queue(parse, 1);
-var replay_dir = "./replays/"
+var replay_dir = process.env.REPLAY_DIR || "./replays/"
+var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
 var num_matches = 2
 
 matches.update( { parse_status: { $mod: [ 2, 1 ] }} , { $inc: { parse_status: -1 } }, { multi: true } )
@@ -197,7 +198,6 @@ function downloadWithRetry(url, timeout, cb){
 function parse(match, cb){
     var fileName = match.file_name
     var match_id = match.match_id
-    var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
 
     console.log("[PARSER] Parsing replay %s", fileName);
     var cp = spawn(
