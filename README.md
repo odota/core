@@ -13,9 +13,13 @@ Configuration
 
 * Install node dependencies: `npm install`
 * Get Foreman `npm install -g foreman`
-* Get MongoDB, Maven, and start your db server `parts install mongodb maven;parts start mongodb`
+* Get MongoDB and start your db server `parts install mongodb maven;parts start mongodb`
 * Create .env file with STEAM_USER, STEAM_PASSWORD, STEAM_API_KEY
 * Run `nf start`, which builds the parser and runs the app with environment variables
+
+Compiling the parser
+====
+Run `mvn -f parser/pom.xml package` to compile the parser.
 
 Obtaining Replays
 ====
