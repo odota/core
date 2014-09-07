@@ -62,7 +62,9 @@ function getNewGames(player_id, cb) {
     var num_matches = process.env.MATCHES_PER_PAGE || 5
     console.log("[POLL] getting games for player %s", player_id)
     request(generateGetMatchHistoryURL(player_id, num_matches), function(err, res, body){
-        if (err) {throw err}
+        if (res.statusCode != 200 || err){
+            cb(err || "WebAPI response did not have status 200");
+        }
         else{
             async.mapSeries(JSON.parse(body).result.matches, insertMatch, function(err){
                 cb(null)
