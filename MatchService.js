@@ -20,7 +20,6 @@ poll()
  * Generates Match History URL
  */
 function generateGetMatchHistoryURL(account_ID, num) {
-    num = 3
     return constants.baseURL + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
     + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
     + (num != "undefined" ? "&matches_requested=" + num : "");
@@ -60,8 +59,9 @@ function poll() {
  * Makes request for match history and puts new games in db
  */
 function getNewGames(player_id, cb) {
+    var num_matches = process.env.MATCHES_PER_PAGE || 5
     console.log("[POLL] getting games for player %s", player_id)
-    request(generateGetMatchHistoryURL(player_id), function(err, res, body){
+    request(generateGetMatchHistoryURL(player_id, num_matches), function(err, res, body){
         if (err) {throw err}
         else{
             async.mapSeries(JSON.parse(body).result.matches, insertMatch, function(err){
