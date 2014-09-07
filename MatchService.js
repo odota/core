@@ -63,7 +63,7 @@ function getNewGames(player_id, cb) {
     console.log("[POLL] getting games for player %s", player_id)
     request(generateGetMatchHistoryURL(player_id, num_matches), function(err, res, body){
         if (res.statusCode != 200 || err){
-            cb(err || "WebAPI response did not have status 200");
+            cb(err || "WebAPI response status != 200");
         }
         else{
             async.mapSeries(JSON.parse(body).result.matches, insertMatch, function(err){
@@ -81,7 +81,9 @@ function insertMatch(match, cb){
             if (!data) {
                 console.log("[POLL] getting details for match %s", match_id)
                 request(generateGetMatchDetailsURL(match_id), function(err, res, body){
-                    if (err) {cb(err)}
+                    if (res.statusCode != 200 || err){
+                        cb(err || "WebAPI response status != 200");
+                    }
                     else{
                         var result = JSON.parse(body).result
                         result.parse_status = 0;
