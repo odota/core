@@ -176,7 +176,7 @@ function download(match, cb) {
 }
 
 function downloadWithRetry(url, timeout, cb){
-    var fileName = "./replays/"+url.substr(url.lastIndexOf("/") + 1).slice(0, -4);
+    var fileName = replay_dir+url.substr(url.lastIndexOf("/") + 1).slice(0, -4);
     console.log('[DL] Downloading file from %s', url)
     var dl = request({url:url, encoding:null}, function (error, response, body) {
         if (response.statusCode !== 200 || error) {
