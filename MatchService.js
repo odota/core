@@ -12,14 +12,15 @@ var steam = new gc(
     process.env.STEAM_USER,
     process.env.STEAM_PASS,
     process.env.STEAM_GUARD_CODE);
+var q = async.queue(download, 1);
 
-poll();
+poll()
 
 /**
  * Generates Match History URL
  */
 function generateGetMatchHistoryURL(account_ID, num) {
-    num=6;
+    num = 3
     return constants.baseURL + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
     + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
     + (num != "undefined" ? "&matches_requested=" + num : "");
@@ -32,27 +33,26 @@ function generateGetMatchDetailsURL(match_id) {
     return constants.baseURL + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
     + "&match_id=" + match_id;
 }
-
+/*
+ * Polls the WebAPI for new matches and adds them to db
+ */
 function poll() {
     //TODO use a db instead of array here
     var account_ids = ["102344608", "88367253","71313111","75392401"];
     async.mapSeries(account_ids, getNewGames, function(err){
-        //after adding new games to db, check db for matches needing more data and without expired replay 
-        var cutoff = moment().subtract(7, 'days').format('X'); 
-        matches.find({"playerNames": {$exists:false}},{"start_time":{ $gt: cutoff }}, function(err, matches){
-            if (err) {throw err}
-            else{
-                console.log('[DB] Found %s matches to process newer than %s', matches.length, moment.unix(cutoff).format('MMMM Do YYYY, h:mm:ss a'));
-                //TODO runs horizontally right now, switch to vertical
-                async.mapLimit(matches, 1, getMatchDetails, function(err, detailedIds){
-                    async.mapLimit(matches, 1, download, function(err, fileNames){
-                        async.mapLimit(fileNames, 1, parse, function(err){
-                            setTimeout(poll, 5000);
-                        })
-                    })
+        if (err) {throw err}
+        //queue matches needing more details
+        matches.find({parse_status: {$lt: 1}}, function(err, docs) {
+            docs.forEach(function(doc){
+                matches.update({match_id: doc.match_id}, {$set: {parse_status : 1}})
+
+                q.push(doc, function (err) {
+                    console.log('[UPDATE] finished processing match %s', doc.match_id); 
                 })
-            }
+            })
+            console.log('[UPDATE] There are %s matches in the queue', q.length())
         })
+        setTimeout(poll, 5000)
     })
 }
 
@@ -60,34 +60,37 @@ function poll() {
  * Makes request for match history and puts new games in db
  */
 function getNewGames(player_id, cb) {
-    console.log("[API] getting games for player %s", player_id)
+    console.log("[POLL] getting games for player %s", player_id)
     request(generateGetMatchHistoryURL(player_id), function(err, res, body){
-        if (err) {cb(err)}
+        if (err) {throw err}
         else{
-            JSON.parse(body).result.matches.forEach(function(match){
-                matches.findOne({match_id: match.match_id}, function(err, data) {
-                    if (!data) {
-                        matches.insert(match);
-                    }
-                })
+            async.mapSeries(JSON.parse(body).result.matches, insertMatch, function(err){
+                cb(null)
             })
-            cb(null)
         }
     })
 }
 
-/**
- * Adds more details to db
- */
-function getMatchDetails(match, cb){
+function insertMatch(match, cb){
     var match_id = match.match_id
-    console.log("[API] getting details for match %s", match.match_id)
-    request(generateGetMatchDetailsURL(match_id), function(err, res, body){
+    matches.findOne({match_id: match_id}, function(err, data) {
         if (err) {cb(err)}
         else{
-            var result = JSON.parse(body).result
-            matches.update({match_id: match_id}, {$set: result})
-            cb(null, match_id)
+            if (!data) {
+                console.log("[POLL] getting details for match %s", match_id)
+                request(generateGetMatchDetailsURL(match_id), function(err, res, body){
+                    if (err) {cb(err)}
+                    else{
+                        var result = JSON.parse(body).result
+                        result.parse_status = 0;
+                        matches.insert(result);
+                        cb(null)
+                    }
+                })
+            }
+            else{
+                cb(null)
+            }
         }
     })
 }
@@ -114,7 +117,7 @@ function getReplayUrl(id, cb) {
                 })
             } 
             else {
-                console.log("[GC] Steam not ready for match %s, retrying", id)
+                console.log("[DL] GC not ready, match %s, retrying", id)
                 setTimeout(getReplayUrl, 10000, id, cb);
             }
         }
@@ -135,14 +138,19 @@ function download(match, cb) {
         }
     }
     if (fileName){
-        cb(null, fileName);
+        parse(fileName, function(err){
+            cb(null);
+        })
     }
     else{
+        //TODO don't try if the replay is too old, right now this blocks forever
         console.log("[DL] no existing replay for match %s", match_id)
         getReplayUrl(match_id, function(err, url){
             downloadWithRetry(url, 1000, function(err, fileName){
-                console.log("[DL] downloaded and decompressed to %s", fileName)
-                cb(null, fileName)
+                console.log("[DL] saved replay to %s", fileName)
+                parse(fileName, function(err){
+                    cb(null);
+                })
             })
         })
     }
@@ -152,13 +160,14 @@ function downloadWithRetry(url, timeout, cb){
     var fileName = "./replays/"+url.substr(url.lastIndexOf("/") + 1).slice(0, -4);
     console.log('[DL] Downloading file from %s', url)
     var dl = request({url:url, encoding:null}, function (error, response, body) {
-        if (response.statusCode !== 200) {
+        if (response.statusCode !== 200 || error) {
             console.log("[DL] failed to download from %s, retrying in %ds", url, timeout/1000)
             setTimeout(downloadWithRetry, timeout, url, timeout*2, cb);
         }
         else{
             var data = Bunzip.decode(body);
             fs.writeFileSync(fileName, data);
+            cb(null, fileName);
         }
     })
     }
@@ -167,11 +176,7 @@ function downloadWithRetry(url, timeout, cb){
  * Parses the given file
  */
 function parse(fileName, cb){
-    var match_id = path.basename(fileName).split("_")[0]
-    var result = {}
-    result.playerNames={}
-    matches.update({match_id: match_id}, {$set: result})
-
+    var match_id = path.basename(fileName).split("_")[0]    
     var parserFile = "./parser/target/stats-0.1.0.jar";
 
     console.log("[PARSER] Parsing replay %s", fileName);
@@ -184,18 +189,22 @@ function parse(fileName, cb){
     );
 
     cp.stdout.on('data', function (data) {
-        //TODO output of parse should output here
-        console.log('[PARSER] stdout: %s - %s', data, fileName);
+        //TODO output of parse should go here
+        //TODO insert data from stdout into database
+        console.log('[PARSER] stdout: %s', data);
     });
 
     cp.stderr.on('data', function (data) {
-        console.log('[PARSER] stderr: %s - %s', data, fileName);
+        console.log('[PARSER] stderr: %ss', data);
     });
 
     cp.on('close', function (code) {
-        //TODO insert data from stdout into database
-        //maybe delete/move the replay file too
-        console.log('[PARSER] exited with code %s - %s', code, fileName);
+        if (code == 0){
+            //TODO maybe delete/move the replay file if code 0
+            //also mark matches with parse status 2
+            matches.update({match_id: match_id}, {$set: {parse_status : 2}})   
+        }      
+        console.log('[PARSER] exited with code %s', code);
         cb(null)
-    }); 
+    });     
 }
