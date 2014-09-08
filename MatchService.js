@@ -18,6 +18,11 @@ var api_url = "https://api.steampowered.com/IDOTA2Match_570/"
 var replay_dir = process.env.REPLAY_DIR || "./replays/"
 var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
 
+
+if (!fs.existsSync(replay_dir)){
+    fs.mkdir(replay_dir)
+}
+
 if (process.env.RESET_ON_START){
     console.log("[RESET] resetting parse status")
     matches.update({}, {$set:{parse_status: 0}}, { multi: true })
