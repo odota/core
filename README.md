@@ -28,7 +28,7 @@ Augmented match data is stored in MongoDB.
 TODO
 ====
 * Add mechanism for adding players to db
-* Make match pages link to player page
+* Make match pages link to player page with teammate history and matches
 * Make player names API request on page request, update/insert names
 * Add tower/racks info
 * Add hero position info
