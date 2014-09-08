@@ -10,7 +10,7 @@ Requirements
 * Maven 3
 * Foreman `npm install -g foreman`
 
-Deployment directions
+Deployment
 ====
 * Install node dependencies: `npm install`
 * Export app to upstart `nf export -o /etc/init/`
@@ -18,7 +18,7 @@ Deployment directions
 * Add MONGOHQ_URL to env if using remote MongoDB, otherwise set up local mongodb server
 * Run `nf start`
 
-Obtaining Replays
+Actions
 ====
 This application contains code from [matchurls](https://rjackson.me/tools/matchurls).  
 It makes DOTA 2 API calls to get your most recently played games and downloads the replays.  
