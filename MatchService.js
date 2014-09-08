@@ -17,7 +17,6 @@ var pq = async.queue(parseReplay, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570/"
 var replay_dir = process.env.REPLAY_DIR || "./replays/"
 var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
-var num_matches = process.env.MATCHES_PER_PLAYER || 1
 
 if (process.env.RESET_ON_START){
     console.log("[RESET] resetting parse status")
@@ -46,13 +45,7 @@ function poll() {
 }
 
 function apiRequest(req, cb){
-    if (req.match_id){
-        var url = generateGetMatchDetailsURL(req.match_id)
-        }
-    else if (req.player_id){
-        var url = generateGetMatchHistoryURL(req.player_id, num_matches)
-        }
-    request(url, function(err, res, body){
+    request(generateURL(req), function(err, res, body){
         if (err) {cb(err)}
         else if (res.statusCode != 200){
             cb("WebAPI response code != 200");
@@ -71,13 +64,12 @@ function apiRequest(req, cb){
                 })
                 cb(null)
             }
-            else if (req.match_id){
+            if (req.match_id){
                 console.log("[API] details for match %s", req.match_id)
                 result.parse_status = 0;
                 matches.insert(result)
                 cb(null)
             }
-
         }
     })
 }
@@ -176,18 +168,16 @@ function parseReplay(match, cb){
 }
 
 /**
- * Generates Match History URL
+ * Generates api request url
  */
-function generateGetMatchHistoryURL(account_ID, num) {
-    return api_url + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
-    + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
-    + (num != "undefined" ? "&matches_requested=" + num : "");
-}
-
-/**
- * Generates Match Details URL
- */
-function generateGetMatchDetailsURL(match_id) {
-    return api_url + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
-    + "&match_id=" + match_id;
+function generateURL(req) {
+    if (req.player_id){
+        return api_url + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
+        + "&account_id=" + req.player_id
+        + "&matches_requested=" + process.env.MATCHES_PER_PLAYER || 1
+    }
+    if (req.match_id){
+        return api_url + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
+        + "&match_id=" + req.match_id;
+    }
 }
