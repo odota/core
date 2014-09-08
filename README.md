@@ -15,6 +15,7 @@ Deployment directions
 * Install node dependencies: `npm install`
 * Export app to upstart `nf export -o /etc/init/`
 * Create .env file with STEAM_USER, STEAM_PASS, STEAM_API_KEY
+* Add MONGOHQ_URL to env if using remote MongoDB, otherwise set up local mongodb server
 * Run `nf start`
 
 Obtaining Replays
