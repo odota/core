@@ -6,6 +6,8 @@ var fs = require('fs')
 util.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
 util.matches = util.db.get('matchStats');
 util.matches.index('match_id', {unique: true});
+util.players = util.db.get('players');
+util.players.index('player_id', {unique: true});
 
 /**
  * Gets a single match from db
