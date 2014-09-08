@@ -13,13 +13,10 @@ Configuration
 
 * Install node dependencies: `npm install`
 * Get Foreman `npm install -g foreman`
-* Get MongoDB and start your db server `parts install mongodb maven;parts start mongodb`
+* Get MongoDB/Maven and start your db server `parts install mongodb maven;parts start mongodb`
 * Create .env file with STEAM_USER, STEAM_PASSWORD, STEAM_API_KEY
-* Run `nf start`, which builds the parser and runs the app with environment variables
-
-Compiling the parser
-====
-Run `mvn -f parser/pom.xml package` to compile the parser.
+* Run `mvn -f parser/pom.xml package` to compile the parser
+* Run `nf start`, which runs the app with environment variables
 
 Obtaining Replays
 ====
@@ -30,15 +27,12 @@ Augmented match data is stored in MongoDB.
 
 TODO
 ====
-* Maintain list of users tracked (visiting a player page adds somebody)
-* don't have java write to db, output and have node handling db ops
-* Fix parsing trying to parse when replay isn't ready
-* Fix match page breaking when replay hasn't been parsed (due to lack of player names)
-* Make player names API request on page request, update/instert names
+* Add mechanism for adding players to db
+* Make match pages link to player page
+* Make player names API request on page request, update/insert names
 * Add tower/racks info
 * Add hero position info
 * Add rune info
 * Add ward info
 * Add chat log
 * Add combat log
-* match regions

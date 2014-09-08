@@ -3,55 +3,59 @@ var express = require('express'),
     async = require('async'),
     fs = require('fs');
 
-async.parallel({
-    "heroes":function (cb){
-        request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log("[CONSTANTS] got latest hero data")
-                var array = JSON.parse(body).result.heroes;
-                var lookup={}
-                for (var i = 0; i < array.length;i++) {
-                    lookup[array[i].id] = array[i];
+function updateConstants(cb){
+    async.parallel({
+        "heroes":function (cb){
+            request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log("[CONSTANTS] got latest hero data")
+                    var array = JSON.parse(body).result.heroes;
+                    var lookup={}
+                    for (var i = 0; i < array.length;i++) {
+                        lookup[array[i].id] = array[i];
+                    }
+                    cb(null, lookup)
                 }
-                cb(null, lookup)
-            }
-            else{
-                cb(error)
-            }
-        })
-    }, 
-    "items":function (cb){
-        request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log("[CONSTANTS] got latest item data")
-                var objects = JSON.parse(body).itemdata;
-                var lookup={}
-                for(var key in objects) {
-                    lookup[objects[key].id] = objects[key];
+                else{
+                    cb(error)
                 }
-                cb(null, lookup)
-            }
-            else{
-                cb(error)
-            }
-        })
-    }
-}, function(err, results){
-    if (err){
-        console.log(err)
-    }
-    else{
+            })
+        }, 
+        "items":function (cb){
+            request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log("[CONSTANTS] got latest item data")
+                    var objects = JSON.parse(body).itemdata;
+                    var lookup={}
+                    for(var key in objects) {
+                        lookup[objects[key].id] = objects[key];
+                    }
+                    cb(null, lookup)
+                }
+                else{
+                    cb(error)
+                }
+            })
+        }
+    }, function(err, results){
         var constants = require('./constants.json');
-        constants.heroes = results.heroes;
-        constants.items = results.items;
-        console.log("[CONSTANTS] writing constants file")
-        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4));
-    }
+        if (err){
+            cb(constants)
+        }
+        else{
+            constants.heroes = results.heroes;
+            constants.items = results.items;
+            console.log("[CONSTANTS] updating constants file")
+            fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
+            cb(constants)
+        }
+    })
+}
 
+updateConstants(function(constants){
     var path = require('path'),
         util = require('./util'),
         teammates = require('./teammates'),
-        constants = require("./constants.json"),
         app = express();
 
     app.use("/public", express.static(path.join(__dirname, '/public')))
@@ -96,5 +100,6 @@ async.parallel({
     var port = Number(process.env.PORT || 5000);
     app.listen(port, function() {
         console.log("Listening on " + port);
-    });
+    })             
 })
+
