@@ -4,6 +4,3 @@ replays
 *.log
 sentry
 servers
-*.dem
-*.bz2
-parser/target
