@@ -2,35 +2,33 @@ var request = require('request'),
     path = require("path"),
     fs = require("fs"),
     async = require("async"),
-    gc = require("./GameController").MatchProvider,
+    Steam = require("./MatchProvider").MatchProvider,
     spawn = require('child_process').spawn,
-    constants = require('./constants.json'),
     moment = require('moment'),
     Bunzip = require('seek-bzip'),
     matches = require('./util').matches;
-var steam = new gc(
+players = require('./util').players;
+var steam = new Steam(
     process.env.STEAM_USER,
     process.env.STEAM_PASS,
     process.env.STEAM_GUARD_CODE);
 var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
+var api_url = "https://api.steampowered.com/IDOTA2Match_570/"
 var replay_dir = process.env.REPLAY_DIR || "./replays/"
 var parserFile = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar";
-var num_matches = 8
+var num_matches = process.env.MATCHES_PER_PLAYER || 1
 
-if (!fs.existsSync(replay_dir)){
-    fs.mkdir(replay_dir);
+if (process.env.RESET_ON_START){
+    console.log("[RESET] resetting parse status")
+    matches.update({}, {$set:{parse_status: 0}}, { multi: true })
 }
-//reset matches that were in queue when the app last exited
-matches.update( { parse_status: { $mod: [ 2, 1 ] }} , { $inc: { parse_status: -1 } }, { multi: true } )
-//matches.update({}, {parse_status: 0}, { multi: true })
-setInterval(poll, 10000)
+setInterval(poll, 5000)
 
 function poll() {
-    //TODO use db instead of array here
-    var account_ids = [{player_id:"88367253"},{player_id:"71313111"}];
-    aq.push(account_ids, function(err){})
-
+    players.find({}, function(err,docs){
+        aq.push(docs, function(err){})
+    })
     matches.find({}, function(err, docs) {
         if (err){throw err}
         docs.forEach(function(doc){
@@ -44,7 +42,7 @@ function poll() {
             }
         })
     })
-    console.log('[QUEUES] %s requests, %s parse', aq.length(), pq.length())
+    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
 }
 
 function apiRequest(req, cb){
@@ -57,12 +55,12 @@ function apiRequest(req, cb){
     request(url, function(err, res, body){
         if (err) {cb(err)}
         else if (res.statusCode != 200){
-            cb("WebAPI response status != 200");
+            cb("WebAPI response code != 200");
         }
         else{
             var result = JSON.parse(body).result
             if (req.player_id){
-                console.log("[USER] games for user %s", req.player_id)
+                console.log("[API] games for user %s", req.player_id)
                 result.matches.forEach(function(match){
                     matches.findOne({ match_id: match.match_id }, function(err, doc) {
                         if (err) {cb(err)}
@@ -74,7 +72,7 @@ function apiRequest(req, cb){
                 cb(null)
             }
             else if (req.match_id){
-                console.log("[MATCH] details for match %s", req.match_id)
+                console.log("[API] details for match %s", req.match_id)
                 result.parse_status = 0;
                 matches.insert(result)
                 cb(null)
@@ -154,26 +152,26 @@ function parseReplay(match, cb){
     var match_id = match.match_id
     download(match, function(err, fileName){
         console.log("[PARSER] Parsing replay %s", fileName);
+        var output="";
         var cp = spawn(
             "java",
             ["-jar",
              parserFile,
              fileName
-            ]
-        );
+            ])
         cp.stdout.on('data', function (data) {
-            //TODO insert data from stdout into database
-            console.log('[PARSER] stdout: %s', data);
-        });
-
+            output+=data
+        })
         cp.stderr.on('data', function (data) {
             console.log('[PARSER] stderr: %s', data);
-        });
-
+        })
         cp.on('close', function (code) {
+            if (!code){
+                matches.update({match_id: match_id}, {$set: JSON.parse(output)})
+            }
             console.log('[PARSER] exited with code %s', code);
             cb(code)
-        });     
+        });    
     })
 }
 
@@ -181,7 +179,7 @@ function parseReplay(match, cb){
  * Generates Match History URL
  */
 function generateGetMatchHistoryURL(account_ID, num) {
-    return constants.baseURL + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
+    return api_url + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
     + (account_ID != "undefined" ? "&account_id=" + account_ID : "")
     + (num != "undefined" ? "&matches_requested=" + num : "");
 }
@@ -190,6 +188,6 @@ function generateGetMatchHistoryURL(account_ID, num) {
  * Generates Match Details URL
  */
 function generateGetMatchDetailsURL(match_id) {
-    return constants.baseURL + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
+    return api_url + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
     + "&match_id=" + match_id;
 }
