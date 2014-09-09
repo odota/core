@@ -99,6 +99,7 @@ function download(match, cb) {
                 }
                 else{
                     console.log("[DL] replay expired for match %s", match_id);
+                    matches.update({match_id: match_id}, {$set: {parse_status : 1}})
                     return cb(true)
                 }
             }
@@ -159,8 +160,6 @@ function parseReplay(match, cb){
     var match_id = match.match_id
     download(match, function(err, fileName){
         if (err) {
-            //replay expired
-            matches.update({match_id: match_id}, {$set: {parse_status : 128}})
             return cb(err)
         }
         console.log("[PARSER] started on %s", fileName);

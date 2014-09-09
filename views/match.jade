@@ -1,30 +1,20 @@
-doctype html
-html
-  head
-    title= match.match_id
-    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css')
-    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css')
-    link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Roboto:400,700')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
-    script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
-    script.
-       var lh = !{JSON.stringify(match.lastHits)}
-       var denies = !{JSON.stringify(match.denies)}
-       var gold = !{JSON.stringify(match.gold)}
-       var xp = !{JSON.stringify(match.xp)}
-       var levels = !{JSON.stringify(match.levels)}
-       var time = !{JSON.stringify(match.time)}
-       var names = !{JSON.stringify(match.playerNames)}
-    style.
-      * {font-family: 'Roboto', sans-serif;}
-      .items img {
-         width: 35px;
-      }
-  body
-      include ./header.jade
-      .container
+extend layout
+block content
+
+ script.
+  var lh = !{JSON.stringify(match.lastHits)}
+  var denies = !{JSON.stringify(match.denies)}
+  var gold = !{JSON.stringify(match.gold)}
+  var xp = !{JSON.stringify(match.xp)}
+  var levels = !{JSON.stringify(match.levels)}
+  var time = !{JSON.stringify(match.time)}
+  var names = !{JSON.stringify(match.playerNames)}
+ 
+ style.
+  * {font-family: 'Roboto', sans-serif;}
+  .items img {width: 35px;}
+  
+ .container
         h1 Match #{match.match_id}
         .row
           .col-md-6
@@ -98,5 +88,4 @@ html
           h1.text-center Denies
           #chart-denies
           script(type='text/javascript', src='../public/js/chart.js')
-          
-     include ./footer.jade
+         
