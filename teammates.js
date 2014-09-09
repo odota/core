@@ -1,6 +1,6 @@
 var $ = require('cheerio'),
     request = require('request'),
-    db = require('./util').db,
+    db = require('./utility').db,
     teammates = db.get('teammates'),
     host = "http://www.dotabuff.com",
     callCount = 0;
