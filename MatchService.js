@@ -17,8 +17,10 @@ var steam = new Steam(
     process.env.STEAM_GUARD_CODE);
 
 var aq = async.queue(apiRequest, 1)
+aq.empty = function(){
+    getNewGames();
+}
 var pq = async.queue(parseReplay, 1)
-var poll_interval = 5000
 var api_delay = 1000
 var api_url = "https://api.steampowered.com/IDOTA2Match_570/"
 var replay_dir = process.env.REPLAY_DIR || "replays/"
@@ -37,16 +39,16 @@ if (process.env.RESET_ON_START){
 matches.find({parse_status : 0}, function(err, docs) {
     pq.push(docs, function (err){})
 })
-setInterval(poll, poll_interval)
+getNewGames()
 
-function poll() {
+function getNewGames(){
     players.find({}, function(err,docs){
         aq.push(docs, function(err){})
     })
-    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
 }
 
 function apiRequest(req, cb){
+    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
     utility.getData(generateURL(req), function(err, data){
         if (err) {return cb(err)}
         data = data.result
@@ -75,7 +77,7 @@ function download(match, cb) {
     var match_id = match.match_id
     var fileName = replay_dir+match_id+".dem"
     if (fs.existsSync(fileName)){
-        console.log("[DL] found existing replay for match %s", match_id)
+        console.log("[DL] found local replay for match %s", match_id)
         return cb(null, fileName);
     }
     if (process.env.AWS_S3_BUCKET){
@@ -87,47 +89,36 @@ function download(match, cb) {
                 fs.writeFileSync(fileName, data.Body);
                 return cb(null, fileName)
             }
-            else{
-                console.log("[DL] no S3 replay for match %s", match_id)
-                if (match.start_time > moment().subtract(8, 'days').format('X')){
-                    getReplayUrl(match, function(err, url){
-                        if (err){return cb(err)}
-                        downloadWithRetry(url, fileName, 1000, function(){
-                            return cb(null, fileName)
-                        })
-                    })
-                }
-                else{
-                    console.log("[DL] replay expired for match %s", match_id);
-                    matches.update({match_id: match_id}, {$set: {parse_status : 1}})
-                    return cb(true)
-                }
-            }
         })
+    }
+    if (match.start_time > moment().subtract(8, 'days').format('X')){
+        getReplayUrl(match, function(url){
+            downloadWithRetry(url, fileName, 1000, function(){
+                console.log("[DL] found steam replay for match %s", match_id)
+                return cb(null, fileName)
+            })
+        })
+    }
+    else{
+        console.log("[DL] replay expired for match %s", match_id);
+        matches.update({match_id: match_id}, {$set: {parse_status : 1}})
+        return cb(true)
     }
 }
 
-/**
- * Get the replay url for this match, callback with it
- */
-function getReplayUrl(match, cb) {
-    if (match.replay_url) {
-        return cb(null, match.replay_url)
-    }
-    if (!steam.ready) {
-        console.log("[DL] steam not ready, retrying in 10 sec")
-        setTimeout(getReplayUrl, 10000, match, cb);
-    }
-    else{
-        steam.getReplayDetails(match.match_id, function(err, data) {
-            //todo use multiple accounts if limit exceeded
-            if (err) {return cb(err)}
-            var result={};
-            result.replay_url = "http://replay"+data.cluster+".valve.net/570/"+data.id+"_"+data.salt+".dem.bz2";
-            matches.update({match_id: match.match_id}, {$set: result})
-            cb(null, result.replay_url)
-        }) 
-    }
+function getReplayUrl(match, cb){
+    if (match.replay_url) { return cb(match.replay_url)}
+    steam.getReplayDetails(match.match_id, function(err, data) {
+        if (err) {
+            console.log("[STEAM] steam not ready, retrying")
+            setTimeout(getReplayUrl, 5000, match, cb)
+        }
+        else{
+            var url = "http://replay"+data.cluster+".valve.net/570/"+data.id+"_"+data.salt+".dem.bz2";
+            matches.update({match_id: match.match_id}, {$set: {replay_url:url}})
+            cb(url)
+        }
+    })  
 }
 
 function downloadWithRetry(url, fileName, timeout, cb){
@@ -138,20 +129,11 @@ function downloadWithRetry(url, fileName, timeout, cb){
             setTimeout(downloadWithRetry, timeout, url, fileName, timeout*2, cb);
         }
         else{
-            console.log("[DL] decompressing replay")
+            console.log("[DL] decompressing replay to %s", fileName)
             body = Bunzip.decode(body);  
             console.log("[DL] saving replay to %s", fileName)
             fs.writeFileSync(fileName, body);
-            if (process.env.AWS_S3_BUCKET){
-                var s3 = new AWS.S3()
-                var params = { Bucket: process.env.AWS_S3_BUCKET, Key: fileName, Body: body}
-                s3.putObject(params,function (err, data) {
-                    if (!err){
-                        console.log('[S3] Successfully uploaded replay %s to S3', fileName)
-                    }
-                })
-            }
-            cb();
+            cb()
         }
     })
 }
@@ -177,16 +159,28 @@ function parseReplay(match, cb){
             console.log('[PARSER] match: %s, stderr: %s', match_id, data);
         })
         cp.on('close', function (code) {
+            console.log('[PARSER] match: %s, exit code: %s', match_id, code);
             if (!code){
                 matches.update({match_id: match_id}, {$set: JSON.parse(output)})
                 matches.update({match_id: match_id}, {$set: {parse_status : 2}})
-                if (process.env.DELETE_REPLAY_FILES){
-                    console.log("[DELETE] deleting replay file %s", fileName)
-                    fs.unlink(fileName)
+                if (process.env.AWS_S3_BUCKET){
+                    var s3 = new AWS.S3()
+                    var params = { Bucket: process.env.AWS_S3_BUCKET, Key: fileName, Body: fs.readFileSync(fileName)}
+                    s3.putObject(params,function (err, data) {
+                        if (!err){
+                            console.log('[S3] Successfully uploaded replay to S3: %s ', fileName)
+                            if (process.env.DELETE_REPLAY_FILES){
+                                console.log("[DELETE] deleting replay: %s", fileName)
+                                fs.unlink(fileName)
+                            }
+                            cb(code)
+                        }
+                    })
                 }
-            }   
-            console.log('[PARSER] match: %s, exit code: %s', match_id, code);
-            cb(code)
+            }
+            else{
+                cb(code)
+            }
         })
     })
 }
