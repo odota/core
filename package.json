@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "mvn -f parser/pom.xml package",
+    "postinstall": "bin/maven/bin/mvn -f parser/pom.xml package",
     "worker": "node MatchService.js",
     "start": "node app.js"
   },
