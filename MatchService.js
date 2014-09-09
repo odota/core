@@ -120,7 +120,6 @@ function getReplayUrl(match, cb) {
     }
     else{
         steam.getReplayDetails(match.match_id, function(err, data) {
-            //todo use multiple accounts if limit exceeded
             if (err) {return cb(err)}
             var result={};
             result.replay_url = "http://replay"+data.cluster+".valve.net/570/"+data.id+"_"+data.salt+".dem.bz2";
