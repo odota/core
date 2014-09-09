@@ -1,7 +1,8 @@
 var fs = require("fs"),
     steam = require("steam"),
     dota2 = require("dota2"),
-    deferred = require("deferred");
+    deferred = require("deferred"),
+    winston = require('winston');
 
 var MatchProvider = function(user, pass, authcode, steam_response_timeout) {
     this.cwd = __dirname+'/';
@@ -16,24 +17,24 @@ var MatchProvider = function(user, pass, authcode, steam_response_timeout) {
     var onSteamLogOn = function onSteamLogOn(){
         self.bot.setPersonaState(steam.EPersonaState.Busy);
         self.bot.setPersonaName(user);
-        console.log("Logged on.");
+        winston.log("Logged on.");
 
         self.Dota2.launch();
         self.Dota2.on("ready", function() {
-            console.log("Dota 2 ready");
+            winston.log("Dota 2 ready");
             self.ready = true;
         });
 
         self.Dota2.on("unhandled", function(kMsg) {
-            console.log("Unhandled message: " + kMsg);
+            winston.log("Unhandled message: " + kMsg);
         });
     },
         onSteamSentry = function onSteamSentry(newSentry) {
-            console.log("Received sentry.");
+            winston.log("Received sentry.");
             fs.writeFileSync("sentry", newSentry);
         },
         onSteamServers = function onSteamServers(servers) {
-            console.log("Received servers.");
+            winston.log("Received servers.");
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {

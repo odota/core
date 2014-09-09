@@ -1,63 +1,49 @@
 var express = require('express'),
-    request = require('request'),
+    utility = require('./utility'),
+    players = utility.players,
     async = require('async'),
-    fs = require('fs');
+    fs = require('fs'),
+    teammates = require('./teammates'),
+    path = require('path')
 
 function updateConstants(cb){
+    var constants = require('./constants.json')
     async.parallel({
         "heroes":function (cb){
-            request("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log("[CONSTANTS] got latest hero data")
-                    var array = JSON.parse(body).result.heroes;
+            utility.getData("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (err, data) {
+                if (!err){
+                    var array = data.result.heroes;
                     var lookup={}
                     for (var i = 0; i < array.length;i++) {
                         lookup[array[i].id] = array[i];
                     }
-                    cb(null, lookup)
+                    constants.heroes=lookup;
                 }
-                else{
-                    cb(error)
-                }
+                cb()
             })
         }, 
         "items":function (cb){
-            request("http://www.dota2.com/jsfeed/itemdata", function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log("[CONSTANTS] got latest item data")
-                    var objects = JSON.parse(body).itemdata;
+            utility.getData("http://www.dota2.com/jsfeed/itemdata", function (err, data) {
+                if (!err){
+                    var objects = data.itemdata;
                     var lookup={}
                     for(var key in objects) {
                         lookup[objects[key].id] = objects[key];
                     }
-                    cb(null, lookup)
+                    constants.items=lookup;
                 }
-                else{
-                    cb(error)
-                }
+                cb()
             })
         }
-    }, function(err, results){
-        var constants = require('./constants.json');
-        if (err){
-            cb(constants)
-        }
-        else{
-            constants.heroes = results.heroes;
-            constants.items = results.items;
-            console.log("[CONSTANTS] updating constants file")
-            fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
-            cb(constants)
-        }
+    }, function(){
+        console.log("[UPDATE] rewriting constants file")
+        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))   
+        cb(constants)
     })
 }
 
 updateConstants(function(constants){
-    var path = require('path'),
-        util = require('./util'),
-        teammates = require('./teammates'),
-        app = express();
-
+    var app = express();
     app.use("/public", express.static(path.join(__dirname, '/public')))
     app.set('views', path.join(__dirname, 'views'))
     app.set('view engine', 'jade');
@@ -65,25 +51,18 @@ updateConstants(function(constants){
     app.locals.constants = constants;
 
     app.route('/').get(function(req, res){
-        util.getAllMatches().success(function(doc){
+        utility.getAllMatches().success(function(doc){
             res.render(
                 'index.jade',
                 {
-                    title: 'Stats',
                     matches: doc
                 }
             )
         })
     })
 
-    app.route('/todo').get(function(req, res){
-        res.render(
-            'todo.jade'
-        )
-    })
-
     app.route('/matches/:id').get(function(req, res){
-        util.getMatch(+req.params.id).success(function(doc){
+        utility.getMatch(+req.params.id).success(function(doc){
             if (!doc) res.status(404).send('Could not find this match!')
             else {
                 res.render('match.jade',{match: doc})
@@ -96,6 +75,11 @@ updateConstants(function(constants){
             res.send(result);
         });
     });
+
+    app.route('/signup/').get(function(req,res){
+        players.insert({player_id:req.query.player_id})
+        res.redirect('/')
+    })
 
     var port = Number(process.env.PORT || 5000);
     app.listen(port, function() {
