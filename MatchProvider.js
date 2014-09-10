@@ -1,8 +1,7 @@
 var fs = require("fs"),
     steam = require("steam"),
     dota2 = require("dota2"),
-    deferred = require("deferred"),
-    winston = require('winston');
+    deferred = require("deferred")
 
 var MatchProvider = function(user, pass, authcode, steam_response_timeout) {
     this.cwd = __dirname+'/';
@@ -17,24 +16,24 @@ var MatchProvider = function(user, pass, authcode, steam_response_timeout) {
     var onSteamLogOn = function onSteamLogOn(){
         self.bot.setPersonaState(steam.EPersonaState.Busy);
         self.bot.setPersonaName(user);
-        winston.log("Logged on.");
+        console.log("Logged on.");
 
         self.Dota2.launch();
         self.Dota2.on("ready", function() {
-            winston.log("Dota 2 ready");
+            console.log("Dota 2 ready");
             self.ready = true;
         });
 
         self.Dota2.on("unhandled", function(kMsg) {
-            winston.log("Unhandled message: " + kMsg);
+            console.log("Unhandled message: " + kMsg);
         });
     },
         onSteamSentry = function onSteamSentry(newSentry) {
-            winston.log("Received sentry.");
+            console.log("Received sentry.");
             fs.writeFileSync("sentry", newSentry);
         },
         onSteamServers = function onSteamServers(servers) {
-            winston.log("Received servers.");
+            console.log("Received servers.");
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {
@@ -107,7 +106,9 @@ MatchProvider.prototype.getReplayDetails = function getReplayDetails(matchId, ca
     // so this is the best way to weed out invalid match ids.
     setTimeout(function(){
         delete self.match_deferreds[matchId];
-    }, this.steam_response_timeout);
+        callback("request timed out");
+    }, 
+               this.steam_response_timeout);
 };
 
 exports.MatchProvider = MatchProvider;
