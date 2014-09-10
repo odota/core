@@ -34,10 +34,10 @@ if (process.env.RESET_ON_START){
 getNewGames()
 parseMatches()
 
-aq.empty = function(){
+aq.drain = function(){
     getNewGames();
 }
-pq.empty = function(){
+pq.drain = function(){
     parseMatches();
 }
 function parseMatches(){
