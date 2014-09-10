@@ -33,24 +33,22 @@ if (process.env.RESET_ON_START){
 }
 getNewGames()
 parseMatches()
-
 aq.drain = function(){
     getNewGames();
 }
 pq.drain = function(){
-    parseMatches();
-}
-function parseMatches(){
-    matches.find({parse_status : 0}, function(err, docs) {
-        pq.push(docs, function (err){})
-    })
+    parseMatches()
 }
 function getNewGames(){
     players.find({}, function(err,docs){
         aq.push(docs, function(err){})
     })
 }
-
+function parseMatches(){
+    matches.find({parse_status : 0}, function(err, docs) {
+        pq.push(docs, function (err){})
+    })
+}
 function apiRequest(req, cb){
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
     utility.getData(generateURL(req), function(err, data){
@@ -58,26 +56,30 @@ function apiRequest(req, cb){
         data = data.result
         if (req.player_id){
             console.log("[API] games for player %s", req.player_id)
-            async.mapSeries(data.matches, queueMatchDetails, function(err){
+            async.map(data.matches, insertMatch, function(err){
                 setTimeout(cb, api_delay, null)
-            })
+            })               
         }
         if (req.match_id){
             console.log("[API] details for match %s", req.match_id)
-            data.parse_status = 0;
-            matches.insert(data)
+            matches.update({match_id:req.match_id},{$set:data})
             pq.push(data, function(err){})
             setTimeout(cb, api_delay, null)
         }
     })
 }
 
-function queueMatchDetails(match, cb){
+function insertMatch(match, cb){
     matches.findOne({ match_id: match.match_id }, function(err, doc) {
-        if(!doc){aq.push(match, function(err){})}
+        if(!doc){
+            match.parse_status = 0;
+            matches.insert(match)
+            aq.push(match, function(err){})
+        }
         cb(null)
     })
-}
+}                
+
 function download(match, cb) {
     var match_id = match.match_id
     var fileName = replay_dir+match_id+".dem"
@@ -90,7 +92,7 @@ function download(match, cb) {
         if (match.start_time > moment().subtract(7, 'days').format('X')) {
             getReplayUrl(match, function(url){
                 downloadFromSteam(url, fileName, 1000, function(){
-                    console.log("[DL] found steam replay for match %s", match_id)
+                    console.log("[DL] downloaded steam replay for match %s", match_id)
                     uploadToS3(fileName, function(err){
                         cb(null, fileName)
                     })
@@ -107,7 +109,7 @@ function download(match, cb) {
                     cb(true)
                 }
                 else{
-                    console.log("[DL] found S3 replay for match %s", match_id)
+                    console.log("[DL] downloaded S3 replay for match %s", match_id)
                     fs.writeFileSync(fileName, data.Body);
                     cb(null, fileName)
                 }

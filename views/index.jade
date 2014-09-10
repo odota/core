@@ -12,7 +12,6 @@ block content
               tr
                 td Match ID
                 td Game Mode
-                td Duration
                 td Winner
                 td Played
                 td Status
@@ -20,7 +19,6 @@ block content
                 tr(class= match.radiant_win ? "success" : "danger")
                   td: a(href='/matches/#{match.match_id}')= match.match_id
                   td= constants.gameModes[match.game_mode]
-                  td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                   if match.radiant_win
                     td Radiant
                   else
