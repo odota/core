@@ -101,14 +101,7 @@ MatchProvider.prototype.getReplayDetails = function getReplayDetails(matchId, ca
                            });
         }
     });
-
-    // Time out request after so long - GC doesn't tell us match ids when it returns bad status',
-    // so this is the best way to weed out invalid match ids.
-    setTimeout(function(){
-        delete self.match_deferreds[matchId];
-        callback("request timed out");
-    }, 
-               this.steam_response_timeout);
+	//todo handle request timing out (100 limit reached?)
 };
 
 exports.MatchProvider = MatchProvider;
