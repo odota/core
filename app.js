@@ -3,7 +3,6 @@ var express = require('express'),
     players = utility.players,
     async = require('async'),
     fs = require('fs'),
-    teammates = require('./teammates'),
     path = require('path')
 
 function updateConstants(cb){
@@ -78,17 +77,12 @@ updateConstants(function(constants){
 
     app.route('/').get(function(req, res){
         utility.getAllMatches().success(function(doc){
-            res.render(
-                'index.jade',
-                {
-                    matches: doc
-                }
-            )
+            res.render('index.jade',{matches: doc})
         })
     })
 
     app.route('/matches/:id').get(function(req, res){
-        utility.getMatch(+req.params.id).success(function(doc){
+        utility.getMatch(Number(req.params.id)).success(function(doc){
             if (!doc) res.status(404).send('Could not find this match!')
             else {
                 utility.updateDisplayNames(doc, function(err){
@@ -116,15 +110,20 @@ updateConstants(function(constants){
         })
     })
 
-    app.route('/players/:account_id').get(function(req, res) { 
-        teammates.getCounts(req.params.account_id, req.query.update, function(result){        
-            res.send(result);
-        });
-    });
+    app.route('/players/:id').get(function(req, res) { 
+        players.findOne({account_id: Number(req.params.id)}, function(err, doc){
+            if (!doc) res.status(404).send('Could not find this player!')
+            else{
+                utility.getCounts(doc.account_id, true, function(counts){
+                    res.render('player.jade', {player: doc, counts: counts})
+                })
+            }
+        })
+    })
 
     var port = Number(process.env.PORT || 5000);
     app.listen(port, function() {
         console.log("Listening on " + port);
-    })             
+    })
 })
 
