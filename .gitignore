@@ -4,4 +4,3 @@ replays
 *.log
 sentry
 servers
-parser/target

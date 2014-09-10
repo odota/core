@@ -40,7 +40,7 @@ pq.drain = function(){
     parseMatches()
 }
 function getNewGames(){
-    players.find({}, function(err,docs){
+    players.find({track: 1}, function(err,docs){
         aq.push(docs, function(err){})
     })
 }
@@ -54,8 +54,8 @@ function apiRequest(req, cb){
     utility.getData(generateURL(req), function(err, data){
         if (err) {return cb(err)}
         data = data.result
-        if (req.player_id){
-            console.log("[API] games for player %s", req.player_id)
+        if (req.account_id){
+            console.log("[API] games for player %s", req.account_id)
             async.map(data.matches, insertMatch, function(err){
                 setTimeout(cb, api_delay, null)
             })               
@@ -216,9 +216,9 @@ function parseReplay(match, cb){
  * Generates api request url
  */
 function generateURL(req) {
-    if (req.player_id){
+    if (req.account_id){
         return api_url + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
-        + "&account_id=" + req.player_id
+        + "&account_id=" + req.account_id
         + "&matches_requested=" + (process.env.MATCHES_PER_PLAYER || 10)
     }
     if (req.match_id){

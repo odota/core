@@ -47,7 +47,11 @@ block content
                     td Items
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
-                     td= match.playerNames ? match.playerNames[i] : player.account_id
+                     td
+                       - if (player.account_id == 4294967295)
+                         =match.playerNames[i]
+                       - else
+                         a(href='/players/#{player.account_id}')=match.playerNames[i]
                      - var hero = constants.heroes[player.hero_id]
                      td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
                      td= player.kills

@@ -4,8 +4,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "preinstall": "mvn -f parser/pom.xml package",
-    "worker": "node MatchService.js",
     "start": "node app.js"
   },
   "dependencies": {
@@ -21,6 +19,7 @@
     "async": "0.9.0",
     "winston": "0.7.3",
     "seek-bzip": "~1.0.3",
-    "aws-sdk": "~2.0.15"
+    "aws-sdk": "~2.0.15",
+    "big-number": "~0.3.1"
   }
 }
