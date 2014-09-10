@@ -11,6 +11,7 @@ Requirements
 Deployment
 ====
 * Install node dependencies: `npm install`
+* Compile the parser `mvn -f parser package`
 * Foreman `npm install -g foreman`
 * Create .env file with STEAM_USER, STEAM_PASS, STEAM_API_KEY
 * Add MONGOHQ_URL to env if using remote MongoDB, otherwise set up local mongodb server
