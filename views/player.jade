@@ -6,4 +6,9 @@ block content
              small=player.account_id
            h3 Recent Matches
            h3 Teammates
-             pre= JSON.stringify(counts, null, 4)
+             table.table
+               each count in counts
+                 tr
+                   td=count.id
+                   td=count.win
+                   td=count.lose

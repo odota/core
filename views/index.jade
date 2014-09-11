@@ -16,7 +16,7 @@ block content
                 td Duration
                 td Winner
                 td Played
-                td Status
+                td Replay Status
               - each match in matches
                 tr(class= match.radiant_win ? "success" : "danger")
                   td: a(href='/matches/#{match.match_id}')= match.match_id
@@ -28,4 +28,4 @@ block content
                   else
                     td Dire
                   td= moment.unix(match.start_time + match.duration).fromNow()
-                  td= match.parse_status
+                  td= constants.parse_status[match.parse_status]

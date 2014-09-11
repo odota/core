@@ -48,7 +48,7 @@ block content
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
-                       - if (player.account_id == 4294967295)
+                       - if (player.account_id == constants.anonymous_account_id)
                          =match.playerNames[i]
                        - else
                          a(href='/players/#{player.account_id}')=match.playerNames[i]

@@ -3,71 +3,64 @@ var express = require('express'),
     players = utility.players,
     async = require('async'),
     fs = require('fs'),
-    path = require('path')
+    path = require('path'),
+    constants = require('./constants.json')
 
-function updateConstants(cb){
-    var constants = require('./constants.json')
-    async.parallel([
-        function (cb){
-            utility.getData("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (err, data) {
-                if (!err){
-                    var array = data.result.heroes;
-                    var lookup={}
-                    for (var i = 0; i < array.length;i++) {
-                        lookup[array[i].id] = array[i];
-                    }
-                    constants.heroes=lookup;
+async.parallel([
+    function (cb){
+        utility.getData("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (err, data) {
+            if (!err){
+                var array = data.result.heroes;
+                var lookup={}
+                for (var i = 0; i < array.length;i++) {
+                    lookup[array[i].id] = array[i];
                 }
-                cb()
-            })
-        }, 
-        function (cb){
-            utility.getData("http://www.dota2.com/jsfeed/itemdata", function (err, data) {
-                if (!err){
-                    var objects = data.itemdata;
-                    var lookup={}
-                    for(var key in objects) {
-                        lookup[objects[key].id] = objects[key];
-                    }
-                    constants.items=lookup;
+                constants.heroes=lookup;
+            }
+            cb()
+        })
+    }, 
+    function (cb){
+        utility.getData("http://www.dota2.com/jsfeed/itemdata", function (err, data) {
+            if (!err){
+                var objects = data.itemdata;
+                var lookup={}
+                for(var key in objects) {
+                    lookup[objects[key].id] = objects[key];
                 }
-                cb()
-            })
-        },
-        function (cb){
-            utility.getData("https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", function (err, data) {
-                if (!err){
-                    var array = data.mods;
-                    var lookup={}
-                    for (var i = 0; i < array.length;i++) {
-                        lookup[array[i].id] = array[i].name;
-                    }
-                    constants.gameModes=lookup;
+                constants.items=lookup;
+            }
+            cb()
+        })
+    },
+    function (cb){
+        utility.getData("https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", function (err, data) {
+            if (!err){
+                var array = data.mods;
+                var lookup={}
+                for (var i = 0; i < array.length;i++) {
+                    lookup[array[i].id] = array[i].name;
                 }
-                cb()
-            })
-        },
-        function (cb){
-            utility.getData("https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json", function (err, data) {
-                if (!err){
-                    var array = data.regions;
-                    var lookup={}
-                    for (var i = 0; i < array.length;i++) {
-                        lookup[array[i].id] = array[i].name;
-                    }
-                    constants.regions=lookup;
+                constants.gameModes=lookup;
+            }
+            cb()
+        })
+    },
+    function (cb){
+        utility.getData("https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json", function (err, data) {
+            if (!err){
+                var array = data.regions;
+                var lookup={}
+                for (var i = 0; i < array.length;i++) {
+                    lookup[array[i].id] = array[i].name;
                 }
-                cb()
-            })
-        }
-    ], 
-                   function(){
-        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))   
-        cb(constants)
-    })
-}
-
-updateConstants(function(constants){
+                constants.regions=lookup;
+            }
+            cb()
+        })
+    }
+], function(){
+    fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))   
     var app = express()
     app.use("/public", express.static(path.join(__dirname, '/public')))
     app.set('views', path.join(__dirname, 'views'))
@@ -126,4 +119,5 @@ updateConstants(function(constants){
         console.log("Listening on " + port);
     })
 })
+
 
