@@ -1,0 +1,2 @@
+web: nodemon app.js
+worker: nodemon MatchService.js
