@@ -6,9 +6,14 @@ block content
              small=player.account_id
            h3 Recent Matches
            h3 Teammates
-             table.table
-               each count in counts
-                 tr
-                   td=count.id
-                   td=count.win
-                   td=count.lose
+           table.table
+             tr
+               td Name
+               td Wins
+               td Losses
+             each player in player.teammates
+               tr
+                 td
+                   a(href="/players/#{player.account_id}")=player.display_name
+                 td=player.win
+                 td=player.lose
