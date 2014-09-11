@@ -46,6 +46,10 @@ function parseMatches(){
         pq.push(docs, function (err){})
     })
 }
+function updateDisplayNames(){
+    //todo add background task to update names?
+    //queue players for name request when match added?
+}
 
 function apiRequest(req, cb){
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
@@ -56,7 +60,7 @@ function apiRequest(req, cb){
             console.log("[API] games for player %s", req.account_id)
             async.map(data.matches, insertMatch, function(err){
                 setTimeout(cb, api_delay, null)
-            })               
+            })
         }
         if (req.match_id){
             console.log("[API] details for match %s", req.match_id)
@@ -76,7 +80,7 @@ function insertMatch(match, cb){
         }
         cb(null)
     })
-}                
+}
 
 function download(match, cb) {
     var match_id = match.match_id
@@ -102,9 +106,8 @@ function download(match, cb) {
             var params = {Bucket: process.env.AWS_S3_BUCKET, Key: fileName}
             s3.getObject(params, function(err, data) {
                 if (!process.env.AWS_S3_BUCKET || err){
-                    console.log("[DL] replay expired for match %s", match_id)
                     matches.update({match_id: match_id}, {$set: {parse_status : 1}})
-                    cb(true)
+                    cb("Replay expired and not found in S3")
                 }
                 else{
                     console.log("[DL] downloaded S3 replay for match %s", match_id)
@@ -181,7 +184,7 @@ function parseReplay(match, cb){
     var match_id = match.match_id
     download(match, function(err, fileName){
         if (err) {
-            console.log("[DL] error downloading replay for match %s", match_id)
+            console.log("[DL] Error for match %s: %s", match_id, err)
             return cb(err)
         }
         console.log("[PARSER] started on %s", fileName)
@@ -217,7 +220,6 @@ function generateURL(req) {
     if (req.account_id){
         return api_url + "GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
         + "&account_id=" + req.account_id
-        + "&matches_requested=" + (process.env.MATCHES_PER_PLAYER || 10)
     }
     if (req.match_id){
         return api_url + "GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY

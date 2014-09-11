@@ -1,11 +1,13 @@
 var express = require('express'),
     utility = require('./utility'),
+    matches = utility.matches,
     players = utility.players,
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
     constants = require('./constants.json')
 
+//todo use object inside parallel instead
 async.parallel([
     function (cb){
         utility.getData("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (err, data) {
@@ -74,35 +76,27 @@ async.parallel([
     app.locals.constants = constants;
 
     app.route('/').get(function(req, res){
-        utility.getAllMatches().success(function(doc){
+        matches.find({"duration":{$exists:true}}, {sort: {match_id: -1}}, function(err, doc){
             res.render('index.jade',{matches: doc})
         })
     })
 
     app.route('/matches/:id').get(function(req, res){
-        utility.getMatch(Number(req.params.id)).success(function(doc){
+        matches.findOne({"match_id": Number(req.params.id)}, function(err, doc){
             if (!doc) res.status(404).send('Could not find this match!')
             else {
-                utility.updateDisplayNames(doc, function(err){
-                    if (!doc.playerNames){
-                        doc.playerNames=[]
-                        async.mapSeries(doc.players, function(player, cb){
-                            players.findOne({account_id:player.account_id}, function(err, dbPlayer){
-                                if (dbPlayer){
-                                    doc.playerNames.push(dbPlayer.display_name)
-                                }
-                                else{
-                                    doc.playerNames.push("Anonymous")
-                                }
-                                cb(null)
-                            })
-                        }, function(err){
-                            res.render('match.jade',{match: doc})
-                        })
-                    }
-                    else{
-                        res.render('match.jade',{match: doc})
-                    }
+                async.mapSeries(doc.players, function(player, cb){
+                    players.findOne({account_id:player.account_id}, function(err, dbPlayer){
+                        if (dbPlayer){
+                            player.display_name = dbPlayer.display_name
+                        }
+                        else{
+                            player.display_name = "Anonymous"
+                        }
+                        cb(null)
+                    })
+                }, function(err){
+                    res.render('match.jade',{match: doc})
                 })
             }
         })
@@ -112,8 +106,11 @@ async.parallel([
         players.findOne({account_id: Number(req.params.id)}, function(err, doc){
             if (!doc) res.status(404).send('Could not find this player!')
             else{
-                utility.getCounts(doc.account_id, true, function(counts){
-                    res.render('player.jade', {player: doc, counts: counts})
+                utility.getCounts(doc.account_id, false, function(teammates){
+                    utility.updateDisplayNames(teammates, function(err){
+                        doc.teammates = teammates
+                        res.render('player.jade', {player: doc})
+                    })
                 })
             }
         })
@@ -124,5 +121,3 @@ async.parallel([
         console.log("Listening on " + port);
     })
 })
-
-

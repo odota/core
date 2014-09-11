@@ -48,10 +48,10 @@ block content
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
-                       - if (player.account_id == constants.anonymous_account_id)
-                         =match.playerNames[i]
-                       - else
-                         a(href='/players/#{player.account_id}')=match.playerNames[i]
+                       if (player.account_id != constants.anonymous_account_id)
+                         a(href='/players/#{player.account_id}')=player.display_name
+                       else
+                         =player.display_name
                      - var hero = constants.heroes[player.hero_id]
                      td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
                      td= player.kills
