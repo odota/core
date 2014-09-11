@@ -28,6 +28,7 @@ utility.getData = function(url, cb){
 utility.updateDisplayNames = function(doc, cb){
     var steamids=[]
     if (doc.account_id){
+        //if we got a player, simulate a one-player match
         doc.players=[{account_id:doc.account_id}]
     }
     doc.players.forEach(function(player){
