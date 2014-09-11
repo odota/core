@@ -27,12 +27,9 @@ var parser_file = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar"
 if (!fs.existsSync(replay_dir)){
     fs.mkdir(replay_dir)
 }
-//reparse all matches
-if (process.env.RESET_ON_START){
-    matches.update({}, {$set:{parse_status: 0}}, { multi: true })
-}
 getNewGames()
 parseMatches()
+
 aq.drain = function(){
     getNewGames();
 }
@@ -49,6 +46,7 @@ function parseMatches(){
         pq.push(docs, function (err){})
     })
 }
+
 function apiRequest(req, cb){
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
     utility.getData(generateURL(req), function(err, data){

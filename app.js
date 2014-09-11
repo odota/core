@@ -15,6 +15,7 @@ async.parallel([
                 for (var i = 0; i < array.length;i++) {
                     lookup[array[i].id] = array[i];
                 }
+                console.log("[UPDATE] updating heroes")
                 constants.heroes=lookup;
             }
             cb()
@@ -28,6 +29,7 @@ async.parallel([
                 for(var key in objects) {
                     lookup[objects[key].id] = objects[key];
                 }
+                console.log("[UPDATE] updating items")
                 constants.items=lookup;
             }
             cb()
@@ -41,6 +43,7 @@ async.parallel([
                 for (var i = 0; i < array.length;i++) {
                     lookup[array[i].id] = array[i].name;
                 }
+                console.log("[UPDATE] updating gamemodes")
                 constants.gameModes=lookup;
             }
             cb()
@@ -54,12 +57,14 @@ async.parallel([
                 for (var i = 0; i < array.length;i++) {
                     lookup[array[i].id] = array[i].name;
                 }
+                console.log("[UPDATE] updating regions")
                 constants.regions=lookup;
             }
             cb()
         })
     }
 ], function(){
+    console.log("[UPDATE] writing constants file")
     fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))   
     var app = express()
     app.use("/public", express.static(path.join(__dirname, '/public')))
