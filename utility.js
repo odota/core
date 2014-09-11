@@ -92,7 +92,16 @@ utility.getCounts =function(account_id, paginate, callback) {
                     }
                 }
             }
-            callback(counts);
+            //convert counts to array and filter
+            var arr=[]
+            for (var prop in counts){
+                var count = counts[prop]
+                count.id=prop
+                if (count.win+count.lose>5){
+                    arr.push(count)
+                }
+            }
+            callback(arr);
         })
     })
 }
@@ -102,20 +111,18 @@ utility.getMatches=function(player_url, paginate, callback){
         console.log(player_url)
         if (err) throw err
         var parsedHTML = $.load(html);
-        var matchCells = parsedHTML('td[class=cell-xlarge]')
-        var vals = [];
-        var i = 0
-        while(matchCells[i.toString]){
-            vals.push(matchCells[i.toString()])
-            i++
-        }
-        async.map(vals, function(matchCell, cb){
+        var dataObject = parsedHTML('td[class=cell-xlarge]')
+        var dataArray = [];
+        dataObject.each(function(i, elem) {
+            dataArray.push(elem);
+        })
+        async.map(dataArray, function(matchCell, cb){
             var match_url = host+$(matchCell).children().first().attr('href'); 
-            console.log(match_url)
             utility.dotabuffMatches.findOne({match_id: getIdFromPath(match_url)}, function(err, data) {
                 if (err) throw err
                 if (!data) {
                     request(match_url, function (err, resp, body) {
+                        console.log(match_url)
                         if (err) throw err
                         var matchHTML = $.load(body)
                         var radiant_win=matchHTML('.match-result').hasClass('radiant');

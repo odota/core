@@ -1,4 +1,10 @@
 {
+    "parse_status": {
+        "0": "Queued for parse",
+        "1": "Expired",
+        "2": "Parsed"
+    },
+    "anonymous_account_id": 4294967295,
     "gameModes": {
         "0": "Unknown",
         "1": "All Pick",
