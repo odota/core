@@ -121,3 +121,16 @@ async.parallel([
 })
 
 
+res.render('player.jade', {player: doc, counts: counts})
+                })
+            }
+        })
+    })
+
+    var port = Number(process.env.PORT || 5000);
+    app.listen(port, function() {
+        console.log("Listening on " + port);
+    })
+})
+
+
