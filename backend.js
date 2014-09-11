@@ -46,7 +46,22 @@ function parseMatches(){
         pq.push(docs, function (err){})
     })
 }
-function updateDisplayNames(){
+function updateDisplayNames(players, cb){
+    var steamids=[]
+    players.forEach(function(player){
+        var steamid64=BigNumber('76561197960265728').plus(player.account_id).toString()
+        steamids.push(steamid64)
+    })
+    var query = steamids.join()
+    var url = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key="+process.env.STEAM_API_KEY+"&steamids="+query
+    utility.getData(url, function(err, data){
+        data.response.players.forEach(function(player){
+            var steamid32=BigNumber(player.steamid).minus('76561197960265728')
+            console.log("updating display name for id %s, %s", steamid32, player.personaname)
+            utility.players.update({account_id:Number(steamid32)},{$set: {display_name:player.personaname}}, {upsert: true})
+        })
+        cb(null)
+    })
     //todo add background task to update names?
     //queue players for name request when match added?
 }

@@ -85,17 +85,8 @@ async.parallel([
         matches.findOne({"match_id": Number(req.params.id)}, function(err, doc){
             if (!doc) res.status(404).send('Could not find this match!')
             else {
-                async.mapSeries(doc.players, function(player, cb){
-                    players.findOne({account_id:player.account_id}, function(err, dbPlayer){
-                        if (dbPlayer){
-                            player.display_name = dbPlayer.display_name
-                        }
-                        else{
-                            player.display_name = "Anonymous"
-                        }
-                        cb(null)
-                    })
-                }, function(err){
+                utility.fillPlayerNames(doc.players, function(err, players){
+                    doc.players=players
                     res.render('match.jade',{match: doc})
                 })
             }
@@ -107,7 +98,7 @@ async.parallel([
             if (!doc) res.status(404).send('Could not find this player!')
             else{
                 utility.getCounts(doc.account_id, false, function(teammates){
-                    utility.updateDisplayNames(teammates, function(err){
+                    utility.fillPlayerNames(teammates, function(err, teammates){
                         doc.teammates = teammates
                         res.render('player.jade', {player: doc})
                     })
