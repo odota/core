@@ -1,7 +1,6 @@
 var utility = exports
 var request = require('request')
 var async = require('async')
-var BigNumber = require('big-number').n
 var $ = require('cheerio')
 
 utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
@@ -38,7 +37,24 @@ utility.fillPlayerNames = function(players, cb){
     })
 }
 
-utility.getCounts = function(account_id, paginate, callback) {
+utility.insertMatch = function (match, cb){
+    utility.matches.findOne({ match_id: match.match_id }, function(err, doc) {
+        if(!doc){
+            match.parse_status = 0;
+            utility.matches.insert(match)
+        }
+        cb(null)
+    })
+}
+
+utility.insertName = function (player, cb){
+    var steamid32=BigNumber(player.steamid).minus('76561197960265728')
+    console.log("[API] updating display name for id %s to %s", steamid32, player.personaname)
+    utility.players.update({account_id:Number(steamid32)},{$set: {display_name:player.personaname}}, {upsert: true})
+    cb(null)
+}
+
+utility.getTeammates = function(account_id, cb) {
     utility.matches.find({players: { $elemMatch: { account_id: account_id }}}, function(err, data){
         var counts = {};
         for (i=0;i<data.length;i++){ //matches
@@ -52,9 +68,9 @@ utility.getCounts = function(account_id, paginate, callback) {
             for (j=0;j<data[i].players.length; j++){  //match players
                 var player = data[i].players[j]
                 if (isRadiant(player)==playerSide){ //only check teammates of player
-                    //todo probably exclude anonymous and player
                     if (!counts[player.account_id]){
-                        counts[player.account_id]=player;
+                        counts[player.account_id]={}
+                        counts[player.account_id]["account_id"]=player.account_id;
                         counts[player.account_id]["win"]=0;
                         counts[player.account_id]["lose"]=0;
                     }
@@ -76,72 +92,10 @@ utility.getCounts = function(account_id, paginate, callback) {
                 arr.push(count)
             }
         }
-        callback(arr)
+        cb(null, arr)
     })
 }
 
 function isRadiant(player){
     return player.player_slot<64
-}
-/*
-var host = "http://www.dotabuff.com"
-utility.getMatches=function(player_url, paginate, callback){
-    request(player_url, function processMatches (err, resp, html) {
-        console.log(player_url)
-        if (err) throw err
-        var parsedHTML = $.load(html);
-        var dataObject = parsedHTML('td[class=cell-xlarge]')
-        var dataArray = [];
-        dataObject.each(function(i, elem) {
-            dataArray.push(elem);
-        })
-        async.map(dataArray, function(matchCell, cb){
-            var match_url = host+$(matchCell).children().first().attr('href');
-            //todo just get the match ids and get data from valve api
-            utility.dotabuffMatches.findOne({match_id: getIdFromPath(match_url)}, function(err, data) {
-                if (err) throw err
-                if (!data) {
-                    request(match_url, function (err, resp, body) {
-                        console.log(match_url)
-                        if (err) throw err
-                        var matchHTML = $.load(body)
-                        var radiant_win=matchHTML('.match-result').hasClass('radiant');
-                        var match = {};
-                        match.match_id = getIdFromPath(match_url);
-                        match.players=[];
-                        matchHTML('a[class=player-radiant]').map(function(i, link) {
-                            player={};
-                            player.id=getIdFromPath($(link).attr('href'));
-                            player.winner=radiant_win;
-                            match.players.push(player);
-                        })
-                        matchHTML('a[class=player-dire]').map(function(i, link) {
-                            player={};
-                            player.id=getIdFromPath($(link).attr('href'));
-                            player.winner=!radiant_win;
-                            match.players.push(player);                        
-                        })
-                        utility.dotabuffMatches.insert(match);
-                        cb(null)
-                    })
-                }
-                else{
-                    cb(null)
-                }
-            })   
-        }, function(err){
-            var nextPath = parsedHTML('a[rel=next]').first().attr('href')
-            if (paginate && nextPath){
-                console.log("going to next page")
-                utility.getMatches(host+nextPath, true, callback);
-            }
-            else{
-                callback(null)
-            }  
-        })
-    })
-}
-*/
-function getIdFromPath(input){
-    return Number(input.split(/[/]+/).pop());
 }
