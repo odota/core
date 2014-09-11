@@ -93,11 +93,11 @@ async.parallel([
         })
     })
 
-    app.route('/players/:id').get(function(req, res) { 
+    app.route('/players/:id').get(function(req, res) {
         players.findOne({account_id: Number(req.params.id)}, function(err, doc){
             if (!doc) res.status(404).send('Could not find this player!')
             else{
-                utility.getCounts(doc.account_id, false, function(teammates){
+                utility.getTeammates(doc.account_id, function(err, teammates){
                     utility.fillPlayerNames(teammates, function(err, teammates){
                         doc.teammates = teammates
                         res.render('player.jade', {player: doc})
