@@ -1,7 +1,7 @@
 var fs = require("fs"),
     steam = require("steam"),
     dota2 = require("dota2"),
-    deferred = require("deferred");
+    deferred = require("deferred")
 
 var MatchProvider = function(user, pass, authcode, steam_response_timeout) {
     this.cwd = __dirname+'/';
@@ -101,12 +101,7 @@ MatchProvider.prototype.getReplayDetails = function getReplayDetails(matchId, ca
                            });
         }
     });
-
-    // Time out request after so long - GC doesn't tell us match ids when it returns bad status',
-    // so this is the best way to weed out invalid match ids.
-    setTimeout(function(){
-        delete self.match_deferreds[matchId];
-    }, this.steam_response_timeout);
+	//todo handle request timing out (100 limit reached?)
 };
 
 exports.MatchProvider = MatchProvider;

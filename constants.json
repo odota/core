@@ -1,558 +1,21 @@
 {
-    "heroes": {
-        "1": {
-            "name": "npc_dota_hero_antimage",
-            "id": 1,
-            "localized_name": "Anti-Mage"
-        },
-        "2": {
-            "name": "npc_dota_hero_axe",
-            "id": 2,
-            "localized_name": "Axe"
-        },
-        "3": {
-            "name": "npc_dota_hero_bane",
-            "id": 3,
-            "localized_name": "Bane"
-        },
-        "4": {
-            "name": "npc_dota_hero_bloodseeker",
-            "id": 4,
-            "localized_name": "Bloodseeker"
-        },
-        "5": {
-            "name": "npc_dota_hero_crystal_maiden",
-            "id": 5,
-            "localized_name": "Crystal Maiden"
-        },
-        "6": {
-            "name": "npc_dota_hero_drow_ranger",
-            "id": 6,
-            "localized_name": "Drow Ranger"
-        },
-        "7": {
-            "name": "npc_dota_hero_earthshaker",
-            "id": 7,
-            "localized_name": "Earthshaker"
-        },
-        "8": {
-            "name": "npc_dota_hero_juggernaut",
-            "id": 8,
-            "localized_name": "Juggernaut"
-        },
-        "9": {
-            "name": "npc_dota_hero_mirana",
-            "id": 9,
-            "localized_name": "Mirana"
-        },
-        "10": {
-            "name": "npc_dota_hero_morphling",
-            "id": 10,
-            "localized_name": "Morphling"
-        },
-        "11": {
-            "name": "npc_dota_hero_nevermore",
-            "id": 11,
-            "localized_name": "Shadow Fiend"
-        },
-        "12": {
-            "name": "npc_dota_hero_phantom_lancer",
-            "id": 12,
-            "localized_name": "Phantom Lancer"
-        },
-        "13": {
-            "name": "npc_dota_hero_puck",
-            "id": 13,
-            "localized_name": "Puck"
-        },
-        "14": {
-            "name": "npc_dota_hero_pudge",
-            "id": 14,
-            "localized_name": "Pudge"
-        },
-        "15": {
-            "name": "npc_dota_hero_razor",
-            "id": 15,
-            "localized_name": "Razor"
-        },
-        "16": {
-            "name": "npc_dota_hero_sand_king",
-            "id": 16,
-            "localized_name": "Sand King"
-        },
-        "17": {
-            "name": "npc_dota_hero_storm_spirit",
-            "id": 17,
-            "localized_name": "Storm Spirit"
-        },
-        "18": {
-            "name": "npc_dota_hero_sven",
-            "id": 18,
-            "localized_name": "Sven"
-        },
-        "19": {
-            "name": "npc_dota_hero_tiny",
-            "id": 19,
-            "localized_name": "Tiny"
-        },
-        "20": {
-            "name": "npc_dota_hero_vengefulspirit",
-            "id": 20,
-            "localized_name": "Vengeful Spirit"
-        },
-        "21": {
-            "name": "npc_dota_hero_windrunner",
-            "id": 21,
-            "localized_name": "Windranger"
-        },
-        "22": {
-            "name": "npc_dota_hero_zuus",
-            "id": 22,
-            "localized_name": "Zeus"
-        },
-        "23": {
-            "name": "npc_dota_hero_kunkka",
-            "id": 23,
-            "localized_name": "Kunkka"
-        },
-        "25": {
-            "name": "npc_dota_hero_lina",
-            "id": 25,
-            "localized_name": "Lina"
-        },
-        "26": {
-            "name": "npc_dota_hero_lion",
-            "id": 26,
-            "localized_name": "Lion"
-        },
-        "27": {
-            "name": "npc_dota_hero_shadow_shaman",
-            "id": 27,
-            "localized_name": "Shadow Shaman"
-        },
-        "28": {
-            "name": "npc_dota_hero_slardar",
-            "id": 28,
-            "localized_name": "Slardar"
-        },
-        "29": {
-            "name": "npc_dota_hero_tidehunter",
-            "id": 29,
-            "localized_name": "Tidehunter"
-        },
-        "30": {
-            "name": "npc_dota_hero_witch_doctor",
-            "id": 30,
-            "localized_name": "Witch Doctor"
-        },
-        "31": {
-            "name": "npc_dota_hero_lich",
-            "id": 31,
-            "localized_name": "Lich"
-        },
-        "32": {
-            "name": "npc_dota_hero_riki",
-            "id": 32,
-            "localized_name": "Riki"
-        },
-        "33": {
-            "name": "npc_dota_hero_enigma",
-            "id": 33,
-            "localized_name": "Enigma"
-        },
-        "34": {
-            "name": "npc_dota_hero_tinker",
-            "id": 34,
-            "localized_name": "Tinker"
-        },
-        "35": {
-            "name": "npc_dota_hero_sniper",
-            "id": 35,
-            "localized_name": "Sniper"
-        },
-        "36": {
-            "name": "npc_dota_hero_necrolyte",
-            "id": 36,
-            "localized_name": "Necrophos"
-        },
-        "37": {
-            "name": "npc_dota_hero_warlock",
-            "id": 37,
-            "localized_name": "Warlock"
-        },
-        "38": {
-            "name": "npc_dota_hero_beastmaster",
-            "id": 38,
-            "localized_name": "Beastmaster"
-        },
-        "39": {
-            "name": "npc_dota_hero_queenofpain",
-            "id": 39,
-            "localized_name": "Queen of Pain"
-        },
-        "40": {
-            "name": "npc_dota_hero_venomancer",
-            "id": 40,
-            "localized_name": "Venomancer"
-        },
-        "41": {
-            "name": "npc_dota_hero_faceless_void",
-            "id": 41,
-            "localized_name": "Faceless Void"
-        },
-        "42": {
-            "name": "npc_dota_hero_skeleton_king",
-            "id": 42,
-            "localized_name": "Wraith King"
-        },
-        "43": {
-            "name": "npc_dota_hero_death_prophet",
-            "id": 43,
-            "localized_name": "Death Prophet"
-        },
-        "44": {
-            "name": "npc_dota_hero_phantom_assassin",
-            "id": 44,
-            "localized_name": "Phantom Assassin"
-        },
-        "45": {
-            "name": "npc_dota_hero_pugna",
-            "id": 45,
-            "localized_name": "Pugna"
-        },
-        "46": {
-            "name": "npc_dota_hero_templar_assassin",
-            "id": 46,
-            "localized_name": "Templar Assassin"
-        },
-        "47": {
-            "name": "npc_dota_hero_viper",
-            "id": 47,
-            "localized_name": "Viper"
-        },
-        "48": {
-            "name": "npc_dota_hero_luna",
-            "id": 48,
-            "localized_name": "Luna"
-        },
-        "49": {
-            "name": "npc_dota_hero_dragon_knight",
-            "id": 49,
-            "localized_name": "Dragon Knight"
-        },
-        "50": {
-            "name": "npc_dota_hero_dazzle",
-            "id": 50,
-            "localized_name": "Dazzle"
-        },
-        "51": {
-            "name": "npc_dota_hero_rattletrap",
-            "id": 51,
-            "localized_name": "Clockwerk"
-        },
-        "52": {
-            "name": "npc_dota_hero_leshrac",
-            "id": 52,
-            "localized_name": "Leshrac"
-        },
-        "53": {
-            "name": "npc_dota_hero_furion",
-            "id": 53,
-            "localized_name": "Nature's Prophet"
-        },
-        "54": {
-            "name": "npc_dota_hero_life_stealer",
-            "id": 54,
-            "localized_name": "Lifestealer"
-        },
-        "55": {
-            "name": "npc_dota_hero_dark_seer",
-            "id": 55,
-            "localized_name": "Dark Seer"
-        },
-        "56": {
-            "name": "npc_dota_hero_clinkz",
-            "id": 56,
-            "localized_name": "Clinkz"
-        },
-        "57": {
-            "name": "npc_dota_hero_omniknight",
-            "id": 57,
-            "localized_name": "Omniknight"
-        },
-        "58": {
-            "name": "npc_dota_hero_enchantress",
-            "id": 58,
-            "localized_name": "Enchantress"
-        },
-        "59": {
-            "name": "npc_dota_hero_huskar",
-            "id": 59,
-            "localized_name": "Huskar"
-        },
-        "60": {
-            "name": "npc_dota_hero_night_stalker",
-            "id": 60,
-            "localized_name": "Night Stalker"
-        },
-        "61": {
-            "name": "npc_dota_hero_broodmother",
-            "id": 61,
-            "localized_name": "Broodmother"
-        },
-        "62": {
-            "name": "npc_dota_hero_bounty_hunter",
-            "id": 62,
-            "localized_name": "Bounty Hunter"
-        },
-        "63": {
-            "name": "npc_dota_hero_weaver",
-            "id": 63,
-            "localized_name": "Weaver"
-        },
-        "64": {
-            "name": "npc_dota_hero_jakiro",
-            "id": 64,
-            "localized_name": "Jakiro"
-        },
-        "65": {
-            "name": "npc_dota_hero_batrider",
-            "id": 65,
-            "localized_name": "Batrider"
-        },
-        "66": {
-            "name": "npc_dota_hero_chen",
-            "id": 66,
-            "localized_name": "Chen"
-        },
-        "67": {
-            "name": "npc_dota_hero_spectre",
-            "id": 67,
-            "localized_name": "Spectre"
-        },
-        "68": {
-            "name": "npc_dota_hero_ancient_apparition",
-            "id": 68,
-            "localized_name": "Ancient Apparition"
-        },
-        "69": {
-            "name": "npc_dota_hero_doom_bringer",
-            "id": 69,
-            "localized_name": "Doom"
-        },
-        "70": {
-            "name": "npc_dota_hero_ursa",
-            "id": 70,
-            "localized_name": "Ursa"
-        },
-        "71": {
-            "name": "npc_dota_hero_spirit_breaker",
-            "id": 71,
-            "localized_name": "Spirit Breaker"
-        },
-        "72": {
-            "name": "npc_dota_hero_gyrocopter",
-            "id": 72,
-            "localized_name": "Gyrocopter"
-        },
-        "73": {
-            "name": "npc_dota_hero_alchemist",
-            "id": 73,
-            "localized_name": "Alchemist"
-        },
-        "74": {
-            "name": "npc_dota_hero_invoker",
-            "id": 74,
-            "localized_name": "Invoker"
-        },
-        "75": {
-            "name": "npc_dota_hero_silencer",
-            "id": 75,
-            "localized_name": "Silencer"
-        },
-        "76": {
-            "name": "npc_dota_hero_obsidian_destroyer",
-            "id": 76,
-            "localized_name": "Outworld Devourer"
-        },
-        "77": {
-            "name": "npc_dota_hero_lycan",
-            "id": 77,
-            "localized_name": "Lycan"
-        },
-        "78": {
-            "name": "npc_dota_hero_brewmaster",
-            "id": 78,
-            "localized_name": "Brewmaster"
-        },
-        "79": {
-            "name": "npc_dota_hero_shadow_demon",
-            "id": 79,
-            "localized_name": "Shadow Demon"
-        },
-        "80": {
-            "name": "npc_dota_hero_lone_druid",
-            "id": 80,
-            "localized_name": "Lone Druid"
-        },
-        "81": {
-            "name": "npc_dota_hero_chaos_knight",
-            "id": 81,
-            "localized_name": "Chaos Knight"
-        },
-        "82": {
-            "name": "npc_dota_hero_meepo",
-            "id": 82,
-            "localized_name": "Meepo"
-        },
-        "83": {
-            "name": "npc_dota_hero_treant",
-            "id": 83,
-            "localized_name": "Treant Protector"
-        },
-        "84": {
-            "name": "npc_dota_hero_ogre_magi",
-            "id": 84,
-            "localized_name": "Ogre Magi"
-        },
-        "85": {
-            "name": "npc_dota_hero_undying",
-            "id": 85,
-            "localized_name": "Undying"
-        },
-        "86": {
-            "name": "npc_dota_hero_rubick",
-            "id": 86,
-            "localized_name": "Rubick"
-        },
-        "87": {
-            "name": "npc_dota_hero_disruptor",
-            "id": 87,
-            "localized_name": "Disruptor"
-        },
-        "88": {
-            "name": "npc_dota_hero_nyx_assassin",
-            "id": 88,
-            "localized_name": "Nyx Assassin"
-        },
-        "89": {
-            "name": "npc_dota_hero_naga_siren",
-            "id": 89,
-            "localized_name": "Naga Siren"
-        },
-        "90": {
-            "name": "npc_dota_hero_keeper_of_the_light",
-            "id": 90,
-            "localized_name": "Keeper of the Light"
-        },
-        "91": {
-            "name": "npc_dota_hero_wisp",
-            "id": 91,
-            "localized_name": "Io"
-        },
-        "92": {
-            "name": "npc_dota_hero_visage",
-            "id": 92,
-            "localized_name": "Visage"
-        },
-        "93": {
-            "name": "npc_dota_hero_slark",
-            "id": 93,
-            "localized_name": "Slark"
-        },
-        "94": {
-            "name": "npc_dota_hero_medusa",
-            "id": 94,
-            "localized_name": "Medusa"
-        },
-        "95": {
-            "name": "npc_dota_hero_troll_warlord",
-            "id": 95,
-            "localized_name": "Troll Warlord"
-        },
-        "96": {
-            "name": "npc_dota_hero_centaur",
-            "id": 96,
-            "localized_name": "Centaur Warrunner"
-        },
-        "97": {
-            "name": "npc_dota_hero_magnataur",
-            "id": 97,
-            "localized_name": "Magnus"
-        },
-        "98": {
-            "name": "npc_dota_hero_shredder",
-            "id": 98,
-            "localized_name": "Timbersaw"
-        },
-        "99": {
-            "name": "npc_dota_hero_bristleback",
-            "id": 99,
-            "localized_name": "Bristleback"
-        },
-        "100": {
-            "name": "npc_dota_hero_tusk",
-            "id": 100,
-            "localized_name": "Tusk"
-        },
-        "101": {
-            "name": "npc_dota_hero_skywrath_mage",
-            "id": 101,
-            "localized_name": "Skywrath Mage"
-        },
-        "102": {
-            "name": "npc_dota_hero_abaddon",
-            "id": 102,
-            "localized_name": "Abaddon"
-        },
-        "103": {
-            "name": "npc_dota_hero_elder_titan",
-            "id": 103,
-            "localized_name": "Elder Titan"
-        },
-        "104": {
-            "name": "npc_dota_hero_legion_commander",
-            "id": 104,
-            "localized_name": "Legion Commander"
-        },
-        "105": {
-            "name": "npc_dota_hero_techies",
-            "id": 105,
-            "localized_name": "Techies"
-        },
-        "106": {
-            "name": "npc_dota_hero_ember_spirit",
-            "id": 106,
-            "localized_name": "Ember Spirit"
-        },
-        "107": {
-            "name": "npc_dota_hero_earth_spirit",
-            "id": 107,
-            "localized_name": "Earth Spirit"
-        },
-        "109": {
-            "name": "npc_dota_hero_terrorblade",
-            "id": 109,
-            "localized_name": "Terrorblade"
-        },
-        "110": {
-            "name": "npc_dota_hero_phoenix",
-            "id": 110,
-            "localized_name": "Phoenix"
-        }
+    "parse_status": {
+        "0": "Queued for parse",
+        "1": "Expired",
+        "2": "Parsed"
     },
-    "runes": {},
+    "anonymous_account_id": 4294967295,
     "gameModes": {
         "0": "Unknown",
         "1": "All Pick",
-        "2": "Captain's Mode",
+        "2": "Captains Mode",
         "3": "Random Draft",
         "4": "Single Draft",
         "5": "All Random",
-        "6": "Intro",
-        "7": "Diretide",
-        "8": "Reverse Captain's Mode",
-        "9": "The Greeviling",
+        "6": "?? INTRO/DEATH ??",
+        "7": "The Diretide",
+        "8": "Reverse Captains Mode",
+        "9": "Greeviling",
         "10": "Tutorial",
         "11": "Mid Only",
         "12": "Least Played",
@@ -562,9 +25,46 @@
         "16": "Captains Draft",
         "17": "Balanced Draft",
         "18": "Ability Draft",
-        "19": "Event",
+        "19": "?? Event ??",
         "20": "All Random Death Match",
-        "21": "1v1 Solo Mid"
+        "21": "1vs1 Solo Mid"
+    },
+    "regions": {
+        "111": "US West",
+        "112": "US West",
+        "114": "US West",
+        "121": "US East",
+        "122": "US East",
+        "123": "US East",
+        "124": "US East",
+        "131": "Europe West",
+        "132": "Europe West",
+        "133": "Europe West",
+        "134": "Europe West",
+        "135": "Europe West",
+        "136": "Europe West",
+        "142": "South Korea",
+        "143": "South Korea",
+        "151": "Southeast Asia",
+        "152": "Southeast Asia",
+        "153": "Southeast Asia",
+        "161": "China",
+        "163": "China",
+        "171": "Australia",
+        "181": "Russia",
+        "182": "Russia",
+        "183": "Russia",
+        "184": "Russia",
+        "191": "Europe East",
+        "200": "South America",
+        "204": "South America",
+        "211": "South America",
+        "212": "South America",
+        "213": "South America",
+        "221": "China",
+        "222": "China",
+        "223": "China",
+        "231": "China"
     },
     "items": {
         "1": {
@@ -3202,6 +2702,548 @@
             "lore": "",
             "components": null,
             "created": false
+        }
+    },
+    "heroes": {
+        "1": {
+            "name": "npc_dota_hero_antimage",
+            "id": 1,
+            "localized_name": "Anti-Mage"
+        },
+        "2": {
+            "name": "npc_dota_hero_axe",
+            "id": 2,
+            "localized_name": "Axe"
+        },
+        "3": {
+            "name": "npc_dota_hero_bane",
+            "id": 3,
+            "localized_name": "Bane"
+        },
+        "4": {
+            "name": "npc_dota_hero_bloodseeker",
+            "id": 4,
+            "localized_name": "Bloodseeker"
+        },
+        "5": {
+            "name": "npc_dota_hero_crystal_maiden",
+            "id": 5,
+            "localized_name": "Crystal Maiden"
+        },
+        "6": {
+            "name": "npc_dota_hero_drow_ranger",
+            "id": 6,
+            "localized_name": "Drow Ranger"
+        },
+        "7": {
+            "name": "npc_dota_hero_earthshaker",
+            "id": 7,
+            "localized_name": "Earthshaker"
+        },
+        "8": {
+            "name": "npc_dota_hero_juggernaut",
+            "id": 8,
+            "localized_name": "Juggernaut"
+        },
+        "9": {
+            "name": "npc_dota_hero_mirana",
+            "id": 9,
+            "localized_name": "Mirana"
+        },
+        "10": {
+            "name": "npc_dota_hero_morphling",
+            "id": 10,
+            "localized_name": "Morphling"
+        },
+        "11": {
+            "name": "npc_dota_hero_nevermore",
+            "id": 11,
+            "localized_name": "Shadow Fiend"
+        },
+        "12": {
+            "name": "npc_dota_hero_phantom_lancer",
+            "id": 12,
+            "localized_name": "Phantom Lancer"
+        },
+        "13": {
+            "name": "npc_dota_hero_puck",
+            "id": 13,
+            "localized_name": "Puck"
+        },
+        "14": {
+            "name": "npc_dota_hero_pudge",
+            "id": 14,
+            "localized_name": "Pudge"
+        },
+        "15": {
+            "name": "npc_dota_hero_razor",
+            "id": 15,
+            "localized_name": "Razor"
+        },
+        "16": {
+            "name": "npc_dota_hero_sand_king",
+            "id": 16,
+            "localized_name": "Sand King"
+        },
+        "17": {
+            "name": "npc_dota_hero_storm_spirit",
+            "id": 17,
+            "localized_name": "Storm Spirit"
+        },
+        "18": {
+            "name": "npc_dota_hero_sven",
+            "id": 18,
+            "localized_name": "Sven"
+        },
+        "19": {
+            "name": "npc_dota_hero_tiny",
+            "id": 19,
+            "localized_name": "Tiny"
+        },
+        "20": {
+            "name": "npc_dota_hero_vengefulspirit",
+            "id": 20,
+            "localized_name": "Vengeful Spirit"
+        },
+        "21": {
+            "name": "npc_dota_hero_windrunner",
+            "id": 21,
+            "localized_name": "Windranger"
+        },
+        "22": {
+            "name": "npc_dota_hero_zuus",
+            "id": 22,
+            "localized_name": "Zeus"
+        },
+        "23": {
+            "name": "npc_dota_hero_kunkka",
+            "id": 23,
+            "localized_name": "Kunkka"
+        },
+        "25": {
+            "name": "npc_dota_hero_lina",
+            "id": 25,
+            "localized_name": "Lina"
+        },
+        "26": {
+            "name": "npc_dota_hero_lion",
+            "id": 26,
+            "localized_name": "Lion"
+        },
+        "27": {
+            "name": "npc_dota_hero_shadow_shaman",
+            "id": 27,
+            "localized_name": "Shadow Shaman"
+        },
+        "28": {
+            "name": "npc_dota_hero_slardar",
+            "id": 28,
+            "localized_name": "Slardar"
+        },
+        "29": {
+            "name": "npc_dota_hero_tidehunter",
+            "id": 29,
+            "localized_name": "Tidehunter"
+        },
+        "30": {
+            "name": "npc_dota_hero_witch_doctor",
+            "id": 30,
+            "localized_name": "Witch Doctor"
+        },
+        "31": {
+            "name": "npc_dota_hero_lich",
+            "id": 31,
+            "localized_name": "Lich"
+        },
+        "32": {
+            "name": "npc_dota_hero_riki",
+            "id": 32,
+            "localized_name": "Riki"
+        },
+        "33": {
+            "name": "npc_dota_hero_enigma",
+            "id": 33,
+            "localized_name": "Enigma"
+        },
+        "34": {
+            "name": "npc_dota_hero_tinker",
+            "id": 34,
+            "localized_name": "Tinker"
+        },
+        "35": {
+            "name": "npc_dota_hero_sniper",
+            "id": 35,
+            "localized_name": "Sniper"
+        },
+        "36": {
+            "name": "npc_dota_hero_necrolyte",
+            "id": 36,
+            "localized_name": "Necrophos"
+        },
+        "37": {
+            "name": "npc_dota_hero_warlock",
+            "id": 37,
+            "localized_name": "Warlock"
+        },
+        "38": {
+            "name": "npc_dota_hero_beastmaster",
+            "id": 38,
+            "localized_name": "Beastmaster"
+        },
+        "39": {
+            "name": "npc_dota_hero_queenofpain",
+            "id": 39,
+            "localized_name": "Queen of Pain"
+        },
+        "40": {
+            "name": "npc_dota_hero_venomancer",
+            "id": 40,
+            "localized_name": "Venomancer"
+        },
+        "41": {
+            "name": "npc_dota_hero_faceless_void",
+            "id": 41,
+            "localized_name": "Faceless Void"
+        },
+        "42": {
+            "name": "npc_dota_hero_skeleton_king",
+            "id": 42,
+            "localized_name": "Wraith King"
+        },
+        "43": {
+            "name": "npc_dota_hero_death_prophet",
+            "id": 43,
+            "localized_name": "Death Prophet"
+        },
+        "44": {
+            "name": "npc_dota_hero_phantom_assassin",
+            "id": 44,
+            "localized_name": "Phantom Assassin"
+        },
+        "45": {
+            "name": "npc_dota_hero_pugna",
+            "id": 45,
+            "localized_name": "Pugna"
+        },
+        "46": {
+            "name": "npc_dota_hero_templar_assassin",
+            "id": 46,
+            "localized_name": "Templar Assassin"
+        },
+        "47": {
+            "name": "npc_dota_hero_viper",
+            "id": 47,
+            "localized_name": "Viper"
+        },
+        "48": {
+            "name": "npc_dota_hero_luna",
+            "id": 48,
+            "localized_name": "Luna"
+        },
+        "49": {
+            "name": "npc_dota_hero_dragon_knight",
+            "id": 49,
+            "localized_name": "Dragon Knight"
+        },
+        "50": {
+            "name": "npc_dota_hero_dazzle",
+            "id": 50,
+            "localized_name": "Dazzle"
+        },
+        "51": {
+            "name": "npc_dota_hero_rattletrap",
+            "id": 51,
+            "localized_name": "Clockwerk"
+        },
+        "52": {
+            "name": "npc_dota_hero_leshrac",
+            "id": 52,
+            "localized_name": "Leshrac"
+        },
+        "53": {
+            "name": "npc_dota_hero_furion",
+            "id": 53,
+            "localized_name": "Nature's Prophet"
+        },
+        "54": {
+            "name": "npc_dota_hero_life_stealer",
+            "id": 54,
+            "localized_name": "Lifestealer"
+        },
+        "55": {
+            "name": "npc_dota_hero_dark_seer",
+            "id": 55,
+            "localized_name": "Dark Seer"
+        },
+        "56": {
+            "name": "npc_dota_hero_clinkz",
+            "id": 56,
+            "localized_name": "Clinkz"
+        },
+        "57": {
+            "name": "npc_dota_hero_omniknight",
+            "id": 57,
+            "localized_name": "Omniknight"
+        },
+        "58": {
+            "name": "npc_dota_hero_enchantress",
+            "id": 58,
+            "localized_name": "Enchantress"
+        },
+        "59": {
+            "name": "npc_dota_hero_huskar",
+            "id": 59,
+            "localized_name": "Huskar"
+        },
+        "60": {
+            "name": "npc_dota_hero_night_stalker",
+            "id": 60,
+            "localized_name": "Night Stalker"
+        },
+        "61": {
+            "name": "npc_dota_hero_broodmother",
+            "id": 61,
+            "localized_name": "Broodmother"
+        },
+        "62": {
+            "name": "npc_dota_hero_bounty_hunter",
+            "id": 62,
+            "localized_name": "Bounty Hunter"
+        },
+        "63": {
+            "name": "npc_dota_hero_weaver",
+            "id": 63,
+            "localized_name": "Weaver"
+        },
+        "64": {
+            "name": "npc_dota_hero_jakiro",
+            "id": 64,
+            "localized_name": "Jakiro"
+        },
+        "65": {
+            "name": "npc_dota_hero_batrider",
+            "id": 65,
+            "localized_name": "Batrider"
+        },
+        "66": {
+            "name": "npc_dota_hero_chen",
+            "id": 66,
+            "localized_name": "Chen"
+        },
+        "67": {
+            "name": "npc_dota_hero_spectre",
+            "id": 67,
+            "localized_name": "Spectre"
+        },
+        "68": {
+            "name": "npc_dota_hero_ancient_apparition",
+            "id": 68,
+            "localized_name": "Ancient Apparition"
+        },
+        "69": {
+            "name": "npc_dota_hero_doom_bringer",
+            "id": 69,
+            "localized_name": "Doom"
+        },
+        "70": {
+            "name": "npc_dota_hero_ursa",
+            "id": 70,
+            "localized_name": "Ursa"
+        },
+        "71": {
+            "name": "npc_dota_hero_spirit_breaker",
+            "id": 71,
+            "localized_name": "Spirit Breaker"
+        },
+        "72": {
+            "name": "npc_dota_hero_gyrocopter",
+            "id": 72,
+            "localized_name": "Gyrocopter"
+        },
+        "73": {
+            "name": "npc_dota_hero_alchemist",
+            "id": 73,
+            "localized_name": "Alchemist"
+        },
+        "74": {
+            "name": "npc_dota_hero_invoker",
+            "id": 74,
+            "localized_name": "Invoker"
+        },
+        "75": {
+            "name": "npc_dota_hero_silencer",
+            "id": 75,
+            "localized_name": "Silencer"
+        },
+        "76": {
+            "name": "npc_dota_hero_obsidian_destroyer",
+            "id": 76,
+            "localized_name": "Outworld Devourer"
+        },
+        "77": {
+            "name": "npc_dota_hero_lycan",
+            "id": 77,
+            "localized_name": "Lycan"
+        },
+        "78": {
+            "name": "npc_dota_hero_brewmaster",
+            "id": 78,
+            "localized_name": "Brewmaster"
+        },
+        "79": {
+            "name": "npc_dota_hero_shadow_demon",
+            "id": 79,
+            "localized_name": "Shadow Demon"
+        },
+        "80": {
+            "name": "npc_dota_hero_lone_druid",
+            "id": 80,
+            "localized_name": "Lone Druid"
+        },
+        "81": {
+            "name": "npc_dota_hero_chaos_knight",
+            "id": 81,
+            "localized_name": "Chaos Knight"
+        },
+        "82": {
+            "name": "npc_dota_hero_meepo",
+            "id": 82,
+            "localized_name": "Meepo"
+        },
+        "83": {
+            "name": "npc_dota_hero_treant",
+            "id": 83,
+            "localized_name": "Treant Protector"
+        },
+        "84": {
+            "name": "npc_dota_hero_ogre_magi",
+            "id": 84,
+            "localized_name": "Ogre Magi"
+        },
+        "85": {
+            "name": "npc_dota_hero_undying",
+            "id": 85,
+            "localized_name": "Undying"
+        },
+        "86": {
+            "name": "npc_dota_hero_rubick",
+            "id": 86,
+            "localized_name": "Rubick"
+        },
+        "87": {
+            "name": "npc_dota_hero_disruptor",
+            "id": 87,
+            "localized_name": "Disruptor"
+        },
+        "88": {
+            "name": "npc_dota_hero_nyx_assassin",
+            "id": 88,
+            "localized_name": "Nyx Assassin"
+        },
+        "89": {
+            "name": "npc_dota_hero_naga_siren",
+            "id": 89,
+            "localized_name": "Naga Siren"
+        },
+        "90": {
+            "name": "npc_dota_hero_keeper_of_the_light",
+            "id": 90,
+            "localized_name": "Keeper of the Light"
+        },
+        "91": {
+            "name": "npc_dota_hero_wisp",
+            "id": 91,
+            "localized_name": "Io"
+        },
+        "92": {
+            "name": "npc_dota_hero_visage",
+            "id": 92,
+            "localized_name": "Visage"
+        },
+        "93": {
+            "name": "npc_dota_hero_slark",
+            "id": 93,
+            "localized_name": "Slark"
+        },
+        "94": {
+            "name": "npc_dota_hero_medusa",
+            "id": 94,
+            "localized_name": "Medusa"
+        },
+        "95": {
+            "name": "npc_dota_hero_troll_warlord",
+            "id": 95,
+            "localized_name": "Troll Warlord"
+        },
+        "96": {
+            "name": "npc_dota_hero_centaur",
+            "id": 96,
+            "localized_name": "Centaur Warrunner"
+        },
+        "97": {
+            "name": "npc_dota_hero_magnataur",
+            "id": 97,
+            "localized_name": "Magnus"
+        },
+        "98": {
+            "name": "npc_dota_hero_shredder",
+            "id": 98,
+            "localized_name": "Timbersaw"
+        },
+        "99": {
+            "name": "npc_dota_hero_bristleback",
+            "id": 99,
+            "localized_name": "Bristleback"
+        },
+        "100": {
+            "name": "npc_dota_hero_tusk",
+            "id": 100,
+            "localized_name": "Tusk"
+        },
+        "101": {
+            "name": "npc_dota_hero_skywrath_mage",
+            "id": 101,
+            "localized_name": "Skywrath Mage"
+        },
+        "102": {
+            "name": "npc_dota_hero_abaddon",
+            "id": 102,
+            "localized_name": "Abaddon"
+        },
+        "103": {
+            "name": "npc_dota_hero_elder_titan",
+            "id": 103,
+            "localized_name": "Elder Titan"
+        },
+        "104": {
+            "name": "npc_dota_hero_legion_commander",
+            "id": 104,
+            "localized_name": "Legion Commander"
+        },
+        "105": {
+            "name": "npc_dota_hero_techies",
+            "id": 105,
+            "localized_name": "Techies"
+        },
+        "106": {
+            "name": "npc_dota_hero_ember_spirit",
+            "id": 106,
+            "localized_name": "Ember Spirit"
+        },
+        "107": {
+            "name": "npc_dota_hero_earth_spirit",
+            "id": 107,
+            "localized_name": "Earth Spirit"
+        },
+        "109": {
+            "name": "npc_dota_hero_terrorblade",
+            "id": 109,
+            "localized_name": "Terrorblade"
+        },
+        "110": {
+            "name": "npc_dota_hero_phoenix",
+            "id": 110,
+            "localized_name": "Phoenix"
         }
     }
 }
