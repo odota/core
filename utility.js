@@ -9,8 +9,6 @@ utility.matches = utility.db.get('matchStats');
 utility.matches.index('match_id', {unique: true});
 utility.players = utility.db.get('players');
 utility.players.index('account_id', {unique: true})
-utility.dotabuffMatches = utility.db.get('dotabuffMatches')
-utility.dotabuffMatches.index('match_id', {unique: true})
 
 utility.getData = function(url, cb){
     request(url, function (err, res, body) {
@@ -24,69 +22,69 @@ utility.getData = function(url, cb){
     })
 }
 
-utility.updateDisplayNames = function(players, cb){
-    var steamids=[]
-    players.forEach(function(player){
-        var steamid64=BigNumber('76561197960265728').plus(player.account_id).toString()
-        steamids.push(steamid64)
-    })
-    var query = steamids.join()
-    var url = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key="+process.env.STEAM_API_KEY+"&steamids="+query
-    utility.getData(url, function(err, data){
-        data.response.players.forEach(function(player){
-            var steamid32=BigNumber(player.steamid).minus('76561197960265728')
-            console.log("updating display name for id %s, %s", steamid32, player.personaname)
-            utility.players.update({account_id:Number(steamid32)},{$set: {display_name:player.personaname}}, {upsert: true})
+utility.fillPlayerNames = function(players, cb){
+    async.mapSeries(players, function(player, cb){
+        utility.players.findOne({account_id:player.account_id}, function(err, dbPlayer){
+            if (dbPlayer){
+                player.display_name = dbPlayer.display_name
+            }
+            else{
+                player.display_name = "Anonymous"
+            }
+            cb(null)
         })
-        cb(null)
+    }, function(err){
+        cb(null, players)
     })
 }
 
+utility.getCounts = function(account_id, paginate, callback) {
+    utility.matches.find({players: { $elemMatch: { account_id: account_id }}}, function(err, data){
+        var counts = {};
+        for (i=0;i<data.length;i++){ //matches
+            for (j=0;j<data[i].players.length; j++){ //match players
+                var player = data[i].players[j]
+                if (player.account_id==account_id){
+                    var playerSide = isRadiant(player)
+                    var playerWinner = (playerSide && data.radiant_win) || (!playerSide && !data.radiant_win)
+                    }
+            }
+            for (j=0;j<data[i].players.length; j++){  //match players
+                var player = data[i].players[j]
+                if (isRadiant(player)==playerSide){ //only check teammates of player
+                    //todo probably exclude anonymous and player
+                    if (!counts[player.account_id]){
+                        counts[player.account_id]=player;
+                        counts[player.account_id]["win"]=0;
+                        counts[player.account_id]["lose"]=0;
+                    }
+                    if (playerWinner){
+                        counts[player.account_id]["win"]+=1
+                    }
+                    else{
+                        counts[player.account_id]["lose"]+=1
+                    }
+                }
+            }
+        }
+        //convert counts to array and filter
+        var arr=[]
+        var min_matches = 5
+        for (var id in counts){
+            var count = counts[id]
+            if (count.win+count.lose>=min_matches){
+                arr.push(count)
+            }
+        }
+        callback(arr)
+    })
+}
+
+function isRadiant(player){
+    return player.player_slot<64
+}
+/*
 var host = "http://www.dotabuff.com"
-utility.getCounts =function(account_id, paginate, callback) {
-    utility.getMatches(host+"/players/"+account_id+"/matches", paginate, function(err){
-        utility.matchStats.find({players: { $elemMatch: { account_id: account_id }}}, function(err, data){
-            var counts = {};
-            for (i=0;i<data.length;i++){ //matches
-                for (j=0;j<data[i].players.length; j++){ //match players
-                    var player = data[i].players[j]
-                    //if between 0 and 4, radiant
-                    //if between 124 an 128, dire
-                    if (player.account_id==account_id){
-                        var playerResult = //player id between 0 and 4 and radiant win true or player id between 124 and 128 and radiant win false
-                    }
-                }
-                for (j=0;j<data[i].players.length; j++){
-                    var player = data[i].players[j]
-                    if (player.winner == playerResult){ //only check teammates of player
-                        if (!counts[player.account_id]){
-                            counts[player.account_id]=player;
-                            counts[player.account_id]["win"]=0;
-                            counts[player.account_id]["lose"]=0;
-                        }
-                        if (player.winner){
-                            counts[player.account_id]["win"]+=1;
-                        }
-                        else{
-                            counts[player.account_id]["lose"]+=1;
-                        }
-                    }
-                }
-            }
-            //convert counts to array and filter
-            var arr=[]
-            var min_matches = 5
-            for (var id in counts){
-                var count = counts[id]
-                if (count.win+count.lose>=min_matches){
-                    arr.push(count)
-                }
-            }
-            callback(arr);
-        })
-    })
-}
-
 utility.getMatches=function(player_url, paginate, callback){
     request(player_url, function processMatches (err, resp, html) {
         console.log(player_url)
@@ -99,7 +97,7 @@ utility.getMatches=function(player_url, paginate, callback){
         })
         async.map(dataArray, function(matchCell, cb){
             var match_url = host+$(matchCell).children().first().attr('href');
-            //just get the match ids and get data from valve api
+            //todo just get the match ids and get data from valve api
             utility.dotabuffMatches.findOne({match_id: getIdFromPath(match_url)}, function(err, data) {
                 if (err) throw err
                 if (!data) {
@@ -143,7 +141,7 @@ utility.getMatches=function(player_url, paginate, callback){
         })
     })
 }
-
+*/
 function getIdFromPath(input){
     return Number(input.split(/[/]+/).pop());
 }

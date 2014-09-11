@@ -8,12 +8,12 @@ block content
            h3 Teammates
            table.table
              tr
-               td Name
-               td Wins
-               td Losses
-             each player in player.teammates
+               th Name
+               th Wins
+               th Losses
+             each teammate in player.teammates
                tr
                  td
-                   a(href="/players/#{player.account_id}")=player.display_name
-                 td=player.win
-                 td=player.lose
+                   a(href='/players/#{teammate.account_id}')=teammate.display_name
+                 td=teammate.win
+                 td=teammate.lose
