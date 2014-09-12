@@ -10,7 +10,9 @@ var request = require('request'),
     matches = utility.matches,
     players = utility.players,
     AWS = require('aws-sdk'),
-    BigNumber = require('big-number').n
+    BigNumber = require('big-number').n,
+    $ = require('cheerio')
+
 
 var steam = new Steam(
     process.env.STEAM_USER,
@@ -29,54 +31,52 @@ var host = "http://www.dotabuff.com"
 if (!fs.existsSync(replay_dir)){
     fs.mkdir(replay_dir)
 }
-queueRequests()
-setInterval(updateAllPlayerNames, 86400*1000)
 aq.empty = function(){
-    console.log("[QUEUE] api request queue empty, refilling")
     queueRequests()
 }
-
+pq.empty = function(){
+    parseMatches()
+}
+setInterval(updateAllPlayers, 86400*1000)
+queueRequests()
+parseMatches()
 //todo insert parsed data under its own key
 //todo organize parsed data better
 //todo update views to work with new format
 //todo implement cool dynatables/pagination
-//todo when should players be added to db/names be requested?
-//page load, do anyone that isn't added?
 
-function updateAllPlayerNames(){
+function updateAllPlayers(){
+    //daily, go through all the matches and update the players
     //todo albert implement this
-    //search db for all players
-    //batch them in groups of 10 or so
-    //use the handy function queuesummaryrequest below to queue the request
 }
 
 function queueRequests(){
     players.find({track: 1}, function(err,docs){
         aq.push(docs, function(err){})
     })
-    players.find({full_history: 1}, function(err,docs){
-        async.mapSeries(docs, getFullMatchHistory, function(err){})
-    })
     matches.find({"duration":{$exists:false}}, function(err,docs){
         aq.push(docs, function(err){})
     })
-    matches.find({parse_status : 0}, function(err, docs) {
-        pq.push(docs, function (err){})
-    })
 }
 
-function queueSummaryRequest(players){
+function parseMatches(){
+    matches.find({parse_status : 0}, function(err, docs) {
+        pq.push(docs, function (err){})
+    })    
+}
+
+function createSummaryRequest(players){
     summaries = {}
     summaries.summaries_id=1
     summaries.players=players
-    aq.push(summaries, function(err){})
+    return summaries
 }
 
 function generateURL(req) {
     if (req.account_id){
         return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY
         + "&account_id=" + req.account_id
-        + "&matches_requested=" + process.env.MATCHES_REQUESTED || 5
+        + "&matches_requested=" + (process.env.MATCHES_REQUESTED || 10)
     }
     if (req.match_id){
         return api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY
@@ -97,31 +97,55 @@ function apiRequest(req, cb){
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
     utility.getData(generateURL(req), function(err, data){
         if (err) {return cb(err)}
+        if (req.full_history){
+            getFullMatchHistory(req.account_id, function(err){
+                setTimeout(cb, api_delay, null)
+            })
+        }
         if (req.account_id){
             console.log("[API] games for player %s", req.account_id)
-            async.map(data.result.matches, utility.insertMatch, function(err){
+            async.map(data.result.matches, insertMatch, function(err){
                 setTimeout(cb, api_delay, null)
             })
         }
         if (req.match_id){
-            console.log("[API] details for match %s", req.match_id)
-            matches.update({match_id:req.match_id},{$set:data.result})
-            pq.push(data.result, function(err){})
+            var match = data.result
+            console.log("[API] details for match %s", match.match_id)
+            matches.update({match_id:req.match_id},{$set:match})
+            aq.unshift(createSummaryRequest(match.players), function(err){})
+            pq.push(match, function(err){})
             setTimeout(cb, api_delay, null)
         }
         if (req.summaries_id){
             console.log("[API] summaries for players (batch)")
-            async.map(data.response.players, utility.insertNames, function(err){
+            async.map(data.response.players, insertPlayer, function(err){
                 setTimeout(cb, api_delay, null)
             })
         }
     })
 }
 
-function getFullMatchHistory (player, cb){
-    var player_url = host+"/players/"+player.account_id+"/matches"
+function insertMatch(match, cb){
+    matches.findOne({ match_id: match.match_id }, function(err, doc) {
+        if(!doc){
+            match.parse_status = 0
+            matches.insert(match)
+        }
+        cb(null)
+    })
+}
+
+function insertPlayer(player, cb){
+    var steamid32=BigNumber(player.steamid).minus('76561197960265728')
+    console.log("[API] updating display name for id %s to %s", steamid32, player.personaname)
+    players.update({account_id:Number(steamid32)},{$set: {display_name:player.personaname}}, {upsert: true})
+    cb(null)
+}
+
+function getFullMatchHistory (account_id, cb){
+    var player_url = host+"/players/"+account_id+"/matches"
+    players.update({account_id: account_id}, {$set: {full_history : 0}})
     getMatchPage(player_url, function(err){
-        players.update({account_id: player.account_id}, {$set: {full_history : 0}})
         cb(null)
     })
 }
@@ -135,7 +159,7 @@ function getMatchPage(url, cb){
             var match_url = host+$(matchCell).children().first().attr('href');
             var match = {}
             match.match_id = Number(match_url.split(/[/]+/).pop());
-            utility.insertMatch(match, function(err){})
+            insertMatch(match, function(err){})
         })  
         var nextPath = parsedHTML('a[rel=next]').first().attr('href')
         if (nextPath){
@@ -152,14 +176,14 @@ function download(match, cb) {
     var fileName = replay_dir+match_id+".dem"
 
     if (fs.existsSync(fileName)){
-        console.log("[DL] found local replay for match %s", match_id)
+        console.log("[PARSER] found local replay for match %s", match_id)
         cb(null, fileName);
     }
     else{
         if (match.start_time > moment().subtract(7, 'days').format('X')) {
             getReplayUrl(match, function(url){
                 downloadFromSteam(url, fileName, 1000, function(){
-                    console.log("[DL] downloaded steam replay for match %s", match_id)
+                    console.log("[PARSER] downloaded steam replay for match %s", match_id)
                     uploadToS3(fileName, function(err){
                         cb(null, fileName)
                     })
@@ -172,11 +196,10 @@ function download(match, cb) {
                 var params = {Bucket: process.env.AWS_S3_BUCKET, Key: fileName}
                 s3.getObject(params, function(err, data) {
                     if (err){
-                        matches.update({match_id: match_id}, {$set: {parse_status : 1}})
                         cb("Replay expired (and not in S3)")
                     }
                     else{
-                        console.log("[DL] downloaded S3 replay for match %s", match_id)
+                        console.log("[PARSER] downloaded S3 replay for match %s", match_id)
                         fs.writeFileSync(fileName, data.Body);
                         cb(null, fileName)
                     }
@@ -245,7 +268,7 @@ function getReplayUrl(match, cb){
 function downloadFromSteam(url, fileName, timeout, cb){
     request({url:url, encoding:null}, function (err, response, body) {
         if (err || response.statusCode !== 200) {
-            console.log("[DL] failed to download from %s, retrying in %ds", url, timeout/1000)
+            console.log("[PARSER] failed to download from %s, retrying in %ds", url, timeout/1000)
             setTimeout(downloadFromSteam, timeout, url, fileName, timeout*2, cb);
         }
         else{
@@ -260,7 +283,8 @@ function parseReplay(match, cb){
     var match_id = match.match_id
     download(match, function(err, fileName){
         if (err) {
-            console.log("[DL] Error for match %s: %s", match_id, err)
+            console.log("[PARSER] Error for match %s: %s", match_id, err)
+            matches.update({match_id: match_id}, {$set: {parse_status : 1}})
             return cb(err)
         }
         console.log("[PARSER] started on %s", fileName)

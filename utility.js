@@ -1,10 +1,9 @@
 var utility = exports
 var request = require('request')
 var async = require('async')
-var $ = require('cheerio')
 
 utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
-utility.matches = utility.db.get('matchStats');
+utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {unique: true});
 utility.players = utility.db.get('players');
 utility.players.index('account_id', {unique: true})
@@ -37,36 +36,31 @@ utility.fillPlayerNames = function(players, cb){
     })
 }
 
-utility.insertMatch = function (match, cb){
-    utility.matches.findOne({ match_id: match.match_id }, function(err, doc) {
-        if(!doc){
-            match.parse_status = 0;
-            utility.matches.insert(match)
-        }
-        cb(null)
+utility.getMatches = function (account_id, cb){
+    utility.matches.find({players: { $elemMatch: { account_id: account_id }},duration:{$exists:true}}, {sort: {match_id: -1}}, function(err, docs){
+        cb(err, docs)
     })
 }
 
-utility.insertName = function (player, cb){
-    var steamid32=BigNumber(player.steamid).minus('76561197960265728')
-    console.log("[API] updating display name for id %s to %s", steamid32, player.personaname)
-    utility.players.update({account_id:Number(steamid32)},{$set: {display_name:player.personaname}}, {upsert: true})
-    cb(null)
+utility.getTrackedPlayers = function (cb){
+    utility.players.find({track:1}, function(err, docs){
+        cb(err, docs)
+    })
 }
 
 utility.getTeammates = function(account_id, cb) {
-    utility.matches.find({players: { $elemMatch: { account_id: account_id }}}, function(err, data){
+    utility.getMatches(account_id, function(err, docs){
         var counts = {};
-        for (i=0;i<data.length;i++){ //matches
-            for (j=0;j<data[i].players.length; j++){ //match players
-                var player = data[i].players[j]
+        for (i=0;i<docs.length;i++){ //matches
+            for (j=0;j<docs[i].players.length; j++){ //match players
+                var player = docs[i].players[j]
                 if (player.account_id==account_id){
                     var playerSide = isRadiant(player)
-                    var playerWinner = (playerSide && data.radiant_win) || (!playerSide && !data.radiant_win)
+                    var playerWinner = (playerSide && docs[i].radiant_win) || (!playerSide && docs[i].radiant_win)
                     }
             }
-            for (j=0;j<data[i].players.length; j++){  //match players
-                var player = data[i].players[j]
+            for (j=0;j<docs[i].players.length; j++){  //match players
+                var player = docs[i].players[j]
                 if (isRadiant(player)==playerSide){ //only check teammates of player
                     if (!counts[player.account_id]){
                         counts[player.account_id]={}

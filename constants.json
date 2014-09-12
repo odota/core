@@ -1,6 +1,6 @@
 {
     "parse_status": {
-        "0": "Queued for parse",
+        "0": "Queued",
         "1": "Expired",
         "2": "Parsed"
     },
