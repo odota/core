@@ -2,7 +2,6 @@ var request = require('request'),
     path = require("path"),
     fs = require("fs"),
     async = require("async"),
-    Steam = require("./MatchProvider").MatchProvider,
     spawn = require('child_process').spawn,
     moment = require('moment'),
     Bunzip = require('seek-bzip'),
@@ -12,8 +11,11 @@ var request = require('request'),
     AWS = require('aws-sdk'),
     BigNumber = require('big-number').n,
     $ = require('cheerio'),
-    steam;
-var aq = async.queue(apiRequest, 1)
+    steam = require("steam"),
+    dota2 = require("dota2"),
+    Steam = new steam.SteamClient(),
+    Dota2 = new dota2.Dota2Client(Steam, false)
+    var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
 var api_delay = 1000
 var replay_dir = process.env.REPLAY_DIR || "replays/"
@@ -27,9 +29,6 @@ if(!fs.existsSync(replay_dir)) {
 aq.empty = function() {
     queueRequests()
 }
-pq.empty = function() {
-    parseMatches()
-}
 setInterval(updatePlayerNames, 86400 * 1000)
 queueRequests()
 parseMatches()
@@ -37,11 +36,7 @@ parseMatches()
 //todo organize parsed data better
 //todo update views to work with new format
 //todo implement cool dynatables/pagination
-
-function updatePlayerNames() {
-    //daily, go through all the matches and update the players
-    //todo albert implement this
-}
+//
 
 function queueRequests() {
     players.find({
@@ -50,7 +45,7 @@ function queueRequests() {
         aq.push(docs, function(err) {})
     })
     matches.find({
-        "duration": {
+        duration: {
             $exists: false
         }
     }, function(err, docs) {
@@ -64,6 +59,11 @@ function parseMatches() {
     }, function(err, docs) {
         pq.push(docs, function(err) {})
     })
+}
+
+function updatePlayerNames() {
+    //daily, go through all the matches and update the players
+    //todo albert implement this
 }
 
 function createSummaryRequest(players) {
@@ -83,8 +83,7 @@ function generateURL(req) {
     if(req.summaries_id) {
         var steamids = []
         req.players.forEach(function(player) {
-            var steamid64 = BigNumber('76561197960265728').plus(player.account_id).toString()
-            steamids.push(steamid64)
+            steamids.push(BigNumber('76561197960265728').plus(player.account_id).toString())
         })
         var query = steamids.join()
         return summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
@@ -142,10 +141,9 @@ function insertMatch(match, cb) {
 }
 
 function insertPlayer(player, cb) {
-    var steamid32 = BigNumber(player.steamid).minus('76561197960265728')
-    console.log("[API] updating display name for id %s to %s", steamid32, player.personaname)
+    var account_id = Number(BigNumber(player.steamid).minus('76561197960265728'))
     players.update({
-        account_id: Number(steamid32)
+        account_id: account_id
     }, {
         $set: {
             display_name: player.personaname
@@ -198,9 +196,12 @@ function download(match, cb) {
         cb(null, fileName);
     } else {
         if(match.start_time > moment().subtract(7, 'days').format('X')) {
-            getReplayUrl(match, function(url) {
-                downloadFromSteam(url, fileName, 1000, function() {
-                    console.log("[PARSER] downloaded steam replay for match %s", match_id)
+            getReplayUrl(match, function(err, url) {
+                if(err) {
+                    cb(err)
+                }
+                downloadWithRetry(url, fileName, 1000, function() {
+                    console.log("[PARSER] downloaded valve replay for match %s", match_id)
                     uploadToS3(fileName, function(err) {
                         cb(null, fileName)
                     })
@@ -215,9 +216,10 @@ function download(match, cb) {
                 }
                 s3.getObject(params, function(err, data) {
                     if(err) {
-                        cb("Replay expired (and not in S3)")
+                        console.log('[S3] Replay not found in S3')
+                        cb("Replay expired")
                     } else {
-                        console.log("[PARSER] downloaded S3 replay for match %s", match_id)
+                        console.log("[PARSER] Downloaded S3 replay for match %s", match_id)
                         fs.writeFileSync(fileName, data.Body);
                         cb(null, fileName)
                     }
@@ -259,46 +261,88 @@ function uploadToS3(fileName, cb) {
     })
 }
 
+function logOnSteam(user, pass, authcode, cb) {
+    var onSteamLogOn = function onSteamLogOn() {
+        console.log("[STEAM] Logged on.");
+        Dota2.launch();
+        Dota2.on("ready", function() {
+            cb(null)
+        })
+    },
+        onSteamSentry = function onSteamSentry(newSentry) {
+            console.log("[STEAM] Received sentry.");
+            fs.writeFileSync("sentry", newSentry);
+        },
+        onSteamServers = function onSteamServers(servers) {
+            console.log("[STEAM] Received servers.");
+            fs.writeFile("servers", JSON.stringify(servers));
+        },
+        onSteamError = function onSteamError(e) {
+            if(e.cause == "logonFail") {
+                switch(e.eresult) {
+                    case steam.EResult.InvalidPassword:
+                        throw "Error: Steam cannot log on - Invalid password.";
+                    case steam.EResult.AccountLogonDenied:
+                        throw "Error: Steam cannot log on - Account logon denied (Steam Guard code required)";
+                    case steam.EResult.InvalidLoginAuthCode:
+                        throw "Error: Steam cannot log on - Invalid Steam Guard code (remove whats set in config.js to have a new one sent)";
+                    case steam.EResult.AlreadyLoggedInElsewhere:
+                        throw "Error: Steam cannot log on - Account already logged in elsewhere.";
+                }
+            }
+        };
+    if(!fs.existsSync("sentry")) {
+        fs.openSync("sentry", 'w')
+    }
+    var logOnDetails = {
+        "accountName": user,
+        "password": pass
+    },
+        sentry = fs.readFileSync("sentry");
+    if(authcode) logOnDetails.authCode = authcode;
+    if(sentry.length) logOnDetails.shaSentryfile = sentry;
+    Steam.logOn(logOnDetails);
+    Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
+}
+
 function getReplayUrl(match, cb) {
     if(match.replay_url) {
         console.log("[STEAM] found replay_url in db")
-        return cb(match.replay_url)
+        return cb(null, match.replay_url)
     }
-    if(!steam) {
-        steam = new Steam(process.env.STEAM_USER, process.env.STEAM_PASS, process.env.STEAM_GUARD_CODE);
-    }
-    if(!steam.ready) {
-        console.log("[STEAM] not ready yet")
-        setTimeout(getReplayUrl, 5000, match, cb)
+    if(!Steam.loggedOn) {
+        logOnSteam(process.env.STEAM_USER, process.env.STEAM_PASS, process.env.STEAM_GUARD_CODE, function(err) {
+            getReplayUrl(match, cb)
+        })
     } else {
-        steam.getReplayDetails(match.match_id, function(err, data) {
+        console.log("[DOTA] requesting replay %s", match.match_id);
+        Dota2.matchDetailsRequest(match.match_id, function(err, data) {
             if(err) {
                 //todo login with another account and try again
                 console.log(err)
-                setTimeout(getReplayUrl, 5000, match, cb)
-            } else {
-                var url = "http://replay" + data.cluster + ".valve.net/570/" + data.id + "_" + data.salt + ".dem.bz2";
-                matches.update({
-                    match_id: match.match_id
-                }, {
-                    $set: {
-                        replay_url: url
-                    }
-                })
-                cb(url)
+                cb(err)
             }
+            var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+            matches.update({
+                match_id: match.match_id
+            }, {
+                $set: {
+                    replay_url: url
+                }
+            })
+            cb(null, url)
         })
     }
 }
 
-function downloadFromSteam(url, fileName, timeout, cb) {
+function downloadWithRetry(url, fileName, timeout, cb) {
     request({
         url: url,
         encoding: null
     }, function(err, response, body) {
         if(err || response.statusCode !== 200) {
             console.log("[PARSER] failed to download from %s, retrying in %ds", url, timeout / 1000)
-            setTimeout(downloadFromSteam, timeout, url, fileName, timeout * 2, cb);
+            setTimeout(downloadWithRetry, timeout, url, fileName, timeout * 2, cb);
         } else {
             body = Bunzip.decode(body);
             fs.writeFileSync(fileName, body);
@@ -309,6 +353,7 @@ function downloadFromSteam(url, fileName, timeout, cb) {
 
 function parseReplay(match, cb) {
     var match_id = match.match_id
+    console.log("[PARSER] beginning parse for match %s", match_id)
     download(match, function(err, fileName) {
         if(err) {
             console.log("[PARSER] Error for match %s: %s", match_id, err)
@@ -321,7 +366,7 @@ function parseReplay(match, cb) {
             })
             return cb(err)
         }
-        console.log("[PARSER] started on %s", fileName)
+        console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
             parser_file,
