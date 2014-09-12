@@ -7,7 +7,6 @@ var express = require('express'),
     path = require('path'),
     constants = require('./constants.json')
 
-//todo use object inside parallel instead
 async.parallel([
     function (cb){
         utility.getData("https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key="+process.env.STEAM_API_KEY+"&language=en-us", function (err, data) {
@@ -76,8 +75,8 @@ async.parallel([
     app.locals.constants = constants;
 
     app.route('/').get(function(req, res){
-        matches.find({"duration":{$exists:true}}, {sort: {match_id: -1}}, function(err, doc){
-            res.render('index.jade',{matches: doc})
+        utility.getTrackedPlayers(function(err, docs){
+            res.render('index.jade',{players: docs})
         })
     })
 
@@ -97,10 +96,12 @@ async.parallel([
         players.findOne({account_id: Number(req.params.id)}, function(err, doc){
             if (!doc) res.status(404).send('Could not find this player!')
             else{
-                utility.getTeammates(doc.account_id, function(err, teammates){
-                    utility.fillPlayerNames(teammates, function(err, teammates){
-                        doc.teammates = teammates
-                        res.render('player.jade', {player: doc})
+                utility.getMatches(doc.account_id, function(err, matches){
+                    utility.getTeammates(doc.account_id, function(err, teammates){
+                        utility.fillPlayerNames(teammates, function(err, teammates){
+                            doc.teammates = teammates
+                            res.render('player.jade', {player: doc, matches: matches})
+                        })
                     })
                 })
             }

@@ -1,11 +1,36 @@
 extend layout
 block content
-     .container
-        .page-header
-           h1(style='font-weight: 700;')=player.display_name
-             small=player.account_id
+   .container
+     .page-header
+       h1(style='font-weight: 700;')=player.display_name
+          small=player.account_id
+       .row
+         .col-md-12
+           h3 Aggregated Lifetime Stats         
+         .col-md-8
            h3 Recent Matches
-           h3 Aggregated Lifetime Stats
+           table.table
+              tr
+                th Match ID
+                th Game Mode
+                th Region
+                th Duration
+                th Winner
+                th Played
+                th Replay Status
+              - each match in matches
+                tr(class= match.radiant_win ? "success" : "danger")
+                  td: a(href='/matches/#{match.match_id}')= match.match_id
+                  td= constants.gameModes[match.game_mode]
+                  td= constants.regions[match.cluster]
+                  td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+                  if match.radiant_win
+                    td Radiant
+                  else
+                    td Dire
+                  td= moment.unix(match.start_time + match.duration).fromNow()
+                  td= constants.parse_status[match.parse_status]
+         .col-md-4
            h3 Teammates
            table.table
              tr
