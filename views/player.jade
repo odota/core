@@ -17,7 +17,7 @@ block content
                 th Duration
                 th Winner
                 th Played
-                th Replay Status
+                th Status
               - each match in matches
                 tr(class= match.radiant_win ? "success" : "danger")
                   td: a(href='/matches/#{match.match_id}')= match.match_id

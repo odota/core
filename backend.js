@@ -28,15 +28,14 @@ if(!fs.existsSync(replay_dir)) {
 }
 aq.empty = function() {
     queueRequests()
+    requestDetails()
 }
-setInterval(updatePlayerNames, 86400 * 1000)
+pq.empty = function(){
+    parseMatches()
+}
+setInterval(updateNames, 86400 * 1000)
 queueRequests()
 parseMatches()
-//todo insert parsed data under its own key
-//todo organize parsed data better
-//todo update views to work with new format
-//todo implement cool dynatables/pagination
-//
 
 function queueRequests() {
     players.find({
@@ -44,6 +43,9 @@ function queueRequests() {
     }, function(err, docs) {
         aq.push(docs, function(err) {})
     })
+}
+
+function requestDetails() {
     matches.find({
         duration: {
             $exists: false
@@ -61,16 +63,18 @@ function parseMatches() {
     })
 }
 
-function updatePlayerNames() {
-    //daily, go through all the matches and update the players
+function updateNames() {
+    //go through all the matches and update the players
+    //maybe make a set of unique players across all games and batch them in groups of 10-20
+    //or go through the players table but possible missing players if action interrupted previously
     //todo albert implement this
 }
 
-function createSummaryRequest(players) {
+function queueSummaryRequest(players) {
     summaries = {}
     summaries.summaries_id = 1
     summaries.players = players
-    return summaries
+    aq.unshift(summaries, function(err) {})
 }
 
 function generateURL(req) {
@@ -108,19 +112,20 @@ function apiRequest(req, cb) {
             })
         }
         if(req.match_id) {
+            console.log("[API] details for match %s", req.match_id)
             var match = data.result
-            console.log("[API] details for match %s", match.match_id)
+            match.parse_status = 0
             matches.update({
-                match_id: req.match_id
+                match_id: match.match_id
             }, {
                 $set: match
             })
-            aq.unshift(createSummaryRequest(match.players), function(err) {})
+            queueSummaryRequest(match.players)
             pq.push(match, function(err) {})
             setTimeout(cb, api_delay, null)
         }
         if(req.summaries_id) {
-            console.log("[API] summaries for players (batch)")
+            console.log("[API] summaries for players")
             async.map(data.response.players, insertPlayer, function(err) {
                 setTimeout(cb, api_delay, null)
             })
@@ -129,12 +134,9 @@ function apiRequest(req, cb) {
 }
 
 function insertMatch(match, cb) {
-    matches.findOne({
-        match_id: match.match_id
-    }, function(err, doc) {
-        if(!doc) {
-            match.parse_status = 0
-            matches.insert(match)
+    matches.insert(match, function(err) {
+        if(!err) {
+            aq.push(match, function(err) {})
         }
         cb(null)
     })
@@ -150,8 +152,9 @@ function insertPlayer(player, cb) {
         }
     }, {
         upsert: true
+    }, function(err) {
+        cb(err)
     })
-    cb(null)
 }
 
 function getFullMatchHistory(account_id, cb) {
@@ -315,12 +318,10 @@ function getReplayUrl(match, cb) {
             getReplayUrl(match, cb)
         })
     } else {
-        console.log("[DOTA] requesting replay %s", match.match_id);
+        console.log("[DOTA] requesting replay %s", match.match_id)
         Dota2.matchDetailsRequest(match.match_id, function(err, data) {
             if(err) {
-                //todo login with another account and try again
-                console.log(err)
-                cb(err)
+                return cb(err)
             }
             var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
             matches.update({
@@ -330,8 +331,14 @@ function getReplayUrl(match, cb) {
                     replay_url: url
                 }
             })
-            cb(null, url)
+            return cb(null, url)
         })
+        setTimeout(function(){
+        //todo when limit exceeded, timeout here, login with another account and try again
+        //Dota2.exit()
+        //Steam.logOff()
+        //call this function with a new set of creds
+        }, 30*1000)
     }
 }
 
@@ -345,8 +352,9 @@ function downloadWithRetry(url, fileName, timeout, cb) {
             setTimeout(downloadWithRetry, timeout, url, fileName, timeout * 2, cb);
         } else {
             body = Bunzip.decode(body);
-            fs.writeFileSync(fileName, body);
-            cb(null)
+            fs.writeFile(fileName, body, function(err) {
+                cb(null)
+            });
         }
     })
 }
