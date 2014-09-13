@@ -4,28 +4,34 @@ html
     link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css')
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css')
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Roboto:400,700')
-    block scripts
+    style.
+      .navbar-default {
+      background-color: #BBF0FD;
+      }
+    block head
+    
 body
-   div.container
-   style.
-    .navbar-default {
-    background-color: #BBF0FD;
-    }
-   nav.navbar.navbar-default
-    .container-fluid
-      a(href='/', class = 'navbar-brand') YASP
-       .navbar-header
-         ul.nav.navbar-nav
+     nav.navbar.navbar-default
+      .container-fluid
+        .navbar-header
+          a(href='/', class = 'navbar-brand') YASP
+        ul.nav.navbar-nav
+          li
+            a(href="/matches") Matches
+          li
+            a(href="/players") Players
 
-   block content
-   .footer(style="background-color: #BBF0FD;width: 100%;padding: 1.5em;margin-top: 2em;")
-    .container
-     p Dota 2 and all that stuff belongs to 
-      a(href='http://store.steampowered.com/') Valve
-      | . Built on Valve's WebAPI. Thanks Valve!
-     p Match parsing powered by 
-      a(href='https://github.com/skadistats/clarity') clarity
-      |.
-     p Source code can be found on 
-      a(href='https://github.com/albertcui/YASP') GitHub
-      |.
+     div.container
+       block content
+       
+     .footer(style="background-color: #BBF0FD;width: 100%;padding: 1.5em;margin-top: 2em;")
+      .container
+       p Dota 2 and all that stuff belongs to 
+        a(href='http://store.steampowered.com/') Valve
+        | . Built on Valve's WebAPI. Thanks Valve!
+       p Match parsing powered by 
+        a(href='https://github.com/skadistats/clarity') clarity
+        |.
+       p Source code can be found on 
+        a(href='https://github.com/albertcui/YASP') GitHub
+        |.

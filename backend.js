@@ -30,12 +30,13 @@ aq.empty = function() {
     queueRequests()
     requestDetails()
 }
-pq.empty = function(){
-    parseMatches()
-}
 setInterval(updateNames, 86400 * 1000)
 queueRequests()
+requestDetails()
 parseMatches()
+/*
+ * Reloads the api queue with tracked users
+ */
 
 function queueRequests() {
     players.find({
@@ -44,6 +45,10 @@ function queueRequests() {
         aq.push(docs, function(err) {})
     })
 }
+/*
+ * Reloads the api queue with matches needing details
+ * After completion, a match is auto-queued for parse
+ */
 
 function requestDetails() {
     matches.find({
@@ -54,6 +59,9 @@ function requestDetails() {
         aq.push(docs, function(err) {})
     })
 }
+/*
+ * Reloads the parse queue with matches needing parse
+ */
 
 function parseMatches() {
     matches.find({
@@ -62,6 +70,9 @@ function parseMatches() {
         pq.push(docs, function(err) {})
     })
 }
+/*
+ * Updates display names for all players
+ */
 
 function updateNames() {
     //go through all the matches and update the players
@@ -69,6 +80,9 @@ function updateNames() {
     //or go through the players table but possible missing players if action interrupted previously
     //todo albert implement this
 }
+/*
+ * Queues a request for display names for an array of players
+ */
 
 function queueSummaryRequest(players) {
     summaries = {}
@@ -76,6 +90,9 @@ function queueSummaryRequest(players) {
     summaries.players = players
     aq.unshift(summaries, function(err) {})
 }
+/*
+ * Generates a URL to access an api
+ */
 
 function generateURL(req) {
     if(req.account_id) {
@@ -93,6 +110,9 @@ function generateURL(req) {
         return summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
     }
 }
+/*
+ * Processes a request to an api
+ */
 
 function apiRequest(req, cb) {
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
@@ -132,6 +152,9 @@ function apiRequest(req, cb) {
         }
     })
 }
+/*
+ * Inserts a match in the database and pushes it onto queue for details
+ */
 
 function insertMatch(match, cb) {
     matches.insert(match, function(err) {
@@ -141,6 +164,9 @@ function insertMatch(match, cb) {
         cb(null)
     })
 }
+/*
+ * Inserts/updates a player in the database
+ */
 
 function insertPlayer(player, cb) {
     var account_id = Number(BigNumber(player.steamid).minus('76561197960265728'))
@@ -156,6 +182,9 @@ function insertPlayer(player, cb) {
         cb(err)
     })
 }
+/*
+ * Scrapes dotabuff for a full match history for the user
+ */
 
 function getFullMatchHistory(account_id, cb) {
     var player_url = host + "/players/" + account_id + "/matches"
@@ -170,6 +199,9 @@ function getFullMatchHistory(account_id, cb) {
         cb(null)
     })
 }
+/*
+ * Inserts matches on a page into database and tries to get the next page
+ */
 
 function getMatchPage(url, cb) {
     request(url, function(err, resp, body) {
@@ -190,6 +222,9 @@ function getMatchPage(url, cb) {
         }
     })
 }
+/*
+ * Downloads a match replay
+ */
 
 function download(match, cb) {
     var match_id = match.match_id
@@ -234,6 +269,9 @@ function download(match, cb) {
         }
     }
 }
+/*
+ * Uploads a replay to S3
+ */
 
 function uploadToS3(fileName, cb) {
     if(!process.env.AWS_S3_BUCKET) {
@@ -263,6 +301,9 @@ function uploadToS3(fileName, cb) {
         }
     })
 }
+/*
+ * Logs onto steam and launches Dota 2
+ */
 
 function logOnSteam(user, pass, authcode, cb) {
     var onSteamLogOn = function onSteamLogOn() {
@@ -307,40 +348,52 @@ function logOnSteam(user, pass, authcode, cb) {
     Steam.logOn(logOnDetails);
     Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
+/*
+ * Gets the replay url from dota
+ */
 
 function getReplayUrl(match, cb) {
     if(match.replay_url) {
-        console.log("[STEAM] found replay_url in db")
+        console.log("[PARSER] found replay_url in db")
         return cb(null, match.replay_url)
     }
     if(!Steam.loggedOn) {
+        //todo select a random set of creds every time
         logOnSteam(process.env.STEAM_USER, process.env.STEAM_PASS, process.env.STEAM_GUARD_CODE, function(err) {
             getReplayUrl(match, cb)
         })
     } else {
         console.log("[DOTA] requesting replay %s", match.match_id)
+        var timeoutProtect = setTimeout(function() {
+            // Clear the local timer variable, indicating the timeout has been triggered.
+            timeoutProtect = null;
+            Dota2.exit()
+            Steam.logOff()
+            console.log("[DOTA] request for replay timed out, relogging")
+            getReplayUrl(match, cb)
+        }, 10000)
         Dota2.matchDetailsRequest(match.match_id, function(err, data) {
-            if(err) {
-                return cb(err)
-            }
-            var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
-            matches.update({
-                match_id: match.match_id
-            }, {
-                $set: {
-                    replay_url: url
+            if(timeoutProtect) {
+                clearTimeout(timeoutProtect);
+                if(err) {
+                    return cb(err)
                 }
-            })
-            return cb(null, url)
+                var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+                matches.update({
+                    match_id: match.match_id
+                }, {
+                    $set: {
+                        replay_url: url
+                    }
+                })
+                return cb(null, url)
+            }
         })
-        setTimeout(function(){
-        //todo when limit exceeded, timeout here, login with another account and try again
-        //Dota2.exit()
-        //Steam.logOff()
-        //call this function with a new set of creds
-        }, 30*1000)
     }
 }
+/*
+ * Tries to download a file from the url repeatedly
+ */
 
 function downloadWithRetry(url, fileName, timeout, cb) {
     request({
@@ -358,6 +411,9 @@ function downloadWithRetry(url, fileName, timeout, cb) {
         }
     })
 }
+/*
+ * Parses a replay for a match
+ */
 
 function parseReplay(match, cb) {
     var match_id = match.match_id

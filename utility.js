@@ -28,8 +28,6 @@ utility.fillPlayerNames = function(players, cb) {
         }, function(err, dbPlayer) {
             if(dbPlayer) {
                 player.display_name = dbPlayer.display_name
-            } else {
-                player.display_name = "Anonymous"
             }
             cb(null)
         })
@@ -38,16 +36,19 @@ utility.fillPlayerNames = function(players, cb) {
     })
 }
 utility.getMatches = function(account_id, cb) {
-    utility.matches.find({
-        players: {
-            $elemMatch: {
-                account_id: account_id
-            }
-        },
+    var search = {
         duration: {
             $exists: true
         }
-    }, {
+    }
+    if(account_id) {
+        search.players = {
+            $elemMatch: {
+                account_id: account_id
+            }
+        }
+    }
+    utility.matches.find(search, {
         sort: {
             match_id: -1
         }
@@ -62,20 +63,24 @@ utility.getTrackedPlayers = function(cb) {
         cb(err, docs)
     })
 }
-utility.getTeammates = function(account_id, cb) {
+utility.fillTeammates = function(doc, cb) {
+    var account_id = doc.account_id
     utility.getMatches(account_id, function(err, docs) {
+        if(err) {
+            return cb(err)
+        }
         var counts = {};
         for(i = 0; i < docs.length; i++) { //matches
             for(j = 0; j < docs[i].players.length; j++) { //match players
                 var player = docs[i].players[j]
                 if(player.account_id == account_id) {
-                    var playerSide = isRadiant(player)
-                    var playerWinner = (playerSide && docs[i].radiant_win) || (!playerSide && docs[i].radiant_win)
+                    var playerRadiant = isRadiant(player)
+                    var playerWinner = (playerRadiant == docs[i].radiant_win)
                 }
             }
             for(j = 0; j < docs[i].players.length; j++) { //match players
                 var player = docs[i].players[j]
-                if(isRadiant(player) == playerSide) { //only check teammates of player
+                if(isRadiant(player) == playerRadiant) { //only check teammates of player
                     if(!counts[player.account_id]) {
                         counts[player.account_id] = {}
                         counts[player.account_id]["account_id"] = player.account_id;
@@ -92,14 +97,21 @@ utility.getTeammates = function(account_id, cb) {
         }
         //convert counts to array and filter
         var arr = []
-        var min_matches = 5
         for(var id in counts) {
             var count = counts[id]
-            if(count.win + count.lose >= min_matches) {
-                arr.push(count)
+            if(id == doc.account_id) {
+                doc.win = count.win
+                doc.lose = count.lose
+            } else {
+                if(count.win + count.lose >= (process.env.MIN_MATCHES_TEAMMATES || 3)) {
+                    arr.push(count)
+                }
             }
         }
-        cb(null, arr)
+        utility.fillPlayerNames(arr, function(err, arr) {
+            doc.teammates = arr
+            cb(null, doc)
+        })
     })
 }
 
