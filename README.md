@@ -23,16 +23,4 @@ Actions
 This application contains code from [matchurls](https://rjackson.me/tools/matchurls).  
 It makes DOTA 2 API calls to get your most recently played games and downloads the replays.  
 The replays are sent to a parser powered by [clarity](https://github.com/skadistats/clarity) to get interesting stats.  
-Augmented match data is stored in MongoDB.
-
-TODO
-====
-* Make match pages link to player page with teammate history and matches
-* Make player names API request on page request, update/insert names
-* Add tower/racks info
-* Add hero position info
-* Add rune info
-* Add ward info
-* Add chat log
-* Add combat log
-* Use multiple accounts to handle >100 replays/day
+Match data is stored in MongoDB.
