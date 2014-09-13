@@ -1,70 +1,241 @@
 {
     "parse_status": {
-        "0": "Queued for parse",
+        "0": "Queued",
         "1": "Expired",
         "2": "Parsed"
     },
     "anonymous_account_id": 4294967295,
-    "gameModes": {
-        "0": "Unknown",
-        "1": "All Pick",
-        "2": "Captains Mode",
-        "3": "Random Draft",
-        "4": "Single Draft",
-        "5": "All Random",
-        "6": "?? INTRO/DEATH ??",
-        "7": "The Diretide",
-        "8": "Reverse Captains Mode",
-        "9": "Greeviling",
-        "10": "Tutorial",
-        "11": "Mid Only",
-        "12": "Least Played",
-        "13": "New Player Pool",
-        "14": "Compendium Matchmaking",
-        "15": "Custom",
-        "16": "Captains Draft",
-        "17": "Balanced Draft",
-        "18": "Ability Draft",
-        "19": "?? Event ??",
-        "20": "All Random Death Match",
-        "21": "1vs1 Solo Mid"
+    "modes": {
+        "0": {
+            "id": 0,
+            "name": "Unknown"
+        },
+        "1": {
+            "id": 1,
+            "name": "All Pick"
+        },
+        "2": {
+            "id": 2,
+            "name": "Captains Mode"
+        },
+        "3": {
+            "id": 3,
+            "name": "Random Draft"
+        },
+        "4": {
+            "id": 4,
+            "name": "Single Draft"
+        },
+        "5": {
+            "id": 5,
+            "name": "All Random"
+        },
+        "6": {
+            "id": 6,
+            "name": "?? INTRO/DEATH ??"
+        },
+        "7": {
+            "id": 7,
+            "name": "The Diretide"
+        },
+        "8": {
+            "id": 8,
+            "name": "Reverse Captains Mode"
+        },
+        "9": {
+            "id": 9,
+            "name": "Greeviling"
+        },
+        "10": {
+            "id": 10,
+            "name": "Tutorial"
+        },
+        "11": {
+            "id": 11,
+            "name": "Mid Only"
+        },
+        "12": {
+            "id": 12,
+            "name": "Least Played"
+        },
+        "13": {
+            "id": 13,
+            "name": "New Player Pool"
+        },
+        "14": {
+            "id": 14,
+            "name": "Compendium Matchmaking"
+        },
+        "15": {
+            "id": 15,
+            "name": "Custom"
+        },
+        "16": {
+            "id": 16,
+            "name": "Captains Draft"
+        },
+        "17": {
+            "id": 17,
+            "name": "Balanced Draft"
+        },
+        "18": {
+            "id": 18,
+            "name": "Ability Draft"
+        },
+        "19": {
+            "id": 19,
+            "name": "?? Event ??"
+        },
+        "20": {
+            "id": 20,
+            "name": "All Random Death Match"
+        },
+        "21": {
+            "id": 21,
+            "name": "1vs1 Solo Mid"
+        }
     },
     "regions": {
-        "111": "US West",
-        "112": "US West",
-        "114": "US West",
-        "121": "US East",
-        "122": "US East",
-        "123": "US East",
-        "124": "US East",
-        "131": "Europe West",
-        "132": "Europe West",
-        "133": "Europe West",
-        "134": "Europe West",
-        "135": "Europe West",
-        "136": "Europe West",
-        "142": "South Korea",
-        "143": "South Korea",
-        "151": "Southeast Asia",
-        "152": "Southeast Asia",
-        "153": "Southeast Asia",
-        "161": "China",
-        "163": "China",
-        "171": "Australia",
-        "181": "Russia",
-        "182": "Russia",
-        "183": "Russia",
-        "184": "Russia",
-        "191": "Europe East",
-        "200": "South America",
-        "204": "South America",
-        "211": "South America",
-        "212": "South America",
-        "213": "South America",
-        "221": "China",
-        "222": "China",
-        "223": "China",
-        "231": "China"
+        "111": {
+            "id": 111,
+            "name": "US West"
+        },
+        "112": {
+            "id": 112,
+            "name": "US West"
+        },
+        "114": {
+            "id": 114,
+            "name": "US West"
+        },
+        "121": {
+            "id": 121,
+            "name": "US East"
+        },
+        "122": {
+            "id": 122,
+            "name": "US East"
+        },
+        "123": {
+            "id": 123,
+            "name": "US East"
+        },
+        "124": {
+            "id": 124,
+            "name": "US East"
+        },
+        "131": {
+            "id": 131,
+            "name": "Europe West"
+        },
+        "132": {
+            "id": 132,
+            "name": "Europe West"
+        },
+        "133": {
+            "id": 133,
+            "name": "Europe West"
+        },
+        "134": {
+            "id": 134,
+            "name": "Europe West"
+        },
+        "135": {
+            "id": 135,
+            "name": "Europe West"
+        },
+        "136": {
+            "id": 136,
+            "name": "Europe West"
+        },
+        "142": {
+            "id": 142,
+            "name": "South Korea"
+        },
+        "143": {
+            "id": 143,
+            "name": "South Korea"
+        },
+        "151": {
+            "id": 151,
+            "name": "Southeast Asia"
+        },
+        "152": {
+            "id": 152,
+            "name": "Southeast Asia"
+        },
+        "153": {
+            "id": 153,
+            "name": "Southeast Asia"
+        },
+        "161": {
+            "id": 161,
+            "name": "China"
+        },
+        "163": {
+            "id": 163,
+            "name": "China"
+        },
+        "171": {
+            "id": 171,
+            "name": "Australia"
+        },
+        "181": {
+            "id": 181,
+            "name": "Russia"
+        },
+        "182": {
+            "id": 182,
+            "name": "Russia"
+        },
+        "183": {
+            "id": 183,
+            "name": "Russia"
+        },
+        "184": {
+            "id": 184,
+            "name": "Russia"
+        },
+        "191": {
+            "id": 191,
+            "name": "Europe East"
+        },
+        "200": {
+            "id": 200,
+            "name": "South America"
+        },
+        "204": {
+            "id": 204,
+            "name": "South America"
+        },
+        "211": {
+            "id": 211,
+            "name": "South America"
+        },
+        "212": {
+            "id": 212,
+            "name": "South America"
+        },
+        "213": {
+            "id": 213,
+            "name": "South America"
+        },
+        "221": {
+            "id": 221,
+            "name": "China"
+        },
+        "222": {
+            "id": 222,
+            "name": "China"
+        },
+        "223": {
+            "id": 223,
+            "name": "China"
+        },
+        "231": {
+            "id": 231,
+            "name": "China"
+        }
     },
     "items": {
         "1": {
