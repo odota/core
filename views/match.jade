@@ -19,7 +19,6 @@ block head
      .items img {width: 35px;}
      
 block content
- .container
         h1 Match #{match.match_id}
         .row
           .col-md-6
@@ -30,7 +29,7 @@ block content
                 td Game Mode
               tr
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                td= constants.gameModes[match.game_mode]
+                td= constants.modes[match.game_mode].name
         .row
           .col-md-12
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"

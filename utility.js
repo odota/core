@@ -12,10 +12,8 @@ utility.players.index('account_id', {
 })
 utility.getData = function(url, cb) {
     request(url, function(err, res, body) {
-        if(err) {
-            cb(err)
-        } else if(res.statusCode != 200) {
-            cb("response code != 200");
+        if(err || res.statusCode != 200) {
+            cb(err || "response code != 200")
         } else {
             cb(null, JSON.parse(body))
         }
@@ -63,55 +61,51 @@ utility.getTrackedPlayers = function(cb) {
         cb(err, docs)
     })
 }
-utility.fillTeammates = function(doc, cb) {
+utility.fillPlayerStats = function(doc, matches, cb) {
     var account_id = doc.account_id
-    utility.getMatches(account_id, function(err, docs) {
-        if(err) {
-            return cb(err)
-        }
-        var counts = {};
-        for(i = 0; i < docs.length; i++) { //matches
-            for(j = 0; j < docs[i].players.length; j++) { //match players
-                var player = docs[i].players[j]
-                if(player.account_id == account_id) {
-                    var playerRadiant = isRadiant(player)
-                    var playerWinner = (playerRadiant == docs[i].radiant_win)
+    var counts = {};
+    for(i = 0; i < matches.length; i++) {
+        for(j = 0; j < matches[i].players.length; j++) {
+            var player = matches[i].players[j]
+            if(player.account_id == account_id) {
+                var playerRadiant = isRadiant(player)
+                matches[i].player_win = (playerRadiant == matches[i].radiant_win)
+                matches[i].player_hero = player.hero_id
                 }
-            }
-            for(j = 0; j < docs[i].players.length; j++) { //match players
-                var player = docs[i].players[j]
-                if(isRadiant(player) == playerRadiant) { //only check teammates of player
-                    if(!counts[player.account_id]) {
-                        counts[player.account_id] = {}
-                        counts[player.account_id]["account_id"] = player.account_id;
-                        counts[player.account_id]["win"] = 0;
-                        counts[player.account_id]["lose"] = 0;
-                    }
-                    if(playerWinner) {
-                        counts[player.account_id]["win"] += 1
-                    } else {
-                        counts[player.account_id]["lose"] += 1
-                    }
+        }
+        for(j = 0; j < matches[i].players.length; j++) {
+            var player = matches[i].players[j]
+            if(isRadiant(player) == playerRadiant) { //only check teammates of player
+                if(!counts[player.account_id]) {
+                    counts[player.account_id] = {}
+                    counts[player.account_id]["account_id"] = player.account_id;
+                    counts[player.account_id]["win"] = 0;
+                    counts[player.account_id]["lose"] = 0;
+                }
+                if(matches[i].player_win) {
+                    counts[player.account_id]["win"] += 1
+                } else {
+                    counts[player.account_id]["lose"] += 1
                 }
             }
         }
-        //convert counts to array and filter
-        var arr = []
-        for(var id in counts) {
-            var count = counts[id]
-            if(id == doc.account_id) {
-                doc.win = count.win
-                doc.lose = count.lose
-            } else {
-                if(count.win + count.lose >= (process.env.MIN_MATCHES_TEAMMATES || 3)) {
-                    arr.push(count)
-                }
+    }
+    //convert counts to array and filter
+    var arr = []
+    for(var id in counts) {
+        var count = counts[id]
+        if(id == doc.account_id) {
+            doc.win = count.win
+            doc.lose = count.lose
+        } else {
+            if(count.win + count.lose >= (process.env.MIN_MATCHES_TEAMMATES || 3)) {
+                arr.push(count)
             }
         }
-        utility.fillPlayerNames(arr, function(err, arr) {
-            doc.teammates = arr
-            cb(null, doc)
-        })
+    }
+    utility.fillPlayerNames(arr, function(err, arr) {
+        doc.teammates = arr
+        cb(null, doc, matches)
     })
 }
 
