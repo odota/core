@@ -1,43 +1,39 @@
 extend layout
 block content
-   .container
      .page-header
        h1(style='font-weight: 700;')=player.display_name
-          small=player.account_id
-       .row
-         .col-md-12
-           h3 Aggregated Lifetime Stats         
-         .col-md-8
-           h3 Recent Matches
-           table.table
-              tr
-                th Match ID
-                th Game Mode
-                th Region
-                th Duration
-                th Winner
-                th Played
-                th Replay Status
-              - each match in matches
-                tr(class= match.radiant_win ? "success" : "danger")
-                  td: a(href='/matches/#{match.match_id}')= match.match_id
-                  td= constants.gameModes[match.game_mode]
-                  td= constants.regions[match.cluster]
-                  td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                  if match.radiant_win
-                    td Radiant
-                  else
-                    td Dire
-                  td= moment.unix(match.start_time + match.duration).fromNow()
-                  td= constants.parse_status[match.parse_status]
-         .col-md-4
-           h3 Teammates
-           table.table
-             tr
-               th Name
-               th Wins
-               th Losses
-             each teammate in player.teammates
+       p.lead (#{player.win}-#{player.lose})
+     .row       
+       .col-md-8
+         h3 Matches
+         table.table
+            tr
+              th Match ID
+              th Hero
+              th Result
+              th Game Mode
+              th Duration
+              th Played
+              th Status
+            - each match in matches
+              tr(class= match.player_win ? "success" : "danger")
+                td: a(href='/matches/#{match.match_id}')= match.match_id
+                - var hero = constants.heroes[match.player_hero]
+                td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
+                td= match.player_win ? "Won" : "Lost"                
+                td= constants.modes[match.game_mode].name
+                td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+                td= moment.unix(match.start_time + match.duration).fromNow()
+                td= constants.parse_status[match.parse_status]
+       .col-md-4
+         h3 Teammates
+         table.table
+           tr
+             th Name
+             th Wins
+             th Losses
+           each teammate in player.teammates
+             if (teammate.account_id != constants.anonymous_account_id)
                tr
                  td
                    a(href='/players/#{teammate.account_id}')=teammate.display_name
