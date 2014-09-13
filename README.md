@@ -22,5 +22,5 @@ Actions
 ====
 This application contains code from [matchurls](https://rjackson.me/tools/matchurls).  
 It makes DOTA 2 API calls to get your most recently played games and downloads the replays.  
-The replays are sent to a parser powered by [clarity](https://github.com/skadistats/clarity) to get interesting stats.  
-Match data is stored in MongoDB.
+The replays are sent to a parser powered by [clarity](https://github.com/skadistats/clarity) to get interesting stats.
+Data is stored in MongoDB
