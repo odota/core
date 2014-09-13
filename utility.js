@@ -1,95 +1,114 @@
 var utility = exports
 var request = require('request')
 var async = require('async')
-
 utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
 utility.matches = utility.db.get('matches');
-utility.matches.index('match_id', {unique: true});
+utility.matches.index('match_id', {
+    unique: true
+});
 utility.players = utility.db.get('players');
-utility.players.index('account_id', {unique: true})
-
-utility.getData = function(url, cb){
-    request(url, function (err, res, body) {
-        if (err) {cb(err)}
-        else if (res.statusCode != 200){
-            cb("response code != 200");
-        }
-        else{
+utility.players.index('account_id', {
+    unique: true
+})
+utility.getData = function(url, cb) {
+    request(url, function(err, res, body) {
+        if(err || res.statusCode != 200) {
+            cb(err || "response code != 200")
+        } else {
             cb(null, JSON.parse(body))
         }
     })
 }
-
-utility.fillPlayerNames = function(players, cb){
-    async.mapSeries(players, function(player, cb){
-        utility.players.findOne({account_id:player.account_id}, function(err, dbPlayer){
-            if (dbPlayer){
+utility.fillPlayerNames = function(players, cb) {
+    async.mapSeries(players, function(player, cb) {
+        utility.players.findOne({
+            account_id: player.account_id
+        }, function(err, dbPlayer) {
+            if(dbPlayer) {
                 player.display_name = dbPlayer.display_name
-            }
-            else{
-                player.display_name = "Anonymous"
             }
             cb(null)
         })
-    }, function(err){
+    }, function(err) {
         cb(null, players)
     })
 }
-
-utility.getMatches = function (account_id, cb){
-    utility.matches.find({players: { $elemMatch: { account_id: account_id }},duration:{$exists:true}}, {sort: {match_id: -1}}, function(err, docs){
-        cb(err, docs)
-    })
-}
-
-utility.getTrackedPlayers = function (cb){
-    utility.players.find({track:1}, function(err, docs){
-        cb(err, docs)
-    })
-}
-
-utility.getTeammates = function(account_id, cb) {
-    utility.getMatches(account_id, function(err, docs){
-        var counts = {};
-        for (i=0;i<docs.length;i++){ //matches
-            for (j=0;j<docs[i].players.length; j++){ //match players
-                var player = docs[i].players[j]
-                if (player.account_id==account_id){
-                    var playerSide = isRadiant(player)
-                    var playerWinner = (playerSide && docs[i].radiant_win) || (!playerSide && docs[i].radiant_win)
-                    }
+utility.getMatches = function(account_id, cb) {
+    var search = {
+        duration: {
+            $exists: true
+        }
+    }
+    if(account_id) {
+        search.players = {
+            $elemMatch: {
+                account_id: account_id
             }
-            for (j=0;j<docs[i].players.length; j++){  //match players
-                var player = docs[i].players[j]
-                if (isRadiant(player)==playerSide){ //only check teammates of player
-                    if (!counts[player.account_id]){
-                        counts[player.account_id]={}
-                        counts[player.account_id]["account_id"]=player.account_id;
-                        counts[player.account_id]["win"]=0;
-                        counts[player.account_id]["lose"]=0;
-                    }
-                    if (playerWinner){
-                        counts[player.account_id]["win"]+=1
-                    }
-                    else{
-                        counts[player.account_id]["lose"]+=1
-                    }
+        }
+    }
+    utility.matches.find(search, {
+        sort: {
+            match_id: -1
+        }
+    }, function(err, docs) {
+        cb(err, docs)
+    })
+}
+utility.getTrackedPlayers = function(cb) {
+    utility.players.find({
+        track: 1
+    }, function(err, docs) {
+        cb(err, docs)
+    })
+}
+utility.fillPlayerStats = function(doc, matches, cb) {
+    var account_id = doc.account_id
+    var counts = {};
+    for(i = 0; i < matches.length; i++) {
+        for(j = 0; j < matches[i].players.length; j++) {
+            var player = matches[i].players[j]
+            if(player.account_id == account_id) {
+                var playerRadiant = isRadiant(player)
+                matches[i].player_win = (playerRadiant == matches[i].radiant_win)
+                matches[i].player_hero = player.hero_id
+                }
+        }
+        for(j = 0; j < matches[i].players.length; j++) {
+            var player = matches[i].players[j]
+            if(isRadiant(player) == playerRadiant) { //only check teammates of player
+                if(!counts[player.account_id]) {
+                    counts[player.account_id] = {}
+                    counts[player.account_id]["account_id"] = player.account_id;
+                    counts[player.account_id]["win"] = 0;
+                    counts[player.account_id]["lose"] = 0;
+                }
+                if(matches[i].player_win) {
+                    counts[player.account_id]["win"] += 1
+                } else {
+                    counts[player.account_id]["lose"] += 1
                 }
             }
         }
-        //convert counts to array and filter
-        var arr=[]
-        var min_matches = 5
-        for (var id in counts){
-            var count = counts[id]
-            if (count.win+count.lose>=min_matches){
+    }
+    //convert counts to array and filter
+    var arr = []
+    for(var id in counts) {
+        var count = counts[id]
+        if(id == doc.account_id) {
+            doc.win = count.win
+            doc.lose = count.lose
+        } else {
+            if(count.win + count.lose >= (process.env.MIN_MATCHES_TEAMMATES || 3)) {
                 arr.push(count)
             }
         }
-        cb(null, arr)
+    }
+    utility.fillPlayerNames(arr, function(err, arr) {
+        doc.teammates = arr
+        cb(null, doc, matches)
     })
 }
 
-function isRadiant(player){
-    return player.player_slot<64
+function isRadiant(player) {
+    return player.player_slot < 64
 }

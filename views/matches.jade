@@ -1,0 +1,27 @@
+extend layout
+block content
+        h3 Recent Matches
+        #row
+          #col-md-2
+          #col-mid-8
+            table.table
+              tr
+                td Match ID
+                td Game Mode
+                td Region
+                td Duration
+                td Winner
+                td Played
+                td Replay Status
+              - each match in matches
+                tr(class= match.radiant_win ? "success" : "danger")
+                  td: a(href='/matches/#{match.match_id}')= match.match_id
+                  td= constants.modes[match.game_mode].name
+                  td= constants.regions[match.cluster].name
+                  td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+                  if match.radiant_win
+                    td Radiant
+                  else
+                    td Dire
+                  td= moment.unix(match.start_time + match.duration).fromNow()
+                  td= constants.parse_status[match.parse_status]
