@@ -73,9 +73,12 @@ var express = require('express'),
         app.locals.moment = require('moment')
         app.locals.constants = constants;
         app.route('/').get(function(req, res) {
-            utility.getTrackedPlayers(function(err, docs) {
-                res.render('index.jade', {
-                    players: docs
+            res.render('index.jade', {})
+        })
+        app.route('/matches').get(function(req, res) {
+            utility.getMatches(null, function(err, docs) {
+                res.render('matches.jade', {
+                    matches: docs
                 })
             })
         })
@@ -94,6 +97,13 @@ var express = require('express'),
                 }
             })
         })
+        app.route('/players').get(function(req, res) {
+            utility.getTrackedPlayers(function(err, docs) {
+                res.render('players.jade', {
+                    players: docs
+                })
+            })
+        })
         app.route('/players/:id').get(function(req, res) {
             players.findOne({
                 account_id: Number(req.params.id)
@@ -101,13 +111,10 @@ var express = require('express'),
                 if(!doc) res.status(404).send('Could not find this player!')
                 else {
                     utility.getMatches(doc.account_id, function(err, matches) {
-                        utility.getTeammates(doc.account_id, function(err, teammates) {
-                            utility.fillPlayerNames(teammates, function(err, teammates) {
-                                doc.teammates = teammates
-                                res.render('player.jade', {
-                                    player: doc,
-                                    matches: matches
-                                })
+                        utility.fillTeammates(doc, function(err, doc) {
+                            res.render('player.jade', {
+                                player: doc,
+                                matches: matches
                             })
                         })
                     })
