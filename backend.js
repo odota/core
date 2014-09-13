@@ -34,6 +34,7 @@ setInterval(updateNames, 86400 * 1000)
 queueRequests()
 requestDetails()
 parseMatches()
+updateConstants()
 /*
  * Reloads the api queue with tracked users
  */
@@ -69,6 +70,37 @@ function parseMatches() {
     }, function(err, docs) {
         pq.push(docs, function(err) {})
     })
+}
+/*
+ * Updates constant values from web sources
+ */
+
+function updateConstants() {
+    var constants = require('./constants.json')
+    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
+        constants.heroes = buildLookup(results[0].result.heroes)
+        constants.items = buildLookup(extractProperties(results[1].itemdata))
+        constants.modes = buildLookup(results[2].mods)
+        constants.regions = buildLookup(results[3].regions)
+        console.log("[UPDATE] writing constants file")
+        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
+    })
+}
+
+function extractProperties(object) {
+    var arr = []
+    for(var key in object) {
+        arr.push(object[key])
+    }
+    return arr
+}
+
+function buildLookup(array) {
+    var lookup = {}
+    for(var i = 0; i < array.length; i++) {
+        lookup[array[i].id] = array[i]
+    }
+    return lookup
 }
 /*
  * Updates display names for all players
