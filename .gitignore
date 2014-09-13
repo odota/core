@@ -4,3 +4,5 @@ replays
 *.log
 sentry
 servers
+*.dem
+*.bz2

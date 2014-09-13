@@ -13,76 +13,61 @@ import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.GameRulesStateType;
 import com.dota2.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
+import com.dota2.proto.Demo.CDemoFileInfo;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class Main {
 
-    public static final float SECONDS_IN_MINUTE = 60;
+    public static final float STAT_INTERVAL_SECONDS = 60;
     public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
 
     public static void main(String[] args) throws Exception {
         long tStart = System.currentTimeMillis();
-
-        String[] playerNames = new String[10];
-        Long[] steamIds = new Long[10];
-        JSONArray playerCreepScores = new JSONArray();
-        JSONArray playerDenies = new JSONArray();
-        JSONArray playerEXP = new JSONArray();
-        JSONArray playerGold = new JSONArray();
-        JSONArray playerLevel = new JSONArray();
-        JSONArray timeList = new JSONArray();
-
-        for (int i = 0; i < PLAYER_IDS.length; i++) {
-            playerCreepScores.put(new JSONArray());
-            playerDenies.put(new JSONArray());
-            playerEXP.put(new JSONArray());
-            playerGold.put(new JSONArray());
-            playerLevel.put(new JSONArray());          
-        }
-
+        JSONArray doc = new JSONArray();
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ENTITIES);
-        float nextMinute = SECONDS_IN_MINUTE;
+        float nextInterval = STAT_INTERVAL_SECONDS;
 
         while(iter.hasNext()) {
             iter.next().apply(match);
-            float gameTime = match.getGameTime();
-
-            if (gameTime > nextMinute) {
-                timeList.put((int) gameTime);
+            int gameTime = (int) match.getGameTime();
+            String time = String.valueOf(gameTime);
+            if (gameTime > nextInterval) {
                 Entity pr = match.getPlayerResource();
 
-                //Get player names
-                if (playerNames[0] == null) {
+                //initialize doc on first tick
+                if (doc.length()==0) {
                     for (int i = 0; i < PLAYER_IDS.length; i++) {
-                        playerNames[i] = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
-                        steamIds[i] = pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]);
+                        JSONObject player = new JSONObject();
+                        player.put("display_name", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
+                        player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
+                        player.put("last_hits", new JSONObject());
+                        player.put("gold", new JSONObject());
+                        player.put("xp", new JSONObject());
+                        player.put("wards", new JSONObject());
+                        player.put("runes", new JSONObject());
+                        player.put("streaks", new JSONObject());
+                        player.put("items", new JSONObject());
+                        //distance traveled
+                        //head to head kills
+                        //feed gold
+                        //consumable use
+                        //user messages or combat log?
+                        doc.put(player);
                     }
                 }
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    playerCreepScores.getJSONArray(i).put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
-                    playerDenies.getJSONArray(i).put(pr.getProperty("m_iDenyCount" + "." + PLAYER_IDS[i]));
-                    playerEXP.getJSONArray(i).put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
-                    playerGold.getJSONArray(i).put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
-                    playerLevel.getJSONArray(i).put(pr.getProperty("m_iLevel" + "." + PLAYER_IDS[i]));                    
+                    doc.getJSONObject(i).getJSONObject("streaks").put(time, pr.getProperty("m_iStreak" + "." + PLAYER_IDS[i]));
+                    doc.getJSONObject(i).getJSONObject("last_hits").put(time, pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
+                    doc.getJSONObject(i).getJSONObject("xp").put(time, pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
+                    doc.getJSONObject(i).getJSONObject("gold").put(time, pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
                 }
-                nextMinute += SECONDS_IN_MINUTE;
+                nextInterval += STAT_INTERVAL_SECONDS;
             }
         }
-
-        JSONObject doc = new JSONObject();
-        doc.put("playerNames", playerNames);
-        doc.put("steamIds", steamIds);
-        doc.put("time", timeList);
-        doc.put("lastHits", playerCreepScores);
-        doc.put("denies", playerDenies);
-        doc.put("xp", playerEXP);
-        doc.put("gold", playerGold);
-        doc.put("levels", playerLevel);
         System.out.println(doc);
-
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.println("time: " + tMatch / 1000.0);      
+        System.err.println("parse time: " + tMatch / 1000.0);      
     }
 }
