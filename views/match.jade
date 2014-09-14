@@ -6,7 +6,8 @@ block head
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
     script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
     script.
-     var parsed_data = !{JSON.stringify(match.parsed_data)}
+     var match = !{JSON.stringify(match)}
+     var constants = !{JSON.stringify(constants)}
     style.
      * {font-family: 'Roboto', sans-serif;}
      .items img {width: 35px;}
@@ -56,7 +57,7 @@ block content
                      td= player.assists
                      td= player.last_hits
                      td= player.denies
-                     td= player.gold
+                     td= player.gold+player.gold_spent
                      td= player.gold_per_min
                      td= player.xp_per_min
                      td= player.hero_damage
@@ -76,17 +77,9 @@ block content
                                img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
                            
         .row
-          h1.text-center Gold Earned
-            p: button.btn#gold Toggle
+          #chart-diff
           #chart-gold
-          h1.text-center Experience
-            p: button.btn#exp Toggle
           #chart-xp
-          h1.text-center Levels
-          #chart-levels
-          h1.text-center Last Hits
           #chart-lh
-          h1.text-center Denies
-          #chart-denies
           script(type='text/javascript', src='../public/js/chart.js')
          

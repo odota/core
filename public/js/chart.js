@@ -1,112 +1,89 @@
-var goldDifference = ['Difference - Radiant minus Dire']
-for (var i = 0; i < time.length; i++) {
-    var total = 0;
-    gold.forEach(function(elem, j) {
-        if (j < 5) total += elem[i]
-        else total -= elem[i]
+var height = 400
+
+var goldDifference = ['Gold']
+var xpDifference = ['XP']
+
+for (var i = 0; i < match.parsed_data.times.length; i++) {
+    var goldtotal = 0
+    var xptotal = 0
+    match.parsed_data.players.forEach(function(elem, j) {
+        if (j < 5){
+            goldtotal += elem.gold[i]
+            xptotal += elem.xp[i]
+        }
+        else{
+            xptotal -= elem.xp[i]
+            goldtotal -= elem.gold[i]
+        } 
     })
-
-    goldDifference.push(total)
+    goldDifference.push(goldtotal)
+    xpDifference.push(xptotal)
 }
-
-var xpDifference = ['Difference - Radiant minus Dire']
-for (var i = 0; i < time.length; i++) {
-    var total = 0;
-    xp.forEach(function(elem, j) {
-        if (j < 5) total += elem[i]
-        else total -= elem[i]
-    })
-
-    xpDifference.push(total)
-}
-
-lh.forEach(function(elem, i){
-	lh[i] = [names[i]].concat(elem)
+var time = ["time"].concat(match.parsed_data.times)
+var lhs = [time]
+var gold = [time]
+var xp = [time]
+match.parsed_data.players.forEach(function(elem){
+    elem.last_hits = [constants.heroes[elem.hero].localized_name].concat(elem.last_hits)
+    lhs.push(elem.last_hits)
+    elem.gold = [constants.heroes[elem.hero].localized_name].concat(elem.gold)
+    gold.push(elem.gold)
+    elem.xp = [constants.heroes[elem.hero].localized_name].concat(elem.xp)
+    xp.push(elem.xp)
 })
 
-denies.forEach(function(elem, i){
-	denies[i] = [names[i]].concat(elem)
-})
-
-gold.forEach(function(elem, i){
-	gold[i] = [names[i]].concat(elem)
-})
-
-xp.forEach(function(elem, i){
-	xp[i] = [names[i]].concat(elem)
-})
-
-levels.forEach(function(elem, i){
-	levels[i] = [names[i]].concat(elem)
-})
-
-time = ["time"].concat(time)
-lh.push(time)
-denies.push(time)
-gold.push(time)
-xp.push(time)
-levels.push(time)
-goldDifference = [time, goldDifference]
-xpDifference = [time, xpDifference]
-
-console.log(goldDifference)
-
-var lh = c3.generate({
-    bindto: "#chart-lh",
+var diff = c3.generate({
+    bindto: "#chart-diff",
     size: {
-        height: 500
+        height: height
     },
     data: {
         x: 'time',
-        columns: lh
+        columns: [time, goldDifference, xpDifference],
+        types:{'Gold':"area",'XP':"area"}
     },
     axis: {
         x: {
             type: 'timeseries',
             tick: {
-            	format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+            },
+            label: 'Game Time (minutes)'
+        },
+        y: {
+            label: 'Radiant Advantage'
+        }
+    }
+})
+
+
+var lh = c3.generate({
+    bindto: "#chart-lh",
+    size: {
+        height: height
+    },
+    data: {
+        x: 'time',
+        columns: lhs,
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
             },
             label: 'Game Time (minutes)'
         },
         y: {
             label: 'Last Hits'
         }
-    },
-    zoom: {
-        enabled: true
-    }
-})
-
-var d = c3.generate({
-    bindto: "#chart-denies",
-    size: {
-        height: 500
-    },
-    data: {
-        x: 'time',
-        columns: denies
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-            	format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
-            },
-            label: 'Game Time (minutes)'
-        },
-        y: {
-            label: 'Denies'
-        }
-    },
-    zoom: {
-        enabled: true
     }
 })
 
 var g = c3.generate({
     bindto: "#chart-gold",
     size: {
-        height: 500
+        height: height
     },
     data: {
         x: 'time',
@@ -116,23 +93,20 @@ var g = c3.generate({
         x: {
             type: 'timeseries',
             tick: {
-            	format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
             },
             label: 'Game Time (minutes)'
         },
         y: {
             label: 'Gold'
         }
-    },
-    zoom: {
-        enabled: true
     }
 })
 
 var x = c3.generate({
     bindto: "#chart-xp",
     size: {
-        height: 500
+        height: height
     },
     data: {
         x: 'time',
@@ -142,81 +116,12 @@ var x = c3.generate({
         x: {
             type: 'timeseries',
             tick: {
-            	format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
             },
             label: 'Game Time (minutes)'
         },
         y: {
             label: 'XP'
         }
-    },
-    zoom: {
-        enabled: true
     }
 })
-
-var l = c3.generate({
-    bindto: "#chart-levels",
-    size: {
-        height: 500
-    },
-    data: {
-        x: 'time',
-        columns: levels
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-            	format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
-            },
-            label: 'Game Time (minutes)'
-        },
-        y: {
-            label: 'Level'
-        }
-    },
-    zoom: {
-        enabled: true
-    }
-})
-
-function reloadGold() {
-    g.load({
-        columns: gold,
-        unload: ["Difference - Radiant minus Dire"]
-    }) 
-    
-    $('#gold').one("click", unloadGold)
-}
-
-function unloadGold() {
-    g.load({
-        columns: goldDifference,
-        unload: names
-    })
-    
-    $('#gold').one("click", reloadGold)
-}
-
-$('#gold').one("click", unloadGold)
-
-function reloadXp() {
-    x.load({
-        columns: xp,
-        unload: ["Difference - Radiant minus Dire"]
-    }) 
-    
-    $('#exp').one("click", unloadXp)
-}
-
-function unloadXp() {
-    x.load({
-        columns: xpDifference,
-        unload: names
-    })
-    
-    $('#exp').one("click", reloadXp)
-}
-
-$('#exp').one("click", unloadXp)

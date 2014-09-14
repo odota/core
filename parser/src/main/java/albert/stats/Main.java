@@ -7,7 +7,6 @@ import skadistats.clarity.parser.TickIterator;
 import skadistats.clarity.model.UserMessage;
 import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
-import skadistats.clarity.model.GameRulesStateType;
 import com.dota2.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import com.dota2.proto.Demo.CDemoFileInfo;
 import org.json.JSONObject;
@@ -18,9 +17,7 @@ public class Main {
     public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
 
     public static void main(String[] args) throws Exception {
-
         long tStart = System.currentTimeMillis();
-
         boolean initialized = false;
         GameEventDescriptor combatLogDescriptor = null;
         JSONObject doc = new JSONObject();
@@ -30,8 +27,7 @@ public class Main {
 
         while(iter.hasNext()) {
             iter.next().apply(match);
-            int gameTime = (int) match.getGameTime();
-            String time = String.valueOf(gameTime);
+            int time = (int) match.getGameTime();
 
             if (!initialized) {
                 doc.put("players", new JSONArray());
@@ -86,6 +82,10 @@ public class Main {
                     }
                     else if (type.contains("TOWER_KILL")){
                     }
+                    else if (type.contains("TOWER_DENY")){
+                    }
+                    else if (type.contains("HERO_DENY")){
+                    }
                     else if (type.contains("BARRACKS_KILL")){
                     }
                     else if (type.contains("COURIER_LOST")){
@@ -101,93 +101,58 @@ public class Main {
                             players.getJSONObject(player1).getJSONArray("pauses").put(time);
                         }
                     }
+                    else if (type.contains("STREAK_KILL")){
+                    }
                     else if (type.contains("HERO_KILL")){
                         if (player2>0 && player2<10){
                             players.getJSONObject(player2).getJSONArray("kills").put(player1);
                         }
                     }
-                    else if (type.contains("STREAK_KILL")){ 
-                    }
                     else{
-                        System.err.println(u);  
                     }
                 }
             }
             for (GameEvent g : match.getGameEvents()) {
-                //dewards
-                //distance traveled
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
                     CombatLogEntry cle = new CombatLogEntry(g);
                     JSONObject combatlog=doc.getJSONObject("combatlog");
                     String hero;
+                    String target;
                     String item;
                     switch(cle.getType()) {
                         case 0:
-                        /*
-                    System.out.format("{} {} hits {}{} for {} damage{}", 
-                             time, 
-                             cle.getAttackerNameCompiled(),
-                             cle.getTargetNameCompiled(), 
-                             cle.getInflictorName() != null ? String.format(" with %s", cle.getInflictorName()) : "",
-                             cle.getValue(),
-                             cle.getHealth() != 0 ? String.format(" (%s->%s)", cle.getHealth() + cle.getValue(), cle.getHealth()) : ""
-                            );
-                            */
+                        //damage
                         break;
                         case 1:
-                        /*
-                    System.out.format("{} {}'s {} heals {} for {} health ({}->{})", 
-
-                             time, 
-
-                             cle.getAttackerNameCompiled(), 
-
-                             cle.getInflictorName(), 
-
-                             cle.getTargetNameCompiled(), 
-
-                             cle.getValue(), 
-
-                             cle.getHealth() - cle.getValue(), 
-
-                             cle.getHealth()
-
-                            );
-
-                            */
+                        //healing
                         break;
                         case 2:
-                        //look in user message log for runes?
-                        /*
-                    System.out.format("{} {} receives {} buff/debuff from {}", 
-                             time, 
-                             cle.getTargetNameCompiled(), 
-                             cle.getInflictorName(), 
-                             cle.getAttackerNameCompiled()
-                            );
-                            */
+                        //gain buff/debuff
                         break;
                         case 3:
-                        /*
-                    System.out.format("{} {} loses {} buff/debuff", 
-                             time, 
-                             cle.getTargetNameCompiled(), 
-                             cle.getInflictorName()
-                            );
-                            */
+                        //lose buff/debuff
                         break;
                         case 4:
-                        //System.out.format("[KILL] %s, %s%n",cle.getAttackerName(),cle.getTargetName());
+                        //kill
+                        hero = cle.getAttackerName();
+                        target = cle.getTargetName();
+                        if (cle.isTargetIllusion()){
+                        }
+                        else if (target.contains("observer")){
+                        }
+                        else if (target.contains("sentry")){
+                        }
+                        else if (target.contains("hero")){
+                            //System.err.format("%s - %s%n",hero, target);
+                        }
+                        else{
+                        }
                         break;
                         case 5:
-                        /*
-                        JSONObject abilityEntry = new JSONObject();
-                        abilityEntry.put("time", time);
-                        abilityEntry.put("name", cle.getInflictorName());
-                        insertHero(combatlog, cle.getAttackerName(), "abilities", abilityEntry);
-                        */
+                        //ability use
                         break;
                         case 6:
+                        //item use
                         hero = cle.getAttackerName();
                         item = cle.getInflictorName();
                         if(!combatlog.has(hero)){
@@ -201,29 +166,16 @@ public class Main {
                         counts.put(item, count + 1);
                         break;
                         case 8:
-                        /*
-                    System.out.format("{} {} {} {} gold", 
-                             time, 
-                             cle.getTargetNameCompiled(),
-                             cle.getValue() < 0 ? "loses" : "receives",
-                             Math.abs(cle.getValue())
-                            );
-                            */
+                        //gold gain/loss
                         break;
                         case 9:
-                        //game state
-                        //System.out.format("[STATE] %s%n", GameRulesStateType.values()[cle.getValue() - 1]); 
+                        //state
                         break;
                         case 10:
-                        /*
-                         System.out.format("{} {} gains {} XP", 
-                             time, 
-                             cle.getTargetNameCompiled(),
-                             cle.getValue()
-                            );
-                            */
+                        //xp gain
                         break;
                         case 11:
+                        //purchase
                         hero = cle.getTargetName();
                         item = cle.getValueName();
                         if(!combatlog.has(hero)){
@@ -240,25 +192,23 @@ public class Main {
                         }
                         break;
                         case 12:
-                        //doc.getJSONArray("players").getJSONObject(cle.getValue()).getJSONArray("buybacks").put(time);
+                        //buyback
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
                         System.err.format("%s (%s): %s%n", type.name(), type.ordinal(), g);
                         break;
                     }
-
                 }
-
             }
 
-            if (gameTime > nextInterval) {
+            if (time > nextInterval) {
                 Entity pr = match.getPlayerResource();
                 doc.getJSONArray("times").put(time);
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    //todo multiple heroes for ARDM, could also update more than once a min
+                    //todo multiple heroes for ARDM, could update more than once a min
                     player.put("hero", pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
