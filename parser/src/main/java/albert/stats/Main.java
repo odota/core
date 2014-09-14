@@ -17,16 +17,6 @@ public class Main {
     public static final float INTERVAL = 60;
     public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
 
-    private static void insertHero(JSONObject combatlog, String hero, String key, JSONObject value){
-        if(!combatlog.has(hero)){
-            JSONObject heroObject = new JSONObject();
-            heroObject.put("purchases", new JSONArray());
-            heroObject.put("items", new JSONArray());
-            combatlog.put(hero, heroObject);
-        }
-        combatlog.getJSONObject(hero).getJSONArray(key).put(value);                                      
-    }
-
     public static void main(String[] args) throws Exception {
 
         long tStart = System.currentTimeMillis();
@@ -57,12 +47,14 @@ public class Main {
                     player.put("last_hits", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
-                    player.put("streaks", new JSONArray());
                     player.put("buybacks", new JSONArray());
                     player.put("kills", new JSONArray());
                     player.put("runes", new JSONArray());
                     player.put("purchases", new JSONArray());
                     player.put("glyphs", new JSONArray());
+                    player.put("courier_kills", new JSONArray());
+                    player.put("aegis", new JSONArray());
+                    player.put("pauses", new JSONArray());
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
@@ -75,43 +67,60 @@ public class Main {
             for (UserMessage u : match.getUserMessages()) {
                 if (u.getName().startsWith("CDOTAUserMsg_ChatEvent")){
                     JSONArray players = doc.getJSONArray("players");
-                    if (u.getProperty("type").toString().contains("HERO_KILL")){
-                        players.getJSONObject((int)u.getProperty("playerid_2")).getJSONArray("kills").put(u.getProperty("playerid_1"));
+                    int player1=(int)u.getProperty("playerid_1");
+                    int player2=(int)u.getProperty("playerid_2");
+                    String type = u.getProperty("type").toString();
+
+                    if (type.contains("RUNE")){
+                        players.getJSONObject(player1).getJSONArray("runes").put(u.getProperty("value"));
                     }
-                    else if (u.getProperty("type").toString().contains("STREAK_KILL")){
-                        players.getJSONObject((int)u.getProperty("playerid_2")).getJSONArray("kills").put(u.getProperty("playerid_1"));
+                    else if (type.contains("ITEM_PURCHASE")){
                     }
-                    else if (u.getProperty("type").toString().contains("RUNE")){
-                        players.getJSONObject((int)u.getProperty("playerid_1")).getJSONArray("runes").put(u.getProperty("value"));
+                    else if (type.contains("GLYPH")){
+                        players.getJSONObject(player1).getJSONArray("glyphs").put(time);
                     }
-                    else if (u.getProperty("type").toString().contains("ITEM_PURCHASE")){
+                    else if (type.contains("BUYBACK")){
+                        players.getJSONObject(player1).getJSONArray("buybacks").put(time);
                     }
-                    else if (u.getProperty("type").toString().contains("GLYPH")){
-                        players.getJSONObject((int)u.getProperty("playerid_1")).getJSONArray("glyphs").put(time);
+                    else if (type.contains("CONNECT")){
                     }
-                    else if (u.getProperty("type").toString().contains("BUYBACK")){
-                        players.getJSONObject((int)u.getProperty("playerid_1")).getJSONArray("buybacks").put(time);
+                    else if (type.contains("TOWER_KILL")){
                     }
-                    else if (u.getProperty("type").toString().contains("CONNECT")){
+                    else if (type.contains("BARRACKS_KILL")){
                     }
-                    else if (u.getProperty("type").toString().contains("TOWER_KILL")){
+                    else if (type.contains("COURIER_LOST")){
+                        players.getJSONObject(player1).getJSONArray("courier_kills").put(time);
                     }
-                    else if (u.getProperty("type").toString().contains("BARRACKS_KILL")){
+                    else if (type.contains("ROSHAN_KILL")){
+                    }
+                    else if (type.contains("AEGIS")){
+                        players.getJSONObject(player1).getJSONArray("aegis").put(time);
+                    }
+                    else if (type.contains("PAUSE")){
+                        if (type.contains("_PAUSED")){
+                            players.getJSONObject(player1).getJSONArray("pauses").put(time);
+                        }
+                    }
+                    else if (type.contains("HERO_KILL")){
+                        if (player2>0 && player2<10){
+                            players.getJSONObject(player2).getJSONArray("kills").put(player1);
+                        }
+                    }
+                    else if (type.contains("STREAK_KILL")){ 
                     }
                     else{
                         System.err.println(u);  
                     }
-                    //courier kill?
-                    //roshan?
-                    //aegis?
                 }
             }
             for (GameEvent g : match.getGameEvents()) {
-                //dewards?
+                //dewards
                 //distance traveled
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
                     CombatLogEntry cle = new CombatLogEntry(g);
                     JSONObject combatlog=doc.getJSONObject("combatlog");
+                    String hero;
+                    String item;
                     switch(cle.getType()) {
                         case 0:
                         /*
@@ -167,89 +176,68 @@ public class Main {
                             );
                             */
                         break;
-
                         case 4:
-
                         //System.out.format("[KILL] %s, %s%n",cle.getAttackerName(),cle.getTargetName());
-
                         break;
-
-
                         case 5:
-
                         /*
-
                         JSONObject abilityEntry = new JSONObject();
-
                         abilityEntry.put("time", time);
-
                         abilityEntry.put("name", cle.getInflictorName());
-
                         insertHero(combatlog, cle.getAttackerName(), "abilities", abilityEntry);
-
                         */
-
                         break;
                         case 6:
-
-                        JSONObject itemEntry = new JSONObject();
-
-                        itemEntry.put("time", time);
-
-                        itemEntry.put("name", cle.getInflictorName());
-
-                        insertHero(combatlog, cle.getAttackerName(), "items", itemEntry);
-
+                        hero = cle.getAttackerName();
+                        item = cle.getInflictorName();
+                        if(!combatlog.has(hero)){
+                            JSONObject heroObject = new JSONObject();
+                            heroObject.put("purchases", new JSONArray());
+                            heroObject.put("uses", new JSONObject());
+                            combatlog.put(hero, heroObject);
+                        }
+                        JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("uses");
+                        Integer count = counts.has(item) ? (Integer)counts.get(item) : 0;
+                        counts.put(item, count + 1);
                         break;
-
                         case 8:
-
                         /*
-
                     System.out.format("{} {} {} {} gold", 
-
                              time, 
-
                              cle.getTargetNameCompiled(),
-
                              cle.getValue() < 0 ? "loses" : "receives",
-
                              Math.abs(cle.getValue())
-
                             );
-
                             */
-
                         break;
-
                         case 9:
-
                         //game state
-
                         //System.out.format("[STATE] %s%n", GameRulesStateType.values()[cle.getValue() - 1]); 
-
                         break;
-
                         case 10:
-
                         /*
-
-                    System.out.format("{} {} gains {} XP", 
-
+                         System.out.format("{} {} gains {} XP", 
                              time, 
-
                              cle.getTargetNameCompiled(),
-
                              cle.getValue()
-
                             );
                             */
                         break;
                         case 11:
-                        JSONObject buyEntry = new JSONObject();
-                        buyEntry.put("time", time);
-                        buyEntry.put("name", cle.getValueName());
-                        insertHero(combatlog, cle.getTargetName(), "purchases", buyEntry);
+                        hero = cle.getTargetName();
+                        item = cle.getValueName();
+                        if(!combatlog.has(hero)){
+                            JSONObject heroObject = new JSONObject();
+                            heroObject.put("purchases", new JSONArray());
+                            heroObject.put("uses", new JSONObject());
+                            combatlog.put(hero, heroObject);
+                        }
+                        if (!item.contains("recipe")){
+                            JSONObject buyEntry = new JSONObject();
+                            buyEntry.put("time", time);
+                            buyEntry.put("name", item);
+                            combatlog.getJSONObject(hero).getJSONArray("purchases").put(buyEntry);     
+                        }
                         break;
                         case 12:
                         //doc.getJSONArray("players").getJSONObject(cle.getValue()).getJSONArray("buybacks").put(time);
@@ -270,8 +258,8 @@ public class Main {
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
+                    //todo multiple heroes for ARDM, could also update more than once a min
                     player.put("hero", pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
-                    player.getJSONArray("streaks").put(pr.getProperty("m_iStreak" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));

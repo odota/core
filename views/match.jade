@@ -6,14 +6,7 @@ block head
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
     script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
     script.
-     var lh = !{JSON.stringify(match.lastHits)}
-     var denies = !{JSON.stringify(match.denies)}
-     var gold = !{JSON.stringify(match.gold)}
-     var xp = !{JSON.stringify(match.xp)}
-     var levels = !{JSON.stringify(match.levels)}
-     var time = !{JSON.stringify(match.time)}
-     var names = !{JSON.stringify(match.playerNames)}
-    
+     var parsed_data = !{JSON.stringify(match.parsed_data)}
     style.
      * {font-family: 'Roboto', sans-serif;}
      .items img {width: 35px;}
