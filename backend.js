@@ -480,7 +480,9 @@ function parseReplay(match, cb) {
                 matches.update({
                     match_id: match_id
                 }, {
-                    $set: JSON.parse(output)
+                    $set: {
+                        parsed_data: JSON.parse(output)
+                    }
                 })
                 matches.update({
                     match_id: match_id
