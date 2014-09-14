@@ -44,9 +44,7 @@ public class Main {
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
-                    player.put("kills", new JSONArray());
                     player.put("runes", new JSONArray());
-                    player.put("purchases", new JSONArray());
                     player.put("glyphs", new JSONArray());
                     player.put("courier_kills", new JSONArray());
                     player.put("aegis", new JSONArray());
@@ -96,17 +94,12 @@ public class Main {
                     else if (type.contains("AEGIS")){
                         players.getJSONObject(player1).getJSONArray("aegis").put(time);
                     }
-                    else if (type.contains("PAUSE")){
-                        if (type.contains("_PAUSED")){
-                            players.getJSONObject(player1).getJSONArray("pauses").put(time);
-                        }
+                    else if (type.contains("_PAUSED")){
+                        players.getJSONObject(player1).getJSONArray("pauses").put(time);
                     }
                     else if (type.contains("STREAK_KILL")){
                     }
                     else if (type.contains("HERO_KILL")){
-                        if (player2>0 && player2<10){
-                            players.getJSONObject(player2).getJSONArray("kills").put(player1);
-                        }
                     }
                     else{
                     }
@@ -142,8 +135,11 @@ public class Main {
                         }
                         else if (target.contains("sentry")){
                         }
-                        else if (target.contains("hero")){
-                            //System.err.format("%s - %s%n",hero, target);
+                        else if (hero.contains("hero") && target.contains("hero")){
+                            insert(combatlog, hero);
+                            JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("kills");
+                            Integer count = counts.has(target) ? (Integer)counts.get(target) : 0;
+                            counts.put(target, count + 1);
                         }
                         else{
                         }
@@ -155,12 +151,7 @@ public class Main {
                         //item use
                         hero = cle.getAttackerName();
                         item = cle.getInflictorName();
-                        if(!combatlog.has(hero)){
-                            JSONObject heroObject = new JSONObject();
-                            heroObject.put("purchases", new JSONArray());
-                            heroObject.put("uses", new JSONObject());
-                            combatlog.put(hero, heroObject);
-                        }
+                        insert(combatlog, hero);
                         JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("uses");
                         Integer count = counts.has(item) ? (Integer)counts.get(item) : 0;
                         counts.put(item, count + 1);
@@ -178,12 +169,7 @@ public class Main {
                         //purchase
                         hero = cle.getTargetName();
                         item = cle.getValueName();
-                        if(!combatlog.has(hero)){
-                            JSONObject heroObject = new JSONObject();
-                            heroObject.put("purchases", new JSONArray());
-                            heroObject.put("uses", new JSONObject());
-                            combatlog.put(hero, heroObject);
-                        }
+                        insert(combatlog, hero);
                         if (!item.contains("recipe")){
                             JSONObject buyEntry = new JSONObject();
                             buyEntry.put("time", time);
@@ -221,6 +207,16 @@ public class Main {
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("time: %s sec%n", tMatch / 1000.0);      
+    }
+
+    private static void insert(JSONObject combatlog, String hero){
+        if(!combatlog.has(hero)){
+            JSONObject heroObject = new JSONObject();
+            heroObject.put("purchases", new JSONArray());
+            heroObject.put("uses", new JSONObject());
+            heroObject.put("kills", new JSONObject());
+            combatlog.put(hero, heroObject);
+        }
     }
 
 }
