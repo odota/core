@@ -6,7 +6,7 @@ var express = require('express'),
     fs = require('fs'),
     path = require('path'),
     constants = require('./constants.json')
-    var app = express()
+var app = express()
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
@@ -30,10 +30,13 @@ app.route('/matches/:id').get(function(req, res) {
         else {
             utility.fillPlayerNames(doc.players, function(err, players) {
                 doc.players = players
-                //fill full hero information for each player
-                doc.parsed_data.players.forEach(function(player){
-                  player.hero = constants.heroes[player.hero]  
-                })
+                if (doc.parsed_data){
+                    //fill hero information for each player
+                    doc.parsed_data.players.forEach(function(player){
+                        player.hero = constants.heroes[player.hero_list[player.hero_list.length-1]]
+                    })    
+                }
+
                 res.render('match.jade', {
                     match: doc
                 })

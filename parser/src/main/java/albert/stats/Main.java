@@ -21,6 +21,9 @@ public class Main {
         boolean initialized = false;
         GameEventDescriptor combatLogDescriptor = null;
         JSONObject doc = new JSONObject();
+        doc.put("players", new JSONArray());
+        doc.put("combatlog", new JSONObject());
+        doc.put("times", new JSONArray());
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
         float nextInterval = INTERVAL;
@@ -30,17 +33,15 @@ public class Main {
             int time = (int) match.getGameTime();
 
             if (!initialized) {
-                doc.put("players", new JSONArray());
-                doc.put("combatlog", new JSONObject());
-                doc.put("times", new JSONArray());
-
                 Entity pr = match.getPlayerResource();
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    JSONObject player = new JSONObject();
+                    doc.getJSONArray("players").put(new JSONObject());
+                    JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.put("display_name", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
                     player.put("last_hits", new JSONArray());
+                    player.put("hero_list", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
@@ -48,7 +49,6 @@ public class Main {
                     player.put("courier_kills", new JSONArray());
                     player.put("aegis", new JSONArray());
                     player.put("pauses", new JSONArray());
-                    doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -57,6 +57,7 @@ public class Main {
                 );
                 initialized = true;
             }
+            
             for (UserMessage u : match.getUserMessages()) {
                 if (u.getName().startsWith("CDOTAUserMsg_ChatEvent")){
                     JSONArray players = doc.getJSONArray("players");
@@ -171,8 +172,6 @@ public class Main {
                         break;
                         case 12:
                         //buyback
-                        int slot = cle.getValue();
-                        doc.getJSONArray("players").getJSONObject(slot).getJSONArray("buybacks").put(time);
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
@@ -188,8 +187,7 @@ public class Main {
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    //todo multiple heroes for ARDM, could update more than once a min
-                    player.put("hero", pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
+                    player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
