@@ -31,6 +31,7 @@ block content
                   tr
                     td Player
                     td Hero
+                    td Level
                     td K
                     td D
                     td A
@@ -52,6 +53,7 @@ block content
                          a(href='/players/#{player.account_id}')=player.display_name ? player.display_name : player.account_id
                      - var hero = constants.heroes[player.hero_id]
                      td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
+                     td= player.level
                      td= player.kills
                      td= player.deaths
                      td= player.assists
@@ -75,7 +77,23 @@ block content
                              - var item = constants.items[val]
                              if item
                                img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-                           
+        if match.parsed_data
+          each hero, name in match.parsed_data.combatlog
+            h3=name
+            p
+            each purchase in hero.purchases
+              =purchase.name
+              =purchase.time
+            p
+            each count,item in hero.uses
+              =item
+              =count
+            p
+            each count,kill in hero.kills
+              =kill
+              =count
+          each player in match.parsed_data.players
+            p= JSON.stringify(player)
         .row
           #chart-diff
           #chart-gold

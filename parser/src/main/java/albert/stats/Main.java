@@ -45,7 +45,6 @@ public class Main {
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
                     player.put("runes", new JSONArray());
-                    player.put("glyphs", new JSONArray());
                     player.put("courier_kills", new JSONArray());
                     player.put("aegis", new JSONArray());
                     player.put("pauses", new JSONArray());
@@ -179,6 +178,8 @@ public class Main {
                         break;
                         case 12:
                         //buyback
+                        int slot = cle.getValue();
+                        doc.getJSONArray("players").getJSONObject(slot).getJSONArray("buybacks").put(time);
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
