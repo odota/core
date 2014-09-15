@@ -70,7 +70,6 @@ public class Main {
                     else if (type.contains("ITEM_PURCHASE")){
                     }
                     else if (type.contains("GLYPH")){
-                        players.getJSONObject(player1).getJSONArray("glyphs").put(time);
                     }
                     else if (type.contains("BUYBACK")){
                         players.getJSONObject(player1).getJSONArray("buybacks").put(time);
@@ -129,18 +128,12 @@ public class Main {
                         hero = cle.getAttackerName();
                         target = cle.getTargetName();
                         if (cle.isTargetIllusion()){
-                        }
-                        else if (target.contains("observer")){
-                        }
-                        else if (target.contains("sentry")){
-                        }
-                        else if (hero.contains("hero") && target.contains("hero")){
+                        }   
+                        else {
                             insert(combatlog, hero);
                             JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("kills");
                             Integer count = counts.has(target) ? (Integer)counts.get(target) : 0;
                             counts.put(target, count + 1);
-                        }
-                        else{
                         }
                         break;
                         case 5:
@@ -207,7 +200,7 @@ public class Main {
 
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("time: %s sec%n", tMatch / 1000.0);      
+        System.err.format("%ssec", tMatch / 1000.0);
     }
 
     private static void insert(JSONObject combatlog, String hero){

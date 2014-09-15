@@ -80,18 +80,15 @@ block content
         if match.parsed_data
           each hero, name in match.parsed_data.combatlog
             h3=name
-            p
+            h4 Purchases
             each purchase in hero.purchases
-              =purchase.name
-              =purchase.time
-            p
-            each count,item in hero.uses
-              =item
-              =count
-            p
-            each count,kill in hero.kills
-              =kill
-              =count
+              p=JSON.stringify(purchase)
+            h4 Uses
+            each use in hero.uses
+              p=JSON.stringify(use)
+            h4 Kills
+            each kill in hero.kills
+              p=JSON.stringify(kill)
           each player in match.parsed_data.players
             p= JSON.stringify(player)
         .row
