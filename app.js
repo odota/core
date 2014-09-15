@@ -30,6 +30,10 @@ app.route('/matches/:id').get(function(req, res) {
         else {
             utility.fillPlayerNames(doc.players, function(err, players) {
                 doc.players = players
+                //fill full hero information for each player
+                doc.parsed_data.players.forEach(function(player){
+                  player.hero = constants.heroes[player.hero]  
+                })
                 res.render('match.jade', {
                     match: doc
                 })
