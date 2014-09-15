@@ -84,11 +84,11 @@ block content
             each purchase in hero.purchases
               p=JSON.stringify(purchase)
             h4 Uses
-            each use in hero.uses
-              p=JSON.stringify(use)
+            each count, use in hero.uses
+              p=use+":"+count
             h4 Kills
-            each kill in hero.kills
-              p=JSON.stringify(kill)
+            each count, kill in hero.kills
+              p=kill+":"+count
           each player in match.parsed_data.players
             p= JSON.stringify(player)
         .row
