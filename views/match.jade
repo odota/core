@@ -28,21 +28,21 @@ block content
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             table.table.table-hover.table-responsive.text-center
                   tr
-                    td Player
-                    td Hero
-                    td Level
-                    td K
-                    td D
-                    td A
-                    td LH
-                    td DN
-                    td Gold
-                    td GPM
-                    td XPM
-                    td HD
-                    td TD
-                    td HH
-                    td Items
+                    th Player
+                    th Hero
+                    th Level
+                    th K
+                    th D
+                    th A
+                    th LH
+                    th DN
+                    th Gold
+                    th GPM
+                    th XPM
+                    th HD
+                    th TD
+                    th HH
+                    th Items
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
@@ -77,19 +77,43 @@ block content
                              if item
                                img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
         if match.parsed_data
-          each hero, name in match.parsed_data.combatlog
-            h3=name
-            h4 Purchases
-            each purchase in hero.purchases
-              p=JSON.stringify(purchase)
-            h4 Uses
-            each count, use in hero.uses
-              p=use+":"+count
-            h4 Kills
-            each count, kill in hero.kills
-              p=kill+":"+count
+          table.table
+            tr
+              th Player
+              th Runes
+              th Buybacks
+              th Pauses
+              th Aegis
+              th Courier Kills
+            each player, i in match.parsed_data.players
+              tr
+                td=match.parsed_data.players[i].display_name
+                td=match.parsed_data.players[i].runes.length
+                td=match.parsed_data.players[i].buybacks.length
+                td=match.parsed_data.players[i].pauses.length
+                td=match.parsed_data.players[i].aegis.length
+                td=match.parsed_data.players[i].courier_kills.length
+          table.table
+            tr
+              th Unit
+              th Purchases
+              th Uses
+              th Kills
+            each hero, name in match.parsed_data.combatlog
+              tr
+                td
+                  p=name
+                td
+                  each purchase in hero.purchases
+                    p=JSON.stringify(purchase)
+                td
+                  each count, use in hero.uses
+                    p=use+":"+count
+                td
+                  each count, kill in hero.kills
+                    p=kill+":"+count
           each player in match.parsed_data.players
-            p= JSON.stringify(player)
+            p= JSON.stringify(player, null, 2)
         .row
           #chart-diff
           #chart-gold
