@@ -24,11 +24,11 @@ var lhs = [time]
 var gold = [time]
 var xp = [time]
 match.parsed_data.players.forEach(function(elem){
-    elem.last_hits = [constants.heroes[elem.hero].localized_name].concat(elem.last_hits)
+    elem.last_hits = [elem.hero.localized_name].concat(elem.last_hits)
     lhs.push(elem.last_hits)
-    elem.gold = [constants.heroes[elem.hero].localized_name].concat(elem.gold)
+    elem.gold = [elem.hero.localized_name].concat(elem.gold)
     gold.push(elem.gold)
-    elem.xp = [constants.heroes[elem.hero].localized_name].concat(elem.xp)
+    elem.xp = [elem.hero.localized_name].concat(elem.xp)
     xp.push(elem.xp)
 })
 
