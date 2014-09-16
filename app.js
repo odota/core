@@ -31,12 +31,20 @@ app.route('/matches/:id').get(function(req, res) {
             utility.fillPlayerNames(doc.players, function(err, players) {
                 doc.players = players
                 if (doc.parsed_data){
-                    //fill hero information for each player
+                    //todo create a "feed" directed graph
+                    //todo ARDM gantt chart/stacked bar
+                    //todo xkcd-style position chart
+                    //todo merge in combat log data
+                    //visualize item build times/usage somehow
                     doc.parsed_data.players.forEach(function(player){
-                        player.hero = constants.heroes[player.hero_list[player.hero_list.length-1]]
+                        //grab hero from corresponding api data
+                        //build map of heroes by name
+                        //use hero_to_slot map
+                        //loop through combat log keys and insert into corresponding players
+                        //edge cases, druid bear, visage familiars, summon units
+                        //iterate through kill logs and count up stats
                     })    
                 }
-
                 res.render('match.jade', {
                     match: doc
                 })

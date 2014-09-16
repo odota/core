@@ -82,17 +82,25 @@ block content
               th Player
               th Runes
               th Buybacks
-              th Pauses
               th Aegis
               th Courier Kills
+              th Observer/Used
+              th Sentry/Used
+              th Smoke/Used
+              th Dust/Used
+              th Gem
             each player, i in match.parsed_data.players
               tr
                 td=match.parsed_data.players[i].display_name
                 td=match.parsed_data.players[i].runes.length
                 td=match.parsed_data.players[i].buybacks.length
-                td=match.parsed_data.players[i].pauses.length
                 td=match.parsed_data.players[i].aegis.length
-                td=match.parsed_data.players[i].courier_kills.length
+                td=match.parsed_data.players[i].ckills.length
+                td
+                td
+                td
+                td
+                td
           table.table
             tr
               th Unit

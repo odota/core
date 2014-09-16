@@ -24,6 +24,7 @@ public class Main {
         doc.put("players", new JSONArray());
         doc.put("combatlog", new JSONObject());
         doc.put("times", new JSONArray());
+        doc.put("hero_to_slot", new JSONObject());
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
         float nextInterval = INTERVAL;
@@ -40,15 +41,15 @@ public class Main {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.put("display_name", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
-                    player.put("last_hits", new JSONArray());
                     player.put("hero_list", new JSONArray());
+                    player.put("last_hits", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
                     player.put("runes", new JSONArray());
-                    player.put("courier_kills", new JSONArray());
                     player.put("aegis", new JSONArray());
-                    player.put("pauses", new JSONArray());
+                    player.put("ckills", new JSONArray());
+
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -57,7 +58,7 @@ public class Main {
                 );
                 initialized = true;
             }
-            
+
             for (UserMessage u : match.getUserMessages()) {
                 if (u.getName().startsWith("CDOTAUserMsg_ChatEvent")){
                     JSONArray players = doc.getJSONArray("players");
@@ -86,7 +87,7 @@ public class Main {
                     else if (type.contains("BARRACKS_KILL")){
                     }
                     else if (type.contains("COURIER_LOST")){
-                        players.getJSONObject(player1).getJSONArray("courier_kills").put(time);
+                        players.getJSONObject(player1).getJSONArray("ckills").put(time);
                     }
                     else if (type.contains("ROSHAN_KILL")){
                     }
@@ -94,7 +95,8 @@ public class Main {
                         players.getJSONObject(player1).getJSONArray("aegis").put(time);
                     }
                     else if (type.contains("_PAUSED")){
-                        players.getJSONObject(player1).getJSONArray("pauses").put(time);
+                    }
+                    else if (type.contains("_UNPAUSED")){
                     }
                     else if (type.contains("STREAK_KILL")){
                     }
@@ -129,12 +131,14 @@ public class Main {
                         hero = cle.getAttackerName();
                         target = cle.getTargetName();
                         if (cle.isTargetIllusion()){
-                        }   
-                        else {
+                        }
+                        else if (cle.isAttackerHero()){
                             insert(combatlog, hero);
                             JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("kills");
                             Integer count = counts.has(target) ? (Integer)counts.get(target) : 0;
                             counts.put(target, count + 1);
+                        }
+                        else{
                         }
                         break;
                         case 5:
@@ -186,6 +190,7 @@ public class Main {
                 doc.getJSONArray("times").put(time);
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
+                    doc.getJSONObject("hero_to_slot").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString(), i);
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
@@ -198,7 +203,7 @@ public class Main {
 
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("%ssec", tMatch / 1000.0);
+        System.err.format("parsed in %s sec%n", tMatch / 1000.0);
     }
 
     private static void insert(JSONObject combatlog, String hero){
