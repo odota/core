@@ -31,6 +31,9 @@ aq.empty = function() {
     requestDetails()
 }
 setInterval(updateNames, 86400 * 1000)
+setInterval(function() {
+    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
+}, 5000)
 queueRequests()
 requestDetails()
 parseMatches()
@@ -147,7 +150,6 @@ function generateURL(req) {
  */
 
 function apiRequest(req, cb) {
-    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
     utility.getData(generateURL(req), function(err, data) {
         if(err) {
             return cb(err)
@@ -449,7 +451,7 @@ function downloadWithRetry(url, fileName, timeout, cb) {
 
 function parseReplay(match, cb) {
     var match_id = match.match_id
-    console.log("[PARSER] beginning parse for match %s", match_id)
+    console.log("[PARSER] requesting parse for match %s", match_id)
     download(match, function(err, fileName) {
         if(err) {
             console.log("[PARSER] Error for match %s: %s", match_id, err)
