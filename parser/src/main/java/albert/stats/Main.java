@@ -22,7 +22,9 @@ public class Main {
         GameEventDescriptor combatLogDescriptor = null;
         JSONObject doc = new JSONObject();
         doc.put("players", new JSONArray());
-        doc.put("combatlog", new JSONObject());
+        doc.put("purchases", new JSONArray());
+        doc.put("itemuses", new JSONArray());
+        doc.put("kills", new JSONArray());
         doc.put("times", new JSONArray());
         doc.put("hero_to_slot", new JSONObject());
         Match match = new Match();
@@ -109,10 +111,9 @@ public class Main {
             for (GameEvent g : match.getGameEvents()) {
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
                     CombatLogEntry cle = new CombatLogEntry(g);
-                    JSONObject combatlog=doc.getJSONObject("combatlog");
                     String hero;
-                    String target;
                     String item;
+                    String target;
                     switch(cle.getType()) {
                         case 0:
                         //damage
@@ -130,15 +131,12 @@ public class Main {
                         //kill
                         hero = cle.getAttackerName();
                         target = cle.getTargetName();
-                        if (cle.isTargetIllusion()){
-                        }
-                        else if (cle.isAttackerHero()){
-                            insert(combatlog, hero);
-                            JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("kills");
-                            Integer count = counts.has(target) ? (Integer)counts.get(target) : 0;
-                            counts.put(target, count + 1);
-                        }
-                        else{
+                        if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
+                            JSONObject killEntry = new JSONObject();
+                            killEntry.put("start", time);
+                            killEntry.put("hero", hero);
+                            killEntry.put("target", target);
+                            doc.getJSONArray("kills").put(killEntry);  
                         }
                         break;
                         case 5:
@@ -148,10 +146,11 @@ public class Main {
                         //item use
                         hero = cle.getAttackerName();
                         item = cle.getInflictorName();
-                        insert(combatlog, hero);
-                        JSONObject counts = combatlog.getJSONObject(hero).getJSONObject("uses");
-                        Integer count = counts.has(item) ? (Integer)counts.get(item) : 0;
-                        counts.put(item, count + 1);
+                        JSONObject useEntry = new JSONObject();
+                        useEntry.put("start", time);
+                        useEntry.put("item", item);
+                        useEntry.put("hero", hero);
+                        doc.getJSONArray("itemuses").put(useEntry);  
                         break;
                         case 8:
                         //gold gain/loss
@@ -166,12 +165,12 @@ public class Main {
                         //purchase
                         hero = cle.getTargetName();
                         item = cle.getValueName();
-                        insert(combatlog, hero);
                         if (!item.contains("recipe")){
                             JSONObject buyEntry = new JSONObject();
-                            buyEntry.put("time", time);
-                            buyEntry.put("name", item);
-                            combatlog.getJSONObject(hero).getJSONArray("purchases").put(buyEntry);     
+                            buyEntry.put("start", time);
+                            buyEntry.put("item", item);
+                            buyEntry.put("hero", hero);
+                            doc.getJSONArray("purchases").put(buyEntry);     
                         }
                         break;
                         case 12:
@@ -190,6 +189,7 @@ public class Main {
                 doc.getJSONArray("times").put(time);
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
+                    //map hero id to a player slot
                     doc.getJSONObject("hero_to_slot").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString(), i);
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
@@ -205,15 +205,4 @@ public class Main {
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("parsed in %s sec%n", tMatch / 1000.0);
     }
-
-    private static void insert(JSONObject combatlog, String hero){
-        if(!combatlog.has(hero)){
-            JSONObject heroObject = new JSONObject();
-            heroObject.put("purchases", new JSONArray());
-            heroObject.put("uses", new JSONObject());
-            heroObject.put("kills", new JSONObject());
-            combatlog.put(hero, heroObject);
-        }
-    }
-
 }
