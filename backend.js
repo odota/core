@@ -15,7 +15,7 @@ var request = require('request'),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false)
-    var aq = async.queue(apiRequest, 1)
+var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
 var api_delay = 1000
 var replay_dir = process.env.REPLAY_DIR || "replays/"
@@ -102,6 +102,8 @@ function buildLookup(array) {
     var lookup = {}
     for(var i = 0; i < array.length; i++) {
         lookup[array[i].id] = array[i]
+        lookup[array[i].name] = array[i]
+
     }
     return lookup
 }
@@ -467,9 +469,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            parser_file,
-            fileName
-        ])
+                                parser_file,
+                                fileName
+                               ])
         cp.stdout.on('data', function(data) {
             output += data
         })
