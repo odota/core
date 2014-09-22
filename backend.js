@@ -33,7 +33,7 @@ aq.empty = function() {
 setInterval(updateNames, 86400 * 1000)
 setInterval(function() {
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
-}, 5000)
+}, 10000)
 queueRequests()
 requestDetails()
 parseMatches()

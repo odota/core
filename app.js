@@ -34,24 +34,20 @@ app.route('/matches/:id').get(function(req, res) {
                     doc.parsed_data.players.forEach(function(player, i){
                         player.hero=constants.heroes[doc.players[i].hero_id]
                         player.build=doc.parsed_data.itembuilds.filter( function( item, index, inputArray ) {
-                            var hero_id = constants.heroes[item.hero].id
-                            return player.hero_list.indexOf(hero_id);
-                        });
+                            var hero_id = constants.heroes[item.hero].id.toString()
+                            return player.hero_history[hero_id]
+                        })
                         player.itemuses={}
                         player.purchases={}
                         player.kills={}
-                        //todo cross table of kills
-                        //todo ARDM hero timeline
-                        var heroIDs = player.hero_list.filter( function( item, index, inputArray ) {
-                            return inputArray.indexOf(item) == index;
-                        });
-                        //todo druid edge case
-                        for (var i =0; i<heroIDs.length;i++){
-                            if (heroIDs[i]>=0){
-                                utility.merge(player.purchases, doc.parsed_data.purchases[constants.heroes[heroIDs[i]].name])
-                                utility.merge(player.itemuses, doc.parsed_data.itemuses[constants.heroes[heroIDs[i]].name])
-                                utility.merge(player.kills, doc.parsed_data.kills[constants.heroes[heroIDs[i]].name])                
-                            }
+                        player.feeds={}
+                        //todo handle druid bear, meepo
+                        for (var hero_id in player.hero_history){
+                            var name = constants.heroes[hero_id].name
+                            utility.merge(player.purchases, doc.parsed_data.purchases[name])
+                            utility.merge(player.itemuses, doc.parsed_data.itemuses[name])
+                            utility.merge(player.kills, doc.parsed_data.kills[name])      
+                            utility.merge(player.feeds, doc.parsed_data.feeds[name])
                         }
                     })
                 }
