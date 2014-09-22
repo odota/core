@@ -18,9 +18,7 @@ options = {
     nodes: {
         shape: 'dot'
     },
-    physics: {barnesHut:{springLength: 200,            
-                         gravitationalConstant: -3000,
-                        }}
+    physics: {barnesHut:{gravitationalConstant:-5000}}
 };
 
 // create the network

@@ -21,12 +21,11 @@ public class Main {
         boolean initialized = false;
         GameEventDescriptor combatLogDescriptor = null;
         JSONObject doc = new JSONObject();
+        JSONArray purchases = new JSONArray();
+        JSONArray itemuses = new JSONArray();
+        JSONArray kills = new JSONArray();
         doc.put("players", new JSONArray());
-        doc.put("purchases", new JSONArray());
-        doc.put("itemuses", new JSONArray());
-        doc.put("kills", new JSONArray());
         doc.put("times", new JSONArray());
-        doc.put("hero_to_slot", new JSONObject());
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
         float nextInterval = INTERVAL;
@@ -50,7 +49,6 @@ public class Main {
                     player.put("buybacks", new JSONArray());
                     player.put("runes", new JSONArray());
                     player.put("aegis", new JSONArray());
-                    player.put("ckills", new JSONArray());
 
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
@@ -89,7 +87,6 @@ public class Main {
                     else if (type.contains("BARRACKS_KILL")){
                     }
                     else if (type.contains("COURIER_LOST")){
-                        players.getJSONObject(player1).getJSONArray("ckills").put(time);
                     }
                     else if (type.contains("ROSHAN_KILL")){
                     }
@@ -133,10 +130,10 @@ public class Main {
                         target = cle.getTargetName();
                         if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
                             JSONObject killEntry = new JSONObject();
-                            killEntry.put("start", time);
+                            killEntry.put("time", time);
                             killEntry.put("hero", hero);
-                            killEntry.put("target", target);
-                            doc.getJSONArray("kills").put(killEntry);  
+                            killEntry.put("key", target);
+                            kills.put(killEntry);  
                         }
                         break;
                         case 5:
@@ -147,10 +144,10 @@ public class Main {
                         hero = cle.getAttackerName();
                         item = cle.getInflictorName();
                         JSONObject useEntry = new JSONObject();
-                        useEntry.put("start", time);
-                        useEntry.put("item", item);
+                        useEntry.put("time", time);
+                        useEntry.put("key", item);
                         useEntry.put("hero", hero);
-                        doc.getJSONArray("itemuses").put(useEntry);  
+                        itemuses.put(useEntry);  
                         break;
                         case 8:
                         //gold gain/loss
@@ -167,10 +164,10 @@ public class Main {
                         item = cle.getValueName();
                         if (!item.contains("recipe")){
                             JSONObject buyEntry = new JSONObject();
-                            buyEntry.put("start", time);
-                            buyEntry.put("item", item);
+                            buyEntry.put("time", time);
+                            buyEntry.put("key", item);
                             buyEntry.put("hero", hero);
-                            doc.getJSONArray("purchases").put(buyEntry);     
+                            purchases.put(buyEntry);     
                         }
                         break;
                         case 12:
@@ -189,10 +186,8 @@ public class Main {
                 doc.getJSONArray("times").put(time);
 
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    //map hero id to a player slot
-                    doc.getJSONObject("hero_to_slot").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString(), i);
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]));
+                    player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString());
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
@@ -201,8 +196,28 @@ public class Main {
             }
         }
 
+        //compress logs into counts
+        doc.put("itembuilds", purchases);
+        doc.put("purchases", getCounts(purchases));
+        doc.put("itemuses", getCounts(itemuses));
+        doc.put("kills", getCounts(kills));
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("parsed in %s sec%n", tMatch / 1000.0);
+        System.err.format("%ssec%n", tMatch / 1000.0);
+    }
+
+    private static JSONObject getCounts(JSONArray arr){
+        JSONObject output = new JSONObject();
+        for (int i = 0;i<arr.length();i++){
+            String hero = arr.getJSONObject(i).getString("hero");
+            String key = arr.getJSONObject(i).getString("key");
+            if (!output.has(hero)){
+                output.put(hero, new JSONObject());
+            }
+            JSONObject counts = output.getJSONObject(hero);
+            Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
+            counts.put(key, count + 1);  
+        }
+        return output;
     }
 }
