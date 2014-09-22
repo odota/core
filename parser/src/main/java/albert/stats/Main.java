@@ -24,6 +24,8 @@ public class Main {
         JSONArray purchases = new JSONArray();
         JSONArray itemuses = new JSONArray();
         JSONArray kills = new JSONArray();
+        JSONArray feeds = new JSONArray();
+
         doc.put("players", new JSONArray());
         doc.put("times", new JSONArray());
         Match match = new Match();
@@ -42,13 +44,12 @@ public class Main {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.put("display_name", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
-                    player.put("hero_list", new JSONArray());
+                    player.put("hero_history", new JSONObject());
                     player.put("last_hits", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
                     player.put("runes", new JSONArray());
-                    player.put("aegis", new JSONArray());
 
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
@@ -57,6 +58,27 @@ public class Main {
                     combatLogDescriptor
                 );
                 initialized = true;
+            }
+
+            if (time > nextInterval) {
+                Entity pr = match.getPlayerResource();
+                doc.getJSONArray("times").put(time);
+
+                for (int i = 0; i < PLAYER_IDS.length; i++) {
+                    JSONObject player = doc.getJSONArray("players").getJSONObject(i);
+                    String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
+                    if (!hero.equals("-1")){
+                        if (!player.getJSONObject("hero_history").has(hero)){
+                            player.getJSONObject("hero_history").put(hero, new JSONObject());
+                            player.getJSONObject("hero_history").getJSONObject(hero).put("start",time);
+                        }  
+                        player.getJSONObject("hero_history").getJSONObject(hero).put("end",time+INTERVAL);
+                    }
+                    player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
+                    player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
+                    player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
+                }
+                nextInterval += INTERVAL;
             }
 
             for (UserMessage u : match.getUserMessages()) {
@@ -74,7 +96,6 @@ public class Main {
                     else if (type.contains("GLYPH")){
                     }
                     else if (type.contains("BUYBACK")){
-                        players.getJSONObject(player1).getJSONArray("buybacks").put(time);
                     }
                     else if (type.contains("CONNECT")){
                     }
@@ -91,7 +112,6 @@ public class Main {
                     else if (type.contains("ROSHAN_KILL")){
                     }
                     else if (type.contains("AEGIS")){
-                        players.getJSONObject(player1).getJSONArray("aegis").put(time);
                     }
                     else if (type.contains("_PAUSED")){
                     }
@@ -111,6 +131,7 @@ public class Main {
                     String hero;
                     String item;
                     String target;
+                    time = (int) cle.getTimestamp();
                     switch(cle.getType()) {
                         case 0:
                         //damage
@@ -126,14 +147,20 @@ public class Main {
                         break;
                         case 4:
                         //kill
+                        //todo credit kill if damaged within 17 sec
                         hero = cle.getAttackerName();
                         target = cle.getTargetName();
-                        if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
+                        if (!cle.isTargetIllusion() && cle.isTargetHero()){
                             JSONObject killEntry = new JSONObject();
                             killEntry.put("time", time);
                             killEntry.put("hero", hero);
                             killEntry.put("key", target);
-                            kills.put(killEntry);  
+                            kills.put(killEntry);
+                            JSONObject feedEntry = new JSONObject();
+                            feedEntry.put("time", time);
+                            feedEntry.put("hero", target);
+                            feedEntry.put("key", hero);
+                            feeds.put(feedEntry);
                         }
                         break;
                         case 5:
@@ -172,6 +199,7 @@ public class Main {
                         break;
                         case 12:
                         //buyback
+                        doc.getJSONArray("players").getJSONObject(cle.getValue()).getJSONArray("buybacks").put(time);
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
@@ -180,20 +208,6 @@ public class Main {
                     }
                 }
             }
-
-            if (time > nextInterval) {
-                Entity pr = match.getPlayerResource();
-                doc.getJSONArray("times").put(time);
-
-                for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    player.getJSONArray("hero_list").put(pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString());
-                    player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
-                    player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
-                    player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
-                }
-                nextInterval += INTERVAL;
-            }
         }
 
         //compress logs into counts
@@ -201,6 +215,7 @@ public class Main {
         doc.put("purchases", getCounts(purchases));
         doc.put("itemuses", getCounts(itemuses));
         doc.put("kills", getCounts(kills));
+        doc.put("feeds", getCounts(feeds));
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("%ssec%n", tMatch / 1000.0);

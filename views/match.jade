@@ -30,7 +30,7 @@ block content
         .row
           .col-md-12
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-            table.table.table-hover.table-responsive.text-center
+            table.table.table-hover.table-responsive
                   tr
                     th Player
                     th Hero
@@ -86,37 +86,44 @@ block content
               th Player
               th Runes
               th Buybacks
-              th Aegis
               th TP/Used
               th Observer/Used
               th Sentry/Used
               th Smoke/Used
               th Dust/Used
               th Gem
-              th Build
-              th Uses
             each player, i in match.parsed_data.players
               tr
                 td=match.parsed_data.players[i].display_name
                 td=match.parsed_data.players[i].runes.length
                 td=match.parsed_data.players[i].buybacks.length
-                td=match.parsed_data.players[i].aegis.length
-                td #{match.parsed_data.players[i].purchases.item_tpscroll}/#{match.parsed_data.players[i].itemuses.item_tpscroll}
-                td #{match.parsed_data.players[i].purchases.item_ward_observer*2}/#{match.parsed_data.players[i].itemuses.item_ward_observer}
-                td #{match.parsed_data.players[i].purchases.item_ward_sentry*2}/#{match.parsed_data.players[i].itemuses.item_ward_sentry}
-                td #{match.parsed_data.players[i].purchases.item_smoke_of_deceit}/#{match.parsed_data.players[i].itemuses.item_smoke_of_deceit}
-                td #{match.parsed_data.players[i].purchases.item_dust*2}/#{match.parsed_data.players[i].itemuses.item_dust}
-                td #{match.parsed_data.players[i].purchases.item_gem}/#{match.parsed_data.players[i].itemuses.item_gem}
+                td #{match.parsed_data.players[i].purchases.item_tpscroll || 0}/#{match.parsed_data.players[i].itemuses.item_tpscroll || 0}
+                td #{match.parsed_data.players[i].purchases.item_ward_observer*2 || 0}/#{match.parsed_data.players[i].itemuses.item_ward_observer || 0}
+                td #{match.parsed_data.players[i].purchases.item_ward_sentry*2 || 0}/#{match.parsed_data.players[i].itemuses.item_ward_sentry || 0}
+                td #{match.parsed_data.players[i].purchases.item_smoke_of_deceit || 0}/#{match.parsed_data.players[i].itemuses.item_smoke_of_deceit || 0}
+                td #{match.parsed_data.players[i].purchases.item_dust*2 || 0}/#{match.parsed_data.players[i].itemuses.item_dust || 0}
+                td #{match.parsed_data.players[i].purchases.item_gem || 0}/#{match.parsed_data.players[i].itemuses.item_gem || 0}
+          table.table
+            tr
+              th Player
+              th Build
+              th Kills
+              th Feeds
+            each player, i in match.parsed_data.players
+              tr
+                td=match.parsed_data.players[i].display_name
                 td
                   each e in match.parsed_data.players[i].build
-                   // p #{e.item}/#{e.start}
+                   div #{e.key}/#{moment().startOf('day').seconds(e.time).format("H:mm:ss")}/#{match.parsed_data.players[i].itemuses[e.key]}
                 td
-                  each e in match.parsed_data.players[i].itemuses
-                   // p #{e.item}/#{e.start}
+                  each e,k in match.parsed_data.players[i].kills
+                    div #{k}/#{e}
+                td
+                  each e,k in match.parsed_data.players[i].feeds
+                    div #{k}/#{e}
         .row
           #chart-diff
           #chart-gold
           #chart-xp
           #chart-lh
           script(type='text/javascript', src='../public/js/chart.js')
-
