@@ -35,10 +35,9 @@ public class Main {
         while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
+            Entity pr = match.getPlayerResource();
 
             if (!initialized) {
-                Entity pr = match.getPlayerResource();
-
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
                     doc.getJSONArray("players").put(new JSONObject());
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
@@ -50,7 +49,6 @@ public class Main {
                     player.put("xp", new JSONArray());
                     player.put("buybacks", new JSONArray());
                     player.put("runes", new JSONArray());
-
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -59,67 +57,33 @@ public class Main {
                 );
                 initialized = true;
             }
-
-            if (time > nextInterval) {
-                Entity pr = match.getPlayerResource();
-                doc.getJSONArray("times").put(time);
-
-                for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                    if (!hero.equals("-1")){
-                        if (!player.getJSONObject("hero_history").has(hero)){
-                            player.getJSONObject("hero_history").put(hero, new JSONObject());
-                            player.getJSONObject("hero_history").getJSONObject(hero).put("start",time);
-                        }  
-                        player.getJSONObject("hero_history").getJSONObject(hero).put("end",time+INTERVAL);
-                    }
+            
+            for (int i = 0; i < PLAYER_IDS.length; i++) {
+                JSONObject player = doc.getJSONArray("players").getJSONObject(i);
+                String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
+                if (!hero.equals("-1")){
+                    if (!player.getJSONObject("hero_history").has(hero)){
+                        player.getJSONObject("hero_history").put(hero, new JSONObject());
+                        player.getJSONObject("hero_history").getJSONObject(hero).put("start",time);
+                    }  
+                    player.getJSONObject("hero_history").getJSONObject(hero).put("end",time);
+                }
+                if (time > nextInterval) {
+                    doc.getJSONArray("times").put(time);
                     player.getJSONArray("last_hits").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
+                    nextInterval += INTERVAL;
                 }
-                nextInterval += INTERVAL;
             }
-
             for (UserMessage u : match.getUserMessages()) {
                 if (u.getName().startsWith("CDOTAUserMsg_ChatEvent")){
                     JSONArray players = doc.getJSONArray("players");
                     int player1=(int)u.getProperty("playerid_1");
                     int player2=(int)u.getProperty("playerid_2");
                     String type = u.getProperty("type").toString();
-
                     if (type.contains("RUNE")){
                         players.getJSONObject(player1).getJSONArray("runes").put(u.getProperty("value"));
-                    }
-                    else if (type.contains("ITEM_PURCHASE")){
-                    }
-                    else if (type.contains("GLYPH")){
-                    }
-                    else if (type.contains("BUYBACK")){
-                    }
-                    else if (type.contains("CONNECT")){
-                    }
-                    else if (type.contains("TOWER_KILL")){
-                    }
-                    else if (type.contains("TOWER_DENY")){
-                    }
-                    else if (type.contains("HERO_DENY")){
-                    }
-                    else if (type.contains("BARRACKS_KILL")){
-                    }
-                    else if (type.contains("COURIER_LOST")){
-                    }
-                    else if (type.contains("ROSHAN_KILL")){
-                    }
-                    else if (type.contains("AEGIS")){
-                    }
-                    else if (type.contains("_PAUSED")){
-                    }
-                    else if (type.contains("_UNPAUSED")){
-                    }
-                    else if (type.contains("STREAK_KILL")){
-                    }
-                    else if (type.contains("HERO_KILL")){
                     }
                     else{
                     }
