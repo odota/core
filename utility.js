@@ -10,6 +10,18 @@ utility.players = utility.db.get('players');
 utility.players.index('account_id', {
     unique: true
 })
+/*
+ * Merges object B into object A, summing identical keys
+ */
+utility.merge = function(objA, objB){
+    for (var key in objB){
+        if (!objA[key]){
+            objA[key]=0
+        }
+        objA[key]+=objB[key]
+    }
+}
+
 utility.getData = function(url, cb) {
     request(url, function(err, res, body) {
         if(err || res.statusCode != 200) {
@@ -71,7 +83,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
                 var playerRadiant = isRadiant(player)
                 matches[i].player_win = (playerRadiant == matches[i].radiant_win)
                 matches[i].player_hero = player.hero_id
-                }
+            }
         }
         for(j = 0; j < matches[i].players.length; j++) {
             var player = matches[i].players[j]

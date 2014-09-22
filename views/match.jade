@@ -74,7 +74,7 @@ block content
                            - var item = constants.items[val]
                            if item
                              img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-                         - if (index === "additional_units")
+                         - if (player.hero_id === 80)
                            hr(style='margin:10px;')
                            each val, index in player.additional_units[0]
                              - var item = constants.items[val]
@@ -87,34 +87,36 @@ block content
               th Runes
               th Buybacks
               th Aegis
-              th Courier Kills
               th TP/Used
               th Observer/Used
               th Sentry/Used
               th Smoke/Used
               th Dust/Used
               th Gem
+              th Build
+              th Uses
             each player, i in match.parsed_data.players
               tr
                 td=match.parsed_data.players[i].display_name
                 td=match.parsed_data.players[i].runes.length
                 td=match.parsed_data.players[i].buybacks.length
                 td=match.parsed_data.players[i].aegis.length
-                td=match.parsed_data.players[i].ckills.length
-                td #{match.parsed_data.players[i].tp}/#{match.parsed_data.players[i].tp_used}
-                td #{match.parsed_data.players[i].observer}/#{match.parsed_data.players[i].observer_used}
-                td #{match.parsed_data.players[i].sentry}/#{match.parsed_data.players[i].sentry_used}
-                td #{match.parsed_data.players[i].smoke}/#{match.parsed_data.players[i].smoke_used}
-                td #{match.parsed_data.players[i].dust}/#{match.parsed_data.players[i].dust_used}
-                td #{match.parsed_data.players[i].gem}
+                td #{match.parsed_data.players[i].purchases.item_tpscroll}/#{match.parsed_data.players[i].itemuses.item_tpscroll}
+                td #{match.parsed_data.players[i].purchases.item_ward_observer*2}/#{match.parsed_data.players[i].itemuses.item_ward_observer}
+                td #{match.parsed_data.players[i].purchases.item_ward_sentry*2}/#{match.parsed_data.players[i].itemuses.item_ward_sentry}
+                td #{match.parsed_data.players[i].purchases.item_smoke_of_deceit}/#{match.parsed_data.players[i].itemuses.item_smoke_of_deceit}
+                td #{match.parsed_data.players[i].purchases.item_dust*2}/#{match.parsed_data.players[i].itemuses.item_dust}
+                td #{match.parsed_data.players[i].purchases.item_gem}/#{match.parsed_data.players[i].itemuses.item_gem}
+                td
+                  each e in match.parsed_data.players[i].build
+                   // p #{e.item}/#{e.start}
+                td
+                  each e in match.parsed_data.players[i].itemuses
+                   // p #{e.item}/#{e.start}
         .row
           #chart-diff
           #chart-gold
           #chart-xp
           #chart-lh
-          #chart-timeline
-          #chart-kills
           script(type='text/javascript', src='../public/js/chart.js')
-          script(type='text/javascript', src='../public/js/graph.js')
-          script(type='text/javascript', src='../public/js/timeline.js')
 

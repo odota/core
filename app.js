@@ -31,88 +31,29 @@ app.route('/matches/:id').get(function(req, res) {
             utility.fillPlayerNames(doc.players, function(err, players) {
                 doc.players = players
                 if (doc.parsed_data){
-                    doc.parsed_data.edges=[]
                     doc.parsed_data.players.forEach(function(player, i){
-                        //grab final hero from corresponding api data
-                        var hero = doc.players[i].hero_id
-                        player.hero=constants.heroes[hero]
-                        player.id=i
-                        player.value=doc.players[i].kills
-                        player.label=player.hero.localized_name
-                        player.content=player.hero.localized_name
-                        player.tp=0
-                        player.observer=0
-                        player.sentry=0
-                        player.smoke=0
-                        player.dust=0
-                        player.gem=0
-                        player.tp_used=0
-                        player.observer_used=0
-                        player.sentry_used=0
-                        player.smoke_used=0
-                        player.dust_used=0
-                        //todo create a "feed" directed graph
+                        player.hero=constants.heroes[doc.players[i].hero_id]
+                        player.build=doc.parsed_data.itembuilds.filter( function( item, index, inputArray ) {
+                            var hero_id = constants.heroes[item.hero].id
+                            return player.hero_list.indexOf(hero_id);
+                        });
+                        player.itemuses={}
+                        player.purchases={}
+                        player.kills={}
+                        //todo cross table of kills
                         //todo ARDM hero timeline
-                        //todo timeline of item build
+                        var heroIDs = player.hero_list.filter( function( item, index, inputArray ) {
+                            return inputArray.indexOf(item) == index;
+                        });
+                        //todo druid edge case
+                        for (var i =0; i<heroIDs.length;i++){
+                            if (heroIDs[i]>=0){
+                                utility.merge(player.purchases, doc.parsed_data.purchases[constants.heroes[heroIDs[i]].name])
+                                utility.merge(player.itemuses, doc.parsed_data.itemuses[constants.heroes[heroIDs[i]].name])
+                                utility.merge(player.kills, doc.parsed_data.kills[constants.heroes[heroIDs[i]].name])                
+                            }
+                        }
                     })
-                    var purchases = doc.parsed_data.purchases
-                    for (var i =0;i<purchases.length;i++){
-                        var hero_id = constants.heroes[purchases[i].hero].id
-                        var slot = doc.parsed_data.hero_to_slot[hero_id]
-                        purchases[i].group = slot
-                        purchases[i].content=purchases[i].item
-                        purchases[i].id=i
-                        purchases[i].start=purchases[i].start*1000
-                        purchases[i].type="point"
-                        if (purchases[i].item=="item_tpscroll"){
-                            doc.parsed_data.players[slot].tp+=1
-                        }
-                        if (purchases[i].item=="item_ward_observer"){
-                            doc.parsed_data.players[slot].observer+=2
-                        }
-                        if (purchases[i].item=="item_ward_sentry"){
-                            doc.parsed_data.players[slot].sentry+=2
-                        }
-                        if (purchases[i].item=="item_smoke_of_deceit"){
-                            doc.parsed_data.players[slot].smoke+=1
-                        }
-                        if (purchases[i].item=="item_dust"){
-                            doc.parsed_data.players[slot].dust+=2
-                        }
-                        if (purchases[i].item=="item_gem"){
-                            doc.parsed_data.players[slot].gem+=1
-                        }
-                    }
-                    var uses = doc.parsed_data.itemuses
-                    for (var i =0;i<uses.length;i++){
-                        var hero_id = constants.heroes[uses[i].hero].id
-                        var slot = doc.parsed_data.hero_to_slot[hero_id]
-                        uses[i].group = slot
-                        if (uses[i].item=="item_tpscroll"){
-                            doc.parsed_data.players[slot].tp_used+=1
-                        }
-                        if (uses[i].item=="item_ward_observer"){
-                            doc.parsed_data.players[slot].observer_used+=1
-                        }
-                        if (uses[i].item=="item_ward_sentry"){
-                            doc.parsed_data.players[slot].sentry_used+=1
-                        }
-                        if (uses[i].item=="item_smoke_of_deceit"){
-                            doc.parsed_data.players[slot].smoke_used+=1
-                        }
-                        if (uses[i].item=="item_dust"){
-                            doc.parsed_data.players[slot].dust_used+=1
-                        }
-                    }
-                    var kills = doc.parsed_data.kills
-                    for (var i =0;i<kills.length;i++){
-                        var hero_id = constants.heroes[kills[i].hero].id
-                        var slot = doc.parsed_data.hero_to_slot[hero_id]
-                        var target_id = constants.heroes[kills[i].target].id
-                        var target_slot = doc.parsed_data.hero_to_slot[target_id]
-                        doc.parsed_data.edges.push({from: target_slot, to: slot})
-                    }
-
                 }
                 res.render('match.jade', {
                     match: doc
