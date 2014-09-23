@@ -20,6 +20,7 @@
     "winston": "0.7.3",
     "seek-bzip": "~1.0.3",
     "aws-sdk": "~2.0.15",
-    "big-number": "~0.3.1"
+    "big-number": "~0.3.1",
+    "numeral": "~1.5.3"
   }
 }

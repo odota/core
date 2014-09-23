@@ -175,7 +175,7 @@ public class Main {
         }
 
         //compress logs into counts
-        doc.put("itembuilds", purchases);
+        doc.put("purchaselog", purchases);
         doc.put("purchases", getCounts(purchases));
         doc.put("itemuses", getCounts(itemuses));
         doc.put("kills", getCounts(kills));

@@ -42,7 +42,7 @@ utility.fillPlayerNames = function(players, cb) {
             cb(null)
         })
     }, function(err) {
-        cb(null, players)
+        cb(err)
     })
 }
 utility.getMatches = function(account_id, cb) {
@@ -103,7 +103,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
         }
     }
     //convert counts to array and filter
-    var arr = []
+    doc.teammates = []
     for(var id in counts) {
         var count = counts[id]
         if(id == doc.account_id) {
@@ -111,12 +111,11 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             doc.lose = count.lose
         } else {
             if(count.win + count.lose >= (process.env.MIN_MATCHES_TEAMMATES || 3)) {
-                arr.push(count)
+                doc.teammates.push(count)
             }
         }
     }
-    utility.fillPlayerNames(arr, function(err, arr) {
-        doc.teammates = arr
+    utility.fillPlayerNames(doc.teammates, function(err) {
         cb(null, doc, matches)
     })
 }

@@ -470,7 +470,8 @@ function parseReplay(match, cb) {
         var output = ""
         var cp = spawn("java", ["-jar",
                                 parser_file,
-                                fileName
+                                fileName,
+                                "constants.json"
                                ])
         cp.stdout.on('data', function(data) {
             output += data

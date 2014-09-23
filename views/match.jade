@@ -12,7 +12,8 @@ block head
     script.
      var match = !{JSON.stringify(match)}
     style.
-     * {font-family: 'Roboto', sans-serif;}
+     .hero img {width: 50px;}
+     .items {white-space:nowrap;}
      .items img {width: 35px;}
      
 block content
@@ -34,19 +35,25 @@ block content
                   tr
                     th Player
                     th Hero
-                    th Level
+                    th LV
                     th K
                     th D
                     th A
-                    th LH
-                    th DN
-                    th Gold
+                    th CS
+                    th G
                     th GPM
                     th XPM
                     th HD
                     th TD
                     th HH
                     th Items
+                    if match.parsed_data
+                      th TP
+                      th OBS
+                      th SEN
+                      th SMK
+                      th DST
+                      th GM
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
@@ -55,55 +62,37 @@ block content
                        else
                          a(href='/players/#{player.account_id}')=player.display_name ? player.display_name : player.account_id
                      - var hero = constants.heroes[player.hero_id]
-                     td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
+                     td.hero: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
                      td= player.level
                      td= player.kills
                      td= player.deaths
                      td= player.assists
-                     td= player.last_hits
-                     td= player.denies
-                     td= player.gold+player.gold_spent
+                     td #{player.last_hits}/#{player.denies}
+                     td= numeral(player.gold+player.gold_spent).format('0.0a')
                      td= player.gold_per_min
                      td= player.xp_per_min
-                     td= player.hero_damage
-                     td= player.tower_damage
-                     td= player.hero_healing
-                     td.items.text-left
+                     td= numeral(player.hero_damage).format('0.0a')
+                     td= numeral(player.tower_damage).format('0.0a')
+                     td= numeral(player.hero_healing).format('0.0a')
+                     td.items
                        each val, index in player
-                         - if (index.slice(0, 5)==="item_")
+                         if (index.slice(0, 5)==="item_")
                            - var item = constants.items[val]
                            if item
                              img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-                         - if (player.hero_id === 80)
-                           hr(style='margin:10px;')
+                         if (player.hero_id === 80)
                            each val, index in player.additional_units[0]
                              - var item = constants.items[val]
                              if item
                                img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
-        if match.parsed_data
-          table.table
-            tr
-              th Player
-              th Runes
-              th Buybacks
-              th TP/Used
-              th Observer/Used
-              th Sentry/Used
-              th Smoke/Used
-              th Dust/Used
-              th Gem
-            each player, i in match.parsed_data.players
-              tr
-                td=match.parsed_data.players[i].display_name
-                td=match.parsed_data.players[i].runes.length
-                td=match.parsed_data.players[i].buybacks.length
-                td #{match.parsed_data.players[i].purchases.item_tpscroll || "-"}/#{match.parsed_data.players[i].itemuses.item_tpscroll || "-"}
-                td #{match.parsed_data.players[i].purchases.item_ward_observer*2 || "-"}/#{match.parsed_data.players[i].itemuses.item_ward_observer || "-"}
-                td #{match.parsed_data.players[i].purchases.item_ward_sentry*2 || "-"}/#{match.parsed_data.players[i].itemuses.item_ward_sentry || "-"}
-                td #{match.parsed_data.players[i].purchases.item_smoke_of_deceit || "-"}/#{match.parsed_data.players[i].itemuses.item_smoke_of_deceit || "-"}
-                td #{match.parsed_data.players[i].purchases.item_dust*2 || "-"}/#{match.parsed_data.players[i].itemuses.item_dust || "-"}
-                td #{match.parsed_data.players[i].purchases.item_gem || "-"}/#{match.parsed_data.players[i].itemuses.item_gem || "-"}
-                
+                     if match.parsed_data
+                       td #{match.parsed_data.players[i].itemuses.item_tpscroll || "-"}/#{match.parsed_data.players[i].purchases.item_tpscroll || "-"}
+                       td #{match.parsed_data.players[i].itemuses.item_ward_observer || "-"}/#{match.parsed_data.players[i].purchases.item_ward_observer*2 || "-"}
+                       td #{match.parsed_data.players[i].itemuses.item_ward_sentry || "-"}/#{match.parsed_data.players[i].purchases.item_ward_sentry*2 || "-"}
+                       td #{match.parsed_data.players[i].itemuses.item_smoke_of_deceit || "-"}/#{match.parsed_data.players[i].purchases.item_smoke_of_deceit || "-"}
+                       td #{match.parsed_data.players[i].itemuses.item_dust || "-"}/#{match.parsed_data.players[i].purchases.item_dust*2 || "-"}
+                       td #{match.parsed_data.players[i].purchases.item_gem || "-"}
+         
         .row
           #chart-diff
           #chart-gold
