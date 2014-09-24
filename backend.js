@@ -162,13 +162,13 @@ function apiRequest(req, cb) {
                 setTimeout(cb, api_delay, null)
             })
         }
-        if(req.account_id) {
+        else if(req.account_id) {
             console.log("[API] games for player %s", req.account_id)
             async.map(data.result.matches, insertMatch, function(err) {
                 setTimeout(cb, api_delay, null)
             })
         }
-        if(req.match_id) {
+        else if(req.match_id) {
             console.log("[API] details for match %s", req.match_id)
             var match = data.result
             match.parse_status = 0
@@ -181,11 +181,13 @@ function apiRequest(req, cb) {
             pq.push(match, function(err) {})
             setTimeout(cb, api_delay, null)
         }
-        if(req.summaries_id) {
+        else if(req.summaries_id) {
             console.log("[API] summaries for players")
             async.map(data.response.players, insertPlayer, function(err) {
                 setTimeout(cb, api_delay, null)
             })
+        }
+        else{   
         }
     })
 }
@@ -225,14 +227,14 @@ function insertPlayer(player, cb) {
 
 function getFullMatchHistory(account_id, cb) {
     var player_url = host + "/players/" + account_id + "/matches"
-    players.update({
-        account_id: account_id
-    }, {
-        $set: {
-            full_history: 0
-        }
-    })
     getMatchPage(player_url, function(err) {
+        players.update({
+            account_id: account_id
+        }, {
+            $set: {
+                full_history: 0
+            }
+        })
         cb(null)
     })
 }
