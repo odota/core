@@ -133,11 +133,7 @@ public class Main {
                 else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
 
                 }
-                else if (type.equals("CHAT_MESSAGE_CONNECT")){
-
-                }
-                else if (type.equals("CHAT_MESSAGE_DISCONNECT")){
-
+                else if (type.contains("CONNECT")){
                 }
                 else{ 
                     System.err.format("%s,%s%n", time, u);
