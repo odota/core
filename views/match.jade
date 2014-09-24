@@ -84,9 +84,11 @@ block content
                            - var item = constants.items[constants.item_ids[val]]
                            if item
                              img(src=item.img, alt=item.dname)
-                         if (player.hero_id === 80)
-                           each val, index in player.additional_units[0]
-                             - var item = constants.items[constants.item_ids[val]]
+                       if (player.hero_id === 80)
+                         br
+                         each val, index in player.additional_units[0]
+                           if (index.slice(0, 5)==="item_")
+                             - var item = constants.items[constants.item_ids[val]]                             
                              if item
                                img(src=item.img, alt=item.dname)
                      if match.parsed_data
