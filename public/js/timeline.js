@@ -1,23 +1,25 @@
 match.parsed_data.players.forEach(function (player, i){
     var items = []
-
+    var heroes = 0
     for (var i=0;i<player.timeline.length;i++){
         var event = player.timeline[i]
         var bar = {}
         if (event.time <0 ){
-            time = moment().startOf('day').seconds(event.time*-1).format(" -m:ss");
+            time = moment().startOf('day').seconds(event.time*-1).format("-m:ss");
         }
         else{
-            time = moment().startOf('day').seconds(event.time).format(" m:ss");
+            time = moment().startOf('day').seconds(event.time).format("m:ss");
         }
         bar.content = event.key + time
         bar.start=moment().startOf('day').seconds(event.time)
         if (event.type=="itembuys"){
-            bar.content = "<img src='http://cdn.dota2.com/apps/dota2/images/items/"+event.img+"' width=30 /><br>"+time
-            bar.type="point"
+            bar.content = "<img src='"+event.img+"' width=25 />"+"<div class='small'>"+time+"</div>"
+            bar.type="box"
         }
         if (event.type=="hero_history"){
-            //construct image
+            bar.className = "background-"+(heroes % 5)
+            heroes+=1
+            bar.content = "<div class='small'>"+event.key+"<br>("+time+")</div>"
             bar.end = moment().startOf('day').seconds(event.end)
             bar.type="background"
         }
@@ -39,8 +41,7 @@ match.parsed_data.players.forEach(function (player, i){
         start: moment().startOf('day').subtract(180, 'seconds'),
         end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
         margin: {
-            item: 0,
-            axis: 0
+
         },
         showMajorLabels: false
     };
