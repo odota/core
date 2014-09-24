@@ -1,39 +1,36 @@
 .vis.timeline .item.background.background-0 {
     background-color: rgba(213, 221, 246, 0.4);
 }
-
 .vis.timeline .item.background.background-1 {
-    background-color: rgba(52, 73, 94,0.4);
+    background-color: rgba(52, 73, 94, 0.4);
 }
-
 .vis.timeline .item.background.background-2 {
     background-color: rgba(46, 204, 113, 0.4);
 }
-
 .vis.timeline .item.background.background-3 {
     background-color: rgba(231, 76, 60, 0.4);
 }
-
 .vis.timeline .item.background.background-4 {
-    background-color: rgba(142, 68, 173,0.4);
+    background-color: rgba(142, 68, 173, 0.4);
 }
-
 .vis.timeline .item.background.background-5 {
     background-color: rgba(90, 76, 192, 0.4);
 }
-
 .vis.timeline .item.background.background-6 {
     background-color: rgba(24, 156, 86, 0.4);
 }
-
 .vis.timeline .item.background.background-7 {
-    background-color: rgba(189, 195, 199,0.4);
+    background-color: rgba(189, 195, 199, 0.4);
 }
-
+.vis.timeline .item.background.background-8 {
+    background-color: rgba(160, 15, 205, 0.4);
+}
+.vis.timeline .item.background.background-9 {
+    background-color: rgba(250, 83, 31, 0.4);
+}
 .vis.timeline .item.kill {
     background-color: red;
 }
-
 .vis.timeline .item.buy {
     background-color: green;
 }

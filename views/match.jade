@@ -3,11 +3,11 @@ extend layout
 block head
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
+    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
     script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
     script(type='text/javascript' src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js')
-    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css')
+    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.css')
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
     link(rel='stylesheet', href='../public/css/match.css')
 
@@ -28,9 +28,11 @@ block content
               tr
                 td Duration
                 td Game Mode
+                td Status
               tr
-                td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                td= constants.modes[match.game_mode].name
+                td=moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+                td=constants.modes[match.game_mode].name
+                td=constants.parse_status[match.parse_status]
         .row
           .col-md-12
             h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
@@ -57,6 +59,7 @@ block content
                       th SEN
                       th SMK
                       th DST
+                      th LOSS
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
@@ -97,17 +100,24 @@ block content
                        td #{match.parsed_data.players[i].itemuses.ward_sentry || "-"}
                        td #{match.parsed_data.players[i].itemuses.smoke_of_deceit || "-"}
                        td #{match.parsed_data.players[i].itemuses.dust || "-"}
+                       td #{match.parsed_data.players[i].gold_log.loss}
 
         if match.parsed_data
           .row
-            h3 Radiant Advantage
-            #chart-diff
-            h3 Gold           
-            #chart-gold
-            h3 XP            
-            #chart-xp
-            h3 LH
-            #chart-lh
-            script(type='text/javascript', src='../public/js/chart.js')
+            .col-md-6
+              h3 Radiant Advantage
+              #chart-diff
+            .col-md-6
+              h3 Gold           
+              #chart-gold
+          .row
+            .col-md-6
+              h3 XP            
+              #chart-xp
+            .col-md-6
+              h3 LH
+              #chart-lh
+          .row
             #chart-timeline
+            script(type='text/javascript', src='../public/js/chart.js')            
             script(type='text/javascript', src='../public/js/timeline.js')
