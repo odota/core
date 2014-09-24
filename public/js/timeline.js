@@ -27,7 +27,7 @@ match.parsed_data.players.forEach(function (player, i){
             bar.content = "<img src='"+img+"' width=30 />"+"<div class='small'>"+time+"</div>"
         }
         if (event.type=="hero_history"){
-            bar.className = "background-"+(heroes % 8)
+            bar.className = "background-"+(heroes % 10)
             heroes+=1
             var img = constants.heroes[event.key].img
             bar.content = "<div class='small'>"+constants.heroes[event.key].localized_name+"</div>"+"<img src='"+img+"'/>"+"<div class='small'>"+time+"</div>"
