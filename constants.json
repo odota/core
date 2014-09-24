@@ -1,4 +1,30 @@
 {
+    "runes": {
+        "0":{
+            "name":"Double Damage",
+            "img":""
+        },
+        "1":{
+            "name":"Haste",
+            "img":""
+        },
+        "2":{
+            "name":"Illusion",
+            "img":""
+        },
+        "3":{
+            "name":"Invisibility",
+            "img":""
+        },
+        "4":{
+            "name":"Regeneration",
+            "img":""
+        },
+        "5":{
+            "name":"Bounty",
+            "img":""
+        }
+    },
     "parse_status": {
         "0": "Queued",
         "1": "Expired",
@@ -366,7 +392,7 @@
         }
     },
     "items": {
-        "1": {
+        "blink": {
             "id": 1,
             "img": "blink_lg.png",
             "dname": "Blink Dagger",
@@ -381,7 +407,7 @@
             "components": null,
             "created": false
         },
-        "2": {
+        "blades_of_attack": {
             "id": 2,
             "img": "blades_of_attack_lg.png",
             "dname": "Blades of Attack",
@@ -396,7 +422,7 @@
             "components": null,
             "created": false
         },
-        "3": {
+        "broadsword": {
             "id": 3,
             "img": "broadsword_lg.png",
             "dname": "Broadsword",
@@ -411,7 +437,7 @@
             "components": null,
             "created": false
         },
-        "4": {
+        "chainmail": {
             "id": 4,
             "img": "chainmail_lg.png",
             "dname": "Chainmail",
@@ -426,7 +452,7 @@
             "components": null,
             "created": false
         },
-        "5": {
+        "claymore": {
             "id": 5,
             "img": "claymore_lg.png",
             "dname": "Claymore",
@@ -441,7 +467,7 @@
             "components": null,
             "created": false
         },
-        "6": {
+        "helm_of_iron_will": {
             "id": 6,
             "img": "helm_of_iron_will_lg.png",
             "dname": "Helm of Iron Will",
@@ -456,7 +482,7 @@
             "components": null,
             "created": false
         },
-        "7": {
+        "javelin": {
             "id": 7,
             "img": "javelin_lg.png",
             "dname": "Javelin",
@@ -471,7 +497,7 @@
             "components": null,
             "created": false
         },
-        "8": {
+        "mithril_hammer": {
             "id": 8,
             "img": "mithril_hammer_lg.png",
             "dname": "Mithril Hammer",
@@ -486,7 +512,7 @@
             "components": null,
             "created": false
         },
-        "9": {
+        "platemail": {
             "id": 9,
             "img": "platemail_lg.png",
             "dname": "Platemail",
@@ -501,7 +527,7 @@
             "components": null,
             "created": false
         },
-        "10": {
+        "quarterstaff": {
             "id": 10,
             "img": "quarterstaff_lg.png",
             "dname": "Quarterstaff",
@@ -516,7 +542,7 @@
             "components": null,
             "created": false
         },
-        "11": {
+        "quelling_blade": {
             "id": 11,
             "img": "quelling_blade_lg.png",
             "dname": "Quelling Blade",
@@ -531,7 +557,7 @@
             "components": null,
             "created": false
         },
-        "12": {
+        "ring_of_protection": {
             "id": 12,
             "img": "ring_of_protection_lg.png",
             "dname": "Ring of Protection",
@@ -546,7 +572,22 @@
             "components": null,
             "created": false
         },
-        "13": {
+        "stout_shield": {
+            "id": 182,
+            "img": "stout_shield_lg.png",
+            "dname": "Stout Shield",
+            "qual": "component",
+            "cost": 250,
+            "desc": "Passive: Damage Block - Gives a chance to block damage based on whether the equipped hero is melee or ranged.",
+            "notes": "Multiple sources of damage block don't stack.",
+            "attrib": "MELEE BLOCK: <span class=\"attribVal\">20</span><br />\nRANGED BLOCK: <span class=\"attribVal\">10</span><br />\nBLOCK CHANCE: <span class=\"attribVal\">60%</span>",
+            "mc": false,
+            "cd": false,
+            "lore": "One man's wine barrel bottom is another man's shield.",
+            "components": null,
+            "created": false
+        },
+        "gauntlets": {
             "id": 13,
             "img": "gauntlets_lg.png",
             "dname": "Gauntlets of Strength",
@@ -561,7 +602,7 @@
             "components": null,
             "created": false
         },
-        "14": {
+        "slippers": {
             "id": 14,
             "img": "slippers_lg.png",
             "dname": "Slippers of Agility",
@@ -576,7 +617,7 @@
             "components": null,
             "created": false
         },
-        "15": {
+        "mantle": {
             "id": 15,
             "img": "mantle_lg.png",
             "dname": "Mantle of Intelligence",
@@ -591,7 +632,7 @@
             "components": null,
             "created": false
         },
-        "16": {
+        "branches": {
             "id": 16,
             "img": "branches_lg.png",
             "dname": "Iron Branch",
@@ -606,7 +647,7 @@
             "components": null,
             "created": false
         },
-        "17": {
+        "belt_of_strength": {
             "id": 17,
             "img": "belt_of_strength_lg.png",
             "dname": "Belt of Strength",
@@ -621,7 +662,7 @@
             "components": null,
             "created": false
         },
-        "18": {
+        "boots_of_elves": {
             "id": 18,
             "img": "boots_of_elves_lg.png",
             "dname": "Band of Elvenskin",
@@ -636,7 +677,7 @@
             "components": null,
             "created": false
         },
-        "19": {
+        "robe": {
             "id": 19,
             "img": "robe_lg.png",
             "dname": "Robe of the Magi",
@@ -651,7 +692,7 @@
             "components": null,
             "created": false
         },
-        "20": {
+        "circlet": {
             "id": 20,
             "img": "circlet_lg.png",
             "dname": "Circlet",
@@ -666,7 +707,7 @@
             "components": null,
             "created": false
         },
-        "21": {
+        "ogre_axe": {
             "id": 21,
             "img": "ogre_axe_lg.png",
             "dname": "Ogre Club",
@@ -681,7 +722,7 @@
             "components": null,
             "created": false
         },
-        "22": {
+        "blade_of_alacrity": {
             "id": 22,
             "img": "blade_of_alacrity_lg.png",
             "dname": "Blade of Alacrity",
@@ -696,7 +737,7 @@
             "components": null,
             "created": false
         },
-        "23": {
+        "staff_of_wizardry": {
             "id": 23,
             "img": "staff_of_wizardry_lg.png",
             "dname": "Staff of Wizardry",
@@ -711,7 +752,7 @@
             "components": null,
             "created": false
         },
-        "24": {
+        "ultimate_orb": {
             "id": 24,
             "img": "ultimate_orb_lg.png",
             "dname": "Ultimate Orb",
@@ -726,7 +767,7 @@
             "components": null,
             "created": false
         },
-        "25": {
+        "gloves": {
             "id": 25,
             "img": "gloves_lg.png",
             "dname": "Gloves of Haste",
@@ -741,7 +782,7 @@
             "components": null,
             "created": false
         },
-        "26": {
+        "lifesteal": {
             "id": 26,
             "img": "lifesteal_lg.png",
             "dname": "Morbid Mask",
@@ -756,7 +797,7 @@
             "components": null,
             "created": false
         },
-        "27": {
+        "ring_of_regen": {
             "id": 27,
             "img": "ring_of_regen_lg.png",
             "dname": "Ring of Regen",
@@ -771,7 +812,7 @@
             "components": null,
             "created": false
         },
-        "28": {
+        "sobi_mask": {
             "id": 28,
             "img": "sobi_mask_lg.png",
             "dname": "Sage's Mask",
@@ -786,7 +827,7 @@
             "components": null,
             "created": false
         },
-        "29": {
+        "boots": {
             "id": 29,
             "img": "boots_lg.png",
             "dname": "Boots of Speed",
@@ -801,7 +842,7 @@
             "components": null,
             "created": false
         },
-        "30": {
+        "gem": {
             "id": 30,
             "img": "gem_lg.png",
             "dname": "Gem of True Sight",
@@ -816,7 +857,7 @@
             "components": null,
             "created": false
         },
-        "31": {
+        "cloak": {
             "id": 31,
             "img": "cloak_lg.png",
             "dname": "Cloak",
@@ -831,7 +872,7 @@
             "components": null,
             "created": false
         },
-        "32": {
+        "talisman_of_evasion": {
             "id": 32,
             "img": "talisman_of_evasion_lg.png",
             "dname": "Talisman of Evasion",
@@ -846,7 +887,7 @@
             "components": null,
             "created": false
         },
-        "33": {
+        "cheese": {
             "id": 33,
             "img": "cheese_lg.png",
             "dname": "Cheese",
@@ -861,7 +902,7 @@
             "components": null,
             "created": false
         },
-        "34": {
+        "magic_stick": {
             "id": 34,
             "img": "magic_stick_lg.png",
             "dname": "Magic Stick",
@@ -876,7 +917,7 @@
             "components": null,
             "created": false
         },
-        "36": {
+        "magic_wand": {
             "id": 36,
             "img": "magic_wand_lg.png",
             "dname": "Magic Wand",
@@ -896,7 +937,7 @@
             ],
             "created": true
         },
-        "37": {
+        "ghost": {
             "id": 37,
             "img": "ghost_lg.png",
             "dname": "Ghost Scepter",
@@ -911,7 +952,7 @@
             "components": null,
             "created": false
         },
-        "38": {
+        "clarity": {
             "id": 38,
             "img": "clarity_lg.png",
             "dname": "Clarity",
@@ -926,7 +967,7 @@
             "components": null,
             "created": false
         },
-        "39": {
+        "flask": {
             "id": 39,
             "img": "flask_lg.png",
             "dname": "Healing Salve",
@@ -941,7 +982,7 @@
             "components": null,
             "created": false
         },
-        "40": {
+        "dust": {
             "id": 40,
             "img": "dust_lg.png",
             "dname": "Dust of Appearance",
@@ -956,7 +997,7 @@
             "components": null,
             "created": false
         },
-        "41": {
+        "bottle": {
             "id": 41,
             "img": "bottle_lg.png",
             "dname": "Bottle",
@@ -971,7 +1012,7 @@
             "components": null,
             "created": false
         },
-        "42": {
+        "ward_observer": {
             "id": 42,
             "img": "ward_observer_lg.png",
             "dname": "Observer Ward",
@@ -986,7 +1027,7 @@
             "components": null,
             "created": false
         },
-        "43": {
+        "ward_sentry": {
             "id": 43,
             "img": "ward_sentry_lg.png",
             "dname": "Sentry Ward",
@@ -1001,7 +1042,7 @@
             "components": null,
             "created": false
         },
-        "44": {
+        "tango": {
             "id": 44,
             "img": "tango_lg.png",
             "dname": "Tango",
@@ -1016,7 +1057,22 @@
             "components": null,
             "created": false
         },
-        "45": {
+        "tango_single": {
+            "id": 241,
+            "img": "tango_single_lg.png",
+            "dname": "Tango (Shared)",
+            "qual": "consumable",
+            "cost": 30,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": 60,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "courier": {
             "id": 45,
             "img": "courier_lg.png",
             "dname": "Animal Courier",
@@ -1031,7 +1087,7 @@
             "components": null,
             "created": false
         },
-        "46": {
+        "tpscroll": {
             "id": 46,
             "img": "tpscroll_lg.png",
             "dname": "Town Portal Scroll",
@@ -1046,7 +1102,7 @@
             "components": null,
             "created": false
         },
-        "48": {
+        "travel_boots": {
             "id": 48,
             "img": "travel_boots_lg.png",
             "dname": "Boots of Travel",
@@ -1063,7 +1119,7 @@
             ],
             "created": true
         },
-        "50": {
+        "phase_boots": {
             "id": 50,
             "img": "phase_boots_lg.png",
             "dname": "Phase Boots",
@@ -1082,7 +1138,7 @@
             ],
             "created": true
         },
-        "51": {
+        "demon_edge": {
             "id": 51,
             "img": "demon_edge_lg.png",
             "dname": "Demon Edge",
@@ -1097,7 +1153,7 @@
             "components": null,
             "created": false
         },
-        "52": {
+        "eagle": {
             "id": 52,
             "img": "eagle_lg.png",
             "dname": "Eaglesong",
@@ -1112,7 +1168,7 @@
             "components": null,
             "created": false
         },
-        "53": {
+        "reaver": {
             "id": 53,
             "img": "reaver_lg.png",
             "dname": "Reaver",
@@ -1127,7 +1183,7 @@
             "components": null,
             "created": false
         },
-        "54": {
+        "relic": {
             "id": 54,
             "img": "relic_lg.png",
             "dname": "Sacred Relic",
@@ -1142,7 +1198,7 @@
             "components": null,
             "created": false
         },
-        "55": {
+        "hyperstone": {
             "id": 55,
             "img": "hyperstone_lg.png",
             "dname": "Hyperstone",
@@ -1157,7 +1213,7 @@
             "components": null,
             "created": false
         },
-        "56": {
+        "ring_of_health": {
             "id": 56,
             "img": "ring_of_health_lg.png",
             "dname": "Ring of Health",
@@ -1172,7 +1228,7 @@
             "components": null,
             "created": false
         },
-        "57": {
+        "void_stone": {
             "id": 57,
             "img": "void_stone_lg.png",
             "dname": "Void Stone",
@@ -1187,7 +1243,7 @@
             "components": null,
             "created": false
         },
-        "58": {
+        "mystic_staff": {
             "id": 58,
             "img": "mystic_staff_lg.png",
             "dname": "Mystic Staff",
@@ -1202,7 +1258,7 @@
             "components": null,
             "created": false
         },
-        "59": {
+        "energy_booster": {
             "id": 59,
             "img": "energy_booster_lg.png",
             "dname": "Energy Booster",
@@ -1217,7 +1273,7 @@
             "components": null,
             "created": false
         },
-        "60": {
+        "point_booster": {
             "id": 60,
             "img": "point_booster_lg.png",
             "dname": "Point Booster",
@@ -1232,7 +1288,7 @@
             "components": null,
             "created": false
         },
-        "61": {
+        "vitality_booster": {
             "id": 61,
             "img": "vitality_booster_lg.png",
             "dname": "Vitality Booster",
@@ -1247,7 +1303,7 @@
             "components": null,
             "created": false
         },
-        "63": {
+        "power_treads": {
             "id": 63,
             "img": "power_treads_lg.png",
             "dname": "Power Treads",
@@ -1266,7 +1322,7 @@
             ],
             "created": true
         },
-        "65": {
+        "hand_of_midas": {
             "id": 65,
             "img": "hand_of_midas_lg.png",
             "dname": "Hand of Midas",
@@ -1283,7 +1339,7 @@
             ],
             "created": true
         },
-        "67": {
+        "oblivion_staff": {
             "id": 67,
             "img": "oblivion_staff_lg.png",
             "dname": "Oblivion Staff",
@@ -1302,7 +1358,7 @@
             ],
             "created": true
         },
-        "69": {
+        "pers": {
             "id": 69,
             "img": "pers_lg.png",
             "dname": "Perseverance",
@@ -1320,7 +1376,7 @@
             ],
             "created": true
         },
-        "71": {
+        "poor_mans_shield": {
             "id": 71,
             "img": "poor_mans_shield_lg.png",
             "dname": "Poor Man's Shield",
@@ -1339,7 +1395,7 @@
             ],
             "created": true
         },
-        "73": {
+        "bracer": {
             "id": 73,
             "img": "bracer_lg.png",
             "dname": "Bracer",
@@ -1357,7 +1413,7 @@
             ],
             "created": true
         },
-        "75": {
+        "wraith_band": {
             "id": 75,
             "img": "wraith_band_lg.png",
             "dname": "Wraith Band",
@@ -1375,7 +1431,7 @@
             ],
             "created": true
         },
-        "77": {
+        "null_talisman": {
             "id": 77,
             "img": "null_talisman_lg.png",
             "dname": "Null Talisman",
@@ -1393,7 +1449,7 @@
             ],
             "created": true
         },
-        "79": {
+        "mekansm": {
             "id": 79,
             "img": "mekansm_lg.png",
             "dname": "Mekansm",
@@ -1411,7 +1467,7 @@
             ],
             "created": true
         },
-        "81": {
+        "vladmir": {
             "id": 81,
             "img": "vladmir_lg.png",
             "dname": "Vladmir's Offering",
@@ -1430,7 +1486,7 @@
             ],
             "created": true
         },
-        "84": {
+        "flying_courier": {
             "id": 84,
             "img": "flying_courier_lg.png",
             "dname": "Flying Courier",
@@ -1445,7 +1501,7 @@
             "components": null,
             "created": false
         },
-        "86": {
+        "buckler": {
             "id": 86,
             "img": "buckler_lg.png",
             "dname": "Buckler",
@@ -1463,7 +1519,7 @@
             ],
             "created": true
         },
-        "88": {
+        "ring_of_basilius": {
             "id": 88,
             "img": "ring_of_basilius_lg.png",
             "dname": "Ring of Basilius",
@@ -1481,7 +1537,7 @@
             ],
             "created": true
         },
-        "90": {
+        "pipe": {
             "id": 90,
             "img": "pipe_lg.png",
             "dname": "Pipe of Insight",
@@ -1499,7 +1555,7 @@
             ],
             "created": true
         },
-        "92": {
+        "urn_of_shadows": {
             "id": 92,
             "img": "urn_of_shadows_lg.png",
             "dname": "Urn of Shadows",
@@ -1518,7 +1574,7 @@
             ],
             "created": true
         },
-        "94": {
+        "headdress": {
             "id": 94,
             "img": "headdress_lg.png",
             "dname": "Headdress",
@@ -1536,7 +1592,7 @@
             ],
             "created": true
         },
-        "96": {
+        "sheepstick": {
             "id": 96,
             "img": "sheepstick_lg.png",
             "dname": "Scythe of Vyse",
@@ -1555,7 +1611,7 @@
             ],
             "created": true
         },
-        "98": {
+        "orchid": {
             "id": 98,
             "img": "orchid_lg.png",
             "dname": "Orchid Malevolence",
@@ -1573,7 +1629,7 @@
             ],
             "created": true
         },
-        "100": {
+        "cyclone": {
             "id": 100,
             "img": "cyclone_lg.png",
             "dname": "Eul's Scepter of Divinity",
@@ -1592,7 +1648,7 @@
             ],
             "created": true
         },
-        "102": {
+        "force_staff": {
             "id": 102,
             "img": "force_staff_lg.png",
             "dname": "Force Staff",
@@ -1610,7 +1666,7 @@
             ],
             "created": true
         },
-        "104": {
+        "dagon": {
             "id": 104,
             "img": "dagon_lg.png",
             "dname": "Dagon",
@@ -1628,7 +1684,79 @@
             ],
             "created": true
         },
-        "106": {
+        "dagon_2": {
+            "id": 201,
+            "img": "dagon_2_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_dagon_2",
+            "qual": "rare",
+            "cost": 2850,
+            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
+            "notes": "",
+            "attrib": "+ 13/<span class=\"attribVal\">15</span>/17/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/<span class=\"attribVal\">500</span>/600/700/800<br />\nCAST RANGE: 600/<span class=\"attribVal\">650</span>/700/750/800",
+            "mc": "180 160 140 120 100",
+            "cd": 35,
+            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "components": [
+                "dagon",
+                "recipe_dagon"
+            ],
+            "created": true
+        },
+        "dagon_3": {
+            "id": 202,
+            "img": "dagon_3_lg.png",
+            "dname": "Dagon",
+            "qual": "rare",
+            "cost": 2850,
+            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
+            "notes": "",
+            "attrib": "+ 13/15/<span class=\"attribVal\">17</span>/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/<span class=\"attribVal\">600</span>/700/800<br />\nCAST RANGE: 600/650/<span class=\"attribVal\">700</span>/750/800",
+            "mc": "180 160 140 120 100",
+            "cd": 35,
+            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "components": [
+                "dagon_2",
+                "recipe_dagon"
+            ],
+            "created": true
+        },
+        "dagon_4": {
+            "id": 203,
+            "img": "dagon_4_lg.png",
+            "dname": "Dagon",
+            "qual": "rare",
+            "cost": 2850,
+            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
+            "notes": "",
+            "attrib": "+ 13/15/17/<span class=\"attribVal\">19</span>/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/<span class=\"attribVal\">700</span>/800<br />\nCAST RANGE: 600/650/700/<span class=\"attribVal\">750</span>/800",
+            "mc": "180 160 140 120 100",
+            "cd": 35,
+            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "components": [
+                "dagon_3",
+                "recipe_dagon"
+            ],
+            "created": true
+        },
+        "dagon_5": {
+            "id": 204,
+            "img": "dagon_5_lg.png",
+            "dname": "Dagon",
+            "qual": "rare",
+            "cost": 2850,
+            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
+            "notes": "",
+            "attrib": "+ 13/15/17/19/<span class=\"attribVal\">21</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/700/<span class=\"attribVal\">800</span><br />\nCAST RANGE: 600/650/700/750/<span class=\"attribVal\">800</span>",
+            "mc": "180 160 140 120 100",
+            "cd": 35,
+            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "components": [
+                "dagon_4",
+                "recipe_dagon"
+            ],
+            "created": true
+        },
+        "necronomicon": {
             "id": 106,
             "img": "necronomicon_lg.png",
             "dname": "Necronomicon",
@@ -1646,7 +1774,43 @@
             ],
             "created": true
         },
-        "108": {
+        "necronomicon_2": {
+            "id": 193,
+            "img": "necronomicon_2_lg.png",
+            "dname": "Necronomicon",
+            "qual": "rare",
+            "cost": 2700,
+            "desc": "Active: Demonic Summoning - Summons a Necronomicon Warrior and a Necronomicon Archer to fight for you.  Their strength and abilities increase as Necronomicon increases in level.  Lasts 40 seconds.",
+            "notes": "",
+            "attrib": "+ 15/<span class=\"attribVal\">21</span>/24 <span class=\"attribValText\">Intelligence</span><br />\n+ 8/<span class=\"attribVal\">12</span>/16 <span class=\"attribValText\">Strength</span>",
+            "mc": 50,
+            "cd": 95,
+            "lore": "Considered the holy grail of necromancy and demonology, a powerful malefic force is locked within its pages.",
+            "components": [
+                "necronomicon",
+                "recipe_necronomicon"
+            ],
+            "created": true
+        },
+        "necronomicon_3": {
+            "id": 194,
+            "img": "necronomicon_3_lg.png",
+            "dname": "Necronomicon",
+            "qual": "rare",
+            "cost": 2700,
+            "desc": "Active: Demonic Summoning - Summons a Necronomicon Warrior and a Necronomicon Archer to fight for you.  Their strength and abilities increase as Necronomicon increases in level.  Lasts 40 seconds.",
+            "notes": "",
+            "attrib": "+ 15/21/<span class=\"attribVal\">24</span> <span class=\"attribValText\">Intelligence</span><br />\n+ 8/12/<span class=\"attribVal\">16</span> <span class=\"attribValText\">Strength</span>",
+            "mc": 50,
+            "cd": 95,
+            "lore": "Considered the holy grail of necromancy and demonology, a powerful malefic force is locked within its pages.",
+            "components": [
+                "necronomicon_2",
+                "recipe_necronomicon"
+            ],
+            "created": true
+        },
+        "ultimate_scepter": {
             "id": 108,
             "img": "ultimate_scepter_lg.png",
             "dname": "Aghanim's Scepter",
@@ -1666,7 +1830,7 @@
             ],
             "created": true
         },
-        "110": {
+        "refresher": {
             "id": 110,
             "img": "refresher_lg.png",
             "dname": "Refresher Orb",
@@ -1684,7 +1848,7 @@
             ],
             "created": true
         },
-        "112": {
+        "assault": {
             "id": 112,
             "img": "assault_lg.png",
             "dname": "Assault Cuirass",
@@ -1703,7 +1867,7 @@
             ],
             "created": true
         },
-        "114": {
+        "heart": {
             "id": 114,
             "img": "heart_lg.png",
             "dname": "Heart of Tarrasque",
@@ -1721,7 +1885,7 @@
             ],
             "created": true
         },
-        "116": {
+        "black_king_bar": {
             "id": 116,
             "img": "black_king_bar_lg.png",
             "dname": "Black King Bar",
@@ -1739,7 +1903,7 @@
             ],
             "created": true
         },
-        "117": {
+        "aegis": {
             "id": 117,
             "img": "aegis_lg.png",
             "dname": "Aegis of the Immortal",
@@ -1754,7 +1918,7 @@
             "components": null,
             "created": false
         },
-        "119": {
+        "shivas_guard": {
             "id": 119,
             "img": "shivas_guard_lg.png",
             "dname": "Shiva's Guard",
@@ -1772,7 +1936,7 @@
             ],
             "created": true
         },
-        "121": {
+        "bloodstone": {
             "id": 121,
             "img": "bloodstone_lg.png",
             "dname": "Bloodstone",
@@ -1790,7 +1954,7 @@
             ],
             "created": true
         },
-        "123": {
+        "sphere": {
             "id": 123,
             "img": "sphere_lg.png",
             "dname": "Linken's Sphere",
@@ -1808,7 +1972,7 @@
             ],
             "created": true
         },
-        "125": {
+        "vanguard": {
             "id": 125,
             "img": "vanguard_lg.png",
             "dname": "Vanguard",
@@ -1827,7 +1991,7 @@
             ],
             "created": true
         },
-        "127": {
+        "blade_mail": {
             "id": 127,
             "img": "blade_mail_lg.png",
             "dname": "Blade Mail",
@@ -1846,7 +2010,7 @@
             ],
             "created": true
         },
-        "129": {
+        "soul_booster": {
             "id": 129,
             "img": "soul_booster_lg.png",
             "dname": "Soul Booster",
@@ -1865,7 +2029,7 @@
             ],
             "created": true
         },
-        "131": {
+        "hood_of_defiance": {
             "id": 131,
             "img": "hood_of_defiance_lg.png",
             "dname": "Hood of Defiance",
@@ -1885,7 +2049,7 @@
             ],
             "created": true
         },
-        "133": {
+        "rapier": {
             "id": 133,
             "img": "rapier_lg.png",
             "dname": "Divine Rapier",
@@ -1903,7 +2067,7 @@
             ],
             "created": true
         },
-        "135": {
+        "monkey_king_bar": {
             "id": 135,
             "img": "monkey_king_bar_lg.png",
             "dname": "Monkey King Bar",
@@ -1922,7 +2086,7 @@
             ],
             "created": true
         },
-        "137": {
+        "radiance": {
             "id": 137,
             "img": "radiance_lg.png",
             "dname": "Radiance",
@@ -1939,7 +2103,7 @@
             ],
             "created": true
         },
-        "139": {
+        "butterfly": {
             "id": 139,
             "img": "butterfly_lg.png",
             "dname": "Butterfly",
@@ -1958,7 +2122,7 @@
             ],
             "created": true
         },
-        "141": {
+        "greater_crit": {
             "id": 141,
             "img": "greater_crit_lg.png",
             "dname": "Daedalus",
@@ -1976,7 +2140,7 @@
             ],
             "created": true
         },
-        "143": {
+        "basher": {
             "id": 143,
             "img": "basher_lg.png",
             "dname": "Skull Basher",
@@ -1994,7 +2158,7 @@
             ],
             "created": true
         },
-        "145": {
+        "bfury": {
             "id": 145,
             "img": "bfury_lg.png",
             "dname": "Battle Fury",
@@ -2013,7 +2177,7 @@
             ],
             "created": true
         },
-        "147": {
+        "manta": {
             "id": 147,
             "img": "manta_lg.png",
             "dname": "Manta Style",
@@ -2031,7 +2195,7 @@
             ],
             "created": true
         },
-        "149": {
+        "lesser_crit": {
             "id": 149,
             "img": "lesser_crit_lg.png",
             "dname": "Crystalys",
@@ -2049,7 +2213,7 @@
             ],
             "created": true
         },
-        "151": {
+        "armlet": {
             "id": 151,
             "img": "armlet_lg.png",
             "dname": "Armlet of Mordiggian",
@@ -2068,7 +2232,7 @@
             ],
             "created": true
         },
-        "152": {
+        "invis_sword": {
             "id": 152,
             "img": "invis_sword_lg.png",
             "dname": "Shadow Blade",
@@ -2086,7 +2250,7 @@
             ],
             "created": true
         },
-        "154": {
+        "sange_and_yasha": {
             "id": 154,
             "img": "sange_and_yasha_lg.png",
             "dname": "Sange and Yasha",
@@ -2104,7 +2268,7 @@
             ],
             "created": true
         },
-        "156": {
+        "satanic": {
             "id": 156,
             "img": "satanic_lg.png",
             "dname": "Satanic",
@@ -2122,7 +2286,7 @@
             ],
             "created": true
         },
-        "158": {
+        "mjollnir": {
             "id": 158,
             "img": "mjollnir_lg.png",
             "dname": "Mjollnir",
@@ -2140,7 +2304,7 @@
             ],
             "created": true
         },
-        "160": {
+        "skadi": {
             "id": 160,
             "img": "skadi_lg.png",
             "dname": "Eye of Skadi",
@@ -2160,7 +2324,7 @@
             ],
             "created": true
         },
-        "162": {
+        "sange": {
             "id": 162,
             "img": "sange_lg.png",
             "dname": "Sange",
@@ -2178,7 +2342,7 @@
             ],
             "created": true
         },
-        "164": {
+        "helm_of_the_dominator": {
             "id": 164,
             "img": "helm_of_the_dominator_lg.png",
             "dname": "Helm of the Dominator",
@@ -2196,7 +2360,7 @@
             ],
             "created": true
         },
-        "166": {
+        "maelstrom": {
             "id": 166,
             "img": "maelstrom_lg.png",
             "dname": "Maelstrom",
@@ -2214,7 +2378,7 @@
             ],
             "created": true
         },
-        "168": {
+        "desolator": {
             "id": 168,
             "img": "desolator_lg.png",
             "dname": "Desolator",
@@ -2232,7 +2396,7 @@
             ],
             "created": true
         },
-        "170": {
+        "yasha": {
             "id": 170,
             "img": "yasha_lg.png",
             "dname": "Yasha",
@@ -2250,7 +2414,7 @@
             ],
             "created": true
         },
-        "172": {
+        "mask_of_madness": {
             "id": 172,
             "img": "mask_of_madness_lg.png",
             "dname": "Mask of Madness",
@@ -2267,7 +2431,7 @@
             ],
             "created": true
         },
-        "174": {
+        "diffusal_blade": {
             "id": 174,
             "img": "diffusal_blade_lg.png",
             "dname": "Diffusal Blade",
@@ -2286,196 +2450,7 @@
             ],
             "created": true
         },
-        "176": {
-            "id": 176,
-            "img": "ethereal_blade_lg.png",
-            "dname": "Ethereal Blade",
-            "qual": "epic",
-            "cost": 4900,
-            "desc": "Active: Ether Blast - Converts you and your target into ethereal form, increasing incoming magic damage. Target unit is slowed and cannot attack or be attacked, and takes 2.0x of your primary attribute + 75 as damage.",
-            "notes": "Shares cooldown with Ghost Scepter.<br />Ethereal units take 40% bonus magic damage.<br />Lasts an extra second on Self or Allied cast.",
-            "attrib": "+ <span class=\"attribVal\">40</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Intelligence</span><br />\nBLAST ENEMY DURATION: <span class=\"attribVal\">3</span><br />\nBLAST ALLY/SELF DURATION: <span class=\"attribVal\">4</span><br />\nINCREASED MAGIC DAMAGE: <span class=\"attribVal\">40%</span>",
-            "mc": 150,
-            "cd": 30,
-            "lore": "A flickering blade of a ghastly nature, it is capable of dealing damage in both magical and physical planes.",
-            "components": [
-                "eagle",
-                "ghost"
-            ],
-            "created": true
-        },
-        "178": {
-            "id": 178,
-            "img": "soul_ring_lg.png",
-            "dname": "Soul Ring",
-            "qual": "common",
-            "cost": 800,
-            "desc": "Active: Sacrifice - Consume 150 HP to temporarily gain 150 Mana.  Lasts 10 seconds.",
-            "notes": "If the mana gain cannot fit in your mana pool, it creates a buffer of mana that is used before your mana pool.  If this mana is not used before the duration, the extra mana is lost.",
-            "attrib": "+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">50%</span> <span class=\"attribValText\">Mana Regeneration</span>",
-            "mc": false,
-            "cd": 30,
-            "lore": "A ring that feeds on the souls of those around it.",
-            "components": [
-                "ring_of_regen",
-                "sobi_mask"
-            ],
-            "created": true
-        },
-        "180": {
-            "id": 180,
-            "img": "arcane_boots_lg.png",
-            "dname": "Arcane Boots",
-            "qual": "rare",
-            "cost": 1450,
-            "desc": "Active: Replenish Mana - Restores mana in an area around the hero.<br />\n<br />\nFlat movement speed bonuses from multiple pairs of boots do not stack.",
-            "notes": "Does not work on Meepo clones.",
-            "attrib": "+ <span class=\"attribVal\">55</span> <span class=\"attribValText\">Movement Speed</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Mana</span><br />\nMANA RESTORED: <span class=\"attribVal\">135</span>",
-            "mc": 35,
-            "cd": 55,
-            "lore": "Magi equipped with these boots are valued in battle.",
-            "components": [
-                "energy_booster",
-                "boots"
-            ],
-            "created": true
-        },
-        "181": {
-            "id": 181,
-            "img": "orb_of_venom_lg.png",
-            "dname": "Orb of Venom",
-            "qual": "secret_shop",
-            "cost": 275,
-            "desc": "Passive: Poison Attack - Poisons the target, dealing damage over time and slowing, depending on whether your hero is melee or ranged.<br />\n<br />\nOrb of Venom is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.  Orb of Venom can be combined with Lifesteal Attack Modifiers.",
-            "notes": "",
-            "attrib": "MELEE SLOW: <span class=\"attribVal\">12%</span><br />\nRANGED SLOW: <span class=\"attribVal\">4%</span><br />\nDURATION: <span class=\"attribVal\">4</span><br />\nPOISON DAMAGE: <span class=\"attribVal\">3</span>",
-            "mc": false,
-            "cd": false,
-            "lore": "Envenoms your veapon with the venom of a venomous viper.",
-            "components": null,
-            "created": false
-        },
-        "182": {
-            "id": 182,
-            "img": "stout_shield_lg.png",
-            "dname": "Stout Shield",
-            "qual": "component",
-            "cost": 250,
-            "desc": "Passive: Damage Block - Gives a chance to block damage based on whether the equipped hero is melee or ranged.",
-            "notes": "Multiple sources of damage block don't stack.",
-            "attrib": "MELEE BLOCK: <span class=\"attribVal\">20</span><br />\nRANGED BLOCK: <span class=\"attribVal\">10</span><br />\nBLOCK CHANCE: <span class=\"attribVal\">60%</span>",
-            "mc": false,
-            "cd": false,
-            "lore": "One man's wine barrel bottom is another man's shield.",
-            "components": null,
-            "created": false
-        },
-        "185": {
-            "id": 185,
-            "img": "ancient_janggo_lg.png",
-            "dname": "Drum of Endurance",
-            "qual": "rare",
-            "cost": 1875,
-            "desc": "Active: Endurance - Gives bonus +10 attack speed and +10% movement speed to surrounding allies.<br />\nPassive: Swiftness Aura - Gives bonus attack and movement speed to surrounding allies.<br />\n<br />\nMultiple instances of Swiftness Aura do not stack.",
-            "notes": "",
-            "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">Damage</span><br />\nAURA ATTACK SPEED: <span class=\"attribVal\">5</span><br />\nAURA MOVE SPEED: <span class=\"attribVal\">5%</span>",
-            "mc": false,
-            "cd": 30,
-            "lore": "A relic that enchants the bodies of those around it for swifter movement in times of crisis.",
-            "components": [
-                "bracer",
-                "robe"
-            ],
-            "created": true
-        },
-        "187": {
-            "id": 187,
-            "img": "medallion_of_courage_lg.png",
-            "dname": "Medallion of Courage",
-            "qual": "rare",
-            "cost": 1075,
-            "desc": "Active: Valor - Reduces the armor of you and your target. Lasts 7 seconds.",
-            "notes": "",
-            "attrib": "+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Armor</span><br />\n+ <span class=\"attribVal\">50%</span> <span class=\"attribValText\">Mana Regeneration</span><br />\nARMOR REDUCTION: <span class=\"attribVal\">6</span>",
-            "mc": false,
-            "cd": 7,
-            "lore": "The bearer has no fear of combat.",
-            "components": [
-                "chainmail",
-                "sobi_mask"
-            ],
-            "created": true
-        },
-        "188": {
-            "id": 188,
-            "img": "smoke_of_deceit_lg.png",
-            "dname": "Smoke of Deceit",
-            "qual": "consumable",
-            "cost": 100,
-            "desc": "Use: Upon activation, the user and all nearby allied player-controlled units gain invisiblity and bonus movement speed for a brief time.  Minimap icons will also be hidden.  Upon moving within 1025 range of an enemy hero or tower, the invisibility is lost.",
-            "notes": "",
-            "attrib": "BONUS SPEED: <span class=\"attribVal\">15%</span><br />\nDURATION: <span class=\"attribVal\">35</span>",
-            "mc": false,
-            "cd": 90,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "190": {
-            "id": 190,
-            "img": "veil_of_discord_lg.png",
-            "dname": "Veil of Discord",
-            "qual": "rare",
-            "cost": 2675,
-            "desc": "Active: Magic Weakness - Emits a weakening blast that increases the magic damage enemies take. Lasts 25.0 seconds.",
-            "notes": "",
-            "attrib": "+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Armor</span><br />\nMAGIC WEAKNESS RADIUS: <span class=\"attribVal\">600</span><br />\nMAGIC WEAKNESS DURATION: <span class=\"attribVal\">25</span><br />\nINCREASED MAGIC DAMAGE: <span class=\"attribVal\">25%</span>",
-            "mc": 75,
-            "cd": 30,
-            "lore": "The headwear of corrupt magi.",
-            "components": [
-                "helm_of_iron_will",
-                "null_talisman"
-            ],
-            "created": true
-        },
-        "193": {
-            "id": 193,
-            "img": "necronomicon_2_lg.png",
-            "dname": "Necronomicon",
-            "qual": "rare",
-            "cost": 2700,
-            "desc": "Active: Demonic Summoning - Summons a Necronomicon Warrior and a Necronomicon Archer to fight for you.  Their strength and abilities increase as Necronomicon increases in level.  Lasts 40 seconds.",
-            "notes": "",
-            "attrib": "+ 15/<span class=\"attribVal\">21</span>/24 <span class=\"attribValText\">Intelligence</span><br />\n+ 8/<span class=\"attribVal\">12</span>/16 <span class=\"attribValText\">Strength</span>",
-            "mc": 50,
-            "cd": 95,
-            "lore": "Considered the holy grail of necromancy and demonology, a powerful malefic force is locked within its pages.",
-            "components": [
-                "necronomicon",
-                "recipe_necronomicon"
-            ],
-            "created": true
-        },
-        "194": {
-            "id": 194,
-            "img": "necronomicon_3_lg.png",
-            "dname": "Necronomicon",
-            "qual": "rare",
-            "cost": 2700,
-            "desc": "Active: Demonic Summoning - Summons a Necronomicon Warrior and a Necronomicon Archer to fight for you.  Their strength and abilities increase as Necronomicon increases in level.  Lasts 40 seconds.",
-            "notes": "",
-            "attrib": "+ 15/21/<span class=\"attribVal\">24</span> <span class=\"attribValText\">Intelligence</span><br />\n+ 8/12/<span class=\"attribVal\">16</span> <span class=\"attribValText\">Strength</span>",
-            "mc": 50,
-            "cd": 95,
-            "lore": "Considered the holy grail of necromancy and demonology, a powerful malefic force is locked within its pages.",
-            "components": [
-                "necronomicon_2",
-                "recipe_necronomicon"
-            ],
-            "created": true
-        },
-        "196": {
+        "diffusal_blade_2": {
             "id": 196,
             "img": "diffusal_blade_2_lg.png",
             "dname": "Diffusal Blade",
@@ -2493,79 +2468,145 @@
             ],
             "created": true
         },
-        "201": {
-            "id": 201,
-            "img": "dagon_2_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_dagon_2",
-            "qual": "rare",
-            "cost": 2850,
-            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
-            "notes": "",
-            "attrib": "+ 13/<span class=\"attribVal\">15</span>/17/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/<span class=\"attribVal\">500</span>/600/700/800<br />\nCAST RANGE: 600/<span class=\"attribVal\">650</span>/700/750/800",
-            "mc": "180 160 140 120 100",
-            "cd": 35,
-            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+        "ethereal_blade": {
+            "id": 176,
+            "img": "ethereal_blade_lg.png",
+            "dname": "Ethereal Blade",
+            "qual": "epic",
+            "cost": 4900,
+            "desc": "Active: Ether Blast - Converts you and your target into ethereal form, increasing incoming magic damage. Target unit is slowed and cannot attack or be attacked, and takes 2.0x of your primary attribute + 75 as damage.",
+            "notes": "Shares cooldown with Ghost Scepter.<br />Ethereal units take 40% bonus magic damage.<br />Lasts an extra second on Self or Allied cast.",
+            "attrib": "+ <span class=\"attribVal\">40</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Intelligence</span><br />\nBLAST ENEMY DURATION: <span class=\"attribVal\">3</span><br />\nBLAST ALLY/SELF DURATION: <span class=\"attribVal\">4</span><br />\nINCREASED MAGIC DAMAGE: <span class=\"attribVal\">40%</span>",
+            "mc": 150,
+            "cd": 30,
+            "lore": "A flickering blade of a ghastly nature, it is capable of dealing damage in both magical and physical planes.",
             "components": [
-                "dagon",
-                "recipe_dagon"
+                "eagle",
+                "ghost"
             ],
             "created": true
         },
-        "202": {
-            "id": 202,
-            "img": "dagon_3_lg.png",
-            "dname": "Dagon",
-            "qual": "rare",
-            "cost": 2850,
-            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
-            "notes": "",
-            "attrib": "+ 13/15/<span class=\"attribVal\">17</span>/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/<span class=\"attribVal\">600</span>/700/800<br />\nCAST RANGE: 600/650/<span class=\"attribVal\">700</span>/750/800",
-            "mc": "180 160 140 120 100",
-            "cd": 35,
-            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+        "soul_ring": {
+            "id": 178,
+            "img": "soul_ring_lg.png",
+            "dname": "Soul Ring",
+            "qual": "common",
+            "cost": 800,
+            "desc": "Active: Sacrifice - Consume 150 HP to temporarily gain 150 Mana.  Lasts 10 seconds.",
+            "notes": "If the mana gain cannot fit in your mana pool, it creates a buffer of mana that is used before your mana pool.  If this mana is not used before the duration, the extra mana is lost.",
+            "attrib": "+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">50%</span> <span class=\"attribValText\">Mana Regeneration</span>",
+            "mc": false,
+            "cd": 30,
+            "lore": "A ring that feeds on the souls of those around it.",
             "components": [
-                "dagon_2",
-                "recipe_dagon"
+                "ring_of_regen",
+                "sobi_mask"
             ],
             "created": true
         },
-        "203": {
-            "id": 203,
-            "img": "dagon_4_lg.png",
-            "dname": "Dagon",
+        "arcane_boots": {
+            "id": 180,
+            "img": "arcane_boots_lg.png",
+            "dname": "Arcane Boots",
             "qual": "rare",
-            "cost": 2850,
-            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
-            "notes": "",
-            "attrib": "+ 13/15/17/<span class=\"attribVal\">19</span>/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/<span class=\"attribVal\">700</span>/800<br />\nCAST RANGE: 600/650/700/<span class=\"attribVal\">750</span>/800",
-            "mc": "180 160 140 120 100",
-            "cd": 35,
-            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "cost": 1450,
+            "desc": "Active: Replenish Mana - Restores mana in an area around the hero.<br />\n<br />\nFlat movement speed bonuses from multiple pairs of boots do not stack.",
+            "notes": "Does not work on Meepo clones.",
+            "attrib": "+ <span class=\"attribVal\">55</span> <span class=\"attribValText\">Movement Speed</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Mana</span><br />\nMANA RESTORED: <span class=\"attribVal\">135</span>",
+            "mc": 35,
+            "cd": 55,
+            "lore": "Magi equipped with these boots are valued in battle.",
             "components": [
-                "dagon_3",
-                "recipe_dagon"
+                "energy_booster",
+                "boots"
             ],
             "created": true
         },
-        "204": {
-            "id": 204,
-            "img": "dagon_5_lg.png",
-            "dname": "Dagon",
-            "qual": "rare",
-            "cost": 2850,
-            "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
+        "orb_of_venom": {
+            "id": 181,
+            "img": "orb_of_venom_lg.png",
+            "dname": "Orb of Venom",
+            "qual": "secret_shop",
+            "cost": 275,
+            "desc": "Passive: Poison Attack - Poisons the target, dealing damage over time and slowing, depending on whether your hero is melee or ranged.<br />\n<br />\nOrb of Venom is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.  Orb of Venom can be combined with Lifesteal Attack Modifiers.",
             "notes": "",
-            "attrib": "+ 13/15/17/19/<span class=\"attribVal\">21</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/700/<span class=\"attribVal\">800</span><br />\nCAST RANGE: 600/650/700/750/<span class=\"attribVal\">800</span>",
-            "mc": "180 160 140 120 100",
-            "cd": 35,
-            "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
+            "attrib": "MELEE SLOW: <span class=\"attribVal\">12%</span><br />\nRANGED SLOW: <span class=\"attribVal\">4%</span><br />\nDURATION: <span class=\"attribVal\">4</span><br />\nPOISON DAMAGE: <span class=\"attribVal\">3</span>",
+            "mc": false,
+            "cd": false,
+            "lore": "Envenoms your veapon with the venom of a venomous viper.",
+            "components": null,
+            "created": false
+        },
+        "ancient_janggo": {
+            "id": 185,
+            "img": "ancient_janggo_lg.png",
+            "dname": "Drum of Endurance",
+            "qual": "rare",
+            "cost": 1875,
+            "desc": "Active: Endurance - Gives bonus +10 attack speed and +10% movement speed to surrounding allies.<br />\nPassive: Swiftness Aura - Gives bonus attack and movement speed to surrounding allies.<br />\n<br />\nMultiple instances of Swiftness Aura do not stack.",
+            "notes": "",
+            "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">Damage</span><br />\nAURA ATTACK SPEED: <span class=\"attribVal\">5</span><br />\nAURA MOVE SPEED: <span class=\"attribVal\">5%</span>",
+            "mc": false,
+            "cd": 30,
+            "lore": "A relic that enchants the bodies of those around it for swifter movement in times of crisis.",
             "components": [
-                "dagon_4",
-                "recipe_dagon"
+                "bracer",
+                "robe"
             ],
             "created": true
         },
-        "206": {
+        "medallion_of_courage": {
+            "id": 187,
+            "img": "medallion_of_courage_lg.png",
+            "dname": "Medallion of Courage",
+            "qual": "rare",
+            "cost": 1075,
+            "desc": "Active: Valor - Reduces the armor of you and your target. Lasts 7 seconds.",
+            "notes": "",
+            "attrib": "+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Armor</span><br />\n+ <span class=\"attribVal\">50%</span> <span class=\"attribValText\">Mana Regeneration</span><br />\nARMOR REDUCTION: <span class=\"attribVal\">6</span>",
+            "mc": false,
+            "cd": 7,
+            "lore": "The bearer has no fear of combat.",
+            "components": [
+                "chainmail",
+                "sobi_mask"
+            ],
+            "created": true
+        },
+        "smoke_of_deceit": {
+            "id": 188,
+            "img": "smoke_of_deceit_lg.png",
+            "dname": "Smoke of Deceit",
+            "qual": "consumable",
+            "cost": 100,
+            "desc": "Use: Upon activation, the user and all nearby allied player-controlled units gain invisiblity and bonus movement speed for a brief time.  Minimap icons will also be hidden.  Upon moving within 1025 range of an enemy hero or tower, the invisibility is lost.",
+            "notes": "",
+            "attrib": "BONUS SPEED: <span class=\"attribVal\">15%</span><br />\nDURATION: <span class=\"attribVal\">35</span>",
+            "mc": false,
+            "cd": 90,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "veil_of_discord": {
+            "id": 190,
+            "img": "veil_of_discord_lg.png",
+            "dname": "Veil of Discord",
+            "qual": "rare",
+            "cost": 2675,
+            "desc": "Active: Magic Weakness - Emits a weakening blast that increases the magic damage enemies take. Lasts 25.0 seconds.",
+            "notes": "",
+            "attrib": "+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Armor</span><br />\nMAGIC WEAKNESS RADIUS: <span class=\"attribVal\">600</span><br />\nMAGIC WEAKNESS DURATION: <span class=\"attribVal\">25</span><br />\nINCREASED MAGIC DAMAGE: <span class=\"attribVal\">25%</span>",
+            "mc": 75,
+            "cd": 30,
+            "lore": "The headwear of corrupt magi.",
+            "components": [
+                "helm_of_iron_will",
+                "null_talisman"
+            ],
+            "created": true
+        },
+        "rod_of_atos": {
             "id": 206,
             "img": "rod_of_atos_lg.png",
             "dname": "Rod of Atos",
@@ -2584,7 +2625,7 @@
             ],
             "created": true
         },
-        "208": {
+        "abyssal_blade": {
             "id": 208,
             "img": "abyssal_blade_lg.png",
             "dname": "Abyssal Blade",
@@ -2602,7 +2643,7 @@
             ],
             "created": true
         },
-        "210": {
+        "heavens_halberd": {
             "id": 210,
             "img": "heavens_halberd_lg.png",
             "dname": "Heaven's Halberd",
@@ -2620,7 +2661,7 @@
             ],
             "created": true
         },
-        "212": {
+        "ring_of_aquila": {
             "id": 212,
             "img": "ring_of_aquila_lg.png",
             "dname": "Ring of Aquila",
@@ -2638,7 +2679,7 @@
             ],
             "created": true
         },
-        "214": {
+        "tranquil_boots": {
             "id": 214,
             "img": "tranquil_boots_lg.png",
             "dname": "Tranquil Boots",
@@ -2657,7 +2698,7 @@
             ],
             "created": true
         },
-        "215": {
+        "shadow_amulet": {
             "id": 215,
             "img": "shadow_amulet_lg.png",
             "dname": "Shadow Amulet",
@@ -2672,7 +2713,7 @@
             "components": null,
             "created": false
         },
-        "216": {
+        "halloween_candy_corn": {
             "id": 216,
             "img": "halloween_candy_corn_lg.png",
             "dname": "Delicious Greevil Treat",
@@ -2687,7 +2728,7 @@
             "components": null,
             "created": false
         },
-        "217": {
+        "mystery_hook": {
             "id": 217,
             "img": "mystery_hook_lg.png",
             "dname": "Mysterious Spell Scroll #1",
@@ -2702,7 +2743,7 @@
             "components": null,
             "created": false
         },
-        "218": {
+        "mystery_arrow": {
             "id": 218,
             "img": "mystery_arrow_lg.png",
             "dname": "Mysterious Spell Scroll #2",
@@ -2717,7 +2758,7 @@
             "components": null,
             "created": false
         },
-        "219": {
+        "mystery_missile": {
             "id": 219,
             "img": "mystery_missile_lg.png",
             "dname": "Mysterious Spell Scroll #3",
@@ -2732,7 +2773,7 @@
             "components": null,
             "created": false
         },
-        "220": {
+        "mystery_toss": {
             "id": 220,
             "img": "mystery_toss_lg.png",
             "dname": "Mysterious Spell Scroll #4",
@@ -2747,7 +2788,7 @@
             "components": null,
             "created": false
         },
-        "221": {
+        "mystery_vacuum": {
             "id": 221,
             "img": "mystery_vacuum_lg.png",
             "dname": "Mysterious Spell Scroll #5",
@@ -2762,7 +2803,7 @@
             "components": null,
             "created": false
         },
-        "226": {
+        "halloween_rapier": {
             "id": 226,
             "img": "halloween_rapier_lg.png",
             "dname": "Cursed Rapier",
@@ -2777,22 +2818,7 @@
             "components": null,
             "created": false
         },
-        "227": {
-            "id": 227,
-            "img": "present_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_present",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": 0,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "228": {
+        "greevil_whistle": {
             "id": 228,
             "img": "greevil_whistle_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_greevil_whistle",
@@ -2807,97 +2833,7 @@
             "components": null,
             "created": false
         },
-        "229": {
-            "id": 229,
-            "img": "winter_stocking_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_stocking",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": 0,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "230": {
-            "id": 230,
-            "img": "winter_skates_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_skates",
-            "qual": "component",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": false,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "231": {
-            "id": 231,
-            "img": "winter_cake_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_cake",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": false,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "232": {
-            "id": 232,
-            "img": "winter_cookie_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_cookie",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": false,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "233": {
-            "id": 233,
-            "img": "winter_coco_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_coco",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": false,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "234": {
-            "id": 234,
-            "img": "winter_ham_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_ham",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": false,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "235": {
+        "greevil_whistle_toggle": {
             "id": 235,
             "img": "greevil_whistle_toggle_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_greevil_whistle_toggle",
@@ -2912,7 +2848,112 @@
             "components": null,
             "created": false
         },
-        "236": {
+        "present": {
+            "id": 227,
+            "img": "present_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_present",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": 0,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_stocking": {
+            "id": 229,
+            "img": "winter_stocking_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_stocking",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": 0,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_skates": {
+            "id": 230,
+            "img": "winter_skates_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_skates",
+            "qual": "component",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": false,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_cake": {
+            "id": 231,
+            "img": "winter_cake_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_cake",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": false,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_cookie": {
+            "id": 232,
+            "img": "winter_cookie_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_cookie",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": false,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_coco": {
+            "id": 233,
+            "img": "winter_coco_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_coco",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": false,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_ham": {
+            "id": 234,
+            "img": "winter_ham_lg.png",
+            "dname": "DOTA_Tooltip_Ability_item_winter_ham",
+            "qual": "consumable",
+            "cost": 0,
+            "desc": "",
+            "notes": "",
+            "attrib": "",
+            "mc": false,
+            "cd": false,
+            "lore": "",
+            "components": null,
+            "created": false
+        },
+        "winter_kringle": {
             "id": 236,
             "img": "winter_kringle_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_winter_kringle",
@@ -2927,7 +2968,7 @@
             "components": null,
             "created": false
         },
-        "237": {
+        "winter_mushroom": {
             "id": 237,
             "img": "winter_mushroom_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_winter_mushroom",
@@ -2942,7 +2983,7 @@
             "components": null,
             "created": false
         },
-        "238": {
+        "winter_greevil_treat": {
             "id": 238,
             "img": "winter_greevil_treat_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_winter_greevil_treat",
@@ -2957,7 +2998,7 @@
             "components": null,
             "created": false
         },
-        "239": {
+        "winter_greevil_garbage": {
             "id": 239,
             "img": "winter_greevil_garbage_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_winter_greevil_garbage",
@@ -2972,37 +3013,7 @@
             "components": null,
             "created": false
         },
-        "240": {
-            "id": 240,
-            "img": "winter_greevil_chewy_lg.png",
-            "dname": "DOTA_Tooltip_Ability_item_winter_greevil_chewy",
-            "qual": "consumable",
-            "cost": 0,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": 10,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "241": {
-            "id": 241,
-            "img": "tango_single_lg.png",
-            "dname": "Tango (Shared)",
-            "qual": "consumable",
-            "cost": 30,
-            "desc": "",
-            "notes": "",
-            "attrib": "",
-            "mc": false,
-            "cd": 60,
-            "lore": "",
-            "components": null,
-            "created": false
-        },
-        "undefined": {
+        "winter_greevil_chewy": {
             "id": 240,
             "img": "winter_greevil_chewy_lg.png",
             "dname": "DOTA_Tooltip_Ability_item_winter_greevil_chewy",
@@ -4099,5 +4110,166 @@
             "id": 105,
             "localized_name": "Techies"
         }
+    },
+    "item_ids": {
+        "1": "blink",
+        "2": "blades_of_attack",
+        "3": "broadsword",
+        "4": "chainmail",
+        "5": "claymore",
+        "6": "helm_of_iron_will",
+        "7": "javelin",
+        "8": "mithril_hammer",
+        "9": "platemail",
+        "10": "quarterstaff",
+        "11": "quelling_blade",
+        "12": "ring_of_protection",
+        "13": "gauntlets",
+        "14": "slippers",
+        "15": "mantle",
+        "16": "branches",
+        "17": "belt_of_strength",
+        "18": "boots_of_elves",
+        "19": "robe",
+        "20": "circlet",
+        "21": "ogre_axe",
+        "22": "blade_of_alacrity",
+        "23": "staff_of_wizardry",
+        "24": "ultimate_orb",
+        "25": "gloves",
+        "26": "lifesteal",
+        "27": "ring_of_regen",
+        "28": "sobi_mask",
+        "29": "boots",
+        "30": "gem",
+        "31": "cloak",
+        "32": "talisman_of_evasion",
+        "33": "cheese",
+        "34": "magic_stick",
+        "36": "magic_wand",
+        "37": "ghost",
+        "38": "clarity",
+        "39": "flask",
+        "40": "dust",
+        "41": "bottle",
+        "42": "ward_observer",
+        "43": "ward_sentry",
+        "44": "tango",
+        "45": "courier",
+        "46": "tpscroll",
+        "48": "travel_boots",
+        "50": "phase_boots",
+        "51": "demon_edge",
+        "52": "eagle",
+        "53": "reaver",
+        "54": "relic",
+        "55": "hyperstone",
+        "56": "ring_of_health",
+        "57": "void_stone",
+        "58": "mystic_staff",
+        "59": "energy_booster",
+        "60": "point_booster",
+        "61": "vitality_booster",
+        "63": "power_treads",
+        "65": "hand_of_midas",
+        "67": "oblivion_staff",
+        "69": "pers",
+        "71": "poor_mans_shield",
+        "73": "bracer",
+        "75": "wraith_band",
+        "77": "null_talisman",
+        "79": "mekansm",
+        "81": "vladmir",
+        "84": "flying_courier",
+        "86": "buckler",
+        "88": "ring_of_basilius",
+        "90": "pipe",
+        "92": "urn_of_shadows",
+        "94": "headdress",
+        "96": "sheepstick",
+        "98": "orchid",
+        "100": "cyclone",
+        "102": "force_staff",
+        "104": "dagon",
+        "106": "necronomicon",
+        "108": "ultimate_scepter",
+        "110": "refresher",
+        "112": "assault",
+        "114": "heart",
+        "116": "black_king_bar",
+        "117": "aegis",
+        "119": "shivas_guard",
+        "121": "bloodstone",
+        "123": "sphere",
+        "125": "vanguard",
+        "127": "blade_mail",
+        "129": "soul_booster",
+        "131": "hood_of_defiance",
+        "133": "rapier",
+        "135": "monkey_king_bar",
+        "137": "radiance",
+        "139": "butterfly",
+        "141": "greater_crit",
+        "143": "basher",
+        "145": "bfury",
+        "147": "manta",
+        "149": "lesser_crit",
+        "151": "armlet",
+        "152": "invis_sword",
+        "154": "sange_and_yasha",
+        "156": "satanic",
+        "158": "mjollnir",
+        "160": "skadi",
+        "162": "sange",
+        "164": "helm_of_the_dominator",
+        "166": "maelstrom",
+        "168": "desolator",
+        "170": "yasha",
+        "172": "mask_of_madness",
+        "174": "diffusal_blade",
+        "176": "ethereal_blade",
+        "178": "soul_ring",
+        "180": "arcane_boots",
+        "181": "orb_of_venom",
+        "182": "stout_shield",
+        "185": "ancient_janggo",
+        "187": "medallion_of_courage",
+        "188": "smoke_of_deceit",
+        "190": "veil_of_discord",
+        "193": "necronomicon_2",
+        "194": "necronomicon_3",
+        "196": "diffusal_blade_2",
+        "201": "dagon_2",
+        "202": "dagon_3",
+        "203": "dagon_4",
+        "204": "dagon_5",
+        "206": "rod_of_atos",
+        "208": "abyssal_blade",
+        "210": "heavens_halberd",
+        "212": "ring_of_aquila",
+        "214": "tranquil_boots",
+        "215": "shadow_amulet",
+        "216": "halloween_candy_corn",
+        "217": "mystery_hook",
+        "218": "mystery_arrow",
+        "219": "mystery_missile",
+        "220": "mystery_toss",
+        "221": "mystery_vacuum",
+        "226": "halloween_rapier",
+        "227": "present",
+        "228": "greevil_whistle",
+        "229": "winter_stocking",
+        "230": "winter_skates",
+        "231": "winter_cake",
+        "232": "winter_cookie",
+        "233": "winter_coco",
+        "234": "winter_ham",
+        "235": "greevil_whistle_toggle",
+        "236": "winter_kringle",
+        "237": "winter_mushroom",
+        "238": "winter_greevil_treat",
+        "239": "winter_greevil_garbage",
+        "240": "winter_greevil_chewy",
+        "241": "tango_single"
     }
 }

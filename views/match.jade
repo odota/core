@@ -77,27 +77,31 @@ block content
                      td.items
                        each val, index in player
                          if (index.slice(0, 5)==="item_")
-                           - var item = constants.items[val]
+                           - var item = constants.items[constants.item_ids[val]]
                            if item
                              img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
                          if (player.hero_id === 80)
                            each val, index in player.additional_units[0]
-                             - var item = constants.items[val]
+                             - var item = constants.items[constants.item_ids[val]]
                              if item
                                img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
                      if match.parsed_data
-                       td #{match.parsed_data.players[i].itemuses.item_tpscroll || "-"}/#{match.parsed_data.players[i].purchases.item_tpscroll || "-"}
-                       td #{match.parsed_data.players[i].itemuses.item_ward_observer || "-"}/#{match.parsed_data.players[i].purchases.item_ward_observer*2 || "-"}
-                       td #{match.parsed_data.players[i].itemuses.item_ward_sentry || "-"}/#{match.parsed_data.players[i].purchases.item_ward_sentry*2 || "-"}
-                       td #{match.parsed_data.players[i].itemuses.item_smoke_of_deceit || "-"}/#{match.parsed_data.players[i].purchases.item_smoke_of_deceit || "-"}
-                       td #{match.parsed_data.players[i].itemuses.item_dust || "-"}/#{match.parsed_data.players[i].purchases.item_dust*2 || "-"}
-                       td #{match.parsed_data.players[i].purchases.item_gem || "-"}
-         
-        .row
-          #chart-diff
-          #chart-gold
-          #chart-xp
-          #chart-lh
-          script(type='text/javascript', src='../public/js/chart.js')
-          #chart-timeline
-          script(type='text/javascript', src='../public/js/timeline.js')
+                       td #{match.parsed_data.players[i].itemuses.tpscroll || "-"}/#{match.parsed_data.players[i].itembuys.tpscroll || "-"}
+                       td #{match.parsed_data.players[i].itemuses.ward_observer || "-"}/#{match.parsed_data.players[i].itembuys.ward_observer*2 || "-"}
+                       td #{match.parsed_data.players[i].itemuses.ward_sentry || "-"}/#{match.parsed_data.players[i].itembuys.ward_sentry*2 || "-"}
+                       td #{match.parsed_data.players[i].itemuses.smoke_of_deceit || "-"}/#{match.parsed_data.players[i].itembuys.smoke_of_deceit || "-"}
+                       td #{match.parsed_data.players[i].itemuses.dust || "-"}/#{match.parsed_data.players[i].itembuys.dust*2 || "-"}
+                       td #{match.parsed_data.players[i].itembuys.gem || "-"}
+        if match.parsed_data
+          .row
+            h3 Radiant Advantage
+            #chart-diff
+            h3 Gold           
+            #chart-gold
+            h3 XP            
+            #chart-xp
+            h3 LH
+            #chart-lh
+            script(type='text/javascript', src='../public/js/chart.js')
+            #chart-timeline
+            script(type='text/javascript', src='../public/js/timeline.js')
