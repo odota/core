@@ -97,12 +97,15 @@ public class Main {
             }
 
             //todo parse user messages for runes
+            //todo also do kills
+            //todo track gold loss
 
             for (GameEvent g : match.getGameEvents()) {
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
                     CombatLogEntry cle = new CombatLogEntry(g);
                     String unit;
                     String key;
+                    int val;
                     JSONObject entry = new JSONObject();
                     switch(cle.getType()) {
                         case 0:
@@ -191,14 +194,20 @@ public class Main {
                         break;
                         case 8:
                         //gold gain/loss
-                        /*
-                         log.info("{} {} {} {} gold", 
-                            time, 
-                            cle.getTargetNameCompiled(),
-                            cle.getValue() < 0 ? "looses" : "receives",
-                            Math.abs(cle.getValue())
-                        );
-                        */
+                        val = cle.getValue();
+                        if (val > 0){
+
+                        }   
+                        else{
+                            /*
+                            System.err.format("%s %s %s %s gold%n", 
+                                              time, 
+                                              cle.getTargetNameCompiled(),
+                                              cle.getValue() < 0 ? "loses" : "receives",
+                                              Math.abs(cle.getValue())
+                                             ); 
+                                             */
+                        }
                         break;
                         case 9:
                         //state
@@ -282,8 +291,8 @@ public class Main {
                 entry.put("time", entry.getInt("start")-gameZero);
                 entry.put("end", entry.getInt("end")-gameZero);
                 entry.put("type", "hero_history");
-                entry.put("img", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(key).getString("img")));
-                entry.put("key", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(key).getString("localized_name")));
+                entry.put("img", constants.getJSONObject("heroes").getJSONObject(key).getString("img"));
+                entry.put("key", constants.getJSONObject("heroes").getJSONObject(key).getString("localized_name"));
                 player.getJSONArray("timeline").put(entry);
             }
         }
