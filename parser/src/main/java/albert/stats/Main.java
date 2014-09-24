@@ -31,7 +31,7 @@ public class Main {
         JSONObject hero_to_slot = new JSONObject();
         JSONObject constants = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(args[1]))));
         Match match = new Match();
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ENTITIES, Profile.COMBAT_LOG);
+        TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ENTITIES, Profile.COMBAT_LOG, Profile.CHAT_MESSAGES);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
 
@@ -96,9 +96,53 @@ public class Main {
                 nextInterval += INTERVAL;
             }
 
-            //todo parse user messages for runes
-            //todo also do kills
-            //todo track gold loss
+            for (UserMessage u : match.getUserMessages()) {
+                JSONArray players = doc.getJSONArray("players");
+                String player1=u.getProperty("playerid_1").toString();
+                String player2=u.getProperty("playerid_2").toString();
+                String type = u.getProperty("type").toString();
+                String value = u.getProperty("value").toString();
+                JSONObject entry = new JSONObject();
+                if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
+                    entry.put("type", "runes");
+                    entry.put("key", value);
+                    entry.put("time", time);
+                    entry.put("slot", player1);
+                    log.put(entry);
+                    //System.err.format("%s,%s%n", time, u);
+                }
+                else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
+                    if (!player1.equals("-1") && !player2.equals("-1")){
+                        entry.put("slot", player2);                        
+                        entry.put("time", time);
+                        entry.put("key", player1);
+                        entry.put("type", "kills");
+                        log.put(entry); 
+                    }
+                    //System.err.format("%s,%s%n", time, u);
+                }
+                else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
+
+                }
+                else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
+
+                }
+                else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
+
+                }                
+                else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
+
+                }
+                else if (type.equals("CHAT_MESSAGE_CONNECT")){
+
+                }
+                else if (type.equals("CHAT_MESSAGE_DISCONNECT")){
+
+                }
+                else{ 
+                    System.err.format("%s,%s%n", time, u);
+                }
+            }
 
             for (GameEvent g : match.getGameEvents()) {
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
@@ -137,14 +181,17 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        /*
                         unit = cle.getTargetName();
                         key = cle.getInflictorName();
+                        /*
                             entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key);
                             log.put(entry);
                             */
+                        if (key.contains("rune")){
+                            //System.err.format("%s,%s,%s%n", time, unit, key);
+                        }
                         break;
                         case 3:
                         //lose buff/debuff
@@ -158,6 +205,7 @@ public class Main {
                         break;
                         case 4:
                         //kill
+                        /*
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
                         if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
@@ -167,6 +215,7 @@ public class Main {
                             entry.put("type", "kills");
                             log.put(entry);
                         }
+                        */
                         break;
                         case 5:
                         //ability use
@@ -266,14 +315,13 @@ public class Main {
             JSONObject counts = player.getJSONObject(type);
             Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
             counts.put(key, count + 1);  
-
+            if (type.equals("kills")){
+                player.getJSONArray("timeline").put(entry);
+            }
             if (type.equals("itembuys")){
-                entry.put("img", constants.getJSONObject("items").getJSONObject(key).getString("img"));
                 player.getJSONArray("timeline").put(entry);
             }
             if (type.equals("runes")){
-                entry.put("key", constants.getJSONObject("runes").getJSONObject(key).getString("name"));
-                entry.put("img", constants.getJSONObject("runes").getJSONObject(key).getString("img"));
                 player.getJSONArray("timeline").put(entry);
             }
             if (type.equals("buybacks")){
@@ -291,14 +339,13 @@ public class Main {
                 entry.put("time", entry.getInt("start")-gameZero);
                 entry.put("end", entry.getInt("end")-gameZero);
                 entry.put("type", "hero_history");
-                entry.put("img", constants.getJSONObject("heroes").getJSONObject(key).getString("img"));
-                entry.put("key", constants.getJSONObject("heroes").getJSONObject(key).getString("localized_name"));
+                entry.put("key", key);
                 player.getJSONArray("timeline").put(entry);
             }
         }
 
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("%ssec%n", tMatch / 1000.0);
+        System.err.format("time:%ssec%n", tMatch / 1000.0);
     }
 }
