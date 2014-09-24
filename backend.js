@@ -105,7 +105,6 @@ function buildLookup(array) {
     for(var i = 0; i < array.length; i++) {
         lookup[array[i].id] = array[i]
         lookup[array[i].name] = array[i]
-
     }
     return lookup
 }
@@ -135,7 +134,7 @@ function queueSummaryRequest(players) {
 
 function generateURL(req) {
     if(req.account_id) {
-        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id + "&matches_requested=" + (process.env.MATCHES_REQUESTED || 10)
+        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id + "&matches_requested=" + (process.env.MATCHES_REQUESTED || 5)
     }
     if(req.match_id) {
         return api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;

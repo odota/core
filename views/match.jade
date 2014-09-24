@@ -6,12 +6,14 @@ block head
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
     script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
+    script(type='text/javascript' src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js')
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css')
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
     link(rel='stylesheet', href='../public/css/match.css')
 
     script.
      var match = !{JSON.stringify(match)}
+     var constants = !{JSON.stringify(constants)}
     style.
      .hero img {width: 50px;}
      .items {white-space:nowrap;}
@@ -40,7 +42,8 @@ block content
                     th K
                     th D
                     th A
-                    th CS
+                    th LH
+                    th DN
                     th G
                     th GPM
                     th XPM
@@ -54,7 +57,6 @@ block content
                       th SEN
                       th SMK
                       th DST
-                      th GM
                   - each player, i in match.players
                    tr(class = i < 5 ? "success" : "danger")
                      td
@@ -68,7 +70,8 @@ block content
                      td= player.kills
                      td= player.deaths
                      td= player.assists
-                     td #{player.last_hits}/#{player.denies}
+                     td= player.last_hits
+                     td= player.denies
                      td= numeral(player.gold+player.gold_spent).format('0.0a')
                      td= player.gold_per_min
                      td= player.xp_per_min
@@ -87,12 +90,12 @@ block content
                              if item
                                img(src=item.img, alt=item.dname)
                      if match.parsed_data
-                       td #{match.parsed_data.players[i].itemuses.tpscroll || "-"}/#{match.parsed_data.players[i].itembuys.tpscroll || "-"}
-                       td #{match.parsed_data.players[i].itemuses.ward_observer || "-"}/#{match.parsed_data.players[i].itembuys.ward_observer*2 || "-"}
-                       td #{match.parsed_data.players[i].itemuses.ward_sentry || "-"}/#{match.parsed_data.players[i].itembuys.ward_sentry*2 || "-"}
-                       td #{match.parsed_data.players[i].itemuses.smoke_of_deceit || "-"}/#{match.parsed_data.players[i].itembuys.smoke_of_deceit || "-"}
-                       td #{match.parsed_data.players[i].itemuses.dust || "-"}/#{match.parsed_data.players[i].itembuys.dust*2 || "-"}
-                       td #{match.parsed_data.players[i].itembuys.gem || "-"}
+                       td #{match.parsed_data.players[i].itemuses.tpscroll || "-"}
+                       td #{match.parsed_data.players[i].itemuses.ward_observer || "-"}
+                       td #{match.parsed_data.players[i].itemuses.ward_sentry || "-"}
+                       td #{match.parsed_data.players[i].itemuses.smoke_of_deceit || "-"}
+                       td #{match.parsed_data.players[i].itemuses.dust || "-"}
+
         if match.parsed_data
           .row
             h3 Radiant Advantage
