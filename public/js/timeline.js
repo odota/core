@@ -1,23 +1,28 @@
 match.parsed_data.players.forEach(function (player, i){
     var items = []
 
-    for (var hero in player.hero_history){
+    for (var i=0;i<player.timeline.length;i++){
+        var event = player.timeline[i]
         var bar = {}
-        bar.content = hero
-        bar.start=moment().startOf('day').seconds(player.hero_history[hero].start)
-        bar.end = moment().startOf('day').seconds(player.hero_history[hero].end)
-        bar.type="background"
+        if (event.time <0 ){
+            time = moment().startOf('day').seconds(event.time*-1).format(" -m:ss");
+        }
+        else{
+            time = moment().startOf('day').seconds(event.time).format(" m:ss");
+        }
+        bar.content = event.key + time
+        bar.start=moment().startOf('day').seconds(event.time)
+        if (event.type=="itembuys"){
+            bar.content = "<img src='http://cdn.dota2.com/apps/dota2/images/items/"+event.img+"' width=30 /><br>"+time
+            bar.type="point"
+        }
+        if (event.type=="hero_history"){
+            //construct image
+            bar.end = moment().startOf('day').seconds(event.end)
+            bar.type="background"
+        }
         items.push(bar)
     }
-    player.build.forEach(function(item){
-        var bar = {}
-        //todo display item usage
-        bar.start = moment().startOf('day').seconds(item.time)
-        var uses = player.itemuses[item.key]
-        bar.content = item.key +moment().startOf('day').seconds(item.time).format(" m'")
-        bar.type="point"
-        items.push(bar)
-    })
 
     // create visualization
     var container = document.getElementById('chart-timeline');
@@ -30,6 +35,8 @@ match.parsed_data.players.forEach(function (player, i){
     var options = {
         zoomable: false,
         moveable: false,
+        start: moment().startOf('day').subtract(180, 'seconds'),
+        end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
         margin: {
             item: 0,
             axis: 0

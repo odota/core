@@ -20,19 +20,20 @@ for (var i = 0; i < match.parsed_data.times.length; i++) {
     xpDifference.push(xptotal)
 }
 var time = ["time"].concat(match.parsed_data.times)
-var lhs = [time]
+var lh = [time]
 var gold = [time]
 var xp = [time]
 match.parsed_data.players.forEach(function(elem){
-    elem.last_hits = [elem.hero.localized_name].concat(elem.last_hits)
-    lhs.push(elem.last_hits)
-    elem.gold = [elem.hero.localized_name].concat(elem.gold)
+    var hero = elem.display_name
+    elem.lh = [hero].concat(elem.lh)
+    lh.push(elem.lh)
+    elem.gold = [hero].concat(elem.gold)
     gold.push(elem.gold)
-    elem.xp = [elem.hero.localized_name].concat(elem.xp)
+    elem.xp = [hero].concat(elem.xp)
     xp.push(elem.xp)
 })
 
-var diff = c3.generate({
+c3.generate({
     bindto: "#chart-diff",
     size: {
         height: height
@@ -57,14 +58,14 @@ var diff = c3.generate({
 })
 
 
-var lh = c3.generate({
+c3.generate({
     bindto: "#chart-lh",
     size: {
         height: height
     },
     data: {
         x: 'time',
-        columns: lhs,
+        columns: lh,
     },
     axis: {
         x: {
@@ -80,7 +81,7 @@ var lh = c3.generate({
     }
 })
 
-var g = c3.generate({
+c3.generate({
     bindto: "#chart-gold",
     size: {
         height: height
@@ -103,7 +104,7 @@ var g = c3.generate({
     }
 })
 
-var x = c3.generate({
+c3.generate({
     bindto: "#chart-xp",
     size: {
         height: height
