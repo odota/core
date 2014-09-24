@@ -62,7 +62,7 @@ block content
                        else
                          a(href='/players/#{player.account_id}')=player.display_name ? player.display_name : player.account_id
                      - var hero = constants.heroes[player.hero_id]
-                     td.hero: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
+                     td.hero: img(src=hero.img, alt=hero.localized_name)
                      td= player.level
                      td= player.kills
                      td= player.deaths
@@ -79,12 +79,12 @@ block content
                          if (index.slice(0, 5)==="item_")
                            - var item = constants.items[constants.item_ids[val]]
                            if item
-                             img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                             img(src=item.img, alt=item.dname)
                          if (player.hero_id === 80)
                            each val, index in player.additional_units[0]
                              - var item = constants.items[constants.item_ids[val]]
                              if item
-                               img(src='http://cdn.dota2.com/apps/dota2/images/items/' + item.img, alt=item.dname)
+                               img(src=item.img, alt=item.dname)
                      if match.parsed_data
                        td #{match.parsed_data.players[i].itemuses.tpscroll || "-"}/#{match.parsed_data.players[i].itembuys.tpscroll || "-"}
                        td #{match.parsed_data.players[i].itemuses.ward_observer || "-"}/#{match.parsed_data.players[i].itembuys.ward_observer*2 || "-"}
