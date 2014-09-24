@@ -30,6 +30,10 @@
     background-color: rgba(189, 195, 199,0.4);
 }
 
-.vis.timeline.item {
-    background-color: #FFFFFF;
+.vis.timeline .item.kill {
+    background-color: red;
+}
+
+.vis.timeline .item.buy {
+    background-color: green;
 }

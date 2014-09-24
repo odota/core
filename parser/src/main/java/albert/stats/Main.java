@@ -103,13 +103,13 @@ public class Main {
                 String type = u.getProperty("type").toString();
                 String value = u.getProperty("value").toString();
                 JSONObject entry = new JSONObject();
-                if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
+                if (type.equals("CHAT_MESSAGE_RUNE_PICKUP")){
                     entry.put("type", "runes");
                     entry.put("key", value);
                     entry.put("time", time);
                     entry.put("slot", player1);
                     log.put(entry);
-                    //System.err.format("%s,%s%n", time, u);
+                    System.err.format("%s,%s%n", time, u);
                 }
                 else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
                     if (!player1.equals("-1") && !player2.equals("-1")){
