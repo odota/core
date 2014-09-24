@@ -35,6 +35,7 @@ match.parsed_data.players.forEach(function (player, i){
     var options = {
         zoomable: false,
         moveable: false,
+        showCurrentTime: false,
         start: moment().startOf('day').subtract(180, 'seconds'),
         end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
         margin: {

@@ -81,12 +81,18 @@ function parseMatches() {
 function updateConstants() {
     var constants = require('./constants.json')
     async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
-        constants.heroes = buildLookup(results[0].result.heroes)
-        constants.items = results[1].itemdata
+        var heroes = results[0].result.heroes
+        var items = results[1].itemdata
+        heroes.forEach(function(hero){
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+        })
         constants.item_ids = {}
-        for (var key in constants.items){
-            constants.item_ids[constants.items[key].id]=key
+        for (var key in items){
+            constants.item_ids[items[key].id]=key
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
         }
+        constants.heroes = buildLookup(heroes)
+        constants.items = items
         constants.modes = buildLookup(results[2].mods)
         constants.regions = buildLookup(results[3].regions)
         console.log("[UPDATE] writing constants file")
