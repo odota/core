@@ -3,7 +3,7 @@
 }
 
 .vis.timeline .item.background.background-1 {
-    background-color: rgba(243, 156, 18, 0.4);
+    background-color: rgba(52, 73, 94,0.4);
 }
 
 .vis.timeline .item.background.background-2 {
@@ -15,7 +15,19 @@
 }
 
 .vis.timeline .item.background.background-4 {
-    background-color: rgba(231, 76, 60, 0.4);
+    background-color: rgba(142, 68, 173,0.4);
+}
+
+.vis.timeline .item.background.background-5 {
+    background-color: rgba(90, 76, 192, 0.4);
+}
+
+.vis.timeline .item.background.background-6 {
+    background-color: rgba(24, 156, 86, 0.4);
+}
+
+.vis.timeline .item.background.background-7 {
+    background-color: rgba(189, 195, 199,0.4);
 }
 
 .vis.timeline.item {
