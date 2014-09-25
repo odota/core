@@ -30,36 +30,6 @@ app.route('/matches/:id').get(function(req, res) {
         if(!doc) res.status(404).send('Could not find this match!')
         else {
             utility.fillPlayerNames(doc.players, function(err) {
-                if (doc.parsed_data){
-                    doc.parsed_data.players.forEach(function(player, i){
-                        player.hero=constants.heroes[doc.players[i].hero_id]
-                        player.build=[]
-                        //use constants file in parser?
-                        //include druid bear in history for merging purposes?
-                        //array of purchase log entries
-                        //if hero history contains the hero
-                        //map internal item name to item id
-                        //place full item into build
-                        //player.build.concat(doc.parsed_data.purchaselog[name])
-                        //embed runes/buybacks in timeline
-                        player.build=doc.parsed_data.itembuilds.filter( function( item, index, inputArray ) {
-                            var hero_id = constants.heroes[item.hero].id.toString()
-                            return player.hero_history[hero_id]
-                        })
-                        
-                        player.itemuses={}
-                        player.purchases={}
-                        player.kills={}
-                        player.feeds={}
-                        for (var hero_id in player.hero_history){
-                            var name = constants.heroes[hero_id].name
-                            utility.merge(player.purchases, doc.parsed_data.purchases[name])
-                            utility.merge(player.itemuses, doc.parsed_data.itemuses[name])
-                            utility.merge(player.kills, doc.parsed_data.kills[name])      
-                            utility.merge(player.feeds, doc.parsed_data.feeds[name])
-                        }
-                    })
-                }
                 res.render('match.jade', {
                     match: doc
                 })
