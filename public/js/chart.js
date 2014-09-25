@@ -1,38 +1,39 @@
-var height = 400
-
+var height = 350
 var goldDifference = ['Gold']
 var xpDifference = ['XP']
-
-for (var i = 0; i < match.parsed_data.times.length; i++) {
+for(var i = 0; i < match.parsed_data.times.length; i++) {
     var goldtotal = 0
     var xptotal = 0
     match.parsed_data.players.forEach(function(elem, j) {
-        if (j < 5){
+        if(j < 5) {
             goldtotal += elem.gold[i]
             xptotal += elem.xp[i]
-        }
-        else{
+        } else {
             xptotal -= elem.xp[i]
             goldtotal -= elem.gold[i]
-        } 
+        }
     })
     goldDifference.push(goldtotal)
     xpDifference.push(xptotal)
 }
 var time = ["time"].concat(match.parsed_data.times)
-var lhs = [time]
+var lh = [time]
 var gold = [time]
 var xp = [time]
-match.parsed_data.players.forEach(function(elem){
-    elem.last_hits = [elem.hero.localized_name].concat(elem.last_hits)
-    lhs.push(elem.last_hits)
-    elem.gold = [elem.hero.localized_name].concat(elem.gold)
+var groups = [
+    []
+]
+match.parsed_data.players.forEach(function(elem, i) {
+    var hero = constants.heroes[match.players[i].hero_id].localized_name
+    groups[0].push(hero)
+    elem.lh = [hero].concat(elem.lh)
+    lh.push(elem.lh)
+    elem.gold = [hero].concat(elem.gold)
     gold.push(elem.gold)
-    elem.xp = [elem.hero.localized_name].concat(elem.xp)
-    xp.push(elem.xp)
+    elem.xp = [hero].concat(elem.xp)
+    xp.push(elem.xp)  
 })
-
-var diff = c3.generate({
+c3.generate({
     bindto: "#chart-diff",
     size: {
         height: height
@@ -40,13 +41,15 @@ var diff = c3.generate({
     data: {
         x: 'time',
         columns: [time, goldDifference, xpDifference],
-        types:{'Gold':"area",'XP':"area"}
+        type: "area-spline"
     },
     axis: {
         x: {
             type: 'timeseries',
             tick: {
-                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) {
+                    return moment().startOf('day').seconds(x).format("H:mm")
+                }
             },
             label: 'Game Time (minutes)'
         },
@@ -55,70 +58,79 @@ var diff = c3.generate({
         }
     }
 })
-
-
-var lh = c3.generate({
+c3.generate({
     bindto: "#chart-lh",
     size: {
         height: height
     },
     data: {
         x: 'time',
-        columns: lhs,
+        columns: lh,
+        type: "area-spline",
+        groups: groups,
+        order: null
     },
     axis: {
         x: {
             type: 'timeseries',
             tick: {
-                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) {
+                    return moment().startOf('day').seconds(x).format("H:mm")
+                }
             },
-            label: 'Game Time (minutes)'
         },
         y: {
             label: 'Last Hits'
         }
     }
 })
-
-var g = c3.generate({
+c3.generate({
     bindto: "#chart-gold",
     size: {
         height: height
     },
     data: {
         x: 'time',
-        columns: gold
+        columns: gold,
+        type: "area-spline",
+        groups: groups,
+        order: null
     },
     axis: {
         x: {
             type: 'timeseries',
             tick: {
-                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) {
+                    return moment().startOf('day').seconds(x).format("H:mm")
+                }
             },
-            label: 'Game Time (minutes)'
         },
         y: {
             label: 'Gold'
         }
     }
 })
-
-var x = c3.generate({
+c3.generate({
     bindto: "#chart-xp",
     size: {
         height: height
     },
     data: {
         x: 'time',
-        columns: xp
+        columns: xp,
+        type: "area-spline",
+        groups: groups,
+        order: null
+
     },
     axis: {
         x: {
             type: 'timeseries',
             tick: {
-                format: function(x) { return moment().startOf('day').seconds(x).format("H:mm")}
+                format: function(x) {
+                    return moment().startOf('day').seconds(x).format("H:mm")
+                }
             },
-            label: 'Game Time (minutes)'
         },
         y: {
             label: 'XP'

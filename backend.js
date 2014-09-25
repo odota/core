@@ -15,14 +15,13 @@ var request = require('request'),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false)
-var aq = async.queue(apiRequest, 1)
+    var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
 var api_delay = 1000
 var replay_dir = process.env.REPLAY_DIR || "replays/"
 var parser_file = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar"
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
-var host = "http://www.dotabuff.com"
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
@@ -80,9 +79,19 @@ function parseMatches() {
 
 function updateConstants() {
     var constants = require('./constants.json')
-    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
-        constants.heroes = buildLookup(results[0].result.heroes)
-        constants.items = buildLookup(extractProperties(results[1].itemdata))
+    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], getData, function(err, results) {
+        var heroes = results[0].result.heroes
+        var items = results[1].itemdata
+        heroes.forEach(function(hero) {
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+        })
+        constants.item_ids = {}
+        for(var key in items) {
+            constants.item_ids[items[key].id] = key
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+        }
+        constants.heroes = buildLookup(heroes)
+        constants.items = items
         constants.modes = buildLookup(results[2].mods)
         constants.regions = buildLookup(results[3].regions)
         console.log("[UPDATE] writing constants file")
@@ -90,20 +99,11 @@ function updateConstants() {
     })
 }
 
-function extractProperties(object) {
-    var arr = []
-    for(var key in object) {
-        arr.push(object[key])
-    }
-    return arr
-}
-
 function buildLookup(array) {
     var lookup = {}
     for(var i = 0; i < array.length; i++) {
         lookup[array[i].id] = array[i]
         lookup[array[i].name] = array[i]
-
     }
     return lookup
 }
@@ -133,7 +133,7 @@ function queueSummaryRequest(players) {
 
 function generateURL(req) {
     if(req.account_id) {
-        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id + "&matches_requested=" + (process.env.MATCHES_REQUESTED || 10)
+        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id + "&matches_requested=" + (req.num_matches || 3)
     }
     if(req.match_id) {
         return api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
@@ -147,28 +147,32 @@ function generateURL(req) {
         return summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
     }
 }
+
+function getData(url, cb) {
+    console.log("[API] %s", url)
+    request(url, function(err, res, body) {
+        if(err || res.statusCode != 200) {
+            cb(err || "response code != 200")
+        } else {
+            cb(null, JSON.parse(body))
+        }
+    })
+}
 /*
  * Processes a request to an api
  */
 
 function apiRequest(req, cb) {
-    utility.getData(generateURL(req), function(err, data) {
+    getData(generateURL(req), function(err, data) {
         if(err) {
             return cb(err)
         }
-        if(req.full_history) {
-            getFullMatchHistory(req.account_id, function(err) {
-                setTimeout(cb, api_delay, null)
-            })
-        }
         if(req.account_id) {
-            console.log("[API] games for player %s", req.account_id)
             async.map(data.result.matches, insertMatch, function(err) {
                 setTimeout(cb, api_delay, null)
             })
         }
         if(req.match_id) {
-            console.log("[API] details for match %s", req.match_id)
             var match = data.result
             match.parse_status = 0
             matches.update({
@@ -181,7 +185,6 @@ function apiRequest(req, cb) {
             setTimeout(cb, api_delay, null)
         }
         if(req.summaries_id) {
-            console.log("[API] summaries for players")
             async.map(data.response.players, insertPlayer, function(err) {
                 setTimeout(cb, api_delay, null)
             })
@@ -216,46 +219,6 @@ function insertPlayer(player, cb) {
         upsert: true
     }, function(err) {
         cb(err)
-    })
-}
-/*
- * Scrapes dotabuff for a full match history for the user
- */
-
-function getFullMatchHistory(account_id, cb) {
-    var player_url = host + "/players/" + account_id + "/matches"
-    players.update({
-        account_id: account_id
-    }, {
-        $set: {
-            full_history: 0
-        }
-    })
-    getMatchPage(player_url, function(err) {
-        cb(null)
-    })
-}
-/*
- * Inserts matches on a page into database and tries to get the next page
- */
-
-function getMatchPage(url, cb) {
-    request(url, function(err, resp, body) {
-        console.log("[DOTABUFF] %s", url)
-        var parsedHTML = $.load(body);
-        var matchCells = parsedHTML('td[class=cell-xlarge]')
-        matchCells.each(function(i, matchCell) {
-            var match_url = host + $(matchCell).children().first().attr('href');
-            var match = {}
-            match.match_id = Number(match_url.split(/[/]+/).pop());
-            insertMatch(match, function(err) {})
-        })
-        var nextPath = parsedHTML('a[rel=next]').first().attr('href')
-        if(nextPath) {
-            getMatchPage(host + nextPath, cb);
-        } else {
-            cb(null)
-        }
     })
 }
 /*
@@ -469,10 +432,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName,
-                                "constants.json"
-                               ])
+            parser_file,
+            fileName, "constants.json"
+        ])
         cp.stdout.on('data', function(data) {
             output += data
         })

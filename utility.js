@@ -10,27 +10,7 @@ utility.players = utility.db.get('players');
 utility.players.index('account_id', {
     unique: true
 })
-/*
- * Merges object B into object A, summing identical keys
- */
-utility.merge = function(objA, objB){
-    for (var key in objB){
-        if (!objA[key]){
-            objA[key]=0
-        }
-        objA[key]+=objB[key]
-    }
-}
 
-utility.getData = function(url, cb) {
-    request(url, function(err, res, body) {
-        if(err || res.statusCode != 200) {
-            cb(err || "response code != 200")
-        } else {
-            cb(null, JSON.parse(body))
-        }
-    })
-}
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
