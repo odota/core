@@ -14,8 +14,8 @@ var request = require('request'),
     steam = require("steam"),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
-    Dota2 = new dota2.Dota2Client(Steam, false)
-    var aq = async.queue(apiRequest, 1)
+    Dota2 = new dota2.Dota2Client(Steam, false);
+var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
 var api_delay = 1000
 var replay_dir = process.env.REPLAY_DIR || "replays/"
@@ -33,34 +33,16 @@ setInterval(updateNames, 86400 * 1000)
 setInterval(function() {
     console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
 }, 10000)
-queueRequests()
-requestDetails()
-parseMatches()
 updateConstants()
+queueRequests()
+parseMatches()
 /*
  * Reloads the api queue with tracked users
  */
 
 function queueRequests() {
-    players.find({
-        track: 1
-    }, function(err, docs) {
-        aq.push(docs, function(err) {})
-    })
-}
-/*
- * Reloads the api queue with matches needing details
- * After completion, a match is auto-queued for parse
- */
-
-function requestDetails() {
-    matches.find({
-        duration: {
-            $exists: false
-        }
-    }, function(err, docs) {
-        aq.push(docs, function(err) {})
-    })
+    //todo poll the full match feed for fewer api reqs?
+    //when a user is added we should get their matches once
 }
 /*
  * Reloads the parse queue with matches needing parse
@@ -112,9 +94,6 @@ function buildLookup(array) {
  */
 
 function updateNames() {
-    //go through all the matches and update the players
-    //maybe make a set of unique players across all games and batch them in groups of 10-20
-    //or go through the players table but possible missing players if action interrupted previously
     //todo albert implement this
 }
 /*
@@ -133,7 +112,7 @@ function queueSummaryRequest(players) {
 
 function generateURL(req) {
     if(req.account_id) {
-        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id + "&matches_requested=" + (req.num_matches || 3)
+        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
     }
     if(req.match_id) {
         return api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
@@ -168,39 +147,26 @@ function apiRequest(req, cb) {
             return cb(err)
         }
         if(req.account_id) {
-            async.map(data.result.matches, insertMatch, function(err) {
-                setTimeout(cb, api_delay, null)
-            })
+            //todo foreach if newer than last_match
+            //if a tracked player is in match, queue
+            //update last_match
+            aq.push(match, function(err) {})
+            setTimeout(cb, api_delay, null)
         }
         if(req.match_id) {
             var match = data.result
             match.parse_status = 0
-            matches.update({
-                match_id: match.match_id
-            }, {
-                $set: match
+            matches.insert(match, function(err) {
+                queueSummaryRequest(match.players)
+                pq.push(match, function(err) {})
+                setTimeout(cb, api_delay, null)
             })
-            queueSummaryRequest(match.players)
-            pq.push(match, function(err) {})
-            setTimeout(cb, api_delay, null)
         }
         if(req.summaries_id) {
             async.map(data.response.players, insertPlayer, function(err) {
                 setTimeout(cb, api_delay, null)
             })
         }
-    })
-}
-/*
- * Inserts a match in the database and pushes it onto queue for details
- */
-
-function insertMatch(match, cb) {
-    matches.insert(match, function(err) {
-        if(!err) {
-            aq.push(match, function(err) {})
-        }
-        cb(null)
     })
 }
 /*
@@ -370,7 +336,7 @@ function getReplayUrl(match, cb) {
             Steam.logOff()
             console.log("[DOTA] request for replay timed out, relogging")
             getReplayUrl(match, cb)
-        }, 10000)
+        }, 15000)
         Dota2.matchDetailsRequest(match.match_id, function(err, data) {
             if(timeoutProtect) {
                 clearTimeout(timeoutProtect);
@@ -432,9 +398,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            parser_file,
-            fileName, "constants.json"
-        ])
+                                parser_file,
+                                fileName, "constants.json"
+                               ])
         cp.stdout.on('data', function(data) {
             output += data
         })
