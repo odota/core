@@ -26,8 +26,8 @@ for(var i = 0; i < match.parsed_data.times.length; i++) {
     goldDifference.push(goldtotal)
     xpDifference.push(xptotal)
     match.parsed_data.players.forEach(function(elem, j) {
-        elem.gold[i]=elem.gold[i]/(absGoldTotal + 1)
-        elem.xp[i]=elem.xp[i]/(absXpTotal + 1)
+        elem.gold[i]=elem.gold[i]/(absGoldTotal)
+        elem.xp[i]=elem.xp[i]/(absXpTotal)
     })
 }
 match.parsed_data.players.forEach(function(elem, i) {
@@ -72,8 +72,7 @@ c3.generate({
         x: 'time',
         columns: gold,
         type: "area-spline",
-        groups: groups,
-        order: null
+        groups: groups
     },
     axis: {
         x: {
@@ -98,8 +97,7 @@ c3.generate({
         x: 'time',
         columns: xp,
         type: "area-spline",
-        groups: groups,
-        order: null
+        groups: groups
     },
     axis: {
         x: {
