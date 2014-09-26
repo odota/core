@@ -104,7 +104,7 @@ public class Main {
                 String type = u.getProperty("type").toString();
                 String value = u.getProperty("value").toString();
                 JSONObject entry = new JSONObject();
-                if (type.equals("CHAT_MESSAGE_RUNE_PICKUP")){
+                if (type.contains("RUNE")){
                     entry.put("type", "runes");
                     entry.put("key", value);
                     entry.put("time", time);
@@ -126,13 +126,24 @@ public class Main {
                     //System.err.format("%s,%s%n", time, u); 
                 }
                 else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
-
                 }
+                else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
+                }
+                else if (type.equals("CHAT_MESSAGE_REPORT_REMINDER")){
+                }     
+                else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
+                }  
+                else if (type.equals("CHAT_MESSAGE_AEGIS")){
+                }  
+                else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
+                }       
+                else if (type.equals("CHAT_MESSAGE_TOWER_DENY")){
+                }  
+                else if (type.equals("CHAT_MESSAGE_HERO_DENY")){
+                }  
                 else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
-
                 }
                 else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
-
                 }                
                 else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
                 }

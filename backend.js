@@ -22,54 +22,48 @@ var replay_dir = process.env.REPLAY_DIR || "replays/"
 var parser_file = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar"
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
-var queued = {}
-var last_seq_num = 823846117
+var queuedMatches = {}
+var trackedPlayers = {}
+var next_seq = parseInt(fs.readFileSync("seqnum"))
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-updateConstants()
-getMatchesByPlayer()
-parseMatches()
+startup()
 aq.empty = function() {
-    getMatchesByPlayer()
-}
-pq.empty = function() {
-    parseMatches()
+    getMatches()
 }
 
-function getMatchesByPlayer() {
+function startup() {
+    updateConstants()
+    //one-time scan for tracked players
     players.find({
         track: 1
     }, function(err, docs) {
         aq.push(docs, function(err) {})
     })
+    //one-time scan for unparsed matches
+    matches.find({
+        parse_status : 0
+    }, function(err, docs){
+        pq.push(docs, function(err){})
+    })
+    //todo one-time name update?
+    getMatches()
 }
 
-function getMatchesBySeqNum() {
-    matches.findOne({}, {
-        sort: {
-            match_seq_num: -1
-        }
-    }, function(err, doc) {
-        if(doc) {
-            last_seq_num = doc.match_seq_num
-        }
+function getMatches() {
+    console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
+    players.find({
+        track: 1
+    }, function(err, docs) {
+        trackedPlayers = {}
+        docs.forEach(function(player) {
+            trackedPlayers[player.account_id] = true
+        })
         aq.push({}, function(err) {})
     })
 }
 
-function parseMatches() {
-    matches.find({
-        parse_status: 0
-    }, function(err, docs) {
-        pq.push(docs, function(err) {})
-    })
-}
-
-function updateNames() {
-    //todo albert implement this
-    //update display names
-}
 /*
  * Updates constant values from web sources
  */
@@ -109,9 +103,10 @@ function buildLookup(array) {
 
 function getData(url, cb) {
     request(url, function(err, res, body) {
+        console.log("[API] %s", url)
         if(err || res.statusCode != 200) {
             console.log("[API] error getting data, retrying")
-            setTimeout(getData, 1000, url, cb)
+            setTimeout(getData, api_delay, url, cb)
         } else {
             cb(null, JSON.parse(body))
         }
@@ -135,15 +130,13 @@ function apiRequest(req, cb) {
     } else if(req.account_id) {
         url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
     } else {
-        url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + last_seq_num
+        url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
     }
-    console.log("[API] %s", url)
-    console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
     getData(url, function(err, data) {
         if(req.match_id) {
             var match = data.result
             insertMatch(match, function(err) {
-                delete queued[match.match_id]
+                delete queuedMatches[match.match_id]
                 setTimeout(cb, api_delay, null)
             })
         } else if(req.summaries_id) {
@@ -152,13 +145,17 @@ function apiRequest(req, cb) {
             })
         } else if(req.account_id) {
             var resp = data.result.matches
+            if(!resp) {
+                console.log(data)
+                return setTimeout(cb, api_delay, null)
+            }
             async.map(resp, function(match, cb) {
                 matches.findOne({
                     match_id: match.match_id
                 }, function(err, doc) {
-                    if(!doc && !(match.match_id in queued)) {
-                        queued[match.match_id] = true
-                        aq.push(match, function(err) {})
+                    if(!doc && !(match.match_id in queuedMatches)) {
+                        queuedMatches[match.match_id] = true
+                        aq.push(match, function(err){})
                     }
                     cb(null)
                 })
@@ -167,38 +164,34 @@ function apiRequest(req, cb) {
             })
         } else {
             var resp = data.result.matches
-            console.log("[API] seq_num: %s, found %s matches", last_seq_num, resp.length)
+            if(!resp) {
+                console.log(data)
+                return setTimeout(cb, api_delay, null)
+            }
+            console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
             async.mapSeries(resp, insertMatch, function(err) {
-                last_seq_num = resp[resp.length - 1].match_seq_num + 1
-                setTimeout(cb, api_delay, null)
+                fs.writeFileSync("seqnum", next_seq)
+                setTimeout(cb, 0, null)
             })
         }
     })
 }
 
 function insertMatch(match, cb) {
-    players.find({
-        track: 1
-    }, function(err, docs) {
-        docs.forEach(function(e, i, arr) {
-            docs[i] = e.account_id
-        })
-        var track = match.players.some(function(element) {
-            return(docs.indexOf(element.account_id) >= 0)
-        })
-        match.parse_status = (track ? 0 : 3)
-        //todo insert match only if all players have heroes, and there are 10 players
-        matches.insert(match)
-        console.log("[DB] inserted match %s", match.match_id)
-        if(track) {
-            summaries = {}
-            summaries.summaries_id = 1
-            summaries.players = match.players
-            aq.unshift(summaries, function(err) {})
-            pq.push(match, function(err) {})
-        }
-        cb(null)
+    var track = match.players.some(function(element) {
+        return(element.account_id in trackedPlayers)
     })
+    match.parse_status = (track ? 0 : 3)
+    next_seq = ((match.match_seq_num>=next_seq) ? match.match_seq_num + 1 : next_seq)
+    if(track) {
+        matches.insert(match)
+        summaries = {}
+        summaries.summaries_id = 1
+        summaries.players = match.players
+        aq.unshift(summaries, function(err) {})
+        pq.push(match, function(err) {})
+    }
+    cb(null)
 }
 /*
  * Inserts/updates a player in the database
@@ -429,9 +422,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            parser_file,
-            fileName, "constants.json"
-        ])
+                                parser_file,
+                                fileName, "constants.json"
+                               ])
         cp.stdout.on('data', function(data) {
             output += data
         })
