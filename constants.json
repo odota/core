@@ -26,9 +26,10 @@
         }
     },
     "parse_status": {
-        "0": "Queued",
-        "1": "Expired",
-        "2": "Parsed"
+        "0": "In Queue",
+        "1": "Replay Expired",
+        "2": "Parsed",
+        "3": "Untracked"
     },
     "anonymous_account_id": 4294967295,
     "modes": {

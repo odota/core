@@ -22,31 +22,41 @@ var replay_dir = process.env.REPLAY_DIR || "replays/"
 var parser_file = process.env.PARSER_FILE || "./parser/target/stats-0.1.0.jar"
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
+var queued = {}
+var last_seq_num = 823846117
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-aq.empty = function() {
-    queueRequests()
-    requestDetails()
-}
-setInterval(updateNames, 86400 * 1000)
-setInterval(function() {
-    console.log('[QUEUES] %s api, %s parse', aq.length(), pq.length())
-}, 10000)
 updateConstants()
-queueRequests()
+getMatchesByPlayer()
 parseMatches()
-/*
- * Reloads the api queue with tracked users
- */
-
-function queueRequests() {
-    //todo poll the full match feed for fewer api reqs?
-    //when a user is added we should get their matches once
+aq.empty = function() {
+    getMatchesByPlayer()
 }
-/*
- * Reloads the parse queue with matches needing parse
- */
+pq.empty = function() {
+    parseMatches()
+}
+
+function getMatchesByPlayer() {
+    players.find({
+        track: 1
+    }, function(err, docs) {
+        aq.push(docs, function(err) {})
+    })
+}
+
+function getMatchesBySeqNum() {
+    matches.findOne({}, {
+        sort: {
+            match_seq_num: -1
+        }
+    }, function(err, doc) {
+        if(doc) {
+            last_seq_num = doc.match_seq_num
+        }
+        aq.push({}, function(err) {})
+    })
+}
 
 function parseMatches() {
     matches.find({
@@ -54,6 +64,11 @@ function parseMatches() {
     }, function(err, docs) {
         pq.push(docs, function(err) {})
     })
+}
+
+function updateNames() {
+    //todo albert implement this
+    //update display names
 }
 /*
  * Updates constant values from web sources
@@ -90,48 +105,14 @@ function buildLookup(array) {
     return lookup
 }
 /*
- * Updates display names for all players
+ * Gets data from a url in JSON format, retries on error
  */
-
-function updateNames() {
-    //todo albert implement this
-}
-/*
- * Queues a request for display names for an array of players
- */
-
-function queueSummaryRequest(players) {
-    summaries = {}
-    summaries.summaries_id = 1
-    summaries.players = players
-    aq.unshift(summaries, function(err) {})
-}
-/*
- * Generates a URL to access an api
- */
-
-function generateURL(req) {
-    if(req.account_id) {
-        return api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
-    }
-    if(req.match_id) {
-        return api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
-    }
-    if(req.summaries_id) {
-        var steamids = []
-        req.players.forEach(function(player) {
-            steamids.push(BigNumber('76561197960265728').plus(player.account_id).toString())
-        })
-        var query = steamids.join()
-        return summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
-    }
-}
 
 function getData(url, cb) {
-    console.log("[API] %s", url)
     request(url, function(err, res, body) {
         if(err || res.statusCode != 200) {
-            cb(err || "response code != 200")
+            console.log("[API] error getting data, retrying")
+            setTimeout(getData, 1000, url, cb)
         } else {
             cb(null, JSON.parse(body))
         }
@@ -142,31 +123,82 @@ function getData(url, cb) {
  */
 
 function apiRequest(req, cb) {
-    getData(generateURL(req), function(err, data) {
-        if(err) {
-            return cb(err)
-        }
-        if(req.account_id) {
-            //todo foreach if newer than last_match
-            //if a tracked player is in match, queue
-            //update last_match
-            aq.push(match, function(err) {})
-            setTimeout(cb, api_delay, null)
-        }
+    var url;
+    if(req.match_id) {
+        url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
+    } else if(req.summaries_id) {
+        var steamids = []
+        req.players.forEach(function(player) {
+            steamids.push(BigNumber('76561197960265728').plus(player.account_id).toString())
+        })
+        var query = steamids.join()
+        url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
+    } else if(req.account_id) {
+        url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
+    } else {
+        url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + last_seq_num
+    }
+    console.log("[API] %s", url)
+    console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
+    getData(url, function(err, data) {
         if(req.match_id) {
             var match = data.result
-            match.parse_status = 0
-            matches.insert(match, function(err) {
-                queueSummaryRequest(match.players)
-                pq.push(match, function(err) {})
+            insertMatch(match, function(err) {
+                delete queued[match.match_id]
                 setTimeout(cb, api_delay, null)
             })
-        }
-        if(req.summaries_id) {
+        } else if(req.summaries_id) {
             async.map(data.response.players, insertPlayer, function(err) {
                 setTimeout(cb, api_delay, null)
             })
+        } else if(req.account_id) {
+            var resp = data.result.matches
+            async.map(resp, function(match, cb) {
+                matches.findOne({
+                    match_id: match.match_id
+                }, function(err, doc) {
+                    if(!doc && !(match.match_id in queued)) {
+                        queued[match.match_id] = true
+                        aq.push(match, function(err) {})
+                    }
+                    cb(null)
+                })
+            }, function(err) {
+                setTimeout(cb, api_delay, null)
+            })
+        } else {
+            var resp = data.result.matches
+            console.log("[API] seq_num: %s, found %s matches", last_seq_num, resp.length)
+            async.mapSeries(resp, insertMatch, function(err) {
+                last_seq_num = resp[resp.length - 1].match_seq_num + 1
+                setTimeout(cb, api_delay, null)
+            })
         }
+    })
+}
+
+function insertMatch(match, cb) {
+    players.find({
+        track: 1
+    }, function(err, docs) {
+        docs.forEach(function(e, i, arr) {
+            docs[i] = e.account_id
+        })
+        var track = match.players.some(function(element) {
+            return(docs.indexOf(element.account_id) >= 0)
+        })
+        match.parse_status = (track ? 0 : 3)
+        //todo insert match only if all players have heroes, and there are 10 players
+        matches.insert(match)
+        console.log("[DB] inserted match %s", match.match_id)
+        if(track) {
+            summaries = {}
+            summaries.summaries_id = 1
+            summaries.players = match.players
+            aq.unshift(summaries, function(err) {})
+            pq.push(match, function(err) {})
+        }
+        cb(null)
     })
 }
 /*
@@ -398,9 +430,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName, "constants.json"
-                               ])
+            parser_file,
+            fileName, "constants.json"
+        ])
         cp.stdout.on('data', function(data) {
             output += data
         })
@@ -414,13 +446,7 @@ function parseReplay(match, cb) {
                     match_id: match_id
                 }, {
                     $set: {
-                        parsed_data: JSON.parse(output)
-                    }
-                })
-                matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
+                        parsed_data: JSON.parse(output),
                         parse_status: 2
                     }
                 })

@@ -31,7 +31,7 @@ block content
                 td Status
               tr
                 td=moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                td=constants.modes[match.game_mode].name
+                td=constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td=constants.parse_status[match.parse_status]
         .row
           .col-md-12
@@ -66,9 +66,13 @@ block content
                        if (player.account_id == constants.anonymous_account_id)
                          ="Anonymous"
                        else
-                         a(href='/players/#{player.account_id}')=player.display_name ? player.display_name : player.account_id
+                         a(href='/players/#{player.account_id}')= player.display_name ? player.display_name : player.account_id
                      - var hero = constants.heroes[player.hero_id]
-                     td.hero: img(src=hero.img, alt=hero.localized_name)
+                     td.hero
+                       if hero
+                         img(src=hero.img, alt=hero.localized_name)
+                       else
+                         =player.hero_id
                      td= player.level
                      td= player.kills
                      td= player.deaths
