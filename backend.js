@@ -76,7 +76,7 @@ function updateNames() {
 
 function updateConstants() {
     var constants = require('./constants.json')
-    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/mods.json", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], getData, function(err, results) {
+    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], getData, function(err, results) {
         var heroes = results[0].result.heroes
         var items = results[1].itemdata
         heroes.forEach(function(hero) {
@@ -89,8 +89,7 @@ function updateConstants() {
         }
         constants.heroes = buildLookup(heroes)
         constants.items = items
-        constants.modes = buildLookup(results[2].mods)
-        constants.regions = buildLookup(results[3].regions)
+        constants.regions = buildLookup(results[2].regions)
         console.log("[UPDATE] writing constants file")
         fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
     })

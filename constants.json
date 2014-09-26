@@ -121,93 +121,9 @@
             "id": 21,
             "name": "1vs1 Solo Mid"
         },
-        "Unknown": {
-            "id": 0,
-            "name": "Unknown"
-        },
-        "All Pick": {
-            "id": 1,
-            "name": "All Pick"
-        },
-        "Captains Mode": {
-            "id": 2,
-            "name": "Captains Mode"
-        },
-        "Random Draft": {
-            "id": 3,
-            "name": "Random Draft"
-        },
-        "Single Draft": {
-            "id": 4,
-            "name": "Single Draft"
-        },
-        "All Random": {
-            "id": 5,
-            "name": "All Random"
-        },
-        "?? INTRO/DEATH ??": {
-            "id": 6,
-            "name": "?? INTRO/DEATH ??"
-        },
-        "The Diretide": {
-            "id": 7,
-            "name": "The Diretide"
-        },
-        "Reverse Captains Mode": {
-            "id": 8,
-            "name": "Reverse Captains Mode"
-        },
-        "Greeviling": {
-            "id": 9,
-            "name": "Greeviling"
-        },
-        "Tutorial": {
-            "id": 10,
-            "name": "Tutorial"
-        },
-        "Mid Only": {
-            "id": 11,
-            "name": "Mid Only"
-        },
-        "Least Played": {
-            "id": 12,
-            "name": "Least Played"
-        },
-        "New Player Pool": {
-            "id": 13,
-            "name": "New Player Pool"
-        },
-        "Compendium Matchmaking": {
-            "id": 14,
-            "name": "Compendium Matchmaking"
-        },
-        "Custom": {
-            "id": 15,
-            "name": "Custom"
-        },
-        "Captains Draft": {
-            "id": 16,
-            "name": "Captains Draft"
-        },
-        "Balanced Draft": {
-            "id": 17,
-            "name": "Balanced Draft"
-        },
-        "Ability Draft": {
-            "id": 18,
-            "name": "Ability Draft"
-        },
-        "?? Event ??": {
-            "id": 19,
-            "name": "?? Event ??"
-        },
-        "All Random Death Match": {
-            "id": 20,
-            "name": "All Random Death Match"
-        },
-        "1vs1 Solo Mid": {
-            "id": 21,
-            "name": "1vs1 Solo Mid"
+	"22": {
+	    "id": 22,
+            "name": "Ranked All Pick"
         }
     },
     "regions": {
