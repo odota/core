@@ -7,4 +7,6 @@ block content
                 th Name
               each player in players
                 tr
-                  td: a(href='/players/#{player.account_id}')=player.display_name
+                  td
+                    a(href='/players/#{player.account_id}')
+                      =player.display_name || player.account_id
