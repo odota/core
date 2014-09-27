@@ -10,35 +10,41 @@ match.parsed_data.players.forEach(function (player, i){
         else{
             time = moment().startOf('day').seconds(event.time).format("m:ss");
         }
+        time = "<span style='font-size:10px;'>"+time+"<span>"
         bar.start=moment().startOf('day').seconds(event.time)
         if (event.type=="kills"){
-            continue
             var img = constants.heroes[match.players[event.key].hero_id].img
-            bar.content = "<img src='"+img+"' width=30/>"+"<div class='small'>"+time+"</div>"
+            bar.content = "<img src='"+img+"' width=25 />"+time
+            bar.className = "kill"
+            bar.group=2
         }
         if (event.type=="runes"){
-            bar.content = "<div class='small'>"+constants.runes[event.key].name+"</div>"+"<div class='small'>"+time+"</div>"
+            bar.content = constants.runes[event.key].name+time
+            bar.group=2
         }
         if (event.type=="buybacks"){
-            bar.content = "<div class='small'>"+event.key+"</div>"+"<div class='small'>"+time+"</div>"
+            bar.content = event.key+time
+            bar.group=2
         }
         if (event.type=="itembuys"){
             var img = constants.items[event.key].img
-            bar.content = "<img src='"+img+"' width=30 />"+"<div class='small'>"+time+"</div>"
+            bar.content = "<img src='"+img+"' width=25 />"+time
+            bar.group=1
         }
         if (event.type=="hero_history"){
             bar.className = "background-"+(heroes % 10)
             heroes+=1
             var img = constants.heroes[event.key].img
-            bar.content = "<div class='small'>"+constants.heroes[event.key].localized_name+"</div>"+"<img src='"+img+"'/>"+"<div class='small'>"+time+"</div>"
+            bar.content = "<img src='"+img+"' width=35 />"+"<span style='font-size:10px;'>"+constants.heroes[event.key].localized_name+"</span>"
             bar.start=moment().startOf('day').seconds(event.time)
             bar.end = moment().startOf('day').seconds(event.end)
             bar.type="background"
+            bar.group=1
         }
         items.add(bar)
     }
 
-    var groups=new vis.DataSet();
+    var groups=[{id:0, content:"Hero"}, {id:1, content: "Item"}, {id:2, content: "Event"}]
 
     // create visualization
     var container = document.getElementById('chart-timeline');
@@ -52,14 +58,18 @@ match.parsed_data.players.forEach(function (player, i){
         zoomable: false,
         moveable: false,
         showCurrentTime: false,
-        start: moment().startOf('day').subtract(180, 'seconds'),
+        //stack: false,
+        margin:{
+            item: 2
+        },
+        start: moment().startOf('day').subtract(300, 'seconds'),
         end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
-        showMajorLabels: false
+        showMajorLabels: false,
+        showMinorLabels:false
     };
 
     var timeline = new vis.Timeline(iDiv);
     timeline.setOptions(options);
     timeline.setItems(items);
-    //timeline.setGroups(groups);
+    timeline.setGroups(groups);
 })
-

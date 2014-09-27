@@ -43,9 +43,9 @@ function startup() {
     })
     //one-time scan for unparsed matches
     matches.find({
-        parse_status : 0
-    }, function(err, docs){
-        pq.push(docs, function(err){})
+        parse_status: 0
+    }, function(err, docs) {
+        pq.push(docs, function(err) {})
     })
     //todo one-time name update?
     getMatches()
@@ -63,7 +63,6 @@ function getMatches() {
         aq.push({}, function(err) {})
     })
 }
-
 /*
  * Updates constant values from web sources
  */
@@ -74,7 +73,7 @@ function updateConstants() {
         var heroes = results[0].result.heroes
         var items = results[1].itemdata
         heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_full.png"
         })
         constants.item_ids = {}
         for(var key in items) {
@@ -155,7 +154,7 @@ function apiRequest(req, cb) {
                 }, function(err, doc) {
                     if(!doc && !(match.match_id in queuedMatches)) {
                         queuedMatches[match.match_id] = true
-                        aq.push(match, function(err){})
+                        aq.push(match, function(err) {})
                     }
                     cb(null)
                 })
@@ -170,7 +169,10 @@ function apiRequest(req, cb) {
             }
             console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
             async.mapSeries(resp, insertMatch, function(err) {
-                fs.writeFileSync("seqnum", next_seq)
+                if(resp.length > 0) {
+                    next_seq = resp[resp.length - 1].match_seq_num + 1
+                    fs.writeFileSync("seqnum", next_seq)
+                }
                 setTimeout(cb, 0, null)
             })
         }
@@ -182,7 +184,6 @@ function insertMatch(match, cb) {
         return(element.account_id in trackedPlayers)
     })
     match.parse_status = (track ? 0 : 3)
-    next_seq = ((match.match_seq_num>=next_seq) ? match.match_seq_num + 1 : next_seq)
     if(track) {
         matches.insert(match)
         summaries = {}
@@ -422,9 +423,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName, "constants.json"
-                               ])
+            parser_file,
+            fileName, "constants.json"
+        ])
         cp.stdout.on('data', function(data) {
             output += data
         })
