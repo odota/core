@@ -47,7 +47,6 @@ function startup() {
     }, function(err, docs) {
         pq.push(docs, function(err) {})
     })
-    //todo one-time name update?
     getMatches()
 }
 

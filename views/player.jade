@@ -19,7 +19,7 @@ block content
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
                 - var hero = constants.heroes[match.player_hero]
-                td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
+                td.hero: img(src=hero.img, alt=hero.localized_name)
                 td= match.player_win ? "Won" : "Lost"                
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
@@ -36,6 +36,18 @@ block content
              if (teammate.account_id != constants.anonymous_account_id)
                tr
                  td
-                   a(href='/players/#{teammate.account_id}')=teammate.display_name
+                   a(href='/players/#{teammate.account_id}')=teammate.display_name || teammate.account_id
                  td=teammate.win
                  td=teammate.lose
+         h3 Heroes
+         table.table
+           tr
+             th Hero
+             th Wins
+             th Losses
+           each hero in player.heroes
+             tr
+               - var herodata = constants.heroes[hero.hero_id]
+               td.hero: img(src=herodata.img, alt=herodata.localized_name)
+               td=hero.win
+               td=hero.lose
