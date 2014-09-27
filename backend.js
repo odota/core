@@ -173,7 +173,11 @@ function apiRequest(req, cb) {
                     next_seq = resp[resp.length - 1].match_seq_num + 1
                     fs.writeFileSync("seqnum", next_seq)
                 }
-                setTimeout(cb, 0, null)
+                if(resp.length == 100) {
+                    setTimeout(cb, 0, null)
+                } else {
+                    setTimeout(cb, api_delay, null)
+                }
             })
         }
     })
