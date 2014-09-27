@@ -1,8 +1,8 @@
 extend layout
 block content
      .page-header
-       h1(style='font-weight: 700;')=player.display_name
-       p.lead (#{player.win}-#{player.lose})
+       h1(style='font-weight: 700;')=player.display_name || player.account_id
+       p.lead (#{player.win || 0 }-#{player.lose || 0})
      .row       
        .col-md-8
          h3 Matches
@@ -21,7 +21,7 @@ block content
                 - var hero = constants.heroes[match.player_hero]
                 td: img(src='http://cdn.dota2.com/apps/dota2/images/heroes/' + hero.name.replace('npc_dota_hero_', "") + "_sb.png", alt=hero.localized_name )
                 td= match.player_win ? "Won" : "Lost"                
-                td= constants.modes[match.game_mode].name
+                td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                 td= moment.unix(match.start_time + match.duration).fromNow()
                 td= constants.parse_status[match.parse_status]
