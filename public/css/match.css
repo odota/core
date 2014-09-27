@@ -34,3 +34,6 @@
 .vis.timeline .item.buy {
     background-color: green;
 }
+.vis.timeline .item{
+    padding: 1px;
+}

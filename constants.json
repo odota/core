@@ -26,9 +26,10 @@
         }
     },
     "parse_status": {
-        "0": "Queued",
-        "1": "Expired",
-        "2": "Parsed"
+        "0": "Waiting",
+        "1": "Replay Expired",
+        "2": "Parsed",
+        "3": "Untracked"
     },
     "anonymous_account_id": 4294967295,
     "modes": {
@@ -120,8 +121,8 @@
             "id": 21,
             "name": "1vs1 Solo Mid"
         },
-	"22": {
-	    "id": 22,
+        "22": {
+            "id": 22,
             "name": "Ranked All Pick"
         }
     },
@@ -313,7 +314,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/blink_lg.png",
             "dname": "Blink Dagger",
             "qual": "component",
-            "cost": 2150,
+            "cost": 2250,
             "desc": "Active: Blink - Teleport to a target point up to 1200 units away.  If damage is taken, Blink Dagger cannot be used for 3 seconds.",
             "notes": "Quick-casting will cause you to teleport towards your fountain.",
             "attrib": "",
@@ -478,10 +479,10 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/ring_of_protection_lg.png",
             "dname": "Ring of Protection",
             "qual": "component",
-            "cost": 175,
+            "cost": 200,
             "desc": "",
             "notes": "",
-            "attrib": "+ <span class=\"attribVal\">2</span> <span class=\"attribValText\">Armor</span>",
+            "attrib": "+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">Armor</span>",
             "mc": false,
             "cd": false,
             "lore": "A glimmering ring that defends its bearer.",
@@ -918,7 +919,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/bottle_lg.png",
             "dname": "Bottle",
             "qual": "consumable",
-            "cost": 650,
+            "cost": 700,
             "desc": "Use:  Regenerate - Restores HP and Mana over time. Effect is lost if unit is attacked. Empty Bottle refills near town fountain.  You can also store runes in the bottle, to save for later use.  After 2 minutes, stored Runes will be activated.  If Bottle is empty, it causes a courier to move 30% slower.<br />\n<br />\nHold Control to use your Bottle on an allied hero.",
             "notes": "Bottle is shareable.",
             "attrib": "HEALTH RESTORED: <span class=\"attribVal\">135</span><br />\nMANA RESTORED: <span class=\"attribVal\">70</span><br />\nDURATION: <span class=\"attribVal\">3</span>",
@@ -1008,7 +1009,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/tpscroll_lg.png",
             "dname": "Town Portal Scroll",
             "qual": "consumable",
-            "cost": 135,
+            "cost": 100,
             "desc": "Use: Teleport - Teleports you to a target friendly building.",
             "notes": "",
             "attrib": "",
@@ -1028,7 +1029,7 @@
             "notes": "Shares cooldown with Town Portal Scrolls.",
             "attrib": "+ <span class=\"attribVal\">100</span> <span class=\"attribValText\">Movement Speed</span>",
             "mc": 75,
-            "cd": 60,
+            "cd": 50,
             "lore": "Winged boots that grant omnipresence.",
             "components": [
                 "boots"
@@ -1374,7 +1375,7 @@
             "desc": "Active: Restore - Heals 250 HP and gives +2 armor in an area.<br />\nPassive: Mekansm Aura - Bonus HP Regen in an area.<br />\n<br />\nMultiple instances of Mekansm Aura do not stack.",
             "notes": "Restore does not affect units that have been affected by Restore in the last 25 seconds.",
             "attrib": "+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">Armor</span><br />\nBONUS HP REGEN: <span class=\"attribVal\">4</span>",
-            "mc": 150,
+            "mc": 225,
             "cd": 45,
             "lore": "A glowing jewel formed out of assorted parts that somehow fit together perfectly.",
             "components": [
@@ -1388,7 +1389,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/vladmir_lg.png",
             "dname": "Vladmir's Offering",
             "qual": "rare",
-            "cost": 2050,
+            "cost": 2075,
             "desc": "Passive: Vladmir's Aura - Grants a variety of bonuses to nearby allies.  Lifesteal bonuses from Vladmir's Aura only affect melee units.  <br />\n<br />\nMultiple instances of Vladmir's Aura do not stack.",
             "notes": "Does not stack with armor auras from Ring of Basilius, Ring of Aquila, or Vladmir's Offering.",
             "attrib": "AURA LIFESTEAL: <span class=\"attribVal\">16%</span><br />\nAURA BONUS DAMAGE: <span class=\"attribVal\">15%</span><br />\nAURA BONUS ARMOR: <span class=\"attribVal\">5</span><br />\nAURA MANA REGEN: <span class=\"attribVal\">0.8</span><br />\n+ <span class=\"attribVal\">2</span> <span class=\"attribValText\">HP Regeneration</span>",
@@ -1440,7 +1441,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/ring_of_basilius_lg.png",
             "dname": "Ring of Basilius",
             "qual": "rare",
-            "cost": 500,
+            "cost": 525,
             "desc": "Passive: Basilius Aura - Grants mana regeneration and armor in a 900 AoE.<br />\n Active: Toggle whether the aura affects other non-hero units.<br />\n<br />\nMultiple instances of Basilius Aura do not stack.",
             "notes": "Does not stack with armor auras from Ring of Basilius, Ring of Aquila, or Vladmir's Offering.",
             "attrib": "+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">1</span> <span class=\"attribValText\">Armor</span><br />\nAURA MANA REGEN: <span class=\"attribVal\">0.65</span><br />\nAURA BONUS ARMOR: <span class=\"attribVal\">2</span>",
@@ -1461,7 +1462,7 @@
             "cost": 3625,
             "desc": "Active: Barrier - Gives nearby friendly units a shield that blocks 400 spell damage.<br />\nPassive: Insight Aura - Gives nearby friendly units 4 health regeneration.",
             "notes": "Does not affect units that have been affected by Barrier in the last 50 seconds.<br />Stacks multiplicatively with non-item sources of spell resistance.",
-            "attrib": "+ <span class=\"attribVal\">8</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">30%</span> <span class=\"attribValText\">Spell Resistance</span><br />\nAURA REGEN: <span class=\"attribVal\">4</span>",
+            "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">30%</span> <span class=\"attribValText\">Spell Resistance</span><br />\nAURA REGEN: <span class=\"attribVal\">4</span>",
             "mc": 100,
             "cd": 60,
             "lore": "A powerful artifact of mysterious origin, it creates barriers against magical forces.",
@@ -1558,8 +1559,8 @@
             "cd": 23,
             "lore": "A mysterious scepter passed down through the ages, its disruptive winds can be used for good or evil.",
             "components": [
-                "staff_of_wizardry",
                 "sobi_mask",
+                "staff_of_wizardry",
                 "void_stone"
             ],
             "created": true
@@ -1590,8 +1591,8 @@
             "cost": 2800,
             "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
             "notes": "",
-            "attrib": "+ <span class=\"attribVal\">13</span>/15/17/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\"><span class=\"attribVal\">3</span></span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\"><span class=\"attribVal\">9</span></span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: <span class=\"attribVal\">400</span>/500/600/700/800<br />\nCAST RANGE: <span class=\"attribVal\">600</span>/650/700/750/800",
-            "mc": "180 160 140 120 100",
+            "attrib": "+ <span class=\"attribVal\">13</span>/16/19/22/25 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\"><span class=\"attribVal\">3</span></span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\"><span class=\"attribVal\">9</span></span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: <span class=\"attribVal\">400</span>/500/600/700/800<br />\nCAST RANGE: <span class=\"attribVal\">600</span>/650/700/750/800",
+            "mc": 180,
             "cd": 35,
             "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
             "components": [
@@ -1608,8 +1609,8 @@
             "cost": 2850,
             "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
             "notes": "",
-            "attrib": "+ 13/<span class=\"attribVal\">15</span>/17/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/<span class=\"attribVal\">500</span>/600/700/800<br />\nCAST RANGE: 600/<span class=\"attribVal\">650</span>/700/750/800",
-            "mc": "180 160 140 120 100",
+            "attrib": "+ 13/<span class=\"attribVal\">16</span>/19/22/25 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/<span class=\"attribVal\">500</span>/600/700/800<br />\nCAST RANGE: 600/<span class=\"attribVal\">650</span>/700/750/800",
+            "mc": 180,
             "cd": 35,
             "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
             "components": [
@@ -1626,8 +1627,8 @@
             "cost": 2850,
             "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
             "notes": "",
-            "attrib": "+ 13/15/<span class=\"attribVal\">17</span>/19/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/<span class=\"attribVal\">600</span>/700/800<br />\nCAST RANGE: 600/650/<span class=\"attribVal\">700</span>/750/800",
-            "mc": "180 160 140 120 100",
+            "attrib": "+ 13/16/<span class=\"attribVal\">19</span>/22/25 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/<span class=\"attribVal\">600</span>/700/800<br />\nCAST RANGE: 600/650/<span class=\"attribVal\">700</span>/750/800",
+            "mc": 180,
             "cd": 35,
             "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
             "components": [
@@ -1644,8 +1645,8 @@
             "cost": 2850,
             "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
             "notes": "",
-            "attrib": "+ 13/15/17/<span class=\"attribVal\">19</span>/21 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/<span class=\"attribVal\">700</span>/800<br />\nCAST RANGE: 600/650/700/<span class=\"attribVal\">750</span>/800",
-            "mc": "180 160 140 120 100",
+            "attrib": "+ 13/16/19/<span class=\"attribVal\">22</span>/25 <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/<span class=\"attribVal\">700</span>/800<br />\nCAST RANGE: 600/650/700/<span class=\"attribVal\">750</span>/800",
+            "mc": 180,
             "cd": 35,
             "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
             "components": [
@@ -1662,8 +1663,8 @@
             "cost": 2850,
             "desc": "Active: Energy Burst - Burst of damage to target enemy unit. Upgradable.",
             "notes": "",
-            "attrib": "+ 13/15/17/19/<span class=\"attribVal\">21</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/700/<span class=\"attribVal\">800</span><br />\nCAST RANGE: 600/650/700/750/<span class=\"attribVal\">800</span>",
-            "mc": "180 160 140 120 100",
+            "attrib": "+ 13/16/19/22/<span class=\"attribVal\">25</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\nBURST DAMAGE: 400/500/600/700/<span class=\"attribVal\">800</span><br />\nCAST RANGE: 600/650/700/750/<span class=\"attribVal\">800</span>",
+            "mc": 180,
             "cd": 35,
             "lore": "A lesser wand that grows in power the longer it is used, it brings magic to the fingertips of the user.",
             "components": [
@@ -1756,7 +1757,7 @@
             "notes": "",
             "attrib": "+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">200%</span> <span class=\"attribValText\">Mana Regeneration</span><br />\n+ <span class=\"attribVal\">40</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Attack Speed</span>",
             "mc": 375,
-            "cd": 160,
+            "cd": 185,
             "lore": "A powerful artifact created for wizards.",
             "components": [
                 "oblivion_staff",
@@ -1809,7 +1810,7 @@
             "cost": 3975,
             "desc": "Active: Avatar - Grants Spell Immunity and 100% Magic Damage Resistance.  Duration and cooldown decrease with each use.  Some Ultimate abilities are able to disable through Black King Bar.",
             "notes": "Cannot be sold.<br />Using Black King Bar may remove some positive buffs.<br />Purchasing another Black King Bar will not reset its immunity duration.",
-            "attrib": "+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">24</span> <span class=\"attribValText\">Damage</span><br />\nDURATION: 10/9/8/7/6/5/4",
+            "attrib": "+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">24</span> <span class=\"attribValText\">Damage</span><br />\nDURATION: 10/9/8/7/6/5",
             "mc": false,
             "cd": 80,
             "lore": "A powerful staff imbued with the strength of giants.",
@@ -1825,7 +1826,7 @@
             "dname": "Aegis of the Immortal",
             "qual": "artifact",
             "cost": 0,
-            "desc": "Passive: Reincarnation - Brings you to life with full health and mana 5.0 seconds after you die, at the location where you died. Reincarnation must be used within  minutes or Aegis of the Immortal disappears. If it expires, it will heal you over 5 seconds (dispels on damage).",
+            "desc": "Passive: Reincarnation - Brings you to life with full health and mana 5.0 seconds after you die, at the location where you died. Reincarnation must be used within 5 minutes or Aegis of the Immortal disappears. If it expires, it will heal you over 5 seconds (dispels on damage).",
             "notes": "",
             "attrib": "",
             "mc": false,
@@ -1857,7 +1858,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/bloodstone_lg.png",
             "dname": "Bloodstone",
             "qual": "epic",
-            "cost": 5050,
+            "cost": 4900,
             "desc": "Active: Pocket Suicide - Instantly commits suicide.<br />\n<br />\nPassive: Bloodpact - Starts with 8 charges. Gains 1 charge each time an enemy hero dies within 1675 range. Each charge bestows 1 mana regeneration per second, reduces gold lost from death by 25, and reduces respawn time by 4 seconds. When the bearer dies, restores 500 HP + 30 HP per charge to allied units within 1675 units, then loses a third of its charges. While dead, the bearer continues to receive experience at the death location and gives 1800 unit vision there.",
             "notes": "Only the first Bloodstone will gain charges.",
             "attrib": "+ <span class=\"attribVal\">500</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">400</span> <span class=\"attribValText\">Mana</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">200%</span> <span class=\"attribValText\">Mana Regeneration</span>",
@@ -1865,7 +1866,7 @@
             "cd": 300,
             "lore": "The Bloodstone's bright ruby color is unmistakable on the battlefield, as the owner seems to have infinite vitality and spirit.",
             "components": [
-                "pers",
+                "soul_ring",
                 "soul_booster"
             ],
             "created": true
@@ -1896,7 +1897,7 @@
             "cost": 2225,
             "desc": "Passive: Damage Block - Gives the wielder a chance to block damage based on whether the equipped hero is melee or ranged.",
             "notes": "Multiple sources of damage block don't stack.",
-            "attrib": "+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">HP Regeneration</span><br />\nBLOCK CHANCE: <span class=\"attribVal\">80%</span><br />\nBLOCK DAMAGE RANGED: <span class=\"attribVal\">20</span><br />\nBLOCK DAMAGE MELEE: <span class=\"attribVal\">40</span>",
+            "attrib": "+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">HP Regeneration</span><br />\nBLOCK CHANCE: <span class=\"attribVal\">80%</span><br />\nBLOCK DAMAGE MELEE: <span class=\"attribVal\">40</span><br />\nBLOCK DAMAGE RANGED: <span class=\"attribVal\">20</span>",
             "mc": false,
             "cd": false,
             "lore": "A powerful shield that defends its wielder from even the most vicious of attacks.",
@@ -1904,6 +1905,24 @@
                 "ring_of_health",
                 "vitality_booster",
                 "stout_shield"
+            ],
+            "created": true
+        },
+        "crimson_guard": {
+            "id": 242,
+            "img": "http://cdn.dota2.com/apps/dota2/images/items/crimson_guard_lg.png",
+            "dname": "Crimson Guard",
+            "qual": "epic",
+            "cost": 3850,
+            "desc": "Active: Guard - Grant Damage Block to nearby allies, along with 2 armor. Lasts 9 seconds. The amount of damage blocked is based on whether the casting hero is melee or ranged.<br />\nPassive: Damage Block - Gives the wielder a chance to block damage based on whether the equipped hero is melee or ranged.",
+            "notes": "Multiple sources of damage block don't stack.",
+            "attrib": "+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">6</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">2</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">Armor</span><br />\nBLOCK CHANCE: <span class=\"attribVal\">80%</span><br />\nBLOCK DAMAGE MELEE: <span class=\"attribVal\">40</span><br />\nBLOCK DAMAGE RANGED: <span class=\"attribVal\">20</span><br />\nGUARD ARMOR: <span class=\"attribVal\">2</span><br />\nGUARD DURATION: <span class=\"attribVal\">9</span><br />\nGUARD RADIUS: <span class=\"attribVal\">750</span>",
+            "mc": false,
+            "cd": 70,
+            "lore": "A cuirass originally built to protect against the dreaded Year Beast.",
+            "components": [
+                "vanguard",
+                "buckler"
             ],
             "created": true
         },
@@ -1953,7 +1972,7 @@
             "cost": 2125,
             "desc": "",
             "notes": "Stacks multiplicatively with non-item sources of spell resistance.",
-            "attrib": "+ <span class=\"attribVal\">8</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">30%</span> <span class=\"attribValText\">Spell Resistance</span>",
+            "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">HP Regeneration</span><br />\n+ <span class=\"attribVal\">30%</span> <span class=\"attribValText\">Spell Resistance</span>",
             "mc": false,
             "cd": false,
             "lore": "A furred, magic resistant headpiece that is feared by wizards.",
@@ -2025,11 +2044,11 @@
             "dname": "Butterfly",
             "qual": "epic",
             "cost": 6000,
-            "desc": "Active: Flutter - Trade evasion for % additional movement speed for  seconds.",
+            "desc": "Active: Flutter - Trade evasion for 20% additional movement speed for 8.0 seconds.",
             "notes": "Doesn't stack with other sources of Evasion.",
-            "attrib": "+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">35%</span> <span class=\"attribValText\">Evasion</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Attack Speed</span>",
+            "attrib": "+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">35%</span> <span class=\"attribValText\">Evasion</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Attack Speed</span><br />\nFLUTTER DURATION: <span class=\"attribVal\">8</span><br />\nFLUTTER BONUS MOVE SPEED: <span class=\"attribVal\">20%</span>",
             "mc": false,
-            "cd": false,
+            "cd": 35,
             "lore": "Only the mightiest and most experienced of warriors can wield the Butterfly, but it provides incredible dexterity in combat.",
             "components": [
                 "talisman_of_evasion",
@@ -2098,7 +2117,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/manta_lg.png",
             "dname": "Manta Style",
             "qual": "epic",
-            "cost": 5050,
+            "cost": 4950,
             "desc": "Active: Mirror Image - Creates 2 illusions of your hero that last 20 seconds.<br />\n<br />\nMelee illusions deal 33% damage and take 250% bonus damage.  Ranged illusions deal 28% damage and take 300% bonus damage.<br />\n<br />\nYasha-based movement speed bonuses from multiple items do not stack.",
             "notes": "Has a 0.1 second cast time upon which you are invulnerable.<br />Many effects are removed upon using Manta.",
             "attrib": "+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">26</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">10</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">15</span> <span class=\"attribValText\">Attack Speed</span><br />\n+ <span class=\"attribVal\">10%</span> <span class=\"attribValText\">Movement Speed</span>",
@@ -2134,7 +2153,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/armlet_lg.png",
             "dname": "Armlet of Mordiggian",
             "qual": "epic",
-            "cost": 2600,
+            "cost": 2500,
             "desc": "Active: Unholy Strength - Gives +31 damage, +10 attack speed, and +25 strength while active, but drains 40 HP per second.  You cannot die from the health loss when the bonus strength is gone, or the health drain per second.",
             "notes": "The strength change will affect both maximum and current HP, but you cannot die from the change.",
             "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">15</span> <span class=\"attribValText\">Attack Speed</span><br />\n+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">Armor</span><br />\n+ <span class=\"attribVal\">7</span> <span class=\"attribValText\">HP Regeneration</span>",
@@ -2154,9 +2173,9 @@
             "dname": "Shadow Blade",
             "qual": "epic",
             "cost": 3000,
-            "desc": "Active: Shadow Walk - Makes you invisible until the duration ends, or until you attack or cast a spell.  While Shadow Walk is active, you move 20% faster and can move through units.  If attacking to break the invisibility, you gain 150 bonus damage on that attack.  Lasts 17 seconds.",
+            "desc": "Active: Shadow Walk - Makes you invisible until the duration ends, or until you attack or cast a spell.  While Shadow Walk is active, you move 20% faster and can move through units.  If attacking to break the invisibility, you gain 175 bonus damage on that attack.  Lasts 17 seconds.",
             "notes": "Has a 0.3 second fade time.<br />If the invisibility ends without attacking, the bonus damage is lost.",
-            "attrib": "+ <span class=\"attribVal\">22</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Attack Speed</span><br />\nSHADOW WALK DURATION: <span class=\"attribVal\">14</span><br />\nSHADOW WALK DAMAGE: <span class=\"attribVal\">150</span>",
+            "attrib": "+ <span class=\"attribVal\">22</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">30</span> <span class=\"attribValText\">Attack Speed</span><br />\nSHADOW WALK DURATION: <span class=\"attribVal\">14</span><br />\nSHADOW WALK DAMAGE: <span class=\"attribVal\">175</span>",
             "mc": 75,
             "cd": 28,
             "lore": "The blade of a fallen king, it allows you to move unseen and strike from the shadows.",
@@ -2228,7 +2247,7 @@
             "cost": 5675,
             "desc": "Passive: Cold Attack - Attacks slow the movement and attack speed of the target.<br />\n<br />\nEye of Skadi is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.  Eye of Skadi can be combined with Lifesteal Attack Modifiers.",
             "notes": "Lasts 5 seconds with melee Eye of Skadi, 3 seconds with ranged Eye of Skadi.",
-            "attrib": "+ <span class=\"attribVal\">25</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Mana</span><br />\nMOVE SLOW: <span class=\"attribVal\">35%</span><br />\nATTACK SLOW: <span class=\"attribVal\">35</span>",
+            "attrib": "+ <span class=\"attribVal\">25</span> <span class=\"attribValText\">All Attributes</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Health</span><br />\n+ <span class=\"attribVal\">250</span> <span class=\"attribValText\">Mana</span><br />\nMOVE SLOW: <span class=\"attribVal\">35%</span><br />\nATTACK SLOW: <span class=\"attribVal\">45</span>",
             "mc": false,
             "cd": false,
             "lore": "Extremely rare artifact, guarded by the azure dragons.",
@@ -2264,9 +2283,9 @@
             "dname": "Helm of the Dominator",
             "qual": "artifact",
             "cost": 1850,
-            "desc": "Active: Dominate - Take control of a non-hero, non-ancient target unit. Dominated units gain  bonus health.<br />\nPassive: Lifesteal - Gives lifesteal on attacks.<br />\n<br />\nHelm of the Dominator is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
+            "desc": "Active: Dominate - Take control of a non-hero, non-ancient target unit. Dominated units gain 250 bonus health.<br />\nPassive: Lifesteal - Gives lifesteal on attacks.<br />\n<br />\nHelm of the Dominator is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
             "notes": "Cannot dominate more than one unit at a time.  If a new unit is dominated, the old one will die.",
-            "attrib": "+ <span class=\"attribVal\">20</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">Armor</span><br />\nLIFESTEAL: <span class=\"attribVal\">15%</span>",
+            "attrib": "+ <span class=\"attribVal\">20</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">5</span> <span class=\"attribValText\">Armor</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">HP Regeneration</span><br />\nLIFESTEAL: <span class=\"attribVal\">15%</span>",
             "mc": 75,
             "cd": 60,
             "lore": "The powerful headpiece of a dead necromancer.",
@@ -2281,7 +2300,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/maelstrom_lg.png",
             "dname": "Maelstrom",
             "qual": "artifact",
-            "cost": 2700,
+            "cost": 2800,
             "desc": "Passive: Chain Lightning - Grants a chance on attack to release a Chain Lightning that hits 4 targets, dealing damage.<br />\n<br />\nMaelstrom is a Unique Attack Modifier that stacks with other Unique Attack Modifiers, but overrides them when Chain Lightning occurs.",
             "notes": "",
             "attrib": "+ <span class=\"attribVal\">24</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">25</span> <span class=\"attribValText\">Attack Speed</span><br />\nCHANCE TO CHAIN: <span class=\"attribVal\">25%</span><br />\nCHAIN DAMAGE: <span class=\"attribVal\">120</span>",
@@ -2335,7 +2354,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/mask_of_madness_lg.png",
             "dname": "Mask of Madness",
             "qual": "artifact",
-            "cost": 1900,
+            "cost": 1800,
             "desc": "Active: Berserk - Gives 100 attack speed and 30% movement speed but causes you to take extra 30% damage.  Lasts 12 seconds.<br />\nPassive: Lifesteal - Grants lifesteal on attacks.<br />\n<br />\nMask of Madness is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
             "notes": "",
             "attrib": "LIFESTEAL: <span class=\"attribVal\">20%</span>",
@@ -2352,10 +2371,10 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/diffusal_blade_lg.png",
             "dname": "Diffusal Blade",
             "qual": "artifact",
-            "cost": 3300,
-            "desc": "Active: Purge - Purges a target unit, removing buffs, slowing, and dealing damage if it is a summoned unit.<br />\nPassive: Feedback - Your attacks burn 20/36 mana from melee heroes, and  from ranged heroes, while dealing the same amount in physical damage. Upgradable.<br />\n<br />\nDiffusal Blade is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
+            "cost": 3150,
+            "desc": "Active: Purge - Purges a target unit, removing buffs, slowing, and dealing damage if it is a summoned unit.<br />\nPassive: Feedback - Your attacks burn 25 mana from melee heroes, and 25 from ranged heroes, while dealing the same amount in physical damage. Upgradable.<br />\n<br />\nDiffusal Blade is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
             "notes": "Instantly kills summoned units.<br />Slow lasts 4 seconds.",
-            "attrib": "+ <span class=\"attribVal\">25</span>/30 <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">6</span>/10 <span class=\"attribValText\">Intelligence</span>",
+            "attrib": "+ <span class=\"attribVal\">20</span>/35 <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">6</span>/10 <span class=\"attribValText\">Intelligence</span>",
             "mc": false,
             "cd": 8,
             "lore": "An enchanted blade that allows the user to cut straight into the enemy's soul.",
@@ -2371,10 +2390,10 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/diffusal_blade_2_lg.png",
             "dname": "Diffusal Blade",
             "qual": "artifact",
-            "cost": 3300,
-            "desc": "Active: Purge - Purges a target unit, removing buffs, slowing, and dealing damage if it is a summoned unit.<br />\nPassive: Feedback - Your attacks burn 20/36 mana and deal the same amount in physical damage. Upgradable.<br />\n<br />\nDiffusal Blade is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
+            "cost": 3150,
+            "desc": "Active: Purge - Purges a target unit, removing buffs, slowing, and dealing damage if it is a summoned unit.<br />\nPassive: Feedback - Your attacks burn 25 mana and deal the same amount in physical damage. Upgradable.<br />\n<br />\nDiffusal Blade is a Unique Attack Modifier, and does not stack with other Unique Attack Modifiers.",
             "notes": "Instantly kills summoned units.<br />Slow lasts 4 seconds.",
-            "attrib": "+ 25/<span class=\"attribVal\">30</span> <span class=\"attribValText\">Agility</span><br />\n+ 6/<span class=\"attribVal\">10</span> <span class=\"attribValText\">Intelligence</span>",
+            "attrib": "+ 20/<span class=\"attribVal\">35</span> <span class=\"attribValText\">Agility</span><br />\n+ 6/<span class=\"attribVal\">10</span> <span class=\"attribValText\">Intelligence</span>",
             "mc": false,
             "cd": 8,
             "lore": "An enchanted blade that allows the user to cut straight into the enemy's soul.",
@@ -2582,7 +2601,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/ring_of_aquila_lg.png",
             "dname": "Ring of Aquila",
             "qual": "rare",
-            "cost": 985,
+            "cost": 1010,
             "desc": "Passive: Aquila Aura - Grants mana regeneration and armor in a 900 AoE.<br />\n Active: Toggle whether the aura affects other non-hero units.<br />\n<br />\nMultiple instances of Aquila Aura do not stack.",
             "notes": "Does not stack with armor auras from Ring of Basilius, Ring of Aquila, or Vladmir's Offering.",
             "attrib": "+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Damage</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">Strength</span><br />\n+ <span class=\"attribVal\">9</span> <span class=\"attribValText\">Agility</span><br />\n+ <span class=\"attribVal\">3</span> <span class=\"attribValText\">Intelligence</span><br />\n+ <span class=\"attribVal\">1</span> <span class=\"attribValText\">Armor</span><br />\nAURA MANA REGEN: <span class=\"attribVal\">0.65</span><br />\nAURA BONUS ARMOR: <span class=\"attribVal\">2</span>",
@@ -2600,7 +2619,7 @@
             "img": "http://cdn.dota2.com/apps/dota2/images/items/tranquil_boots_lg.png",
             "dname": "Tranquil Boots",
             "qual": "rare",
-            "cost": 975,
+            "cost": 1000,
             "desc": "Passive: Break - Whenever you attack or get attacked you lose the HP regeneration and 30 Movement Speed for 13 seconds.",
             "notes": "",
             "attrib": "+ <span class=\"attribVal\">90</span> <span class=\"attribValText\">Movement Speed</span><br />\n+ <span class=\"attribVal\">4</span> <span class=\"attribValText\">Armor</span><br />\n+ <span class=\"attribVal\">12</span> <span class=\"attribValText\">HP Regeneration</span>",
@@ -2943,10 +2962,6 @@
             "lore": "",
             "components": null,
             "created": false
-        },
-        "crimson_guard": {
-            "dname": "Crimson Guard",
-            "img": "http://cdn.dota2.com/apps/dota2/images/items/undefined"
         }
     },
     "heroes": {
@@ -2954,1297 +2969,1297 @@
             "name": "npc_dota_hero_antimage",
             "id": 1,
             "localized_name": "Anti-Mage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/antimage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/antimage_full.png"
         },
         "2": {
             "name": "npc_dota_hero_axe",
             "id": 2,
             "localized_name": "Axe",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/axe_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/axe_full.png"
         },
         "3": {
             "name": "npc_dota_hero_bane",
             "id": 3,
             "localized_name": "Bane",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bane_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bane_full.png"
         },
         "4": {
             "name": "npc_dota_hero_bloodseeker",
             "id": 4,
             "localized_name": "Bloodseeker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bloodseeker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bloodseeker_full.png"
         },
         "5": {
             "name": "npc_dota_hero_crystal_maiden",
             "id": 5,
             "localized_name": "Crystal Maiden",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/crystal_maiden_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/crystal_maiden_full.png"
         },
         "6": {
             "name": "npc_dota_hero_drow_ranger",
             "id": 6,
             "localized_name": "Drow Ranger",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/drow_ranger_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/drow_ranger_full.png"
         },
         "7": {
             "name": "npc_dota_hero_earthshaker",
             "id": 7,
             "localized_name": "Earthshaker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earthshaker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earthshaker_full.png"
         },
         "8": {
             "name": "npc_dota_hero_juggernaut",
             "id": 8,
             "localized_name": "Juggernaut",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/juggernaut_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/juggernaut_full.png"
         },
         "9": {
             "name": "npc_dota_hero_mirana",
             "id": 9,
             "localized_name": "Mirana",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/mirana_full.png"
         },
         "10": {
             "name": "npc_dota_hero_morphling",
             "id": 10,
             "localized_name": "Morphling",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/morphling_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/morphling_full.png"
         },
         "11": {
             "name": "npc_dota_hero_nevermore",
             "id": 11,
             "localized_name": "Shadow Fiend",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_full.png"
         },
         "12": {
             "name": "npc_dota_hero_phantom_lancer",
             "id": 12,
             "localized_name": "Phantom Lancer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_lancer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_lancer_full.png"
         },
         "13": {
             "name": "npc_dota_hero_puck",
             "id": 13,
             "localized_name": "Puck",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/puck_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/puck_full.png"
         },
         "14": {
             "name": "npc_dota_hero_pudge",
             "id": 14,
             "localized_name": "Pudge",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pudge_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pudge_full.png"
         },
         "15": {
             "name": "npc_dota_hero_razor",
             "id": 15,
             "localized_name": "Razor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/razor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/razor_full.png"
         },
         "16": {
             "name": "npc_dota_hero_sand_king",
             "id": 16,
             "localized_name": "Sand King",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sand_king_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sand_king_full.png"
         },
         "17": {
             "name": "npc_dota_hero_storm_spirit",
             "id": 17,
             "localized_name": "Storm Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/storm_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/storm_spirit_full.png"
         },
         "18": {
             "name": "npc_dota_hero_sven",
             "id": 18,
             "localized_name": "Sven",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sven_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sven_full.png"
         },
         "19": {
             "name": "npc_dota_hero_tiny",
             "id": 19,
             "localized_name": "Tiny",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tiny_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tiny_full.png"
         },
         "20": {
             "name": "npc_dota_hero_vengefulspirit",
             "id": 20,
             "localized_name": "Vengeful Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/vengefulspirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/vengefulspirit_full.png"
         },
         "21": {
             "name": "npc_dota_hero_windrunner",
             "id": 21,
             "localized_name": "Windranger",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_full.png"
         },
         "22": {
             "name": "npc_dota_hero_zuus",
             "id": 22,
             "localized_name": "Zeus",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/zuus_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/zuus_full.png"
         },
         "23": {
             "name": "npc_dota_hero_kunkka",
             "id": 23,
             "localized_name": "Kunkka",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/kunkka_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/kunkka_full.png"
         },
         "25": {
             "name": "npc_dota_hero_lina",
             "id": 25,
             "localized_name": "Lina",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lina_full.png"
         },
         "26": {
             "name": "npc_dota_hero_lion",
             "id": 26,
             "localized_name": "Lion",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lion_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lion_full.png"
         },
         "27": {
             "name": "npc_dota_hero_shadow_shaman",
             "id": 27,
             "localized_name": "Shadow Shaman",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_shaman_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_shaman_full.png"
         },
         "28": {
             "name": "npc_dota_hero_slardar",
             "id": 28,
             "localized_name": "Slardar",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slardar_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slardar_full.png"
         },
         "29": {
             "name": "npc_dota_hero_tidehunter",
             "id": 29,
             "localized_name": "Tidehunter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tidehunter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tidehunter_full.png"
         },
         "30": {
             "name": "npc_dota_hero_witch_doctor",
             "id": 30,
             "localized_name": "Witch Doctor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/witch_doctor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/witch_doctor_full.png"
         },
         "31": {
             "name": "npc_dota_hero_lich",
             "id": 31,
             "localized_name": "Lich",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lich_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lich_full.png"
         },
         "32": {
             "name": "npc_dota_hero_riki",
             "id": 32,
             "localized_name": "Riki",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/riki_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/riki_full.png"
         },
         "33": {
             "name": "npc_dota_hero_enigma",
             "id": 33,
             "localized_name": "Enigma",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enigma_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enigma_full.png"
         },
         "34": {
             "name": "npc_dota_hero_tinker",
             "id": 34,
             "localized_name": "Tinker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tinker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tinker_full.png"
         },
         "35": {
             "name": "npc_dota_hero_sniper",
             "id": 35,
             "localized_name": "Sniper",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sniper_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sniper_full.png"
         },
         "36": {
             "name": "npc_dota_hero_necrolyte",
             "id": 36,
             "localized_name": "Necrophos",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/necrolyte_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/necrolyte_full.png"
         },
         "37": {
             "name": "npc_dota_hero_warlock",
             "id": 37,
             "localized_name": "Warlock",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/warlock_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/warlock_full.png"
         },
         "38": {
             "name": "npc_dota_hero_beastmaster",
             "id": 38,
             "localized_name": "Beastmaster",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/beastmaster_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/beastmaster_full.png"
         },
         "39": {
             "name": "npc_dota_hero_queenofpain",
             "id": 39,
             "localized_name": "Queen of Pain",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_full.png"
         },
         "40": {
             "name": "npc_dota_hero_venomancer",
             "id": 40,
             "localized_name": "Venomancer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/venomancer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/venomancer_full.png"
         },
         "41": {
             "name": "npc_dota_hero_faceless_void",
             "id": 41,
             "localized_name": "Faceless Void",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/faceless_void_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/faceless_void_full.png"
         },
         "42": {
             "name": "npc_dota_hero_skeleton_king",
             "id": 42,
             "localized_name": "Wraith King",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skeleton_king_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skeleton_king_full.png"
         },
         "43": {
             "name": "npc_dota_hero_death_prophet",
             "id": 43,
             "localized_name": "Death Prophet",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/death_prophet_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/death_prophet_full.png"
         },
         "44": {
             "name": "npc_dota_hero_phantom_assassin",
             "id": 44,
             "localized_name": "Phantom Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_full.png"
         },
         "45": {
             "name": "npc_dota_hero_pugna",
             "id": 45,
             "localized_name": "Pugna",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pugna_full.png"
         },
         "46": {
             "name": "npc_dota_hero_templar_assassin",
             "id": 46,
             "localized_name": "Templar Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/templar_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/templar_assassin_full.png"
         },
         "47": {
             "name": "npc_dota_hero_viper",
             "id": 47,
             "localized_name": "Viper",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/viper_full.png"
         },
         "48": {
             "name": "npc_dota_hero_luna",
             "id": 48,
             "localized_name": "Luna",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/luna_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/luna_full.png"
         },
         "49": {
             "name": "npc_dota_hero_dragon_knight",
             "id": 49,
             "localized_name": "Dragon Knight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dragon_knight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dragon_knight_full.png"
         },
         "50": {
             "name": "npc_dota_hero_dazzle",
             "id": 50,
             "localized_name": "Dazzle",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dazzle_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dazzle_full.png"
         },
         "51": {
             "name": "npc_dota_hero_rattletrap",
             "id": 51,
             "localized_name": "Clockwerk",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rattletrap_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rattletrap_full.png"
         },
         "52": {
             "name": "npc_dota_hero_leshrac",
             "id": 52,
             "localized_name": "Leshrac",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/leshrac_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/leshrac_full.png"
         },
         "53": {
             "name": "npc_dota_hero_furion",
             "id": 53,
             "localized_name": "Nature's Prophet",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/furion_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/furion_full.png"
         },
         "54": {
             "name": "npc_dota_hero_life_stealer",
             "id": 54,
             "localized_name": "Lifestealer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/life_stealer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/life_stealer_full.png"
         },
         "55": {
             "name": "npc_dota_hero_dark_seer",
             "id": 55,
             "localized_name": "Dark Seer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dark_seer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dark_seer_full.png"
         },
         "56": {
             "name": "npc_dota_hero_clinkz",
             "id": 56,
             "localized_name": "Clinkz",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/clinkz_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/clinkz_full.png"
         },
         "57": {
             "name": "npc_dota_hero_omniknight",
             "id": 57,
             "localized_name": "Omniknight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/omniknight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/omniknight_full.png"
         },
         "58": {
             "name": "npc_dota_hero_enchantress",
             "id": 58,
             "localized_name": "Enchantress",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enchantress_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enchantress_full.png"
         },
         "59": {
             "name": "npc_dota_hero_huskar",
             "id": 59,
             "localized_name": "Huskar",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/huskar_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/huskar_full.png"
         },
         "60": {
             "name": "npc_dota_hero_night_stalker",
             "id": 60,
             "localized_name": "Night Stalker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/night_stalker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/night_stalker_full.png"
         },
         "61": {
             "name": "npc_dota_hero_broodmother",
             "id": 61,
             "localized_name": "Broodmother",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/broodmother_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/broodmother_full.png"
         },
         "62": {
             "name": "npc_dota_hero_bounty_hunter",
             "id": 62,
             "localized_name": "Bounty Hunter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bounty_hunter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bounty_hunter_full.png"
         },
         "63": {
             "name": "npc_dota_hero_weaver",
             "id": 63,
             "localized_name": "Weaver",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/weaver_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/weaver_full.png"
         },
         "64": {
             "name": "npc_dota_hero_jakiro",
             "id": 64,
             "localized_name": "Jakiro",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/jakiro_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/jakiro_full.png"
         },
         "65": {
             "name": "npc_dota_hero_batrider",
             "id": 65,
             "localized_name": "Batrider",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/batrider_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/batrider_full.png"
         },
         "66": {
             "name": "npc_dota_hero_chen",
             "id": 66,
             "localized_name": "Chen",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chen_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chen_full.png"
         },
         "67": {
             "name": "npc_dota_hero_spectre",
             "id": 67,
             "localized_name": "Spectre",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spectre_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spectre_full.png"
         },
         "68": {
             "name": "npc_dota_hero_ancient_apparition",
             "id": 68,
             "localized_name": "Ancient Apparition",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ancient_apparition_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ancient_apparition_full.png"
         },
         "69": {
             "name": "npc_dota_hero_doom_bringer",
             "id": 69,
             "localized_name": "Doom",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/doom_bringer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/doom_bringer_full.png"
         },
         "70": {
             "name": "npc_dota_hero_ursa",
             "id": 70,
             "localized_name": "Ursa",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ursa_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ursa_full.png"
         },
         "71": {
             "name": "npc_dota_hero_spirit_breaker",
             "id": 71,
             "localized_name": "Spirit Breaker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spirit_breaker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spirit_breaker_full.png"
         },
         "72": {
             "name": "npc_dota_hero_gyrocopter",
             "id": 72,
             "localized_name": "Gyrocopter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/gyrocopter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/gyrocopter_full.png"
         },
         "73": {
             "name": "npc_dota_hero_alchemist",
             "id": 73,
             "localized_name": "Alchemist",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/alchemist_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/alchemist_full.png"
         },
         "74": {
             "name": "npc_dota_hero_invoker",
             "id": 74,
             "localized_name": "Invoker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/invoker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/invoker_full.png"
         },
         "75": {
             "name": "npc_dota_hero_silencer",
             "id": 75,
             "localized_name": "Silencer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/silencer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/silencer_full.png"
         },
         "76": {
             "name": "npc_dota_hero_obsidian_destroyer",
             "id": 76,
             "localized_name": "Outworld Devourer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/obsidian_destroyer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/obsidian_destroyer_full.png"
         },
         "77": {
             "name": "npc_dota_hero_lycan",
             "id": 77,
             "localized_name": "Lycan",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lycan_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lycan_full.png"
         },
         "78": {
             "name": "npc_dota_hero_brewmaster",
             "id": 78,
             "localized_name": "Brewmaster",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/brewmaster_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/brewmaster_full.png"
         },
         "79": {
             "name": "npc_dota_hero_shadow_demon",
             "id": 79,
             "localized_name": "Shadow Demon",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_demon_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_demon_full.png"
         },
         "80": {
             "name": "npc_dota_hero_lone_druid",
             "id": 80,
             "localized_name": "Lone Druid",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lone_druid_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lone_druid_full.png"
         },
         "81": {
             "name": "npc_dota_hero_chaos_knight",
             "id": 81,
             "localized_name": "Chaos Knight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chaos_knight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chaos_knight_full.png"
         },
         "82": {
             "name": "npc_dota_hero_meepo",
             "id": 82,
             "localized_name": "Meepo",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/meepo_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/meepo_full.png"
         },
         "83": {
             "name": "npc_dota_hero_treant",
             "id": 83,
             "localized_name": "Treant Protector",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/treant_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/treant_full.png"
         },
         "84": {
             "name": "npc_dota_hero_ogre_magi",
             "id": 84,
             "localized_name": "Ogre Magi",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ogre_magi_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ogre_magi_full.png"
         },
         "85": {
             "name": "npc_dota_hero_undying",
             "id": 85,
             "localized_name": "Undying",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/undying_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/undying_full.png"
         },
         "86": {
             "name": "npc_dota_hero_rubick",
             "id": 86,
             "localized_name": "Rubick",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rubick_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rubick_full.png"
         },
         "87": {
             "name": "npc_dota_hero_disruptor",
             "id": 87,
             "localized_name": "Disruptor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_full.png"
         },
         "88": {
             "name": "npc_dota_hero_nyx_assassin",
             "id": 88,
             "localized_name": "Nyx Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nyx_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nyx_assassin_full.png"
         },
         "89": {
             "name": "npc_dota_hero_naga_siren",
             "id": 89,
             "localized_name": "Naga Siren",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/naga_siren_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/naga_siren_full.png"
         },
         "90": {
             "name": "npc_dota_hero_keeper_of_the_light",
             "id": 90,
             "localized_name": "Keeper of the Light",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/keeper_of_the_light_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/keeper_of_the_light_full.png"
         },
         "91": {
             "name": "npc_dota_hero_wisp",
             "id": 91,
             "localized_name": "Io",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/wisp_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/wisp_full.png"
         },
         "92": {
             "name": "npc_dota_hero_visage",
             "id": 92,
             "localized_name": "Visage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/visage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/visage_full.png"
         },
         "93": {
             "name": "npc_dota_hero_slark",
             "id": 93,
             "localized_name": "Slark",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slark_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slark_full.png"
         },
         "94": {
             "name": "npc_dota_hero_medusa",
             "id": 94,
             "localized_name": "Medusa",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/medusa_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/medusa_full.png"
         },
         "95": {
             "name": "npc_dota_hero_troll_warlord",
             "id": 95,
             "localized_name": "Troll Warlord",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/troll_warlord_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/troll_warlord_full.png"
         },
         "96": {
             "name": "npc_dota_hero_centaur",
             "id": 96,
             "localized_name": "Centaur Warrunner",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/centaur_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/centaur_full.png"
         },
         "97": {
             "name": "npc_dota_hero_magnataur",
             "id": 97,
             "localized_name": "Magnus",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/magnataur_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/magnataur_full.png"
         },
         "98": {
             "name": "npc_dota_hero_shredder",
             "id": 98,
             "localized_name": "Timbersaw",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shredder_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shredder_full.png"
         },
         "99": {
             "name": "npc_dota_hero_bristleback",
             "id": 99,
             "localized_name": "Bristleback",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_full.png"
         },
         "100": {
             "name": "npc_dota_hero_tusk",
             "id": 100,
             "localized_name": "Tusk",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tusk_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tusk_full.png"
         },
         "101": {
             "name": "npc_dota_hero_skywrath_mage",
             "id": 101,
             "localized_name": "Skywrath Mage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skywrath_mage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skywrath_mage_full.png"
         },
         "102": {
             "name": "npc_dota_hero_abaddon",
             "id": 102,
             "localized_name": "Abaddon",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/abaddon_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/abaddon_full.png"
         },
         "103": {
             "name": "npc_dota_hero_elder_titan",
             "id": 103,
             "localized_name": "Elder Titan",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/elder_titan_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/elder_titan_full.png"
         },
         "104": {
             "name": "npc_dota_hero_legion_commander",
             "id": 104,
             "localized_name": "Legion Commander",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/legion_commander_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/legion_commander_full.png"
         },
         "105": {
             "name": "npc_dota_hero_techies",
             "id": 105,
             "localized_name": "Techies",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/techies_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/techies_full.png"
         },
         "106": {
             "name": "npc_dota_hero_ember_spirit",
             "id": 106,
             "localized_name": "Ember Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ember_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ember_spirit_full.png"
         },
         "107": {
             "name": "npc_dota_hero_earth_spirit",
             "id": 107,
             "localized_name": "Earth Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earth_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earth_spirit_full.png"
         },
         "109": {
             "name": "npc_dota_hero_terrorblade",
             "id": 109,
             "localized_name": "Terrorblade",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/terrorblade_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/terrorblade_full.png"
         },
         "110": {
             "name": "npc_dota_hero_phoenix",
             "id": 110,
             "localized_name": "Phoenix",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phoenix_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phoenix_full.png"
         },
         "npc_dota_hero_antimage": {
             "name": "npc_dota_hero_antimage",
             "id": 1,
             "localized_name": "Anti-Mage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/antimage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/antimage_full.png"
         },
         "npc_dota_hero_axe": {
             "name": "npc_dota_hero_axe",
             "id": 2,
             "localized_name": "Axe",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/axe_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/axe_full.png"
         },
         "npc_dota_hero_bane": {
             "name": "npc_dota_hero_bane",
             "id": 3,
             "localized_name": "Bane",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bane_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bane_full.png"
         },
         "npc_dota_hero_bloodseeker": {
             "name": "npc_dota_hero_bloodseeker",
             "id": 4,
             "localized_name": "Bloodseeker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bloodseeker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bloodseeker_full.png"
         },
         "npc_dota_hero_crystal_maiden": {
             "name": "npc_dota_hero_crystal_maiden",
             "id": 5,
             "localized_name": "Crystal Maiden",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/crystal_maiden_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/crystal_maiden_full.png"
         },
         "npc_dota_hero_drow_ranger": {
             "name": "npc_dota_hero_drow_ranger",
             "id": 6,
             "localized_name": "Drow Ranger",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/drow_ranger_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/drow_ranger_full.png"
         },
         "npc_dota_hero_earthshaker": {
             "name": "npc_dota_hero_earthshaker",
             "id": 7,
             "localized_name": "Earthshaker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earthshaker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earthshaker_full.png"
         },
         "npc_dota_hero_juggernaut": {
             "name": "npc_dota_hero_juggernaut",
             "id": 8,
             "localized_name": "Juggernaut",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/juggernaut_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/juggernaut_full.png"
         },
         "npc_dota_hero_mirana": {
             "name": "npc_dota_hero_mirana",
             "id": 9,
             "localized_name": "Mirana",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/mirana_full.png"
         },
         "npc_dota_hero_nevermore": {
             "name": "npc_dota_hero_nevermore",
             "id": 11,
             "localized_name": "Shadow Fiend",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_full.png"
         },
         "npc_dota_hero_morphling": {
             "name": "npc_dota_hero_morphling",
             "id": 10,
             "localized_name": "Morphling",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/morphling_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/morphling_full.png"
         },
         "npc_dota_hero_phantom_lancer": {
             "name": "npc_dota_hero_phantom_lancer",
             "id": 12,
             "localized_name": "Phantom Lancer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_lancer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_lancer_full.png"
         },
         "npc_dota_hero_puck": {
             "name": "npc_dota_hero_puck",
             "id": 13,
             "localized_name": "Puck",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/puck_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/puck_full.png"
         },
         "npc_dota_hero_pudge": {
             "name": "npc_dota_hero_pudge",
             "id": 14,
             "localized_name": "Pudge",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pudge_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pudge_full.png"
         },
         "npc_dota_hero_razor": {
             "name": "npc_dota_hero_razor",
             "id": 15,
             "localized_name": "Razor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/razor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/razor_full.png"
         },
         "npc_dota_hero_sand_king": {
             "name": "npc_dota_hero_sand_king",
             "id": 16,
             "localized_name": "Sand King",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sand_king_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sand_king_full.png"
         },
         "npc_dota_hero_storm_spirit": {
             "name": "npc_dota_hero_storm_spirit",
             "id": 17,
             "localized_name": "Storm Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/storm_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/storm_spirit_full.png"
         },
         "npc_dota_hero_sven": {
             "name": "npc_dota_hero_sven",
             "id": 18,
             "localized_name": "Sven",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sven_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sven_full.png"
         },
         "npc_dota_hero_tiny": {
             "name": "npc_dota_hero_tiny",
             "id": 19,
             "localized_name": "Tiny",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tiny_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tiny_full.png"
         },
         "npc_dota_hero_vengefulspirit": {
             "name": "npc_dota_hero_vengefulspirit",
             "id": 20,
             "localized_name": "Vengeful Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/vengefulspirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/vengefulspirit_full.png"
         },
         "npc_dota_hero_windrunner": {
             "name": "npc_dota_hero_windrunner",
             "id": 21,
             "localized_name": "Windranger",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_full.png"
         },
         "npc_dota_hero_zuus": {
             "name": "npc_dota_hero_zuus",
             "id": 22,
             "localized_name": "Zeus",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/zuus_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/zuus_full.png"
         },
         "npc_dota_hero_kunkka": {
             "name": "npc_dota_hero_kunkka",
             "id": 23,
             "localized_name": "Kunkka",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/kunkka_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/kunkka_full.png"
         },
         "npc_dota_hero_lina": {
             "name": "npc_dota_hero_lina",
             "id": 25,
             "localized_name": "Lina",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lina_full.png"
         },
         "npc_dota_hero_lich": {
             "name": "npc_dota_hero_lich",
             "id": 31,
             "localized_name": "Lich",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lich_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lich_full.png"
         },
         "npc_dota_hero_lion": {
             "name": "npc_dota_hero_lion",
             "id": 26,
             "localized_name": "Lion",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lion_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lion_full.png"
         },
         "npc_dota_hero_shadow_shaman": {
             "name": "npc_dota_hero_shadow_shaman",
             "id": 27,
             "localized_name": "Shadow Shaman",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_shaman_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_shaman_full.png"
         },
         "npc_dota_hero_slardar": {
             "name": "npc_dota_hero_slardar",
             "id": 28,
             "localized_name": "Slardar",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slardar_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slardar_full.png"
         },
         "npc_dota_hero_tidehunter": {
             "name": "npc_dota_hero_tidehunter",
             "id": 29,
             "localized_name": "Tidehunter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tidehunter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tidehunter_full.png"
         },
         "npc_dota_hero_witch_doctor": {
             "name": "npc_dota_hero_witch_doctor",
             "id": 30,
             "localized_name": "Witch Doctor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/witch_doctor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/witch_doctor_full.png"
         },
         "npc_dota_hero_riki": {
             "name": "npc_dota_hero_riki",
             "id": 32,
             "localized_name": "Riki",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/riki_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/riki_full.png"
         },
         "npc_dota_hero_enigma": {
             "name": "npc_dota_hero_enigma",
             "id": 33,
             "localized_name": "Enigma",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enigma_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enigma_full.png"
         },
         "npc_dota_hero_tinker": {
             "name": "npc_dota_hero_tinker",
             "id": 34,
             "localized_name": "Tinker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tinker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tinker_full.png"
         },
         "npc_dota_hero_sniper": {
             "name": "npc_dota_hero_sniper",
             "id": 35,
             "localized_name": "Sniper",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sniper_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/sniper_full.png"
         },
         "npc_dota_hero_necrolyte": {
             "name": "npc_dota_hero_necrolyte",
             "id": 36,
             "localized_name": "Necrophos",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/necrolyte_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/necrolyte_full.png"
         },
         "npc_dota_hero_warlock": {
             "name": "npc_dota_hero_warlock",
             "id": 37,
             "localized_name": "Warlock",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/warlock_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/warlock_full.png"
         },
         "npc_dota_hero_beastmaster": {
             "name": "npc_dota_hero_beastmaster",
             "id": 38,
             "localized_name": "Beastmaster",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/beastmaster_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/beastmaster_full.png"
         },
         "npc_dota_hero_queenofpain": {
             "name": "npc_dota_hero_queenofpain",
             "id": 39,
             "localized_name": "Queen of Pain",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_full.png"
         },
         "npc_dota_hero_venomancer": {
             "name": "npc_dota_hero_venomancer",
             "id": 40,
             "localized_name": "Venomancer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/venomancer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/venomancer_full.png"
         },
         "npc_dota_hero_faceless_void": {
             "name": "npc_dota_hero_faceless_void",
             "id": 41,
             "localized_name": "Faceless Void",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/faceless_void_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/faceless_void_full.png"
         },
         "npc_dota_hero_skeleton_king": {
             "name": "npc_dota_hero_skeleton_king",
             "id": 42,
             "localized_name": "Wraith King",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skeleton_king_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skeleton_king_full.png"
         },
         "npc_dota_hero_death_prophet": {
             "name": "npc_dota_hero_death_prophet",
             "id": 43,
             "localized_name": "Death Prophet",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/death_prophet_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/death_prophet_full.png"
         },
         "npc_dota_hero_phantom_assassin": {
             "name": "npc_dota_hero_phantom_assassin",
             "id": 44,
             "localized_name": "Phantom Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_full.png"
         },
         "npc_dota_hero_pugna": {
             "name": "npc_dota_hero_pugna",
             "id": 45,
             "localized_name": "Pugna",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/pugna_full.png"
         },
         "npc_dota_hero_templar_assassin": {
             "name": "npc_dota_hero_templar_assassin",
             "id": 46,
             "localized_name": "Templar Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/templar_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/templar_assassin_full.png"
         },
         "npc_dota_hero_viper": {
             "name": "npc_dota_hero_viper",
             "id": 47,
             "localized_name": "Viper",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/viper_full.png"
         },
         "npc_dota_hero_luna": {
             "name": "npc_dota_hero_luna",
             "id": 48,
             "localized_name": "Luna",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/luna_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/luna_full.png"
         },
         "npc_dota_hero_dragon_knight": {
             "name": "npc_dota_hero_dragon_knight",
             "id": 49,
             "localized_name": "Dragon Knight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dragon_knight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dragon_knight_full.png"
         },
         "npc_dota_hero_dazzle": {
             "name": "npc_dota_hero_dazzle",
             "id": 50,
             "localized_name": "Dazzle",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dazzle_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dazzle_full.png"
         },
         "npc_dota_hero_rattletrap": {
             "name": "npc_dota_hero_rattletrap",
             "id": 51,
             "localized_name": "Clockwerk",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rattletrap_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rattletrap_full.png"
         },
         "npc_dota_hero_leshrac": {
             "name": "npc_dota_hero_leshrac",
             "id": 52,
             "localized_name": "Leshrac",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/leshrac_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/leshrac_full.png"
         },
         "npc_dota_hero_furion": {
             "name": "npc_dota_hero_furion",
             "id": 53,
             "localized_name": "Nature's Prophet",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/furion_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/furion_full.png"
         },
         "npc_dota_hero_life_stealer": {
             "name": "npc_dota_hero_life_stealer",
             "id": 54,
             "localized_name": "Lifestealer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/life_stealer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/life_stealer_full.png"
         },
         "npc_dota_hero_dark_seer": {
             "name": "npc_dota_hero_dark_seer",
             "id": 55,
             "localized_name": "Dark Seer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dark_seer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/dark_seer_full.png"
         },
         "npc_dota_hero_clinkz": {
             "name": "npc_dota_hero_clinkz",
             "id": 56,
             "localized_name": "Clinkz",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/clinkz_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/clinkz_full.png"
         },
         "npc_dota_hero_omniknight": {
             "name": "npc_dota_hero_omniknight",
             "id": 57,
             "localized_name": "Omniknight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/omniknight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/omniknight_full.png"
         },
         "npc_dota_hero_enchantress": {
             "name": "npc_dota_hero_enchantress",
             "id": 58,
             "localized_name": "Enchantress",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enchantress_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/enchantress_full.png"
         },
         "npc_dota_hero_huskar": {
             "name": "npc_dota_hero_huskar",
             "id": 59,
             "localized_name": "Huskar",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/huskar_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/huskar_full.png"
         },
         "npc_dota_hero_night_stalker": {
             "name": "npc_dota_hero_night_stalker",
             "id": 60,
             "localized_name": "Night Stalker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/night_stalker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/night_stalker_full.png"
         },
         "npc_dota_hero_broodmother": {
             "name": "npc_dota_hero_broodmother",
             "id": 61,
             "localized_name": "Broodmother",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/broodmother_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/broodmother_full.png"
         },
         "npc_dota_hero_bounty_hunter": {
             "name": "npc_dota_hero_bounty_hunter",
             "id": 62,
             "localized_name": "Bounty Hunter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bounty_hunter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bounty_hunter_full.png"
         },
         "npc_dota_hero_weaver": {
             "name": "npc_dota_hero_weaver",
             "id": 63,
             "localized_name": "Weaver",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/weaver_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/weaver_full.png"
         },
         "npc_dota_hero_jakiro": {
             "name": "npc_dota_hero_jakiro",
             "id": 64,
             "localized_name": "Jakiro",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/jakiro_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/jakiro_full.png"
         },
         "npc_dota_hero_batrider": {
             "name": "npc_dota_hero_batrider",
             "id": 65,
             "localized_name": "Batrider",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/batrider_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/batrider_full.png"
         },
         "npc_dota_hero_chen": {
             "name": "npc_dota_hero_chen",
             "id": 66,
             "localized_name": "Chen",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chen_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chen_full.png"
         },
         "npc_dota_hero_spectre": {
             "name": "npc_dota_hero_spectre",
             "id": 67,
             "localized_name": "Spectre",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spectre_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spectre_full.png"
         },
         "npc_dota_hero_doom_bringer": {
             "name": "npc_dota_hero_doom_bringer",
             "id": 69,
             "localized_name": "Doom",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/doom_bringer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/doom_bringer_full.png"
         },
         "npc_dota_hero_ancient_apparition": {
             "name": "npc_dota_hero_ancient_apparition",
             "id": 68,
             "localized_name": "Ancient Apparition",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ancient_apparition_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ancient_apparition_full.png"
         },
         "npc_dota_hero_ursa": {
             "name": "npc_dota_hero_ursa",
             "id": 70,
             "localized_name": "Ursa",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ursa_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ursa_full.png"
         },
         "npc_dota_hero_spirit_breaker": {
             "name": "npc_dota_hero_spirit_breaker",
             "id": 71,
             "localized_name": "Spirit Breaker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spirit_breaker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/spirit_breaker_full.png"
         },
         "npc_dota_hero_gyrocopter": {
             "name": "npc_dota_hero_gyrocopter",
             "id": 72,
             "localized_name": "Gyrocopter",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/gyrocopter_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/gyrocopter_full.png"
         },
         "npc_dota_hero_alchemist": {
             "name": "npc_dota_hero_alchemist",
             "id": 73,
             "localized_name": "Alchemist",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/alchemist_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/alchemist_full.png"
         },
         "npc_dota_hero_invoker": {
             "name": "npc_dota_hero_invoker",
             "id": 74,
             "localized_name": "Invoker",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/invoker_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/invoker_full.png"
         },
         "npc_dota_hero_silencer": {
             "name": "npc_dota_hero_silencer",
             "id": 75,
             "localized_name": "Silencer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/silencer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/silencer_full.png"
         },
         "npc_dota_hero_obsidian_destroyer": {
             "name": "npc_dota_hero_obsidian_destroyer",
             "id": 76,
             "localized_name": "Outworld Devourer",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/obsidian_destroyer_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/obsidian_destroyer_full.png"
         },
         "npc_dota_hero_lycan": {
             "name": "npc_dota_hero_lycan",
             "id": 77,
             "localized_name": "Lycan",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lycan_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lycan_full.png"
         },
         "npc_dota_hero_brewmaster": {
             "name": "npc_dota_hero_brewmaster",
             "id": 78,
             "localized_name": "Brewmaster",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/brewmaster_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/brewmaster_full.png"
         },
         "npc_dota_hero_shadow_demon": {
             "name": "npc_dota_hero_shadow_demon",
             "id": 79,
             "localized_name": "Shadow Demon",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_demon_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shadow_demon_full.png"
         },
         "npc_dota_hero_lone_druid": {
             "name": "npc_dota_hero_lone_druid",
             "id": 80,
             "localized_name": "Lone Druid",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lone_druid_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/lone_druid_full.png"
         },
         "npc_dota_hero_chaos_knight": {
             "name": "npc_dota_hero_chaos_knight",
             "id": 81,
             "localized_name": "Chaos Knight",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chaos_knight_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/chaos_knight_full.png"
         },
         "npc_dota_hero_meepo": {
             "name": "npc_dota_hero_meepo",
             "id": 82,
             "localized_name": "Meepo",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/meepo_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/meepo_full.png"
         },
         "npc_dota_hero_treant": {
             "name": "npc_dota_hero_treant",
             "id": 83,
             "localized_name": "Treant Protector",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/treant_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/treant_full.png"
         },
         "npc_dota_hero_ogre_magi": {
             "name": "npc_dota_hero_ogre_magi",
             "id": 84,
             "localized_name": "Ogre Magi",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ogre_magi_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ogre_magi_full.png"
         },
         "npc_dota_hero_undying": {
             "name": "npc_dota_hero_undying",
             "id": 85,
             "localized_name": "Undying",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/undying_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/undying_full.png"
         },
         "npc_dota_hero_rubick": {
             "name": "npc_dota_hero_rubick",
             "id": 86,
             "localized_name": "Rubick",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rubick_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/rubick_full.png"
         },
         "npc_dota_hero_disruptor": {
             "name": "npc_dota_hero_disruptor",
             "id": 87,
             "localized_name": "Disruptor",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_full.png"
         },
         "npc_dota_hero_nyx_assassin": {
             "name": "npc_dota_hero_nyx_assassin",
             "id": 88,
             "localized_name": "Nyx Assassin",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nyx_assassin_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/nyx_assassin_full.png"
         },
         "npc_dota_hero_naga_siren": {
             "name": "npc_dota_hero_naga_siren",
             "id": 89,
             "localized_name": "Naga Siren",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/naga_siren_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/naga_siren_full.png"
         },
         "npc_dota_hero_keeper_of_the_light": {
             "name": "npc_dota_hero_keeper_of_the_light",
             "id": 90,
             "localized_name": "Keeper of the Light",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/keeper_of_the_light_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/keeper_of_the_light_full.png"
         },
         "npc_dota_hero_wisp": {
             "name": "npc_dota_hero_wisp",
             "id": 91,
             "localized_name": "Io",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/wisp_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/wisp_full.png"
         },
         "npc_dota_hero_visage": {
             "name": "npc_dota_hero_visage",
             "id": 92,
             "localized_name": "Visage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/visage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/visage_full.png"
         },
         "npc_dota_hero_slark": {
             "name": "npc_dota_hero_slark",
             "id": 93,
             "localized_name": "Slark",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slark_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/slark_full.png"
         },
         "npc_dota_hero_medusa": {
             "name": "npc_dota_hero_medusa",
             "id": 94,
             "localized_name": "Medusa",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/medusa_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/medusa_full.png"
         },
         "npc_dota_hero_troll_warlord": {
             "name": "npc_dota_hero_troll_warlord",
             "id": 95,
             "localized_name": "Troll Warlord",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/troll_warlord_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/troll_warlord_full.png"
         },
         "npc_dota_hero_centaur": {
             "name": "npc_dota_hero_centaur",
             "id": 96,
             "localized_name": "Centaur Warrunner",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/centaur_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/centaur_full.png"
         },
         "npc_dota_hero_magnataur": {
             "name": "npc_dota_hero_magnataur",
             "id": 97,
             "localized_name": "Magnus",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/magnataur_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/magnataur_full.png"
         },
         "npc_dota_hero_shredder": {
             "name": "npc_dota_hero_shredder",
             "id": 98,
             "localized_name": "Timbersaw",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shredder_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/shredder_full.png"
         },
         "npc_dota_hero_bristleback": {
             "name": "npc_dota_hero_bristleback",
             "id": 99,
             "localized_name": "Bristleback",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_full.png"
         },
         "npc_dota_hero_tusk": {
             "name": "npc_dota_hero_tusk",
             "id": 100,
             "localized_name": "Tusk",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tusk_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/tusk_full.png"
         },
         "npc_dota_hero_skywrath_mage": {
             "name": "npc_dota_hero_skywrath_mage",
             "id": 101,
             "localized_name": "Skywrath Mage",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skywrath_mage_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/skywrath_mage_full.png"
         },
         "npc_dota_hero_abaddon": {
             "name": "npc_dota_hero_abaddon",
             "id": 102,
             "localized_name": "Abaddon",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/abaddon_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/abaddon_full.png"
         },
         "npc_dota_hero_elder_titan": {
             "name": "npc_dota_hero_elder_titan",
             "id": 103,
             "localized_name": "Elder Titan",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/elder_titan_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/elder_titan_full.png"
         },
         "npc_dota_hero_legion_commander": {
             "name": "npc_dota_hero_legion_commander",
             "id": 104,
             "localized_name": "Legion Commander",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/legion_commander_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/legion_commander_full.png"
         },
         "npc_dota_hero_ember_spirit": {
             "name": "npc_dota_hero_ember_spirit",
             "id": 106,
             "localized_name": "Ember Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ember_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/ember_spirit_full.png"
         },
         "npc_dota_hero_earth_spirit": {
             "name": "npc_dota_hero_earth_spirit",
             "id": 107,
             "localized_name": "Earth Spirit",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earth_spirit_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/earth_spirit_full.png"
         },
         "npc_dota_hero_terrorblade": {
             "name": "npc_dota_hero_terrorblade",
             "id": 109,
             "localized_name": "Terrorblade",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/terrorblade_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/terrorblade_full.png"
         },
         "npc_dota_hero_phoenix": {
             "name": "npc_dota_hero_phoenix",
             "id": 110,
             "localized_name": "Phoenix",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phoenix_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/phoenix_full.png"
         },
         "npc_dota_hero_techies": {
             "name": "npc_dota_hero_techies",
             "id": 105,
             "localized_name": "Techies",
-            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/techies_sb.png"
+            "img": "http://cdn.dota2.com/apps/dota2/images/heroes/techies_full.png"
         }
     },
     "item_ids": {
@@ -4407,6 +4422,6 @@
         "239": "winter_greevil_garbage",
         "240": "winter_greevil_chewy",
         "241": "tango_single",
-        "undefined": "crimson_guard"
+        "242": "crimson_guard"
     }
 }

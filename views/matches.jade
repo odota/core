@@ -12,12 +12,12 @@ block content
                 td Duration
                 td Winner
                 td Played
-                td Replay Status
+                td Status
               - each match in matches
                 tr(class= match.radiant_win ? "success" : "danger")
                   td: a(href='/matches/#{match.match_id}')= match.match_id
-                  td= constants.modes[match.game_mode].name
-                  td= constants.regions[match.cluster].name
+                  td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+                  td= constants.regions[match.cluster] ? constants.regions[match.cluster].name : match.cluster
                   td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                   if match.radiant_win
                     td Radiant
