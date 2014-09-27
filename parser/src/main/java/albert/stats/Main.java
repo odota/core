@@ -114,11 +114,11 @@ public class Main {
                 }
                 else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
                     if (!player1.equals("-1") && !player2.equals("-1")){
-                        entry.put("slot", player2);                        
+                        entry.put("slot", player2);
                         entry.put("time", time);
                         entry.put("key", player1);
                         entry.put("type", "kills");
-                        log.put(entry); 
+                        log.put(entry);
                     }
                     //System.err.format("%s,%s%n", time, u);
                 }
