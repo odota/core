@@ -4,6 +4,7 @@ var xpDifference = ['XP']
 var time = ["time"].concat(match.parsed_data.times)
 var gold = [time]
 var xp = [time]
+var lh = [time]
 var groups = [
     []
 ]
@@ -25,10 +26,12 @@ for(var i = 0; i < match.parsed_data.times.length; i++) {
     })
     goldDifference.push(goldtotal)
     xpDifference.push(xptotal)
+    /*
     match.parsed_data.players.forEach(function(elem, j) {
         elem.gold[i]=elem.gold[i]/(absGoldTotal)
         elem.xp[i]=elem.xp[i]/(absXpTotal)
     })
+    */
 }
 match.parsed_data.players.forEach(function(elem, i) {
     var hero = constants.heroes[match.players[i].hero_id].localized_name
@@ -37,6 +40,8 @@ match.parsed_data.players.forEach(function(elem, i) {
     gold.push(elem.gold)
     elem.xp = [hero].concat(elem.xp)
     xp.push(elem.xp)
+    elem.lh = [hero].concat(elem.lh)
+    lh.push(elem.lh)
 })
 c3.generate({
     bindto: "#chart-diff",
@@ -71,8 +76,7 @@ c3.generate({
     data: {
         x: 'time',
         columns: gold,
-        type: "area-spline",
-        groups: groups
+        type: "spline"
     },
     axis: {
         x: {
@@ -96,8 +100,7 @@ c3.generate({
     data: {
         x: 'time',
         columns: xp,
-        type: "area-spline",
-        groups: groups
+        type: "spline"
     },
     axis: {
         x: {
@@ -110,6 +113,30 @@ c3.generate({
         },
         y: {
             label: 'XP'
+        }
+    }
+})
+c3.generate({
+    bindto: "#chart-lh",
+    size: {
+        height: height
+    },
+    data: {
+        x: 'time',
+        columns: lh,
+        type: "spline"
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+                format: function(x) {
+                    return moment().startOf('day').seconds(x).format("H:mm")
+                }
+            },
+        },
+        y: {
+            label: 'LH'
         }
     }
 })
