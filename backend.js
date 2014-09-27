@@ -52,7 +52,7 @@ function startup() {
 }
 
 function getMatches() {
-    console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
+    //console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
     players.find({
         track: 1
     }, function(err, docs) {
@@ -173,11 +173,7 @@ function apiRequest(req, cb) {
                     next_seq = resp[resp.length - 1].match_seq_num + 1
                     fs.writeFileSync("seqnum", next_seq)
                 }
-                if(resp.length == 100) {
-                    setTimeout(cb, 0, null)
-                } else {
-                    setTimeout(cb, api_delay, null)
-                }
+                setTimeout(cb, api_delay, null)
             })
         }
     })
@@ -427,9 +423,9 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            parser_file,
-            fileName, "constants.json"
-        ])
+                                parser_file,
+                                fileName, "constants.json"
+                               ])
         cp.stdout.on('data', function(data) {
             output += data
         })
