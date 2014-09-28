@@ -1,15 +1,21 @@
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+function formatSeconds(seconds){
+    var minutes =  ~~(seconds / 60)
+    var seconds = pad(Math.abs(seconds%60), 2)
+    return minutes+":"+seconds
+}
+
 match.parsed_data.players.forEach(function (player, i){
     var items = new vis.DataSet();
     var heroes = 0
     for (var i=0;i<player.timeline.length;i++){
         var event = player.timeline[i]
         var bar = {}
-        if (event.time < 0){
-            time = moment().startOf('day').seconds(event.time*-1).format("-m:ss");
-        }
-        else{
-            time = moment().startOf('day').seconds(event.time).format("m:ss");
-        }
+        var time = formatSeconds(event.time)
         time = "<span style='font-size:10px;'>"+time+"<span>"
         bar.start=moment().startOf('day').seconds(event.time)
         if (event.type=="kills"){
