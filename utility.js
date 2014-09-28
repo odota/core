@@ -10,7 +10,6 @@ utility.players = utility.db.get('players');
 utility.players.index('account_id', {
     unique: true
 })
-
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
@@ -55,7 +54,8 @@ utility.getTrackedPlayers = function(cb) {
 }
 utility.fillPlayerStats = function(doc, matches, cb) {
     var account_id = doc.account_id
-    var counts = {};
+    var counts = {}
+    var heroes = {}
     for(i = 0; i < matches.length; i++) {
         for(j = 0; j < matches[i].players.length; j++) {
             var player = matches[i].players[j]
@@ -63,6 +63,17 @@ utility.fillPlayerStats = function(doc, matches, cb) {
                 var playerRadiant = isRadiant(player)
                 matches[i].player_win = (playerRadiant == matches[i].radiant_win)
                 matches[i].player_hero = player.hero_id
+                if(!heroes[player.hero_id]) {
+                    heroes[player.hero_id] = {}
+                    heroes[player.hero_id]["hero_id"] = player.hero_id
+                    heroes[player.hero_id]["win"] = 0
+                    heroes[player.hero_id]["lose"] = 0
+                }
+                if(matches[i].player_win) {
+                    heroes[player.hero_id]["win"] += 1
+                } else {
+                    heroes[player.hero_id]["lose"] += 1
+                }
             }
         }
         for(j = 0; j < matches[i].players.length; j++) {
@@ -70,7 +81,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             if(isRadiant(player) == playerRadiant) { //only check teammates of player
                 if(!counts[player.account_id]) {
                     counts[player.account_id] = {}
-                    counts[player.account_id]["account_id"] = player.account_id;
+                    counts[player.account_id]["account_id"] = player.account_id
                     counts[player.account_id]["win"] = 0;
                     counts[player.account_id]["lose"] = 0;
                 }
@@ -94,6 +105,11 @@ utility.fillPlayerStats = function(doc, matches, cb) {
                 doc.teammates.push(count)
             }
         }
+    }
+    doc.heroes = []
+    for(var id in heroes) {
+        var count = heroes[id]
+        doc.heroes.push(count)
     }
     utility.fillPlayerNames(doc.teammates, function(err) {
         cb(null, doc, matches)
