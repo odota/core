@@ -3,10 +3,13 @@ function pad(n, width, z) {
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
-function formatSeconds(seconds){
-    var minutes =  ~~(seconds / 60)
-    var seconds = pad(Math.abs(seconds%60), 2)
-    return minutes+":"+seconds
+function formatSeconds(input){
+    var absTime = Math.abs(input)
+    var minutes =  ~~(absTime / 60)
+    var seconds = pad(absTime%60, 2)
+    var time = ((input<0) ? "-":"")
+    time += minutes+":"+seconds
+    return time
 }
 
 match.parsed_data.players.forEach(function (player, i){
