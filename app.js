@@ -9,55 +9,57 @@ var express = require('express'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     constants = require('./constants.json')
-    
-passport.use(
-    new SteamStrategy({
-        //todo get actual address of running instance
-        returnURL: 'http://finance-manila.codio.io:5000/return',
-        realm: 'http://finance-manila.codio.io:5000/',
-        apiKey: process.env.STEAM_API_KEY
-    }, function(identifier, profile, done) { // start tracking the player
-        steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)))
-        console.log(steam32)
-        profile.identifier = identifier;
-        
-        console.log(profile);
-        
-        players.findOne({
+
+passport.use(new SteamStrategy({
+    //todo get actual address of running instance
+    returnURL:  process.env.HOST + '/return',
+    realm: process.env.HOST,
+    apiKey: process.env.STEAM_API_KEY
+}, function(identifier, profile, done) { // start tracking the player
+    steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)))
+
+    players.findOne({
             account_id: steam32    
-        }, function(err, player) {
-            if (err) return done(err, null)
-            if (player) {
+    }, function(err, player) {
+        if (err) return done(err, null)
+        if (player) {
+            players.update({
+                account_id: steam32
+            }, {
+                $set: profile._json
+            }, {
+                upsert: true
+            }, function(err, player) {
+                if(err) return done(err, null)
+                
                 return done(null, steam32)
-            } else {
-                var insert = profile._json
-                insert.account_id = steam32
-                insert.track = 1
-                players.insert(insert, function(err, doc){
-                    if (err) return done(err, null)
-                                
-                    return done(null, steam32);
-                })
-            }
-        })
-        
-    }
-))
+            })
+        } else { //new user!
+            var insert = profile._json
+            insert.account_id = steam32
+            insert.track = 1
+            players.insert(insert, function(err, doc){
+                if (err) return done(err, null)
+
+                return done(null, {steamid: steam32, new: 1});
+            })
+        }
+    })
+}))
 
 passport.serializeUser(function(user, done) {
-  console.log(user)
-  done(null, user.identifier);
+    done(null, user);
 });
 
 passport.deserializeUser(function(id, done) {
-  done(null, id)
+    done(null, id)
 });
 
-    
 var app = express()
-
 app.use("/public", express.static(path.join(__dirname, '/public')))
-app.use(session({secret: 'this is a secret'}))
+app.use(session({
+    secret: process.env.COOKIE_SECRET
+}))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.set('views', path.join(__dirname, 'views'))
@@ -65,9 +67,10 @@ app.set('view engine', 'jade');
 app.locals.numeral = require('numeral')
 app.locals.moment = require('moment')
 app.locals.constants = constants;
-
 app.route('/').get(function(req, res) {
-    res.render('index.jade', {})
+    res.render('index.jade', {
+        loggedin: req.user
+    })
 })
 
 app.route('/matches').get(function(req, res) {
@@ -77,6 +80,7 @@ app.route('/matches').get(function(req, res) {
         })
     })
 })
+
 app.route('/matches/:id').get(function(req, res) {
     matches.findOne({
         "match_id": Number(req.params.id)
@@ -91,6 +95,7 @@ app.route('/matches/:id').get(function(req, res) {
         }
     })
 })
+
 app.route('/players').get(function(req, res) {
     utility.getTrackedPlayers(function(err, docs) {
         res.render('players.jade', {
@@ -98,6 +103,7 @@ app.route('/players').get(function(req, res) {
         })
     })
 })
+
 app.route('/players/:id').get(function(req, res) {
     players.findOne({
         account_id: Number(req.params.id)
@@ -115,6 +121,7 @@ app.route('/players/:id').get(function(req, res) {
         }
     })
 })
+
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }))
@@ -123,8 +130,8 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/',
     successRedirect: '/'
 }))
-                         
-app.route('/logout', function(req, res) {
+
+app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
