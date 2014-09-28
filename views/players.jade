@@ -8,5 +8,5 @@ block content
               each player in players
                 tr
                   td
-                    a(href='/players/#{player.account_id}')
+                    a(href='/player/#{player.account_id}')
                       =player.display_name || player.account_id

@@ -28,6 +28,28 @@ utility.fillPlayerNames = function(players, cb) {
     })
 }
 
+utility.getLastMatch = function(account_id, cb) {
+    var search = {
+        duration: {
+            $exists: true
+        }
+    }
+   
+    search.players = {
+        $elemMatch: {
+            account_id: account_id
+        }
+    }
+    
+    utility.matches.findOne(search, {
+        sort: {
+            match_id: -1
+        }
+    }, function(err, docs) {
+        cb(err, docs)
+    })
+}
+
 utility.getMatches = function(account_id, cb) {
     var search = {
         duration: {

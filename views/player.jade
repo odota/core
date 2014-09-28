@@ -17,7 +17,7 @@ block content
               th Status
             - each match in matches
               tr(class= match.player_win ? "success" : "danger")
-                td: a(href='/matches/#{match.match_id}')= match.match_id
+                td: a(href='/match/#{match.match_id}')= match.match_id
                 - var hero = constants.heroes[match.player_hero]
                 td.hero: img(src=hero.img, alt=hero.localized_name)
                 td= match.player_win ? "Won" : "Lost"                
@@ -36,7 +36,7 @@ block content
              if (teammate.account_id != constants.anonymous_account_id)
                tr
                  td
-                   a(href='/players/#{teammate.account_id}')=teammate.display_name || teammate.account_id
+                   a(href='/player/#{teammate.account_id}')=teammate.display_name || teammate.account_id
                  td=teammate.win
                  td=teammate.lose
          h3 Heroes
