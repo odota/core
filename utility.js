@@ -1,15 +1,18 @@
-var utility = exports
-var request = require('request')
-var async = require('async')
-utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
+var utility = exports,
+    request = require('request'),
+    async = require('async'),
+    BigNumber = require('big-number').n
+    utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
     unique: true
 });
+
 utility.players = utility.db.get('players');
 utility.players.index('account_id', {
     unique: true
 })
+
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
@@ -24,6 +27,7 @@ utility.fillPlayerNames = function(players, cb) {
         cb(err)
     })
 }
+
 utility.getMatches = function(account_id, cb) {
     var search = {
         duration: {
@@ -52,6 +56,7 @@ utility.getTrackedPlayers = function(cb) {
         cb(err, docs)
     })
 }
+
 utility.fillPlayerStats = function(doc, matches, cb) {
     var account_id = doc.account_id
     var counts = {}
@@ -114,6 +119,24 @@ utility.fillPlayerStats = function(doc, matches, cb) {
     utility.fillPlayerNames(doc.teammates, function(err) {
         cb(null, doc, matches)
     })
+}
+
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+utility.convert64to32 = function(id) {
+    return BigNumber(id).minus('76561197960265728')
+}
+
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+utility.convert32to64 = function(id) {
+    return BigNumber('76561197960265728').plus(id)
 }
 
 function isRadiant(player) {
