@@ -18,41 +18,30 @@ passport.use(new SteamStrategy({
 }, function(identifier, profile, done) { // start tracking the player
     steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)))
 
-    players.findOne({
-            account_id: steam32    
-    }, function(err, player) {
-        if (err) return done(err, null)
-        if (player) {
-            players.update({
-                account_id: steam32
-            }, {
-                $set: profile._json
-            }, {
-                upsert: true
-            }, function(err, player) {
-                if(err) return done(err, null)
-                
-                return done(null, steam32)
-            })
-        } else { //new user!
-            var insert = profile._json
-            insert.account_id = steam32
-            insert.track = 1
-            players.insert(insert, function(err, doc){
-                if (err) return done(err, null)
-
-                return done(null, {steamid: steam32, new: 1});
-            })
-        }
+    var insert = profile._json
+    insert.account_id = steam32
+    insert.track = 1
+    
+    players.update({
+        account_id: steam32
+    }, {
+        $set: insert
+    }, {
+        upsert: true
+    }, function(err, num) {
+        if(err) return done(err, null)
+        return done(null, {account_id: steam32})
     })
 }))
 
 passport.serializeUser(function(user, done) {
-    done(null, user);
+    done(null, user.account_id);
 });
 
 passport.deserializeUser(function(id, done) {
-    done(null, id)
+    players.findOne({account_id: id}, function(err, user) {
+        done(err, user)
+    })
 });
 
 var app = express()
@@ -68,9 +57,17 @@ app.locals.numeral = require('numeral')
 app.locals.moment = require('moment')
 app.locals.constants = constants;
 app.route('/').get(function(req, res) {
-    res.render('index.jade', {
-        loggedin: req.user
-    })
+    if (req.user) {
+        utility.getLastMatch(req.user.account_id, function(err, doc){
+            if (err) res.render('index.jade', {loggedin: req.user})
+            res.render('index.jade', {
+                user: req.user,
+                match: doc
+            })            
+        })
+    } else {
+        res.render('index.jade', {})
+    }
 })
 
 app.route('/matches').get(function(req, res) {
@@ -81,9 +78,9 @@ app.route('/matches').get(function(req, res) {
     })
 })
 
-app.route('/matches/:id').get(function(req, res) {
+app.route('/match/:id').get(function(req, res) {
     matches.findOne({
-        "match_id": Number(req.params.id)
+        match_id: Number(req.params.id)
     }, function(err, doc) {
         if(!doc) res.status(404).send('Could not find this match!')
         else {
@@ -104,7 +101,7 @@ app.route('/players').get(function(req, res) {
     })
 })
 
-app.route('/players/:id').get(function(req, res) {
+app.route('/player/:id').get(function(req, res) {
     players.findOne({
         account_id: Number(req.params.id)
     }, function(err, player) {
@@ -126,10 +123,12 @@ app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }))
 
-app.route('/return').get(passport.authenticate('steam', {
-    failureRedirect: '/',
-    successRedirect: '/'
-}))
+app.route('/return').get(
+    passport.authenticate('steam', {failureRedirect: '/'}),
+    function(req, res) {
+        if (req.user) res.redirect('/player/' + req.user.account_id)
+        res.redirect('/')
+})
 
 app.route('/logout').get(function(req, res) {
     req.logout();
