@@ -17,26 +17,47 @@ passport.use(
         realm: 'http://finance-manila.codio.io:5000/',
         apiKey: process.env.STEAM_API_KEY
     }, function(identifier, profile, done) { // start tracking the player
-      
-        console.log(identifier)
+        steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)))
+        console.log(steam32)
         profile.identifier = identifier;
-        return done(null, profile);
+        
+        console.log(profile);
+        
+        players.findOne({
+            account_id: steam32    
+        }, function(err, player) {
+            if (err) return done(err, null)
+            if (player) {
+                return done(null, steam32)
+            } else {
+                var insert = profile._json
+                insert.account_id = steam32
+                insert.track = 1
+                players.insert(insert, function(err, doc){
+                    if (err) return done(err, null)
+                                
+                    return done(null, steam32);
+                })
+            }
+        })
+        
     }
 ))
 
 passport.serializeUser(function(user, done) {
+  console.log(user)
   done(null, user.identifier);
 });
 
 passport.deserializeUser(function(id, done) {
-  done(null, )
+  done(null, id)
 });
 
     
 var app = express()
 
 app.use("/public", express.static(path.join(__dirname, '/public')))
-app.use(session({secret: 'this is a secret'})
+app.use(session({secret: 'this is a secret'}))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.set('views', path.join(__dirname, 'views'))
