@@ -24,29 +24,29 @@ var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var queuedMatches = {}
 var trackedPlayers = {}
-var next_seq = parseInt(fs.readFileSync("seqnum"))
+var next_seq;
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-startup()
-aq.empty = function() {
+updateConstants()
+//one-time scan for tracked players
+players.find({
+    track: 1
+}, function(err, docs) {
+    aq.push(docs, function(err) {})
+})
+//one-time scan for unparsed matches
+matches.find({
+    parse_status: 0
+}, function(err, docs) {
+    pq.push(docs, function(err) {})
+})
+getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data){
+    next_seq = process.env.MATCH_SEQ_NUM || data.result.matches[0].match_seq_num
     getMatches()
-}
+})
 
-function startup() {
-    updateConstants()
-    //one-time scan for tracked players
-    players.find({
-        track: 1
-    }, function(err, docs) {
-        aq.push(docs, function(err) {})
-    })
-    //one-time scan for unparsed matches
-    matches.find({
-        parse_status: 0
-    }, function(err, docs) {
-        pq.push(docs, function(err) {})
-    })
+aq.empty = function() {
     getMatches()
 }
 
@@ -170,7 +170,6 @@ function apiRequest(req, cb) {
             async.mapSeries(resp, insertMatch, function(err) {
                 if(resp.length > 0) {
                     next_seq = resp[resp.length - 1].match_seq_num + 1
-                    fs.writeFileSync("seqnum", next_seq)
                 }
                 setTimeout(cb, api_delay, null)
             })

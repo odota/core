@@ -10,7 +10,6 @@ var app = express()
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
-app.locals.numeral = require('numeral')
 app.locals.moment = require('moment')
 app.locals.constants = constants;
 app.route('/').get(function(req, res) {
