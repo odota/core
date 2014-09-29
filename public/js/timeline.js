@@ -35,7 +35,7 @@ match.parsed_data.players.forEach(function (player, i){
         if (event.type=="buybacks"){
             bar.content = event.key+time
             bar.group=2
-            items.add(bar)
+            //items.add(bar)
         }
         if (event.type=="itembuys"){
             var img = constants.items[event.key].img
@@ -74,6 +74,7 @@ match.parsed_data.players.forEach(function (player, i){
         margin:{
             item: 2
         },
+        padding: 1,
         start: moment().startOf('day').subtract(300, 'seconds'),
         end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
         showMajorLabels: false,
