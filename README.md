@@ -1,6 +1,7 @@
 YASP - YASP: Another Stats Page
 ====
 
+Live version at http://yasp.albertcui.com  
 Provides awesome replay-parsed stats for free!  
 Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  
 Data stored in MongoDB.
