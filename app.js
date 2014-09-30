@@ -59,7 +59,7 @@ app.locals.constants = constants;
 app.route('/').get(function(req, res) {
     if (req.user) {
         utility.getLastMatch(req.user.account_id, function(err, doc){
-            if (err) res.render('index.jade', {loggedin: req.user})
+            if (err) doc = false;
             res.render('index.jade', {
                 user: req.user,
                 match: doc
