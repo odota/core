@@ -62,7 +62,7 @@ block content
                  if (player.account_id == constants.anonymous_account_id)
                    ="Anonymous"
                  else
-                   a(href='/players/#{player.account_id}')= player.display_name ? player.display_name : player.account_id
+                   a(href='/players/#{player.account_id}')= player.personaname || player.account_id
                - var hero = constants.heroes[player.hero_id]
                td.hero
                  if hero

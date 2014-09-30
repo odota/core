@@ -61,7 +61,7 @@ match.parsed_data.players.forEach(function (player, i){
     // create visualization
     var container = document.getElementById('chart-timeline');
     var label = document.createElement('h3')
-    label.innerHTML = player.display_name
+    label.innerHTML = player.personaname
     var iDiv = document.createElement('div');
     container.appendChild(label)
     container.appendChild(iDiv);

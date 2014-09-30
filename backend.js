@@ -200,9 +200,7 @@ function insertPlayer(player, cb) {
     players.update({
         account_id: account_id
     }, {
-        $set: {
-            display_name: player.personaname
-        }
+        $set: player
     }, {
         upsert: true
     }, function(err) {
