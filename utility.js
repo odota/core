@@ -19,7 +19,7 @@ utility.fillPlayerNames = function(players, cb) {
             account_id: player.account_id
         }, function(err, dbPlayer) {
             if(dbPlayer) {
-                player.display_name = dbPlayer.display_name
+                player.personaname = dbPlayer.personaname
             }
             cb(null)
         })
