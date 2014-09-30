@@ -9,11 +9,9 @@ var express = require('express'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     constants = require('./constants.json'),
-    http = require('http'),
-    app = express()
-    var port = Number(process.env.PORT || 5000);
-var server = http.createServer(app);
-server.listen(port);
+    app = express();
+var port = Number(process.env.PORT || 5000)
+app.listen(port);
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
