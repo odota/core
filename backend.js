@@ -9,7 +9,6 @@ var request = require('request'),
     matches = utility.matches,
     players = utility.players,
     AWS = require('aws-sdk'),
-    BigNumber = require('big-number').n,
     $ = require('cheerio'),
     steam = require("steam"),
     dota2 = require("dota2"),
@@ -121,7 +120,7 @@ function apiRequest(req, cb) {
     } else if(req.summaries_id) {
         var steamids = []
         req.players.forEach(function(player) {
-            steamids.push(BigNumber('76561197960265728').plus(player.account_id).toString())
+            steamids.push(utility.convert32to64(player.account_id).toString())
         })
         var query = steamids.join()
         url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
@@ -197,7 +196,7 @@ function insertMatch(match, cb) {
  */
 
 function insertPlayer(player, cb) {
-    var account_id = Number(BigNumber(player.steamid).minus('76561197960265728'))
+    var account_id = Number(utility.convert64to32(player.steamid))
     players.update({
         account_id: account_id
     }, {
@@ -210,6 +209,7 @@ function insertPlayer(player, cb) {
         cb(err)
     })
 }
+
 /*
  * Downloads a match replay
  */
