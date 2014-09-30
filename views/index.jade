@@ -3,4 +3,26 @@ block content
   .page-header
     h1(style='font-weight: 700;') YASP 
       small YASP: Another Stats Page
-  p.lead Login with a Steam account.  We'll start tracking your games! :)
+      
+  if user
+   .row
+    div.col-md-1
+      img(src='#{user.avatarmedium}').img-thumbnail
+    div.col-md-4
+      h2
+        | Welcome back #{user.personaname}!
+   if match
+    .row(style='margin-top:1em;')
+     .col-md-5
+      p The most recent match we have for you is match 
+        a(href='/matches/#{match.match_id}') #{match.match_id}.
+    p: a(href='/logout') Logout
+  else
+    p.lead
+     | As the name suggests, we're yet <em>another</em> Dota 2 stats site.
+    p.lead <strong>But we're special!</strong> (At least we think we are.)
+    p.lead We'll download the replays of your games for you and even parse them to get even more stats!
+    p.lead Just sign in through Steam!
+    p
+      a(href='/login')
+        img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_small.png')

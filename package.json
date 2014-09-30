@@ -14,12 +14,15 @@
     "request": "2.40.0",
     "cheerio": "~0.17.0",
     "express": "4.8.6",
+    "express-session": "1.8.2",
     "jade": "1.5.0",
     "moment": "2.8.2",
     "async": "0.9.0",
     "winston": "0.7.3",
     "seek-bzip": "~1.0.3",
     "aws-sdk": "~2.0.15",
-    "big-number": "~0.3.1"
+    "big-number": "~0.3.1",
+    "passport": "0.2.1",
+    "passport-steam": "0.1.4"
   }
 }
