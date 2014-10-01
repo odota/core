@@ -21,14 +21,15 @@ app.use(bodyParser.urlencoded({
 var port = 9001;
 var router = express.Router();
 router.route('/').post(function(req, res) {
-    matches.findOne({match_id:parseInt(req.body.match_id)}, function(err, doc){
+    matches.findOne({
+        match_id: parseInt(req.body.match_id)
+    }, function(err, doc) {
         pq.push(doc, function(err) {})
-        console.log("[PARSER] parse queue position %s", pq.length())
+        console.log("[PARSER] parse request: match %s, position %s", req.body.match_id, pq.length())
         res.json({
             position: pq.length()
         })
     })
-
 })
 app.use('/', router);
 app.listen(port);
@@ -54,41 +55,15 @@ function download(match, cb) {
         console.log("[PARSER] found local replay for match %s", match_id)
         cb(null, fileName);
     } else {
-        if(match.start_time > moment().subtract(7, 'days').format('X')) {
-            getReplayUrl(match, function(err, url) {
-                if(err) {
-                    cb(err)
-                }
-                downloadWithRetry(url, fileName, 1000, function() {
-                    console.log("[PARSER] downloaded valve replay for match %s", match_id)
-                    cb(null, fileName)
-                })
-            })
-        } else {
-            if(process.env.AWS_S3_BUCKET) {
-                var archiveName = fileName + ".bz2"
-                var s3 = new AWS.S3()
-                var params = {
-                    Bucket: process.env.AWS_S3_BUCKET,
-                    Key: archiveName
-                }
-                s3.getObject(params, function(err, data) {
-                    if(err) {
-                        console.log('[S3] Replay not found in S3')
-                        cb("Replay expired")
-                    } else {
-                        console.log("[PARSER] Downloaded S3 replay for match %s", match_id)
-                        var decomp = Bunzip.decode(data.Body);
-                        fs.writeFile(fileName, decomp, function(err) {
-                            cb(null, fileName)
-                        })
-                    }
-                })
-            } else {
-                console.log('[S3] S3 is not defined')
-                cb("Replay expired")
+        getReplayUrl(match, function(err, url) {
+            if(err) {
+                return cb(err)
             }
-        }
+            downloadWithRetry(url, fileName, 1000, function() {
+                console.log("[PARSER] downloaded replay for match %s", match_id)
+                cb(null, fileName)
+            })
+        })
     }
 }
 /*
@@ -133,46 +108,80 @@ function logOnSteam(user, pass, authcode, cb) {
  */
 
 function getReplayUrl(match, cb) {
-    //if new enough, try for db url or dota url
-    //otherwise, try for s3 url
-    //otherwise, expired
-    if(match.replay_url) {
-        console.log("[PARSER] found replay_url in db")
-        return cb(null, match.replay_url)
-    }
-    if(!Steam.loggedOn) {
-        loginNum += 1
-        loginNum = loginNum % users.length
-        logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
-            getReplayUrl(match, cb)
-        })
-    } else {
-        console.log("[DOTA] requesting replay %s", match.match_id)
-        var timeoutProtect = setTimeout(function() {
-            // Clear the local timer variable, indicating the timeout has been triggered.
-            timeoutProtect = null;
-            Dota2.exit()
-            Steam.logOff()
-            console.log("[DOTA] request for replay timed out, relogging")
-            getReplayUrl(match, cb)
-        }, 15000)
-        Dota2.matchDetailsRequest(match.match_id, function(err, data) {
-            if(timeoutProtect) {
-                clearTimeout(timeoutProtect);
-                if(err) {
-                    return cb(err)
-                }
-                var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
-                matches.update({
-                    match_id: match.match_id
-                }, {
-                    $set: {
-                        replay_url: url
+    if(match.start_time > moment().subtract(7, 'days').format('X')) {
+        if(!Steam.loggedOn) {
+            loginNum += 1
+            loginNum = loginNum % users.length
+            logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
+                getReplayUrl(match, cb)
+            })
+        } else {
+            console.log("[DOTA] requesting replay %s", match.match_id)
+            var timeoutProtect = setTimeout(function() {
+                // Clear the local timer variable, indicating the timeout has been triggered.
+                timeoutProtect = null;
+                Dota2.exit()
+                Steam.logOff()
+                console.log("[DOTA] request for replay timed out, relogging")
+                getReplayUrl(match, cb)
+            }, 15000)
+            Dota2.matchDetailsRequest(match.match_id, function(err, data) {
+                if(timeoutProtect) {
+                    clearTimeout(timeoutProtect);
+                    if(err) {
+                        return cb(err)
                     }
-                })
-                return cb(null, url)
+                    var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+                    return cb(null, url)
+                }
+            })
+        }
+    } else {
+        var match_id = match.match_id
+        var fileName = replay_dir + match_id + ".dem"
+        var archiveName = fileName + ".bz2"
+        var s3 = new AWS.S3()
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        }
+        s3.headObject(params, function(err, data) {
+            if (!err){
+                var url = s3.getSignedUrl('getObject', params);
+                cb(null, url)
+            }
+            else {
+                cb("Replay expired")
             }
         })
+    }
+}
+
+function uploadToS3(archiveName, body, cb) {
+    if(process.env.AWS_S3_BUCKET) {
+        var s3 = new AWS.S3()
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        }
+        s3.headObject(params, function(err, data) {
+            if(err) {
+                params.Body = body
+                s3.putObject(params, function(err, data) {
+                    if(err) {
+                        console.log('[S3] could not upload to S3')
+                    } else {
+                        console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
+                    }
+                    cb(err)
+                })
+            } else {
+                console.log('[S3] replay already exists in S3')
+                cb(err)
+            }
+        })
+    } else {
+        cb(null)
     }
 }
 /*
@@ -189,33 +198,7 @@ function downloadWithRetry(url, fileName, timeout, cb) {
             setTimeout(downloadWithRetry, timeout, url, fileName, timeout * 2, cb);
         } else {
             var archiveName = fileName + ".bz2"
-            async.series([
-                function(cb) {
-                    if(process.env.AWS_S3_BUCKET) {
-                        var s3 = new AWS.S3()
-                        var params = {
-                            Bucket: process.env.AWS_S3_BUCKET,
-                            Key: archiveName
-                        }
-                        s3.headObject(params, function(err, data) {
-                            if(err) {
-                                params.Body = body
-                                s3.putObject(params, function(err, data) {
-                                    if(err) {
-                                        console.log('[S3] could not upload to S3')
-                                    } else {
-                                        console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
-                                    }
-                                    cb(err)
-                                })
-                            } else {
-                                console.log('[S3] replay already exists in S3')
-                                cb(err)
-                            }
-                        })
-                    }
-                }
-            ], function(err) {
+            uploadToS3(archiveName, body, function(err) {
                 //decompress and write locally
                 var decomp = Bunzip.decode(body);
                 fs.writeFile(fileName, decomp, function(err) {
