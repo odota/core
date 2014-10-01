@@ -2,7 +2,6 @@ var async = require("async"),
     utility = require('./utility'),
     matches = utility.matches,
     players = utility.players;
-
 var request = require("request")
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
@@ -11,19 +10,16 @@ var queuedMatches = {}
 var trackedPlayers = {}
 var parser = process.env.PARSER_HOST || "localhost"
 var next_seq;
-
 utility.updateConstants()
-//one-time scan for tracked players
 players.find({
     track: 1
 }, function(err, docs) {
     aq.push(docs, function(err) {})
 })
-//one-time scan for unparsed matches
 matches.find({
     parse_status: 0
 }, function(err, docs) {
-    docs.forEach(function(match){
+    docs.forEach(function(match) {
         requestParse(match)
     })
 })
@@ -47,10 +43,18 @@ function getMatches() {
     })
 }
 
-function requestParse(match){
-    request.post({url:"http://"+parser+":9001", form: { match_id: match.match_id}})
+function requestParse(match) {
+    request.post({
+        url: "http://" + parser + ":9001",
+        form: {
+            match_id: match.match_id
+        }
+    }, function(err) {
+        if(err) {
+            requestParse(match)
+        }
+    })
 }
-
 /*
  * Processes a request to an api
  */
@@ -112,7 +116,7 @@ function apiRequest(req, cb) {
                 if(resp.length > 0) {
                     next_seq = resp[resp.length - 1].match_seq_num + 1
                 }
-               cb(null)
+                cb(null)
             })
         }
     })
