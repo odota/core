@@ -1,2 +1,3 @@
 web: npm start
-worker: node backend.js
+backend: node backend.js
+parser: node parser.js

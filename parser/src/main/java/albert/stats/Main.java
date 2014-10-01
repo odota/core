@@ -156,14 +156,13 @@ public class Main {
                     else if (type.contains("PAUSE")){
                     }
                     else{ 
-                        System.err.format("%s,%s%n", time, u);
+                        System.err.format("%s %s%n", time, u);
                     }
                 }
                 else if (name.equals("CUserMsg_SayText2")){
-
                     JSONObject entry = new JSONObject();
                     entry.put("prefix", u.getProperty("prefix"));
-                    entry.put("message", u.getProperty("text"));
+                    entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
                     entry.put("type", "chat");
                     log.put(entry);
@@ -196,7 +195,7 @@ public class Main {
 
                 }
                 else{
-                    System.err.format("%s,%s%n", time, u); 
+                    System.err.format("%s %s%n", time, u); 
                 }
             }
 
