@@ -163,7 +163,7 @@ utility.convert32to64 = function(id) {
 }
 
 utility.getData = function getData(url, cb) {
-    var delay = 500
+    var delay = 1000
     request(url, function(err, res, body) {
         console.log("[API] %s", url)
         if(err || res.statusCode != 200) {
@@ -177,7 +177,7 @@ utility.getData = function getData(url, cb) {
 
 utility.updateConstants = function updateConstants() {
     var constants = require('./constants.json')
-    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
+    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "https://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
         var heroes = results[0].result.heroes
         var items = results[1].itemdata
         heroes.forEach(function(hero) {
