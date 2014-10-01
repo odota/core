@@ -52,10 +52,9 @@ aq.empty = function() {
     getMatches()
 }
 //todo migrate parse function to another file
-//parse workers have steam login creds (conflict between workers?)
 //parse worker listens on port for match id to parse
 //worker downloads file, parses, inserts in db
-//parser needs access to constants, could be outdated
+//allow backend to request parser update constants
 
 function getMatches() {
     console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
@@ -285,18 +284,8 @@ function logOnSteam(user, pass, authcode, cb) {
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {
-            if(e.cause == "logonFail") {
-                switch(e.eresult) {
-                    case steam.EResult.InvalidPassword:
-                        throw "Error: Steam cannot log on - Invalid password.";
-                    case steam.EResult.AccountLogonDenied:
-                        throw "Error: Steam cannot log on - Account logon denied (Steam Guard code required)";
-                    case steam.EResult.InvalidLoginAuthCode:
-                        throw "Error: Steam cannot log on - Invalid Steam Guard code (remove whats set in config.js to have a new one sent)";
-                    case steam.EResult.AlreadyLoggedInElsewhere:
-                        throw "Error: Steam cannot log on - Account already logged in elsewhere.";
-                }
-            }
+            console.log(e)
+            cb(e)
         };
     if(!fs.existsSync("sentry")) {
         fs.openSync("sentry", 'w')
@@ -325,7 +314,7 @@ function getReplayUrl(match, cb) {
         loginNum=loginNum % users.length
         logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
             getReplayUrl(match, cb)
-        })
+        })   
     } else {
         console.log("[DOTA] requesting replay %s", match.match_id)
         var timeoutProtect = setTimeout(function() {
@@ -437,6 +426,22 @@ function parseReplay(match, cb) {
         cp.on('close', function(code) {
             console.log('[PARSER] match: %s, exit code: %s', match_id, code);
             if(!code) {
+                matches.update({
+                    match_id: match_id
+                }, {
+                    $set: {
+                        parsed_data: JSON.parse(output),
+                        parse_status: 2
+                    }
+                })
+                if(process.env.DELETE_REPLAYS) {
+                    fs.unlink(fileName)
+                }
+            }
+            cb(code)
+        })
+    })
+}  if(!code) {
                 matches.update({
                     match_id: match_id
                 }, {
