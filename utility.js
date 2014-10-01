@@ -128,7 +128,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             doc.win = count.win
             doc.lose = count.lose
         } else {
-            if(count.win + count.lose >= 3 {
+            if(count.win + count.lose >= 3) {
                 doc.teammates.push(count)
             }
         }

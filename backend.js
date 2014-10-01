@@ -51,10 +51,8 @@ getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, fun
 aq.empty = function() {
     getMatches()
 }
-//automatically move to next login at ~95 matches?
-//todo upload compressed files to s3
 //todo migrate parse function to another file
-//parse workers have steam login creds
+//parse workers have steam login creds (conflict between workers?)
 //parse worker listens on port for match id to parse
 //worker downloads file, parses, inserts in db
 //parser needs access to constants, could be outdated
@@ -235,17 +233,17 @@ function download(match, cb) {
                 }
                 downloadWithRetry(url, fileName, 1000, function() {
                     console.log("[PARSER] downloaded valve replay for match %s", match_id)
-                    uploadToS3(fileName, function(err) {
-                        cb(null, fileName)
-                    })
+
+                    cb(null, fileName)
                 })
             })
         } else {
             if(process.env.AWS_S3_BUCKET) {
+                var archiveName = fileName+".bz2"
                 var s3 = new AWS.S3()
                 var params = {
                     Bucket: process.env.AWS_S3_BUCKET,
-                    Key: fileName
+                    Key: archiveName
                 }
                 s3.getObject(params, function(err, data) {
                     if(err) {
@@ -253,8 +251,10 @@ function download(match, cb) {
                         cb("Replay expired")
                     } else {
                         console.log("[PARSER] Downloaded S3 replay for match %s", match_id)
-                        fs.writeFileSync(fileName, data.Body);
-                        cb(null, fileName)
+                        var decomp = Bunzip.decode(data.Body);
+                        fs.writeFile(fileName, decomp, function(err) {
+                            cb(null, fileName)
+                        })
                     }
                 })
             } else {
@@ -263,37 +263,6 @@ function download(match, cb) {
             }
         }
     }
-}
-/*
- * Uploads a replay to S3
- */
-
-function uploadToS3(fileName, cb) {
-    if(!process.env.AWS_S3_BUCKET) {
-        console.log('[S3] S3 is not defined')
-        return cb(null)
-    }
-    var s3 = new AWS.S3()
-    var params = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: fileName
-    }
-    s3.headObject(params, function(err, data) {
-        if(err) {
-            params.Body = fs.readFileSync(fileName)
-            s3.putObject(params, function(err, data) {
-                if(err) {
-                    console.log('[S3] could not upload to S3')
-                } else {
-                    console.log('[S3] Successfully uploaded replay to S3: %s ', fileName)
-                }
-                cb(err)
-            })
-        } else {
-            console.log('[S3] replay already exists in S3')
-            cb(null)
-        }
-    })
 }
 /*
  * Logs onto steam and launches Dota 2
@@ -399,10 +368,38 @@ function downloadWithRetry(url, fileName, timeout, cb) {
             console.log("[PARSER] failed to download from %s, retrying in %ds", url, timeout / 1000)
             setTimeout(downloadWithRetry, timeout, url, fileName, timeout * 2, cb);
         } else {
-            body = Bunzip.decode(body);
-            fs.writeFile(fileName, body, function(err) {
-                cb(null)
-            });
+            var archiveName = fileName+".bz2"
+            async.series([function(cb){
+                if(process.env.AWS_S3_BUCKET) {
+                    var s3 = new AWS.S3()
+                    var params = {
+                        Bucket: process.env.AWS_S3_BUCKET,
+                        Key: archiveName
+                    }
+                    s3.headObject(params, function(err, data) {
+                        if(err) {
+                            params.Body = body
+                            s3.putObject(params, function(err, data) {
+                                if(err) {
+                                    console.log('[S3] could not upload to S3')
+                                } else {
+                                    console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
+                                }
+                                cb(err)
+                            })
+                        } else {
+                            console.log('[S3] replay already exists in S3')
+                            cb(err)
+                        }
+                    })
+                }
+            }], function(err){
+                //decompress and write locally
+                var decomp = Bunzip.decode(body);
+                fs.writeFile(fileName, decomp, function(err) {
+                    cb(null)
+                })
+            })
         }
     })
 }
