@@ -1,4 +1,5 @@
 var utility = exports,
+    fs = require('fs'),
     request = require('request'),
     async = require('async'),
     BigNumber = require('big-number').n
@@ -159,6 +160,49 @@ utility.convert64to32 = function(id) {
  */
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
+}
+
+utility.getData = function getData(url, cb) {
+    var delay = 500
+    request(url, function(err, res, body) {
+        console.log("[API] %s", url)
+        if(err || res.statusCode != 200) {
+            console.log("[API] error getting data, retrying")
+            setTimeout(utility.getData, delay, url, cb)
+        } else {
+            setTimeout(cb, delay, null, JSON.parse(body))
+        }
+    })
+}
+
+utility.updateConstants = function updateConstants() {
+    var constants = require('./constants.json')
+    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
+        var heroes = results[0].result.heroes
+        var items = results[1].itemdata
+        heroes.forEach(function(hero) {
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+        })
+        constants.item_ids = {}
+        for(var key in items) {
+            constants.item_ids[items[key].id] = key
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+        }
+        constants.heroes = buildLookup(heroes)
+        constants.items = items
+        constants.regions = buildLookup(results[2].regions)
+        console.log("[UPDATE] writing constants file")
+        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
+    })
+}
+
+function buildLookup(array) {
+    var lookup = {}
+    for(var i = 0; i < array.length; i++) {
+        lookup[array[i].id] = array[i]
+        lookup[array[i].name] = array[i]
+    }
+    return lookup
 }
 
 function isRadiant(player) {
