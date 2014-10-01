@@ -30,8 +30,9 @@ public class Main {
         JSONArray hero_history = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
         JSONObject constants = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(args[1]))));
+        JSONObject heroes = constants.getJSONObject("heroes");
         Match match = new Match();
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ENTITIES, Profile.COMBAT_LOG, Profile.CHAT_MESSAGES);
+        TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
 
@@ -43,6 +44,7 @@ public class Main {
             if (!initialized) {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
+                doc.put("chat", new JSONArray());
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
                     hero_history.put(new JSONObject());
                     doc.getJSONArray("players").put(new JSONObject());
@@ -96,65 +98,105 @@ public class Main {
                 }
                 nextInterval += INTERVAL;
             }
-
             for (UserMessage u : match.getUserMessages()) {
-                JSONArray players = doc.getJSONArray("players");
-                String player1=u.getProperty("playerid_1").toString();
-                String player2=u.getProperty("playerid_2").toString();
-                String type = u.getProperty("type").toString();
-                String value = u.getProperty("value").toString();
-                JSONObject entry = new JSONObject();
-                if (type.contains("RUNE")){
-                    entry.put("type", "runes");
-                    entry.put("key", value);
-                    entry.put("time", time);
-                    entry.put("slot", player1);
-                    log.put(entry);
-                    System.err.format("%s,%s%n", time, u);
-                }
-                else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
-                    if (!player1.equals("-1") && !player2.equals("-1")){
-                        entry.put("slot", player2);
+                String name = u.getName();
+                if (name.equals("CDOTAUserMsg_ChatEvent")){
+                    JSONArray players = doc.getJSONArray("players");
+                    String player1=u.getProperty("playerid_1").toString();
+                    String player2=u.getProperty("playerid_2").toString();
+                    String type = u.getProperty("type").toString();
+                    String value = u.getProperty("value").toString();
+                    JSONObject entry = new JSONObject();
+                    if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
+                        entry.put("type", "runes");
+                        entry.put("key", value);
                         entry.put("time", time);
-                        entry.put("key", player1);
-                        entry.put("type", "kills");
+                        entry.put("slot", player1);
                         log.put(entry);
                     }
-                    //System.err.format("%s,%s%n", time, u);
+                    else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
+                        if (!player1.equals("-1") && !player2.equals("-1")){
+                            entry.put("slot", player2);
+                            entry.put("time", time);
+                            entry.put("key", player1);
+                            entry.put("type", "kills");
+                            log.put(entry);
+                        }
+                        //System.err.format("%s,%s%n", time, u);
+                    }
+                    else if (type.equals("CHAT_MESSAGE_BUYBACK")){
+                        //System.err.format("%s,%s%n", time, u); 
+                    }
+                    else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
+                    }
+                    else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
+                    }
+                    else if (type.equals("CHAT_MESSAGE_REPORT_REMINDER")){
+                    }     
+                    else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
+                    }  
+                    else if (type.equals("CHAT_MESSAGE_AEGIS")){
+                    }  
+                    else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
+                    }       
+                    else if (type.equals("CHAT_MESSAGE_TOWER_DENY")){
+                    }  
+                    else if (type.equals("CHAT_MESSAGE_HERO_DENY")){
+                    }  
+                    else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
+                    }
+                    else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
+                    }                
+                    else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
+                    }
+                    else if (type.equals("CHAT_MESSAGE_INTHEBAG")){
+                    }
+                    else if (type.contains("CONNECT")){
+                    }
+                    else if (type.contains("PAUSE")){
+                    }
+                    else{ 
+                        System.err.format("%s,%s%n", time, u);
+                    }
                 }
-                else if (type.equals("CHAT_MESSAGE_BUYBACK")){
-                    //System.err.format("%s,%s%n", time, u); 
+                else if (name.equals("CUserMsg_SayText2")){
+
+                    JSONObject entry = new JSONObject();
+                    entry.put("prefix", u.getProperty("prefix"));
+                    entry.put("message", u.getProperty("text"));
+                    entry.put("time", time);
+                    entry.put("type", "chat");
+                    log.put(entry);
                 }
-                else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
+                else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
+
                 }
-                else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
+                else if (name.equals("CDOTAUserMsg_ParticleManager")){
+
                 }
-                else if (type.equals("CHAT_MESSAGE_REPORT_REMINDER")){
-                }     
-                else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
-                }  
-                else if (type.equals("CHAT_MESSAGE_AEGIS")){
-                }  
-                else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
-                }       
-                else if (type.equals("CHAT_MESSAGE_TOWER_DENY")){
-                }  
-                else if (type.equals("CHAT_MESSAGE_HERO_DENY")){
-                }  
-                else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
+                else if (name.equals("CDOTAUserMsg_UnitEvent")){
+
                 }
-                else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
-                }                
-                else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
+                else if (name.equals("CDOTAUserMsg_OverheadEvent")){
+
                 }
-                else if (type.equals("CHAT_MESSAGE_INTHEBAG")){
+                else if (name.equals("CDOTAUserMsg_SharedCooldown")){
+
                 }
-                else if (type.contains("CONNECT")){
+                else if (name.contains("CDOTAUserMsg_MinimapEvent")){
+
                 }
-                else if (type.contains("PAUSE")){
+                else if (name.contains("CUserMsg_SendAudio")){
+
                 }
-                else{ 
-                    System.err.format("%s,%s%n", time, u);
+                else if (name.contains("Projectile")){
+
+                }
+                else if (name.equals("CUserMsg_TextMsg")){
+
+                }
+                else{
+                    System.err.format("%s,%s%n", time, u); 
                 }
             }
 
@@ -172,7 +214,7 @@ public class Main {
                         key = cle.getTargetName();
                         val = cle.getValue();
                         if (cle.isAttackerHero()){
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key);
                             entry.put("value", val);
@@ -186,7 +228,7 @@ public class Main {
                         key = cle.getTargetName();
                         val = cle.getValue();
                         if (cle.isAttackerHero()){
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key);
                             entry.put("value", val);
@@ -199,7 +241,7 @@ public class Main {
                         unit = cle.getTargetName();
                         key = cle.getInflictorName();
                         /*
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key);
                             log.put(entry);
@@ -224,7 +266,7 @@ public class Main {
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
                         if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key);
                             entry.put("type", "kills");
@@ -250,7 +292,7 @@ public class Main {
                         //item use
                         unit = cle.getAttackerName();
                         key = cle.getInflictorName();
-                        entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                        entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                         entry.put("time", time);
                         entry.put("key", key.substring(5));
                         entry.put("type", "itemuses");
@@ -264,7 +306,7 @@ public class Main {
                         }   
                         else{
                             //deaths and buybacks
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", "loss");
                             entry.put("value", val);
@@ -295,7 +337,7 @@ public class Main {
                         unit = cle.getTargetName();
                         key = cle.getValueName();
                         if (!key.contains("recipe")){
-                            entry.put("slot", hero_to_slot.get(constants.getJSONObject("heroes").getJSONObject(unit).get("id").toString()));                        
+                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
                             entry.put("time", time);
                             entry.put("key", key.substring(5));
                             entry.put("type", "itembuys");
@@ -310,6 +352,14 @@ public class Main {
                         entry.put("type", "buybacks");
                         log.put(entry);
                         break;
+                        case 13:
+                        //ability trigger
+                        System.err.format("%s %s proc %s %s%n", 
+                            time,
+                            cle.getAttackerNameCompiled(),
+                            cle.getInflictorName(),
+                            cle.getTargetName() != null ? "on " + cle.getTargetNameCompiled() : "");
+                        break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
                         System.err.format("%s (%s): %s%n", type.name(), type.ordinal(), g);
@@ -323,28 +373,37 @@ public class Main {
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
             String type = entry.getString("type");
-            String key = entry.getString("key");
-            int slot = entry.getInt("slot");
-            JSONObject player = doc.getJSONArray("players").getJSONObject(slot);
-            JSONObject counts = player.getJSONObject(type);
-            Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
-            if(entry.has("value")){
-                counts.put(key, count+entry.getInt("value"));
+            if (entry.has("slot")){
+                int slot = entry.getInt("slot");
+                JSONObject player = doc.getJSONArray("players").getJSONObject(slot);
+                JSONObject counts = player.getJSONObject(type);
+                if (entry.has("key")){
+                    String key = entry.getString("key");
+                    Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
+                    if(entry.has("value")){
+                        counts.put(key, count+entry.getInt("value"));
+                    }
+                    else{
+                        counts.put(key, count + 1);  
+                    }   
+                }
+                if (type.equals("kills")){
+                    player.getJSONArray("timeline").put(entry);
+                }
+                if (type.equals("itembuys")){
+                    player.getJSONArray("timeline").put(entry);
+                }
+                if (type.equals("runes")){
+                    player.getJSONArray("timeline").put(entry);
+                }
+                if (type.equals("buybacks")){
+                    player.getJSONArray("timeline").put(entry);
+                }
             }
             else{
-                counts.put(key, count + 1);  
-            }
-            if (type.equals("kills")){
-                player.getJSONArray("timeline").put(entry);
-            }
-            if (type.equals("itembuys")){
-                player.getJSONArray("timeline").put(entry);
-            }
-            if (type.equals("runes")){
-                player.getJSONArray("timeline").put(entry);
-            }
-            if (type.equals("buybacks")){
-                player.getJSONArray("timeline").put(entry);
+                if (type.equals("chat")){
+                    doc.getJSONArray("chat").put(entry);
+                }  
             }
         }
 
