@@ -28,6 +28,17 @@ block content
           td=moment().startOf('day').seconds(match.duration).format("H:mm:ss")
           td=constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
           td=constants.parse_status[match.parse_status]
+  ul.nav.nav-tabs
+    li.active
+      a(href="")="Match"
+    li.disabled
+      a(href="")="Graphs"
+    li.disabled
+      a(href="")="Details"
+    li.disabled
+      a(href="")="Timelines"
+    li.disabled
+      a(href="")="Chat"
   .row
     .col-md-12
       h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
@@ -122,6 +133,11 @@ block content
       #chart-timeline
       script(type='text/javascript', src='../public/js/chart.js')            
       script(type='text/javascript', src='../public/js/timeline.js')
+    .row
+      .col-ms-12
+        h3 Chat
+        each message in match.parsed_data.chat
+          div=JSON.stringify(message)
   script.
       $('.format').each(function(){
       $(this).text(format($(this).text()))

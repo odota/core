@@ -14,6 +14,10 @@ var request = require('request'),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false);
+var loginNum = 0
+var users = process.env.STEAM_USER.split()
+var passes = process.env.STEAM_PASS.split()
+var codes = process.env.STEAM_GUARD_CODE.split()
 var aq = async.queue(apiRequest, 1)
 var pq = async.queue(parseReplay, 1)
 var api_delay = 1000
@@ -40,17 +44,23 @@ matches.find({
 }, function(err, docs) {
     pq.push(docs, function(err) {})
 })
-getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data){
+getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
     next_seq = process.env.MATCH_SEQ_NUM || data.result.matches[0].match_seq_num
     getMatches()
 })
-
 aq.empty = function() {
     getMatches()
 }
+//automatically move to next login at ~95 matches?
+//todo upload compressed files to s3
+//todo migrate parse function to another file
+//parse workers have steam login creds
+//parse worker listens on port for match id to parse
+//worker downloads file, parses, inserts in db
+//parser needs access to constants
 
 function getMatches() {
-    //console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
+    console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
     players.find({
         track: 1
     }, function(err, docs) {
@@ -71,7 +81,7 @@ function updateConstants() {
         var heroes = results[0].result.heroes
         var items = results[1].itemdata
         heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_full.png"
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
         })
         constants.item_ids = {}
         for(var key in items) {
@@ -207,7 +217,6 @@ function insertPlayer(player, cb) {
         cb(err)
     })
 }
-
 /*
  * Downloads a match replay
  */
@@ -275,11 +284,10 @@ function uploadToS3(fileName, cb) {
             s3.putObject(params, function(err, data) {
                 if(err) {
                     console.log('[S3] could not upload to S3')
-                    cb(true);
                 } else {
                     console.log('[S3] Successfully uploaded replay to S3: %s ', fileName)
-                    cb(null)
                 }
+                cb(err)
             })
         } else {
             console.log('[S3] replay already exists in S3')
@@ -344,8 +352,9 @@ function getReplayUrl(match, cb) {
         return cb(null, match.replay_url)
     }
     if(!Steam.loggedOn) {
-        //todo select a random set of creds every time
-        logOnSteam(process.env.STEAM_USER, process.env.STEAM_PASS, process.env.STEAM_GUARD_CODE, function(err) {
+        loginNum+=1
+        loginNum=loginNum % users.length
+        logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
             getReplayUrl(match, cb)
         })
     } else {
