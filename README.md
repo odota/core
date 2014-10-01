@@ -16,7 +16,23 @@ Deployment
 * Install node dependencies: `npm install`
 * Compile the parser `mvn -f parser package`
 * Foreman `npm install -g foreman`
-* Create .env file with STEAM_USER, STEAM_PASS, STEAM_GUARD_CODE (can be empty), STEAM_API_KEY, COOKIE_SECRET
-* Add MONGOHQ_URL to env if using remote MongoDB, otherwise set up local mongodb server
-* Add Amazon information if storing replays in S3
+* Create .env file with desired parameters
 * Run `nf start`
+
+.env
+====
+* STEAM_USER
+* STEAM_PASS
+* STEAM_GUARD_CODE (can be empty)
+* STEAM_API_KEY
+* COOKIE_SECRET
+* DELETE_REPLAYS
+* MONGOHQ_URL
+* AWS_S3_BUCKET
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+* REPLAY_DIR
+* PARSER_FILE
+* PORT
+* MATCH_SEQ_NUM
+
