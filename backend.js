@@ -57,7 +57,7 @@ aq.empty = function() {
 //parse workers have steam login creds
 //parse worker listens on port for match id to parse
 //worker downloads file, parses, inserts in db
-//parser needs access to constants
+//parser needs access to constants, could be outdated
 
 function getMatches() {
     console.log('[QUEUE] %s api, %s parse', aq.length(), pq.length())
