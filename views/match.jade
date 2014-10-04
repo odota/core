@@ -59,14 +59,15 @@ block content
               th TD
               th HH
               th Items
-              th TP
-              th OBS
-              th SEN
-              th SMK
-              th DST
-              th GEM
-              th BB
-              th LOSS
+              if match.parsed_data
+               th TP
+               th OBS
+               th SEN
+               th SMK
+               th DST
+               th GEM
+               th BB
+               th LOSS
             - each player, i in match.players
              tr(class = i < 5 ? "success" : "danger")
                td
@@ -136,7 +137,8 @@ block content
     .row
       .col-ms-12
         h3 Chat
-        each message in match.parsed_data.chat
+        if match.parsed_data.chat
+         each message in match.parsed_data.chat
           div=JSON.stringify(message)
   script.
       $('.format').each(function(){
