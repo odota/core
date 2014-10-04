@@ -8,12 +8,11 @@ utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
     unique: true
 });
-
 utility.players = utility.db.get('players');
 utility.players.index('account_id', {
     unique: true
 })
-
+utility.constants = utility.db.get('constants');
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
@@ -28,20 +27,17 @@ utility.fillPlayerNames = function(players, cb) {
         cb(err)
     })
 }
-
 utility.getLastMatch = function(account_id, cb) {
     var search = {
         duration: {
             $exists: true
         }
     }
-   
     search.players = {
         $elemMatch: {
             account_id: account_id
         }
     }
-    
     utility.matches.findOne(search, {
         sort: {
             match_id: -1
@@ -50,7 +46,6 @@ utility.getLastMatch = function(account_id, cb) {
         cb(err, docs)
     })
 }
-
 utility.getMatches = function(account_id, cb) {
     var search = {
         duration: {
@@ -79,7 +74,6 @@ utility.getTrackedPlayers = function(cb) {
         cb(err, docs)
     })
 }
-
 utility.fillPlayerStats = function(doc, matches, cb) {
     var account_id = doc.account_id
     var counts = {}
@@ -143,7 +137,6 @@ utility.fillPlayerStats = function(doc, matches, cb) {
         cb(null, doc, matches)
     })
 }
-
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -152,7 +145,6 @@ utility.fillPlayerStats = function(doc, matches, cb) {
 utility.convert64to32 = function(id) {
     return BigNumber(id).minus('76561197960265728')
 }
-
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -161,8 +153,7 @@ utility.convert64to32 = function(id) {
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
 }
-
-utility.getData = function (url, cb) {
+utility.getData = function(url, cb) {
     var delay = 1000
     request(url, function(err, res, body) {
         console.log("[API] %s", url)
@@ -174,25 +165,58 @@ utility.getData = function (url, cb) {
         }
     })
 }
-
-utility.updateConstants = function updateConstants() {
+utility.updateConstants = function() {
     var constants = require('./constants.json')
-    async.map(["https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=en-us", "http://www.dota2.com/jsfeed/itemdata", "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json"], utility.getData, function(err, results) {
-        var heroes = results[0].result.heroes
-        var items = results[1].itemdata
-        heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
-        })
-        constants.item_ids = {}
-        for(var key in items) {
-            constants.item_ids[items[key].id] = key
-            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+    async.series(Object.keys(constants), function(key, cb) {
+        if(constants[key].slice(0, 4) === "http") {
+            utility.getData(constants[key], function(err, result) {
+                if(key == "heroes") {
+                    var heroes = result.heroes
+                    heroes.forEach(function(hero) {
+                        hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+                    })
+                    //druid bear npc should map to hero
+                    for(var i = 1; i < 5; i++) {
+                        heroes["npc_dota_lone_druid_bear" + i] = heroes["80"]
+                    }
+                    constants.heroes = buildLookup(heroes)
+                }
+                if(key == "items") {
+                    var items = result.itemdata
+                    constants.item_ids = {}
+                    for(var key in items) {
+                        constants.item_ids[items[key].id] = key
+                        items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+                    }
+                    constants.items = items
+                }
+                if(key == "ability_ids") {
+                    var lookup = {}
+                    var ability_ids = result.abilities
+                    for(var i = 0; i < ability_ids.length; i++) {
+                        lookup[ability_ids[i].id] = ability_ids[name]
+                    }
+                    constants.ability_ids = lookup
+                }
+                if(key == "abilities") {
+                    var abilities = result.abilitydata
+                    for(String key in abilities) {
+                        abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + abilities[key] + "_md.png"
+                    }
+                    constants.abilities = abilities
+                }
+                if(key == "regions") {
+                    constants.regions = buildLookup(result.regions)
+                }
+                cb(null)
+            })
+        } else {
+            cb(null)
         }
-        constants.heroes = buildLookup(heroes)
-        constants.items = items
-        constants.regions = buildLookup(results[2].regions)
-        console.log("[UPDATE] writing constants file")
-        fs.writeFileSync("./constants.json", JSON.stringify(constants, null, 4))
+    }, function(err) {
+        utility.constants.update({}, constants, {
+            upsert: true
+        })
     })
 }
 
