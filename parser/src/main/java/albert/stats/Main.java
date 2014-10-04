@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONTokener;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.util.Iterator;
 
@@ -29,7 +30,13 @@ public class Main {
         JSONArray log = new JSONArray();
         JSONArray hero_history = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
-        JSONObject constants = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(args[1]))));
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String s;
+        String input = "";
+            while ((s = in.readLine()) != null && s.length() != 0){
+            input+=s;
+        }
+        JSONObject constants = new JSONObject(new JSONTokener(input));
         JSONObject heroes = constants.getJSONObject("heroes");
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
@@ -354,10 +361,10 @@ public class Main {
                         case 13:
                         //ability trigger
                         System.err.format("%s %s proc %s %s%n", 
-                            time,
-                            cle.getAttackerNameCompiled(),
-                            cle.getInflictorName(),
-                            cle.getTargetName() != null ? "on " + cle.getTargetNameCompiled() : "");
+                                          time,
+                                          cle.getAttackerNameCompiled(),
+                                          cle.getInflictorName(),
+                                          cle.getTargetName() != null ? "on " + cle.getTargetNameCompiled() : "");
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());

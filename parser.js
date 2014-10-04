@@ -11,9 +11,8 @@ var async = require("async"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false),
     AWS = require('aws-sdk');
-//todo provide method to request parser node to update its constants
-var express = require('express'); // call express
-var app = express(); // define our app using express
+var express = require('express');
+var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({
     extended: true
@@ -231,8 +230,12 @@ function parseReplay(match, cb) {
         var output = ""
         var cp = spawn("java", ["-jar",
                                 parser_file,
-                                fileName, "constants.json"
+                                fileName
                                ])
+        //pipe constants to stdin
+        utility.constants.findOne({}, function(err, doc){
+            cp.stdin.write(JSON.stringify(doc))
+        })
         cp.stdout.on('data', function(data) {
             output += data
         })
