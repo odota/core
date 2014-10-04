@@ -47,7 +47,7 @@ public class Main {
                     hero_history.put(new JSONObject());
                     doc.getJSONArray("players").put(new JSONObject());
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    player.put("display_name", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
+                    player.put("personaname", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
                     player.put("timeline", new JSONArray());
                     player.put("itemuses", new JSONObject());
