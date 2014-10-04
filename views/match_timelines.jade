@@ -1,0 +1,29 @@
+extend match_base
+block head
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
+  script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
+  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
+  link(rel='stylesheet', href='../../public/css/match.css')
+  script.
+    var match = !{JSON.stringify(match)}
+    var constants = !{JSON.stringify(constants)}
+     
+append content
+  .row
+    .col-md-12
+      h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+      
+  if match.parsed_data
+    .row
+      #chart-timeline          
+      script(type='text/javascript', src='../../public/js/timeline.js')
+  script.
+      $('.format').each(function(){
+      $(this).text(format($(this).text()))
+      })
+      function format(input){
+        input = parseInt(input)
+        return (input<1000 ? input : numeral(input).format('0.0a'))
+      }

@@ -86,13 +86,47 @@ app.route('/matches/:id').get(function(req, res) {
         if(!doc) res.status(404).send('Could not find this match!')
         else {
             utility.fillPlayerNames(doc.players, function(err) {
-                res.render('match.jade', {
+                res.render('match_index.jade', {
+                    route: 'Match',
                     match: doc
                 })
             })
         }
     })
 })
+
+app.route('/matches/:id/graphs').get(function(req, res) {
+    matches.findOne({
+        match_id: Number(req.params.id)
+    }, function(err, doc) {
+        if(!doc) res.status(404).send('Could not find this match!')
+        else {
+            utility.fillPlayerNames(doc.players, function(err) {
+                res.render('match_graphs.jade', {
+                    route: 'Graphs',
+                    match: doc
+                })
+            })
+        }
+    })
+})
+
+app.route('/matches/:id/timelines').get(function(req, res) {
+    matches.findOne({
+        match_id: Number(req.params.id)
+    }, function(err, doc) {
+        if(!doc) res.status(404).send('Could not find this match!')
+        else {
+            utility.fillPlayerNames(doc.players, function(err) {
+                res.render('match_timelines.jade', {
+                    route: 'Timelines',
+                    match: doc
+                })
+            })
+        }
+    })
+})
+
 app.route('/players').get(function(req, res) {
     utility.getTrackedPlayers(function(err, docs) {
         res.render('players.jade', {
