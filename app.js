@@ -50,7 +50,9 @@ app.use('/login', function(req, res, next) {
 })
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
-    secret: process.env.COOKIE_SECRET
+    secret: process.env.COOKIE_SECRET,
+    saveUninitialized: true,
+    resave: true
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
