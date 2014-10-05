@@ -58,7 +58,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment')
 utility.constants.findOne({}, function(err, doc){
-    app.locals.constants = JSON.stringify(doc)
+    app.locals.constants = doc
 })
 app.route('/').get(function(req, res) {
     if(req.user) {

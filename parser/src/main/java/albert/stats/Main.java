@@ -36,8 +36,7 @@ public class Main {
             while ((s = in.readLine()) != null && s.length() != 0){
             input+=s;
         }
-        JSONObject constants = new JSONObject(new JSONTokener(input));
-        JSONObject heroes = constants.getJSONObject("heroes");
+        JSONObject heroes = new JSONObject(new JSONTokener(input));
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
         float nextInterval = 0;

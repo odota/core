@@ -128,5 +128,7 @@
     },
     "regions": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json",
     "items": "http://www.dota2.com/jsfeed/itemdata",
-    "heroes": "https://github.com/kronusme/dota2-api/blob/master/data/heroes.json"
+    "heroes": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/heroes.json",
+    "ability_ids": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/abilities.json",
+    "abilities": "http://www.dota2.com/jsfeed/abilitydata"
 }

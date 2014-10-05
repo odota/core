@@ -3,7 +3,7 @@ var utility = exports,
     request = require('request'),
     async = require('async'),
     BigNumber = require('big-number').n
-    utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
+utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
     unique: true
@@ -165,23 +165,28 @@ utility.getData = function(url, cb) {
         }
     })
 }
-utility.updateConstants = function() {
+utility.updateConstants = function(cb) {
     var constants = require('./constants.json')
-    async.series(Object.keys(constants), function(key, cb) {
-        if(constants[key].slice(0, 4) === "http") {
-            utility.getData(constants[key], function(err, result) {
-                if(key == "heroes") {
+    async.mapSeries(Object.keys(constants), function(key, cb) {
+        var val = constants[key]
+        if(typeof(val)=="string" && val.slice(0, 4) == "http") {
+            utility.getData(val, function(err, result) {
+                if(val==constants.heroes) {
                     var heroes = result.heroes
                     heroes.forEach(function(hero) {
                         hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
                     })
+                    constants.hero_names={}
+                    for (var i =0;i<heroes.length;i++){
+                        constants.hero_names["npc_dota_hero_"+heroes[i].name] = heroes[i]
+                    }
                     //druid bear npc should map to hero
                     for(var i = 1; i < 5; i++) {
-                        heroes["npc_dota_lone_druid_bear" + i] = heroes["80"]
+                        constants.hero_names["npc_dota_lone_druid_bear" + i] = heroes["80"]
                     }
                     constants.heroes = buildLookup(heroes)
                 }
-                if(key == "items") {
+                if(val==constants.items) {
                     var items = result.itemdata
                     constants.item_ids = {}
                     for(var key in items) {
@@ -190,22 +195,22 @@ utility.updateConstants = function() {
                     }
                     constants.items = items
                 }
-                if(key == "ability_ids") {
+                if(val==constants.ability_ids) {
                     var lookup = {}
                     var ability_ids = result.abilities
                     for(var i = 0; i < ability_ids.length; i++) {
-                        lookup[ability_ids[i].id] = ability_ids[name]
+                        lookup[ability_ids[i].id] = ability_ids[i].name
                     }
                     constants.ability_ids = lookup
                 }
-                if(key == "abilities") {
+                if(val==constants.abilities) {
                     var abilities = result.abilitydata
-                    for(String key in abilities) {
-                        abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + abilities[key] + "_md.png"
+                    for(var key in abilities) {
+                        abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
                     }
                     constants.abilities = abilities
                 }
-                if(key == "regions") {
+                if(val==constants.regions) {
                     constants.regions = buildLookup(result.regions)
                 }
                 cb(null)
@@ -216,6 +221,9 @@ utility.updateConstants = function() {
     }, function(err) {
         utility.constants.update({}, constants, {
             upsert: true
+        }, function(err){
+            console.log("[CONSTANTS] updated constants")
+            cb(null)
         })
     })
 }
@@ -224,7 +232,6 @@ function buildLookup(array) {
     var lookup = {}
     for(var i = 0; i < array.length; i++) {
         lookup[array[i].id] = array[i]
-        lookup[array[i].name] = array[i]
     }
     return lookup
 }
