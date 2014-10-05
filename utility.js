@@ -178,11 +178,7 @@ utility.updateConstants = function(cb) {
                     })
                     constants.hero_names={}
                     for (var i =0;i<heroes.length;i++){
-                        constants.hero_names["npc_dota_hero_"+heroes[i].name] = heroes[i]
-                    }
-                    //druid bear npc should map to hero
-                    for(var i = 1; i < 5; i++) {
-                        constants.hero_names["npc_dota_lone_druid_bear" + i] = heroes["80"]
+                        constants.hero_names[heroes[i].name] = heroes[i]
                     }
                     constants.heroes = buildLookup(heroes)
                 }

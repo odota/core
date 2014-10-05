@@ -6,4 +6,3 @@ sentry
 servers
 *.dem
 *.bz2
-constants.json
