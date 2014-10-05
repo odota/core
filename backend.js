@@ -24,7 +24,7 @@ matches.find({
     })
 })
 if (process.env.SAVE_ALL_MATCHES){
-   matches.find({}, { limit : 1, sort : { match_seq_num : -1 } }, function (err,doc) {
+   matches.findOne({}, {sort : { match_seq_num : -1 } }, function (err,doc) {
       next_seq=doc.match_seq_num+1
       getMatches()
    })
