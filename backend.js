@@ -23,10 +23,18 @@ matches.find({
         requestParse(match)
     })
 })
-utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-    next_seq = process.env.MATCH_SEQ_NUM || data.result.matches[0].match_seq_num
+if (process.env.SAVE_ALL_MATCHES){
+   matches.find({}, { limit : 1, sort : { match_seq_num : -1 } }, function (err,doc) {
+      next_seq=doc.match_seq_num+1
+      getMatches()
+   })
+}
+else{
+  utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+    next_seq = data.result.matches[0].match_seq_num
     getMatches()
-})
+  })  
+}
 aq.empty = function() {
     getMatches()
 }
