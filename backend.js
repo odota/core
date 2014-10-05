@@ -127,8 +127,10 @@ function insertMatch(match, cb) {
         return(element.account_id in trackedPlayers)
     })
     match.parse_status = (track ? 0 : 3)
-    if(track) {
+    if (process.ENV.SAVE_ALL_MATCHES || track){
         matches.insert(match)
+    }
+    if(track) {
         summaries = {}
         summaries.summaries_id = 1
         summaries.players = match.players
