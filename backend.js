@@ -10,26 +10,27 @@ var queuedMatches = {}
 var trackedPlayers = {}
 var parser = process.env.PARSER_HOST || "localhost"
 var next_seq;
-utility.updateConstants()
-players.find({
-    track: 1
-}, function(err, docs) {
-    aq.push(docs, function(err) {})
-})
-matches.find({
-    parse_status: 0
-}, function(err, docs) {
-    docs.forEach(function(match) {
-        requestParse(match)
+utility.updateConstants(function(err){
+    players.find({
+        track: 1
+    }, function(err, docs) {
+        aq.push(docs, function(err) {})
     })
+    matches.find({
+        parse_status: 0
+    }, function(err, docs) {
+        docs.forEach(function(match) {
+            requestParse(match)
+        })
+    })
+    utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+        next_seq = process.env.MATCH_SEQ_NUM || data.result.matches[0].match_seq_num
+        getMatches()
+    })
+    aq.empty = function() {
+        getMatches()
+    }
 })
-utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-    next_seq = process.env.MATCH_SEQ_NUM || data.result.matches[0].match_seq_num
-    getMatches()
-})
-aq.empty = function() {
-    getMatches()
-}
 
 function getMatches() {
     players.find({

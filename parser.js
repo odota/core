@@ -59,7 +59,7 @@ function download(match, cb) {
                 return cb(err)
             }
             downloadWithRetry(url, fileName, 1000, function() {
-                console.log("[PARSER] downloaded replay for match %s", match_id)
+                console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
                 cb(null, fileName)
             })
         })
@@ -232,9 +232,10 @@ function parseReplay(match, cb) {
                                 parser_file,
                                 fileName
                                ])
-        //pipe constants to stdin
+        //pipe heroes to stdin
         utility.constants.findOne({}, function(err, doc){
-            cp.stdin.write(JSON.stringify(doc))
+            cp.stdin.write(JSON.stringify(doc.hero_names))
+            cp.stdin.end("\n")
         })
         cp.stdout.on('data', function(data) {
             output += data
