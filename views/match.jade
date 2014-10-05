@@ -86,7 +86,7 @@ block content
                td= player.assists
                td= player.last_hits
                td= player.denies
-               - var gold = player.gold_per_min*match.duration/60
+               - var gold = ~~(player.gold_per_min*match.duration/60)
                td.format= gold
                td= player.gold_per_min
                td= player.xp_per_min

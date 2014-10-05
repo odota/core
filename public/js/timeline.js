@@ -21,26 +21,15 @@ match.parsed_data.players.forEach(function (player, i){
         var time = formatSeconds(event.time)
         time = "<span style='font-size:10px;'>"+time+"<span>"
         bar.start=moment().startOf('day').seconds(event.time)
-        if (event.type=="kills"){
-            var img = constants.heroes[match.players[event.key].hero_id].img
-            bar.content = "<img src='"+img+"' width=30 />"+time
-            bar.group=2
-            //items.add(bar)
-        }
-        if (event.type=="runes"){
-            bar.content = constants.runes[event.key].name+time
-            bar.group=2
-            //items.add(bar)
-        }
-        if (event.type=="buybacks"){
-            bar.content = event.key+time
-            bar.group=2
-            //items.add(bar)
-        }
         if (event.type=="itembuys"){
             var img = constants.items[event.key].img
             bar.content = "<img src='"+img+"' width=30 />"+time
             bar.group=1
+            items.add(bar)
+        }
+        if (event.type=="gold_log"){
+            bar.content = "<span style='font-size:10px;'>"+event.value+"g</span>"
+            bar.group=2
             items.add(bar)
         }
         if (event.type=="hero_history"){
