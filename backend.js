@@ -127,7 +127,7 @@ function insertMatch(match, cb) {
         return(element.account_id in trackedPlayers)
     })
     match.parse_status = (track ? 0 : 3)
-    if (process.ENV.SAVE_ALL_MATCHES || track){
+    if (process.env.SAVE_ALL_MATCHES || track){
         matches.insert(match)
     }
     if(track) {
