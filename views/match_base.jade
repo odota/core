@@ -20,6 +20,6 @@ block content
     .row(style="padding-bottom:1em;")
       .col-md-12
         ul.nav.nav-tabs
-          each name in ["Match", "Details", "Graphs", "Timelines", "Chat"]
-            li(class= (name == route ? 'active' : ''))
-                a(href="/matches/#{match.match_id}/" + (name === "Match" ? "" : name.toLowerCase()))= name
+          each val, key in tabs
+            li(class= (route == key ? 'active' : ''))
+                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name

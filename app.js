@@ -10,7 +10,30 @@ var express = require('express'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
 var constants;
-var port = Number(process.env.PORT || 5000)
+var port = Number(process.env.PORT || 5000),
+    matchPages = {
+        index: {
+            template: "match_index",
+            name: "Match"
+        },
+        details: {
+            template: "match_details",
+            name: "Details"
+        },
+        graphs: {
+            template: "match_graphs",
+            name: "Graphs"
+        },
+        timelines: {
+            template: "match_timelines",
+            name: "Timelines"
+        },
+        chat: {
+            template: "match_chat",
+            name: "Chat"
+        }
+    }
+
 app.listen(port)
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -85,6 +108,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 
 app.locals.moment = require('moment')
+
 utility.constants.findOne({}, function(err, doc){
     app.locals.constants = doc
 })
@@ -109,39 +133,24 @@ app.route('/matches').get(function(req, res) {
     })
 })
 
-app.route('/matches/:match_id').get(function(req, res) {
-    res.render('match_index.jade', {
-        route: 'Match',
-        match: req.match
-    })
-})
+app.route('/matches/:match_id/:info?').get(function(req, res) {
+    var render,
+        info = req.params.info
 
-app.route('/matches/:match_id/details').get(function(req, res) {
-    console.log(req.match)
-    res.render('match_details.jade', {
-        route: 'Details',
-        match: req.match
-    })
-})
+    if (info) {
+        if (info in matchPages) {
+            render = matchPages[info].template
+        } else {
+            return res.status(404).render('404.jade')
+        }
+    } else {
+        render = matchPages['index'].template
+    }
 
-app.route('/matches/:match_id/graphs').get(function(req, res) {
-    res.render('match_graphs.jade', {
-        route: 'Graphs',
-        match: req.match
-    })
-})
-
-app.route('/matches/:match_id/timelines').get(function(req, res) {
-    res.render('match_timelines.jade', {
-        route: 'Timelines',
-        match: req.match
-    })
-})
-
-app.route('/matches/:match_id/chat').get(function(req, res) {
-    res.render('match_chat.jade', {
-        route: 'Chat',
-        match: req.match
+    res.render(render, {
+        route: info ? info : 'index',
+        match: req.match,
+        tabs: matchPages
     })
 })
 
@@ -184,6 +193,5 @@ app.route('/logout').get(function(req, res) {
 })
 
 app.use(function(req, res, next){
-  res.status(404)
-  res.render('404.jade')
+  res.status(404).render('404.jade')
 });
