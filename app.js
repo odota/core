@@ -48,16 +48,42 @@ app.use('/login', function(req, res, next) {
     }))
     next()
 })
+
+app.param('match_id', function(req, res, next, id){
+    matches.findOne({
+        match_id: Number(id)
+    }, function(err, doc) {
+        if(!doc) {
+          res.status(404).render(
+            '404', {
+                message: "Sorry, we couldn't find this match!"
+            }
+          )  
+        } 
+        else {
+            utility.fillPlayerNames(doc.players, function(err) {
+                req.match = doc
+                next()
+            })
+        }
+    })
+})
+
 app.use("/public", express.static(path.join(__dirname, '/public')))
+
 app.use(session({
     secret: process.env.COOKIE_SECRET,
     saveUninitialized: true,
     resave: true
 }))
+
 app.use(passport.initialize())
+
 app.use(passport.session()) // persistent login
+
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
+
 app.locals.moment = require('moment')
 app.locals.constants = constants;
 app.route('/').get(function(req, res) {
@@ -72,6 +98,7 @@ app.route('/').get(function(req, res) {
         res.render('index.jade', {})
     }
 })
+
 app.route('/matches').get(function(req, res) {
     utility.getMatches(null, function(err, docs) {
         res.render('matches.jade', {
@@ -79,51 +106,39 @@ app.route('/matches').get(function(req, res) {
         })
     })
 })
-app.route('/matches/:id').get(function(req, res) {
-    matches.findOne({
-        match_id: Number(req.params.id)
-    }, function(err, doc) {
-        if(!doc) res.status(404).send('Could not find this match!')
-        else {
-            utility.fillPlayerNames(doc.players, function(err) {
-                res.render('match_index.jade', {
-                    route: 'Match',
-                    match: doc
-                })
-            })
-        }
+
+app.route('/matches/:match_id').get(function(req, res) {
+    res.render('match_index.jade', {
+        route: 'Match',
+        match: req.match
     })
 })
 
-app.route('/matches/:id/graphs').get(function(req, res) {
-    matches.findOne({
-        match_id: Number(req.params.id)
-    }, function(err, doc) {
-        if(!doc) res.status(404).send('Could not find this match!')
-        else {
-            utility.fillPlayerNames(doc.players, function(err) {
-                res.render('match_graphs.jade', {
-                    route: 'Graphs',
-                    match: doc
-                })
-            })
-        }
+app.route('/matches/:match_id/details').get(function(req, res) {
+    res.render('match_details.jade', {
+        route: 'Details',
+        match: req.match
     })
 })
 
-app.route('/matches/:id/timelines').get(function(req, res) {
-    matches.findOne({
-        match_id: Number(req.params.id)
-    }, function(err, doc) {
-        if(!doc) res.status(404).send('Could not find this match!')
-        else {
-            utility.fillPlayerNames(doc.players, function(err) {
-                res.render('match_timelines.jade', {
-                    route: 'Timelines',
-                    match: doc
-                })
-            })
-        }
+app.route('/matches/:match_id/graphs').get(function(req, res) {
+    res.render('match_graphs.jade', {
+        route: 'Graphs',
+        match: req.match
+    })
+})
+
+app.route('/matches/:match_id/timelines').get(function(req, res) {
+    res.render('match_timelines.jade', {
+        route: 'Timelines',
+        match: req.match
+    })
+})
+
+app.route('/matches/:match_id/chat').get(function(req, res) {
+    res.render('match_chat.jade', {
+        route: 'Chat',
+        match: req.match
     })
 })
 
@@ -164,3 +179,9 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
+
+app.use(function(req, res, next){
+  res.status(404)
+  res.render('404.jade')
+});
+

@@ -1,0 +1,35 @@
+extend layout
+
+append head
+  style.
+    .image { 
+       position: relative; 
+       width: 100%; /* for IE 6 */
+    }
+
+    h2 { 
+       position: absolute; 
+       top: 200px; 
+       left: 0; 
+       width: 100%; 
+       margin-left: 1em;
+    }
+    h2 span { 
+       color: white; 
+       font: bold 24px/45px Helvetica, Sans-Serif; 
+       letter-spacing: -1px;  
+       background: rgb(0, 0, 0); /* fallback color */
+       background: rgba(0, 0, 0, 0.7);
+       padding: 10px; 
+    }
+block content
+  .row
+    .col-md-12
+      .image
+        h2
+          span 404
+          br
+          span= message? message : "Sorry, we couldn't find that!"
+        img(src='http://fc08.deviantart.net/fs70/i/2013/049/e/c/dota_2_fan_art___apples_require_a_delicate_touch_by_jeffufu-d5vf65k.jpg')
+        div
+        a(href='http://fav.me/d5vf65k') Dota 2 Fan Art - Apples require a delicate touch by Jeffufu
