@@ -1,9 +1,21 @@
 extend match_base
 
+append head
+  style.
+    h3 img {
+      padding-right: 1em;
+    }
+    
+    .abilities img {
+       height: 35px;
+       width: 35px;
+    }
+    
 append content
   .row
     .col-md-12
       if match.parsed_data
+        h2 Consumables Bought
         table.table.table-hover.table-responsive
           tr
             th Player
@@ -14,7 +26,7 @@ append content
             th Smokes
             th Dusts
             th Gems
-            th Buy Backs
+            th Buybacks
             th Gold Lost
           - each player, i in match.players
              tr(class = i < 5 ? "success" : "danger")
@@ -37,5 +49,33 @@ append content
                td #{match.parsed_data.players[i].itembuys.gem || "-"}
                td #{match.parsed_data.players[i].buybacks.buyback || "-"}
                td #{match.parsed_data.players[i].gold_log.loss || "-"}
+        h2 Skill Usage
+        - each player, i in match.players
+          if i % 3 == 0
+            .row
+          if match.parsed_data.players[i].abilityuses
+              .col-md-4
+                 - var hero = constants.heroes[player.hero_id]
+                  h3
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      = player.hero_id
+                    if (player.account_id == constants.anonymous_account_id)
+                      ="Anonymous"
+                     else
+                      a(href='/players/#{player.account_id}')= player.personaname || player.account_id  
+                 table.table.table-hover.table-responsive.abilities
+                   tr
+                     th(colspan="2") Skill
+                     th Times Used
+                   - each val, key in match.parsed_data.players[i].abilityuses
+                     - var ab = constants.abilities[key]
+                     if ab
+                       tr
+                         td: img(src=ab.img, title=ab.dname)
+                         td= ab.dname
+                         td= val
+                    
       else
         h1 This match has no parsed data!
