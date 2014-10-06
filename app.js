@@ -33,7 +33,6 @@ var port = Number(process.env.PORT || 5000),
             name: "Chat"
         }
     }
-
 app.listen(port)
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -71,19 +70,15 @@ app.use('/login', function(req, res, next) {
     }))
     next()
 })
-
-app.param('match_id', function(req, res, next, id){
+app.param('match_id', function(req, res, next, id) {
     matches.findOne({
         match_id: Number(id)
     }, function(err, doc) {
         if(!doc) {
-          res.status(404).render(
-            '404', {
+            res.status(404).render('404', {
                 message: "Sorry, we couldn't find this match!"
-            }
-          )  
-        } 
-        else {
+            })
+        } else {
             utility.fillPlayerNames(doc.players, function(err) {
                 req.match = doc
                 next()
@@ -91,26 +86,21 @@ app.param('match_id', function(req, res, next, id){
         }
     })
 })
-
 app.use("/public", express.static(path.join(__dirname, '/public')))
-
 app.use(session({
     secret: process.env.COOKIE_SECRET,
     saveUninitialized: true,
     resave: true
 }))
-
 app.use(passport.initialize())
-
 app.use(passport.session()) // persistent login
-
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
-
 app.locals.moment = require('moment')
-
-utility.constants.findOne({}, function(err, doc){
-    app.locals.constants = doc
+utility.updateConstants(function(err){
+    utility.constants.findOne({}, function(err, doc) {
+        app.locals.constants = doc
+    })  
 })
 app.route('/').get(function(req, res) {
     if(req.user) {
@@ -124,7 +114,6 @@ app.route('/').get(function(req, res) {
         res.render('index.jade', {})
     }
 })
-
 app.route('/matches').get(function(req, res) {
     utility.getMatches(null, function(err, docs) {
         res.render('matches.jade', {
@@ -132,13 +121,11 @@ app.route('/matches').get(function(req, res) {
         })
     })
 })
-
 app.route('/matches/:match_id/:info?').get(function(req, res) {
     var render,
         info = req.params.info
-
-    if (info) {
-        if (info in matchPages) {
+    if(info) {
+        if(info in matchPages) {
             render = matchPages[info].template
         } else {
             return res.status(404).render('404.jade')
@@ -146,14 +133,12 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
     } else {
         render = matchPages['index'].template
     }
-
     res.render(render, {
         route: info ? info : 'index',
         match: req.match,
         tabs: matchPages
     })
 })
-
 app.route('/players').get(function(req, res) {
     utility.getTrackedPlayers(function(err, docs) {
         res.render('players.jade', {
@@ -191,7 +176,6 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
-
-app.use(function(req, res, next){
-  res.status(404).render('404.jade')
+app.use(function(req, res, next) {
+    res.status(404).render('404.jade')
 });

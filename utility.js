@@ -198,6 +198,7 @@ utility.updateConstants = function(cb) {
                         lookup[ability_ids[i].id] = ability_ids[i].name
                     }
                     lookup["5601"]="techies_suicide"
+                    lookup["5088"]="skeleton_king_mortal_strike"
                     constants.ability_ids = lookup
                 }
                 if(val==constants.abilities) {

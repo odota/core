@@ -5,11 +5,18 @@ append head
     h3 img {
       padding-right: 1em;
     }
-    
-    .abilities img {
-       height: 35px;
+    .table-img{
+      white-space: nowrap;
     }
-    
+    .img-text{
+      float: left;
+      text-align: center;      
+    }
+    .img-text img{
+       width: 25px;
+    }
+
+
 append content
   .row
     .col-md-12
@@ -19,15 +26,16 @@ append content
           tr
             th Player
             th Hero
-            th Couriers/Flying
-            th TP Scrolls
-            th Observers
-            th Sentries
-            th Smokes
-            th Dusts
-            th Gems
-            th Buybacks
-            th Gold Lost
+            th CR
+            th FLY
+            th TP
+            th OBS
+            th SEN
+            th SMK
+            th DST
+            th GEM
+            th BB
+            th LOSS
             th Skill Use
             th Item Use
           - each player, i in match.players
@@ -40,11 +48,12 @@ append content
                - var hero = constants.heroes[player.hero_id]
                td.hero
                  if hero
-                   img(src=hero.img, alt=hero.localized_name)
+                   img(src=hero.img, title=hero.localized_name)
                  else
                    =player.hero_id
                - var parsedPlayer = match.parsed_data.players[i]
-               td #{parsedPlayer.itembuys.courier || "-"}/#{parsedPlayer.itembuys.flying_courier || "-"}
+               td #{parsedPlayer.itembuys.courier || "-"}
+               td #{parsedPlayer.itembuys.flying_courier || "-"}
                td #{parsedPlayer.itembuys.tpscroll || "-"}
                td #{parsedPlayer.itembuys.ward_observer*2 || "-"}
                td #{parsedPlayer.itembuys.ward_sentry*2 || "-"}
@@ -53,7 +62,23 @@ append content
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
                td #{parsedPlayer.gold_log.loss || "-"}
-               td=parsedPlayer.abilityuses
-               td=parsedPlayer.itemuses                 
+               td.table-img
+                 each val, key in parsedPlayer.abilityuses
+                   - var ability = constants.abilities[key]
+                   if ability
+                     div.img-text
+                       img(src=ability.img, title=ability.dname)
+                       div=val
+                   else
+                     //=key
+               td.table-img
+                 each val, key in parsedPlayer.itemuses
+                   - var item = constants.items[key]                   
+                   if item
+                     div.img-text
+                       img(src=item.img, title=item.dname)
+                       div=val
+                   else
+                     =key
       else
         h1 This match has no parsed data!
