@@ -19,7 +19,9 @@ utility.fillPlayerNames = function(players, cb) {
             account_id: player.account_id
         }, function(err, dbPlayer) {
             if(dbPlayer) {
-                player.personaname = dbPlayer.personaname
+                for (var prop in dbPlayer){
+                    player[prop]=dbPlayer[prop]
+                }
             }
             cb(null)
         })
@@ -123,7 +125,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             doc.win = count.win
             doc.lose = count.lose
         } else {
-            if(count.win + count.lose >= 3) {
+            if(count.win + count.lose >= 2) {
                 doc.teammates.push(count)
             }
         }
@@ -167,7 +169,7 @@ utility.getData = function(url, cb) {
 }
 utility.updateConstants = function(cb) {
     var constants = require('./constants.json')
-    async.mapSeries(Object.keys(constants), function(key, cb) {
+    async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val)=="string" && val.slice(0, 4) == "http") {
             utility.getData(val, function(err, result) {
