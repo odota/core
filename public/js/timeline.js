@@ -13,10 +13,10 @@ function formatSeconds(input) {
     return time
 }
 
-function momentTime(input){
+function momentTime(input) {
     return moment().startOf('day').seconds(input)
 }
-match.parsed_data.players.forEach(function(player, ind) {
+async.eachSeries(match.parsed_data.players, function(player, cb) {
     var items = new vis.DataSet();
     var heroes = 0
     for(var i = 0; i < player.timeline.length; i++) {
@@ -27,7 +27,7 @@ match.parsed_data.players.forEach(function(player, ind) {
         bar.start = momentTime(event.time)
         if(event.type == "itembuys") {
             var img = constants.items[event.key].img
-            bar.content = "<img src='" + img + "' width=30 />" + time
+            bar.content = "<img src='" + img + "' width=25 />" + time
             bar.group = 1
             items.add(bar)
         }
@@ -50,30 +50,13 @@ match.parsed_data.players.forEach(function(player, ind) {
             items.add(bar)
         }
     }
-    /*
-    var ab = match.players[ind].ability_upgrades
-    for(var i = 0; i < ab.length; i++) {
-        bar = {}
-        bar.start =  momentTime(ab[i].time)
-        bar.content = ab[i].ability
-        bar.group=2
-        items.add(bar)
-    }
-    */
     var groups = [{
         id: 0,
         content: "Hero"
     }, {
         id: 1,
         content: "Item"
-    }                  
-    /*
-    {
-        id: 2,
-        content: "Skill"
-    }
-    */
-                 ]
+    }]
     // create visualization
     var container = document.getElementById('chart-timeline');
     var iDiv = document.createElement('div');
@@ -96,4 +79,5 @@ match.parsed_data.players.forEach(function(player, ind) {
     timeline.setOptions(options);
     timeline.setItems(items);
     timeline.setGroups(groups);
+    setTimeout(cb, 50)
 })

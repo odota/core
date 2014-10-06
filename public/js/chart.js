@@ -103,6 +103,5 @@ async.eachSeries(charts, function(chart, cb) {
             }
         }
     })
-    
-    setTimeout(cb, 200)
+    setTimeout(cb, 50)
 })

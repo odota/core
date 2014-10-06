@@ -23,7 +23,7 @@ block content
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
                 - var hero = constants.heroes[match.player_hero]
-                td.hero: img(src=hero.img, alt=hero.localized_name)
+                td.hero: img(src=hero.img, title=hero.localized_name)
                 td= match.player_win ? "Won" : "Lost"                
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")

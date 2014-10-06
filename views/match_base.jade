@@ -1,4 +1,6 @@
 extend layout
+append head
+    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js')
 
 block content
   h1 Match #{match.match_id}
@@ -10,11 +12,13 @@ block content
           td Result
           td Duration
           td Game Mode
+          td Played
           td Status
         tr(class = match.radiant_win ? "success" : "danger")
           td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
           td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
           td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+          td= moment.unix(match.start_time + match.duration).fromNow()
           td= constants.parse_status[match.parse_status]
   if match.parsed_data
     .row(style="padding-bottom:1em;")

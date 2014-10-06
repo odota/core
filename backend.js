@@ -13,7 +13,7 @@ var next_seq;
 aq.empty = function() {
     getMatches()
 }
-async.series([utility.updateConstants,
+async.series([
     function(cb) {
         players.find({
             track: 1
