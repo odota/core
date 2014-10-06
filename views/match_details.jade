@@ -1,0 +1,41 @@
+extend match_base
+
+append content
+  .row
+    .col-md-12
+      if match.parsed_data
+        table.table.table-hover.table-responsive
+          tr
+            th Player
+            th Hero
+            th TP Scrolls
+            th Observers
+            th Sentries
+            th Smokes
+            th Dusts
+            th Gems
+            th Buy Backs
+            th Gold Lost
+          - each player, i in match.players
+             tr(class = i < 5 ? "success" : "danger")
+               td
+                 if (player.account_id == constants.anonymous_account_id)
+                   ="Anonymous"
+                 else
+                   a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+               - var hero = constants.heroes[player.hero_id]
+               td.hero
+                 if hero
+                   img(src=hero.img, alt=hero.localized_name)
+                 else
+                   =player.hero_id
+               td #{match.parsed_data.players[i].itembuys.tpscroll || "-"}
+               td #{match.parsed_data.players[i].itembuys.ward_observer*2 || "-"}
+               td #{match.parsed_data.players[i].itembuys.ward_sentry*2 || "-"}
+               td #{match.parsed_data.players[i].itembuys.smoke_of_deceit || "-"}
+               td #{match.parsed_data.players[i].itembuys.dust*2 || "-"}
+               td #{match.parsed_data.players[i].itembuys.gem || "-"}
+               td #{match.parsed_data.players[i].buybacks.buyback || "-"}
+               td #{match.parsed_data.players[i].gold_log.loss || "-"}
+      else
+        h1 This match has no parsed data!
