@@ -1,18 +1,31 @@
 extend layout
+
+append head
+  script(type='text/javascript', src='https://code.jquery.com/jquery-2.1.1.min.js')
+  script(type='text/javascript', src='//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js')
+  link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
+  script(type='text/javascript', src='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js')
+  script.
+    $(document).ready(function() {
+        $('#table').dataTable({
+           "order": [[ 0, "desc" ]]
+        });
+    });
 block content
   h3 Recent Matches
   #row
     #col-md-2
     #col-mid-8
-      table.table
-        tr
-          td Match ID
-          td Game Mode
-          td Region
-          td Duration
-          td Winner
-          td Played
-          td Status
+      table.table#table
+        thead
+          tr
+            td Match ID
+            td Game Mode
+            td Region
+            td Duration
+            td Winner
+            td Played
+            td Status
         - each match in matches
           tr(class= match.radiant_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
