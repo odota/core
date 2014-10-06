@@ -19,11 +19,7 @@ append content
               td= message.text
       script.
         $('.format').each(function(){
-          $(this).text(format($(this).text()))
+          $(this).text(formatSeconds($(this).text()))
         })
-        
-        function format(input){
-          return moment().startOf('day').seconds(input).format("H:mm:ss")
-        }
   else
     h1 This match has no parsed data!

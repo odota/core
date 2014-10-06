@@ -1,21 +1,3 @@
-function pad(n, width, z) {
-    z = z || '0';
-    n = n + '';
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-
-function formatSeconds(input) {
-    var absTime = Math.abs(input)
-    var minutes = ~~ (absTime / 60)
-    var seconds = pad(absTime % 60, 2)
-    var time = ((input < 0) ? "-" : "")
-    time += minutes + ":" + seconds
-    return time
-}
-
-function momentTime(input) {
-    return moment().startOf('day').seconds(input)
-}
 async.eachSeries(match.parsed_data.players, function(player, cb) {
     var items = new vis.DataSet();
     var heroes = 0

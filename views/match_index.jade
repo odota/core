@@ -114,8 +114,4 @@ append content
         $('.format').each(function(){
           $(this).text(format($(this).text()))
         })
-        function format(input){
-          input = parseInt(input)
-          return (input<1000 ? input : numeral(input).format('0.0a'))
-        }
 
