@@ -197,12 +197,17 @@ utility.updateConstants = function(cb) {
                     for(var i = 0; i < ability_ids.length; i++) {
                         lookup[ability_ids[i].id] = ability_ids[i].name
                     }
+                    lookup["5601"]="techies_suicide"
                     constants.ability_ids = lookup
                 }
                 if(val==constants.abilities) {
                     var abilities = result.abilitydata
                     for(var key in abilities) {
                         abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+                    }
+                    abilities["stats"]={
+                        dname: "Stats",
+                        img: '../../public/images/Stats.png'
                     }
                     constants.abilities = abilities
                 }

@@ -12,10 +12,10 @@ append head
      
 append content 
     .row
-      .col-md-12
         if match.parsed_data
-          h3 Radiant Advantage
-          #chart-diff
+          .col-md-12
+            h3 Radiant Advantage
+            #chart-diff
           .col-md-12
             h3 Gold
             #chart-gold
@@ -25,6 +25,6 @@ append content
           .col-md-12
             h3 LH
             #chart-lh
-          script(type='text/javascript', src='../../public/js/chart.js')
+          script(async, type='text/javascript', src='../../public/js/chart.js')
         else
           h1 This match has no parsed data!
