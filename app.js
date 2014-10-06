@@ -10,30 +10,32 @@ var express = require('express'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
 var constants;
-var port = Number(process.env.PORT || 5000),
-    matchPages = {
-        index: {
-            template: "match_index",
-            name: "Match"
-        },
-        details: {
-            template: "match_details",
-            name: "Details"
-        },
-        graphs: {
-            template: "match_graphs",
-            name: "Graphs"
-        },
-        timelines: {
-            template: "match_timelines",
-            name: "Timelines"
-        },
-        chat: {
-            template: "match_chat",
-            name: "Chat"
-        }
+var port = Number(process.env.PORT || 5000);
+var matchPages = {
+    index: {
+        template: "match_index",
+        name: "Match"
+    },
+    details: {
+        template: "match_details",
+        name: "Details"
+    },
+    graphs: {
+        template: "match_graphs",
+        name: "Graphs"
+    },
+    timelines: {
+        template: "match_timelines",
+        name: "Timelines"
+    },
+    chat: {
+        template: "match_chat",
+        name: "Chat"
     }
-app.listen(port)
+}
+app.listen(port, function() {
+    console.log("[WEB] listening on port %s", port)
+})
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
@@ -73,14 +75,14 @@ app.use('/login', function(req, res, next) {
 app.param('match_id', function(req, res, next, id) {
     matches.findOne({
         match_id: Number(id)
-    }, function(err, doc) {
-        if(!doc) {
+    }, function(err, match) {
+        if(!match) {
             res.status(404).render('404', {
                 message: "Sorry, we couldn't find this match!"
             })
         } else {
-            utility.fillPlayerNames(doc.players, function(err) {
-                req.match = doc
+            utility.fillPlayerNames(match.players, function(err) {
+                req.match = match
                 next()
             })
         }
@@ -96,12 +98,17 @@ app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
-app.locals.moment = require('moment')
-utility.updateConstants(function(err){
+app.locals.moment = require('moment');
+loadConstants()
+utility.updateConstants(function(err) {
+    loadConstants()
+})
+
+function loadConstants() {
     utility.constants.findOne({}, function(err, doc) {
         app.locals.constants = doc
-    })  
-})
+    })
+}
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getLastMatch(req.user.account_id, function(err, doc) {
@@ -131,6 +138,23 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
             return res.status(404).render('404.jade')
         }
     } else {
+        match = req.match
+        match.sums = [{
+            personaname: "Radiant"
+        }, {
+            personaname: "Dire"
+        }]
+        match.players.forEach(function(player) {
+            var target = (player.player_slot < 64 ? match.sums[0] : match.sums[1])
+            for(var prop in player) {
+                if(typeof(player[prop]) == "number") {
+                    if(!(prop in target)) {
+                        target[prop] = 0
+                    }
+                    target[prop] += player[prop]
+                }
+            }
+        })
         render = matchPages['index'].template
     }
     res.render(render, {
@@ -169,8 +193,11 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
-    if(req.user) res.redirect('/players/' + req.user.account_id)
-    res.redirect('/')
+    if(req.user) {
+        res.redirect('/players/' + req.user.account_id)
+    } else {
+        res.redirect('/')
+    }
 })
 app.route('/logout').get(function(req, res) {
     req.logout();
