@@ -117,6 +117,7 @@ app.route('/matches/:match_id').get(function(req, res) {
 })
 
 app.route('/matches/:match_id/details').get(function(req, res) {
+    console.log(req.match)
     res.render('match_details.jade', {
         route: 'Details',
         match: req.match
@@ -186,4 +187,3 @@ app.use(function(req, res, next){
   res.status(404)
   res.render('404.jade')
 });
-

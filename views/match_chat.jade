@@ -12,7 +12,9 @@ append content
       .col-md-6
         h3 Chat
         table.table.table-hover.table-responsive
-          each message in match.parsed_data.chat
+          tr
+            th(colspan="2") Time
+          - each message in match.parsed_data.chat
             tr
               td.format= message.time
               td= message.prefix + ": " + message.text
@@ -22,7 +24,7 @@ append content
         })
         
         function format(input){
-          return moment().startOf('day').seconds(input).format("H:mm")
+          return moment().startOf('day').seconds(input).format("H:mm:ss")
         }
   else
     h1 This match has no parsed data!
