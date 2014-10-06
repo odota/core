@@ -2,7 +2,6 @@ package albert.stats;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.Clarity;
 import skadistats.clarity.match.Match;
-import skadistats.clarity.parser.Profile;
 import skadistats.clarity.parser.TickIterator;
 import skadistats.clarity.model.UserMessage;
 import skadistats.clarity.model.GameEvent;
@@ -14,6 +13,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONTokener;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.util.Iterator;
 
@@ -29,10 +29,15 @@ public class Main {
         JSONArray log = new JSONArray();
         JSONArray hero_history = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
-        JSONObject constants = new JSONObject(new JSONTokener(new BufferedReader(new FileReader(args[1]))));
-        JSONObject heroes = constants.getJSONObject("heroes");
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String s;
+        String input = "";
+        while ((s = in.readLine()) != null && s.length() != 0){
+            input+=s;
+        }
+        JSONObject heroes = new JSONObject(new JSONTokener(input));
         Match match = new Match();
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], Profile.ALL);
+        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.CHAT_MESSAGES, CustomProfile.ALL_CHAT);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
 
@@ -60,6 +65,7 @@ public class Main {
                     player.put("healing", new JSONObject());
                     player.put("gold_log", new JSONObject());
                     player.put("kills", new JSONObject());
+                    player.put("abilityuses", new JSONObject());
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
@@ -74,9 +80,8 @@ public class Main {
 
             for (int i = 0; i < PLAYER_IDS.length; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                String slot = String.valueOf(i);
                 if (!hero.equals("-1")){
-                    hero_to_slot.put(hero, slot);
+                    hero_to_slot.put(hero, i);
                     JSONObject player_hero_history = hero_history.getJSONObject(i);
                     if (!player_hero_history.has(hero)){
                         JSONObject entry = new JSONObject();
@@ -107,14 +112,8 @@ public class Main {
                     String type = u.getProperty("type").toString();
                     String value = u.getProperty("value").toString();
                     JSONObject entry = new JSONObject();
-                    if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
-                        entry.put("type", "runes");
-                        entry.put("key", value);
-                        entry.put("time", time);
-                        entry.put("slot", player1);
-                        log.put(entry);
-                    }
-                    else if (type.equals("CHAT_MESSAGE_HERO_KILL")){
+                    if (type.equals("CHAT_MESSAGE_HERO_KILL")){
+                        /*
                         if (!player1.equals("-1") && !player2.equals("-1")){
                             entry.put("slot", player2);
                             entry.put("time", time);
@@ -122,10 +121,13 @@ public class Main {
                             entry.put("type", "kills");
                             log.put(entry);
                         }
+                        */
                         //System.err.format("%s,%s%n", time, u);
                     }
                     else if (type.equals("CHAT_MESSAGE_BUYBACK")){
                         //System.err.format("%s,%s%n", time, u); 
+                    }
+                    else if (type.equals("CHAT_MESSAGE_RANDOM")){
                     }
                     else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
                     }
@@ -194,6 +196,9 @@ public class Main {
                 else if (name.equals("CUserMsg_TextMsg")){
 
                 }
+                else if (name.equals("CDOTAUserMsg_HudError")){
+
+                }
                 else{
                     System.err.format("%s %s%n", time, u); 
                 }
@@ -212,35 +217,31 @@ public class Main {
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
                         val = cle.getValue();
-                        if (cle.isAttackerHero()){
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("value", val);
-                            entry.put("type", "damage");
-                            log.put(entry);
-                        }
+                        entry.put("unit", unit);                        
+                        entry.put("time", time);
+                        entry.put("key", key);
+                        entry.put("value", val);
+                        entry.put("type", "damage");
+                        log.put(entry);
                         break;
                         case 1:
                         //healing
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
                         val = cle.getValue();
-                        if (cle.isAttackerHero()){
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("value", val);
-                            entry.put("type", "healing");
-                            log.put(entry);
-                        }
+                        entry.put("unit", unit);                        
+                        entry.put("time", time);
+                        entry.put("key", key);
+                        entry.put("value", val);
+                        entry.put("type", "healing");
+                        log.put(entry);
                         break;
                         case 2:
                         //gain buff/debuff
                         unit = cle.getTargetName();
                         key = cle.getInflictorName();
                         /*
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
+                            entry.put("unit", unit);                        
                             entry.put("time", time);
                             entry.put("key", key);
                             log.put(entry);
@@ -261,38 +262,33 @@ public class Main {
                         break;
                         case 4:
                         //kill
-                        /*
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
-                        if (cle.isAttackerHero() && !cle.isTargetIllusion() && cle.isTargetHero()){
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
+                        if (!cle.isTargetIllusion()){
+                            entry.put("unit", unit);                        
                             entry.put("time", time);
                             entry.put("key", key);
                             entry.put("type", "kills");
                             log.put(entry);
                         }
-                        */
                         break;
                         case 5:
                         //ability use
-                        /*
-                            log.info("{} {} {} ability {} (lvl {}){}{}", 
-                            time, 
-                            cle.getAttackerNameCompiled(),
-                            cle.isAbilityToggleOn() || cle.isAbilityToggleOff() ? "toggles" : "casts",
-                            cle.getInflictorName(),
-                            cle.getAbilityLevel(),
-                            cle.isAbilityToggleOn() ? " on" : cle.isAbilityToggleOff() ? " off" : "",
-                            cle.getTargetName() != null ? " on " + cle.getTargetNameCompiled() : ""
-                        );
-                        */
+                        unit = cle.getAttackerName();
+                        key = cle.getInflictorName();
+                        entry.put("unit", unit);                        
+                        entry.put("time", time);
+                        entry.put("key", key);
+                        entry.put("type", "abilityuses");
+                        log.put(entry);
                         break;
                         case 6:
                         //item use
                         unit = cle.getAttackerName();
                         key = cle.getInflictorName();
-                        entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
+                        entry.put("unit", unit);                        
                         entry.put("time", time);
+                        //remove "item_" from name
                         entry.put("key", key.substring(5));
                         entry.put("type", "itemuses");
                         log.put(entry);
@@ -304,8 +300,7 @@ public class Main {
                         if (val > 0){
                         }   
                         else{
-                            //deaths and buybacks
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
+                            entry.put("unit", unit);                        
                             entry.put("time", time);
                             entry.put("key", "loss");
                             entry.put("value", val);
@@ -336,7 +331,7 @@ public class Main {
                         unit = cle.getTargetName();
                         key = cle.getValueName();
                         if (!key.contains("recipe")){
-                            entry.put("slot", hero_to_slot.get(heroes.getJSONObject(unit).get("id").toString()));                        
+                            entry.put("unit", unit);                        
                             entry.put("time", time);
                             entry.put("key", key.substring(5));
                             entry.put("type", "itembuys");
@@ -354,10 +349,10 @@ public class Main {
                         case 13:
                         //ability trigger
                         System.err.format("%s %s proc %s %s%n", 
-                            time,
-                            cle.getAttackerNameCompiled(),
-                            cle.getInflictorName(),
-                            cle.getTargetName() != null ? "on " + cle.getTargetNameCompiled() : "");
+                                          time,
+                                          cle.getAttackerNameCompiled(),
+                                          cle.getInflictorName(),
+                                          cle.getTargetName() != null ? "on " + cle.getTargetNameCompiled() : "");
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
@@ -372,6 +367,16 @@ public class Main {
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
             String type = entry.getString("type");
+
+            if (type.equals("chat")){
+                doc.getJSONArray("chat").put(entry);
+            }
+            if (entry.has("unit")){
+                int slot = getSlotByUnit(entry.getString("unit"), heroes, hero_to_slot);
+                if (slot >= 0){
+                    entry.put("slot", slot);
+                }
+            }
             if (entry.has("slot")){
                 int slot = entry.getInt("slot");
                 JSONObject player = doc.getJSONArray("players").getJSONObject(slot);
@@ -386,23 +391,12 @@ public class Main {
                         counts.put(key, count + 1);  
                     }   
                 }
-                if (type.equals("kills")){
-                    player.getJSONArray("timeline").put(entry);
-                }
                 if (type.equals("itembuys")){
                     player.getJSONArray("timeline").put(entry);
                 }
-                if (type.equals("runes")){
+                if (type.equals("gold_log")){
                     player.getJSONArray("timeline").put(entry);
                 }
-                if (type.equals("buybacks")){
-                    player.getJSONArray("timeline").put(entry);
-                }
-            }
-            else{
-                if (type.equals("chat")){
-                    doc.getJSONArray("chat").put(entry);
-                }  
             }
         }
 
@@ -424,5 +418,16 @@ public class Main {
         System.out.println(doc);
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("time:%ssec%n", tMatch / 1000.0);
+    }
+    private static int getSlotByUnit(String unit, JSONObject heroes, JSONObject hero_to_slot){
+        if (unit.startsWith("npc_dota_hero_")){
+            unit = unit.substring("npc_dota_hero_".length());
+            return hero_to_slot.getInt(heroes.getJSONObject(unit).get("id").toString());
+        }
+        else if (unit.startsWith("npc_dota_")){
+            //todo try to look up hero by name
+            //can be third or third and fourth groups
+        }
+        return -1;
     }
 }
