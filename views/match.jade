@@ -1,0 +1,150 @@
+extend layout
+block head
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.js')
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
+  script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
+  script(type='text/javascript' src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js')
+  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.css')
+  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
+  link(rel='stylesheet', href='../public/css/match.css')
+  script.
+    var match = !{JSON.stringify(match)}
+    var constants = !{JSON.stringify(constants)}
+     
+block content
+  h1 Match #{match.match_id}
+  .row
+    .col-md-6
+    .col-md-6
+      table.table.table-condensed
+        tr
+          td Duration
+          td Game Mode
+          td Status
+        tr
+          td=moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+          td=constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+          td=constants.parse_status[match.parse_status]
+  ul.nav.nav-tabs
+    li.active
+      a(href="")="Match"
+    li.disabled
+      a(href="")="Graphs"
+    li.disabled
+      a(href="")="Details"
+    li.disabled
+      a(href="")="Timelines"
+    li.disabled
+      a(href="")="Chat"
+  .row
+    .col-md-12
+      h1(class = match.radiant_win ? "success" : "danger").text-center= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+      table.table.table-hover.table-responsive
+            tr
+              th Player
+              th Hero
+              th LV
+              th K
+              th D
+              th A
+              th LH
+              th DN
+              th GOLD
+              th GPM
+              th XPM
+              th HD
+              th TD
+              th HH
+              th Items
+              if match.parsed_data
+               th TP
+               th OBS
+               th SEN
+               th SMK
+               th DST
+               th GEM
+               th BB
+               th LOSS
+            - each player, i in match.players
+             tr(class = i < 5 ? "success" : "danger")
+               td
+                 if (player.account_id == constants.anonymous_account_id)
+                   ="Anonymous"
+                 else
+                   a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+               - var hero = constants.heroes[player.hero_id]
+               td.hero
+                 if hero
+                   img(src=hero.img, alt=hero.localized_name)
+                 else
+                   =player.hero_id
+               td= player.level
+               td= player.kills
+               td= player.deaths
+               td= player.assists
+               td= player.last_hits
+               td= player.denies
+               - var gold = ~~(player.gold_per_min*match.duration/60)
+               td.format= gold
+               td= player.gold_per_min
+               td= player.xp_per_min
+               td.format= player.hero_damage
+               td.format= player.tower_damage
+               td.format= player.hero_healing
+               td.items
+                 each val, index in player
+                   if (index.slice(0, 5)==="item_")
+                     - var item = constants.items[constants.item_ids[val]]
+                     if item
+                       img(src=item.img, alt=item.dname)
+                 if (player.hero_id === 80)
+                   br
+                   each val, index in player.additional_units[0]
+                     if (index.slice(0, 5)==="item_")
+                       - var item = constants.items[constants.item_ids[val]]                             
+                       if item
+                         img(src=item.img, alt=item.dname)
+               if match.parsed_data
+                 td #{match.parsed_data.players[i].itembuys.tpscroll || "-"}
+                 td #{match.parsed_data.players[i].itembuys.ward_observer*2 || "-"}
+                 td #{match.parsed_data.players[i].itembuys.ward_sentry*2 || "-"}
+                 td #{match.parsed_data.players[i].itembuys.smoke_of_deceit || "-"}
+                 td #{match.parsed_data.players[i].itembuys.dust*2 || "-"}
+                 td #{match.parsed_data.players[i].itembuys.gem || "-"}
+                 td #{match.parsed_data.players[i].buybacks.buyback || "-"}
+                 td #{match.parsed_data.players[i].gold_log.loss || "-"}
+  if match.parsed_data
+    .row
+      .col-md-12
+        h3 Radiant Advantage
+        #chart-diff
+      .col-md-12
+        h3 Gold           
+        #chart-gold
+      .col-md-12
+        h3 XP            
+        #chart-xp
+      .col-md-12
+        h3 LH
+        #chart-lh
+    .row
+      #chart-timeline
+      script(type='text/javascript', src='../public/js/chart.js')            
+      script(type='text/javascript', src='../public/js/timeline.js')
+    .row
+      .col-ms-12
+        h3 Chat
+        if match.parsed_data.chat
+         each message in match.parsed_data.chat
+          div=JSON.stringify(message)
+  script.
+      $('.format').each(function(){
+      $(this).text(format($(this).text()))
+      })
+      function format(input){
+        input = parseInt(input)
+        return (input<1000 ? input : numeral(input).format('0.0a'))
+      }
