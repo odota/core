@@ -21,17 +21,17 @@ Deployment
 
 .env
 ====
-* STEAM_USER
-* STEAM_PASS
-* STEAM_GUARD_CODE (can be empty)
-* STEAM_API_KEY
-* COOKIE_SECRET
-* DELETE_REPLAYS
-* MONGOHQ_URL
-* AWS_S3_BUCKET
-* AWS_ACCESS_KEY_ID
-* AWS_SECRET_ACCESS_KEY
-* PORT
-* PARSER_HOST
-* SAVE_ALL_MATCHES
+* STEAM_USER (required, a Steam username)
+* STEAM_PASS (required, a Steam password)
+* STEAM_GUARD_CODE (required, a Steam guard code, can be empty)
+* STEAM_API_KEY (required, a Steam API key)
+* COOKIE_SECRET (required, a encryption token for cookies)
+* DELETE_REPLAYS (optional, deletes replays after parse if set)
+* MONGOHQ_URL (optional, default localhost/dota, the MongoDB to use)
+* AWS_S3_BUCKET (optional, replays are saved to S3 bucket if set)
+* AWS_ACCESS_KEY_ID (optional, allows use of S3)
+* AWS_SECRET_ACCESS_KEY (optional, allows use of S3)
+* PORT (optional, default 5000, the port to use)
+* PARSER_HOST (optional, default localhost, the hostname of the parse worker)
+* SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
 
