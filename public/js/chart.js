@@ -66,13 +66,6 @@ charts = [
         x: 'time',
         type: "spline",
         xLabel: 'Game Time (minutes)',
-        yLabel: 'Gold'
-    }, {
-        bindTo: "#chart-gold",
-        columns: gold,
-        x: 'time',
-        type: "spline",
-        xLabel: 'Game Time (minutes)',
         yLabel: 'XP'
     }, {
         bindTo: "#chart-lh",
