@@ -8,8 +8,8 @@ var express = require('express'),
     path = require('path'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
-    constants = require('./constants.json'),
     app = express();
+var constants;
 var port = Number(process.env.PORT || 5000)
 app.listen(port)
 passport.serializeUser(function(user, done) {
@@ -85,7 +85,9 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 
 app.locals.moment = require('moment')
-app.locals.constants = constants;
+utility.constants.findOne({}, function(err, doc){
+    app.locals.constants = doc
+})
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getLastMatch(req.user.account_id, function(err, doc) {
