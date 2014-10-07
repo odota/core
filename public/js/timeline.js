@@ -5,11 +5,11 @@ async.eachSeries(match.parsed_data.players, function(player, cb) {
         var event = player.timeline[i]
         var bar = {}
         var time = formatSeconds(event.time)
-        time = "<span style='font-size:10px;'>" + time + "<span>"
+        time = "<div style='font-size:10px;'>" + time + "<div>"
         bar.start = momentTime(event.time)
         if(event.type == "itembuys") {
             var img = constants.items[event.key].img
-            bar.content = "<img src='" + img + "' width=25 />" + time
+            bar.content = "<img src='" + img + "' width=30 />" + time
             bar.group = 1
             items.add(bar)
         }
