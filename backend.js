@@ -36,7 +36,7 @@ async.series([
                     match_seq_num: -1
                 }
             }, function(err, doc) {
-                next_seq = doc.match_seq_num + 1
+                next_seq = doc ? doc.match_seq_num + 1 : 0
                 cb(null)
             })
         } else {
