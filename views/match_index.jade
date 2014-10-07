@@ -1,0 +1,117 @@
+extend match_base
+
+append head
+  style.
+    td.abilities {
+       padding: 8px 1px !important;
+    }
+    td.abilities img {
+       height: 35px;
+       width: 35px;
+    }
+  
+append content
+  .row
+    .col-md-12
+      h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+      table.table.table-hover.table-responsive
+        thead
+          tr
+            th Player
+            th Hero
+            th LV
+            th K
+            th D
+            th A
+            th LH
+            th DN
+            th GOLD
+            th GPM
+            th XPM
+            th HD
+            th TD
+            th HH
+            th Items
+        tbody
+          - each player, i in match.players
+           tr(class = player.player_slot<64 ? "success" : "danger")
+             td
+               if (player.account_id == constants.anonymous_account_id)
+                 ="Anonymous"
+               else
+                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+             - var hero = constants.heroes[player.hero_id]
+             td.hero
+               if hero
+                 img(src=hero.img, alt=hero.localized_name)
+               else
+                 =player.hero_id
+             td= player.level
+             td= player.kills
+             td= player.deaths
+             td= player.assists
+             td= player.last_hits
+             td= player.denies
+             td.format= ~~(player.gold_per_min*match.duration/60)
+             td= player.gold_per_min
+             td= player.xp_per_min
+             td.format= player.hero_damage
+             td.format= player.tower_damage
+             td.format= player.hero_healing
+             td.items
+               each val, index in player
+                 if (index.slice(0, 5)==="item_")
+                   - var item = constants.items[constants.item_ids[val]]
+                   if item
+                     img(src=item.img, title=item.dname)
+               if (player.hero_id === 80)
+                 br
+                 each val, index in player.additional_units[0]
+                   if (index.slice(0, 5)==="item_")
+                     - var item = constants.items[constants.item_ids[val]]                             
+                     if item
+                       img(src=item.img, title=item.dname)
+        tfoot
+          each sum in match.sums
+            tr
+              td=sum.personaname
+              td
+              td= sum.level
+              td= sum.kills
+              td= sum.deaths
+              td= sum.assists
+              td= sum.last_hits
+              td= sum.denies
+              td.format= ~~(sum.gold_per_min*match.duration/60)
+              td= sum.gold_per_min
+              td= sum.xp_per_min
+              td.format= sum.hero_damage
+              td.format= sum.tower_damage
+              td.format= sum.hero_healing
+              td
+      h2 Skill Builds
+      table.table.table-hover.table-responsive
+        tr
+          th Hero
+          - for (var i = 1; i < 26; i++)
+            th= i
+        - each player, i in match.players
+           tr(class = player.player_slot<64 ? "success" : "danger")
+             - var hero = constants.heroes[player.hero_id]
+             td.hero
+               if hero
+                 img(src=hero.img, title=hero.localized_name)
+               else
+                 =player.hero_id
+               - each ability in player.ability_upgrades
+                   - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                   td.abilities
+                     if abilityData
+                       img(src=abilityData.img, title=abilityData.dname)
+                     else
+                       =ability.ability
+      script.
+        $('.format').each(function(){
+          $(this).text(format($(this).text()))
+        })
+

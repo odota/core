@@ -19,7 +19,9 @@ utility.fillPlayerNames = function(players, cb) {
             account_id: player.account_id
         }, function(err, dbPlayer) {
             if(dbPlayer) {
-                player.personaname = dbPlayer.personaname
+                for (var prop in dbPlayer){
+                    player[prop]=dbPlayer[prop]
+                }
             }
             cb(null)
         })
@@ -123,7 +125,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             doc.win = count.win
             doc.lose = count.lose
         } else {
-            if(count.win + count.lose >= 3) {
+            if(count.win + count.lose >= 2) {
                 doc.teammates.push(count)
             }
         }
@@ -167,7 +169,7 @@ utility.getData = function(url, cb) {
 }
 utility.updateConstants = function(cb) {
     var constants = require('./constants.json')
-    async.mapSeries(Object.keys(constants), function(key, cb) {
+    async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val)=="string" && val.slice(0, 4) == "http") {
             utility.getData(val, function(err, result) {
@@ -197,12 +199,18 @@ utility.updateConstants = function(cb) {
                     for(var i = 0; i < ability_ids.length; i++) {
                         lookup[ability_ids[i].id] = ability_ids[i].name
                     }
+                    lookup["5601"]="techies_suicide"
+                    lookup["5088"]="skeleton_king_mortal_strike"
                     constants.ability_ids = lookup
                 }
                 if(val==constants.abilities) {
                     var abilities = result.abilitydata
                     for(var key in abilities) {
                         abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+                    }
+                    abilities["stats"]={
+                        dname: "Stats",
+                        img: '../../public/images/Stats.png'
                     }
                     constants.abilities = abilities
                 }

@@ -1,0 +1,85 @@
+extend match_base
+
+append head
+  style.
+    h3 img {
+      padding-right: 1em;
+    }
+    .table-img{
+      white-space: nowrap;
+      min-width: 200px;
+    }
+    .img-text{
+      float: left;
+      text-align: center;
+      font-size: 10px;
+    }
+    .img-text img{
+       width: 30px;
+    }
+
+append content
+  .row
+    .col-md-12
+      if match.parsed_data
+        h2 Details
+        table.table.table-hover.table-responsive
+          tr
+            th Player
+            th Hero
+            th CR
+            th FLY
+            th TP
+            th OBS
+            th SEN
+            th SMK
+            th DST
+            th GEM
+            th BB
+            th LOSS
+            th Skill Use
+            th Item Use
+          - each player, i in match.players
+             tr(class = player.player_slot<64 ? "success" : "danger")
+               td
+                 if (player.account_id == constants.anonymous_account_id)
+                   ="Anonymous"
+                 else
+                   a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+               - var hero = constants.heroes[player.hero_id]
+               td.hero
+                 if hero
+                   img(src=hero.img, title=hero.localized_name)
+                 else
+                   =player.hero_id
+               - var parsedPlayer = match.parsed_data.players[i]
+               td #{parsedPlayer.itembuys.courier || "-"}
+               td #{parsedPlayer.itembuys.flying_courier || "-"}
+               td #{parsedPlayer.itembuys.tpscroll || "-"}
+               td #{parsedPlayer.itembuys.ward_observer*2 || "-"}
+               td #{parsedPlayer.itembuys.ward_sentry*2 || "-"}
+               td #{parsedPlayer.itembuys.smoke_of_deceit || "-"}
+               td #{parsedPlayer.itembuys.dust*2 || "-"}
+               td #{parsedPlayer.itembuys.gem || "-"}
+               td #{parsedPlayer.buybacks.buyback || "-"}
+               td #{parsedPlayer.gold_log.loss || "-"}
+               td.table-img
+                 each val, key in parsedPlayer.abilityuses
+                   - var ability = constants.abilities[key]
+                   if ability
+                     div.img-text
+                       img(src=ability.img, title=ability.dname)
+                       div=val
+                   else
+                     //=key
+               td.table-img
+                 each val, key in parsedPlayer.itemuses
+                   - var item = constants.items[key]                   
+                   if item
+                     div.img-text
+                       img(src=item.img, title=item.dname)
+                       div=val
+                   else
+                     =key
+      else
+        h1 This match has no parsed data!

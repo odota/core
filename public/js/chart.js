@@ -43,100 +43,65 @@ match.parsed_data.players.forEach(function(elem, i) {
     elem.lh = [hero].concat(elem.lh)
     lh.push(elem.lh)
 })
-c3.generate({
-    bindto: "#chart-diff",
-    size: {
-        height: height
-    },
-    data: {
-        x: 'time',
+
+
+charts = [
+    {
+        bindTo: "#chart-diff",
         columns: [time, goldDifference, xpDifference],
-        type: "area-spline"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-                format: function(x) {
-                    return moment().startOf('day').seconds(x).format("H:mm")
-                }
-            },
-            label: 'Game Time (minutes)'
-        },
-        y: {
-            label: 'Radiant Advantage'
-        }
-    }
-})
-c3.generate({
-    bindto: "#chart-gold",
-    size: {
-        height: height
-    },
-    data: {
         x: 'time',
+        type: "area-spline",
+        xLabel: 'Game Time (minutes)',
+        yLabel: 'Radiant Advantage'
+    }, {
+        bindTo: "#chart-gold",
         columns: gold,
-        type: "spline"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-                format: function(x) {
-                    return moment().startOf('day').seconds(x).format("H:mm")
-                }
-            },
-        },
-        y: {
-            label: 'Gold'
-        }
-    }
-})
-c3.generate({
-    bindto: "#chart-xp",
-    size: {
-        height: height
-    },
-    data: {
         x: 'time',
+        type: "spline",
+        xLabel: 'Game Time (minutes)',
+        yLabel: 'Gold'
+    }, {
+        bindTo: "#chart-xp",
         columns: xp,
-        type: "spline"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-                format: function(x) {
-                    return moment().startOf('day').seconds(x).format("H:mm")
-                }
-            },
-        },
-        y: {
-            label: 'XP'
-        }
-    }
-})
-c3.generate({
-    bindto: "#chart-lh",
-    size: {
-        height: height
-    },
-    data: {
         x: 'time',
+        type: "spline",
+        xLabel: 'Game Time (minutes)',
+        yLabel: 'XP'
+    }, {
+        bindTo: "#chart-lh",
         columns: lh,
-        type: "spline"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            tick: {
-                format: function(x) {
-                    return moment().startOf('day').seconds(x).format("H:mm")
-                }
-            },
-        },
-        y: {
-            label: 'LH'
-        }
+        x: 'time',
+        type: "spline",
+        xLabel: 'Game Time (minutes)',
+        yLabel: 'LH'
     }
+]
+
+async.eachSeries(charts, function(chart, cb) {
+    c3.generate({
+        bindto: chart.bindTo,
+        size: {
+            height: height
+        },
+        data: {
+            x: chart.x,
+            columns: chart.columns,
+            type: chart.type
+        },
+        axis: {
+            x: {
+                type: 'timeseries',
+                tick: {
+                    format: function(x) {
+                        return moment().startOf('day').seconds(x).format("H:mm")
+                    }
+                },
+                label: chart.xLabel
+            },
+            y: {
+                label: chart.yLabel
+            }
+        }
+    })
+    setTimeout(cb, 50)
 })
