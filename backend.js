@@ -70,7 +70,7 @@ function requestParse(match) {
         }
     }, function(err) {
         if(err) {
-            requestParse(match)
+            setTimeout(requestParse(match), 1000)
         }
     })
 }
