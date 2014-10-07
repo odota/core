@@ -21,13 +21,15 @@ var port = 9001;
 var router = express.Router();
 router.route('/').post(function(req, res) {
     matches.findOne({
-        match_id: parseInt(req.body.match_id)
+        match_id: Number(req.body.match_id)
     }, function(err, doc) {
-        pq.push(doc, function(err) {})
-        console.log("[PARSER] parse request: match %s, position %s", req.body.match_id, pq.length())
-        res.json({
-            position: pq.length()
-        })
+        if (doc){
+            pq.push(doc, function(err) {})
+            console.log("[PARSER] parse request: match %s, position %s", req.body.match_id, pq.length())
+            res.json({
+                position: pq.length()
+            })   
+        }
     })
 })
 app.use('/', router);
@@ -136,23 +138,29 @@ function getReplayUrl(match, cb) {
             })
         }
     } else {
-        var match_id = match.match_id
-        var fileName = replay_dir + match_id + ".dem"
-        var archiveName = fileName + ".bz2"
-        var s3 = new AWS.S3()
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
+        if(process.env.AWS_S3_BUCKET) {
+            var match_id = match.match_id
+            var fileName = replay_dir + match_id + ".dem"
+            var archiveName = fileName + ".bz2"
+            var s3 = new AWS.S3()
+            var params = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: archiveName
+            }
+            s3.headObject(params, function(err, data) {
+                if (!err){
+                    var url = s3.getSignedUrl('getObject', params);
+                    cb(null, url)
+                }
+                else {
+                    console.log("[S3] replay %s not in S3", match_id)
+                    cb("Replay expired")
+                }
+            })
         }
-        s3.headObject(params, function(err, data) {
-            if (!err){
-                var url = s3.getSignedUrl('getObject', params);
-                cb(null, url)
-            }
-            else {
-                cb("Replay expired")
-            }
-        })
+        else{
+            cb("Replay expired")
+        }
     }
 }
 
