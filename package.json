@@ -7,7 +7,7 @@
     "start": "node app.js",
       "backend": "node backend.js",
       "parser": "node parser.js",
-      "preparser": "mvn -f parser/pom.xml package"
+      "preparser": "mvn -q -f parser/pom.xml package"
   },
   "dependencies": {
     "steam": ">= 0.6.0",

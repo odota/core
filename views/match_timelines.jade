@@ -1,0 +1,19 @@
+extend match_base
+
+append head
+  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
+  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
+  link(rel='stylesheet', href='../../public/css/match.css')
+  script.
+    var match = !{JSON.stringify(match)}
+    var constants = !{JSON.stringify(constants)}
+     
+append content
+  .row
+    .col-md-12
+      if match.parsed_data
+        .row
+          #chart-timeline          
+          script(async, type='text/javascript', src='../../public/js/timeline.js')
+      else
+        h1 This match has no parsed data!

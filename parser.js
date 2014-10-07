@@ -232,7 +232,7 @@ function parseReplay(match, cb) {
                                 parser_file,
                                 fileName
                                ])
-        //pipe heroes to stdin
+        //pipe hero names to stdin
         utility.constants.findOne({}, function(err, doc){
             cp.stdin.write(JSON.stringify(doc.hero_names))
             cp.stdin.end("\n")
