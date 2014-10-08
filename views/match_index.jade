@@ -1,15 +1,5 @@
 extend match_base
 
-append head
-  style.
-    td.abilities {
-       padding: 8px 1px !important;
-    }
-    td.abilities img {
-       height: 35px;
-       width: 35px;
-    }
-  
 append content
   .row
     .col-md-12
@@ -33,7 +23,7 @@ append content
             th HH
             th Items
         tbody
-          - each player, i in match.players
+          each player, i in match.players
            tr(class = player.player_slot<64 ? "success" : "danger")
              td
                if (player.account_id == constants.anonymous_account_id)
@@ -110,8 +100,3 @@ append content
                        img(src=abilityData.img, title=abilityData.dname)
                      else
                        =ability.ability
-      script.
-        $('.format').each(function(){
-          $(this).text(format($(this).text()))
-        })
-

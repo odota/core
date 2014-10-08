@@ -1,23 +1,5 @@
 extend match_base
 
-append head
-  style.
-    h3 img {
-      padding-right: 1em;
-    }
-    .table-img{
-      white-space: nowrap;
-      min-width: 200px;
-    }
-    .img-text{
-      float: left;
-      text-align: center;
-      font-size: 10px;
-    }
-    .img-text img{
-       width: 30px;
-    }
-
 append content
   .row
     .col-md-12
@@ -25,7 +7,6 @@ append content
         h2 Details
         table.table.table-hover.table-responsive
           tr
-            th Player
             th Hero
             th CR
             th FLY
@@ -39,13 +20,8 @@ append content
             th LOSS
             th Skill Use
             th Item Use
-          - each player, i in match.players
+          each player, i in match.players
              tr(class = player.player_slot<64 ? "success" : "danger")
-               td
-                 if (player.account_id == constants.anonymous_account_id)
-                   ="Anonymous"
-                 else
-                   a(href='/players/#{player.account_id}')= player.personaname || player.account_id
                - var hero = constants.heroes[player.hero_id]
                td.hero
                  if hero
@@ -67,7 +43,7 @@ append content
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
                    if ability
-                     div.img-text
+                     div.img-text.ability
                        img(src=ability.img, title=ability.dname)
                        div=val
                    else
@@ -76,7 +52,7 @@ append content
                  each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]                   
                    if item
-                     div.img-text
+                     div.img-text.item
                        img(src=item.img, title=item.dname)
                        div=val
                    else

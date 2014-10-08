@@ -1,19 +1,34 @@
 extend match_base
-
-append head
-  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.js')
-  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/vis/3.5.0/vis.css')
-  link(rel='stylesheet', href='../../public/css/timeline.css')
-  script.
-    var match = !{JSON.stringify(match)}
-    var constants = !{JSON.stringify(constants)}
      
 append content
   .row
     .col-md-12
       if match.parsed_data
-        .row
-          #chart-timeline          
-          script(async, type='text/javascript', src='../../public/js/timeline.js')
+        table.table.table-hover.table-responsive
+          tr
+            th Hero
+            - var bucket = 300
+            - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+              th= i/60+"'"
+          each player, ind in match.players
+            - var parsedPlayer = match.parsed_data.players[ind]
+            tr(class = player.player_slot<64 ? "success" : "danger")
+              - var hero = constants.heroes[player.hero_id]
+              td.hero
+                if hero
+                  img(src=hero.img, title=hero.localized_name)
+                else
+                  =player.hero_id              
+              - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                td
+                  each entry in parsedPlayer.timeline
+                    if entry.type=="itembuys" && entry.time < i && entry.time >= i-bucket
+                      - var item = constants.items[entry.key]                 
+                      if item
+                        div.img-text.item
+                          img(src=item.img, title=item.dname)
+                          div.format-seconds=entry.time
+                      else
+                        =key
       else
         h1 This match has no parsed data!
