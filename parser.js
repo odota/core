@@ -144,29 +144,33 @@ function getReplayUrl(match, cb) {
             })
         }
     } else {
-        if(process.env.AWS_S3_BUCKET) {
-            var match_id = match.match_id
-            var fileName = replay_dir + match_id + ".dem"
-            var archiveName = fileName + ".bz2"
-            var s3 = new AWS.S3()
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
+        getS3URL(match.match_id, function(err,url){
+            cb(err, url)
+        })
+    }
+}
+
+function getS3URL(match_id, cb){
+    if(process.env.AWS_S3_BUCKET) {
+        var archiveName = match_id + ".dem.bz2"
+        var s3 = new AWS.S3()
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        }
+        s3.headObject(params, function(err, data) {
+            if (!err){
+                var url = s3.getSignedUrl('getObject', params);
+                cb(null, url)
             }
-            s3.headObject(params, function(err, data) {
-                if (!err){
-                    var url = s3.getSignedUrl('getObject', params);
-                    cb(null, url)
-                }
-                else {
-                    console.log("[S3] replay %s not in S3", match_id)
-                    cb("Replay expired")
-                }
-            })
-        }
-        else{
-            cb("Replay expired")
-        }
+            else {
+                console.log("[S3] replay %s not in S3", match_id)
+                cb("Replay not in S3")
+            }
+        })
+    }
+    else{
+        cb("S3 not defined")
     }
 }
 
@@ -202,6 +206,7 @@ function uploadToS3(archiveName, body, cb) {
  */
 
 function downloadWithRetry(url, fileName, timeout, cb) {
+    console.log("[PARSER] downloading from %s", url)
     request({
         url: url,
         encoding: null

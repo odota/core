@@ -17,7 +17,7 @@ memwatch.on('leak', function(info) {
 aq.empty = function() {
     getMatches()
 }
-async.series([
+async.series([utility.updateConstants,
     function(cb) {
         players.find({
             track: 1
@@ -75,9 +75,8 @@ function requestParse(match) {
     }, function(err, resp, body) {
         if(err) {
             setTimeout(requestParse(match), 1000)
-        }
-        else{
-            console.log(body)
+        } else {
+            console.log("[RESPONSE] %s", body)
         }
     })
 }

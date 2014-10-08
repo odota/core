@@ -89,6 +89,11 @@ public class Main {
                     player.getJSONArray("lh").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
+
+                    String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
+                    if (!hero.equals("-1")){
+                        hero_to_slot.put(hero, i);
+                    }
                 }
                 nextInterval += INTERVAL;
             }
@@ -143,9 +148,10 @@ public class Main {
                 }
                 else if (name.equals("CUserMsg_SayText2")){
                     JSONObject entry = new JSONObject();
+                    entry.put("prefix", u.getProperty("prefix"));
                     entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
-                    entry.put("slot", name_to_slot.getInt(u.getProperty("prefix").toString()));
+                    //entry.put("slot", name_to_slot.getInt(u.getProperty("prefix").toString()));
                     doc.getJSONArray("chat").put(entry);
                 }
                 else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
@@ -230,17 +236,16 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        unit = cle.getTargetName();
+                        unit = cle.getAttackerName();
                         key = cle.getInflictorName();
+                        String target = cle.getTargetName();
+                        //System.err.format("%s,%s,%s,%s%n", time, unit, key, target);
                         /*
                             entry.put("unit", unit);                        
                             entry.put("time", time);
                             entry.put("key", key);
                             log.put(entry);
                             */
-                        if (key.contains("rune")){
-                            //System.err.format("%s,%s,%s%n", time, unit, key);
-                        }
                         break;
                         case 3:
                         //lose buff/debuff
@@ -356,7 +361,7 @@ public class Main {
 
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
-
+            System.err.println(entry);
             //correct the time
             entry.put("time", entry.getInt("time")-gameZero);
 
@@ -386,7 +391,6 @@ public class Main {
                 }
             }
         }
-
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
 
@@ -405,6 +409,7 @@ public class Main {
             for (int i =1 ;i<=unit.length();i++){
                 String s = unit.substring(0,i);
                 if (heroes.has(s)){
+                    System.err.format("%s to %s%n", unit, s);
                     return hero_to_slot.getInt(heroes.getJSONObject(s).get("id").toString());
                 }
             }

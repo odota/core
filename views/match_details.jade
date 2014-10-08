@@ -18,7 +18,7 @@ append content
             th GEM
             th BB
             th Gold Log
-            th Skill Use
+            th Skill Hits/Uses
             th Item Use
             th Kills
           each player, i in match.players
@@ -39,17 +39,21 @@ append content
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
-               td #{JSON.stringify(parsedPlayer.gold_log)}
+               td
+                 each val, key in parsedPlayer.gold_log
+                   div #{constants.gold_reasons[key] || key}:#{val}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
                    if ability
                      div.img-text.ability
                        img(src=ability.img, title=ability.dname)
-                       div=val
+                       if parsedPlayer.hero_hits[key]
+                         div #{parsedPlayer.hero_hits[key]}/#{val}
+                       else
+                         div=val
                    else
                      //=key
-
                td.table-img
                  each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]                   
