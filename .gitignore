@@ -7,5 +7,5 @@ servers
 *.dem
 *.bz2
 parser/target
-heronames.json
+input.json
 output.json
