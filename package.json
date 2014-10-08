@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "start": "node app.js",
-      "backend": "node backend.js",
-      "parser": "node parser.js",
-      "preparser": "mvn -q -f parser/pom.xml package"
+    "backend": "node backend.js",
+    "parser": "node parser.js",
+    "preparser": "mvn -q -f parser/pom.xml package"
   },
   "dependencies": {
     "steam": ">= 0.6.0",
@@ -26,6 +26,7 @@
     "big-number": "~0.3.1",
     "passport": "0.2.1",
     "passport-steam": "0.1.4",
-    "body-parser": "~1.9.0"
+    "body-parser": "~1.9.0",
+    "memwatch": "~0.2.2"
   }
 }

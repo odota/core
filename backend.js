@@ -2,6 +2,7 @@ var async = require("async"),
     utility = require('./utility'),
     matches = utility.matches,
     players = utility.players;
+var memwatch = require('memwatch');
 var request = require("request")
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
@@ -10,6 +11,9 @@ var queuedMatches = {}
 var trackedPlayers = {}
 var parser = process.env.PARSER_HOST || "localhost"
 var next_seq;
+memwatch.on('leak', function(info) {
+    console.log(info);
+});
 aq.empty = function() {
     getMatches()
 }
@@ -68,7 +72,8 @@ function requestParse(match) {
         form: {
             match_id: match.match_id
         }
-    }, function(err) {
+    }, function(err, resp) {
+        console.log(resp)
         if(err) {
             setTimeout(requestParse(match), 1000)
         }

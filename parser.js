@@ -25,10 +25,16 @@ router.route('/').post(function(req, res) {
     }, function(err, doc) {
         if (doc){
             pq.push(doc, function(err) {})
-            console.log("[PARSER] parse request: match %s, position %s", req.body.match_id, pq.length())
             res.json({
+                status: 0,
+                match_id: doc.match_id,
                 position: pq.length()
             })   
+        }
+        else{
+            res.json({
+                status: 1
+            })
         }
     })
 })
