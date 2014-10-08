@@ -99,9 +99,8 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
 loadConstants()
-utility.updateConstants(function(err) {
-    loadConstants()
-})
+//reload constants every 10 sec
+setInterval(loadConstants, 10000);
 
 function loadConstants() {
     utility.constants.findOne({}, function(err, doc) {
