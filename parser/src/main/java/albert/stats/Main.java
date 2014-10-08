@@ -407,7 +407,7 @@ public class Main {
             while (it.hasNext()){
                 String key = it.next();
                 JSONObject entry = player_hero_history.getJSONObject(key);
-                entry.put("time", entry.getInt("start")-gameZero);
+                entry.put("start", entry.getInt("start")-gameZero);
                 entry.put("end", entry.getInt("end")-gameZero);
                 entry.put("type", "hero_history");
                 entry.put("key", key);

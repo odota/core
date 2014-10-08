@@ -5,8 +5,7 @@ append head
   script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.js')
   link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.css')
   script.
-    var match = !{JSON.stringify(match)}
-    var constants = !{JSON.stringify(constants)}
+    var graphdata = !{JSON.stringify(match.graphdata)}
 append content 
     .row
         if match.parsed_data
