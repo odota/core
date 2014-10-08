@@ -20,6 +20,7 @@ append content
             th LOSS
             th Skill Use
             th Item Use
+            th Kills
           each player, i in match.players
              tr(class = player.player_slot<64 ? "success" : "danger")
                - var hero = constants.heroes[player.hero_id]
@@ -48,6 +49,7 @@ append content
                        div=val
                    else
                      //=key
+
                td.table-img
                  each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]                   
@@ -57,5 +59,14 @@ append content
                        div=val
                    else
                      =key
+               td.table-img
+                 each val, key in parsedPlayer.kills
+                   - var kill = constants.hero_names[key.replace("npc_dota_hero_", "")]                
+                   if kill
+                     div.img-text.kill
+                       img(src=kill.img, title=kill.dname)
+                       div=val
+                   else
+                     //=key
       else
         h1 This match has no parsed data!
