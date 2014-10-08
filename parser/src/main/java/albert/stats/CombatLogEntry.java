@@ -39,7 +39,6 @@ public class CombatLogEntry {
         healthIdx = descriptor.getIndexForKey("health");
         timestampIdx = descriptor.getIndexForKey("timestamp");
         targetSourceNameIdx = descriptor.getIndexForKey("targetsourcename");
-
         timestampRawIdx = descriptor.getIndexForKey("timestampraw");
         attackerHeroIdx = descriptor.getIndexForKey("attackerhero");
         targetHeroIdx = descriptor.getIndexForKey("targethero");
@@ -60,7 +59,14 @@ public class CombatLogEntry {
     }
 
     private String translate(String in) {
-        // TODO: translate modifier_XXX, or npc_hero_XXX into correct names...
+        if (in!=null){
+            if (in.startsWith("item_")){
+                return in.substring("item_".length());
+            }
+            else if (in.startsWith("npc_dota_hero_")){
+                return in.substring("npc_dota_hero_".length());
+            }
+        }
         return in;
     }
 
@@ -79,19 +85,12 @@ public class CombatLogEntry {
         return (int)event.getProperty(targetNameIdx);
     }
 
-    public String getTargetNameCompiled() {
-        return getTargetName() + (isTargetIllusion() ? " (Illusion)" : "");
-    }
-
     public String getAttackerName() {
         return translate(readCombatLogName(getAttackerIndex()));
     }
 
     public int getAttackerIndex(){
         return (int)event.getProperty(attackerNameIdx);
-    }
-    public String getAttackerNameCompiled() {
-        return getAttackerName() + (isAttackerIllusion() ? " (Illusion)" : "");
     }
 
     public String getInflictorName() {
