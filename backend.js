@@ -72,10 +72,12 @@ function requestParse(match) {
         form: {
             match_id: match.match_id
         }
-    }, function(err, resp) {
-        console.log(resp)
+    }, function(err, resp, body) {
         if(err) {
             setTimeout(requestParse(match), 1000)
+        }
+        else{
+            console.log(body)
         }
     })
 }

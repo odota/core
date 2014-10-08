@@ -17,7 +17,7 @@ append content
             th DST
             th GEM
             th BB
-            th LOSS
+            th Gold Log
             th Skill Use
             th Item Use
             th Kills
@@ -39,7 +39,7 @@ append content
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
-               td #{parsedPlayer.gold_log.loss || "-"}
+               td #{JSON.stringify(parsedPlayer.gold_log)}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
@@ -61,7 +61,7 @@ append content
                      =key
                td.table-img
                  each val, key in parsedPlayer.kills
-                   - var kill = constants.hero_names[key.replace("npc_dota_hero_", "")]                
+                   - var kill = constants.hero_names[key]
                    if kill
                      div.img-text.kill
                        img(src=kill.img, title=kill.dname)

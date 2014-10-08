@@ -71,7 +71,6 @@ public class Main {
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
-                    hero_history.put(new JSONObject());
                     name_to_slot.put(player.getString("personaname"), i);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
@@ -80,20 +79,6 @@ public class Main {
                     combatLogDescriptor
                 );
                 initialized = true;
-            }
-
-            for (int i = 0; i < PLAYER_IDS.length; i++) {
-                String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                if (!hero.equals("-1")){
-                    hero_to_slot.put(hero, i);
-                    JSONObject player_hero_history = hero_history.getJSONObject(i);
-                    if (!player_hero_history.has(hero)){
-                        JSONObject entry = new JSONObject();
-                        entry.put("start", time);
-                        player_hero_history.put(hero, entry);
-                    }
-                    player_hero_history.getJSONObject(hero).put("end", time);
-                }
             }
 
             int trueTime=time-gameZero;
@@ -117,15 +102,6 @@ public class Main {
                     String value = u.getProperty("value").toString();
                     JSONObject entry = new JSONObject();
                     if (type.equals("CHAT_MESSAGE_HERO_KILL")){
-                        /*
-                        if (!player1.equals("-1") && !player2.equals("-1")){
-                            entry.put("slot", player2);
-                            entry.put("time", time);
-                            entry.put("key", player1);
-                            entry.put("type", "kills");
-                            log.put(entry);
-                        }
-                        */
                         //System.err.format("%s,%s%n", time, u);
                     }
                     else if (type.equals("CHAT_MESSAGE_BUYBACK")){
@@ -408,21 +384,6 @@ public class Main {
                         player.getJSONArray("log").put(entry);
                     }
                 }
-            }
-        }
-
-        for (int i =0;i<hero_history.length();i++){
-            JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-            JSONObject player_hero_history = hero_history.getJSONObject(i);
-            Iterator<String> it = player_hero_history.keys();
-            while (it.hasNext()){
-                String key = it.next();
-                JSONObject entry = player_hero_history.getJSONObject(key);
-                entry.put("start", entry.getInt("start")-gameZero);
-                entry.put("end", entry.getInt("end")-gameZero);
-                entry.put("type", "hero_history");
-                entry.put("key", key);
-                player.getJSONArray("log").put(entry);
             }
         }
 
