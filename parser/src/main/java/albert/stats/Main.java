@@ -100,6 +100,7 @@ public class Main {
             for (UserMessage u : match.getUserMessages()) {
                 String name = u.getName();
                 if (name.equals("CDOTAUserMsg_ChatEvent")){
+                    /*
                     JSONArray players = doc.getJSONArray("players");
                     String player1=u.getProperty("playerid_1").toString();
                     String player2=u.getProperty("playerid_2").toString();
@@ -145,6 +146,7 @@ public class Main {
                     else{ 
                         System.err.format("%s %s%n", time, u);
                     }
+                    */
                 }
                 else if (name.equals("CUserMsg_SayText2")){
                     JSONObject entry = new JSONObject();
@@ -361,7 +363,7 @@ public class Main {
 
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
-            System.err.println(entry);
+            //System.err.println(entry);
             //correct the time
             entry.put("time", entry.getInt("time")-gameZero);
 
@@ -414,6 +416,7 @@ public class Main {
                 }
             }
         }
+        //System.err.format("couldn't find hero for unit %s%n", unit);
         return -1;
     }
 }
