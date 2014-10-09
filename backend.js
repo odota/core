@@ -58,6 +58,7 @@ function getMatches() {
     players.find({
         track: 1
     }, function(err, docs) {
+        //rebuild set of tracked players before every check
         trackedPlayers = {}
         docs.forEach(function(player) {
             trackedPlayers[player.account_id] = true
