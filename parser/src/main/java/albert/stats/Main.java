@@ -89,13 +89,14 @@ public class Main {
                     player.getJSONArray("lh").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
-
-                    String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                    if (!hero.equals("-1")){
-                        hero_to_slot.put(hero, i);
-                    }
                 }
                 nextInterval += INTERVAL;
+            }
+            for (int i = 0; i < PLAYER_IDS.length; i++) {
+                String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
+                if (!hero.equals("-1")){
+                    hero_to_slot.put(hero, i);
+                }
             }
             for (UserMessage u : match.getUserMessages()) {
                 String name = u.getName();
