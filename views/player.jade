@@ -7,7 +7,7 @@ append head
   script.
     $(document).ready(function() {
         $('#table').dataTable({
-           "order": [[ 0, "desc" ]]
+           "order": [[ 2, "desc" ]]
         });
     });
     
@@ -20,9 +20,9 @@ block content
          h1(style='font-weight: 700;')=player.personaname || player.account_id
          p.lead (#{player.win || 0 }-#{player.lose || 0})
      .row       
-       .col-md-9
+       .col-md-8
          h3 Matches
-         table.table#table
+         table.table
            thead
              tr
               th Match ID
@@ -42,14 +42,15 @@ block content
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                 td= moment.unix(match.start_time + match.duration).fromNow()
                 td= constants.parse_status[match.parse_status]
-       .col-md-3
+       .col-md-4
          h3 Teammates (2+ matches)
-         table.table
-           tr
-             th Avatar
-             th Name
-             th Wins
-             th Losses
+         table.table#table
+           thead
+             tr
+               th Avatar
+               th Name
+               th Wins
+               th Losses
            each teammate in player.teammates
              if (teammate.account_id != constants.anonymous_account_id)
                tr
