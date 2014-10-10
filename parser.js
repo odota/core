@@ -14,12 +14,26 @@ var async = require("async"),
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
-var port = 9001;
+var seaport = require('seaport');
+var ports = seaport.connect(process.env.SEAPORT_HOST || "localhost", process.env.SEAPORT_PORT || 9001);
+var loginNum = 0
+var users = process.env.STEAM_USER.split()
+var passes = process.env.STEAM_PASS.split()
+var codes = process.env.STEAM_GUARD_CODE.split()
+var pq = async.queue(parseReplay, 1)
+var replay_dir = "./replays/"
+var parser_file = "./parser/target/stats-0.1.0.jar"
+if(!fs.existsSync(replay_dir)) {
+    fs.mkdir(replay_dir)
+}
+
+app.use(bodyParser.urlencoded({}));
+var port = ports.register('parser');
+app.listen(port, function(){
+    console.log('[PARSER] listening on port ' + port);
+});
 var router = express.Router();
-router.route('/').post(function(req, res) {
+app.post("/", function(req, res) {
     matches.findOne({
         match_id: Number(req.body.match_id)
     }, function(err, doc) {
@@ -38,19 +52,7 @@ router.route('/').post(function(req, res) {
         }
     })
 })
-app.use('/', router);
-app.listen(port);
-console.log('[PARSER] listening on port ' + port);
-var loginNum = 0
-var users = process.env.STEAM_USER.split()
-var passes = process.env.STEAM_PASS.split()
-var codes = process.env.STEAM_GUARD_CODE.split()
-var pq = async.queue(parseReplay, 1)
-var replay_dir = "replays/"
-var parser_file = "./parser/target/stats-0.1.0.jar"
-if(!fs.existsSync(replay_dir)) {
-    fs.mkdir(replay_dir)
-}
+
 /*
  * Downloads a match replay
  */
@@ -265,6 +267,7 @@ function parseReplay(match, cb) {
         cp.on('close', function(code) {
             console.log('[PARSER] match: %s, exit code: %s', match_id, code);
             if(!code) {
+                //process parser output
                 matches.update({
                     match_id: match_id
                 }, {

@@ -3,7 +3,16 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players;
 var memwatch = require('memwatch');
-var request = require("request")
+var request = require("request");
+var seaport = require('seaport');
+var httpProxy = require('http-proxy');
+var server = seaport.createServer();
+var port = process.env.SEAPORT_PORT || 9001;
+server.listen(port, function(){
+    console.log("[SEAPORT] running on port %s", port)
+});
+var ports = seaport.connect(port);
+var parserNum = -1;
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
@@ -18,39 +27,39 @@ aq.empty = function() {
     getMatches()
 }
 async.series([utility.updateConstants,
-    function(cb) {
-        players.find({
-            track: 1
-        }, function(err, docs) {
-            aq.push(docs, function(err) {})
-        })
-        matches.find({
-            parse_status: 0
-        }, function(err, docs) {
-            docs.forEach(function(match) {
-                requestParse(match)
-            })
-        })
-        cb(null)
-    },
-    function(cb) {
-        if(process.env.SAVE_ALL_MATCHES) {
-            matches.findOne({}, {
-                sort: {
-                    match_seq_num: -1
-                }
-            }, function(err, doc) {
-                next_seq = doc ? doc.match_seq_num + 1 : 0
-                cb(null)
-            })
-        } else {
-            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                next_seq = data.result.matches[0].match_seq_num
-                cb(null)
-            })
-        }
-    }
-], function(err) {
+              function(cb) {
+                  players.find({
+                      track: 1
+                  }, function(err, docs) {
+                      aq.push(docs, function(err) {})
+                  })
+                  matches.find({
+                      parse_status: 0
+                  }, function(err, docs) {
+                      docs.forEach(function(match) {
+                          requestParse(match)
+                      })
+                  })
+                  cb(null)
+              },
+              function(cb) {
+                  if(process.env.SAVE_ALL_MATCHES) {
+                      matches.findOne({}, {
+                          sort: {
+                              match_seq_num: -1
+                          }
+                      }, function(err, doc) {
+                          next_seq = doc ? doc.match_seq_num + 1 : 0
+                          cb(null)
+                      })
+                  } else {
+                      utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                          next_seq = data.result.matches[0].match_seq_num
+                          cb(null)
+                      })
+                  }
+              }
+             ], function(err) {
     getMatches()
 })
 
@@ -68,17 +77,21 @@ function getMatches() {
 }
 
 function requestParse(match) {
-    request.post({
-        url: "http://" + parser + ":9001",
-        form: {
-            match_id: match.match_id
-        }
-    }, function(err, resp, body) {
-        if(err) {
-            setTimeout(requestParse(match), 1000)
-        } else {
-            console.log("[RESPONSE] %s", body)
-        }
+    ports.get('parser', function (ps) {
+        parserNum = (parserNum + 1) % ps.length;
+        var u = 'http://' + ps[parserNum].host + ':' + ps[parserNum].port;
+        request.post({
+            url: u,
+            form: {
+                match_id: match.match_id
+            }
+        }, function(err, resp, body) {
+            if(err) {
+                setTimeout(requestParse(match), 1000)
+            } else {
+                console.log("[RESPONSE] %s", body)
+            }
+        })
     })
 }
 /*
