@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.util.Iterator;
+import java.util.Arrays;
 
 public class Main {
     public static final float INTERVAL = 60;
@@ -53,9 +54,10 @@ public class Main {
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
                 for (int i = 0; i < PLAYER_IDS.length; i++) {
+                    String name = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
                     doc.getJSONArray("players").put(new JSONObject());
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    player.put("personaname", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]));
+                    player.put("personaname", name);
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
                     player.put("log", new JSONArray());
                     player.put("itemuses", new JSONObject());
@@ -65,13 +67,15 @@ public class Main {
                     player.put("damage", new JSONObject());
                     player.put("healing", new JSONObject());
                     player.put("gold_log", new JSONObject());
+                    player.put("xp_log", new JSONObject());
                     player.put("kills", new JSONObject());
                     player.put("abilityuses", new JSONObject());
                     player.put("hero_hits", new JSONObject());
+                    player.put("modifier", new JSONObject());
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
-                    name_to_slot.put(player.getString("personaname"), i);
+                    name_to_slot.put(name, i);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -150,11 +154,16 @@ public class Main {
                     */
                 }
                 else if (name.equals("CUserMsg_SayText2")){
+                    String prefix = u.getProperty("prefix").toString();
+                    int slot = -1;
+                    if (name_to_slot.has(prefix)){
+                        slot = name_to_slot.getInt(prefix);
+                    }
                     JSONObject entry = new JSONObject();
-                    entry.put("prefix", u.getProperty("prefix"));
+                    entry.put("prefix", prefix);
                     entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
-                    //entry.put("slot", name_to_slot.getInt(u.getProperty("prefix").toString()));
+                    entry.put("slot", slot);
                     doc.getJSONArray("chat").put(entry);
                 }
                 else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
@@ -205,9 +214,6 @@ public class Main {
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
                         val = cle.getValue();
-                        if (cle.isTargetIllusion()){
-                            key+="_illusion";
-                        }
                         entry.put("unit", unit);                        
                         entry.put("time", time);
                         entry.put("key", key);
@@ -239,16 +245,16 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        unit = cle.getAttackerName();
-                        key = cle.getInflictorName();
-                        String target = cle.getTargetName();
-                        //System.err.format("%s,%s,%s,%s%n", time, unit, key, target);
-                        /*
-                            entry.put("unit", unit);                        
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            log.put(entry);
-                            */
+                        unit = cle.getAttackerName(); //source of buff
+                        key = cle.getInflictorName(); //the buff
+                        String target = cle.getTargetName(); //target of buff
+                        //val = cle.getStunDuration();
+                        entry.put("unit", unit);                        
+                        entry.put("time", time);
+                        entry.put("key", key);
+                        //entry.put("value", val);
+                        entry.put("type", "modifier");
+                        log.put(entry);
                         break;
                         case 3:
                         //lose buff/debuff
@@ -264,9 +270,6 @@ public class Main {
                         //kill
                         unit = cle.getAttackerName();
                         key = cle.getTargetName();
-                        if (cle.isTargetIllusion()){
-                            key+="_illusion";
-                        }
                         entry.put("unit", unit);                        
                         entry.put("time", time);
                         entry.put("key", key);
@@ -317,13 +320,15 @@ public class Main {
                         break;
                         case 10:
                         //xp gain
-                        /*
-                         log.info("{} {} gains {} XP", 
-                            time, 
-                            cle.getTargetNameCompiled(),
-                            cle.getValue()
-                        );
-                        */
+                        unit = cle.getTargetName();
+                        val = cle.getValue();
+                        key = String.valueOf(cle.getXpReason());
+                        entry.put("unit", unit);                        
+                        entry.put("time", time);
+                        entry.put("value", val);
+                        entry.put("key", key);
+                        entry.put("type", "xp_log");
+                        log.put(entry);
                         break;
                         case 11:
                         //purchase
@@ -364,35 +369,31 @@ public class Main {
 
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
-            //System.err.println(entry);
-            //correct the time
             entry.put("time", entry.getInt("time")-gameZero);
-
             String type = entry.getString("type");
 
             if (entry.has("unit")){
                 entry.put("slot", getSlotByUnit(entry.getString("unit"), heroes, hero_to_slot));
             }
-            if (entry.has("slot")){
+            if (entry.has("slot")){   
                 int slot = entry.getInt("slot");
                 if (slot>=0){
                     JSONObject player = doc.getJSONArray("players").getJSONObject(slot);
                     JSONObject counts = player.getJSONObject(type);
-                    if (entry.has("key")){
-                        String key = entry.getString("key");
-                        Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
-                        if(entry.has("value")){
-                            counts.put(key, count+entry.getInt("value"));
-                        }
-                        else{
-                            counts.put(key, count + 1);  
-                        }
+                    String key = entry.getString("key");
+                    Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
+                    if(entry.has("value")){
+                        counts.put(key, count+entry.getInt("value"));
+                    }
+                    else{
+                        counts.put(key, count + 1);  
                     }
                     if (type.equals("itembuys")){
                         player.getJSONArray("log").put(entry);
                     }
                 }
             }
+            //System.err.println(entry);
         }
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
@@ -400,9 +401,12 @@ public class Main {
         System.out.println(doc);
 
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("time:%ssec%n", tMatch / 1000.0);
+        System.err.format("%s sec%n", tMatch / 1000.0);
     }
     private static int getSlotByUnit(String unit, JSONObject heroes, JSONObject hero_to_slot){
+        if (unit.startsWith("illusion_")){
+            unit=unit.substring("illusion_".length());
+        }
         if (heroes.has(unit)){
             return hero_to_slot.getInt(heroes.getJSONObject(unit).get("id").toString());
         }

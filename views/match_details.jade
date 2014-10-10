@@ -68,23 +68,44 @@ append content
                        div=val
                    else
                      //=key
-        h2 Gold
-        table.table.table-hover.table-responsive
-          tr
-            th Hero
-            each val, key in constants.gold_reasons
-              th=val
-          each player, i in match.players
-            tr(class = player.player_slot<64 ? "success" : "danger")
-              - var hero = constants.heroes[player.hero_id]
-              td.hero
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
-                - var parsedPlayer = match.parsed_data.players[i]
+        .row
+          .col-md-8
+            h2 Gold
+            table.table.table-hover.table-responsive
+              tr
+                th Hero
                 each val, key in constants.gold_reasons
-                  td
-                    div #{parsedPlayer.gold_log[key] || "-"}
+                  th=val
+              each player, i in match.players
+                tr(class = player.player_slot<64 ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    - var parsedPlayer = match.parsed_data.players[i]
+                    each val, key in constants.gold_reasons
+                      td
+                        div #{parsedPlayer.gold_log[key] || "-"}
+          .col-md-4
+            h2 XP
+            table.table.table-hover.table-responsive
+              tr
+                th Hero
+                each val, key in constants.xp_reasons
+                  th=val
+              each player, i in match.players
+                tr(class = player.player_slot<64 ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    - var parsedPlayer = match.parsed_data.players[i]
+                    each val, key in constants.xp_reasons
+                      td
+                        div #{parsedPlayer.xp_log[key] || "-"}
       else
         h1 This match has no parsed data!
