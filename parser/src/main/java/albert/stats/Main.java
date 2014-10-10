@@ -28,9 +28,7 @@ public class Main {
         GameEventDescriptor combatLogDescriptor = null;
         JSONObject doc = new JSONObject();
         JSONArray log = new JSONArray();
-        JSONArray hero_history = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
-        JSONObject name_to_slot = new JSONObject();
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String s;
         String input = "";
@@ -75,7 +73,6 @@ public class Main {
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
-                    name_to_slot.put(name, i);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -156,8 +153,11 @@ public class Main {
                 else if (name.equals("CUserMsg_SayText2")){
                     String prefix = u.getProperty("prefix").toString();
                     int slot = -1;
-                    if (name_to_slot.has(prefix)){
-                        slot = name_to_slot.getInt(prefix);
+                    JSONArray players = doc.getJSONArray("players");
+                    for (int i = 0;i<players.length();i++){
+                        if (players.getJSONObject(i).getString("personaname").equals(prefix)){
+                            slot=i;
+                        }
                     }
                     JSONObject entry = new JSONObject();
                     entry.put("prefix", prefix);
@@ -245,6 +245,7 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
+                        /*
                         unit = cle.getAttackerName(); //source of buff
                         key = cle.getInflictorName(); //the buff
                         String target = cle.getTargetName(); //target of buff
@@ -255,6 +256,7 @@ public class Main {
                         //entry.put("value", val);
                         entry.put("type", "modifier");
                         log.put(entry);
+                        */
                         break;
                         case 3:
                         //lose buff/debuff
@@ -366,7 +368,7 @@ public class Main {
                 }
             }
         }
-
+        
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
@@ -397,6 +399,7 @@ public class Main {
         }
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
+        doc.put("hero_to_slot", hero_to_slot);
 
         System.out.println(doc);
 
@@ -424,4 +427,5 @@ public class Main {
         //System.err.format("couldn't find hero for unit %s%n", unit);
         return -1;
     }
+    
 }
