@@ -9,7 +9,6 @@ var express = require('express'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var constants;
 var port = Number(process.env.PORT || 5000);
 var matchPages = {
     index: {
@@ -130,20 +129,48 @@ app.route('/matches').get(function(req, res) {
 })
 app.route('/matches/:match_id/:info?').get(function(req, res) {
     var render,
-        info = req.params.info
-    if(info) {
-        if(info in matchPages) {
-            render = matchPages[info].template
-        } else {
-            return res.status(404).render('404.jade')
-        }
-    } else {
+        info = req.params.info ? req.params.info : 'index',
         match = req.match
+    if (info == "graphs"){
+        if (match.parsed_data){
+            //compute graphs
+            var goldDifference = ['Gold']
+            var xpDifference = ['XP']
+            for(var i = 0; i < match.parsed_data.times.length; i++) {
+                var goldtotal = 0
+                var xptotal = 0
+                match.parsed_data.players.forEach(function(elem, j) {
+                    if(match.players[j].player_slot <64) {
+                        goldtotal += elem.gold[i]
+                        xptotal += elem.xp[i]
+                    } else {
+                        xptotal -= elem.xp[i]
+                        goldtotal -= elem.gold[i]
+                    }
+                })
+                goldDifference.push(goldtotal)
+                xpDifference.push(xptotal)
+            }
+            var time = ["time"].concat(match.parsed_data.times)
+            match.graphdata={difference:[time, goldDifference, xpDifference], gold:[time], xp:[time], lh:[time]}
+            match.parsed_data.players.forEach(function(elem, i) {
+                var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name
+                elem.gold = [hero].concat(elem.gold)
+                match.graphdata.gold.push(elem.gold)
+                elem.xp = [hero].concat(elem.xp)
+                match.graphdata.xp.push(elem.xp)
+                elem.lh = [hero].concat(elem.lh)
+                match.graphdata.lh.push(elem.lh)
+            })
+        }
+    }
+    if (info=="index"){
         match.sums = [{
             personaname: "Radiant"
         }, {
             personaname: "Dire"
         }]
+        //compute sums
         match.players.forEach(function(player) {
             var target = (player.player_slot < 64 ? match.sums[0] : match.sums[1])
             for(var prop in player) {
@@ -155,10 +182,14 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
                 }
             }
         })
-        render = matchPages['index'].template
+    }
+    if(info in matchPages) {
+        render = matchPages[info].template
+    } else {
+        return res.status(404).render('404.jade')
     }
     res.render(render, {
-        route: info ? info : 'index',
+        route: info,
         match: req.match,
         tabs: matchPages
     })

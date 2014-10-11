@@ -1,54 +1,12 @@
 var height = 350
-var goldDifference = ['Gold']
-var xpDifference = ['XP']
-var time = ["time"].concat(match.parsed_data.times)
-var gold = [time]
-var xp = [time]
-var lh = [time]
-var groups = [
-    []
-]
-for(var i = 0; i < match.parsed_data.times.length; i++) {
-    var goldtotal = 0
-    var xptotal = 0
-    var absGoldTotal = 0
-    var absXpTotal = 0
-    match.parsed_data.players.forEach(function(elem, j) {
-        absGoldTotal +=elem.gold[i]
-        absXpTotal +=elem.xp[i]
-        if(j < 5) {
-            goldtotal += elem.gold[i]
-            xptotal += elem.xp[i]
-        } else {
-            xptotal -= elem.xp[i]
-            goldtotal -= elem.gold[i]
-        }
-    })
-    goldDifference.push(goldtotal)
-    xpDifference.push(xptotal)
-    /*
-    match.parsed_data.players.forEach(function(elem, j) {
-        elem.gold[i]=elem.gold[i]/(absGoldTotal)
-        elem.xp[i]=elem.xp[i]/(absXpTotal)
-    })
-    */
-}
-match.parsed_data.players.forEach(function(elem, i) {
-    var hero = constants.heroes[match.players[i].hero_id].localized_name
-    groups[0].push(hero)
-    elem.gold = [hero].concat(elem.gold)
-    gold.push(elem.gold)
-    elem.xp = [hero].concat(elem.xp)
-    xp.push(elem.xp)
-    elem.lh = [hero].concat(elem.lh)
-    lh.push(elem.lh)
-})
-
-
-charts = [
+var difference = graphdata.difference
+var gold = graphdata.gold
+var xp = graphdata.xp
+var lh = graphdata.lh
+var charts = [
     {
         bindTo: "#chart-diff",
-        columns: [time, goldDifference, xpDifference],
+        columns: difference,
         x: 'time',
         type: "area-spline",
         xLabel: 'Game Time (minutes)',
