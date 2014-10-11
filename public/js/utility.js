@@ -27,3 +27,11 @@ function formatSeconds(input) {
 function momentTime(input) {
     return moment().startOf('day').seconds(input)
 }
+$( document ).ready(function() {
+    $('.format').each(function(){
+        $(this).text(format($(this).text()))
+    })
+    $('.format-seconds').each(function(){
+        $(this).text(formatSeconds($(this).text()))
+    })
+})
