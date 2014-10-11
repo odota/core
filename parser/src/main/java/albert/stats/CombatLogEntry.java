@@ -160,7 +160,10 @@ public class CombatLogEntry {
     }
 
     public int getXpReason() {
-        return event.getProperty(xpReasonIdx);
+        if (xpReasonIdx!=null){
+            return event.getProperty(xpReasonIdx);
+        }
+        return 0;
     }
 
     public int getStunDuration() {

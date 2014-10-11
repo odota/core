@@ -9,6 +9,9 @@ append head
         $('#table').dataTable({
            "order": [[ 2, "desc" ]]
         });
+        $('#heroes').dataTable({
+           "order": [[ 1, "desc" ]]
+        });
     });
     
 block content
@@ -55,17 +58,18 @@ block content
              if (teammate.account_id != constants.anonymous_account_id)
                tr
                  td 
-                   img(src=teammate.avatarmedium)
+                   img(src=teammate.avatar)
                  td
                    a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
                  td=teammate.win
                  td=teammate.lose
          h3 Heroes
-         table.table
-           tr
-             th Hero
-             th Wins
-             th Losses
+         table.table#heroes
+           thead
+             tr
+               th Hero
+               th Wins
+               th Losses
            each hero in player.heroes
              tr
                - var herodata = constants.heroes[hero.hero_id]
