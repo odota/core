@@ -9,7 +9,7 @@ var express = require('express'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var port = Number(process.env.PORT || 5000);
+var port = Number(process.env.PORT || 3000);
 var matchPages = {
     index: {
         template: "match_index",
