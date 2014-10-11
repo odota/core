@@ -1,7 +1,7 @@
 YASP - YASP: Another Stats Page
 ====
 
-Live version at http://yasp.albertcui.com  
+Live version at http://yasp.co
 Provides awesome replay-parsed stats for free!  
 Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  
 Data stored in MongoDB.
@@ -13,7 +13,7 @@ Requirements
 
 Deployment
 ====
-* Install node dependencies: `npm install`
+* Install node dependencies `npm install`
 * Compile the parser `mvn -f parser package`
 * Foreman `npm install -g foreman`
 * Create .env file with desired parameters
