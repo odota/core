@@ -21,7 +21,7 @@ append content
                   =player.hero_id              
               - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                 td
-                  each entry in parsedPlayer.timeline
+                  each entry in parsedPlayer.log
                     if entry.type=="itembuys" && entry.time < i && entry.time >= i-bucket
                       - var item = constants.items[entry.key]                 
                       if item

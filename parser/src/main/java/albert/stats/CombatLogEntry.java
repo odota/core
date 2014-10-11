@@ -2,6 +2,7 @@ package albert.stats;
 import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.StringTable;
+import java.util.Arrays;
 
 public class CombatLogEntry {
 
@@ -25,6 +26,8 @@ public class CombatLogEntry {
     private static Integer abilityToggleOffIdx;
     private static Integer abilityLevelIdx;
     private static Integer goldReasonIdx;
+    private static Integer stunDurationIdx;
+    private static Integer xpReasonIdx;
 
     public static void init(StringTable combatLogNamesTable, GameEventDescriptor descriptor) {
         combatLogNames = combatLogNamesTable;
@@ -39,7 +42,6 @@ public class CombatLogEntry {
         healthIdx = descriptor.getIndexForKey("health");
         timestampIdx = descriptor.getIndexForKey("timestamp");
         targetSourceNameIdx = descriptor.getIndexForKey("targetsourcename");
-
         timestampRawIdx = descriptor.getIndexForKey("timestampraw");
         attackerHeroIdx = descriptor.getIndexForKey("attackerhero");
         targetHeroIdx = descriptor.getIndexForKey("targethero");
@@ -47,6 +49,9 @@ public class CombatLogEntry {
         abilityToggleOffIdx = descriptor.getIndexForKey("ability_toggle_off");
         abilityLevelIdx = descriptor.getIndexForKey("ability_level");
         goldReasonIdx = descriptor.getIndexForKey("gold_reason");
+        stunDurationIdx = descriptor.getIndexForKey("stun_duration");
+        xpReasonIdx = descriptor.getIndexForKey("xp_reason");
+        //System.err.println(Arrays.toString(descriptor.getKeys()));
     }
 
     private final GameEvent event;
@@ -60,7 +65,14 @@ public class CombatLogEntry {
     }
 
     private String translate(String in) {
-        // TODO: translate modifier_XXX, or npc_hero_XXX into correct names...
+        if (in!=null){
+            if (in.startsWith("item_")){
+                in=in.substring("item_".length());
+            }
+            if (in.startsWith("npc_dota_hero_")){
+                in=in.substring("npc_dota_hero_".length());
+            }
+        }
         return in;
     }
 
@@ -73,25 +85,18 @@ public class CombatLogEntry {
     }
 
     public String getTargetName() {
-        return translate(readCombatLogName(getTargetIndex()));
+        return (isTargetIllusion() ? "illusion_" : "") + translate(readCombatLogName(getTargetIndex()));
     }
     public int getTargetIndex(){
         return (int)event.getProperty(targetNameIdx);
     }
 
-    public String getTargetNameCompiled() {
-        return getTargetName() + (isTargetIllusion() ? " (Illusion)" : "");
-    }
-
     public String getAttackerName() {
-        return translate(readCombatLogName(getAttackerIndex()));
+        return (isAttackerIllusion() ? "illusion_" : "") + translate(readCombatLogName(getAttackerIndex()));
     }
 
     public int getAttackerIndex(){
         return (int)event.getProperty(attackerNameIdx);
-    }
-    public String getAttackerNameCompiled() {
-        return getAttackerName() + (isAttackerIllusion() ? " (Illusion)" : "");
     }
 
     public String getInflictorName() {
@@ -153,5 +158,14 @@ public class CombatLogEntry {
     public int getGoldReason() {
         return event.getProperty(goldReasonIdx);
     }
+
+    public int getXpReason() {
+        return event.getProperty(xpReasonIdx);
+    }
+
+    public int getStunDuration() {
+        return event.getProperty(stunDurationIdx);
+    }
+
 
 }

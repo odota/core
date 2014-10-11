@@ -1,4 +1,22 @@
 {
+    "gold_reasons":{
+        "0": "Other",
+        "1": "Deaths",
+        "2": "Buybacks",
+        "5": "Abandons",
+        "6": "Sells",
+        "11": "Structures",
+        "12": "Heroes",
+        "13": "Creeps",
+        "14": "Roshan",
+        "15": "Couriers"
+    },
+    "xp_reasons":{
+        "0": "Other",
+        "1": "Heroes",
+        "2": "Creeps",
+        "3": "Roshan"
+    },
     "runes": {
         "0": {
             "name": "Double Damage",

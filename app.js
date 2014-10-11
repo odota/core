@@ -45,6 +45,12 @@ passport.deserializeUser(function(id, done) {
         done(err, user)
     })
 });
+app.use(function(req,res,next){
+    utility.constants.findOne({}, function(err, doc) {
+        app.locals.constants = doc
+        next()
+    })
+})
 app.use('/login', function(req, res, next) {
     var host = req.protocol + '://' + req.get('host')
     passport.use(new SteamStrategy({
@@ -98,16 +104,7 @@ app.use(passport.session()) // persistent login
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
-loadConstants()
-utility.updateConstants(function(err) {
-    loadConstants()
-})
 
-function loadConstants() {
-    utility.constants.findOne({}, function(err, doc) {
-        app.locals.constants = doc
-    })
-}
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getLastMatch(req.user.account_id, function(err, doc) {

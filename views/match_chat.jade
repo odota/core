@@ -10,11 +10,13 @@ append content
         table.table.table-hover.table-responsive
           tr
             th Time
-            th Player
+            th Slot
+            th Prefix
             th Message
           - each message in match.parsed_data.chat
             tr
-              td.format= message.time
+              td.format-seconds= message.time
+              td= message.slot
               td= message.prefix 
               td= message.text
       script.
