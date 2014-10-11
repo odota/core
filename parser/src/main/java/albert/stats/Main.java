@@ -164,6 +164,7 @@ public class Main {
                     entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
                     entry.put("slot", slot);
+                    entry.put("type", "chat");
                     log.put(entry);
                 }
                 else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
@@ -376,6 +377,7 @@ public class Main {
 
             if (type.equals("chat")){
                 doc.getJSONArray("chat").put(entry);
+                continue;
             }
             if (entry.has("unit")){
                 entry.put("slot", getSlotByUnit(entry.getString("unit"), heroes, hero_to_slot));

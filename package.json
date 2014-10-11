@@ -7,7 +7,8 @@
         "start": "npm run web",
         "web": "node app.js",
         "backend": "node backend.js",
-        "parser": "node parser.js"
+        "parser": "node parser.js",
+        "preparser": "mvn -q -f parser/pom.xml package"
     },
     "dependencies": {
         "steam": ">= 0.6.0",

@@ -17,7 +17,7 @@ append content
             th DST
             th GEM
             th BB
-            th Skill Hits/Uses
+            th Skills
             th Item Use
             th Kills
           each player, i in match.players
@@ -37,7 +37,7 @@ append content
                td #{parsedPlayer.itembuys.smoke_of_deceit || "-"}
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
-               td #{parsedPlayer.buybacks.buyback || "-"}
+               td #{parsedPlayer.buybacks.buyback || "-"}               
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
@@ -47,7 +47,7 @@ append content
                        if parsedPlayer.hero_hits[key]
                          div #{parsedPlayer.hero_hits[key]}/#{val}
                        else
-                         div=val
+                         div #{val}
                    else
                      //=key
                td.table-img

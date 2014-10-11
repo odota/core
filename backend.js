@@ -85,9 +85,11 @@ function requestParse(match) {
             form: {
                 match_id: match.match_id
             }
-        }, function(err, resp, body) {
-            if(err) {
-                setTimeout(requestParse(match), 1000)
+        }, function(err, res, body) {
+            if(err || res.statusCode != 200) {
+                setTimeout(function(){
+                    requestParse(match)
+                }, 1000)
             } else {
                 console.log("[RESPONSE] %s", body)
             }
@@ -167,7 +169,7 @@ function insertMatch(match, cb) {
     })
     match.parse_status = (track ? 0 : 3)
     if(process.env.SAVE_ALL_MATCHES || track) {
-        matches.insert(match)
+        matches.insert(match);
     }
     if(track) {
         summaries = {}
