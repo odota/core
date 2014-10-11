@@ -164,7 +164,7 @@ public class Main {
                     entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
                     entry.put("slot", slot);
-                    doc.getJSONArray("chat").put(entry);
+                    log.put(entry);
                 }
                 else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
 
@@ -368,12 +368,15 @@ public class Main {
                 }
             }
         }
-        
+
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
             String type = entry.getString("type");
 
+            if (type.equals("chat")){
+                doc.getJSONArray("chat").put(entry);
+            }
             if (entry.has("unit")){
                 entry.put("slot", getSlotByUnit(entry.getString("unit"), heroes, hero_to_slot));
             }
@@ -427,5 +430,5 @@ public class Main {
         //System.err.format("couldn't find hero for unit %s%n", unit);
         return -1;
     }
-    
+
 }
