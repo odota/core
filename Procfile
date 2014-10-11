@@ -1,3 +1,3 @@
-web: npm run web
-backend: npm run backend
-parser: npm run parser
+web: node app.js
+backend: node backend.js
+parser: mvn -q -f parser/pom.xml package && node parser.js

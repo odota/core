@@ -44,8 +44,8 @@ append content
                    if ability
                      div.img-text.ability
                        img(src=ability.img, title=ability.dname)
-                       if parsedPlayer.hero_hits[key]
-                         div #{parsedPlayer.hero_hits[key]}/#{val}
+                       if constants.skillshots[key]
+                         div #{parsedPlayer.hero_hits[key] || 0}/#{val}
                        else
                          div #{val}
                    else

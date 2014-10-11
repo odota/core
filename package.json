@@ -4,11 +4,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "start": "npm run web",
-        "web": "node app.js",
-        "backend": "node backend.js",
-        "parser": "node parser.js",
-        "preparser": "mvn -q -f parser/pom.xml package"
+        "start": "nf start"
     },
     "dependencies": {
         "steam": ">= 0.6.0",
