@@ -14,7 +14,6 @@ Requirements
 Deployment
 ====
 * Install node dependencies `npm install`
-* Compile the parser `mvn -f parser package`
 * Foreman `npm install -g foreman`
 * Create .env file with desired parameters
 * Run `nf start`
