@@ -2,7 +2,42 @@ extend layout
 append head
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js')
     script(type='text/javascript' src='../../public/js/utility.js')
-    
+    script.
+      $( document ).ready(function() {
+        $('.format').each(function(){
+          $(this).text(format($(this).text()))
+        })
+        $('.format-seconds').each(function(){
+          $(this).text(formatSeconds($(this).text()))
+        })
+        });
+    style.
+      h3 img {
+        padding-right: 1em;
+      }
+      .table-img{
+        white-space: nowrap;
+        min-width: 200px;
+      }
+      .img-text{
+        float: left;
+        text-align: center;
+        font-size: 10px;
+      }
+      .img-text.ability img{
+         width: 25px
+      }
+      .img-text.item img{
+         width: 30px;
+      }
+      td.abilities {
+         padding: 8px 1px !important;
+      }
+      td.abilities img {
+         height: 35px;
+         width: 35px;
+      }
+      
 block content
   h1 Match #{match.match_id}
   .row
