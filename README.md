@@ -1,10 +1,10 @@
 YASP - YASP: Another Stats Page
 ====
 
-Live version at http://yasp.co
-Provides awesome replay-parsed stats for free!  
-Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  
-Data stored in MongoDB.
+* Live version at http://yasp.co
+* Provides awesome replay-parsed stats for free!  
+* Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  
+* Data stored in MongoDB.
 
 Requirements
 ====
