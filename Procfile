@@ -1,3 +1,3 @@
-web: node app.js
-backend: node backend.js
-parser: node parser.js
+web: npm run web
+backend: npm run backend
+parser: npm run parser

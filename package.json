@@ -4,7 +4,10 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "start": "nf start"
+        "start": "npm run web",
+        "web": "node app.js",
+        "backend": "node backend.js",
+        "parser": "node parser.js"
     },
     "dependencies": {
         "steam": ">= 0.6.0",
