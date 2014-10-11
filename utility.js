@@ -69,13 +69,6 @@ utility.getMatches = function(account_id, cb) {
         cb(err, docs)
     })
 }
-utility.getTrackedPlayers = function(cb) {
-    utility.players.find({
-        track: 1
-    }, function(err, docs) {
-        cb(err, docs)
-    })
-}
 utility.fillPlayerStats = function(doc, matches, cb) {
     var account_id = doc.account_id
     var counts = {}
@@ -176,7 +169,7 @@ utility.updateConstants = function(cb) {
                 if(val==constants.heroes) {
                     var heroes = result.heroes
                     heroes.forEach(function(hero) {
-                        hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace('npc_dota_hero_', "") + "_sb.png"
+                        hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
                     })
                     constants.hero_names={}
                     for (var i =0;i<heroes.length;i++){

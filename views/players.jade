@@ -1,12 +1,12 @@
 extend layout
 block content
-        h3 Tracked Players
-        .row
-            table.table
-              tr
-                th Name
-              each player in players
-                tr
-                  td
-                    a(href='/players/#{player.account_id}')
-                      =player.personaname || player.account_id
+  h3 Players
+  .row
+    table.table
+      tr
+        th Name
+      each player in players
+        tr
+          td
+            a(href='/players/#{player.account_id}')
+              =player.personaname || player.account_id

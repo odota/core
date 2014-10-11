@@ -90,7 +90,7 @@ app.param('match_id', function(req, res, next, id) {
         match_id: Number(id)
     }, function(err, match) {
         if(!match) {
-            return next(err)
+            return next()
         } else {
             utility.fillPlayerNames(match.players, function(err) {
                 req.match = match
@@ -121,9 +121,8 @@ app.route('/matches').get(function(req, res) {
         })
     })
 })
-app.route('/matches/:match_id/:info?').get(function(req, res) {
-    var render,
-        info = req.params.info ? req.params.info : 'index',
+app.route('/matches/:match_id/:info?').get(function(req, res, next) {
+    var info = req.params.info ? req.params.info : 'index',
         match = req.match
     if(info == "graphs") {
         if(match.parsed_data) {
@@ -182,17 +181,17 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
             }
         })
     }
-    if(info in matchPages) {
-        render = matchPages[info].template
+    if (!matchPages[info]){
+        return next()
     }
-    res.render(render, {
+    res.render(matchPages[info].template, {
         route: info,
         match: req.match,
         tabs: matchPages
     })
 })
 app.route('/players').get(function(req, res) {
-    utility.getTrackedPlayers(function(err, docs) {
+    players.find({}, function(err, docs) {
         res.render('players.jade', {
             players: docs
         })
@@ -203,7 +202,7 @@ app.route('/players/:id').get(function(req, res, next) {
         account_id: Number(req.params.id)
     }, function(err, player) {
         if(!player) {
-            return next(err)
+            return next()
         } else {
             utility.getMatches(player.account_id, function(err, matches) {
                 utility.fillPlayerStats(player, matches, function(err, player, matches) {
