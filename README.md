@@ -31,7 +31,6 @@ Deployment
 * AWS_S3_BUCKET (optional, replays are saved to S3 bucket if set)
 * AWS_ACCESS_KEY_ID (optional, allows use of S3)
 * AWS_SECRET_ACCESS_KEY (optional, allows use of S3)
-* PORT (optional, default 5000, the port to use)
 * SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
 * SEAPORT_HOST
 * SEAPORT_PORT
