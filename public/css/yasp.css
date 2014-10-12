@@ -42,21 +42,20 @@ h3 img {
 }
 .table-img{
     white-space: nowrap;
-    min-width: 200px;
 }
 .img-text{
     float: left;
     text-align: center;
     font-size: 10px;
 }
-.img-text.ability img{
-    width: 25px
+.ability{
+    width: 30px
 }
-.img-text.item img{
-    width: 30px;
-}
-.img-text.kill img{
+.item{
     width: 35px;
+}
+.kill{
+    width: 40px;
 }
 td.abilities {
     padding: 8px 1px !important;

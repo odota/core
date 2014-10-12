@@ -48,19 +48,19 @@ append content
              td.format= player.hero_damage
              td.format= player.tower_damage
              td.format= player.hero_healing
-             td.items
+             td.table-img
                each val, index in player
                  if (index.slice(0, 5)==="item_")
                    - var item = constants.items[constants.item_ids[val]]
                    if item
-                     img(src=item.img, title=item.dname)
+                     img.item(src=item.img, title=item.dname)
                if (player.hero_id === 80)
                  br
                  each val, index in player.additional_units[0]
                    if (index.slice(0, 5)==="item_")
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
-                       img(src=item.img, title=item.dname)
+                       img.item(src=item.img, title=item.dname)
         tfoot
           each sum in match.sums
             tr

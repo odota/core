@@ -42,8 +42,8 @@ append content
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
                    if ability
-                     div.img-text.ability
-                       img(src=ability.img, title=ability.dname)
+                     div.img-text
+                       img.ability(src=ability.img, title=ability.dname)
                        if constants.skillshots[key]
                          div #{parsedPlayer.hero_hits[key] || 0}/#{val}
                        else
@@ -54,8 +54,8 @@ append content
                  each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]                   
                    if item
-                     div.img-text.item
-                       img(src=item.img, title=item.dname)
+                     div.img-text
+                       img.item(src=item.img, title=item.dname)
                        div=val
                    else
                      =key
@@ -63,8 +63,8 @@ append content
                  each val, key in parsedPlayer.kills
                    - var kill = constants.hero_names[key]
                    if kill
-                     div.img-text.kill
-                       img(src=kill.img, title=kill.dname)
+                     div.img-text
+                       img.kill(src=kill.img, title=kill.dname)
                        div=val
                    else
                      //=key

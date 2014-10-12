@@ -233,8 +233,5 @@ app.route('/logout').get(function(req, res) {
 })
 // Handle 404
 app.use(function(req, res) {
-    res.status(404);
-    res.render('404.jade', {
-        title: '404: File Not Found'
-    });
+    res.status(404).render('404.jade');
 });
