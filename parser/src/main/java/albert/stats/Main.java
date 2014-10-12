@@ -2,6 +2,8 @@ package albert.stats;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.Clarity;
 import skadistats.clarity.match.Match;
+import skadistats.clarity.match.EntityCollection;
+import skadistats.clarity.match.TempEntityCollection;
 import skadistats.clarity.parser.TickIterator;
 import skadistats.clarity.model.UserMessage;
 import skadistats.clarity.model.GameEvent;
@@ -20,7 +22,7 @@ import java.util.Arrays;
 
 public class Main {
     public static final float INTERVAL = 60;
-    public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
+    public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009","0010"};
 
     public static void main(String[] args) throws Exception {
         long tStart = System.currentTimeMillis();
@@ -37,26 +39,26 @@ public class Main {
         }
         JSONObject heroes = new JSONObject(new JSONTokener(input));
         Match match = new Match();
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.CHAT_MESSAGES, CustomProfile.ALL_CHAT);
+        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
+        int numPlayers = 0;
 
         while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
             Entity pr = match.getPlayerResource();
 
-            if (!initialized) {
+            if (!initialized) {   
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
-                for (int i = 0; i < PLAYER_IDS.length; i++) {
-                    String name = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
-                    doc.getJSONArray("players").put(new JSONObject());
-                    JSONObject player = doc.getJSONArray("players").getJSONObject(i);
-                    player.put("personaname", name);
-                    player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
+
+                while (!pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]).equals("")) {
+                    JSONObject player = new JSONObject();
+                    player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[numPlayers]));
+                    player.put("personaname", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]));
                     player.put("log", new JSONArray());
                     player.put("itemuses", new JSONObject());
                     player.put("itembuys", new JSONObject());
@@ -73,6 +75,8 @@ public class Main {
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
+                    doc.getJSONArray("players").put(player);
+                    numPlayers++;
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -82,22 +86,39 @@ public class Main {
                 initialized = true;
             }
 
+            for (int i = 0; i < numPlayers; i++) {
+                String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
+                if (!hero.equals("-1")){
+                    hero_to_slot.put(hero, i);
+                }
+                JSONObject player = doc.getJSONArray("players").getJSONObject(i);
+                player.put("stuns", pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]));
+            }
+
             int trueTime=time-gameZero;
+
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
-                for (int i = 0; i < PLAYER_IDS.length; i++) {
+                for (int i = 0; i < numPlayers; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.getJSONArray("lh").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
                 }
-                nextInterval += INTERVAL;
-            }
-            for (int i = 0; i < PLAYER_IDS.length; i++) {
-                String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                if (!hero.equals("-1")){
-                    hero_to_slot.put(hero, i);
+                EntityCollection ec = match.getEntities();
+                Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
+                while (runes.hasNext()){
+                    Entity e = runes.next();
+                    System.err.format("%s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                 }
+                //todo get by entity handle, through playerresource
+                Iterator<Entity> hero = ec.getAllByDtName("DT_DOTA_Unit_Hero_Lich");
+                while (hero.hasNext()){
+                    Entity e = hero.next();
+                    //System.err.println(e);
+                    System.err.format("%s %s %s,%s %n", trueTime, "hero", e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                }
+                nextInterval += INTERVAL;
             }
             for (UserMessage u : match.getUserMessages()) {
                 String name = u.getName();
@@ -166,36 +187,6 @@ public class Main {
                     entry.put("slot", slot);
                     entry.put("type", "chat");
                     log.put(entry);
-                }
-                else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
-
-                }
-                else if (name.equals("CDOTAUserMsg_ParticleManager")){
-
-                }
-                else if (name.equals("CDOTAUserMsg_UnitEvent")){
-
-                }
-                else if (name.equals("CDOTAUserMsg_OverheadEvent")){
-
-                }
-                else if (name.equals("CDOTAUserMsg_SharedCooldown")){
-
-                }
-                else if (name.contains("CDOTAUserMsg_MinimapEvent")){
-
-                }
-                else if (name.contains("CUserMsg_SendAudio")){
-
-                }
-                else if (name.contains("Projectile")){
-
-                }
-                else if (name.equals("CUserMsg_TextMsg")){
-
-                }
-                else if (name.equals("CDOTAUserMsg_HudError")){
-
                 }
                 else{
                     System.err.format("%s %s%n", time, u); 
