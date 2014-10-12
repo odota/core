@@ -17,6 +17,7 @@ append content
             th DST
             th GEM
             th BB
+            th Stuns
             th Skills
             th Item Use
             th Kills
@@ -37,7 +38,8 @@ append content
                td #{parsedPlayer.itembuys.smoke_of_deceit || "-"}
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
-               td #{parsedPlayer.buybacks.buyback || "-"}               
+               td #{parsedPlayer.buybacks.buyback || "-"}
+               td #{parsedPlayer.stuns || "-"}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
