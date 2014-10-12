@@ -145,7 +145,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
                 xpDifference.push(xptotal)
             }
             var time = ["time"].concat(match.parsed_data.times)
-            match.graphdata = {
+            data = {
                 difference: [time, goldDifference, xpDifference],
                 gold: [time],
                 xp: [time],
@@ -154,11 +154,11 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
             match.parsed_data.players.forEach(function(elem, i) {
                 var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name
                 elem.gold = [hero].concat(elem.gold)
-                match.graphdata.gold.push(elem.gold)
+                data.gold.push(elem.gold)
                 elem.xp = [hero].concat(elem.xp)
-                match.graphdata.xp.push(elem.xp)
+                data.xp.push(elem.xp)
                 elem.lh = [hero].concat(elem.lh)
-                match.graphdata.lh.push(elem.lh)
+                data.lh.push(elem.lh)
             })
         }
     }
@@ -206,6 +206,10 @@ app.route('/players/:id').get(function(req, res, next) {
         } else {
             utility.getMatches(player.account_id, function(err, matches) {
                 utility.fillPlayerStats(player, matches, function(err, player, matches) {
+                    data={}
+                    matches.forEach(function(m){
+                        data[m.start_time]=1
+                    })
                     res.render('player.jade', {
                         player: player,
                         matches: matches

@@ -1,8 +1,8 @@
 var height = 350
-var difference = graphdata.difference
-var gold = graphdata.gold
-var xp = graphdata.xp
-var lh = graphdata.lh
+var difference = data.difference
+var gold = data.gold
+var xp = data.xp
+var lh = data.lh
 var charts = [
     {
         bindTo: "#chart-diff",
