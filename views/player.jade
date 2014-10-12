@@ -2,6 +2,7 @@ extend layout
 
 append head
   script.
+    var data = !{JSON.stringify(data)}
     $(document).ready(function() {
         $('#table').dataTable({
            "order": [[ 2, "desc" ]]
@@ -19,6 +20,11 @@ block content
        .col-xs-4.col-sm-3.col-md-2
          h1(style='font-weight: 700;')=player.personaname || player.account_id
          p.lead (#{player.win || 0 }-#{player.lose || 0})
+     .row
+       .col-md-12
+         h3 Activity
+           div#cal-heatmap
+           script(async, src='/public/js/cal-heatmap.js')
      .row       
        .col-md-8
          h3 Matches

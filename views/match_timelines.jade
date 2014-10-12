@@ -25,8 +25,8 @@ append content
                     if entry.type=="itembuys" && entry.time < i && entry.time >= i-bucket
                       - var item = constants.items[entry.key]                 
                       if item
-                        div.img-text.item
-                          img(src=item.img, title=item.dname)
+                        div.img-text
+                          img.item(src=item.img, title=item.dname)
                           div.format-seconds=entry.time
                       else
                         =key
