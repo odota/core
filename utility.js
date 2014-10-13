@@ -82,7 +82,6 @@ utility.fillPlayerStats = function(doc, matches, cb) {
                 matches[i].player_hero = player.hero_id
                 if(!heroes[player.hero_id]) {
                     heroes[player.hero_id] = {}
-                    heroes[player.hero_id]["hero_id"] = player.hero_id
                     heroes[player.hero_id]["win"] = 0
                     heroes[player.hero_id]["lose"] = 0
                 }
@@ -123,11 +122,7 @@ utility.fillPlayerStats = function(doc, matches, cb) {
             }
         }
     }
-    doc.heroes = []
-    for(var id in heroes) {
-        var count = heroes[id]
-        doc.heroes.push(count)
-    }
+    doc.heroes = heroes
     utility.fillPlayerNames(doc.teammates, function(err) {
         cb(null, doc, matches)
     })
