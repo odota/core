@@ -5,7 +5,7 @@ append head
     var data = !{JSON.stringify(data)}
     $(document).ready(function() {
         $('#table').dataTable({
-           "order": [[ 2, "desc" ]]
+           "order": [[ 1, "desc" ]]
         });
         $('#heroes').dataTable({
            "order": [[ 1, "desc" ]]
@@ -42,7 +42,11 @@ block content
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
                 - var hero = constants.heroes[match.player_hero]
-                td.hero: img(src=hero.img, title=hero.localized_name)
+                td.hero
+                  if hero
+                    img(src=hero.img, title=hero.localized_name)
+                  else
+                    =match.player_hero
                 td= match.player_win ? "Won" : "Lost"                
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
@@ -71,9 +75,10 @@ block content
                th Hero
                th Wins
                th Losses
-           each hero in player.heroes
+           each hero in constants.heroes
              tr
-               - var herodata = constants.heroes[hero.hero_id]
-               td.hero: img(src=herodata.img, alt=herodata.localized_name)
-               td=hero.win
-               td=hero.lose
+               td.hero
+                 img(src=hero.img, alt=hero.localized_name)
+               - var entry = player.heroes[hero.id]
+               td #{entry ? entry.win : 0}
+               td #{entry ? entry.lose : 0}
