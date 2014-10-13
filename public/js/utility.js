@@ -6,8 +6,11 @@
 * To change this template use Tools | Templates.
 */
 function format(input){
-    input = parseInt(input)
-    return ~~(input<1000 ? input : numeral(input).format('0.0a'))
+    input = Number(input)
+    if (input==0){
+        return "-"
+    }
+    return (Math.abs(input)<1000 ? ~~(input) : numeral(input).format('0.0a'))
 }
 function pad(n, width, z) {
     z = z || '0';
@@ -60,9 +63,10 @@ $( document ).ready(function() {
             sum["0"]=key
             for (var index in sum){
                 var td = $("<td>")
-                if (sum[index]!=0){
-                    td.text(sum[index])
+                if (index!="0"){
+                    td.addClass('format')
                 }
+                td.text(sum[index])
                 tr.append(td)
             }
             tfoot.append(tr)
