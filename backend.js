@@ -20,7 +20,6 @@ var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
-var parser = process.env.PARSER_HOST || "localhost"
 var next_seq;
 memwatch.on('leak', function(info) {
     console.log(info);
@@ -29,67 +28,67 @@ aq.empty = function() {
     getMatches()
 }
 async.series([utility.updateConstants,
-    function(cb) {
-        //todo scraping (do on brand new players, not all tracked)
-        players.find({
-            full_history: 0
-        }, function(err, docs) {
-            async.mapSeries(docs, function(player, cb2) {
-                var account_id = player.account_id
-                var player_url = remote + "/players/" + account_id + "/matches"
-                getMatchPage(player_url, function(err) {
-                    //done scraping player
-                    players.update({
-                        account_id: account_id
-                    }, {
-                        $set: {
-                            full_history: 1
-                        }
-                    })
-                    cb2(null)
-                })
-            }, function(err) {
-                //done scraping all players
-                cb(null)
-            })
-        })
-    },
-    function(cb) {
-        //check most recent 100 matches for tracked players
-        players.find({
-            track: 1
-        }, function(err, docs) {
-            aq.push(docs, function(err) {})
-        })
-        //parse unparsed matches
-        matches.find({
-            parse_status: 0
-        }, function(err, docs) {
-            docs.forEach(function(match) {
-                requestParse(match)
-            })
-        })
-        cb(null)
-    },
-    function(cb) {
-        //determine sequence number to begin scan at
-        if(process.env.SAVE_ALL_MATCHES) {
-            matches.findOne({}, {
-                sort: {
-                    match_seq_num: -1
-                }
-            }, function(err, doc) {
-                next_seq = doc ? doc.match_seq_num + 1 : 0
-                cb(null)
-            })
-        } else {
-            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                next_seq = data.result.matches[0].match_seq_num
-                cb(null)
-            })
-        }
-    }
-], function(err) {
+              //todo listen for requests to get full history from new players
+              function(cb) {
+                  players.find({
+                      full_history: 0
+                  }, function(err, docs) {
+                      async.mapSeries(docs, function(player, cb2) {
+                          var account_id = player.account_id
+                          var player_url = remote + "/players/" + account_id + "/matches"
+                          getMatchPage(player_url, function(err) {
+                              //done scraping player
+                              players.update({
+                                  account_id: account_id
+                              }, {
+                                  $set: {
+                                      full_history: 1
+                                  }
+                              })
+                              cb2(null)
+                          })
+                      }, function(err) {
+                          //done scraping all players
+                          cb(null)
+                      })
+                  })
+              },
+              function(cb) {
+                  //check most recent 100 matches for tracked players
+                  players.find({
+                      track: 1
+                  }, function(err, docs) {
+                      aq.push(docs, function(err) {})
+                  })
+                  //parse unparsed matches
+                  matches.find({
+                      parse_status: 0
+                  }, function(err, docs) {
+                      docs.forEach(function(match) {
+                          requestParse(match)
+                      })
+                  })
+                  cb(null)
+              },
+              function(cb) {
+                  //determine sequence number to begin scan at
+                  if(process.env.SAVE_ALL_MATCHES) {
+                      matches.findOne({}, {
+                          sort: {
+                              match_seq_num: -1
+                          }
+                      }, function(err, doc) {
+                          next_seq = doc ? doc.match_seq_num + 1 : 0
+                          cb(null)
+                      })
+                  } else {
+                      utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                          next_seq = data.result.matches[0].match_seq_num
+                          cb(null)
+                      })
+                  }
+              }
+             ], function(err) {
     getMatches()
 })
 
@@ -168,12 +167,7 @@ function apiRequest(req, cb) {
     if(req.match_id) {
         url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
     } else if(req.summaries_id) {
-        var steamids = []
-        req.players.forEach(function(player) {
-            steamids.push(utility.convert32to64(player.account_id).toString())
-        })
-        var query = steamids.join()
-        url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + query
+        url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + req.query
     } else if(req.account_id) {
         url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
     } else {
@@ -229,7 +223,11 @@ function insertMatch(match, cb) {
         //todo get player summaries separately
         summaries = {}
         summaries.summaries_id = 1
-        summaries.players = match.players
+        var steamids = []
+        match.players.forEach(function(player) {
+            steamids.push(utility.convert32to64(player.account_id).toString())
+        })
+        summaries.query = steamids.join()
         aq.unshift(summaries, function(err) {})
         requestParse(match)
     }
