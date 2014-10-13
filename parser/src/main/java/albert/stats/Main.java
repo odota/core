@@ -71,7 +71,7 @@ public class Main {
                     player.put("kills", new JSONObject());
                     player.put("abilityuses", new JSONObject());
                     player.put("hero_hits", new JSONObject());
-                    player.put("modifier", new JSONObject());
+                    player.put("modifier_gained", new JSONObject());
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
@@ -235,18 +235,15 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        /*
-                        unit = cle.getAttackerName(); //source of buff
+                        unit = cle.getTargetName(); //target of buff
                         key = cle.getInflictorName(); //the buff
-                        String target = cle.getTargetName(); //target of buff
-                        //val = cle.getStunDuration();
+                        String unit2 = cle.getAttackerName(); //source of buff
+                        //todo this includes modifiers on illusions
                         entry.put("unit", unit);                        
                         entry.put("time", time);
                         entry.put("key", key);
-                        //entry.put("value", val);
-                        entry.put("type", "modifier");
+                        entry.put("type", "modifier_gained");
                         log.put(entry);
-                        */
                         break;
                         case 3:
                         //lose buff/debuff
@@ -344,6 +341,7 @@ public class Main {
                         break;
                         case 13:
                         //ability trigger
+                        //todo, so far, only seeing axe spins here
                         System.err.format("%s %s proc %s %s%n", 
                                           time,
                                           cle.getAttackerName(),
