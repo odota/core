@@ -53,16 +53,14 @@ block content
          table.table#table
            thead
              tr
-               th Avatar
                th Name
                th Wins
                th Losses
            each teammate in player.teammates
              if (teammate.account_id != constants.anonymous_account_id)
-               tr
-                 td 
-                   img(src=teammate.avatar)
+               tr                   
                  td
+                   img(src=teammate.avatar)
                    a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
                  td=teammate.win
                  td=teammate.lose

@@ -1,5 +1,7 @@
 var cal = new CalHeatMap();
-var m = moment().subtract(11, 'month');
+var m = moment().subtract(11,'month');
+var w = moment().subtract(89,'day');
+
 cal.init({
     start: new Date(m),
 	range: 12,
@@ -14,3 +16,23 @@ cal.init({
 	},
     cellSize: 15
 });
+
+/*
+cal.init({
+    start: new Date(w),
+    range: 90,
+    domain: "day",
+    subDomain: "hour",
+    label:
+{
+    position: "left"
+},
+    domainLabelFormat: "",
+    verticalOrientation: true,
+    colLimit: 24,
+    data: data,
+    cellSize:5,
+    cellPadding:1,
+    domainGutter:1
+});
+*/

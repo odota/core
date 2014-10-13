@@ -5,7 +5,7 @@ append content
     .col-md-12
       if match.parsed_data
         h2 Details
-        table.table.table-hover.table-responsive
+        table.table.table-hover.table-responsive.summable
           tr
             th Hero
             th CR
@@ -39,7 +39,7 @@ append content
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
-               td #{parsedPlayer.stuns || "-"}
+               td.format #{parsedPlayer.stuns || "-"}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
@@ -73,7 +73,7 @@ append content
         .row
           .col-md-8
             h2 Gold
-            table.table.table-hover.table-responsive
+            table.table.table-hover.table-responsive.summable
               tr
                 th Hero
                 each val, key in constants.gold_reasons
@@ -88,11 +88,10 @@ append content
                       =player.hero_id
                     - var parsedPlayer = match.parsed_data.players[i]
                     each val, key in constants.gold_reasons
-                      td
-                        div #{parsedPlayer.gold_log[key] || "-"}
+                      td #{parsedPlayer.gold_log[key] || "-"}
           .col-md-4
             h2 XP
-            table.table.table-hover.table-responsive
+            table.table.table-hover.table-responsive.summable
               tr
                 th Hero
                 each val, key in constants.xp_reasons
@@ -107,7 +106,6 @@ append content
                       =player.hero_id
                     - var parsedPlayer = match.parsed_data.players[i]
                     each val, key in constants.xp_reasons
-                      td
-                        div #{parsedPlayer.xp_log[key] || "-"}
+                      td #{parsedPlayer.xp_log[key] || "-"}
       else
         h1 This match has no parsed data!

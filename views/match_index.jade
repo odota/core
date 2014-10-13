@@ -4,7 +4,7 @@ append content
   .row
     .col-md-12
       h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-      table.table.table-hover.table-responsive
+      table.table.table-hover.table-responsive.summable
         thead
           tr
             th Player
@@ -61,24 +61,6 @@ append content
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
                        img.item(src=item.img, title=item.dname)
-        tfoot
-          each sum in match.sums
-            tr
-              td=sum.personaname
-              td
-              td= sum.level
-              td= sum.kills
-              td= sum.deaths
-              td= sum.assists
-              td= sum.last_hits
-              td= sum.denies
-              td.format= ~~(sum.gold_per_min*match.duration/60)
-              td= sum.gold_per_min
-              td= sum.xp_per_min
-              td.format= sum.hero_damage
-              td.format= sum.tower_damage
-              td.format= sum.hero_healing
-              td
       h2 Skill Builds
       table.table.table-hover.table-responsive
         tr
