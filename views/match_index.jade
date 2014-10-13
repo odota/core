@@ -61,24 +61,25 @@ append content
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
                        img.item(src=item.img, title=item.dname)
-      h2 Skill Builds
-      table.table.table-hover.table-responsive
-        tr
-          th Hero
-          - for (var i = 1; i < 26; i++)
-            th= i
-        - each player, i in match.players
-           tr(class = player.player_slot<64 ? "success" : "danger")
-             - var hero = constants.heroes[player.hero_id]
-             td.hero
-               if hero
-                 img(src=hero.img, title=hero.localized_name)
-               else
-                 =player.hero_id
-               - each ability in player.ability_upgrades
-                   - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                   td.abilities
-                     if abilityData
-                       img(src=abilityData.img, title=abilityData.dname)
-                     else
-                       =ability.ability
+      if match.players[0].ability_upgrades
+        h2 Skill Builds
+        table.table.table-hover.table-responsive
+          tr
+            th Hero
+            - for (var i = 1; i < 26; i++)
+              th= i
+          - each player, i in match.players
+             tr(class = player.player_slot<64 ? "success" : "danger")
+               - var hero = constants.heroes[player.hero_id]
+               td.hero
+                 if hero
+                   img(src=hero.img, title=hero.localized_name)
+                 else
+                   =player.hero_id
+                 each ability in player.ability_upgrades
+                     - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                     td.abilities
+                       if abilityData
+                         img(src=abilityData.img, title=abilityData.dname)
+                       else
+                         =ability.ability
