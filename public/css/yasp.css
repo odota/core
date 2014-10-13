@@ -42,6 +42,7 @@ h3 img {
 }
 .table-img{
     white-space: nowrap;
+    min-width: 150px;
 }
 .img-text{
     float: left;
@@ -49,13 +50,13 @@ h3 img {
     font-size: 10px;
 }
 .ability{
-    width: 30px
+    width: 25px
 }
 .item{
-    width: 35px;
+    width: 30px;
 }
 .kill{
-    width: 40px;
+    width: 35px;
 }
 td.abilities {
     padding: 8px 1px !important;

@@ -153,33 +153,11 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
             }
             match.parsed_data.players.forEach(function(elem, i) {
                 var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name
-                elem.gold = [hero].concat(elem.gold)
-                data.gold.push(elem.gold)
-                elem.xp = [hero].concat(elem.xp)
-                data.xp.push(elem.xp)
-                elem.lh = [hero].concat(elem.lh)
-                data.lh.push(elem.lh)
+                data.gold.push([hero].concat(elem.gold))
+                data.xp.push([hero].concat(elem.xp))
+                data.lh.push([hero].concat(elem.lh))
             })
         }
-    }
-    if(info == "index") {
-        match.sums = [{
-            personaname: "Radiant"
-        }, {
-            personaname: "Dire"
-        }]
-        //compute sums
-        match.players.forEach(function(player) {
-            var target = (player.player_slot < 64 ? match.sums[0] : match.sums[1])
-            for(var prop in player) {
-                if(typeof(player[prop]) == "number") {
-                    if(!(prop in target)) {
-                        target[prop] = 0
-                    }
-                    target[prop] += player[prop]
-                }
-            }
-        })
     }
     if (!matchPages[info]){
         return next()
