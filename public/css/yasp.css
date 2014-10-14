@@ -1,3 +1,11 @@
+/* ads */
+
+.leaderboard {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
 .vis.timeline .item.background.background-0 {
     background-color: rgba(213, 221, 246, 0.4);
 }
