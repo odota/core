@@ -174,18 +174,19 @@ function apiRequest(req, cb) {
         url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
     }
     utility.getData(url, function(err, data) {
-        if((!data.result && !data.response) || data.result.error || data.result.status == 2) {
+        if (data.response){
+            async.map(data.response.players, insertPlayer, function(err) {
+                cb(null)
+            })
+        }
+        else if(data.result.error || data.result.status == 2) {
             console.log(data)
             return cb(null)
         }
-        if(req.match_id) {
+        else if(req.match_id) {
             var match = data.result
             insertMatch(match, function(err) {
                 delete queuedMatches[match.match_id]
-                cb(null)
-            })
-        } else if(req.summaries_id) {
-            async.map(data.response.players, insertPlayer, function(err) {
                 cb(null)
             })
         } else {
