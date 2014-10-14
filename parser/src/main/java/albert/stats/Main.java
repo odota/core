@@ -57,9 +57,12 @@ public class Main {
                 doc.put("chat", new JSONArray());
 
                 while (!pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]).equals("")) {
+                    String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]);
+                    byte[] b = st.getBytes();
+                    String name = new String(b);
                     JSONObject player = new JSONObject();
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[numPlayers]));
-                    player.put("personaname", pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]));
+                    player.put("personaname", name);
                     player.put("log", new JSONArray());
                     player.put("itemuses", new JSONObject());
                     player.put("itembuys", new JSONObject());
@@ -101,7 +104,7 @@ public class Main {
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                     Entity e = runes.next();
-                    System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                    //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                 }
                 for (int i = 0; i < numPlayers; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
@@ -111,7 +114,9 @@ public class Main {
                     int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
                     Entity e = ec.getByHandle(handle);
                     //System.err.println(e);
-                    System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                    if (e!=null){
+                        //System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                    }
                 }
                 nextInterval += INTERVAL;
             }
@@ -171,7 +176,8 @@ public class Main {
                     int slot = -1;
                     JSONArray players = doc.getJSONArray("players");
                     for (int i = 0;i<players.length();i++){
-                        System.err.format("%s,%s %n",Arrays.toString(prefix.getBytes()), Arrays.toString(players.getJSONObject(i).getString("personaname").getBytes()));
+                        String playerName = players.getJSONObject(i).getString("personaname");
+                        System.err.format("%s-%s,%s-%s %n",prefix, Arrays.toString(prefix.getBytes()), playerName, Arrays.toString(playerName.getBytes()));
                         if (players.getJSONObject(i).getString("personaname").equals(prefix)){
                             slot=i;
                         }

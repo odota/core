@@ -156,7 +156,10 @@ public class CombatLogEntry {
     }
 
     public int getGoldReason() {
-        return event.getProperty(goldReasonIdx);
+        if (goldReasonIdx!=null){
+            return event.getProperty(goldReasonIdx);
+        }
+        return 0;
     }
 
     public int getXpReason() {

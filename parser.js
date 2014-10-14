@@ -263,10 +263,9 @@ function parseReplay(match, cb) {
             output += data
         })
         cp.stderr.on('data', function(data) {
-            //todo redirect to logfile
             console.log('[PARSER] match: %s, stderr: %s', match_id, data);
         })
-        cp.on('close', function(code) {
+        cp.on('exit', function(code) {
             console.log('[PARSER] match: %s, exit code: %s', match_id, code);
             if(!code) {
                 //process parser output
