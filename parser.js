@@ -77,7 +77,7 @@ function download(match, cb) {
                     var decomp = Bunzip.decode(body);
                     fs.writeFile(fileName, decomp, function(err) {
                         console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
-                        cb(null, fileName)
+                        return cb(null, fileName)
                     })
                 })
             })
