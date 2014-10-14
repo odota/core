@@ -49,6 +49,7 @@ public class Main {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
             Entity pr = match.getPlayerResource();
+            EntityCollection ec = match.getEntities();
 
             if (!initialized) {   
                 doc.put("players", new JSONArray());
@@ -71,7 +72,7 @@ public class Main {
                     player.put("kills", new JSONObject());
                     player.put("abilityuses", new JSONObject());
                     player.put("hero_hits", new JSONObject());
-                    player.put("modifier_gained", new JSONObject());
+                    player.put("modifier_applied", new JSONObject());
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
@@ -88,9 +89,7 @@ public class Main {
 
             for (int i = 0; i < numPlayers; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-                if (!hero.equals("-1")){
-                    hero_to_slot.put(hero, i);
-                }
+                hero_to_slot.put(hero, i);
                 JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                 player.put("stuns", pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]));
             }
@@ -99,7 +98,6 @@ public class Main {
 
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
-                EntityCollection ec = match.getEntities();
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                     Entity e = runes.next();
@@ -235,14 +233,14 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        unit = cle.getTargetName(); //target of buff
+                        unit = cle.getAttackerName(); //source of buff
                         key = cle.getInflictorName(); //the buff
-                        String unit2 = cle.getAttackerName(); //source of buff
-                        //todo this includes modifiers on illusions
-                        entry.put("unit", unit);                        
+                        String unit2 = cle.getTargetName(); //target of buff
+                        entry.put("unit", unit);
+                        entry.put("unit2", unit2);
                         entry.put("time", time);
                         entry.put("key", key);
-                        entry.put("type", "modifier_gained");
+                        entry.put("type", "modifier_applied");
                         log.put(entry);
                         break;
                         case 3:
@@ -361,6 +359,7 @@ public class Main {
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
             String type = entry.getString("type");
+            //System.err.println(entry);
 
             if (type.equals("chat")){
                 doc.getJSONArray("chat").put(entry);
@@ -387,7 +386,6 @@ public class Main {
                     }
                 }
             }
-            //System.err.println(entry);
         }
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
@@ -403,7 +401,10 @@ public class Main {
             unit=unit.substring("illusion_".length());
         }
         if (heroes.has(unit)){
-            return hero_to_slot.getInt(heroes.getJSONObject(unit).get("id").toString());
+            String hero_id = heroes.getJSONObject(unit).get("id").toString();
+            if (hero_to_slot.has(hero_id)){
+                return hero_to_slot.getInt(hero_id);
+            }
         }
         //attempt to recover hero name from unit
         if (unit.startsWith("npc_dota_")){
@@ -411,7 +412,7 @@ public class Main {
             for (int i =1 ;i<=unit.length();i++){
                 String s = unit.substring(0,i);
                 if (heroes.has(s)){
-                    System.err.format("%s to %s%n", unit, s);
+                    //System.err.format("%s to %s%n", unit, s);
                     return hero_to_slot.getInt(heroes.getJSONObject(s).get("id").toString());
                 }
             }
