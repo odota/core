@@ -70,7 +70,7 @@ block content
                 td=match.assists
                 td=match.last_hits
                 td=match.denies
-                td=match.gold
+                td=~~(match.gold_per_min*match.duration/60)
                 td=match.gold_per_min
                 td=match.xp_per_min
                 td=match.hero_damage
