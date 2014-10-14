@@ -8,7 +8,9 @@ var express = require('express'),
     path = require('path'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
+    redis = require('redis'),
     app = express();
+var redisClient = redis.createClient();
 var port = Number(process.env.PORT || 3000);
 var matchPages = {
     index: {

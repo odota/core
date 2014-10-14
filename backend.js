@@ -1,18 +1,23 @@
 var async = require("async"),
     utility = require('./utility'),
+    redis = require('redis');
+    cheerio = require('cheerio');
+    memwatch = require('memwatch');
+    request = require("request");
+    seaport = require('seaport');
+    httpProxy = require('http-proxy'),
     matches = utility.matches,
     players = utility.players;
-var cheerio = require('cheerio');
-var memwatch = require('memwatch');
-var request = require("request");
-var seaport = require('seaport');
-var httpProxy = require('http-proxy');
+
 var server = seaport.createServer();
 var port = process.env.SEAPORT_PORT || 9001;
+
 server.listen(port, function() {
     console.log("[SEAPORT] running on port %s", port)
 });
+
 var ports = seaport.connect(port);
+var redisClient = redis.createClient();
 var parserNum = -1;
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
@@ -21,56 +26,60 @@ var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
 var next_seq;
+var matches_in_curr_min = 0;
+
+redisClient.del("live_matches");
+
 memwatch.on('leak', function(info) {
     console.log(info);
 });
 aq.empty = function() {
     getMatches()
 }
-utility.updateConstants();
+//utility.updateConstants();
 async.series([
     //todo listen for requests to get full history from new players
-    function(cb) {
-        players.find({
-            full_history: 0
-        }, function(err, docs) {
-            async.mapSeries(docs, function(player, cb2) {
-                var account_id = player.account_id
-                var player_url = remote + "/players/" + account_id + "/matches"
-                getMatchPage(player_url, function(err) {
-                    //done scraping player
-                    players.update({
-                        account_id: account_id
-                    }, {
-                        $set: {
-                            full_history: 1
-                        }
-                    })
-                    cb2(null)
-                })
-            }, function(err) {
-                //done scraping all players
-                cb(null)
-            })
-        })
-    },
-    function(cb) {
-        //check most recent 100 matches for tracked players
-        players.find({
-            track: 1
-        }, function(err, docs) {
-            aq.push(docs, function(err) {})
-        })
-        //parse unparsed matches
-        matches.find({
-            parse_status: 0
-        }, function(err, docs) {
-            docs.forEach(function(match) {
-                requestParse(match)
-            })
-        })
-        cb(null)
-    },
+//     function(cb) {
+//         players.find({
+//             full_history: 0
+//         }, function(err, docs) {
+//             async.mapSeries(docs, function(player, cb2) {
+//                 var account_id = player.account_id
+//                 var player_url = remote + "/players/" + account_id + "/matches"
+//                 getMatchPage(player_url, function(err) {
+//                     //done scraping player
+//                     players.update({
+//                         account_id: account_id
+//                     }, {
+//                         $set: {
+//                             full_history: 1
+//                         }
+//                     })
+//                     cb2(null)
+//                 })
+//             }, function(err) {
+//                 //done scraping all players
+//                 cb(null)
+//             })
+//         })
+//     },
+//     function(cb) {
+//         //check most recent 100 matches for tracked players
+//         players.find({
+//             track: 1
+//         }, function(err, docs) {
+//             aq.push(docs, function(err) {})
+//         })
+//         //parse unparsed matches
+//         matches.find({
+//             parse_status: 0
+//         }, function(err, docs) {
+//             docs.forEach(function(match) {
+//                 requestParse(match)
+//             })
+//         })
+//         cb(null)
+//     },
     function(cb) {
         //determine sequence number to begin scan at
         if(process.env.SAVE_ALL_MATCHES) {
@@ -200,6 +209,7 @@ function apiRequest(req, cb) {
                 })
             } else {
                 console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
+                matches_in_curr_min += resp.length;
                 async.mapSeries(resp, insertMatch, function(err) {
                     if(resp.length > 0) {
                         next_seq = resp[resp.length - 1].match_seq_num + 1
@@ -209,6 +219,12 @@ function apiRequest(req, cb) {
             }
         }
     })
+}
+
+function addCountsToRedis() {
+    redisClient.rpush("live_matches", matches_in_curr_min);
+    matches_in_curr_min = 0;
+    //redisClient.ltrim("live_matches", 0, 59);
 }
 
 function insertMatch(match, cb) {
@@ -249,3 +265,5 @@ function insertPlayer(player, cb) {
         cb(err)
     })
 }
+
+setInterval(addCountsToRedis, 60 * 1000);
