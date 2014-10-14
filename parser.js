@@ -250,7 +250,7 @@ function parseReplay(match, cb) {
         }
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
-        var cp = spawn("java", ["-jar",
+        var cp = spawn("java", ["-jar", "-Xmx64m",
                                 parser_file,
                                 fileName
                                ])
@@ -263,6 +263,7 @@ function parseReplay(match, cb) {
             output += data
         })
         cp.stderr.on('data', function(data) {
+            //todo redirect to logfile
             console.log('[PARSER] match: %s, stderr: %s', match_id, data);
         })
         cp.on('close', function(code) {
