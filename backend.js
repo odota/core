@@ -27,68 +27,69 @@ memwatch.on('leak', function(info) {
 aq.empty = function() {
     getMatches()
 }
-async.series([utility.updateConstants,
-              //todo listen for requests to get full history from new players
-              function(cb) {
-                  players.find({
-                      full_history: 0
-                  }, function(err, docs) {
-                      async.mapSeries(docs, function(player, cb2) {
-                          var account_id = player.account_id
-                          var player_url = remote + "/players/" + account_id + "/matches"
-                          getMatchPage(player_url, function(err) {
-                              //done scraping player
-                              players.update({
-                                  account_id: account_id
-                              }, {
-                                  $set: {
-                                      full_history: 1
-                                  }
-                              })
-                              cb2(null)
-                          })
-                      }, function(err) {
-                          //done scraping all players
-                          cb(null)
-                      })
-                  })
-              },
-              function(cb) {
-                  //check most recent 100 matches for tracked players
-                  players.find({
-                      track: 1
-                  }, function(err, docs) {
-                      aq.push(docs, function(err) {})
-                  })
-                  //parse unparsed matches
-                  matches.find({
-                      parse_status: 0
-                  }, function(err, docs) {
-                      docs.forEach(function(match) {
-                          requestParse(match)
-                      })
-                  })
-                  cb(null)
-              },
-              function(cb) {
-                  //determine sequence number to begin scan at
-                  if(process.env.SAVE_ALL_MATCHES) {
-                      matches.findOne({}, {
-                          sort: {
-                              match_seq_num: -1
-                          }
-                      }, function(err, doc) {
-                          next_seq = doc ? doc.match_seq_num + 1 : 0
-                          cb(null)
-                      })
-                  } else {
-                      utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                          next_seq = data.result.matches[0].match_seq_num
-                          cb(null)
-                      })
-                  }
-              }
-             ], function(err) {
+utility.updateConstants();
+async.series([
+    //todo listen for requests to get full history from new players
+    function(cb) {
+        players.find({
+            full_history: 0
+        }, function(err, docs) {
+            async.mapSeries(docs, function(player, cb2) {
+                var account_id = player.account_id
+                var player_url = remote + "/players/" + account_id + "/matches"
+                getMatchPage(player_url, function(err) {
+                    //done scraping player
+                    players.update({
+                        account_id: account_id
+                    }, {
+                        $set: {
+                            full_history: 1
+                        }
+                    })
+                    cb2(null)
+                })
+            }, function(err) {
+                //done scraping all players
+                cb(null)
+            })
+        })
+    },
+    function(cb) {
+        //check most recent 100 matches for tracked players
+        players.find({
+            track: 1
+        }, function(err, docs) {
+            aq.push(docs, function(err) {})
+        })
+        //parse unparsed matches
+        matches.find({
+            parse_status: 0
+        }, function(err, docs) {
+            docs.forEach(function(match) {
+                requestParse(match)
+            })
+        })
+        cb(null)
+    },
+    function(cb) {
+        //determine sequence number to begin scan at
+        if(process.env.SAVE_ALL_MATCHES) {
+            matches.findOne({}, {
+                sort: {
+                    match_seq_num: -1
+                }
+            }, function(err, doc) {
+                next_seq = doc ? doc.match_seq_num + 1 : 0
+                cb(null)
+            })
+        } else {
+            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                next_seq = data.result.matches[0].match_seq_num
+                cb(null)
+            })
+        }
+    }
+], function(err) {
     getMatches()
 })
 
@@ -174,16 +175,14 @@ function apiRequest(req, cb) {
         url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
     }
     utility.getData(url, function(err, data) {
-        if (data.response){
+        if(data.response) {
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(null)
             })
-        }
-        else if(data.result.error || data.result.status == 2) {
+        } else if(data.result.error || data.result.status == 2) {
             console.log(data)
             return cb(null)
-        }
-        else if(req.match_id) {
+        } else if(req.match_id) {
             var match = data.result
             insertMatch(match, function(err) {
                 delete queuedMatches[match.match_id]

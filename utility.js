@@ -150,7 +150,7 @@ utility.getData = function(url, cb) {
     var delay = 1000
     request(url, function(err, res, body) {
         console.log("[API] %s", url)
-        if(err || res.statusCode != 200) {
+        if(err || res.statusCode != 200 || !body) {
             console.log("[API] error getting data, retrying")
             setTimeout(utility.getData, delay, url, cb)
         } else {
