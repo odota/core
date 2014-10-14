@@ -5,7 +5,7 @@ append content
     .col-md-12
       if match.parsed_data
         h2 Details
-        table.table.table-hover.table-responsive
+        table.table.table-hover.table-responsive.summable
           tr
             th Hero
             th CR
@@ -17,7 +17,8 @@ append content
             th DST
             th GEM
             th BB
-            th Skill Hits/Uses
+            th Stuns
+            th Skills
             th Item Use
             th Kills
           each player, i in match.players
@@ -38,24 +39,25 @@ append content
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
+               td #{parsedPlayer.stuns || "-"}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]
                    if ability
-                     div.img-text.ability
-                       img(src=ability.img, title=ability.dname)
-                       if parsedPlayer.hero_hits[key]
-                         div #{parsedPlayer.hero_hits[key]}/#{val}
+                     div.img-text
+                       img.ability(src=ability.img, title=ability.dname)
+                       if constants.skillshots[key]
+                         div #{parsedPlayer.hero_hits[key] || 0}/#{val}
                        else
-                         div=val
+                         div #{val}
                    else
                      //=key
                td.table-img
                  each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]                   
                    if item
-                     div.img-text.item
-                       img(src=item.img, title=item.dname)
+                     div.img-text
+                       img.item(src=item.img, title=item.dname)
                        div=val
                    else
                      =key
@@ -63,15 +65,15 @@ append content
                  each val, key in parsedPlayer.kills
                    - var kill = constants.hero_names[key]
                    if kill
-                     div.img-text.kill
-                       img(src=kill.img, title=kill.dname)
+                     div.img-text
+                       img.kill(src=kill.img, title=kill.dname)
                        div=val
                    else
                      //=key
         .row
           .col-md-8
             h2 Gold
-            table.table.table-hover.table-responsive
+            table.table.table-hover.table-responsive.summable
               tr
                 th Hero
                 each val, key in constants.gold_reasons
@@ -86,11 +88,10 @@ append content
                       =player.hero_id
                     - var parsedPlayer = match.parsed_data.players[i]
                     each val, key in constants.gold_reasons
-                      td
-                        div #{parsedPlayer.gold_log[key] || "-"}
+                      td #{parsedPlayer.gold_log[key] || "-"}
           .col-md-4
             h2 XP
-            table.table.table-hover.table-responsive
+            table.table.table-hover.table-responsive.summable
               tr
                 th Hero
                 each val, key in constants.xp_reasons
@@ -105,7 +106,6 @@ append content
                       =player.hero_id
                     - var parsedPlayer = match.parsed_data.players[i]
                     each val, key in constants.xp_reasons
-                      td
-                        div #{parsedPlayer.xp_log[key] || "-"}
+                      td #{parsedPlayer.xp_log[key] || "-"}
       else
         h1 This match has no parsed data!

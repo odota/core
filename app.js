@@ -9,7 +9,7 @@ var express = require('express'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var port = Number(process.env.PORT || 5000);
+var port = Number(process.env.PORT || 3000);
 var matchPages = {
     index: {
         template: "match_index",
@@ -45,7 +45,7 @@ passport.deserializeUser(function(id, done) {
         done(err, user)
     })
 });
-app.use(function(req,res,next){
+app.use(function(req, res, next) {
     utility.constants.findOne({}, function(err, doc) {
         app.locals.constants = doc
         next()
@@ -77,14 +77,20 @@ app.use('/login', function(req, res, next) {
     }))
     next()
 })
+app.use("/public", express.static(path.join(__dirname, '/public')))
+app.use(session({
+    secret: process.env.SESSION_SECRET || "secret",
+    saveUninitialized: true,
+    resave: true
+}))
+app.use(passport.initialize())
+app.use(passport.session()) // persistent login
 app.param('match_id', function(req, res, next, id) {
     matches.findOne({
         match_id: Number(id)
     }, function(err, match) {
         if(!match) {
-            res.status(404).render('404', {
-                message: "Sorry, we couldn't find this match!"
-            })
+            return next()
         } else {
             utility.fillPlayerNames(match.players, function(err) {
                 req.match = match
@@ -93,18 +99,9 @@ app.param('match_id', function(req, res, next, id) {
         }
     })
 })
-app.use("/public", express.static(path.join(__dirname, '/public')))
-app.use(session({
-    secret: process.env.COOKIE_SECRET,
-    saveUninitialized: true,
-    resave: true
-}))
-app.use(passport.initialize())
-app.use(passport.session()) // persistent login
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
-
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getLastMatch(req.user.account_id, function(err, doc) {
@@ -124,12 +121,11 @@ app.route('/matches').get(function(req, res) {
         })
     })
 })
-app.route('/matches/:match_id/:info?').get(function(req, res) {
-    var render,
-        info = req.params.info ? req.params.info : 'index',
+app.route('/matches/:match_id/:info?').get(function(req, res, next) {
+    var info = req.params.info ? req.params.info : 'index',
         match = req.match
-    if (info == "graphs"){
-        if (match.parsed_data){
+    if(info == "graphs") {
+        if(match.parsed_data) {
             //compute graphs
             var goldDifference = ['Gold']
             var xpDifference = ['XP']
@@ -137,7 +133,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
                 var goldtotal = 0
                 var xptotal = 0
                 match.parsed_data.players.forEach(function(elem, j) {
-                    if(match.players[j].player_slot <64) {
+                    if(match.players[j].player_slot < 64) {
                         goldtotal += elem.gold[i]
                         xptotal += elem.xp[i]
                     } else {
@@ -149,63 +145,49 @@ app.route('/matches/:match_id/:info?').get(function(req, res) {
                 xpDifference.push(xptotal)
             }
             var time = ["time"].concat(match.parsed_data.times)
-            match.graphdata={difference:[time, goldDifference, xpDifference], gold:[time], xp:[time], lh:[time]}
+            data = {
+                difference: [time, goldDifference, xpDifference],
+                gold: [time],
+                xp: [time],
+                lh: [time]
+            }
             match.parsed_data.players.forEach(function(elem, i) {
                 var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name
-                elem.gold = [hero].concat(elem.gold)
-                match.graphdata.gold.push(elem.gold)
-                elem.xp = [hero].concat(elem.xp)
-                match.graphdata.xp.push(elem.xp)
-                elem.lh = [hero].concat(elem.lh)
-                match.graphdata.lh.push(elem.lh)
+                data.gold.push([hero].concat(elem.gold))
+                data.xp.push([hero].concat(elem.xp))
+                data.lh.push([hero].concat(elem.lh))
             })
         }
     }
-    if (info=="index"){
-        match.sums = [{
-            personaname: "Radiant"
-        }, {
-            personaname: "Dire"
-        }]
-        //compute sums
-        match.players.forEach(function(player) {
-            var target = (player.player_slot < 64 ? match.sums[0] : match.sums[1])
-            for(var prop in player) {
-                if(typeof(player[prop]) == "number") {
-                    if(!(prop in target)) {
-                        target[prop] = 0
-                    }
-                    target[prop] += player[prop]
-                }
-            }
-        })
+    if (!matchPages[info]){
+        return next()
     }
-    if(info in matchPages) {
-        render = matchPages[info].template
-    } else {
-        return res.status(404).render('404.jade')
-    }
-    res.render(render, {
+    res.render(matchPages[info].template, {
         route: info,
         match: req.match,
         tabs: matchPages
     })
 })
 app.route('/players').get(function(req, res) {
-    utility.getTrackedPlayers(function(err, docs) {
+    players.find({}, function(err, docs) {
         res.render('players.jade', {
             players: docs
         })
     })
 })
-app.route('/players/:id').get(function(req, res) {
+app.route('/players/:id').get(function(req, res, next) {
     players.findOne({
         account_id: Number(req.params.id)
     }, function(err, player) {
-        if(!player) res.status(404).send('Could not find this player!')
-        else {
+        if(!player) {
+            return next()
+        } else {
             utility.getMatches(player.account_id, function(err, matches) {
                 utility.fillPlayerStats(player, matches, function(err, player, matches) {
+                    data={}
+                    matches.forEach(function(m){
+                        data[m.start_time]=1
+                    })
                     res.render('player.jade', {
                         player: player,
                         matches: matches
@@ -231,6 +213,7 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
-app.use(function(req, res, next) {
-    res.status(404).render('404.jade')
+// Handle 404
+app.use(function(req, res) {
+    res.status(404).render('404.jade');
 });

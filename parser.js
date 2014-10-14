@@ -21,13 +21,15 @@ var users = process.env.STEAM_USER.split()
 var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
 var pq = async.queue(parseReplay, 1)
-var replay_dir = "./replays/"
-var parser_file = "./parser/target/stats-0.1.0.jar"
+var replay_dir = "replays/"
+var parser_file = "parser/target/stats-0.1.0.jar"
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
 
-app.use(bodyParser.urlencoded({}));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 var port = ports.register('parser');
 app.listen(port, function(){
     console.log('[PARSER] listening on port ' + port);
@@ -46,7 +48,7 @@ app.post("/", function(req, res) {
             })   
         }
         else{
-            res.json({
+            res.status(500).json({
                 status: 1
             })
         }
@@ -68,9 +70,16 @@ function download(match, cb) {
             if(err) {
                 return cb(err)
             }
-            downloadWithRetry(url, fileName, 1000, function() {
-                console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
-                cb(null, fileName)
+            downloadWithRetry(url, 1000, function(err, body) {
+                var archiveName = match_id + ".dem.bz2"
+                uploadToS3(archiveName, body, function(err) {
+                    //decompress and write locally
+                    var decomp = Bunzip.decode(body);
+                    fs.writeFile(fileName, decomp, function(err) {
+                        console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                        cb(null, fileName)
+                    })
+                })
             })
         })
     }
@@ -112,9 +121,6 @@ function logOnSteam(user, pass, authcode, cb) {
     Steam.logOn(logOnDetails);
     Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
-/*
- * Gets the replay url from dota
- */
 
 function getReplayUrl(match, cb) {
     if(match.start_time > moment().subtract(7, 'days').format('X')) {
@@ -166,7 +172,7 @@ function getS3URL(match_id, cb){
                 cb(null, url)
             }
             else {
-                console.log("[S3] replay %s not in S3", match_id)
+                console.log("[S3] %s not in S3", match_id)
                 cb("Replay not in S3")
             }
         })
@@ -207,7 +213,7 @@ function uploadToS3(archiveName, body, cb) {
  * Tries to download a file from the url repeatedly
  */
 
-function downloadWithRetry(url, fileName, timeout, cb) {
+function downloadWithRetry(url, timeout, cb) {
     console.log("[PARSER] downloading from %s", url)
     request({
         url: url,
@@ -215,16 +221,11 @@ function downloadWithRetry(url, fileName, timeout, cb) {
     }, function(err, response, body) {
         if(err || response.statusCode !== 200) {
             console.log("[PARSER] failed to download from %s, retrying in %ds", url, timeout / 1000)
-            setTimeout(downloadWithRetry, timeout, url, fileName, timeout * 2, cb);
+            setTimeout(function(){
+                downloadWithRetry(url, timeout*2, cb)
+            }, timeout)
         } else {
-            var archiveName = fileName + ".bz2"
-            uploadToS3(archiveName, body, function(err) {
-                //decompress and write locally
-                var decomp = Bunzip.decode(body);
-                fs.writeFile(fileName, decomp, function(err) {
-                    cb(null)
-                })
-            })
+            cb(null, body);
         }
     })
 }

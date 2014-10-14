@@ -37,3 +37,38 @@
 .vis.timeline .item{
     padding: 1px;
 }
+h3 img {
+    padding-right: 1em;
+}
+.table-img{
+    white-space: nowrap;
+    min-width: 150px;
+}
+.img-text{
+    float: left;
+    text-align: center;
+    font-size: 10px;
+}
+.ability{
+    width: 25px
+}
+.item{
+    width: 30px;
+}
+.kill{
+    width: 35px;
+}
+td.abilities {
+    padding: 8px 1px !important;
+}
+td.abilities img {
+    height: 35px;
+    width: 35px;
+}
+* {
+    font-family: 'Lato', sans-serif;
+}
+.navbar-default {
+    background-color: #BBF0FD;
+}
+.hero img {width: 50px;}
