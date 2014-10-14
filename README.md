@@ -15,6 +15,7 @@ Deployment
 ====
 * Install node dependencies `npm install`
 * Foreman `npm install -g foreman`
+* Compile parser `mvn -f parser/pom.xml package`
 * Create .env file with desired parameters
 * Run `nf start`
 
