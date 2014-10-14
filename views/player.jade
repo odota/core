@@ -1,13 +1,17 @@
 extend layout
 
 append head
-  script(type='text/javascript', src='//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js')
-  link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
-  script(type='text/javascript', src='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js')
   script.
+    var data = !{JSON.stringify(data)}
     $(document).ready(function() {
-        $('#table').dataTable({
-           "order": [[ 2, "desc" ]]
+        $('#matches').dataTable({
+           "order": [[ 0, "desc" ]]
+        });
+        $('#teammates').dataTable({
+           "order": [[ 1, "desc" ]]
+        });
+        $('#heroes').dataTable({
+           "order": [[ 1, "desc" ]]
         });
     });
     
@@ -19,10 +23,15 @@ block content
        .col-xs-4.col-sm-3.col-md-2
          h1(style='font-weight: 700;')=player.personaname || player.account_id
          p.lead (#{player.win || 0 }-#{player.lose || 0})
+     .row
+       .col-md-12
+         h3 Activity
+         div#cal-heatmap
+         script(async, src='/public/js/cal-heatmap.js')
      .row       
-       .col-md-8
+       .col-md-12
          h3 Matches
-         table.table
+         table.table#matches
            thead
              tr
               th Match ID
@@ -31,44 +40,71 @@ block content
               th Game Mode
               th Duration
               th Played
-              th Status
-            - each match in matches
+              th K
+              th D
+              th A
+              th LH
+              th DN
+              th Gold
+              th GPM
+              th XPM
+              th HD
+              th TD
+              th HH
+            each match in matches
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
-                - var hero = constants.heroes[match.player_hero]
-                td.hero: img(src=hero.img, title=hero.localized_name)
+                - var hero = constants.heroes[match.players[match.slot].hero_id]
+                td.hero
+                  if hero
+                    img(src=hero.img, title=hero.localized_name)
+                    =hero.localized_name
+                  else
+                    =match.players[match.slot].hero_id
                 td= match.player_win ? "Won" : "Lost"                
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                 td= moment.unix(match.start_time + match.duration).fromNow()
-                td= constants.parse_status[match.parse_status]
-       .col-md-4
-         h3 Teammates (2+ matches)
-         table.table#table
+                td=match.kills
+                td=match.deaths
+                td=match.assists
+                td=match.last_hits
+                td=match.denies
+                td=match.gold
+                td=match.gold_per_min
+                td=match.xp_per_min
+                td=match.hero_damage
+                td=match.tower_damage
+                td=match.hero_healing
+       .col-md-6
+         h3 Teammates
+         table.table#teammates
            thead
              tr
-               th Avatar
                th Name
                th Wins
                th Losses
            each teammate in player.teammates
-             if (teammate.account_id != constants.anonymous_account_id)
+             if (teammate.account_id != constants.anonymous_account_id && teammate.win+teammate.lose > 3)
                tr
-                 td 
-                   img(src=teammate.avatarmedium)
                  td
+                   img(src=teammate.avatar)
                    a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
                  td=teammate.win
                  td=teammate.lose
+       .col-md-6
          h3 Heroes
-         table.table
-           tr
-             th Hero
-             th Wins
-             th Losses
-           each hero in player.heroes
+         table.table#heroes
+           thead
              tr
-               - var herodata = constants.heroes[hero.hero_id]
-               td.hero: img(src=herodata.img, alt=herodata.localized_name)
-               td=hero.win
-               td=hero.lose
+               th Hero
+               th Wins
+               th Losses
+           each hero in constants.heroes
+             tr
+               td.hero
+                 img(src=hero.img, alt=hero.localized_name)
+                 =hero.localized_name
+               - var entry = player.heroes[hero.id]
+               td #{entry ? entry.win : 0}
+               td #{entry ? entry.lose : 0}

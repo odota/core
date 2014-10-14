@@ -1,11 +1,8 @@
 extend match_base
 
 append head
-  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
-  script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.js')
-  link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.css')
   script.
-    var graphdata = !{JSON.stringify(match.graphdata)}
+    var data = !{JSON.stringify(data)}
 append content 
     .row
         if match.parsed_data
@@ -21,6 +18,6 @@ append content
           .col-md-12
             h3 LH
             #chart-lh
-          script(async, type='text/javascript', src='../../public/js/chart.js')
+          script(async, src='/public/js/chart.js')
         else
           h1 This match has no parsed data!
