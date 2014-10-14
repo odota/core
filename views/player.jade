@@ -5,17 +5,38 @@ append head
     var data = !{JSON.stringify(data)}
     $(document).ready(function() {
         $('#matches').dataTable({
-           "order": [[ 0, "desc" ]]
+           "order": [[ 0, "desc" ]],
+           "columnDefs" : [
+             {
+               "targets": [1],
+               "orderData": [2]
+             },
+             {
+               "targets" : [2],
+               "visible": false
+             }
+           ]
         });
         $('#teammates').dataTable({
            "order": [[ 1, "desc" ]]
         });
         $('#heroes').dataTable({
-           "order": [[ 1, "desc" ]]
+           "order": [[ 2, "desc" ]],
+           "columnDefs" : [
+             {
+               "targets": [0],
+               "orderData": [1]
+             },
+             {
+               "targets" : [1],
+               "visible": false
+             }
+           ]
         });
     });
     
 block content
+     include ads/leaderboard
      .row
        if player.avatarmedium
          .col-xs-3.col-sm-2.col-md-1(style="margin-top:2em;")
@@ -36,6 +57,7 @@ block content
              tr
               th Match ID
               th Hero
+              th Hero Name
               th Result
               th Game Mode
               th Duration
@@ -58,9 +80,11 @@ block content
                 td.hero
                   if hero
                     img(src=hero.img, title=hero.localized_name)
-                    =hero.localized_name
                   else
                     =match.players[match.slot].hero_id
+                td
+                  if hero
+                    =hero.localized_name
                 td= match.player_win ? "Won" : "Lost"                
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
@@ -98,12 +122,14 @@ block content
            thead
              tr
                th Hero
+               th Hero Name
                th Wins
                th Losses
            each hero in constants.heroes
              tr
                td.hero
                  img(src=hero.img, alt=hero.localized_name)
+               td 
                  =hero.localized_name
                - var entry = player.heroes[hero.id]
                td #{entry ? entry.win : 0}
