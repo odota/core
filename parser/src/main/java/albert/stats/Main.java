@@ -90,33 +90,35 @@ public class Main {
                 initialized = true;
             }
 
+            int trueTime=time-gameZero;
+
+
             for (int i = 0; i < numPlayers; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
                 hero_to_slot.put(hero, i);
                 JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                 player.put("stuns", pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]));
+                int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
+                Entity e = ec.getByHandle(handle);
+                //System.err.println(e);
+                if (e!=null){
+                    //System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                }
             }
 
-            int trueTime=time-gameZero;
+            Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
+            while (runes.hasNext()){
+                Entity e = runes.next();
+                //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+            }
 
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
-                Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
-                while (runes.hasNext()){
-                    Entity e = runes.next();
-                    //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
-                }
                 for (int i = 0; i < numPlayers; i++) {
                     JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                     player.getJSONArray("lh").put(pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("xp").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
                     player.getJSONArray("gold").put(pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
-                    int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
-                    Entity e = ec.getByHandle(handle);
-                    //System.err.println(e);
-                    if (e!=null){
-                        //System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
-                    }
                 }
                 nextInterval += INTERVAL;
             }
@@ -177,7 +179,7 @@ public class Main {
                     JSONArray players = doc.getJSONArray("players");
                     for (int i = 0;i<players.length();i++){
                         String playerName = players.getJSONObject(i).getString("personaname");
-                        System.err.format("%s-%s,%s-%s %n",prefix, Arrays.toString(prefix.getBytes()), playerName, Arrays.toString(playerName.getBytes()));
+                        //System.err.format("%s-%s,%s-%s %n",prefix, Arrays.toString(prefix.getBytes()), playerName, Arrays.toString(playerName.getBytes()));
                         if (players.getJSONObject(i).getString("personaname").equals(prefix)){
                             slot=i;
                         }
