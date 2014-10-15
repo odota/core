@@ -4,7 +4,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "nf start"
   },
   "dependencies": {
     "steam": ">= 0.6.0",

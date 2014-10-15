@@ -27,7 +27,7 @@ memwatch.on('leak', function(info) {
 aq.empty = function() {
     getMatches()
 }
-utility.updateConstants();
+utility.updateConstants(function(err){});
 async.series([
     //todo listen for requests to get full history from new players
     function(cb) {
