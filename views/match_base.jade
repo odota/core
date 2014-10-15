@@ -1,23 +1,25 @@
 extend layout
 block content
   include ads/leaderboard
-  h1 Match #{match.match_id}
-  .row
+  .row.match-top
     .col-md-6
+      h1 Match #{match.match_id}
     .col-md-6
       table.table.table-condensed
-        tr(class = match.radiant_win ? "success" : "danger")
-          td Result
-          td Duration
-          td Game Mode
-          td Played
-          td Status
-        tr(class = match.radiant_win ? "success" : "danger")
-          td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-          td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-          td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
-          td= moment.unix(match.start_time + match.duration).fromNow()
-          td= constants.parse_status[match.parse_status]
+        thead
+          tr(class = match.radiant_win ? "success" : "danger")
+            th Result
+            th Duration
+            th Game Mode
+            th Played
+            th Status
+        tbody
+          tr(class = match.radiant_win ? "success" : "danger")
+            td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+            td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+            td= moment.unix(match.start_time + match.duration).fromNow()
+            td= constants.parse_status[match.parse_status]
   if match.parsed_data
     .row(style="padding-bottom:1em;")
       .col-md-12

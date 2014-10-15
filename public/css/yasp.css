@@ -6,6 +6,15 @@
     display: block;
 }
 
+.match-top {
+    margin-top: 1.5em;
+}
+
+.match-top h1 {
+    font-size: 38px;
+    font-weight: 700;
+}
+
 .vis.timeline .item.background.background-0 {
     background-color: rgba(213, 221, 246, 0.4);
 }
