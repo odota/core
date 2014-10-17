@@ -25,7 +25,7 @@ Deployment
 * STEAM_PASS (required, a Steam password)
 * STEAM_GUARD_CODE (required, a Steam guard code, can be empty)
 * STEAM_API_KEY (required, a Steam API key)
-* SESSION_SECRET (optional, a secret to use for sessions)
+* SESSION_SECRET (required, a secret to use for sessions)
 * DELETE_REPLAYS (optional, deletes replays after parse if set)
 * MONGOHQ_URL (optional, default localhost/dota, the MongoDB to use)
 * AWS_S3_BUCKET (optional, replays are saved to S3 bucket if set)
