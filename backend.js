@@ -24,9 +24,6 @@ var next_seq;
 memwatch.on('leak', function(info) {
     console.log(info);
 });
-aq.empty = function() {
-    getMatches()
-}
 utility.updateConstants(function(err){});
 async.series([
     //todo listen for requests to get full history from new players
@@ -204,6 +201,8 @@ function apiRequest(req, cb) {
                     if(resp.length > 0) {
                         next_seq = resp[resp.length - 1].match_seq_num + 1
                     }
+                    //queue next request
+                    getMatches()
                     cb(null)
                 })
             }
