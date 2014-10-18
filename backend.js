@@ -24,7 +24,10 @@ var next_seq;
 memwatch.on('leak', function(info) {
     console.log(info);
 });
-utility.updateConstants(function(err){});
+aq.drain = function() {
+    getMatches();
+}
+updateConstants(function(err) {});
 async.series([
     //todo listen for requests to get full history from new players
     function(cb) {
@@ -89,6 +92,78 @@ async.series([
 ], function(err) {
     getMatches()
 })
+
+function updateConstants(cb) {
+    var constants = require('./constants.json')
+    var heroes = constants.heroes
+    heroes.forEach(function(hero) {
+        hero.name=hero.name.replace("npc_dota_hero_", "")
+        hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
+    })
+    constants.hero_names = {}
+    for(var i = 0; i < heroes.length; i++) {
+        constants.hero_names[heroes[i].name] = heroes[i]
+    }
+    constants.heroes = buildLookup(heroes)
+    async.map(Object.keys(constants), function(key, cb) {
+        var val = constants[key]
+        if(typeof(val) == "string" && val.slice(0, 4) == "http") {
+            utility.getData(val, function(err, result) {
+                if(val == constants.items) {
+                    var items = result.itemdata
+                    constants.item_ids = {}
+                    for(var key in items) {
+                        constants.item_ids[items[key].id] = key
+                        items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+                    }
+                    constants.items = items
+                }
+                if(val == constants.ability_ids) {
+                    var lookup = {}
+                    var ability_ids = result.abilities
+                    for(var i = 0; i < ability_ids.length; i++) {
+                        lookup[ability_ids[i].id] = ability_ids[i].name
+                    }
+                    lookup["5601"] = "techies_suicide"
+                    lookup["5088"] = "skeleton_king_mortal_strike"
+                    constants.ability_ids = lookup
+                }
+                if(val == constants.abilities) {
+                    var abilities = result.abilitydata
+                    for(var key in abilities) {
+                        abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+                    }
+                    abilities["stats"] = {
+                        dname: "Stats",
+                        img: '../../public/images/Stats.png'
+                    }
+                    constants.abilities = abilities
+                }
+                if(val == constants.regions) {
+                    constants.regions = buildLookup(result.regions)
+                }
+                cb(null)
+            })
+        } else {
+            cb(null)
+        }
+    }, function(err) {
+        utility.constants.update({}, constants, {
+            upsert: true
+        }, function(err) {
+            console.log("[CONSTANTS] updated constants")
+            cb(null)
+        })
+    })
+}
+
+function buildLookup(array) {
+    var lookup = {}
+    for(var i = 0; i < array.length; i++) {
+        lookup[array[i].id] = array[i]
+    }
+    return lookup
+}
 
 function getMatches() {
     players.find({
@@ -201,8 +276,6 @@ function apiRequest(req, cb) {
                     if(resp.length > 0) {
                         next_seq = resp[resp.length - 1].match_seq_num + 1
                     }
-                    //queue next request
-                    getMatches()
                     cb(null)
                 })
             }
