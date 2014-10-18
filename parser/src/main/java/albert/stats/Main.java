@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 public class Main {
     public static final float INTERVAL = 60;
-    public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009","0010"};
+    public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
 
     public static void main(String[] args) throws Exception {
         long tStart = System.currentTimeMillis();
@@ -56,7 +56,7 @@ public class Main {
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
 
-                while (!pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]).equals("")) {
+                while (numPlayers<10 && !pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]).equals("")) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]);
                     byte[] b = st.getBytes();
                     String name = new String(b);
