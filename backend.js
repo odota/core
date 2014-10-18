@@ -95,59 +95,52 @@ async.series([
 
 function updateConstants(cb) {
     var constants = require('./constants.json')
-    var heroes = constants.heroes
-    heroes.forEach(function(hero) {
-        hero.name=hero.name.replace("npc_dota_hero_", "")
-        hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
-    })
-    constants.hero_names = {}
-    for(var i = 0; i < heroes.length; i++) {
-        constants.hero_names[heroes[i].name] = heroes[i]
-    }
-    constants.heroes = buildLookup(heroes)
     async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val) == "string" && val.slice(0, 4) == "http") {
             utility.getData(val, function(err, result) {
-                if(val == constants.items) {
-                    var items = result.itemdata
-                    constants.item_ids = {}
-                    for(var key in items) {
-                        constants.item_ids[items[key].id] = key
-                        items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
-                    }
-                    constants.items = items
-                }
-                if(val == constants.ability_ids) {
-                    var lookup = {}
-                    var ability_ids = result.abilities
-                    for(var i = 0; i < ability_ids.length; i++) {
-                        lookup[ability_ids[i].id] = ability_ids[i].name
-                    }
-                    lookup["5601"] = "techies_suicide"
-                    lookup["5088"] = "skeleton_king_mortal_strike"
-                    constants.ability_ids = lookup
-                }
-                if(val == constants.abilities) {
-                    var abilities = result.abilitydata
-                    for(var key in abilities) {
-                        abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
-                    }
-                    abilities["stats"] = {
-                        dname: "Stats",
-                        img: '../../public/images/Stats.png'
-                    }
-                    constants.abilities = abilities
-                }
-                if(val == constants.regions) {
-                    constants.regions = buildLookup(result.regions)
-                }
+                constants[key] = result
                 cb(null)
             })
         } else {
             cb(null)
         }
     }, function(err) {
+        var heroes = constants.heroes
+        heroes.forEach(function(hero) {
+            hero.name = hero.name.replace("npc_dota_hero_", "")
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
+        })
+        constants.hero_names = {}
+        for(var i = 0; i < heroes.length; i++) {
+            constants.hero_names[heroes[i].name] = heroes[i]
+        }
+        constants.heroes = buildLookup(heroes)
+        var items = constants.items.itemdata
+        constants.item_ids = {}
+        for(var key in items) {
+            constants.item_ids[items[key].id] = key
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+        }
+        constants.items = items
+        var lookup = {}
+        var ability_ids = constants.ability_ids.abilities
+        for(var i = 0; i < ability_ids.length; i++) {
+            lookup[ability_ids[i].id] = ability_ids[i].name
+        }
+        lookup["5601"] = "techies_suicide"
+        lookup["5088"] = "skeleton_king_mortal_strike"
+        constants.ability_ids = lookup
+        var abilities = constants.abilities.abilitydata
+        for(var key in abilities) {
+            abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+        }
+        abilities["stats"] = {
+            dname: "Stats",
+            img: '../../public/images/Stats.png'
+        }
+        constants.abilities = abilities
+        constants.regions = buildLookup(constants.regions.regions)
         utility.constants.update({}, constants, {
             upsert: true
         }, function(err) {
