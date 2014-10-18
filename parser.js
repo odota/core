@@ -91,10 +91,7 @@ function download(match, cb) {
 function logOnSteam(user, pass, authcode, cb) {
     var onSteamLogOn = function onSteamLogOn() {
         console.log("[STEAM] Logged on.");
-        Dota2.launch();
-        Dota2.on("ready", function() {
-            return cb(null)
-        })
+        cb(null)
     },
         onSteamSentry = function onSteamSentry(newSentry) {
             console.log("[STEAM] Received sentry.");
@@ -105,7 +102,8 @@ function logOnSteam(user, pass, authcode, cb) {
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {
-            return cb(e)
+            console.log(e)
+            cb(e)
         };
     if(!fs.existsSync("sentry")) {
         fs.openSync("sentry", 'w')
@@ -127,32 +125,24 @@ function getReplayUrl(match, cb) {
             loginNum += 1
             loginNum = loginNum % users.length
             logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
-                if (err){
-                    console.log(err)
-                }
-                setTimeout(function(){
+                Dota2.launch();
+                Dota2.on("ready", function() {
                     getReplayUrl(match, cb)
-                }, 5000)
+                })
             })
         } else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-            var timeoutProtect = setTimeout(function() {
-                // Clear the local timer variable, indicating the timeout has been triggered.
-                timeoutProtect = null;
+            setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()
+                Steam = new steam.SteamClient()
+                Dota2 = new dota2.Dota2Client(Steam, false)
                 console.log("[DOTA] request for replay timed out, relogging")
-                getReplayUrl(match, cb)
-            }, 15000)
+                return getReplayUrl(match, cb)
+            }, 10000)
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
-                if(timeoutProtect) {
-                    clearTimeout(timeoutProtect);
-                    if(err) {
-                        return cb(err)
-                    }
-                    var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
-                    return cb(null, url)
-                }
+                var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+                return cb(null, url)
             })
         }
     } else {
