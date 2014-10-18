@@ -93,7 +93,7 @@ function logOnSteam(user, pass, authcode, cb) {
         console.log("[STEAM] Logged on.");
         Dota2.launch();
         Dota2.on("ready", function() {
-            cb(null)
+            return cb(null)
         })
     },
         onSteamSentry = function onSteamSentry(newSentry) {
@@ -105,8 +105,7 @@ function logOnSteam(user, pass, authcode, cb) {
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {
-            console.log(e)
-            cb(e)
+            return cb(e)
         };
     if(!fs.existsSync("sentry")) {
         fs.openSync("sentry", 'w')
@@ -128,7 +127,12 @@ function getReplayUrl(match, cb) {
             loginNum += 1
             loginNum = loginNum % users.length
             logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
-                getReplayUrl(match, cb)
+                if (err){
+                    console.log(err)
+                }
+                setTimeout(function(){
+                    getReplayUrl(match, cb)
+                }, 5000)
             })
         } else {
             console.log("[DOTA] requesting replay %s", match.match_id)
@@ -250,7 +254,7 @@ function parseReplay(match, cb) {
         }
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
-        var cp = spawn("java", ["-jar", "-Xmx96m",
+        var cp = spawn("java", ["-jar",
                                 parser_file,
                                 fileName
                                ])
