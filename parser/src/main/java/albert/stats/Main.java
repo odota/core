@@ -56,7 +56,7 @@ public class Main {
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
 
-                while (numPlayers<10 && !pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]).equals("")) {
+                while (numPlayers<10) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]);
                     byte[] b = st.getBytes();
                     String name = new String(b);

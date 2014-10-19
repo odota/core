@@ -67,7 +67,7 @@ function download(match, cb) {
             if(err) {
                 return cb(err)
             }
-            downloadWithRetry(url, 1000, function(err, body) {
+            downloadWithRetry(url, 10000, function(err, body) {
                 var archiveName = match_id + ".dem.bz2"
                 uploadToS3(archiveName, body, function(err) {
                     //decompress and write locally
