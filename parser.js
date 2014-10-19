@@ -132,7 +132,7 @@ function getReplayUrl(match, cb) {
             })
         } else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-            setTimeout(function() {
+            var timeOut = setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()
                 Steam = new steam.SteamClient()
@@ -142,6 +142,7 @@ function getReplayUrl(match, cb) {
             }, 10000)
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
                 var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+		clearTimeout(timeOut);
                 return cb(null, url)
             })
         }
