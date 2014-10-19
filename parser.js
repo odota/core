@@ -275,7 +275,7 @@ function parseReplay(match, cb) {
                     fs.unlink(fileName)
                 }
             }
-            cb(code)
+            return cb(code)
         })
     })
 }
