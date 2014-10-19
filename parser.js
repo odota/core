@@ -26,12 +26,11 @@ var parser_file = "parser/target/stats-0.1.0.jar"
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 var port = ports.register('parser');
-app.listen(port, function(){
+app.listen(port, function() {
     console.log('[PARSER] listening on port ' + port);
 });
 var router = express.Router();
@@ -39,22 +38,20 @@ app.post("/", function(req, res) {
     matches.findOne({
         match_id: Number(req.body.match_id)
     }, function(err, doc) {
-        if (doc){
+        if(doc) {
             pq.push(doc, function(err) {})
             res.json({
                 status: 0,
                 match_id: doc.match_id,
                 position: pq.length()
-            })   
-        }
-        else{
+            })
+        } else {
             res.status(500).json({
                 status: 1
             })
         }
     })
 })
-
 /*
  * Downloads a match replay
  */
@@ -132,7 +129,7 @@ function getReplayUrl(match, cb) {
             })
         } else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-            var to = setTimeout(function() {
+            var timeOut = setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()
                 Steam = new steam.SteamClient()
@@ -141,19 +138,19 @@ function getReplayUrl(match, cb) {
                 return getReplayUrl(match, cb)
             }, 10000)
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
-                clearTimeout(to)
                 var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
+                clearTimeout(timeOut);
                 return cb(null, url)
             })
         }
     } else {
-        getS3URL(match.match_id, function(err,url){
+        getS3URL(match.match_id, function(err, url) {
             cb(err, url)
         })
     }
 }
 
-function getS3URL(match_id, cb){
+function getS3URL(match_id, cb) {
     if(process.env.AWS_S3_BUCKET) {
         var archiveName = match_id + ".dem.bz2"
         var s3 = new AWS.S3()
@@ -162,17 +159,15 @@ function getS3URL(match_id, cb){
             Key: archiveName
         }
         s3.headObject(params, function(err, data) {
-            if (!err){
+            if(!err) {
                 var url = s3.getSignedUrl('getObject', params);
                 cb(null, url)
-            }
-            else {
+            } else {
                 console.log("[S3] %s not in S3", match_id)
                 cb("Replay not in S3")
             }
         })
-    }
-    else{
+    } else {
         cb("S3 not defined")
     }
 }
@@ -216,8 +211,8 @@ function downloadWithRetry(url, timeout, cb) {
     }, function(err, response, body) {
         if(err || response.statusCode !== 200) {
             console.log("[PARSER] failed to download from %s, retrying in %ds", url, timeout / 1000)
-            setTimeout(function(){
-                downloadWithRetry(url, timeout*2, cb)
+            setTimeout(function() {
+                downloadWithRetry(url, timeout * 2, cb)
             }, timeout)
         } else {
             cb(null, body);
@@ -246,11 +241,11 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName
-                               ])
+            parser_file,
+            fileName
+        ])
         //pipe hero names to stdin
-        utility.constants.findOne({}, function(err, doc){
+        utility.constants.findOne({}, function(err, doc) {
             cp.stdin.write(JSON.stringify(doc.hero_names))
             cp.stdin.end("\n")
         })
@@ -276,7 +271,7 @@ function parseReplay(match, cb) {
                     fs.unlink(fileName)
                 }
             }
-            cb(code)
+            return cb(code)
         })
     })
 }
