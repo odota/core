@@ -32,7 +32,7 @@ async.series([
     //todo listen for requests to get full history from new players
     function(cb) {
         players.find({
-            full_history: 0
+            full_history: 1
         }, function(err, docs) {
             async.mapSeries(docs, function(player, cb2) {
                 var account_id = player.account_id
@@ -43,7 +43,7 @@ async.series([
                         account_id: account_id
                     }, {
                         $set: {
-                            full_history: 1
+                            full_history: 0
                         }
                     })
                     cb2(null)
