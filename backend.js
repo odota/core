@@ -24,9 +24,6 @@ var next_seq;
 memwatch.on('leak', function(info) {
     console.log(info);
 });
-aq.drain = function() {
-    getMatches();
-}
 updateConstants(function(err) {});
 async.series([
     //todo listen for requests to get full history from new players
@@ -91,6 +88,9 @@ async.series([
     }
 ], function(err) {
     getMatches()
+    aq.drain = function() {
+        getMatches();
+    }
 })
 
 function updateConstants(cb) {
