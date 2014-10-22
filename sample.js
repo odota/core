@@ -1,5 +1,7 @@
 conn = new Mongo();
 db = conn.getDB("dota");
 
-//create test users
-db.players.insert({account_id: 88367253, full_history:0})
+db.players.drop();
+
+//create test user
+db.players.insert({account_id: 88367253, track:1, full_history:1})
