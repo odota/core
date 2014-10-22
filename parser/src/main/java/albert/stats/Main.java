@@ -19,6 +19,18 @@ import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.util.Iterator;
 import java.util.Arrays;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.BulkWriteResult;
+import com.mongodb.Cursor;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.ParallelScanOptions;
+import com.mongodb.MongoClientURI;
+import java.util.HashMap;
 
 public class Main {
     public static final float INTERVAL = 60;
@@ -31,37 +43,36 @@ public class Main {
         JSONObject doc = new JSONObject();
         JSONArray log = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String s;
-        String input = "";
-        while ((s = in.readLine()) != null && s.length() != 0){
-            input+=s;
-        }
-        JSONObject heroes = new JSONObject(new JSONTokener(input));
+        MongoClientURI con = new MongoClientURI(args[1]);
+        MongoClient mongoClient = new MongoClient(con);
+        DB db = mongoClient.getDB(con.getDatabase());
+        DBCollection constants = db.getCollection("constants");
+        HashMap myDoc = (HashMap) constants.findOne().get("hero_names");
+        JSONObject heroes = new JSONObject(myDoc);
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
-        int numPlayers = 0;
+        int numPlayers = 10;
 
         while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
             Entity pr = match.getPlayerResource();
-            EntityCollection ec = match.getEntities();
+            //EntityCollection ec = match.getEntities();
 
             if (!initialized) {   
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
 
-                while (numPlayers<10) {
-                    String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[numPlayers]);
+                for (int i = 0; i < numPlayers; i++) {
+                    String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
                     byte[] b = st.getBytes();
                     String name = new String(b);
                     JSONObject player = new JSONObject();
-                    player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[numPlayers]));
+                    player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
                     player.put("personaname", name);
                     player.put("log", new JSONArray());
                     player.put("itemuses", new JSONObject());
@@ -80,7 +91,6 @@ public class Main {
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
                     doc.getJSONArray("players").put(player);
-                    numPlayers++;
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
                 CombatLogEntry.init(
@@ -92,26 +102,27 @@ public class Main {
 
             int trueTime=time-gameZero;
 
-
             for (int i = 0; i < numPlayers; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
                 hero_to_slot.put(hero, i);
                 JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                 player.put("stuns", pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]));
                 int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
+                /*
                 Entity e = ec.getByHandle(handle);
-                //System.err.println(e);
+                System.err.println(e);
                 if (e!=null){
                     //System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                 }
+                */
             }
-
+            /*
             Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
             while (runes.hasNext()){
                 Entity e = runes.next();
                 //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
             }
-
+*/
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
                 for (int i = 0; i < numPlayers; i++) {
@@ -348,11 +359,7 @@ public class Main {
                         case 13:
                         //ability trigger
                         //todo, so far, only seeing axe spins here
-                        System.err.format("%s %s proc %s %s%n", 
-                                          time,
-                                          cle.getAttackerName(),
-                                          cle.getInflictorName(),
-                                          cle.getTargetName() != null ? "on " + cle.getTargetName() : "");
+                        //System.err.format("%s %s proc %s %s%n", time, cle.getAttackerName(), cle.getInflictorName(), cle.getTargetName() != null ? "on " + cle.getTargetName() : "");
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
