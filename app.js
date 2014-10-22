@@ -109,28 +109,16 @@ app.route('/').get(function(req, res) {
             res.render('index.jade', {
                 user: req.user,
                 match: doc
-            },
-            function(err, html) {
-                if (err) return res.status(500).render('500.jade')
-                res.send(html)
             })
         })
     } else {
-        res.render('index.jade', {},
-            function(err, html) {
-                if (err) return res.status(500).render('500.jade')
-                res.send(html)
-            })
+        res.render('index.jade', {})
     }
 })
 app.route('/matches').get(function(req, res) {
     utility.getMatches(null, function(err, docs) {
         res.render('matches.jade', {
             matches: docs
-        },
-        function(err, html) {
-            if (err) return res.status(500).render('500.jade')
-            res.send(html)
         })
     })
 })
@@ -179,20 +167,12 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         route: info,
         match: req.match,
         tabs: matchPages
-    },
-    function(err, html) {
-        if (err) return res.status(500).render('500.jade')
-        res.send(html)
     })
 })
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
             players: docs
-        },
-        function(err, html) {
-            if (err) return res.status(500).render('500.jade')
-            res.send(html)
         })
     })
 })
@@ -212,10 +192,6 @@ app.route('/players/:id').get(function(req, res, next) {
                     res.render('player.jade', {
                         player: player,
                         matches: matches
-                    },
-                    function(err, html) {
-                        if (err) return res.status(500).render('500.jade')
-                        res.send(html)
                     })
                 })
             })
@@ -238,6 +214,12 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
+
+app.use(function(err, req, res, next) {
+    if (err) return res.status(500).render('500.jade')
+    next(err)
+})
+
 // Handle 404
 app.use(function(req, res) {
     res.status(404).render('404.jade');
