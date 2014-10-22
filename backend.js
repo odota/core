@@ -88,7 +88,7 @@ async.series([
     }
 ], function(err) {
     getMatches()
-    aq.drain = function() {
+    aq.empty = function() {
         getMatches();
     }
 })
@@ -130,6 +130,7 @@ function updateConstants(cb) {
         }
         lookup["5601"] = "techies_suicide"
         lookup["5088"] = "skeleton_king_mortal_strike"
+        lookup["5060"] = "nevermore_shadowraze1"
         constants.ability_ids = lookup
         var abilities = constants.abilities.abilitydata
         for(var key in abilities) {
