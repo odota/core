@@ -47,7 +47,11 @@
             <artifactId>json</artifactId>
             <version>20140107</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.12.4</version>
+        </dependency>
     </dependencies>
 
     <build>

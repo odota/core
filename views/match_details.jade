@@ -39,7 +39,7 @@ append content
                td #{parsedPlayer.itembuys.dust*2 || "-"}
                td #{parsedPlayer.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.buyback || "-"}
-               td #{parsedPlayer.stuns || "-"}
+               td #{parsedPlayer.stuns.toFixed(2)}
                td.table-img
                  each val, key in parsedPlayer.abilityuses
                    - var ability = constants.abilities[key]

@@ -241,14 +241,10 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            parser_file,
-            fileName
-        ])
-        //pipe hero names to stdin
-        utility.constants.findOne({}, function(err, doc) {
-            cp.stdin.write(JSON.stringify(doc.hero_names))
-            cp.stdin.end("\n")
-        })
+                                parser_file,
+                                fileName,
+                                process.env.MONGOHQ_URL || "mongodb://localhost/dota"
+                               ])
         cp.stdout.on('data', function(data) {
             output += data
         })

@@ -3,7 +3,7 @@ var utility = exports,
     request = require('request'),
     async = require('async'),
     BigNumber = require('big-number').n
-utility.db = require('monk')(process.env.MONGOHQ_URL || "localhost/dota");
+utility.db = require('monk')(process.env.MONGOHQ_URL || "mongodb://localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
     unique: true
