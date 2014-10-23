@@ -1,27 +1,8 @@
 extend layout
 
 append head
-  style.
-    .image { 
-       position: relative; 
-       width: 100%; /* for IE 6 */
-    }
-
-    h2 { 
-       position: absolute; 
-       top: 200px; 
-       left: 0; 
-       width: 100%; 
-       margin-left: 1em;
-    }
-    h2 span { 
-       color: white; 
-       font: bold 24px/45px Helvetica, Sans-Serif; 
-       letter-spacing: -1px;  
-       background: rgb(0, 0, 0); /* fallback color */
-       background: rgba(0, 0, 0, 0.7);
-       padding: 10px; 
-    }
+    link(rel='stylesheet', href='/public/css/error.css')
+    
 block content
   .row
     .col-md-12
