@@ -68,15 +68,21 @@ function download(match, cb) {
                 return cb(err)
             }
             downloadWithRetry(url, 10000, function(err, body) {
-                var archiveName = match_id + ".dem.bz2"
-                uploadToS3(archiveName, body, function(err) {
-                    //decompress and write locally
-                    var decomp = Bunzip.decode(body);
+                try {
+                    var decomp = Bunzip.decode(body)
                     fs.writeFile(fileName, decomp, function(err) {
+                        if(err) {
+                            return cb(err)
+                        }
                         console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
-                        return cb(null, fileName)
+                        var archiveName = match_id + ".dem.bz2"
+                        uploadToS3(archiveName, body, function(err) {
+                            return cb(null, fileName)
+                        })
                     })
-                })
+                } catch(e) {
+                    return cb(e)
+                }
             })
         })
     }
@@ -241,10 +247,10 @@ function parseReplay(match, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName,
-                                process.env.MONGOHQ_URL || "mongodb://localhost/dota"
-                               ])
+            parser_file,
+            fileName,
+            process.env.MONGOHQ_URL || "mongodb://localhost/dota"
+        ])
         cp.stdout.on('data', function(data) {
             output += data
         })

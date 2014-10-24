@@ -213,7 +213,7 @@ app.route('/logout').get(function(req, res) {
 })
 
 app.use(function(err, req, res, next) {
-    if (err) return res.status(500).render('500.jade')
+    if (err && process.env.NODE_ENV=="production") return res.status(500).render('500.jade')
     next(err)
 })
 
