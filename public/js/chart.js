@@ -1,4 +1,4 @@
-var height = 350
+var height = 400
 var difference = data.difference
 var gold = data.gold
 var xp = data.xp

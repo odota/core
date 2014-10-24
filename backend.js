@@ -128,10 +128,10 @@ function updateConstants(cb) {
         for(var i = 0; i < ability_ids.length; i++) {
             lookup[ability_ids[i].id] = ability_ids[i].name
         }
-        lookup["5601"] = "techies_suicide"
-        lookup["5088"] = "skeleton_king_mortal_strike"
-        lookup["5060"] = "nevermore_shadowraze1"
         constants.ability_ids = lookup
+        constants.ability_ids["5601"] = "techies_suicide"
+        constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
+        constants.ability_ids["5060"] = "nevermore_shadowraze1"
         var abilities = constants.abilities.abilitydata
         for(var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
@@ -142,6 +142,7 @@ function updateConstants(cb) {
         }
         constants.abilities = abilities
         constants.regions = buildLookup(constants.regions.regions)
+        constants.regions["251"]="Peru"
         utility.constants.update({}, constants, {
             upsert: true
         }, function(err) {
