@@ -141,7 +141,12 @@ function updateConstants(cb) {
             img: '../../public/images/Stats.png'
         }
         constants.abilities = abilities
-        constants.regions = buildLookup(constants.regions.regions)
+        var lookup = {}
+        var regions = constants.regions.regions
+        for(var i = 0; i < regions.length; i++) {
+            lookup[regions[i].id] = regions[i].name
+        }
+        constants.regions = lookup
         constants.regions["251"]="Peru"
         utility.constants.update({}, constants, {
             upsert: true
