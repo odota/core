@@ -211,6 +211,12 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
+
+app.use(function(err, req, res, next) {
+    if (err) return res.status(500).render('500.jade')
+    next(err)
+})
+
 // Handle 404
 app.use(function(req, res) {
     res.status(404).render('404.jade');
