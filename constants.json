@@ -51,7 +51,7 @@
     },
     "parse_status": {
         "0": "Queued",
-        "1": "Replay Expired",
+        "1": "Unavailable",
         "2": "Parsed",
         "3": "Untracked"
     },
