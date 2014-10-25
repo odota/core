@@ -99,19 +99,26 @@ utility.fillPlayerStats = function(player, matches, cb) {
         }
         for(j = 0; j < matches[i].players.length; j++) {
             var p = matches[i].players[j]
-            if(isRadiant(p) == playerRadiant) { //only check teammates of player
-                if(!counts[p.account_id]) {
-                    counts[p.account_id] = {}
-                    counts[p.account_id]["account_id"] = p.account_id
-                    counts[p.account_id]["win"] = 0;
-                    counts[p.account_id]["lose"] = 0;
-                }
+            if(!counts[p.account_id]) {
+                counts[p.account_id] = {}
+                counts[p.account_id]["account_id"] = p.account_id
+                counts[p.account_id]["win"] = 0
+                counts[p.account_id]["lose"] = 0
+                counts[p.account_id]["opponent"]=0
+                counts[p.account_id]["games"]=0
+            }
+            counts[p.account_id]["games"]+=1
+            if(isRadiant(p) == playerRadiant) { //teammates of player
                 if(matches[i].player_win) {
                     counts[p.account_id]["win"] += 1
                 } else {
                     counts[p.account_id]["lose"] += 1
                 }
             }
+            else{
+                counts[p.account_id]["opponent"]+=1
+            }
+
         }
     }
     //convert counts to array and filter
