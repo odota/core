@@ -235,52 +235,54 @@ function getMatchPage(url, cb) {
  */
 
 function apiRequest(req, cb) {
-    console.log("[QUEUE] api requests: %s", aq.length())
-    var url;
-    if(req.match_id) {
-        url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
-    } else if(req.summaries_id) {
-        url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + req.query
-    } else if(req.account_id) {
-        url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
-    } else {
-        url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
-    }
-    utility.getData(url, function(err, data) {
-        if(data.response) {
-            async.map(data.response.players, insertPlayer, function(err) {
-                cb(null)
-            })
-        } else if(data.result.error || data.result.status == 2) {
-            console.log(data)
-            return cb(null)
-        } else if(req.match_id) {
-            var match = data.result
-            insertMatch(match, function(err) {
-                delete queuedMatches[match.match_id]
-                cb(null)
-            })
+    setTimeout(function(){
+        console.log("[QUEUE] api requests: %s", aq.length())
+        var url;
+        if(req.match_id) {
+            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
+        } else if(req.summaries_id) {
+            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + req.query
+        } else if(req.account_id) {
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
         } else {
-            var resp = data.result.matches
-            if(req.account_id) {
-                async.map(resp, function(match, cb) {
-                    requestDetails(match, function(err) {
-                        cb(null)
-                    })
-                }, function(err) {
+            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
+        }
+        utility.getData(url, function(err, data) {
+            if(data.response) {
+                async.map(data.response.players, insertPlayer, function(err) {
+                    cb(null)
+                })
+            } else if(data.result.error || data.result.status == 2) {
+                console.log(data)
+                return cb(null)
+            } else if(req.match_id) {
+                var match = data.result
+                insertMatch(match, function(err) {
+                    delete queuedMatches[match.match_id]
                     cb(null)
                 })
             } else {
-                console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
-                async.mapSeries(resp, insertMatch, function(err) {
-                    if(resp.length > 0) {
-                        next_seq = resp[resp.length - 1].match_seq_num + 1
-                    }
-                    cb(null)
-                })
+                var resp = data.result.matches
+                if(req.account_id) {
+                    async.map(resp, function(match, cb) {
+                        requestDetails(match, function(err) {
+                            cb(null)
+                        })
+                    }, function(err) {
+                        cb(null)
+                    })
+                } else {
+                    console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
+                    async.mapSeries(resp, insertMatch, function(err) {
+                        if(resp.length > 0) {
+                            next_seq = resp[resp.length - 1].match_seq_num + 1
+                        }
+                        cb(null)
+                    })
+                }
             }
-        }
-    })
+        })
+    }, 1000)
 }
 
 function insertMatch(match, cb) {
