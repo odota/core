@@ -12,16 +12,8 @@ html
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.js')
     script(type="text/javascript" src='//cdn.jsdelivr.net/cal-heatmap/3.4.0/cal-heatmap.js')
     script(type='text/javascript' src='/public/js/utility.js')
-    script.
-     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    script(type='text/javascript' src='/public/js/ga.js')
 
-     ga('create', 'UA-55757642-1', 'auto');
-     ga('require','displayfeatures');
-     ga('send', 'pageview');
- 
     link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/3.4.0/cal-heatmap.css')
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/c3/0.3.0/c3.css')
     link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
@@ -43,6 +35,7 @@ html
             a(href="/players") Players
 
      div.container
+       include ads/leaderboard
        block content
        
      .footer(style="background-color: #BBF0FD;width: 100%;padding: 1.5em;margin-top: 2em;")
