@@ -3,37 +3,6 @@ extend layout
 append head
   script.
     var data = !{JSON.stringify(data)}
-    $(document).ready(function() {
-        $('#matches').dataTable({
-           "order": [[ 0, "desc" ]],
-           "columnDefs" : [
-             {
-               "targets": [1],
-               "orderData": [2]
-             },
-             {
-               "targets" : [2],
-               "visible": false
-             }
-           ]
-        });
-        $('#teammates').dataTable({
-           "order": [[ 1, "desc" ]]
-        });
-        $('#heroes').dataTable({
-           "order": [[ 2, "desc" ]],
-           "columnDefs" : [
-             {
-               "targets": [0],
-               "orderData": [1]
-             },
-             {
-               "targets" : [1],
-               "visible": false
-             }
-           ]
-        });
-    });
     
 block content
      .row
@@ -45,95 +14,9 @@ block content
          p.lead (#{player.win || 0 }-#{player.lose || 0})
      .row
        .col-md-12
-         h3 Activity
-         div#cal-heatmap
-         script(async, src='/public/js/cal-heatmap.js')
-     .row       
-       .col-md-12
-         h3 Matches
-         table.table#matches
-           thead
-             tr
-              th Match ID
-              th Hero
-              th Hero Name
-              th Result
-              th Game Mode
-              th Duration
-              th Played
-              th K
-              th D
-              th A
-              th LH
-              th DN
-              th Gold
-              th GPM
-              th XPM
-              th HD
-              th TD
-              th HH
-            each match in matches
-              tr(class= match.player_win ? "success" : "danger")
-                td: a(href='/matches/#{match.match_id}')= match.match_id
-                - var hero = constants.heroes[match.players[match.slot].hero_id]
-                td.hero
-                  if hero
-                    img(src=hero.img, title=hero.localized_name)
-                  else
-                    =match.players[match.slot].hero_id
-                td
-                  if hero
-                    =hero.localized_name
-                td= match.player_win ? "Won" : "Lost"                
-                td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
-                td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-                td= moment.unix(match.start_time + match.duration).fromNow()
-                td=match.kills
-                td=match.deaths
-                td=match.assists
-                td=match.last_hits
-                td=match.denies
-                td=~~(match.gold_per_min*match.duration/60)
-                td=match.gold_per_min
-                td=match.xp_per_min
-                td=match.hero_damage
-                td=match.tower_damage
-                td=match.hero_healing
-       .col-md-6
-         h3 Teammates
-         table.table#teammates
-           thead
-             tr
-               th Name
-               th Games
-               th Wins
-               th Losses
-               th Opponent
-           each teammate in player.teammates
-             if (teammate.account_id != constants.anonymous_account_id && teammate.games >= 3)
-               tr
-                 td
-                   img(src=teammate.avatar)
-                   a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-                 td=teammate.games
-                 td=teammate.win
-                 td=teammate.lose
-                 td=teammate.opponent
-       .col-md-6
-         h3 Heroes
-         table.table#heroes
-           thead
-             tr
-               th Hero
-               th Hero Name
-               th Wins
-               th Losses
-           each hero in constants.heroes
-             tr
-               td.hero
-                 img(src=hero.img, alt=hero.localized_name)
-               td 
-                 =hero.localized_name
-               - var entry = player.heroes[hero.id]
-               td #{entry ? entry.win : 0}
-               td #{entry ? entry.lose : 0}
+         ul.nav.nav-tabs
+           each val, key in tabs
+             li(class= (route == key ? 'active' : ''))
+                 a(href="/players/#{player.account_id}/" + (key == 'index' ? "" : key))= val.name
+     block playercontent 
+
