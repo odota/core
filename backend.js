@@ -217,6 +217,7 @@ function requestParse(match) {
                 })
                 .priority('high')
                 .attempts(5)
+                .backoff({delay: 30000, type:'exponential'})
                 .searchKeys(['title'])
                 .save(function(err){
                     if (!err) console.log('[KUE] Parse added for ' + match.match_id)
