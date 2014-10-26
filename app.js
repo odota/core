@@ -99,13 +99,12 @@ app.param('match_id', function(req, res, next, id) {
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
-app.locals.production = process.env.NODE_ENV || 0;
 app.route('/').get(function(req, res) {
     if(req.user) {
-        utility.getLastMatch(req.user.account_id, function(err, doc) {
+        utility.getMatches(req.user.account_id, function(err, docs) {
             res.render('index.jade', {
                 user: req.user,
-                match: doc
+                match: docs[0]
             })
         })
     } else {

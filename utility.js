@@ -13,6 +13,7 @@ utility.players.index('account_id', {
     unique: true
 })
 utility.constants = utility.db.get('constants');
+//given an array of player ids, join with data from players collection
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
@@ -27,25 +28,6 @@ utility.fillPlayerNames = function(players, cb) {
         })
     }, function(err) {
         cb(err)
-    })
-}
-utility.getLastMatch = function(account_id, cb) {
-    var search = {
-        duration: {
-            $exists: true
-        }
-    }
-    search.players = {
-        $elemMatch: {
-            account_id: account_id
-        }
-    }
-    utility.matches.findOne(search, {
-        sort: {
-            match_id: -1
-        }
-    }, function(err, docs) {
-        cb(err, docs)
     })
 }
 utility.getMatches = function(account_id, cb) {
@@ -99,19 +81,26 @@ utility.fillPlayerStats = function(player, matches, cb) {
         }
         for(j = 0; j < matches[i].players.length; j++) {
             var p = matches[i].players[j]
-            if(isRadiant(p) == playerRadiant) { //only check teammates of player
-                if(!counts[p.account_id]) {
-                    counts[p.account_id] = {}
-                    counts[p.account_id]["account_id"] = p.account_id
-                    counts[p.account_id]["win"] = 0;
-                    counts[p.account_id]["lose"] = 0;
-                }
+            if(!counts[p.account_id]) {
+                counts[p.account_id] = {}
+                counts[p.account_id]["account_id"] = p.account_id
+                counts[p.account_id]["win"] = 0
+                counts[p.account_id]["lose"] = 0
+                counts[p.account_id]["opponent"]=0
+                counts[p.account_id]["games"]=0
+            }
+            counts[p.account_id]["games"]+=1
+            if(isRadiant(p) == playerRadiant) { //teammates of player
                 if(matches[i].player_win) {
                     counts[p.account_id]["win"] += 1
                 } else {
                     counts[p.account_id]["lose"] += 1
                 }
             }
+            else{
+                counts[p.account_id]["opponent"]+=1
+            }
+
         }
     }
     //convert counts to array and filter
@@ -147,14 +136,13 @@ utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
 }
 utility.getData = function(url, cb) {
-    var delay = 1000
     request(url, function(err, res, body) {
         console.log("[API] %s", url)
         if(err || res.statusCode != 200 || !body) {
             console.log("[API] error getting data, retrying")
-            setTimeout(utility.getData, delay, url, cb)
+            return utility.getData(url, cb)
         } else {
-            setTimeout(cb, delay, null, JSON.parse(body))
+            cb(null, JSON.parse(body))
         }
     })
 }
