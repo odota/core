@@ -1,9 +1,11 @@
 var async = require("async"),
+    request = require('request'),
     utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
     cheerio = require('cheerio'),
-    kue = require('kue');
+    kue = require('kue'),
+    winston = require('winston');
 
 var jobs = kue.createQueue();
 var memwatch = require('memwatch');
@@ -19,15 +21,21 @@ var queuedMatches = {}
 var trackedPlayers = {}
 var next_seq;
 
+var logger =  new (winston.Logger)({
+    transports: [
+        new (winston.transports.File)({ filename: 'backend.log', level: 'info' })
+    ]
+});
+
 memwatch.on('leak', function(info) {
-    console.log(info);
+    logger.info(info);
 });
 
 jobs.on('job complete', function(id, result){
     kue.Job.get(id, function(err, job){
         if (err) return
         job.remove(function(err){
-            console.log("removing job, " + job)
+            logger.info("removing job, " + job)
         })
     })
 })
@@ -91,7 +99,7 @@ async.series([
                 cb(null)
             })
         } else {
-            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+            getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
                 next_seq = data.result.matches[0].match_seq_num
                 cb(null)
             })
@@ -109,7 +117,7 @@ function updateConstants(cb) {
     async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val) == "string" && val.slice(0, 4) == "http") {
-            utility.getData(val, function(err, result) {
+            getData(val, function(err, result) {
                 constants[key] = result
                 cb(null)
             })
@@ -162,7 +170,7 @@ function updateConstants(cb) {
         utility.constants.update({}, constants, {
             upsert: true
         }, function(err) {
-            console.log("[CONSTANTS] updated constants")
+            logger.info("[CONSTANTS] updated constants")
             cb(null)
         })
     })
@@ -193,7 +201,7 @@ function requestParse(match) {
     jobs.create('parse', {
         match: match
     }).priority('high').attempts(5).save(function(err){
-        if (!err) console.log('[KUE] Parse added for ' + match.match_id)
+        if (!err) logger.info('[KUE] Parse added for ' + match.match_id)
     });
     
 //     ports.get('parser', function(ps) {
@@ -210,7 +218,7 @@ function requestParse(match) {
 //                     requestParse(match)
 //                 }, 1000)
 //             } else {
-//                 console.log("[RESPONSE] %s", body)
+//                 logger.info("[RESPONSE] %s", body)
 //             }
 //         })
 //     })
@@ -230,7 +238,7 @@ function requestDetails(match, cb) {
 
 function getMatchPage(url, cb) {
     request(url, function(err, resp, body) {
-        console.log("[REMOTE] %s", url)
+        logger.info("[REMOTE] %s", url)
         var parsedHTML = cheerio.load(body);
         var matchCells = parsedHTML('td[class=cell-xlarge]')
         matchCells.each(function(i, matchCell) {
@@ -253,7 +261,7 @@ function getMatchPage(url, cb) {
 
 function apiRequest(req, cb) {
     setTimeout(function(){
-        console.log("[QUEUE] api requests: %s", aq.length())
+        logger.info("[QUEUE] api requests: %s", aq.length())
         var url;
         if(req.match_id) {
             url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
@@ -264,13 +272,13 @@ function apiRequest(req, cb) {
         } else {
             url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
         }
-        utility.getData(url, function(err, data) {
+        getData(url, function(err, data) {
             if(data.response) {
                 async.map(data.response.players, insertPlayer, function(err) {
                     cb(null)
                 })
             } else if(data.result.error || data.result.status == 2) {
-                console.log(data)
+                logger.info(data)
                 return cb(null)
             } else if(req.match_id) {
                 var match = data.result
@@ -289,7 +297,7 @@ function apiRequest(req, cb) {
                         cb(null)
                     })
                 } else {
-                    console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
+                    logger.info("[API] seq_num: %s, found %s matches", next_seq, resp.length)
                     async.mapSeries(resp, insertMatch, function(err) {
                         if(resp.length > 0) {
                             next_seq = resp[resp.length - 1].match_seq_num + 1
@@ -339,5 +347,17 @@ function insertPlayer(player, cb) {
         upsert: true
     }, function(err) {
         cb(err)
+    })
+}
+
+function getData(url, cb) {
+    request(url, function(err, res, body) {
+        logger.log("[API] %s", url)
+        if(err || res.statusCode != 200 || !body) {
+            logger.log("[API] error getting data, retrying")
+            return getData(url, cb)
+        } else {
+            cb(null, JSON.parse(body))
+        }
     })
 }
