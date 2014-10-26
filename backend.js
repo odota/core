@@ -1,19 +1,16 @@
 var async = require("async"),
     utility = require('./utility'),
     matches = utility.matches,
-    players = utility.players;
-var cheerio = require('cheerio');
+    players = utility.players,
+    cheerio = require('cheerio'),
+    kue = require('kue');
+
+var jobs = kue.createQueue();
 var memwatch = require('memwatch');
 var request = require("request");
-var seaport = require('seaport');
+
 var httpProxy = require('http-proxy');
-var server = seaport.createServer();
-var port = process.env.SEAPORT_PORT || 9001;
-server.listen(port, function() {
-    console.log("[SEAPORT] running on port %s", port)
-});
-var ports = seaport.connect(port);
-var parserNum = -1;
+
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
@@ -21,10 +18,24 @@ var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
 var next_seq;
+
 memwatch.on('leak', function(info) {
     console.log(info);
 });
+
+jobs.on('job complete', function(id, result){
+    kue.Job.get(id, function(err, job){
+        if (err) return
+        job.remove(function(err){
+            console.log("removing job, " + job)
+        })
+    })
+})
+
+kue.app.listen(5001);
+
 updateConstants(function(err) {});
+
 async.series([
     //todo listen for requests to get full history from new players
     function(cb) {
@@ -63,7 +74,7 @@ async.series([
             parse_status: 0
         }, function(err, docs) {
             docs.forEach(function(match) {
-                requestParse(match)
+                requestParse({match_id: match.match_id, start_time: match.start_time})
             })
         })
         cb(null)
@@ -179,24 +190,30 @@ function getMatches() {
 }
 
 function requestParse(match) {
-    ports.get('parser', function(ps) {
-        parserNum = (parserNum + 1) % ps.length;
-        var u = 'http://' + ps[parserNum].host + ':' + ps[parserNum].port;
-        request.post({
-            url: u,
-            form: {
-                match_id: match.match_id
-            }
-        }, function(err, res, body) {
-            if(err || res.statusCode != 200) {
-                setTimeout(function() {
-                    requestParse(match)
-                }, 1000)
-            } else {
-                console.log("[RESPONSE] %s", body)
-            }
-        })
-    })
+    jobs.create('parse', {
+        match: match
+    }).priority('high').attempts(5).save(function(err){
+        if (!err) console.log('[KUE] Parse added for ' + match.match_id)
+    });
+    
+//     ports.get('parser', function(ps) {
+//         parserNum = (parserNum + 1) % ps.length;
+//         var u = 'http://' + ps[parserNum].host + ':' + ps[parserNum].port;
+//         request.post({
+//             url: u,
+//             form: {
+//                 match_id: match.match_id
+//             }
+//         }, function(err, res, body) {
+//             if(err || res.statusCode != 200) {
+//                 setTimeout(function() {
+//                     requestParse(match)
+//                 }, 1000)
+//             } else {
+//                 console.log("[RESPONSE] %s", body)
+//             }
+//         })
+//     })
 }
 
 function requestDetails(match, cb) {
@@ -303,10 +320,11 @@ function insertMatch(match, cb) {
         })
         summaries.query = steamids.join()
         aq.unshift(summaries, function(err) {})
-        requestParse(match)
+        requestParse({match_id: match.match_id, start_time: match.start_time})
     }
     cb(null)
 }
+
 /*
  * Inserts/updates a player in the database
  */

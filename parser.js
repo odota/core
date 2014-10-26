@@ -1,4 +1,4 @@
-var async = require("async"),
+var //async = require("async"),
     request = require("request"),
     fs = require("fs"),
     spawn = require('child_process').spawn,
@@ -10,48 +10,58 @@ var async = require("async"),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false),
-    AWS = require('aws-sdk');
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var seaport = require('seaport');
-var ports = seaport.connect(process.env.SEAPORT_HOST || "localhost", process.env.SEAPORT_PORT || 9001);
+    AWS = require('aws-sdk'),
+    kue = require('kue');
+
+var jobs = kue.createQueue();
+
+// var express = require('express');
+// var app = express();
+//var bodyParser = require('body-parser');
+// var seaport = require('seaport');
+// var ports = seaport.connect(process.env.SEAPORT_HOST || "localhost", process.env.SEAPORT_PORT || 9001);
 var loginNum = 0
 var users = process.env.STEAM_USER.split()
 var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
-var pq = async.queue(parseReplay, 1)
+// var pq = async.queue(parseReplay, 1)
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
+
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
-var port = ports.register('parser');
-app.listen(port, function() {
-    console.log('[PARSER] listening on port ' + port);
-});
-var router = express.Router();
-app.post("/", function(req, res) {
-    matches.findOne({
-        match_id: Number(req.body.match_id)
-    }, function(err, doc) {
-        if(doc) {
-            pq.push(doc, function(err) {})
-            res.json({
-                status: 0,
-                match_id: doc.match_id,
-                position: pq.length()
-            })
-        } else {
-            res.status(500).json({
-                status: 1
-            })
-        }
-    })
+// app.use(bodyParser.urlencoded({
+//     extended: true
+// }));
+// var port = ports.register('parser');
+// app.listen(port, function() {
+//     console.log('[PARSER] listening on port ' + port);
+// });
+// var router = express.Router();
+// app.post("/", function(req, res) {
+//     matches.findOne({
+//         match_id: Number(req.body.match_id)
+//     }, function(err, doc) {
+//         if(doc) {
+//             pq.push(doc, function(err) {})
+//             res.json({
+//                 status: 0,
+//                 match_id: doc.match_id,
+//                 position: pq.length()
+//             })
+//         } else {
+//             res.status(500).json({
+//                 status: 1
+//             })
+//         }
+//     })
+// })
+
+jobs.process('parse', function(job, done){
+    parseReplay(job.data.match, done)
 })
+
 /*
  * Downloads a match replay
  */
