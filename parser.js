@@ -27,7 +27,7 @@ jobs.on('job complete', function(id, result){
     kue.Job.get(id, function(err, job){
         if (err) return
         job.remove(function(err){
-            console.log("removing job, " + job)
+            console.log("removing parse request for match " + job.data.match.match_id)
         })
     })
 })
