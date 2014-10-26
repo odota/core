@@ -12,14 +12,23 @@ var request = require("request"),
     AWS = require('aws-sdk'),
     kue = require('kue');
 
-var jobs = kue.createQueue();
-
 var loginNum = 0
 var users = process.env.STEAM_USER.split()
 var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
+
+var jobs = kue.createQueue();
+
+jobs.on('job complete', function(id, result){
+    kue.Job.get(id, function(err, job){
+        if (err) return
+        job.remove(function(err){
+            console.log("removing job, " + job)
+        })
+    })
+})
 
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
@@ -58,6 +67,7 @@ function download(match, cb) {
                         })
                     })
                 } catch(e) {
+                    console.log(e)
                     return cb(e)
                 }
             })
@@ -250,7 +260,7 @@ function parseReplay(match, cb) {
                     fs.unlink(fileName)
                 }
             }
-            return cb(code)
+            return cb(null, code)
         })
     })
 }

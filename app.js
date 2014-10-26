@@ -38,6 +38,7 @@ app.listen(port, function() {
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
+
 passport.deserializeUser(function(id, done) {
     players.findOne({
         account_id: id
