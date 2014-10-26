@@ -32,18 +32,6 @@ jobs.on('job complete', function(id, result){
     })
 })
 
-// jobs.on('job failed attempt', function(id, result){
-//     console.log('a job failed')
-//     console.log(result)
-//     kue.Job.get(id, function(err, job){
-//         if (err) return console.log("failed to find id")
-//         if ('url' in err) {
-//             job.data["url"] = err.url
-//             job.update()
-//         }
-//     })
-// })
-
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
@@ -63,7 +51,7 @@ function download(job, cb) {
         console.log("[PARSER] found local replay for match %s", match_id)
         cb(null, fileName);
     } else {
-        getReplayUrl(match, function(err, url) {
+        getReplayUrl(job, function(err, url) {
             if(err) {
                 return cb(err)
             }
@@ -76,7 +64,7 @@ function download(job, cb) {
             }, function(err, response, body) {
                 if(err || response.statusCode !== 200) {
                     console.log("[PARSER] failed to download from %s", url)
-                    cb({reason: "DOWNLOAD TIMEOUT", url: url})
+                    cb("DOWNLOAD TIMEOUT")
                 } else {
                     try {
                         var decomp = Bunzip.decode(body)
@@ -135,10 +123,13 @@ function logOnSteam(user, pass, authcode, cb) {
     Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
 
-function getReplayUrl(match, cb) {
-    if ('url' in match) {
-        return cb(null, match.url)
+function getReplayUrl(job, cb) {
+    
+    if ('url' in job.data) {
+        return cb(null, job.data.url)
     }
+    
+    var match = job.data.match
     
     if(match.start_time > moment().subtract(7, 'days').format('X')) {
         if(!Steam.loggedOn) {
@@ -147,7 +138,7 @@ function getReplayUrl(match, cb) {
             logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
                 Dota2.launch();
                 Dota2.on("ready", function() {
-                    getReplayUrl(match, cb)
+                    getReplayUrl(job, cb)
                 })
             })
         } else {
@@ -160,11 +151,15 @@ function getReplayUrl(match, cb) {
                 Steam = new steam.SteamClient()
                 Dota2 = new dota2.Dota2Client(Steam, false)
                 console.log("[DOTA] request for replay timed out.")
-                return cb({reason: "STEAM TIMEOUT"})
+                return cb("STEAM TIMEOUT")
             }, 10000)
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
                 var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
                 clearTimeout(timeOut);
+                
+                //Add url to job so we don't need to check again.
+                job.data['url'] = url
+                job.update()
                 return cb(null, url)
             })
         }
@@ -190,11 +185,11 @@ function getS3URL(match_id, cb) {
                 cb(null, url)
             } else {
                 console.log("[S3] %s not in S3", match_id)
-                cb({reason: "Replay not in S3"})
+                cb("Replay not in S3")
             }
         })
     } else {
-        cb({reason: "S3 not defined"})
+        cb("S3 not defined")
     }
 }
 
@@ -236,7 +231,7 @@ function parseReplay(job, cb) {
     console.log("[PARSER] requesting parse for match %s", match_id)
     download(job, function(err, fileName) {
         if(err) {
-            if ('reason' in err) {
+            if (err) {
                 if (err === "S3 not defined" || err === "Replay not in S3")
                     return cb(null, err) //Mark as done
             }
