@@ -1,0 +1,19 @@
+extend player
+block playercontent
+       h3 Heroes
+       table.table#heroes
+         thead
+           tr
+             th Hero
+             th Hero Name
+             th Wins
+             th Losses
+         each hero in constants.heroes
+           tr
+             td.hero
+               img(src=hero.img, alt=hero.localized_name)
+             td 
+               =hero.localized_name
+             - var entry = player.heroes[hero.id]
+             td #{entry ? entry.win : 0}
+             td #{entry ? entry.lose : 0}

@@ -55,7 +55,6 @@ utility.fillPlayerStats = function(player, matches, cb) {
     var account_id = player.account_id
     var counts = {}
     var heroes = {}
-    player.aggregates={}
     for(i = 0; i < matches.length; i++) {
         for(j = 0; j < matches[i].players.length; j++) {
             var p = matches[i].players[j]
