@@ -1,10 +1,3 @@
-/**
-* Created with dev.
-* User: howardc93
-* Date: 2014-10-06
-* Time: 11:38 AM
-* To change this template use Tools | Templates.
-*/
 function format(input){
     input = Number(input)
     if (input==0){
@@ -80,4 +73,33 @@ $( document ).ready(function() {
     $('.format-seconds').each(function(){
         $(this).text(formatSeconds($(this).text()))
     })
+    $('#matches').dataTable({
+        "order": [[ 0, "desc" ]],
+        "columnDefs" : [
+            {
+                "targets": [1],
+                "orderData": [2]
+            },
+            {
+                "targets" : [2],
+                "visible": false
+            }
+        ]
+    });
+    $('#teammates').dataTable({
+        "order": [[ 1, "desc" ]]
+    });
+    $('#heroes').dataTable({
+        "order": [[ 2, "desc" ]],
+        "columnDefs" : [
+            {
+                "targets": [0],
+                "orderData": [1]
+            },
+            {
+                "targets" : [1],
+                "visible": false
+            }
+        ]
+    });
 })
