@@ -1,4 +1,6 @@
 var async = require("async"),
+    express = require('express'),
+    auth = require('http-auth'),
     request = require('request'),
     utility = require('./utility'),
     matches = utility.matches,
@@ -10,8 +12,6 @@ var async = require("async"),
 var jobs = kue.createQueue();
 var memwatch = require('memwatch');
 var request = require("request");
-
-var httpProxy = require('http-proxy');
 
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
@@ -27,20 +27,22 @@ var logger =  new (winston.Logger)({
     ]
 });
 
+var basic = auth.basic({
+        realm: "Kue"
+    }, function (username, password, callback) { // Custom authentication method.
+        callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+    }
+);
+
+var app = express();
+
+app.use(auth.connect(basic));
+app.use(kue.app);
+app.listen(process.env.KUE_PORT || 5001);
+
 memwatch.on('leak', function(info) {
-    logger.info(info);
+    logger.info('[LEAK]' + info);
 });
-
-jobs.on('job complete', function(id, result){
-    kue.Job.get(id, function(err, job){
-        if (err) return
-        job.remove(function(err){
-            logger.info("removing job, " + job)
-        })
-    })
-})
-
-kue.app.listen(5001);
 
 updateConstants(function(err) {});
 
@@ -71,7 +73,7 @@ async.series([
         })
     },
     function(cb) {
-        //check most recent 100 matches for tracked players
+       //check most recent 100 matches for tracked players
         players.find({
             track: 1
         }, function(err, docs) {
@@ -82,7 +84,7 @@ async.series([
             parse_status: 0
         }, function(err, docs) {
             docs.forEach(function(match) {
-                requestParse({match_id: match.match_id, start_time: match.start_time})
+                requestParse(match)
             })
         })
         cb(null)
@@ -198,30 +200,34 @@ function getMatches() {
 }
 
 function requestParse(match) {
-    jobs.create('parse', {
-        match: match
-    }).priority('high').attempts(5).save(function(err){
-        if (!err) logger.info('[KUE] Parse added for ' + match.match_id)
-    });
-    
-//     ports.get('parser', function(ps) {
-//         parserNum = (parserNum + 1) % ps.length;
-//         var u = 'http://' + ps[parserNum].host + ':' + ps[parserNum].port;
-//         request.post({
-//             url: u,
-//             form: {
-//                 match_id: match.match_id
-//             }
-//         }, function(err, res, body) {
-//             if(err || res.statusCode != 200) {
-//                 setTimeout(function() {
-//                     requestParse(match)
-//                 }, 1000)
-//             } else {
-//                 logger.info("[RESPONSE] %s", body)
-//             }
-//         })
-//     })
+    request
+    .get('http://localhost:' + (process.env.KUE_PORT || 5001) + '/job/search?q=' + match.match_id,
+        {
+        'auth': {
+            'user': process.env.KUE_USER,
+            'pass': process.env.KUE_PASS
+        }
+    }, function(err, res, body){
+        if(!err && res.statusCode === 200) {
+            if (JSON.parse(body).length === 0) {
+                 jobs
+                .create('parse', {
+                    title: match.match_id,
+                    match: {match_id: match.match_id, start_time: match.start_time}
+                })
+                .priority('high')
+                .attempts(5)
+                .searchKeys(['title'])
+                .save(function(err){
+                    if (!err) console.log('[KUE] Parse added for ' + match.match_id)
+                });      
+            } else {
+                console.log('[KUE] ' + match.match_id + ' already queued.')
+            }
+        } else {
+            console.log('[KUE] Could not connect to Kue server.')
+        }
+    })
 }
 
 function requestDetails(match, cb) {
@@ -328,7 +334,7 @@ function insertMatch(match, cb) {
         })
         summaries.query = steamids.join()
         aq.unshift(summaries, function(err) {})
-        requestParse({match_id: match.match_id, start_time: match.start_time})
+        requestParse(match)
     }
     cb(null)
 }
