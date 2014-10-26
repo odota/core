@@ -1,0 +1,21 @@
+extend player
+block playercontent
+  h3 Teammates
+  table.table#teammates
+    thead
+        tr
+          th Name
+          th Games
+          th Wins
+          th Losses
+          th Opponent
+      each teammate in player.teammates
+        if (teammate.account_id != constants.anonymous_account_id && teammate.games >= 2)
+          tr
+            td
+              img(src=teammate.avatar)
+              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+            td=teammate.games
+            td=teammate.win
+            td=teammate.lose
+            td=teammate.opponent

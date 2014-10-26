@@ -1,6 +1,6 @@
-var express = require('express'),
-    session = require('express-session'),
-    utility = require('./utility'),
+var express = require('express');
+var session = require('cookie-session');
+var utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
     async = require('async'),
@@ -30,6 +30,24 @@ var matchPages = {
     chat: {
         template: "match_chat",
         name: "Chat"
+    }
+}
+var playerPages = {
+    index: {
+        template: "player_index",
+        name: "Player"
+    },
+    matches: {
+        template: "player_matches",
+        name: "Matches"
+    },
+    heroes: {
+        template: "player_heroes",
+        name: "Heroes"
+    },
+    teammates: {
+        template: "player_teammates",
+        name: "Teammates"
     }
 }
 app.listen(port, function() {
@@ -76,9 +94,7 @@ passport.use(new SteamStrategy({
 }))
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    saveUninitialized: true,
-    resave: true
+    secret: process.env.SESSION_SECRET
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
@@ -119,7 +135,7 @@ app.route('/matches').get(function(req, res) {
     })
 })
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info ? req.params.info : 'index',
+    var info = req.params.info || 'index',
         match = req.match
     if(info == "graphs") {
         if(match.parsed_data) {
@@ -156,7 +172,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
             })
         }
     }
-    if (!matchPages[info]){
+    if(!matchPages[info]) {
         return next()
     }
     res.render(matchPages[info].template, {
@@ -172,22 +188,28 @@ app.route('/players').get(function(req, res) {
         })
     })
 })
-app.route('/players/:id').get(function(req, res, next) {
+app.route('/players/:account_id/:info?').get(function(req, res, next) {
+    var info = req.params.info || 'index';
     players.findOne({
-        account_id: Number(req.params.id)
+        account_id: Number(req.params.account_id)
     }, function(err, player) {
         if(!player) {
             return next()
         } else {
             utility.getMatches(player.account_id, function(err, matches) {
                 utility.fillPlayerStats(player, matches, function(err, player, matches) {
-                    data={}
-                    matches.forEach(function(m){
-                        data[m.start_time]=1
+                    data = {}
+                    matches.forEach(function(m) {
+                        data[m.start_time] = 1
                     })
-                    res.render('player.jade', {
+                    if(!playerPages[info]) {
+                        return next()
+                    }
+                    res.render(playerPages[info].template, {
+                        route: info,
                         player: player,
-                        matches: matches
+                        matches: matches,
+                        tabs: playerPages
                     })
                 })
             })
@@ -210,12 +232,10 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     res.redirect('/')
 })
-
 app.use(function(err, req, res, next) {
-    if (err && process.env.NODE_ENV=="production") return res.status(500).render('500.jade')
+    if(err && process.env.NODE_ENV == "production") return res.status(500).render('500.jade')
     next(err)
 })
-
 // Handle 404
 app.use(function(req, res) {
     res.status(404).render('404.jade');

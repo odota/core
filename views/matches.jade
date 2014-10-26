@@ -19,7 +19,7 @@ block content
             td Game Mode
             td Region
             td Duration
-            td Winner
+            td Result
             td Played
             td Status
         - each match in matches
@@ -28,9 +28,6 @@ block content
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            if match.radiant_win
-              td Radiant
-            else
-              td Dire
+            td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.parse_status[match.parse_status]

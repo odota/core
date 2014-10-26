@@ -25,6 +25,7 @@
     "memwatch": "~0.2.2",
     "seaport": "~2.0.9",
     "http-proxy": "~1.5.3",
-    "cheerio": "~0.17.0"
+    "cheerio": "~0.17.0",
+    "cookie-session": "~1.0.2"
   }
 }
