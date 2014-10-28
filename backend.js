@@ -132,6 +132,8 @@ function updateConstants(cb) {
         constants.ability_ids["5601"] = "techies_suicide"
         constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
         constants.ability_ids["5060"] = "nevermore_shadowraze1"
+        constants.ability_ids["5061"] = "nevermore_shadowraze1"
+
         var abilities = constants.abilities.abilitydata
         for(var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"

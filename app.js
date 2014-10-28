@@ -234,7 +234,7 @@ app.route('/logout').get(function(req, res) {
 })
 app.use(function(err, req, res, next) {
     if(err && process.env.NODE_ENV == "production") return res.status(500).render('500.jade')
-    next(err)
+    next()
 })
 // Handle 404
 app.use(function(req, res) {
