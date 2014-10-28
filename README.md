@@ -26,13 +26,14 @@ Deployment
 * STEAM_GUARD_CODE (required, a Steam guard code, can be empty)
 * STEAM_API_KEY (required, a Steam API key)
 * SESSION_SECRET (required, a secret to use for sessions)
+* KUE_USER (required, for http authentication on KUE UI)
+* KUE_PASS (required, for http authentication on KUE UI)
+* KUE_PORT (optional, defaults to 5001)
 * DELETE_REPLAYS (optional, deletes replays after parse if set)
 * MONGOHQ_URL (optional, default localhost/dota, the MongoDB to use)
 * AWS_S3_BUCKET (optional, replays are saved to S3 bucket if set)
 * AWS_ACCESS_KEY_ID (optional, allows use of S3)
 * AWS_SECRET_ACCESS_KEY (optional, allows use of S3)
 * SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
-* SEAPORT_HOST
-* SEAPORT_PORT
 * NODE_ENV
 * ROOT_URL
