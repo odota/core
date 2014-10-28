@@ -1,8 +1,8 @@
 var utility = exports,
     fs = require('fs'),
-    request = require('request'),
     async = require('async'),
-    BigNumber = require('big-number').n
+    BigNumber = require('big-number').n;
+
 utility.db = require('monk')(process.env.MONGOHQ_URL || "mongodb://localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
@@ -134,17 +134,7 @@ utility.convert64to32 = function(id) {
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
 }
-utility.getData = function(url, cb) {
-    request(url, function(err, res, body) {
-        console.log("[API] %s", url)
-        if(err || res.statusCode != 200 || !body) {
-            console.log("[API] error getting data, retrying")
-            return utility.getData(url, cb)
-        } else {
-            cb(null, JSON.parse(body))
-        }
-    })
-}
+
 
 function isRadiant(player) {
     return player.player_slot < 64
