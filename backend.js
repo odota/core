@@ -80,6 +80,7 @@ async.series([
                 requestParse(match)
             })
         })
+        //todo check for stuck active jobs and reset to waiting
         cb(null)
     },
     function(cb) {
@@ -213,7 +214,7 @@ function requestParse(match) {
                     type: 'exponential'
                 }).searchKeys(['title']).save(function(err) {
                     if(!err) console.log('[KUE] Parse added for ' + match.match_id)
-                });
+                        });
             } else {
                 console.log('[KUE] ' + match.match_id + ' already queued.')
             }
