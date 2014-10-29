@@ -1,33 +1,51 @@
 var async = require("async"),
+    express = require('express'),
+    auth = require('http-auth'),
+    request = require('request'),
     utility = require('./utility'),
     matches = utility.matches,
-    players = utility.players;
-var cheerio = require('cheerio');
+    players = utility.players,
+    cheerio = require('cheerio'),
+    kue = require('kue'),
+    winston = require('winston');
+var jobs = kue.createQueue();
 var memwatch = require('memwatch');
 var request = require("request");
-var seaport = require('seaport');
-var httpProxy = require('http-proxy');
-var server = seaport.createServer();
-var port = process.env.SEAPORT_PORT || 9001;
-server.listen(port, function() {
-    console.log("[SEAPORT] running on port %s", port)
-});
-var ports = seaport.connect(port);
-var parserNum = -1;
 var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
+var jobTimeout = 5 * 60 * 1000 // Job timeout for kue
 var next_seq;
+var logger = new(winston.Logger)({
+    transports: [
+        new(winston.transports.File)({
+            filename: 'backend.log',
+            level: 'info'
+        })
+    ]
+});
+var basic = auth.basic({
+    realm: "Kue"
+}, function(username, password, callback) { // Custom authentication method.
+    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+});
+var app = express();
+app.use(auth.connect(basic));
+app.use(kue.app);
+app.listen(process.env.KUE_PORT || 5001);
+
+setInterval(findStuckJobs, jobTimeout)
+
 memwatch.on('leak', function(info) {
-    console.log(info);
+    logger.info('[LEAK]' + info);
 });
 updateConstants(function(err) {});
 async.series([
-    //todo listen for requests to get full history from new players
     function(cb) {
+        //scrape players full match history
         players.find({
             full_history: 1
         }, function(err, docs) {
@@ -66,6 +84,7 @@ async.series([
                 requestParse(match)
             })
         })
+
         cb(null)
     },
     function(cb) {
@@ -80,7 +99,7 @@ async.series([
                 cb(null)
             })
         } else {
-            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+            getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
                 next_seq = data.result.matches[0].match_seq_num
                 cb(null)
             })
@@ -98,7 +117,7 @@ function updateConstants(cb) {
     async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val) == "string" && val.slice(0, 4) == "http") {
-            utility.getData(val, function(err, result) {
+            getData(val, function(err, result) {
                 constants[key] = result
                 cb(null)
             })
@@ -111,11 +130,11 @@ function updateConstants(cb) {
             hero.name = hero.name.replace("npc_dota_hero_", "")
             hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
         })
+        constants.heroes = buildLookup(heroes)
         constants.hero_names = {}
         for(var i = 0; i < heroes.length; i++) {
             constants.hero_names[heroes[i].name] = heroes[i]
         }
-        constants.heroes = buildLookup(heroes)
         var items = constants.items.itemdata
         constants.item_ids = {}
         for(var key in items) {
@@ -133,7 +152,6 @@ function updateConstants(cb) {
         constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
         constants.ability_ids["5060"] = "nevermore_shadowraze1"
         constants.ability_ids["5061"] = "nevermore_shadowraze1"
-
         var abilities = constants.abilities.abilitydata
         for(var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
@@ -149,11 +167,11 @@ function updateConstants(cb) {
             lookup[regions[i].id] = regions[i].name
         }
         constants.regions = lookup
-        constants.regions["251"]="Peru"
+        constants.regions["251"] = "Peru"
         utility.constants.update({}, constants, {
             upsert: true
         }, function(err) {
-            console.log("[CONSTANTS] updated constants")
+            logger.info("[CONSTANTS] updated constants")
             cb(null)
         })
     })
@@ -181,26 +199,54 @@ function getMatches() {
 }
 
 function requestParse(match) {
-    ports.get('parser', function(ps) {
-        parserNum = (parserNum + 1) % ps.length;
-        var u = 'http://' + ps[parserNum].host + ':' + ps[parserNum].port;
-        request.post({
-            url: u,
-            form: {
-                match_id: match.match_id
-            }
-        }, function(err, res, body) {
-            if(err || res.statusCode != 200) {
-                setTimeout(function() {
-                    requestParse(match)
-                }, 1000)
+    request.get('http://localhost:' + (process.env.KUE_PORT || 5001) + '/job/search?q=' + match.match_id, {
+        'auth': {
+            'user': process.env.KUE_USER,
+            'pass': process.env.KUE_PASS
+        }
+    }, function(err, res, body) {
+        if(!err && res.statusCode === 200) {
+            if(JSON.parse(body).length === 0) {
+                jobs.create('parse', {
+                    title: match.match_id,
+                    match: {
+                        match_id: match.match_id,
+                        start_time: match.start_time
+                    }
+                }).priority('high').attempts(5).backoff({
+                    delay: 30000,
+                    type: 'exponential'
+                }).searchKeys(['title']).save(function(err) {
+                    if(!err) logger.info('[KUE] Parse added for ' + match.match_id)
+                        });
             } else {
-                console.log("[RESPONSE] %s", body)
+                logger.info('[KUE] ' + match.match_id + ' already queued.')
             }
-        })
+        } else {
+            logger.info('[KUE] Could not connect to Kue server.')
+        }
     })
 }
 
+function findStuckJobs() {
+    logger.info('[KUE] Looking for stuck jobs.')
+    
+    kue.Job.rangeByType('parse', 'active', 0, 20, 'ASC', function(err, ids) {
+        if(!err) {
+            ids.forEach(function(job){
+                if (Date.now() - job.updated_at > jobTimeout) {
+                    job.state('inactive', function(err){
+                        if (err) logger.info('[KUE] Failed to move from active to inactive.')
+                        else logger.info('[KUE] Moved ' + job.data.match.match_id + ' back to queue.')
+                    })
+                }
+            })
+        } else {
+            logger.info('[KUE] Could not connect to Kue server.')
+        }
+    })
+}
+                
 function requestDetails(match, cb) {
     matches.findOne({
         match_id: match.match_id
@@ -215,7 +261,7 @@ function requestDetails(match, cb) {
 
 function getMatchPage(url, cb) {
     request(url, function(err, resp, body) {
-        console.log("[REMOTE] %s", url)
+        logger.info("[REMOTE] %s", url)
         var parsedHTML = cheerio.load(body);
         var matchCells = parsedHTML('td[class=cell-xlarge]')
         matchCells.each(function(i, matchCell) {
@@ -237,8 +283,8 @@ function getMatchPage(url, cb) {
  */
 
 function apiRequest(req, cb) {
-    setTimeout(function(){
-        console.log("[QUEUE] api requests: %s", aq.length())
+    setTimeout(function() {
+        logger.info("[QUEUE] api requests: %s", aq.length())
         var url;
         if(req.match_id) {
             url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
@@ -249,13 +295,13 @@ function apiRequest(req, cb) {
         } else {
             url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
         }
-        utility.getData(url, function(err, data) {
+        getData(url, function(err, data) {
             if(data.response) {
                 async.map(data.response.players, insertPlayer, function(err) {
                     cb(null)
                 })
             } else if(data.result.error || data.result.status == 2) {
-                console.log(data)
+                logger.info(data)
                 return cb(null)
             } else if(req.match_id) {
                 var match = data.result
@@ -274,7 +320,7 @@ function apiRequest(req, cb) {
                         cb(null)
                     })
                 } else {
-                    console.log("[API] seq_num: %s, found %s matches", next_seq, resp.length)
+                    logger.info("[API] seq_num: %s, found %s matches", next_seq, resp.length)
                     async.mapSeries(resp, insertMatch, function(err) {
                         if(resp.length > 0) {
                             next_seq = resp[resp.length - 1].match_seq_num + 1
@@ -323,5 +369,17 @@ function insertPlayer(player, cb) {
         upsert: true
     }, function(err) {
         cb(err)
+    })
+}
+
+function getData(url, cb) {
+    request(url, function(err, res, body) {
+        logger.info("[API] %s", url)
+        if(err || res.statusCode != 200 || !body) {
+            logger.info("[API] error getting data, retrying")
+            return getData(url, cb)
+        } else {
+            cb(null, JSON.parse(body))
+        }
     })
 }
