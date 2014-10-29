@@ -17,7 +17,7 @@ var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
-var jobTimeout = 60 * 1000 // Job timeout for kue
+var jobTimeout = 5 * 60 * 1000 // Job timeout for kue
 var next_seq;
 var logger = new(winston.Logger)({
     transports: [
@@ -231,7 +231,7 @@ function requestParse(match) {
 function findStuckJobs() {
     logger.info('[KUE] Looking for stuck jobs.')
     
-    kue.Job.rangeByType('parse', 'active', 0, 10, 'ASC', function(err, ids) {
+    kue.Job.rangeByType('parse', 'active', 0, 20, 'ASC', function(err, ids) {
         if(!err) {
             ids.forEach(function(job){
                 if (Date.now() - job.updated_at > jobTimeout) {
