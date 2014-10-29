@@ -14,14 +14,6 @@ block playercontent
               th K
               th D
               th A
-              th LH
-              th DN
-              th Gold
-              th GPM
-              th XPM
-              th HD
-              th TD
-              th HH
             each match in matches
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
@@ -38,14 +30,6 @@ block playercontent
                 td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
                 td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
                 td= moment.unix(match.start_time + match.duration).fromNow()
-                td=match.kills
-                td=match.deaths
-                td=match.assists
-                td=match.last_hits
-                td=match.denies
-                td=~~(match.gold_per_min*match.duration/60)
-                td=match.gold_per_min
-                td=match.xp_per_min
-                td=match.hero_damage
-                td=match.tower_damage
-                td=match.hero_healing
+                td=match.players[match.slot].kills
+                td=match.players[match.slot].deaths
+                td=match.players[match.slot].assists

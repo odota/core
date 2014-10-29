@@ -33,7 +33,10 @@ html
             a(href="/matches") Matches
           li
             a(href="/players") Players
-
+        if (user)
+          ul.nav.navbar-nav.navbar-right
+            li
+              a(href="/players/"+user.account_id)=user.personaname
      div.container
        include ads/leaderboard
        block content
