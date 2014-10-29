@@ -17,6 +17,7 @@ var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
+var jobTimeout = 60 * 1000 // Job timeout for kue
 var next_seq;
 var logger = new(winston.Logger)({
     transports: [
@@ -35,6 +36,9 @@ var app = express();
 app.use(auth.connect(basic));
 app.use(kue.app);
 app.listen(process.env.KUE_PORT || 5001);
+
+setInterval(findStuckJobs, jobTimeout)
+
 memwatch.on('leak', function(info) {
     logger.info('[LEAK]' + info);
 });
@@ -80,7 +84,7 @@ async.series([
                 requestParse(match)
             })
         })
-        //todo check for stuck active jobs and reset to waiting
+
         cb(null)
     },
     function(cb) {
@@ -213,17 +217,36 @@ function requestParse(match) {
                     delay: 30000,
                     type: 'exponential'
                 }).searchKeys(['title']).save(function(err) {
-                    if(!err) console.log('[KUE] Parse added for ' + match.match_id)
+                    if(!err) logger.info('[KUE] Parse added for ' + match.match_id)
                         });
             } else {
-                console.log('[KUE] ' + match.match_id + ' already queued.')
+                logger.info('[KUE] ' + match.match_id + ' already queued.')
             }
         } else {
-            console.log('[KUE] Could not connect to Kue server.')
+            logger.info('[KUE] Could not connect to Kue server.')
         }
     })
 }
 
+function findStuckJobs() {
+    logger.info('[KUE] Looking for stuck jobs.')
+    
+    kue.Job.rangeByType('parse', 'active', 0, 10, 'ASC', function(err, ids) {
+        if(!err) {
+            ids.forEach(function(job){
+                if (Date.now() - job.updated_at > jobTimeout) {
+                    job.state('inactive', function(err){
+                        if (err) logger.info('[KUE] Failed to move from active to inactive.')
+                        else logger.info('[KUE] Moved ' + job.data.match.match_id + ' back to queue.')
+                    })
+                }
+            })
+        } else {
+            logger.info('[KUE] Could not connect to Kue server.')
+        }
+    })
+}
+                
 function requestDetails(match, cb) {
     matches.findOne({
         match_id: match.match_id
@@ -351,9 +374,9 @@ function insertPlayer(player, cb) {
 
 function getData(url, cb) {
     request(url, function(err, res, body) {
-        logger.log("[API] %s", url)
+        logger.info("[API] %s", url)
         if(err || res.statusCode != 200 || !body) {
-            logger.log("[API] error getting data, retrying")
+            logger.info("[API] error getting data, retrying")
             return getData(url, cb)
         } else {
             cb(null, JSON.parse(body))

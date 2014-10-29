@@ -43,7 +43,6 @@ jobs.process('parse', function(job, done){
 /*
  * Downloads a match replay
  */
-
 function download(job, cb) {
     var match_id = job.data.match.match_id
     var fileName = replay_dir + match_id + ".dem"
@@ -168,6 +167,7 @@ function getReplayUrl(job, cb) {
         })
     }
 }
+
 
 function getS3URL(match_id, cb) {
     if(process.env.AWS_S3_BUCKET) {
