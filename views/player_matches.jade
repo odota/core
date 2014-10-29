@@ -14,6 +14,12 @@ block playercontent
               th K
               th D
               th A
+              th LH
+              th DN
+              th GPM
+              th XPM
+              th HD
+              th TD
             each match in matches
               tr(class= match.player_win ? "success" : "danger")
                 td: a(href='/matches/#{match.match_id}')= match.match_id
@@ -33,3 +39,9 @@ block playercontent
                 td=match.players[match.slot].kills
                 td=match.players[match.slot].deaths
                 td=match.players[match.slot].assists
+                td=match.players[match.slot].last_hits
+                td=match.players[match.slot].denies
+                td=match.players[match.slot].gold_per_min
+                td=match.players[match.slot].xp_per_min
+                td=match.players[match.slot].hero_damage
+                td=match.players[match.slot].tower_damage

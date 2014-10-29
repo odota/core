@@ -206,6 +206,8 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 var account_id = player.account_id
                 var counts = {}
                 var heroes = {}
+                player.win = 0
+                player.lose = 0
                 for(i = 0; i < matches.length; i++) {
                     for(j = 0; j < matches[i].players.length; j++) {
                         var p = matches[i].players[j]
@@ -213,6 +215,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                             var playerRadiant = utility.isRadiant(p)
                             matches[i].player_win = (playerRadiant == matches[i].radiant_win)
                             matches[i].slot = j
+                            matches[i].player_win ? player.win += 1 : player.lose += 1
                             if(!heroes[p.hero_id]) {
                                 heroes[p.hero_id] = {}
                                 heroes[p.hero_id]["games"] = 0
@@ -252,10 +255,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.teammates = []
                 for(var id in counts) {
                     var count = counts[id]
-                    if(id == player.account_id) {
-                        player.win = count.win
-                        player.lose = count.lose
-                    } else {
+                    if(id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
                         player.teammates.push(count)
                     }
                 }

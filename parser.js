@@ -11,38 +11,44 @@ var request = require("request"),
     Dota2 = new dota2.Dota2Client(Steam, false),
     AWS = require('aws-sdk'),
     kue = require('kue');
-
 var loginNum = 0
 var users = process.env.STEAM_USER.split()
 var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
-
 var jobs = kue.createQueue();
-
 jobs.promote(); //For delayed jobs
-
-jobs.on('job complete', function(id, result){
-    kue.Job.get(id, function(err, job){
-        if (err) return
-        job.remove(function(err){
+jobs.on('job complete', function(id, result) {
+    kue.Job.get(id, function(err, job) {
+        if(err) return
+        job.remove(function(err) {
             console.log("removing parse request for match " + job.data.match.match_id)
         })
-            })
+    })
 })
-
+jobs.on('job failed', function(id, result) {
+    kue.Job.get(id, function(err, job) {
+        if(err) return
+        matches.update({
+            match_id: job.data.match.match_id
+        }, {
+            $set: {
+                parse_status: 1
+            }
+        })
+    })
+})
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-
-jobs.process('parse', function(job, done){
+jobs.process('parse', function(job, done) {
     parseReplay(job, done)
 })
-
 /*
  * Downloads a match replay
  */
+
 function download(job, cb) {
     var match_id = job.data.match.match_id
     var fileName = replay_dir + match_id + ".dem"
@@ -54,9 +60,7 @@ function download(job, cb) {
             if(err) {
                 return cb(err)
             }
-
             console.log("[PARSER] downloading from %s", url)
-
             request({
                 url: url,
                 encoding: null
@@ -68,7 +72,7 @@ function download(job, cb) {
                     try {
                         var decomp = Bunzip.decode(body)
                         fs.writeFile(fileName, decomp, function(err) {
-                            if (err){
+                            if(err) {
                                 return cb(err)
                             }
                             console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
@@ -85,7 +89,6 @@ function download(job, cb) {
         })
     }
 }
-
 /*
  * Logs onto steam and launches Dota 2
  */
@@ -122,13 +125,10 @@ function logOnSteam(user, pass, authcode, cb) {
 }
 
 function getReplayUrl(job, cb) {
-
-    if ('url' in job.data) {
+    if('url' in job.data) {
         return cb(null, job.data.url)
     }
-
     var match = job.data.match
-
     if(match.start_time > moment().subtract(7, 'days').format('X')) {
         if(!Steam.loggedOn) {
             loginNum += 1
@@ -141,7 +141,6 @@ function getReplayUrl(job, cb) {
             })
         } else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-
             // Try to get replay for 10 sec, else give up and try again later.
             var timeOut = setTimeout(function() {
                 Dota2.exit()
@@ -154,7 +153,6 @@ function getReplayUrl(job, cb) {
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
                 var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
                 clearTimeout(timeOut);
-
                 //Add url to job so we don't need to check again.
                 job.data['url'] = url
                 job.update()
@@ -167,7 +165,6 @@ function getReplayUrl(job, cb) {
         })
     }
 }
-
 
 function getS3URL(match_id, cb) {
     if(process.env.AWS_S3_BUCKET) {
@@ -219,37 +216,28 @@ function uploadToS3(archiveName, body, cb) {
         cb(null)
     }
 }
-
 /*
  * Parses a replay for a match
  */
 
 function parseReplay(job, cb) {
     var match_id = job.data.match.match_id
-
     console.log("[PARSER] requesting parse for match %s", match_id)
     download(job, function(err, fileName) {
         if(err) {
-            if (err === "S3 UNAVAILABLE"){
+            if(err === "S3 UNAVAILABLE") {
                 return cb(null, err) //Mark as done
             }
             console.log("[PARSER] Error for match %s: %s", match_id, err)
-            matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            })
             return cb(err)
         }
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-                                parser_file,
-                                fileName,
-                                process.env.MONGOHQ_URL || "mongodb://localhost/dota"
-                               ])
+            parser_file,
+            fileName,
+            process.env.MONGOHQ_URL || "mongodb://localhost/dota"
+        ])
         cp.stdout.on('data', function(data) {
             output += data
         })
