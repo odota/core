@@ -53,6 +53,10 @@ var playerPages = {
 app.listen(port, function() {
     console.log("[WEB] listening on port %s", port)
 })
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'jade');
+app.locals.moment = require('moment');
+var host = process.env.ROOT_URL
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
@@ -63,13 +67,6 @@ passport.deserializeUser(function(id, done) {
         done(err, user)
     })
 });
-app.use(function(req, res, next) {
-    utility.constants.findOne({}, function(err, doc) {
-        app.locals.constants = doc
-        next()
-    })
-})
-var host = process.env.ROOT_URL
 passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
@@ -98,6 +95,16 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
+app.use(function(req, res, next) {
+    user = req.user
+    next()
+})
+app.use(function(req, res, next) {
+    utility.constants.findOne({}, function(err, doc) {
+        app.locals.constants = doc
+        next()
+    })
+})
 app.param('match_id', function(req, res, next, id) {
     matches.findOne({
         match_id: Number(id)
@@ -112,14 +119,10 @@ app.param('match_id', function(req, res, next, id) {
         }
     })
 })
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'jade');
-app.locals.moment = require('moment');
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getMatches(req.user.account_id, function(err, docs) {
             res.render('index.jade', {
-                user: req.user,
                 match: docs[0]
             })
         })
@@ -135,8 +138,11 @@ app.route('/matches').get(function(req, res) {
     })
 })
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index',
-        match = req.match
+    var info = req.params.info || 'index'
+    var match = req.match
+    if(!matchPages[info]) {
+        return next()
+    }
     if(info == "graphs") {
         if(match.parsed_data) {
             //compute graphs
@@ -172,9 +178,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
             })
         }
     }
-    if(!matchPages[info]) {
-        return next()
-    }
     res.render(matchPages[info].template, {
         route: info,
         match: req.match,
@@ -190,6 +193,9 @@ app.route('/players').get(function(req, res) {
 })
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index';
+    if(!playerPages[info]) {
+        return next()
+    }
     players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
@@ -197,13 +203,69 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next()
         } else {
             utility.getMatches(player.account_id, function(err, matches) {
-                utility.fillPlayerStats(player, matches, function(err, player, matches) {
-                    data = {}
-                    matches.forEach(function(m) {
-                        data[m.start_time] = 1
-                    })
-                    if(!playerPages[info]) {
-                        return next()
+                var account_id = player.account_id
+                var counts = {}
+                var heroes = {}
+                for(i = 0; i < matches.length; i++) {
+                    for(j = 0; j < matches[i].players.length; j++) {
+                        var p = matches[i].players[j]
+                        if(p.account_id == account_id) {
+                            var playerRadiant = utility.isRadiant(p)
+                            matches[i].player_win = (playerRadiant == matches[i].radiant_win)
+                            matches[i].slot = j
+                            if(!heroes[p.hero_id]) {
+                                heroes[p.hero_id] = {}
+                                heroes[p.hero_id]["games"] = 0
+                                heroes[p.hero_id]["win"] = 0
+                                heroes[p.hero_id]["lose"] = 0
+                            }
+                            heroes[p.hero_id]["games"] += 1
+                            if(matches[i].player_win) {
+                                heroes[p.hero_id]["win"] += 1
+                            } else {
+                                heroes[p.hero_id]["lose"] += 1
+                            }
+                        }
+                    }
+                    if(info == "teammates") {
+                        for(j = 0; j < matches[i].players.length; j++) {
+                            var p = matches[i].players[j]
+                            if(utility.isRadiant(p) == playerRadiant) { //teammates of player
+                                if(!counts[p.account_id]) {
+                                    counts[p.account_id] = {}
+                                    counts[p.account_id]["account_id"] = p.account_id
+                                    counts[p.account_id]["win"] = 0
+                                    counts[p.account_id]["lose"] = 0
+                                    counts[p.account_id]["games"] = 0
+                                }
+                                counts[p.account_id]["games"] += 1
+                                if(matches[i].player_win) {
+                                    counts[p.account_id]["win"] += 1
+                                } else {
+                                    counts[p.account_id]["lose"] += 1
+                                }
+                            }
+                        }
+                    }
+                }
+                //convert counts to array and filter
+                player.teammates = []
+                for(var id in counts) {
+                    var count = counts[id]
+                    if(id == player.account_id) {
+                        player.win = count.win
+                        player.lose = count.lose
+                    } else {
+                        player.teammates.push(count)
+                    }
+                }
+                player.heroes = heroes
+                utility.fillPlayerNames(player.teammates, function(err) {
+                    if(info == "index") {
+                        data = {}
+                        matches.forEach(function(m) {
+                            data[m.start_time] = 1
+                        })
                     }
                     res.render(playerPages[info].template, {
                         route: info,
@@ -233,10 +295,14 @@ app.route('/logout').get(function(req, res) {
     res.redirect('/')
 })
 app.use(function(err, req, res, next) {
-    if(err && process.env.NODE_ENV == "production") return res.status(500).render('500.jade')
+    if(err && process.env.NODE_ENV == "production") {
+        return res.status(500).render('500.jade')
+    }
     next()
 })
 // Handle 404
 app.use(function(req, res) {
-    res.status(404).render('404.jade');
+    if(process.env.NODE_ENV == "production") {
+        res.status(404).render('404.jade');
+    }
 });
