@@ -6,6 +6,7 @@ block playercontent
            tr
              th Hero
              th Hero Name
+             th Games
              th Wins
              th Losses
          each hero in constants.heroes
@@ -15,5 +16,6 @@ block playercontent
              td 
                =hero.localized_name
              - var entry = player.heroes[hero.id]
+             td #{entry ? entry.games : 0}
              td #{entry ? entry.win : 0}
              td #{entry ? entry.lose : 0}
