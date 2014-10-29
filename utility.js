@@ -51,73 +51,6 @@ utility.getMatches = function(account_id, cb) {
         cb(err, docs)
     })
 }
-utility.fillPlayerStats = function(player, matches, cb) {
-    var account_id = player.account_id
-    var counts = {}
-    var heroes = {}
-    for(i = 0; i < matches.length; i++) {
-        for(j = 0; j < matches[i].players.length; j++) {
-            var p = matches[i].players[j]
-            if(p.account_id == account_id) {
-                var playerRadiant = isRadiant(p)
-                matches[i].player_win = (playerRadiant == matches[i].radiant_win)
-                matches[i].slot = j
-                matches[i].gold = ~~(p.gold_per_min*matches[i].duration/60)
-                for (var prop in p){
-                    matches[i][prop]=p[prop]
-                }
-                if(!heroes[p.hero_id]) {
-                    heroes[p.hero_id] = {}
-                    heroes[p.hero_id]["win"] = 0
-                    heroes[p.hero_id]["lose"] = 0
-                }
-                if(matches[i].player_win) {
-                    heroes[p.hero_id]["win"] += 1
-                } else {
-                    heroes[p.hero_id]["lose"] += 1
-                }
-            }
-        }
-        for(j = 0; j < matches[i].players.length; j++) {
-            var p = matches[i].players[j]
-            if(!counts[p.account_id]) {
-                counts[p.account_id] = {}
-                counts[p.account_id]["account_id"] = p.account_id
-                counts[p.account_id]["win"] = 0
-                counts[p.account_id]["lose"] = 0
-                counts[p.account_id]["opponent"]=0
-                counts[p.account_id]["games"]=0
-            }
-            counts[p.account_id]["games"]+=1
-            if(isRadiant(p) == playerRadiant) { //teammates of player
-                if(matches[i].player_win) {
-                    counts[p.account_id]["win"] += 1
-                } else {
-                    counts[p.account_id]["lose"] += 1
-                }
-            }
-            else{
-                counts[p.account_id]["opponent"]+=1
-            }
-
-        }
-    }
-    //convert counts to array and filter
-    player.teammates = []
-    for(var id in counts) {
-        var count = counts[id]
-        if(id == player.account_id) {
-            player.win = count.win
-            player.lose = count.lose
-        } else {
-            player.teammates.push(count)
-        }
-    }
-    player.heroes = heroes
-    utility.fillPlayerNames(player.teammates, function(err) {
-        cb(null, player, matches)
-    })
-}
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -136,6 +69,6 @@ utility.convert32to64 = function(id) {
 }
 
 
-function isRadiant(player) {
+utility.isRadiant= function(player) {
     return player.player_slot < 64
 }
