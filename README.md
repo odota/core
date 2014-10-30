@@ -10,9 +10,12 @@ Requirements
 ====
 * node.js v0.10
 * Java 1.7
+* Maven
+* Redis
 
 Deployment
 ====
+* Install MongoDB/Redis/Maven (or use remote provider)
 * Install node dependencies `npm install`
 * Foreman `npm install -g foreman`
 * Compile parser `mvn -f parser/pom.xml package`
