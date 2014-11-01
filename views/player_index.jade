@@ -1,5 +1,8 @@
 extend player
 block playercontent
          h3 Activity
-         div#cal-heatmap
+         p
+           button.btn.btn-default#prev <
+           button.btn.btn-default#next >
+         div#cal-heatmap         
          script(async, src='/public/js/cal-heatmap.js')
