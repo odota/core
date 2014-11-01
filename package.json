@@ -26,7 +26,6 @@
     "cheerio": "~0.17.0",
     "cookie-session": "~1.0.2",
     "kue": "0.8.9",
-    "http-auth": "2.2.0",
-    "protobuf": "~0.11.0"
+    "http-auth": "2.2.0"
   }
 }
