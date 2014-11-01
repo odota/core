@@ -1,20 +1,19 @@
 var cal = new CalHeatMap();
-var m = moment().subtract(11,'month');
-var w = moment().subtract(89,'day');
-
 cal.init({
-    start: new Date(m),
-	range: 12,
-	domain: "month",
-	subDomain: "day",
+    start: new Date(moment().subtract(11, 'month')),
+    range: 12,
+    domain: "month",
+    subDomain: "day",
     data: data,
     tooltip: true,
     legend: [1,2,3,4],
     itemName: ["match", "matches"],
     subDomainTextFormat: function(date, value) {
-		return value;
-	},
-    cellSize: 15
+        return value;
+    },
+    cellSize: 15,
+    previousSelector: "#prev",
+    nextSelector: "#next"
 });
 
 /*
