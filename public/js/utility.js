@@ -47,7 +47,7 @@ $( document ).ready(function() {
 
             })
         })
-        console.log(sums)
+
         //add sums to table
         var tfoot = $("<tfoot>")
         for (var key in sums){
