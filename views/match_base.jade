@@ -1,8 +1,14 @@
 extend layout
+
+append head
+    meta(property="og:title",  content="Match #{match.match_id}")
+    
 block content
   .row.match-top
     .col-md-6
       h1 Match #{match.match_id}
+      .addthis_sharing_toolbox
+      script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
     .col-md-6
       table.table.table-condensed
         thead
