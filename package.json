@@ -26,6 +26,8 @@
     "cheerio": "~0.17.0",
     "cookie-session": "~1.0.2",
     "kue": "0.8.9",
-    "http-auth": "2.2.0"
+    "http-auth": "2.2.0",
+    "redis": "0.12.1",
+    "hiredis": "0.1.17"
   }
 }
