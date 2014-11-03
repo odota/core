@@ -8,6 +8,8 @@ var utility = require('./utility'),
     path = require('path'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
+    redis = require('redis'),
+    cache = redis.createClient(process.env.CACHE_PORT, '127.0.0.1', {}),
     app = express();
 var port = Number(process.env.PORT || 3000);
 var matchPages = {
@@ -106,19 +108,45 @@ app.use(function(req, res, next) {
     })
 })
 app.param('match_id', function(req, res, next, id) {
-    matches.findOne({
-        match_id: Number(id)
-    }, function(err, match) {
-        if(!match) {
-            return next()
-        } else {
-            utility.fillPlayerNames(match.players, function(err) {
-                req.match = match
-                next()
+    
+    // Check cache for html
+    cache.get(req.url, function(err, reply) {
+        
+        if (err || !reply) {
+            // Check cache for match data
+            cache.get(id, function(err, reply) {
+        
+                if (err || !reply) {
+                    matches.findOne({
+                        match_id: Number(id)
+                    }, function(err, match) {
+                        if(!match) {
+                            return next()
+                        } else {
+                            utility.fillPlayerNames(match.players, function(err) {
+                                req.match = match
+                                //Add to cache if we have parsed data
+                                if (match.parsed_data) {
+                                    cache.set(id, match)    
+                                }
+                                return next()
+                            })
+                        }
+                    })
+                } else if (reply) {
+                    req.match = JSON.parse(reply)
+                    return next()
+                }
             })
+        } else if (reply) {
+            console.log("Cache hit for HTML for request " + req.url)
+            return res.send(reply);
+        } else {
+            return next()
         }
     })
 })
+
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getMatches(req.user.account_id, function(err, docs) {
@@ -140,6 +168,7 @@ app.route('/matches').get(function(req, res) {
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index'
     var match = req.match
+    
     if(!matchPages[info]) {
         return next()
     }
@@ -182,8 +211,16 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         route: info,
         match: req.match,
         tabs: matchPages
+    }, function(err, html){
+        if (err) return next(err)
+        if (match.parsed_data) {
+            cache.set(req.url, html)            
+        }
+
+        return res.send(html)
     })
 })
+
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
