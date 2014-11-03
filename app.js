@@ -113,10 +113,12 @@ app.param('match_id', function(req, res, next, id) {
     cache.get(req.url, function(err, reply) {
         
         if (err || !reply) {
+            console.log("Cache miss for HTML for request " + req.url)
             // Check cache for match data
             cache.get(id, function(err, reply) {
         
                 if (err || !reply) {
+                    console.log("Cache miss for match " + id)
                     matches.findOne({
                         match_id: Number(id)
                     }, function(err, match) {
@@ -127,13 +129,14 @@ app.param('match_id', function(req, res, next, id) {
                                 req.match = match
                                 //Add to cache if we have parsed data
                                 if (match.parsed_data) {
-                                    cache.set(id, match)    
+                                    cache.set(id, JSON.stringify(match))    
                                 }
                                 return next()
                             })
                         }
                     })
                 } else if (reply) {
+                    console.log("Cache hit for Document for match " + id)
                     req.match = JSON.parse(reply)
                     return next()
                 }
