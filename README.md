@@ -40,3 +40,5 @@ Deployment
 * SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
 * NODE_ENV
 * ROOT_URL
+* CACHE_PORT (required, port for redis instance for caching)
+* CACHE_HOST (optional, host for redis instance for caching, defaults to localhost)
