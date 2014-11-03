@@ -6,12 +6,22 @@ var utility = require('./utility'),
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
+    winston = require('winston'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
     redis = require('redis'),
     cache = redis.createClient(process.env.CACHE_PORT, process.env.CACHE_HOST || '127.0.0.1', {}),
     app = express();
 var port = Number(process.env.PORT || 3000);
+var logger = new(winston.Logger)({
+    transports: [
+        new(winston.transports.File)({
+            filename: 'web.log',
+            level: 'info'
+        })
+    ]
+});
+
 var matchPages = {
     index: {
         template: "match_index",
@@ -53,7 +63,7 @@ var playerPages = {
     }
 }
 app.listen(port, function() {
-    console.log("[WEB] listening on port %s", port)
+    logger.info("[WEB] listening on port %s", port)
 })
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
@@ -113,12 +123,12 @@ app.param('match_id', function(req, res, next, id) {
     cache.get(req.url, function(err, reply) {
         
         if (err || !reply) {
-            console.log("Cache miss for HTML for request " + req.url)
+            logger.info("Cache miss for HTML for request " + req.url)
             // Check cache for match data
             cache.get(id, function(err, reply) {
         
                 if (err || !reply) {
-                    console.log("Cache miss for match " + id)
+                    logger.info("Cache miss for match " + id)
                     matches.findOne({
                         match_id: Number(id)
                     }, function(err, match) {
@@ -136,13 +146,13 @@ app.param('match_id', function(req, res, next, id) {
                         }
                     })
                 } else if (reply) {
-                    console.log("Cache hit for Document for match " + id)
+                    logger.info("Cache hit for Document for match " + id)
                     req.match = JSON.parse(reply)
                     return next()
                 }
             })
         } else if (reply) {
-            console.log("Cache hit for HTML for request " + req.url)
+            logger.info("Cache hit for HTML for request " + req.url)
             return res.send(reply);
         } else {
             return next()
