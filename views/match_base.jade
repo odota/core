@@ -2,6 +2,7 @@ extend layout
 
 append head
     meta(property="og:title",  content="Match #{match.match_id}")
+    | <!-- This page generated at #{moment(Date.now()).format('MMMM Do YYYY, h:mm:ss a')} -->
     
 block content
   .row.match-top
