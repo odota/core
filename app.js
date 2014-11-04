@@ -6,10 +6,22 @@ var utility = require('./utility'),
     async = require('async'),
     fs = require('fs'),
     path = require('path'),
+    winston = require('winston'),
     passport = require('passport'),
     SteamStrategy = require('passport-steam').Strategy,
+    redis = require('redis'),
+    cache = redis.createClient(process.env.CACHE_PORT || 16379, process.env.CACHE_HOST || '127.0.0.1', {}),
     app = express();
 var port = Number(process.env.PORT || 3000);
+var logger = new(winston.Logger)({
+    transports: [
+        new(winston.transports.File)({
+            filename: 'web.log',
+            level: 'info'
+        })
+    ]
+});
+
 var matchPages = {
     index: {
         template: "match_index",
@@ -51,7 +63,7 @@ var playerPages = {
     }
 }
 app.listen(port, function() {
-    console.log("[WEB] listening on port %s", port)
+    logger.info("[WEB] listening on port %s", port)
 })
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
@@ -106,19 +118,48 @@ app.use(function(req, res, next) {
     })
 })
 app.param('match_id', function(req, res, next, id) {
-    matches.findOne({
-        match_id: Number(id)
-    }, function(err, match) {
-        if(!match) {
-            return next()
-        } else {
-            utility.fillPlayerNames(match.players, function(err) {
-                req.match = match
-                next()
+    
+    // Check cache for html
+    cache.get(req.url, function(err, reply) {
+        
+        if (err || !reply) {
+            logger.info("Cache miss for HTML for request " + req.url)
+            // Check cache for match data
+            cache.get(id, function(err, reply) {
+        
+                if (err || !reply) {
+                    logger.info("Cache miss for match " + id)
+                    matches.findOne({
+                        match_id: Number(id)
+                    }, function(err, match) {
+                        if(!match) {
+                            return next()
+                        } else {
+                            utility.fillPlayerNames(match.players, function(err) {
+                                req.match = match
+                                //Add to cache if we have parsed data
+                                if (match.parsed_data) {
+                                    cache.set(id, JSON.stringify(match))    
+                                }
+                                return next()
+                            })
+                        }
+                    })
+                } else if (reply) {
+                    logger.info("Cache hit for Document for match " + id)
+                    req.match = JSON.parse(reply)
+                    return next()
+                }
             })
+        } else if (reply) {
+            logger.info("Cache hit for HTML for request " + req.url)
+            return res.send(reply);
+        } else {
+            return next()
         }
     })
 })
+
 app.route('/').get(function(req, res) {
     if(req.user) {
         utility.getMatches(req.user.account_id, function(err, docs) {
@@ -140,6 +181,7 @@ app.route('/matches').get(function(req, res) {
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index'
     var match = req.match
+    
     if(!matchPages[info]) {
         return next()
     }
@@ -182,8 +224,16 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         route: info,
         match: req.match,
         tabs: matchPages
+    }, function(err, html){
+        if (err) return next(err)
+        if (match.parsed_data) {
+            cache.set(req.url, html)            
+        }
+
+        return res.send(html)
     })
 })
+
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
