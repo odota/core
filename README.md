@@ -45,5 +45,5 @@ to use a fixed amount of memory and with some key eviction policy.
 * SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
 * NODE_ENV
 * ROOT_URL
-* CACHE_PORT (required, port for Redis instance for caching)
+* CACHE_PORT (optional, defaults to 16379, port for Redis instance for caching)
 * CACHE_HOST (optional, host for Redis instance for caching, defaults to localhost)
