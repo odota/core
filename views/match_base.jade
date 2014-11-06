@@ -8,8 +8,6 @@ block content
   .row.match-top
     .col-md-6
       h1 Match #{match.match_id}
-      .addthis_sharing_toolbox
-      script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
     .col-md-6
       table.table.table-condensed
         thead
@@ -30,8 +28,14 @@ block content
             td= constants.parse_status[match.parse_status]
   if match.parsed_data
     .row
-      .col-md-12
+      .col-md-10
         ul.nav.nav-tabs
           each val, key in tabs
             li(class= (route == key ? 'active' : ''))
                 a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+      .col-md-2
+        .addthis_sharing_toolbox.pull-right
+  else
+    .row
+      .addthis_sharing_toolbox.pull-right
+  script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
