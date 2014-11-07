@@ -17,7 +17,7 @@ var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var queuedMatches = {}
 var trackedPlayers = {}
-var jobTimeout = 5 * 60 * 1000 // Job timeout for kue
+var jobTimeout = 5 * 60 * 1000 // Job timeout for kue, 5 minutes
 var next_seq;
 var logger = new(winston.Logger)({
     transports: [
@@ -213,8 +213,8 @@ function requestParse(match) {
                         match_id: match.match_id,
                         start_time: match.start_time
                     }
-                }).priority('high').attempts(5).backoff({
-                    delay: 30000,
+                }).priority('high').attempts(10).backoff({
+                    delay: 60000,
                     type: 'exponential'
                 }).searchKeys(['title']).save(function(err) {
                     if(!err) logger.info('[KUE] Parse added for ' + match.match_id)
