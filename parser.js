@@ -9,15 +9,18 @@ var request = require("request"),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false),
-    AWS = require('aws-sdk'),
-    kue = require('kue');
+    AWS = require('aws-sdk');
+var kue = utility.kue;
+var jobs = utility.jobs;
 var loginNum = 0
 var users = process.env.STEAM_USER.split()
 var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
-var jobs = kue.createQueue();
+if(!fs.existsSync(replay_dir)) {
+    fs.mkdir(replay_dir)
+}
 jobs.promote(); //For delayed jobs
 jobs.on('job complete', function(id, result) {
     kue.Job.get(id, function(err, job) {
@@ -33,9 +36,6 @@ jobs.on('job failed', function(id, result) {
         if(err) return
     })
 })
-if(!fs.existsSync(replay_dir)) {
-    fs.mkdir(replay_dir)
-}
 jobs.process('parse', function(job, done) {
     parseReplay(job, done)
 })

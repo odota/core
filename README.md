@@ -12,10 +12,11 @@ Requirements
 * Java 1.7
 * Maven
 * Redis
+* MongoDB
 
 Deployment
 ====
-* Install MongoDB/Redis/Maven (or use remote provider)
+* Install MongoDB/Redis/Maven/Java (or use remote provider)
 * Install node dependencies `npm install`
 * Foreman `npm install -g foreman`
 * Compile parser `mvn -f parser/pom.xml package`
