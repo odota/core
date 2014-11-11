@@ -8,8 +8,6 @@ append content
         table.table.table-hover.table-responsive.summable
           tr
             th Hero
-            th CR
-            th FLY
             th TP
             th OBS
             th SEN
@@ -19,7 +17,7 @@ append content
             th BB
             th Stuns
             th Skills
-            th Item Use
+            th Items
             th Kills
           each player, i in match.players
              tr(class = player.player_slot<64 ? "success" : "danger")
@@ -30,8 +28,6 @@ append content
                  else
                    =player.hero_id
                - var parsedPlayer = match.parsed_data.players[i]
-               td #{parsedPlayer.itembuys.courier || "-"}
-               td #{parsedPlayer.itembuys.flying_courier || "-"}
                td #{parsedPlayer.itembuys.tpscroll || "-"}
                td #{parsedPlayer.itembuys.ward_observer*2 || "-"}
                td #{parsedPlayer.itembuys.ward_sentry*2 || "-"}
@@ -47,18 +43,21 @@ append content
                      div.img-text
                        img.ability(src=ability.img, title=ability.dname)
                        if constants.skillshots[key]
-                         div #{parsedPlayer.hero_hits[key] || 0}/#{val}
+                         div #{val}/#{parsedPlayer.hero_hits[key] || 0}
                        else
                          div #{val}
                    else
                      //=key
                td.table-img
-                 each val, key in parsedPlayer.itemuses
-                   - var item = constants.items[key]                   
+                 each val, key in parsedPlayer.itembuys
+                   - var item = constants.items[key]
                    if item
                      div.img-text
                        img.item(src=item.img, title=item.dname)
-                       div=val
+                       if parsedPlayer.itemuses[key]
+                         div #{val}/#{parsedPlayer.itemuses[key] || 0}
+                       else
+                         div #{val}
                    else
                      =key
                td.table-img

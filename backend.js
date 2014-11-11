@@ -6,9 +6,9 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players,
     cheerio = require('cheerio'),
-    kue = require('kue'),
     winston = require('winston');
-var jobs = kue.createQueue();
+var kue = utility.kue;
+var jobs = utility.jobs;
 var memwatch = require('memwatch');
 var request = require("request");
 var aq = async.queue(apiRequest, 1)
@@ -36,9 +36,7 @@ var app = express();
 app.use(auth.connect(basic));
 app.use(kue.app);
 app.listen(process.env.KUE_PORT || 5001);
-
 setInterval(findStuckJobs, jobTimeout)
-
 memwatch.on('leak', function(info) {
     logger.info('[LEAK]' + info);
 });
@@ -84,7 +82,6 @@ async.series([
                 requestParse(match)
             })
         })
-
         cb(null)
     },
     function(cb) {
@@ -199,6 +196,8 @@ function getMatches() {
 }
 
 function requestParse(match) {
+    
+    
     request.get('http://localhost:' + (process.env.KUE_PORT || 5001) + '/job/search?q=' + match.match_id, {
         'auth': {
             'user': process.env.KUE_USER,
@@ -218,7 +217,7 @@ function requestParse(match) {
                     type: 'exponential'
                 }).searchKeys(['title']).save(function(err) {
                     if(!err) logger.info('[KUE] Parse added for ' + match.match_id)
-                        });
+                });
             } else {
                 logger.info('[KUE] ' + match.match_id + ' already queued.')
             }
@@ -230,13 +229,12 @@ function requestParse(match) {
 
 function findStuckJobs() {
     logger.info('[KUE] Looking for stuck jobs.')
-    
     kue.Job.rangeByType('parse', 'active', 0, 20, 'ASC', function(err, ids) {
         if(!err) {
-            ids.forEach(function(job){
-                if (Date.now() - job.updated_at > jobTimeout) {
-                    job.state('inactive', function(err){
-                        if (err) logger.info('[KUE] Failed to move from active to inactive.')
+            ids.forEach(function(job) {
+                if(Date.now() - job.updated_at > jobTimeout) {
+                    job.state('inactive', function(err) {
+                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
                         else logger.info('[KUE] Moved ' + job.data.match.match_id + ' back to queue.')
                     })
                 }
@@ -246,7 +244,7 @@ function findStuckJobs() {
         }
     })
 }
-                
+
 function requestDetails(match, cb) {
     matches.findOne({
         match_id: match.match_id
