@@ -225,18 +225,20 @@ function queueReq(type, data) {
     }
     reds.createSearch(jobs.client.getKey('search')).query(name).end(function(err, ids) {
         //console.log(name, ids)
-        return;
+        if(ids.length > 0) {
+            return;
+        }
+        jobs.create(type, {
+            title: name,
+            payload: data,
+            url: url
+        }).attempts(10).backoff({
+            delay: 60000,
+            type: 'exponential'
+        }).searchKeys(['title']).removeOnComplete(true).save(function(err) {
+            if(!err) logger.info('[KUE] %s', name)
+        });
     })
-    jobs.create(type, {
-        title: name,
-        payload: data,
-        url: url
-    }).priority('high').attempts(10).backoff({
-        delay: 60000,
-        type: 'exponential'
-    }).searchKeys(['title']).removeOnComplete(true).save(function(err) {
-        if(!err) logger.info('[KUE] %s', name)
-    });
 }
 
 function findStuckJobs() {
@@ -244,7 +246,7 @@ function findStuckJobs() {
     kue.Job.rangeByState('active', 0, 20, 'ASC', function(err, ids) {
         if(!err) {
             ids.forEach(function(job) {
-                if(job.data.title.slice(0, 7) === "sequence") {
+                if(job.data.title.slice(0, 8) === "sequence") {
                     job.remove(function(err) {})
                 }
                 if(Date.now() - job.updated_at > jobTimeout) {
