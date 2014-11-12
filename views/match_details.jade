@@ -49,15 +49,12 @@ append content
                    else
                      //=key
                td.table-img
-                 each val, key in parsedPlayer.itembuys
+                 each val, key in parsedPlayer.itemuses
                    - var item = constants.items[key]
                    if item
                      div.img-text
                        img.item(src=item.img, title=item.dname)
-                       if parsedPlayer.itemuses[key]
-                         div #{val}/#{parsedPlayer.itemuses[key] || 0}
-                       else
-                         div #{val}
+                       div #{val}
                    else
                      =key
                td.table-img

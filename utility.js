@@ -1,8 +1,8 @@
 var utility = exports,
     fs = require('fs'),
     async = require('async'),
-    BigNumber = require('big-number').n,
-    redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
+    BigNumber = require('big-number').n;
+utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
     redis: {
@@ -10,6 +10,7 @@ utility.jobs = utility.kue.createQueue({
         host: process.env.REDIS_HOST || '127.0.0.1'
     }
 })
+utility.jobs.promote();
 utility.db = require('monk')(process.env.MONGOHQ_URL || "mongodb://localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
