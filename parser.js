@@ -21,21 +21,6 @@ var parser_file = "parser/target/stats-0.1.0.jar"
 if(!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-jobs.promote(); //For delayed jobs
-jobs.on('job complete', function(id, result) {
-    kue.Job.get(id, function(err, job) {
-        if(err) return
-        job.remove(function(err) {
-            console.log("removing parse request for match " + job.data.match.match_id)
-        })
-    })
-})
-jobs.on('job failed', function(id, result) {
-    kue.Job.get(id, function(err, job) {
-        //failed 5 times, probably valve replay server issue
-        if(err) return
-    })
-})
 jobs.process('parse', function(job, done) {
     parseReplay(job, done)
 })
@@ -44,7 +29,7 @@ jobs.process('parse', function(job, done) {
  */
 
 function download(job, cb) {
-    var match_id = job.data.match.match_id
+    var match_id = job.data.payload.match_id
     var fileName = replay_dir + match_id + ".dem"
     if(fs.existsSync(fileName)) {
         console.log("[PARSER] found local replay for match %s", match_id)
@@ -125,7 +110,7 @@ function getReplayUrl(job, cb) {
     if('url' in job.data) {
         return cb(null, job.data.url)
     }
-    var match = job.data.match
+    var match = job.data.payload
     if(match.start_time > moment().subtract(7, 'days').format('X')) {
         if(!Steam.loggedOn) {
             loginNum += 1
@@ -215,14 +200,14 @@ function uploadToS3(archiveName, body, cb) {
  */
 
 function parseReplay(job, cb) {
-    var match_id = job.data.match.match_id
-    console.log("[PARSER] requesting parse for match %s", match_id)
+    var match_id = job.data.payload.match_id
+    console.log("[PARSER] match %s", match_id)
     download(job, function(err, fileName) {
         if(err) {
             if(err === "S3 UNAVAILABLE") {
                 //mark unavailable if unable to find in s3
                 matches.update({
-                    match_id: job.data.match.match_id
+                    match_id: match_id
                 }, {
                     $set: {
                         parse_status: 1

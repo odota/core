@@ -6,19 +6,17 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players,
     cheerio = require('cheerio'),
-    winston = require('winston');
+    winston = require('winston'),
+    reds = require('reds');
 var kue = utility.kue;
 var jobs = utility.jobs;
 var memwatch = require('memwatch');
 var request = require("request");
-var aq = async.queue(apiRequest, 1)
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
-var queuedMatches = {}
 var trackedPlayers = {}
-var jobTimeout = 5 * 60 * 1000 // Job timeout for kue, 5 minutes
-var next_seq;
+var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
 var logger = new(winston.Logger)({
     transports: [
         new(winston.transports.File)({
@@ -72,14 +70,16 @@ async.series([
         players.find({
             track: 1
         }, function(err, docs) {
-            aq.push(docs, function(err) {})
+            docs.forEach(function(player) {
+                queueReq("api", player)
+            })
         })
         //parse unparsed matches
         matches.find({
             parse_status: 0
         }, function(err, docs) {
             docs.forEach(function(match) {
-                requestParse(match)
+                queueReq("parse", match)
             })
         })
         cb(null)
@@ -92,21 +92,22 @@ async.series([
                     match_seq_num: -1
                 }
             }, function(err, doc) {
-                next_seq = doc ? doc.match_seq_num + 1 : 0
+                getMatches(doc ? doc.match_seq_num + 1 : 0)
                 cb(null)
             })
         } else {
             getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                next_seq = data.result.matches[0].match_seq_num
+                getMatches(data.result.matches[0].match_seq_num)
                 cb(null)
             })
         }
     }
 ], function(err) {
-    getMatches()
-    aq.empty = function() {
-        getMatches();
-    }
+    jobs.process('api', function(job, done) {
+        setTimeout(function() {
+            apiRequest(job, done)
+        }, 1000)
+    })
 })
 
 function updateConstants(cb) {
@@ -182,7 +183,7 @@ function buildLookup(array) {
     return lookup
 }
 
-function getMatches() {
+function getMatches(seq_num) {
     players.find({
         track: 1
     }, function(err, docs) {
@@ -191,51 +192,65 @@ function getMatches() {
         docs.forEach(function(player) {
             trackedPlayers[player.account_id] = true
         })
-        aq.push({}, function(err) {})
+        queueReq("api", {
+            seq_num: seq_num
+        })
     })
 }
 
-function requestParse(match) {
-    
-    
-    request.get('http://localhost:' + (process.env.KUE_PORT || 5001) + '/job/search?q=' + match.match_id, {
-        'auth': {
-            'user': process.env.KUE_USER,
-            'pass': process.env.KUE_PASS
+function queueReq(type, data) {
+    var url;
+    var name;
+    if(type === "api") {
+        if(data.match_id) {
+            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + data.match_id;
+            name = "details_" + data.match_id
+        } else if(data.summaries_id) {
+            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + data.query
+            name = "summaries_" + data.summaries_id
+        } else if(data.account_id) {
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id
+            name = "history_" + data.account_id
+        } else if(data.seq_num) {
+            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + data.seq_num
+            name = "sequence_" + data.seq_num
         }
-    }, function(err, res, body) {
-        if(!err && res.statusCode === 200) {
-            if(JSON.parse(body).length === 0) {
-                jobs.create('parse', {
-                    title: match.match_id,
-                    match: {
-                        match_id: match.match_id,
-                        start_time: match.start_time
-                    }
-                }).priority('high').attempts(10).backoff({
-                    delay: 60000,
-                    type: 'exponential'
-                }).searchKeys(['title']).save(function(err) {
-                    if(!err) logger.info('[KUE] Parse added for ' + match.match_id)
-                });
-            } else {
-                logger.info('[KUE] ' + match.match_id + ' already queued.')
-            }
-        } else {
-            logger.info('[KUE] Could not connect to Kue server.')
+    }
+    if(type === "parse") {
+        name = "parse_" + data.match_id
+        data = {
+            match_id: data.match_id,
+            start_time: data.start_time
         }
+    }
+    reds.createSearch(jobs.client.getKey('search')).query(name).end(function(err, ids) {
+        //console.log(name, ids)
+        return;
     })
+    jobs.create(type, {
+        title: name,
+        payload: data,
+        url: url
+    }).priority('high').attempts(10).backoff({
+        delay: 60000,
+        type: 'exponential'
+    }).searchKeys(['title']).removeOnComplete(true).save(function(err) {
+        if(!err) logger.info('[KUE] %s', name)
+    });
 }
 
 function findStuckJobs() {
     logger.info('[KUE] Looking for stuck jobs.')
-    kue.Job.rangeByType('parse', 'active', 0, 20, 'ASC', function(err, ids) {
+    kue.Job.rangeByState('active', 0, 20, 'ASC', function(err, ids) {
         if(!err) {
             ids.forEach(function(job) {
+                if(job.data.title.slice(0, 7) === "sequence") {
+                    job.remove(function(err) {})
+                }
                 if(Date.now() - job.updated_at > jobTimeout) {
                     job.state('inactive', function(err) {
                         if(err) logger.info('[KUE] Failed to move from active to inactive.')
-                        else logger.info('[KUE] Moved ' + job.data.match.match_id + ' back to queue.')
+                        else logger.info('[KUE] Unstuck %s ', job.title)
                     })
                 }
             })
@@ -249,9 +264,8 @@ function requestDetails(match, cb) {
     matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
-        if(!doc && !(match.match_id in queuedMatches)) {
-            queuedMatches[match.match_id] = true
-            aq.push(match, function(err) {})
+        if(!doc) {
+            queueReq("api", match)
         }
         cb(null)
     })
@@ -280,55 +294,42 @@ function getMatchPage(url, cb) {
  * Processes a request to an api
  */
 
-function apiRequest(req, cb) {
-    setTimeout(function() {
-        logger.info("[QUEUE] api requests: %s", aq.length())
-        var url;
-        if(req.match_id) {
-            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + req.match_id;
-        } else if(req.summaries_id) {
-            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + req.query
-        } else if(req.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + req.account_id
+function apiRequest(job, cb) {
+    var payload = job.data.payload
+    getData(job.data.url, function(err, data) {
+        if(data.response) {
+            async.map(data.response.players, insertPlayer, function(err) {
+                cb(err)
+            })
+        } else if(data.result.error || data.result.status == 2) {
+            logger.info(data)
+            return cb(data)
+        } else if(payload.match_id) {
+            var match = data.result
+            insertMatch(match, function(err) {
+                cb(err)
+            })
         } else {
-            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + next_seq
-        }
-        getData(url, function(err, data) {
-            if(data.response) {
-                async.map(data.response.players, insertPlayer, function(err) {
-                    cb(null)
-                })
-            } else if(data.result.error || data.result.status == 2) {
-                logger.info(data)
-                return cb(null)
-            } else if(req.match_id) {
-                var match = data.result
-                insertMatch(match, function(err) {
-                    delete queuedMatches[match.match_id]
-                    cb(null)
+            var resp = data.result.matches
+            if(payload.account_id) {
+                async.map(resp, function(match, cb) {
+                    requestDetails(match, function(err) {
+                        cb(err)
+                    })
+                }, function(err) {
+                    cb(err)
                 })
             } else {
-                var resp = data.result.matches
-                if(req.account_id) {
-                    async.map(resp, function(match, cb) {
-                        requestDetails(match, function(err) {
-                            cb(null)
-                        })
-                    }, function(err) {
-                        cb(null)
-                    })
-                } else {
-                    logger.info("[API] seq_num: %s, found %s matches", next_seq, resp.length)
-                    async.mapSeries(resp, insertMatch, function(err) {
-                        if(resp.length > 0) {
-                            next_seq = resp[resp.length - 1].match_seq_num + 1
-                        }
-                        cb(null)
-                    })
-                }
+                logger.info("[API] seq_num: %s, found %s matches", payload.seq_num, resp.length)
+                async.mapSeries(resp, insertMatch, function(err) {
+                    if(resp.length > 0) {
+                        getMatches(resp[resp.length - 1].match_seq_num + 1)
+                    }
+                    cb(err)
+                })
             }
-        })
-    }, 1000)
+        }
+    })
 }
 
 function insertMatch(match, cb) {
@@ -341,15 +342,17 @@ function insertMatch(match, cb) {
     }
     if(track) {
         //todo get player summaries separately
-        summaries = {}
-        summaries.summaries_id = 1
+        summaries = {
+            summaries_id: 0
+        }
         var steamids = []
         match.players.forEach(function(player) {
             steamids.push(utility.convert32to64(player.account_id).toString())
+            summaries.summaries_id += player.account_id
         })
         summaries.query = steamids.join()
-        aq.unshift(summaries, function(err) {})
-        requestParse(match)
+        queueReq("api", summaries)
+        queueReq("parse", match)
     }
     cb(null)
 }

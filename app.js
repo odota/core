@@ -15,7 +15,7 @@ var port = Number(process.env.PORT || 3000);
 var logger = new(winston.Logger)({
     transports: [
         new(winston.transports.File)({
-            filename: 'web.log',
+            filename: 'app.log',
             level: 'info'
         })
     ]
@@ -116,34 +116,19 @@ app.use(function(req, res, next) {
     })
 })
 app.param('match_id', function(req, res, next, id) {
-    // Check cache for html
     cache.get(req.url, function(err, reply) {
-        if(err || !reply) {
+        if(err || !reply || process.env.NODE_ENV!="production") {
             logger.info("Cache miss for HTML for request " + req.url)
-            // Check cache for match data
-            cache.get(id, function(err, reply) {
-                if(err || !reply) {
-                    logger.info("Cache miss for match " + id)
-                    matches.findOne({
-                        match_id: Number(id)
-                    }, function(err, match) {
-                        if(!match) {
-                            return next()
-                        } else {
-                            utility.fillPlayerNames(match.players, function(err) {
-                                req.match = match
-                                //Add to cache if we have parsed data
-                                if(match.parsed_data) {
-                                    cache.setex(id, 86400, JSON.stringify(match))
-                                }
-                                return next()
-                            })
-                        }
-                    })
-                } else if(reply) {
-                    logger.info("Cache hit for Document for match " + id)
-                    req.match = JSON.parse(reply)
+            matches.findOne({
+                match_id: Number(id)
+            }, function(err, match) {
+                if(!match) {
                     return next()
+                } else {
+                    utility.fillPlayerNames(match.players, function(err) {
+                        req.match = match
+                        return next()
+                    })
                 }
             })
         } else if(reply) {
@@ -220,7 +205,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     }, function(err, html) {
         if(err) return next(err)
         if(match.parsed_data) {
-            cache.set(req.url, html)
+            cache.setex(req.url, 86400, html)
         }
         return res.send(html)
     })
