@@ -2,7 +2,15 @@ var utility = exports,
     fs = require('fs'),
     async = require('async'),
     BigNumber = require('big-number').n;
-
+utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
+utility.kue = require('kue');
+utility.jobs = utility.kue.createQueue({
+    redis: {
+        port: process.env.REDIS_PORT || 6379,
+        host: process.env.REDIS_HOST || '127.0.0.1'
+    }
+})
+utility.jobs.promote();
 utility.db = require('monk')(process.env.MONGOHQ_URL || "mongodb://localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
@@ -20,8 +28,8 @@ utility.fillPlayerNames = function(players, cb) {
             account_id: player.account_id
         }, function(err, dbPlayer) {
             if(dbPlayer) {
-                for (var prop in dbPlayer){
-                    player[prop]=dbPlayer[prop]
+                for(var prop in dbPlayer) {
+                    player[prop] = dbPlayer[prop]
                 }
             }
             cb(null)
@@ -67,8 +75,6 @@ utility.convert64to32 = function(id) {
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
 }
-
-
-utility.isRadiant= function(player) {
+utility.isRadiant = function(player) {
     return player.player_slot < 64
 }
