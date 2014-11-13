@@ -243,17 +243,18 @@ function queueReq(type, data) {
 
 function findStuckJobs() {
     logger.info('[KUE] Looking for stuck jobs.')
-    kue.Job.rangeByState('active', 0, 20, 'ASC', function(err, ids) {
+    kue.Job.rangeByState('active', 0, 10, 'ASC', function(err, ids) {
         if(!err) {
             ids.forEach(function(job) {
-                if(job.data.title.slice(0, 8) === "sequence") {
-                    job.remove(function(err) {})
-                }
                 if(Date.now() - job.updated_at > jobTimeout) {
-                    job.state('inactive', function(err) {
-                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
-                        else logger.info('[KUE] Unstuck %s ', job.title)
-                    })
+                    if(job.data.title.slice(0, 8) === "sequence") {
+                        job.remove(function(err) {})
+                    } else {
+                        job.state('inactive', function(err) {
+                            if(err) logger.info('[KUE] Failed to move from active to inactive.')
+                            else logger.info('[KUE] Unstuck %s ', job.title)
+                        })
+                    }
                 }
             })
         } else {
