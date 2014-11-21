@@ -115,6 +115,8 @@ function updateConstants(cb) {
     async.map(Object.keys(constants), function(key, cb) {
         var val = constants[key]
         if(typeof(val) == "string" && val.slice(0, 4) == "http") {
+            //insert API key if necessary
+            val = val.slice(-4) === "key=" ? val+process.env.STEAM_API_KEY : val
             getData(val, function(err, result) {
                 constants[key] = result
                 cb(null)
@@ -123,7 +125,7 @@ function updateConstants(cb) {
             cb(null)
         }
     }, function(err) {
-        var heroes = constants.heroes
+        var heroes = constants.heroes.result.heroes
         heroes.forEach(function(hero) {
             hero.name = hero.name.replace("npc_dota_hero_", "")
             hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
