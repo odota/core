@@ -7,6 +7,7 @@ cal.init({
     data: data,
     tooltip: true,
     legend: [1,2,3,4],
+    highlight: new Date(),
     itemName: ["match", "matches"],
     subDomainTextFormat: function(date, value) {
         return value;
