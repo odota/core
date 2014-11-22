@@ -127,8 +127,7 @@ function updateConstants(cb) {
     }, function(err) {
         var heroes = constants.heroes.result.heroes
         heroes.forEach(function(hero) {
-            hero.name = hero.name.replace("npc_dota_hero_", "")
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
         })
         constants.heroes = buildLookup(heroes)
         constants.hero_names = {}

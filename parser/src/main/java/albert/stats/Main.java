@@ -19,17 +19,6 @@ import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.util.Iterator;
 import java.util.Arrays;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BulkWriteOperation;
-import com.mongodb.BulkWriteResult;
-import com.mongodb.Cursor;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.ParallelScanOptions;
-import com.mongodb.MongoClientURI;
 import java.util.HashMap;
 
 public class Main {
@@ -43,12 +32,6 @@ public class Main {
         JSONObject doc = new JSONObject();
         JSONArray log = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
-        MongoClientURI con = new MongoClientURI(args[1]);
-        MongoClient mongoClient = new MongoClient(con);
-        DB db = mongoClient.getDB(con.getDatabase());
-        DBCollection constants = db.getCollection("constants");
-        HashMap myDoc = (HashMap) constants.findOne().get("hero_names");
-        JSONObject heroes = new JSONObject(myDoc);
         Match match = new Match();
         TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
         float nextInterval = 0;
@@ -66,6 +49,7 @@ public class Main {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
+                doc.put("heroes", new JSONObject());
 
                 for (int i = 0; i < numPlayers; i++) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
@@ -74,19 +58,7 @@ public class Main {
                     JSONObject player = new JSONObject();
                     player.put("steamid", pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]));
                     player.put("personaname", name);
-                    player.put("log", new JSONArray());
-                    player.put("itemuses", new JSONObject());
-                    player.put("itembuys", new JSONObject());
-                    player.put("buybacks", new JSONObject());
-                    player.put("runes", new JSONObject());
-                    player.put("damage", new JSONObject());
-                    player.put("healing", new JSONObject());
-                    player.put("gold_log", new JSONObject());
-                    player.put("xp_log", new JSONObject());
-                    player.put("kills", new JSONObject());
-                    player.put("abilityuses", new JSONObject());
-                    player.put("hero_hits", new JSONObject());
-                    player.put("modifier_applied", new JSONObject());
+                    player.put("buybacks", new JSONArray());
                     player.put("lh", new JSONArray());
                     player.put("gold", new JSONArray());
                     player.put("xp", new JSONArray());
@@ -375,31 +347,32 @@ public class Main {
             entry.put("time", entry.getInt("time")-gameZero);
             String type = entry.getString("type");
             //System.err.println(entry);
-
+            if (type.equals("buybacks")){
+                Integer slot = entry.getInt("slot");
+                doc.getJSONArray("players").getJSONObject(slot).getJSONArray("buybacks").put(entry);
+                continue;
+            }
             if (type.equals("chat")){
                 doc.getJSONArray("chat").put(entry);
                 continue;
             }
-            if (entry.has("unit")){
-                entry.put("slot", getSlotByUnit(entry.getString("unit"), heroes, hero_to_slot));
+            JSONObject heroes = doc.getJSONObject("heroes");
+            String unit = entry.getString("unit");
+            if (!heroes.has(unit)){
+                addHero(unit, heroes);
             }
-            if (entry.has("slot")){   
-                int slot = entry.getInt("slot");
-                if (slot>=0){
-                    JSONObject player = doc.getJSONArray("players").getJSONObject(slot);
-                    JSONObject counts = player.getJSONObject(type);
-                    String key = entry.getString("key");
-                    Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
-                    if(entry.has("value")){
-                        counts.put(key, count+entry.getInt("value"));
-                    }
-                    else{
-                        counts.put(key, count + 1);  
-                    }
-                    if (type.equals("itembuys")){
-                        player.getJSONArray("log").put(entry);
-                    }
-                }
+            JSONObject hero = heroes.getJSONObject(unit);
+            JSONObject counts = hero.getJSONObject(type);
+            String key = entry.getString("key");
+            Integer count = counts.has(key) ? (Integer)counts.get(key) : 0;
+            if(entry.has("value")){
+                counts.put(key, count+entry.getInt("value"));
+            }
+            else{
+                counts.put(key, count + 1);  
+            }
+            if (type.equals("itembuys")){
+                hero.getJSONArray("timeline").put(entry);
             }
         }
         doc.put("game_zero", gameZero);
@@ -411,6 +384,24 @@ public class Main {
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("%s sec%n", tMatch / 1000.0);
     }
+
+    private static void addHero(String hero, JSONObject map){
+        JSONObject newHero = new JSONObject();
+        newHero.put("timeline", new JSONArray());
+        newHero.put("itemuses", new JSONObject());
+        newHero.put("itembuys", new JSONObject());
+        newHero.put("runes", new JSONObject());
+        newHero.put("damage", new JSONObject());
+        newHero.put("healing", new JSONObject());
+        newHero.put("gold_log", new JSONObject());
+        newHero.put("xp_log", new JSONObject());
+        newHero.put("kills", new JSONObject());
+        newHero.put("abilityuses", new JSONObject());
+        newHero.put("hero_hits", new JSONObject());
+        newHero.put("modifier_applied", new JSONObject());
+        map.put(hero, newHero);
+    }
+
     private static int getSlotByUnit(String unit, JSONObject heroes, JSONObject hero_to_slot){
         if (unit.startsWith("illusion_")){
             unit=unit.substring("illusion_".length());
