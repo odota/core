@@ -39,9 +39,6 @@ function download(job, cb) {
             if(err) {
                 return cb(err)
             }
-            //Add url to job so we don't need to check again.
-            job.data['url'] = url
-            job.update()
             console.log("[PARSER] downloading from %s", url)
             request({
                 url: url,
@@ -131,10 +128,13 @@ function getReplayUrl(job, cb) {
                 Dota2 = new dota2.Dota2Client(Steam, false)
                 console.log("[DOTA] request for replay timed out.")
                 return cb("STEAM TIMEOUT")
-            }, 10000)
+            }, 15000)
             Dota2.matchDetailsRequest(match.match_id, function(err, data) {
                 var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
                 clearTimeout(timeOut);
+                //Add url to job so we don't need to check again.
+                job.data['url'] = url
+                job.update()
                 return cb(null, url)
             })
         }
