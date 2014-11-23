@@ -69,9 +69,6 @@ public class CombatLogEntry {
             if (in.startsWith("item_")){
                 in=in.substring("item_".length());
             }
-            if (in.startsWith("npc_dota_hero_")){
-                in=in.substring("npc_dota_hero_".length());
-            }
         }
         return in;
     }

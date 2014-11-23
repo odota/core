@@ -10,20 +10,23 @@ var async = require("async"),
     reds = require('reds');
 var kue = utility.kue;
 var jobs = utility.jobs;
-var memwatch = require('memwatch');
 var request = require("request");
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var trackedPlayers = {}
 var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
+var transports = []
+if(process.env.NODE_ENV === "production") {
+    transports.push(new(winston.transports.File)({
+        filename: 'backend.log',
+        level: 'info'
+    }))
+} else {
+    transports.push(new(winston.transports.Console))
+}
 var logger = new(winston.Logger)({
-    transports: [
-        new(winston.transports.File)({
-            filename: 'backend.log',
-            level: 'info'
-        })
-    ]
+    transports: transports
 });
 var basic = auth.basic({
     realm: "Kue"
@@ -35,9 +38,6 @@ app.use(auth.connect(basic));
 app.use(kue.app);
 app.listen(process.env.KUE_PORT || 5001);
 setInterval(findStuckJobs, jobTimeout)
-memwatch.on('leak', function(info) {
-    logger.info('[LEAK]' + info);
-});
 updateConstants(function(err) {});
 async.series([
     function(cb) {
@@ -116,7 +116,7 @@ function updateConstants(cb) {
         var val = constants[key]
         if(typeof(val) == "string" && val.slice(0, 4) == "http") {
             //insert API key if necessary
-            val = val.slice(-4) === "key=" ? val+process.env.STEAM_API_KEY : val
+            val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
             getData(val, function(err, result) {
                 constants[key] = result
                 cb(null)
@@ -127,8 +127,7 @@ function updateConstants(cb) {
     }, function(err) {
         var heroes = constants.heroes.result.heroes
         heroes.forEach(function(hero) {
-            hero.name = hero.name.replace("npc_dota_hero_", "")
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name + "_sb.png"
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
         })
         constants.heroes = buildLookup(heroes)
         constants.hero_names = {}
@@ -186,18 +185,32 @@ function buildLookup(array) {
 }
 
 function getMatches(seq_num) {
-    players.find({
-        track: 1
-    }, function(err, docs) {
-        //rebuild set of tracked players before every check
-        trackedPlayers = {}
-        docs.forEach(function(player) {
-            trackedPlayers[player.account_id] = true
+    setTimeout(function() {
+        players.find({
+            track: 1
+        }, function(err, docs) {
+            //rebuild set of tracked players before every check
+            trackedPlayers = {}
+            docs.forEach(function(player) {
+                trackedPlayers[player.account_id] = true
+            })
+            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num
+            getData(url, function(err, data) {
+                if(data.result.error || data.result.status == 2) {
+                    logger.info(data)
+                    return getMatches(seq_num)
+                }
+                var resp = data.result.matches
+                logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length)
+                async.mapSeries(resp, insertMatch, function(err) {
+                    if(resp.length > 0) {
+                        seq_num = resp[resp.length - 1].match_seq_num + 1
+                    }
+                    getMatches(seq_num)
+                })
+            })
         })
-        queueReq("api", {
-            seq_num: seq_num
-        })
-    })
+    }, 1000)
 }
 
 function queueReq(type, data) {
@@ -213,9 +226,6 @@ function queueReq(type, data) {
         } else if(data.account_id) {
             url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id
             name = "history_" + data.account_id
-        } else if(data.seq_num) {
-            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + data.seq_num
-            name = "sequence_" + data.seq_num
         }
     }
     if(type === "parse") {
@@ -226,7 +236,6 @@ function queueReq(type, data) {
         }
     }
     reds.createSearch(jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        //console.log(name, ids)
         if(ids.length > 0) {
             return;
         }
@@ -249,14 +258,10 @@ function findStuckJobs() {
         if(!err) {
             ids.forEach(function(job) {
                 if(Date.now() - job.updated_at > jobTimeout) {
-                    if(job.data.title.slice(0, 8) === "sequence") {
-                        job.remove(function(err) {})
-                    } else {
-                        job.state('inactive', function(err) {
-                            if(err) logger.info('[KUE] Failed to move from active to inactive.')
-                            else logger.info('[KUE] Unstuck %s ', job.title)
-                        })
-                    }
+                    job.state('inactive', function(err) {
+                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
+                        else logger.info('[KUE] Unstuck %s ', job.data.title)
+                    })
                 }
             })
         } else {
@@ -303,6 +308,7 @@ function apiRequest(job, cb) {
     var payload = job.data.payload
     getData(job.data.url, function(err, data) {
         if(data.response) {
+            //summaries response
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(err)
             })
@@ -322,14 +328,6 @@ function apiRequest(job, cb) {
                         cb(err)
                     })
                 }, function(err) {
-                    cb(err)
-                })
-            } else {
-                logger.info("[API] seq_num: %s, found %s matches", payload.seq_num, resp.length)
-                async.mapSeries(resp, insertMatch, function(err) {
-                    if(resp.length > 0) {
-                        getMatches(resp[resp.length - 1].match_seq_num + 1)
-                    }
                     cb(err)
                 })
             }
@@ -380,7 +378,7 @@ function insertPlayer(player, cb) {
 
 function getData(url, cb) {
     request(url, function(err, res, body) {
-        logger.info("[API] %s", url)
+        //logger.info("[API] %s", url)
         if(err || res.statusCode != 200 || !body) {
             logger.info("[API] error getting data, retrying")
             return getData(url, cb)

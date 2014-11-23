@@ -1,8 +1,9 @@
 <configuration>
-	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+	<appender name="stderr" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%msg%n</pattern>
 		</encoder>
+            <target>System.err</target>
 	</appender>
 
 	<logger name="org.reflections" level="warn" />
@@ -38,7 +39,7 @@
 	<logger name="skadistats.clarity.parser.handler.UserMsgGamerulesStateChangedHandler" level="info" />
 		
 	<root level="info">
-		<appender-ref ref="stdout" />
+		<appender-ref ref="stderr" />
 	</root>
 	
 </configuration>
