@@ -12,13 +12,17 @@ var utility = require('./utility'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
 var port = Number(process.env.PORT || 3000);
+var transports = []
+if(process.env.NODE_ENV === "production") {
+    transports.push(new(winston.transports.File)({
+        filename: 'app.log',
+        level: 'info'
+    }))
+} else {
+    transports.push(new(winston.transports.Console))
+}
 var logger = new(winston.Logger)({
-    transports: [
-        new(winston.transports.File)({
-            filename: 'app.log',
-            level: 'info'
-        })
-    ]
+    transports: transports
 });
 var matchPages = {
     index: {
@@ -117,7 +121,7 @@ app.use(function(req, res, next) {
 })
 app.param('match_id', function(req, res, next, id) {
     cache.get(req.url, function(err, reply) {
-        if(err || !reply || process.env.NODE_ENV!="production") {
+        if(err || !reply || process.env.NODE_ENV != "production") {
             logger.info("Cache miss for HTML for request " + req.url)
             matches.findOne({
                 match_id: Number(id)
@@ -234,6 +238,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 var heroes = {}
                 player.win = 0
                 player.lose = 0
+                player.games = 0
                 for(i = 0; i < matches.length; i++) {
                     for(j = 0; j < matches[i].players.length; j++) {
                         var p = matches[i].players[j]
@@ -242,6 +247,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                             matches[i].player_win = (playerRadiant == matches[i].radiant_win)
                             matches[i].slot = j
                             matches[i].player_win ? player.win += 1 : player.lose += 1
+                            player.games += 1
                             if(!heroes[p.hero_id]) {
                                 heroes[p.hero_id] = {}
                                 heroes[p.hero_id]["games"] = 0
