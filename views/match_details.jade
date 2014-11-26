@@ -42,7 +42,7 @@ append content
                    - var ability = constants.abilities[key]
                    if ability
                      div.img-text
-                       img.ability(src=ability.img, title=ability.dname)
+                       img.ability(src=ability.img, alt=key)
                        if constants.skillshots[key]
                          div #{val}/#{parsedHero.hero_hits[key] || 0}
                        else
@@ -54,7 +54,7 @@ append content
                    - var item = constants.items[key]
                    if item
                      div.img-text
-                       img.item(src=item.img, title=item.dname)
+                       img.item(src=item.img, alt=key)
                        div #{val}
                    else
                      =key
