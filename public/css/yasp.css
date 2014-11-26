@@ -90,3 +90,15 @@ td.abilities img {
 .tooltip-inner {
     white-space:normal;
 }
+.mapContainer {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 600px;
+}
+.map {
+    width: 100%;
+}
+.icon {
+    width:15px;
+}

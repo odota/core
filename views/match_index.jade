@@ -85,13 +85,5 @@ append content
                          =ability.ability
       if match.tower_status_radiant>=0
         h2 Buildings
-        p=match.tower_status_radiant
-        p=match.tower_status_dire
-        p=match.barracks_status_radiant
-        p=match.barracks_status_dire
-        #map(style="position: relative; left: 0; top: 0;")
-          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg", alt="map", style="position: relative; top: 0; left: 0;")
-          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/racks_dire.png",  style="position: absolute; top: 30px; left: 70px;")
-          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/racks_radiant.png")
-          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/tower_dire.png")
-          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/tower_radiant.png")
+        #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
+          img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
