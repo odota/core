@@ -26,7 +26,7 @@ append content
                       - var item = constants.items[entry.key]                 
                       if item
                         div.img-text
-                          img.item(src=item.img, title=item.dname)
+                          img.item(src=item.img, alt=entry.key)
                           div.format-seconds=entry.time
                       else
                         =key

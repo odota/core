@@ -53,14 +53,14 @@ append content
                  if (index.slice(0, 5)==="item_")
                    - var item = constants.items[constants.item_ids[val]]
                    if item
-                     img.item(src=item.img, title=item.dname)
+                     img.item(src=item.img, alt=constants.item_ids[val])
                if (player.hero_id === 80)
                  br
                  each val, index in player.additional_units[0]
                    if (index.slice(0, 5)==="item_")
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
-                       img.item(src=item.img, title=item.dname)
+                       img.item(src=item.img, alt=constants.item_ids[val])
       if match.players[0].ability_upgrades
         h2 Skill Builds
         table.table.table-hover.table-responsive
@@ -80,6 +80,18 @@ append content
                      - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
                      td.abilities
                        if abilityData
-                         img(src=abilityData.img, title=abilityData.dname)
+                         img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
                        else
                          =ability.ability
+      if match.tower_status_radiant>=0
+        h2 Buildings
+        p=match.tower_status_radiant
+        p=match.tower_status_dire
+        p=match.barracks_status_radiant
+        p=match.barracks_status_dire
+        #map(style="position: relative; left: 0; top: 0;")
+          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg", alt="map", style="position: relative; top: 0; left: 0;")
+          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/racks_dire.png",  style="position: absolute; top: 30px; left: 70px;")
+          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/racks_radiant.png")
+          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/tower_dire.png")
+          img(src="https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/tower_radiant.png")

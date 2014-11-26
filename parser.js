@@ -24,6 +24,17 @@ if(!fs.existsSync(replay_dir)) {
 jobs.process('parse', function(job, done) {
     parseReplay(job, done)
 })
+jobs.on('job failed', function(id, result) {
+    kue.Job.get(id, function(err, job) {
+        matches.update({
+            match_id: job.data.payload.match_id
+        }, {
+            $set: {
+                parse_status: 1
+            }
+        })
+    })
+})
 /*
  * Downloads a match replay
  */
@@ -204,17 +215,6 @@ function parseReplay(job, cb) {
     console.log("[PARSER] match %s", match_id)
     download(job, function(err, fileName) {
         if(err) {
-            if(err === "S3 UNAVAILABLE") {
-                //mark unavailable if unable to find in s3
-                matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parse_status: 1
-                    }
-                })
-                return cb(null) //Mark as done
-            }
             console.log("[PARSER] Error for match %s: %s", match_id, err)
             return cb(err)
         }
