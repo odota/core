@@ -61,29 +61,28 @@ append content
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
                        img.item(src=item.img, alt=constants.item_ids[val])
-      if match.players[0].ability_upgrades
-        h2 Skill Builds
-        table.table.table-hover.table-responsive
-          tr
-            th Hero
-            - for (var i = 1; i < 26; i++)
-              th= i
-          - each player, i in match.players
-             tr(class = player.player_slot<64 ? "success" : "danger")
-               - var hero = constants.heroes[player.hero_id]
-               td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+      h2 Skill Builds
+      table.table.table-hover.table-responsive
+        tr
+          th Hero
+          - for (var i = 1; i < 26; i++)
+            th= i
+        - each player, i in match.players
+           tr(class = player.player_slot<64 ? "success" : "danger")
+             - var hero = constants.heroes[player.hero_id]
+             td.hero
+               if hero
+                 img(src=hero.img, title=hero.localized_name)
+               else
+                 =player.hero_id
+               if player.ability_upgrades
                  each ability in player.ability_upgrades
-                     - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                     td.abilities
-                       if abilityData
-                         img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
-                       else
-                         =ability.ability
-      if match.tower_status_radiant>=0
-        h2 Buildings
-        #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
-          img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+                   - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                   td.abilities
+                     if abilityData
+                       img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
+                     else
+                       =ability.ability
+      h2 Buildings
+      #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
+        img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")

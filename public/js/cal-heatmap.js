@@ -16,23 +16,3 @@ cal.init({
     previousSelector: "#prev",
     nextSelector: "#next"
 });
-
-/*
-cal.init({
-    start: new Date(w),
-    range: 90,
-    domain: "day",
-    subDomain: "hour",
-    label:
-{
-    position: "left"
-},
-    domainLabelFormat: "",
-    verticalOrientation: true,
-    colLimit: 24,
-    data: data,
-    cellSize:5,
-    cellPadding:1,
-    domainGutter:1
-});
-*/
