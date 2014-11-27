@@ -249,10 +249,10 @@ $(document).ready(function() {
         style: "position: absolute; top: 14%; left: 72%;"
     }, {
         id: "brmd",
-        style: "position: absolute; top: 25%; left: 75%;"
+        style: "position: absolute; top: 25%; left: 74%;"
     }, {
         id: "bmmd",
-        style: "position: absolute; top: 26%; left: 77%;"
+        style: "position: absolute; top: 26%; left: 76%;"
     }, {
         id: "brbd",
         style: "position: absolute; top: 29%; left: 86%;"
@@ -279,7 +279,7 @@ $(document).ready(function() {
     for(var i = 0; i < bits.length; i++) {
         var d = buildingData[i]
         d.src = 'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/'
-        d.src += buildingData[i].id.slice(0, 1) === "b" ? 'racks' : 'tower'
+        d.src += buildingData[i].id.slice(0, 1) === "t" ? 'tower' : 'racks'
         d.src += buildingData[i].id.slice(-1) === "r" ? '_radiant.png' : '_dire.png'
         d.class = buildingData[i].id.slice(0, 1) === "a" ? "" : "icon"
         d.style += bits[i] === "1" ? "" : "-webkit-filter: grayscale(100%);"
