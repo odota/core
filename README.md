@@ -23,11 +23,6 @@ Deployment
 * Create .env file with desired parameters
 * Run `nf start`
 
-Caching
-====
-No keys are being expired, so the Redis caching instance should be set
-to use a fixed amount of memory and with some key eviction policy.
-
 .env
 ====
 * STEAM_USER (required, a Steam username)
