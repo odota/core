@@ -16,7 +16,7 @@ append content
             th GEM
             th BB
             th Stuns
-            th Skills
+            th Skills (Hero Hits)
             th Items
             th Kills
           each player, i in match.players
@@ -37,18 +37,16 @@ append content
                td #{parsedHero.itembuys.gem || "-"}
                td #{parsedPlayer.buybacks.length || "-"}
                td #{parsedPlayer.stuns.toFixed(2)}
-               td.table-img
+               td
                  each val, key in parsedHero.abilityuses
                    - var ability = constants.abilities[key]
                    if ability
                      div.img-text
                        img.ability(src=ability.img, alt=key)
-                       if constants.skillshots[key]
-                         div #{val}/#{parsedHero.hero_hits[key] || 0}
-                       else
-                         div #{val}
+                       div #{val}
+                       div (#{parsedHero.hero_hits[key] || 0})
                    else
-                     //=key
+                     =key
                td.table-img
                  each val, key in parsedHero.itemuses
                    - var item = constants.items[key]
@@ -104,5 +102,35 @@ append content
                     - var parsedHero = match.parsed_data.heroes[hero.name]
                     each val, key in constants.xp_reasons
                       td #{parsedHero.xp_log[key] || "-"}
+
+        .row
+          .col-md-12
+            h2 Purchases
+            table.table.table-hover.table-responsive
+              tr
+                th Hero
+                - var bucket = 300
+                - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                  th= i/60+"'"
+              each player, ind in match.players
+                - var hero = constants.heroes[player.hero_id]
+                - var parsedPlayer = match.parsed_data.heroes[hero.name]
+                tr(class = player.player_slot<64 ? "success" : "danger")
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id              
+                  - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                    td
+                      each entry in parsedPlayer.timeline
+                        if entry.type=="itembuys" && entry.time < i && entry.time >= i-bucket
+                          - var item = constants.items[entry.key]                 
+                          if item
+                            div.img-text
+                              img.item(src=item.img, alt=entry.key)
+                              div.format-seconds=entry.time
+                          else
+                            =key
       else
         h1 This match has no parsed data!
