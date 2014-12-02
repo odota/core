@@ -26,7 +26,7 @@ var logger = new(winston.Logger)({
 });
 var matchPages = {
     index: {
-        template: "match_index",
+        template: "match",
         name: "Match"
     },
     details: {
@@ -36,10 +36,6 @@ var matchPages = {
     graphs: {
         template: "match_graphs",
         name: "Graphs"
-    },
-    timelines: {
-        template: "match_timelines",
-        name: "Timelines"
     },
     chat: {
         template: "match_chat",
