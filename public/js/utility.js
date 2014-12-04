@@ -164,14 +164,14 @@ $(document).ready(function() {
         id: "t4br",
         style: "position: absolute; top: 78%; left: 17%;"
     }, {
-        id: "t3tr",
-        style: "position: absolute; top: 67%; left: 9%;"
+        id: "t3br",
+        style: "position: absolute; top: 86%; left: 26%;"
     }, {
-        id: "t2tr",
-        style: "position: absolute; top: 50%; left: 9%;"
+        id: "t2br",
+        style: "position: absolute; top: 86%; left: 43%;"
     }, {
-        id: "t1tr",
-        style: "position: absolute; top: 40%; left: 9%;"
+        id: "t1br",
+        style: "position: absolute; top: 86%; left: 80%;"
     }, {
         id: "t3mr",
         style: "position: absolute; top: 72%; left: 22%;"
@@ -182,26 +182,14 @@ $(document).ready(function() {
         id: "t1mr",
         style: "position: absolute; top: 56%; left: 38%;"
     }, {
-        id: "t3br",
-        style: "position: absolute; top: 86%; left: 26%;"
+        id: "t3tr",
+        style: "position: absolute; top: 67%; left: 9%;"
     }, {
-        id: "t2br",
-        style: "position: absolute; top: 86%; left: 43%;"
+        id: "t2tr",
+        style: "position: absolute; top: 50%; left: 9%;"
     }, {
-        id: "t1br",
-        style: "position: absolute; top: 86%; left: 80%;"
-    }, {
-        id: "brtr",
-        style: "position: absolute; top: 69%; left: 8%;"
-    }, {
-        id: "bmtr",
-        style: "position: absolute; top: 69%; left: 10%;"
-    }, {
-        id: "brmr",
-        style: "position: absolute; top: 73%; left: 18%;"
-    }, {
-        id: "bmmr",
-        style: "position: absolute; top: 74%; left: 20%;"
+        id: "t1tr",
+        style: "position: absolute; top: 40%; left: 9%;"
     }, {
         id: "brbr",
         style: "position: absolute; top: 85%; left: 24%;"
@@ -209,20 +197,23 @@ $(document).ready(function() {
         id: "bmbr",
         style: "position: absolute; top: 87%; left: 24%;"
     }, {
+        id: "brmr",
+        style: "position: absolute; top: 73%; left: 18%;"
+    }, {
+        id: "bmmr",
+        style: "position: absolute; top: 74%; left: 20%;"
+    }, {
+        id: "brtr",
+        style: "position: absolute; top: 69%; left: 8%;"
+    }, {
+        id: "bmtr",
+        style: "position: absolute; top: 69%; left: 10%;"
+    }, {
         id: "t4td",
         style: "position: absolute; top: 18%; left: 81%;"
     }, {
         id: "t4bd",
         style: "position: absolute; top: 19%; left: 83%;"
-    }, {
-        id: "t3td",
-        style: "position: absolute; top: 13%; left: 70%;"
-    }, {
-        id: "t2td",
-        style: "position: absolute; top: 13%; left: 50%;"
-    }, {
-        id: "t1td",
-        style: "position: absolute; top: 13%; left: 20%;"
     }, {
         id: "t3md",
         style: "position: absolute; top: 27%; left: 73%;"
@@ -242,11 +233,20 @@ $(document).ready(function() {
         id: "t1bd",
         style: "position: absolute; top: 60%; left: 87%;"
     }, {
-        id: "brtd",
-        style: "position: absolute; top: 12%; left: 72%;"
+        id: "t3td",
+        style: "position: absolute; top: 13%; left: 70%;"
     }, {
-        id: "bmtd",
-        style: "position: absolute; top: 14%; left: 72%;"
+        id: "t2td",
+        style: "position: absolute; top: 13%; left: 50%;"
+    }, {
+        id: "t1td",
+        style: "position: absolute; top: 13%; left: 20%;"
+    }, {
+        id: "brbd",
+        style: "position: absolute; top: 29%; left: 86%;"
+    }, {
+        id: "bmbd",
+        style: "position: absolute; top: 29%; left: 88%;"
     }, {
         id: "brmd",
         style: "position: absolute; top: 25%; left: 74%;"
@@ -254,11 +254,11 @@ $(document).ready(function() {
         id: "bmmd",
         style: "position: absolute; top: 26%; left: 76%;"
     }, {
-        id: "brbd",
-        style: "position: absolute; top: 29%; left: 86%;"
+        id: "brtd",
+        style: "position: absolute; top: 12%; left: 72%;"
     }, {
-        id: "bmbd",
-        style: "position: absolute; top: 29%; left: 88%;"
+        id: "bmtd",
+        style: "position: absolute; top: 14%; left: 72%;"
     }, {
         id: "ar",
         style: "position: absolute; top: 79%; left: 12%;"
