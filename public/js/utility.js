@@ -215,15 +215,6 @@ $(document).ready(function() {
         id: "t4bd",
         style: "position: absolute; top: 19%; left: 83%;"
     }, {
-        id: "t3md",
-        style: "position: absolute; top: 27%; left: 73%;"
-    }, {
-        id: "t2md",
-        style: "position: absolute; top: 37%; left: 63%;"
-    }, {
-        id: "t1md",
-        style: "position: absolute; top: 47%; left: 53%;"
-    }, {
         id: "t3bd",
         style: "position: absolute; top: 31%; left: 87%;"
     }, {
@@ -232,6 +223,15 @@ $(document).ready(function() {
     }, {
         id: "t1bd",
         style: "position: absolute; top: 60%; left: 87%;"
+    }, {
+        id: "t3md",
+        style: "position: absolute; top: 27%; left: 73%;"
+    }, {
+        id: "t2md",
+        style: "position: absolute; top: 37%; left: 63%;"
+    }, {
+        id: "t1md",
+        style: "position: absolute; top: 47%; left: 53%;"
     }, {
         id: "t3td",
         style: "position: absolute; top: 13%; left: 70%;"
