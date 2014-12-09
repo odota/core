@@ -2,6 +2,7 @@ $('#table').dataTable({
     "order": [[ 0, "desc" ]],
     ajax: '/api/matches',
     serverSide: true,
+    processing: true,
     columns: [
         {
             data: 'match_id',
