@@ -1,28 +1,5 @@
 extend layout
 
-append head
-  script.
-    $(document).ready(function() {
-        $('#table').dataTable({
-           "order": [[ 0, "desc" ]],
-           ajax: '/api/matches',
-           serverSide: true,
-            columns: [
-        { data: 'match_id',
-          title: 'Match ID'  },
-        { data: 'game_mode',
-          title: 'Game Mode' },
-        { data: 'cluster',
-          title: 'Region' },
-        { data: 'duration',
-          title: 'Duration' },
-        { data: 'start_time',
-          title: 'Played' },
-        { data: 'parse_status',
-          title: 'Status' }
-        ]
-        });
-    });
 block content
   h3 Recent Matches
   table.table#table
@@ -33,3 +10,4 @@ block content
         td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
         td= moment.unix(match.start_time + match.duration).fromNow()
         td= constants.parse_status[match.parse_status]
+  script(src='/public/js/match_table.js')
