@@ -1,13 +1,12 @@
 extend layout
 
+append head
+  script.
+    var parse_status = !{JSON.stringify(constants.parse_status)},
+        regions = !{JSON.stringify(constants.regions)},
+        modes = !{JSON.stringify(constants.modes)}
+    
 block content
   h3 Recent Matches
   table.table#table
-    //- each match in matches
-        td: a(href='/matches/#{match.match_id}')= match.match_id
-        td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
-        td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
-        td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-        td= moment.unix(match.start_time + match.duration).fromNow()
-        td= constants.parse_status[match.parse_status]
   script(src='/public/js/match_table.js')
