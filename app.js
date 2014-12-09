@@ -158,15 +158,13 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name])
 })
 app.route('/api/matches').get(function(req, res) {
-    console.log(query)
     var options = {}
+    var sort = utility.makeSort(req.query.order, req.query.columns)
     utility.matches.count({}, function(err, count) {
         utility.matches.find(options, {
             limit: Number(req.query.length),
             skip: Number(req.query.start),
-            sort: {
-                match_id: -1
-            }
+            sort: sort
         }, function(err, docs) {
             res.json({
                 draw: Number(req.query.draw),
