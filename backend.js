@@ -15,7 +15,6 @@ var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var trackedPlayers = {}
-var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
 var transports = []
 if(process.env.NODE_ENV === "production") {
     transports.push(new(winston.transports.File)({
@@ -37,7 +36,27 @@ var app = express();
 app.use(auth.connect(basic));
 app.use(kue.app);
 app.listen(process.env.KUE_PORT || 5001);
-setInterval(findStuckJobs, jobTimeout)
+//var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
+//setInterval(findStuckJobs, jobTimeout)
+/*
+function findStuckJobs() {
+    logger.info('[KUE] Looking for stuck jobs.')
+    kue.Job.rangeByState('active', 0, 10, 'ASC', function(err, ids) {
+        if(!err) {
+            ids.forEach(function(job) {
+                if(Date.now() - job.updated_at > jobTimeout) {
+                    job.state('inactive', function(err) {
+                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
+                        else logger.info('[KUE] Unstuck %s ', job.data.title)
+                    })
+                }
+            })
+        } else {
+            logger.info('[KUE] Could not connect to Kue server.')
+        }
+    })
+}
+*/
 updateConstants(function(err) {});
 async.series([
     function(cb) {
@@ -108,6 +127,7 @@ async.series([
             apiRequest(job, done)
         }, 1000)
     })
+    jobs.watchStuckJobs()
 })
 
 function updateConstants(cb) {
@@ -206,7 +226,7 @@ function getMatches(seq_num) {
                     if(resp.length > 0) {
                         seq_num = resp[resp.length - 1].match_seq_num + 1
                     }
-                    getMatches(seq_num)
+                    return getMatches(seq_num)
                 })
             })
         })
@@ -249,24 +269,6 @@ function queueReq(type, data) {
         }).searchKeys(['title']).removeOnComplete(true).save(function(err) {
             if(!err) logger.info('[KUE] %s', name)
         });
-    })
-}
-
-function findStuckJobs() {
-    logger.info('[KUE] Looking for stuck jobs.')
-    kue.Job.rangeByState('active', 0, 10, 'ASC', function(err, ids) {
-        if(!err) {
-            ids.forEach(function(job) {
-                if(Date.now() - job.updated_at > jobTimeout) {
-                    job.state('inactive', function(err) {
-                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
-                        else logger.info('[KUE] Unstuck %s ', job.data.title)
-                    })
-                }
-            })
-        } else {
-            logger.info('[KUE] Could not connect to Kue server.')
-        }
     })
 }
 
@@ -381,7 +383,9 @@ function getData(url, cb) {
         //logger.info("[API] %s", url)
         if(err || res.statusCode != 200 || !body) {
             logger.info("[API] error getting data, retrying")
-            return getData(url, cb)
+            setTimeout(function() {
+                getData(url, cb)
+            }, 1000)
         } else {
             cb(null, JSON.parse(body))
         }

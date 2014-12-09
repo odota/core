@@ -23,11 +23,6 @@ Deployment
 * Create .env file with desired parameters
 * Run `nf start`
 
-Caching
-====
-No keys are being expired, so the Redis caching instance should be set
-to use a fixed amount of memory and with some key eviction policy.
-
 .env
 ====
 * STEAM_USER (required, a Steam username)
@@ -44,7 +39,7 @@ to use a fixed amount of memory and with some key eviction policy.
 * AWS_ACCESS_KEY_ID (optional, allows use of S3)
 * AWS_SECRET_ACCESS_KEY (optional, allows use of S3)
 * SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
-* NODE_ENV
-* ROOT_URL
-* CACHE_PORT (optional, defaults to 16379, port for Redis instance for caching)
-* CACHE_HOST (optional, host for Redis instance for caching, defaults to localhost)
+* NODE_ENV (optional, when set to "production" causes express optimizations and suppressed error messages)
+* ROOT_URL (required, root URL of instance for oauth callbacks)
+* REDIS_PORT (optional, defaults to 16379, port for Redis instance)
+* REDIS_HOST (optional, defaults to localhost, host for Redis instance)
