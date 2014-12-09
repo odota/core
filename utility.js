@@ -61,6 +61,18 @@ utility.getMatches = function(account_id, cb) {
 }
 
 /*
+ * Makes search from a datatables call
+ */
+utility.makeSearch = function(search, columns) {
+    var s = {}
+    columns.forEach(function(c){
+        s[c.data] = "/.*" + search + ".*/"
+    })
+    
+    return s;
+}
+
+/*
  * Makes sort from a datatables call
  */
 utility.makeSort = function(order, columns) {
