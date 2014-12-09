@@ -158,7 +158,6 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name])
 })
 app.route('/api/matches').get(function(req, res) {
-    console.log(req.query)
     var options = {}
     utility.matches.count({}, function(err, count) {
         utility.matches.find(options, {
