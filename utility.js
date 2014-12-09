@@ -59,6 +59,22 @@ utility.getMatches = function(account_id, cb) {
         cb(err, docs)
     })
 }
+
+/*
+ * Makes sort from a datatables call
+ */
+utility.makeSort = function(order, columns) {
+    var sort = {}
+    order.forEach(function(s){
+        var c = columns[Number(s.column)]
+        if (c) {
+            sort[c.data] = s.dir === 'desc' ? -1 : 1
+        }
+    })
+    
+    return sort;
+}
+
 /*
  * Converts a steamid 64 to a steamid 32
  *
