@@ -1,20 +1,16 @@
 /* ads */
-
-.leaderboard {
+ .leaderboard {
     margin-left: auto;
     margin-right: auto;
     display: block;
 }
-
 .match-top {
     margin-top: 1.5em;
 }
-
 .match-top h1 {
     font-size: 38px;
     font-weight: 700;
 }
-
 .vis.timeline .item.background.background-0 {
     background-color: rgba(213, 221, 246, 0.4);
 }
@@ -51,28 +47,28 @@
 .vis.timeline .item.buy {
     background-color: green;
 }
-.vis.timeline .item{
+.vis.timeline .item {
     padding: 1px;
 }
 h3 img {
     padding-right: 1em;
 }
-.table-img{
+.table-img {
     white-space: nowrap;
     min-width: 150px;
 }
-.img-text{
+.img-text {
     float: left;
     text-align: center;
     font-size: 10px;
 }
-.ability{
-    width: 25px
+.ability {
+    width: 30px
 }
-.item{
-    width: 30px;
+.item {
+    width: 35px;
 }
-.kill{
+.kill {
     width: 35px;
 }
 td.abilities {
@@ -83,9 +79,26 @@ td.abilities img {
     width: 35px;
 }
 * {
-    font-family: 'Lato', sans-serif;
+    font-family:'Lato', sans-serif;
 }
 .navbar-default {
     background-color: #BBF0FD;
 }
-.hero img {width: 50px;}
+.hero img {
+    width: 50px;
+}
+.tooltip-inner {
+    white-space:normal;
+}
+.mapContainer {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 600px;
+}
+.map {
+    width: 100%;
+}
+.icon {
+    width:15px;
+}

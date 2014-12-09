@@ -26,7 +26,7 @@ var logger = new(winston.Logger)({
 });
 var matchPages = {
     index: {
-        template: "match_index",
+        template: "match",
         name: "Match"
     },
     details: {
@@ -36,10 +36,6 @@ var matchPages = {
     graphs: {
         template: "match_graphs",
         name: "Graphs"
-    },
-    timelines: {
-        template: "match_timelines",
-        name: "Timelines"
     },
     chat: {
         template: "match_chat",
@@ -105,6 +101,7 @@ passport.use(new SteamStrategy({
 }))
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
+    maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
     secret: process.env.SESSION_SECRET
 }))
 app.use(passport.initialize())
@@ -154,12 +151,34 @@ app.route('/').get(function(req, res) {
         res.render('index.jade', {})
     }
 })
-app.route('/matches').get(function(req, res) {
-    utility.getMatches(null, function(err, docs) {
-        res.render('matches.jade', {
-            matches: docs
+app.route('/api/items').get(function(req, res) {
+    res.json(app.locals.constants.items[req.query.name])
+})
+app.route('/api/abilities').get(function(req, res) {
+    res.json(app.locals.constants.abilities[req.query.name])
+})
+app.route('/api/matches').get(function(req, res) {
+    console.log(req.query)
+    var options = {}
+    utility.matches.count({}, function(err, count) {
+        utility.matches.find(options, {
+            limit: Number(req.query.length),
+            skip: Number(req.query.start),
+            sort: {
+                match_id: -1
+            }
+        }, function(err, docs) {
+            res.json({
+                draw: Number(req.query.draw),
+                recordsTotal: count,
+                recordsFiltered: count,
+                data: docs
+            })
         })
-    })
+    });
+})
+app.route('/matches').get(function(req, res) {
+    res.render('matches.jade', {})
 })
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index'
@@ -324,6 +343,7 @@ app.route('/return').get(passport.authenticate('steam', {
 })
 app.route('/logout').get(function(req, res) {
     req.logout();
+    req.session = null;
     res.redirect('/')
 })
 app.use(function(err, req, res, next) {
