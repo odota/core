@@ -10,7 +10,6 @@ var async = require("async"),
     reds = require('reds');
 var kue = utility.kue;
 var jobs = utility.jobs;
-var request = require("request");
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
@@ -22,7 +21,7 @@ if(process.env.NODE_ENV === "production") {
         level: 'info'
     }))
 } else {
-    transports.push(new(winston.transports.Console))
+    transports.push(new(winston.transports.Console)());
 }
 var logger = new(winston.Logger)({
     transports: transports
@@ -180,7 +179,7 @@ function updateConstants(cb) {
             img: '../../public/images/Stats.png'
         }
         constants.abilities = abilities
-        var lookup = {}
+        lookup = {};
         var regions = constants.regions.regions
         for(var i = 0; i < regions.length; i++) {
             lookup[regions[i].id] = regions[i].name
@@ -214,7 +213,7 @@ function getMatches(seq_num) {
             docs.forEach(function(player) {
                 trackedPlayers[player.account_id] = true
             })
-            url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num
+            var url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
             getData(url, function(err, data) {
                 if(data.result.error || data.result.status == 2) {
                     logger.info(data)
@@ -285,42 +284,42 @@ function requestDetails(match, cb) {
 
 function getMatchPage(url, cb) {
     request(url, function(err, resp, body) {
-        logger.info("[REMOTE] %s", url)
+        logger.info("[REMOTE] %s", url);
         var parsedHTML = cheerio.load(body);
-        var matchCells = parsedHTML('td[class=cell-xlarge]')
+        var matchCells = parsedHTML('td[class=cell-xlarge]');
         matchCells.each(function(i, matchCell) {
             var match_url = remote + cheerio(matchCell).children().first().attr('href');
-            var match = {}
+            var match = {};
             match.match_id = Number(match_url.split(/[/]+/).pop());
-            requestDetails(match, function(err) {})
-        })
-        var nextPath = parsedHTML('a[rel=next]').first().attr('href')
+            requestDetails(match, function(err) {});
+        });
+        var nextPath = parsedHTML('a[rel=next]').first().attr('href');
         if(nextPath) {
             getMatchPage(remote + nextPath, cb);
         } else {
-            cb(null)
+            cb(null);
         }
-    })
+    });
 }
 /*
  * Processes a request to an api
  */
 
 function apiRequest(job, cb) {
-    var payload = job.data.payload
+    var payload = job.data.payload;
     getData(job.data.url, function(err, data) {
         if(data.response) {
             //summaries response
             async.map(data.response.players, insertPlayer, function(err) {
-                cb(err)
-            })
+                cb(err);
+            });
         } else if(data.result.error || data.result.status == 2) {
-            logger.info(data)
-            return cb(data)
+            logger.info(data);
+            return cb(data);
         } else if(payload.match_id) {
             var match = data.result
             insertMatch(match, function(err) {
-                cb(err)
+                cb(err);
             })
         } else {
             var resp = data.result.matches
@@ -347,7 +346,7 @@ function insertMatch(match, cb) {
     }
     if(track) {
         //todo get player summaries separately
-        summaries = {
+        var summaries = {
             summaries_id: 0
         }
         var steamids = []

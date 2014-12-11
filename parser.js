@@ -18,76 +18,79 @@ var passes = process.env.STEAM_PASS.split()
 var codes = process.env.STEAM_GUARD_CODE.split()
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
-if(!fs.existsSync(replay_dir)) {
+if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
 jobs.process('parse', function(job, done) {
     parseReplay(job, done)
 })
 jobs.on('job failed', function(id, result) {
-    kue.Job.get(id, function(err, job) {
-        matches.update({
-            match_id: job.data.payload.match_id
-        }, {
-            $set: {
-                parse_status: 1
-            }
-        })
-    })
-})
-/*
- * Downloads a match replay
- */
-
-function download(job, cb) {
-    var match_id = job.data.payload.match_id
-    var fileName = replay_dir + match_id + ".dem"
-    if(fs.existsSync(fileName)) {
-        console.log("[PARSER] found local replay for match %s", match_id)
-        cb(null, fileName);
-    } else {
-        getReplayUrl(job, function(err, url) {
-            if(err) {
-                return cb(err)
-            }
-            console.log("[PARSER] downloading from %s", url)
-            request({
-                url: url,
-                encoding: null
-            }, function(err, response, body) {
-                if(err || response.statusCode !== 200) {
-                    console.log("[PARSER] failed to download from %s", url)
-                    return cb("DOWNLOAD TIMEOUT")
-                } else {
-                    try {
-                        var decomp = Bunzip.decode(body)
-                        fs.writeFile(fileName, decomp, function(err) {
-                            if(err) {
-                                return cb(err)
-                            }
-                            console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
-                            var archiveName = match_id + ".dem.bz2"
-                            uploadToS3(archiveName, body, function(err) {
-                                return cb(err, fileName)
-                            })
-                        })
-                    } catch(e) {
-                        return cb(e)
-                    }
+        kue.Job.get(id, function(err, job) {
+            matches.update({
+                match_id: job.data.payload.match_id
+            }, {
+                $set: {
+                    parse_status: 1
                 }
             })
         })
+    })
+    /*
+     * Downloads a match replay
+     */
+
+function download(job, cb) {
+        var match_id = job.data.payload.match_id
+        var fileName = replay_dir + match_id + ".dem"
+        if (fs.existsSync(fileName)) {
+            console.log("[PARSER] found local replay for match %s", match_id)
+            cb(null, fileName);
+        }
+        else {
+            getReplayUrl(job, function(err, url) {
+                if (err) {
+                    return cb(err)
+                }
+                console.log("[PARSER] downloading from %s", url)
+                request({
+                    url: url,
+                    encoding: null
+                }, function(err, response, body) {
+                    if (err || response.statusCode !== 200) {
+                        console.log("[PARSER] failed to download from %s", url)
+                        return cb("DOWNLOAD TIMEOUT")
+                    }
+                    else {
+                        try {
+                            var decomp = Bunzip.decode(body)
+                            fs.writeFile(fileName, decomp, function(err) {
+                                if (err) {
+                                    return cb(err)
+                                }
+                                console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                                var archiveName = match_id + ".dem.bz2"
+                                uploadToS3(archiveName, body, function(err) {
+                                    return cb(err, fileName)
+                                })
+                            })
+                        }
+                        catch (e) {
+                            return cb(e)
+                        }
+                    }
+                })
+            })
+        }
     }
-}
-/*
- * Logs onto steam and launches Dota 2
- */
+    /*
+     * Logs onto steam and launches Dota 2
+     */
 
 function logOnSteam(user, pass, authcode, cb) {
     var onSteamLogOn = function onSteamLogOn() {
-        console.log("[STEAM] Logged on.");
-        cb(null)
-    },
+            console.log("[STEAM] Logged on.");
+            cb(null)
+        },
         onSteamSentry = function onSteamSentry(newSentry) {
             console.log("[STEAM] Received sentry.");
             fs.writeFileSync("sentry", newSentry);
@@ -100,27 +103,27 @@ function logOnSteam(user, pass, authcode, cb) {
             console.log(e)
             cb(e)
         };
-    if(!fs.existsSync("sentry")) {
+    if (!fs.existsSync("sentry")) {
         fs.openSync("sentry", 'w')
     }
     var logOnDetails = {
-        "accountName": user,
-        "password": pass
-    },
+            "accountName": user,
+            "password": pass
+        },
         sentry = fs.readFileSync("sentry");
-    if(authcode) logOnDetails.authCode = authcode;
-    if(sentry.length) logOnDetails.shaSentryfile = sentry;
+    if (authcode) logOnDetails.authCode = authcode;
+    if (sentry.length) logOnDetails.shaSentryfile = sentry;
     Steam.logOn(logOnDetails);
     Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
 
 function getReplayUrl(job, cb) {
-    if('url' in job.data) {
+    if ('url' in job.data) {
         return cb(null, job.data.url)
     }
     var match = job.data.payload
-    if(match.start_time > moment().subtract(7, 'days').format('X')) {
-        if(!Steam.loggedOn) {
+    if (match.start_time > moment().subtract(7, 'days').format('X')) {
+        if (!Steam.loggedOn) {
             loginNum += 1
             loginNum = loginNum % users.length
             logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
@@ -129,9 +132,10 @@ function getReplayUrl(job, cb) {
                     getReplayUrl(job, cb)
                 })
             })
-        } else {
+        }
+        else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-            // Try to get replay for 10 sec, else give up and try again later.
+                // Try to get replay for 10 sec, else give up and try again later.
             var timeOut = setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()
@@ -149,7 +153,8 @@ function getReplayUrl(job, cb) {
                 return cb(null, url)
             })
         }
-    } else {
+    }
+    else {
         getS3URL(match.match_id, function(err, url) {
             cb(err, url)
         })
@@ -157,7 +162,7 @@ function getReplayUrl(job, cb) {
 }
 
 function getS3URL(match_id, cb) {
-    if(process.env.AWS_S3_BUCKET) {
+    if (process.env.AWS_S3_BUCKET) {
         var archiveName = match_id + ".dem.bz2"
         var s3 = new AWS.S3()
         var params = {
@@ -165,56 +170,61 @@ function getS3URL(match_id, cb) {
             Key: archiveName
         }
         s3.headObject(params, function(err, data) {
-            if(!err) {
+            if (!err) {
                 var url = s3.getSignedUrl('getObject', params);
                 cb(null, url)
-            } else {
+            }
+            else {
                 console.log("[S3] %s not in S3", match_id)
                 cb("S3 UNAVAILABLE")
             }
         })
-    } else {
+    }
+    else {
         cb("S3 UNAVAILABLE")
     }
 }
 
 function uploadToS3(archiveName, body, cb) {
-    if(process.env.AWS_S3_BUCKET) {
-        var s3 = new AWS.S3()
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        }
-        s3.headObject(params, function(err, data) {
-            if(err) {
-                params.Body = body
-                s3.putObject(params, function(err, data) {
-                    if(err) {
-                        console.log('[S3] could not upload to S3')
-                    } else {
-                        console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
-                    }
-                    cb(err)
-                })
-            } else {
-                console.log('[S3] replay already exists in S3')
-                cb(err)
+        if (process.env.AWS_S3_BUCKET) {
+            var s3 = new AWS.S3()
+            var params = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: archiveName
             }
-        })
-    } else {
-        console.log("[S3] S3 not defined (skipping upload)")
-        cb(null)
+            s3.headObject(params, function(err, data) {
+                if (err) {
+                    params.Body = body
+                    s3.putObject(params, function(err, data) {
+                        if (err) {
+                            console.log('[S3] could not upload to S3')
+                        }
+                        else {
+                            console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
+                        }
+                        cb(err)
+                    })
+                }
+                else {
+                    console.log('[S3] replay already exists in S3')
+                    cb(err)
+                }
+            })
+        }
+        else {
+            console.log("[S3] S3 not defined (skipping upload)")
+            cb(null)
+        }
     }
-}
-/*
- * Parses a replay for a match
- */
+    /*
+     * Parses a replay for a match
+     */
 
 function parseReplay(job, cb) {
     var match_id = job.data.payload.match_id
     console.log("[PARSER] match %s", match_id)
     download(job, function(err, fileName) {
-        if(err) {
+        if (err) {
             console.log("[PARSER] Error for match %s: %s", match_id, err)
             return cb(err)
         }
@@ -233,7 +243,7 @@ function parseReplay(job, cb) {
         })
         cp.on('exit', function(code) {
             console.log('[PARSER] match: %s, exit code: %s', match_id, code);
-            if(!code) {
+            if (!code) {
                 //process parser output
                 matches.update({
                     match_id: match_id
@@ -243,7 +253,7 @@ function parseReplay(job, cb) {
                         parse_status: 2
                     }
                 })
-                if(process.env.DELETE_REPLAYS) {
+                if (process.env.DELETE_REPLAYS) {
                     fs.unlink(fileName)
                 }
             }
