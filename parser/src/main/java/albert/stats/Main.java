@@ -45,7 +45,6 @@ public class Main {
             Entity pr = match.getPlayerResource();
             //EntityCollection ec = match.getEntities();
 
-
             if (!initialized) {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
@@ -67,10 +66,7 @@ public class Main {
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
-                CombatLogEntry.init(
-                    match.getStringTables().forName("CombatLogNames"), 
-                    combatLogDescriptor
-                );
+                CombatLogEntry.init(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
                 initialized = true;
             }
 
@@ -332,6 +328,7 @@ public class Main {
                 }
             }
         }
+        iter.close();
 
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
