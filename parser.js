@@ -10,6 +10,7 @@ var request = require("request"),
     Steam = new steam.SteamClient(),
     Dota2 = new dota2.Dota2Client(Steam, false),
     AWS = require('aws-sdk');
+var async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
 var loginNum = 0
@@ -21,8 +22,19 @@ var parser_file = "parser/target/stats-0.1.0.jar"
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-jobs.process('parse', function(job, done) {
-    parseReplay(job, done)
+kue.Job.rangeByType('parse', 'active', 0, 99999, 'ASC', function(err, docs) {
+    async.mapSeries(docs,
+        function(job, cb) {
+            job.state('inactive', function(err) {
+                console.log('[KUE] Unstuck %s ', job.data.title);
+                cb(err)
+            })
+        },
+        function(err) {
+            jobs.process('parse', function(job, done) {
+                parseReplay(job, done)
+            })
+        })
 })
 jobs.on('job failed', function(id, result) {
         kue.Job.get(id, function(err, job) {
