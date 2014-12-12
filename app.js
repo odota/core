@@ -1,6 +1,8 @@
 var express = require('express');
 var session = require('cookie-session');
 var utility = require('./utility'),
+    kue = utility.kue,
+    auth = require('http-auth'),
     matches = utility.matches,
     players = utility.players,
     async = require('async'),
@@ -13,13 +15,14 @@ var utility = require('./utility'),
     app = express();
 var port = Number(process.env.PORT || 3000);
 var transports = []
-if(process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production") {
     transports.push(new(winston.transports.File)({
         filename: 'app.log',
         level: 'info'
     }))
-} else {
-    transports.push(new(winston.transports.Console))
+}
+else {
+    transports.push(new(winston.transports.Console)())
 }
 var logger = new(winston.Logger)({
     transports: transports
@@ -93,12 +96,20 @@ passport.use(new SteamStrategy({
     }, {
         upsert: true
     }, function(err, num) {
-        if(err) return done(err, null)
+        if (err) return done(err, null)
         return done(null, {
             account_id: steam32
         })
     })
 }))
+var basic = auth.basic({
+    realm: "Kue"
+}, function(username, password, callback) { // Custom authentication method.
+    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+});
+app.use("/kueapi", auth.connect(basic));
+app.use("/kueapi", kue.app);
+kue.app.listen(5001);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
@@ -114,36 +125,40 @@ app.use(function(req, res, next) {
 })
 app.param('match_id', function(req, res, next, id) {
     cache.get(req.url, function(err, reply) {
-        if(err || !reply || process.env.NODE_ENV != "production") {
+        if (err || !reply || process.env.NODE_ENV != "production") {
             logger.info("Cache miss for HTML for request " + req.url)
             matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
-                if(!match) {
+                if (!match) {
                     return next()
-                } else {
+                }
+                else {
                     utility.fillPlayerNames(match.players, function(err) {
                         req.match = match
                         return next()
                     })
                 }
             })
-        } else if(reply) {
+        }
+        else if (reply) {
             logger.info("Cache hit for HTML for request " + req.url)
             return res.send(reply);
-        } else {
+        }
+        else {
             return next()
         }
     })
 })
 app.route('/').get(function(req, res) {
-    if(req.user) {
+    if (req.user) {
         utility.getMatches(req.user.account_id, function(err, docs) {
             res.render('index.jade', {
                 match: docs[0]
             })
         })
-    } else {
+    }
+    else {
         res.render('index.jade', {})
     }
 })
@@ -156,8 +171,7 @@ app.route('/api/abilities').get(function(req, res) {
 app.route('/api/matches').get(function(req, res) {
     var search = req.query.search.value
     var options = search ?
-        utility.makeSearch(search, req.query.columns) :
-        {}
+        utility.makeSearch(search, req.query.columns) : {}
 
     var sort = utility.makeSort(req.query.order, req.query.columns)
     utility.matches.count({}, function(err, count) {
@@ -181,22 +195,23 @@ app.route('/matches').get(function(req, res) {
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index'
     var match = req.match
-    if(!matchPages[info]) {
+    if (!matchPages[info]) {
         return next()
     }
-    if(info == "graphs") {
-        if(match.parsed_data) {
+    if (info == "graphs") {
+        if (match.parsed_data) {
             //compute graphs
             var goldDifference = ['Gold']
             var xpDifference = ['XP']
-            for(var i = 0; i < match.parsed_data.times.length; i++) {
+            for (var i = 0; i < match.parsed_data.times.length; i++) {
                 var goldtotal = 0
                 var xptotal = 0
                 match.parsed_data.players.forEach(function(elem, j) {
-                    if(match.players[j].player_slot < 64) {
+                    if (match.players[j].player_slot < 64) {
                         goldtotal += elem.gold[i]
                         xptotal += elem.xp[i]
-                    } else {
+                    }
+                    else {
                         xptotal -= elem.xp[i]
                         goldtotal -= elem.gold[i]
                     }
@@ -205,7 +220,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
                 xpDifference.push(xptotal)
             }
             var time = ["time"].concat(match.parsed_data.times)
-            data = {
+            var data = {
                 difference: [time, goldDifference, xpDifference],
                 gold: [time],
                 xp: [time],
@@ -222,10 +237,11 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     res.render(matchPages[info].template, {
         route: info,
         match: req.match,
-        tabs: matchPages
+        tabs: matchPages,
+        data: data
     }, function(err, html) {
-        if(err) return next(err)
-        if(match.parsed_data) {
+        if (err) return next(err)
+        if (match.parsed_data) {
             cache.setex(req.url, 86400, html)
         }
         return res.send(html)
@@ -240,15 +256,16 @@ app.route('/players').get(function(req, res) {
 })
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index';
-    if(!playerPages[info]) {
+    if (!playerPages[info]) {
         return next()
     }
     players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
-        if(!player) {
+        if (!player) {
             return next()
-        } else {
+        }
+        else {
             utility.getMatches(player.account_id, function(err, matches) {
                 var account_id = player.account_id
                 var counts = {}
@@ -256,34 +273,35 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.win = 0
                 player.lose = 0
                 player.games = 0
-                for(i = 0; i < matches.length; i++) {
-                    for(j = 0; j < matches[i].players.length; j++) {
+                for (var i = 0; i < matches.length; i++) {
+                    for (var j = 0; j < matches[i].players.length; j++) {
                         var p = matches[i].players[j]
-                        if(p.account_id == account_id) {
+                        if (p.account_id == account_id) {
                             var playerRadiant = utility.isRadiant(p)
                             matches[i].player_win = (playerRadiant == matches[i].radiant_win)
                             matches[i].slot = j
                             matches[i].player_win ? player.win += 1 : player.lose += 1
                             player.games += 1
-                            if(!heroes[p.hero_id]) {
+                            if (!heroes[p.hero_id]) {
                                 heroes[p.hero_id] = {}
                                 heroes[p.hero_id]["games"] = 0
                                 heroes[p.hero_id]["win"] = 0
                                 heroes[p.hero_id]["lose"] = 0
                             }
                             heroes[p.hero_id]["games"] += 1
-                            if(matches[i].player_win) {
+                            if (matches[i].player_win) {
                                 heroes[p.hero_id]["win"] += 1
-                            } else {
+                            }
+                            else {
                                 heroes[p.hero_id]["lose"] += 1
                             }
                         }
                     }
-                    if(info == "teammates") {
-                        for(j = 0; j < matches[i].players.length; j++) {
+                    if (info == "teammates") {
+                        for (j = 0; j < matches[i].players.length; j++) {
                             var p = matches[i].players[j]
-                            if(utility.isRadiant(p) == playerRadiant) { //teammates of player
-                                if(!counts[p.account_id]) {
+                            if (utility.isRadiant(p) == playerRadiant) { //teammates of player
+                                if (!counts[p.account_id]) {
                                     counts[p.account_id] = {}
                                     counts[p.account_id]["account_id"] = p.account_id
                                     counts[p.account_id]["win"] = 0
@@ -291,9 +309,10 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                                     counts[p.account_id]["games"] = 0
                                 }
                                 counts[p.account_id]["games"] += 1
-                                if(matches[i].player_win) {
+                                if (matches[i].player_win) {
                                     counts[p.account_id]["win"] += 1
-                                } else {
+                                }
+                                else {
                                     counts[p.account_id]["lose"] += 1
                                 }
                             }
@@ -302,16 +321,16 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 }
                 //convert counts to array and filter
                 player.teammates = []
-                for(var id in counts) {
+                for (var id in counts) {
                     var count = counts[id]
-                    if(id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
+                    if (id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
                         player.teammates.push(count)
                     }
                 }
                 player.heroes = heroes
                 utility.fillPlayerNames(player.teammates, function(err) {
-                    if(info == "index") {
-                        data = {}
+                    if (info == "index") {
+                        var data = {}
                         matches.forEach(function(m) {
                             data[m.start_time] = 1
                         })
@@ -320,7 +339,8 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         route: info,
                         player: player,
                         matches: matches,
-                        tabs: playerPages
+                        tabs: playerPages,
+                        data: data
                     })
                 })
             })
@@ -333,9 +353,10 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
-    if(req.user) {
+    if (req.user) {
         res.redirect('/players/' + req.user.account_id)
-    } else {
+    }
+    else {
         res.redirect('/')
     }
 })
@@ -345,14 +366,14 @@ app.route('/logout').get(function(req, res) {
     res.redirect('/')
 })
 app.use(function(err, req, res, next) {
-    if(err && process.env.NODE_ENV == "production") {
-        return res.status(500).render('500.jade')
-    }
-    next()
-})
-// Handle 404
+        if (err && process.env.NODE_ENV == "production") {
+            return res.status(500).render('500.jade')
+        }
+        next()
+    })
+    // Handle 404
 app.use(function(req, res) {
-    if(process.env.NODE_ENV == "production") {
+    if (process.env.NODE_ENV == "production") {
         res.status(404).render('404.jade');
     }
 });
