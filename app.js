@@ -3,6 +3,7 @@ var session = require('cookie-session');
 var utility = require('./utility'),
     kue = utility.kue,
     auth = require('http-auth'),
+    ui = require('kue-ui'),
     matches = utility.matches,
     players = utility.players,
     async = require('async'),
@@ -13,6 +14,7 @@ var utility = require('./utility'),
     cache = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
+var host = process.env.ROOT_URL
 var port = Number(process.env.PORT || 3000);
 var transports = []
 if (process.env.NODE_ENV === "production") {
@@ -69,7 +71,6 @@ app.listen(port, function() {
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
-var host = process.env.ROOT_URL
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
@@ -107,9 +108,12 @@ var basic = auth.basic({
 }, function(username, password, callback) { // Custom authentication method.
     callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
 });
+ui.setup({
+    apiURL: '/kueapi' // IMPORTANT: specify the api url
+});
 app.use("/kueapi", auth.connect(basic));
 app.use("/kueapi", kue.app);
-kue.app.listen(5001);
+app.use('/kue', ui.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
