@@ -231,6 +231,8 @@ function parseReplay(job, cb) {
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
+            "-Xms256m",
+            "-Xmx256m",
             parser_file,
             fileName,
             process.env.MONGOHQ_URL || "mongodb://localhost/dota"
