@@ -70,6 +70,9 @@ $(document).ready(function() {
     $('.format').each(function() {
         $(this).text(format($(this).text()))
     })
+        $('.fromNow').each(function() {
+        $(this).text(moment.unix($(this).text()).fromNow())
+    })
     $('.format-seconds').each(function() {
         $(this).text(formatSeconds($(this).text()))
     })
