@@ -25,31 +25,10 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
-//var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
-//setInterval(findStuckJobs, jobTimeout)
-/*
-function findStuckJobs() {
-    logger.info('[KUE] Looking for stuck jobs.')
-    kue.Job.rangeByState('active', 0, 10, 'ASC', function(err, ids) {
-        if(!err) {
-            ids.forEach(function(job) {
-                if(Date.now() - job.updated_at > jobTimeout) {
-                    job.state('inactive', function(err) {
-                        if(err) logger.info('[KUE] Failed to move from active to inactive.')
-                        else logger.info('[KUE] Unstuck %s ', job.data.title)
-                    })
-                }
-            })
-        } else {
-            logger.info('[KUE] Could not connect to Kue server.')
-        }
-    })
-}
-*/
 updateConstants(function(err) {});
 async.series([
     function(cb) {
-        //scrape players full match history
+        //scrape full match history for requested players
         players.find({
             full_history: 1
         }, function(err, docs) {
@@ -72,8 +51,6 @@ async.series([
                 cb(null)
             })
         })
-    },
-    function(cb) {
         //check most recent 100 matches for tracked players
         players.find({
             track: 1
