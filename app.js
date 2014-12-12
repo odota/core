@@ -26,7 +26,7 @@ var logger = new(winston.Logger)({
 });
 var matchPages = {
     index: {
-        template: "match",
+        template: "match_index",
         name: "Match"
     },
     details: {
@@ -82,10 +82,10 @@ passport.use(new SteamStrategy({
     realm: host,
     apiKey: process.env.STEAM_API_KEY
 }, function(identifier, profile, done) { // start tracking the player
-    steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)))
+    var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json
-    insert.account_id = steam32
-    insert.track = 1
+    insert.account_id = steam32;
+    insert.track = 1;
     players.update({
         account_id: steam32
     }, {
@@ -106,10 +106,6 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
-app.use(function(req, res, next) {
-    user = req.user
-    next()
-})
 app.use(function(req, res, next) {
     utility.constants.findOne({}, function(err, doc) {
         app.locals.constants = doc
