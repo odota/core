@@ -1,6 +1,4 @@
 var async = require("async"),
-    express = require('express'),
-    auth = require('http-auth'),
     request = require('request'),
     utility = require('./utility'),
     matches = utility.matches,
@@ -26,15 +24,7 @@ if(process.env.NODE_ENV === "production") {
 var logger = new(winston.Logger)({
     transports: transports
 });
-var basic = auth.basic({
-    realm: "Kue"
-}, function(username, password, callback) { // Custom authentication method.
-    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
-});
-var app = express();
-app.use(auth.connect(basic));
-app.use(kue.app);
-app.listen(process.env.KUE_PORT || 5001);
+
 //var jobTimeout = 3 * 60 * 1000 // Job timeout for kue
 //setInterval(findStuckJobs, jobTimeout)
 /*
