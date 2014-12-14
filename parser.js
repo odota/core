@@ -22,34 +22,15 @@ var parser_file = "parser/target/stats-0.1.0.jar"
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
-kue.Job.rangeByType('parse', 'active', 0, 99999, 'ASC', function(err, docs) {
-    async.mapSeries(docs,
-        function(job, cb) {
-            job.state('inactive', function(err) {
-                console.log('[KUE] Unstuck %s ', job.data.title);
-                cb(err)
-            })
-        },
-        function(err) {
-            jobs.process('parse', function(job, done) {
-                parseReplay(job, done)
-            })
-        })
-})
-jobs.on('job failed', function(id, result) {
-        kue.Job.get(id, function(err, job) {
-            matches.update({
-                match_id: job.data.payload.match_id
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            })
-        })
+utility.clearActiveJobs('parse', function(err) {
+    jobs.process('parse', function(job, done) {
+        parseReplay(job, done)
     })
-    /*
-     * Downloads a match replay
-     */
+})
+
+/*
+ * Downloads a match replay
+ */
 
 function download(job, cb) {
         var match_id = job.data.payload.match_id
@@ -238,13 +219,22 @@ function parseReplay(job, cb) {
     download(job, function(err, fileName) {
         if (err) {
             console.log("[PARSER] Error for match %s: %s", match_id, err)
+            if (job.attempts.remaining === 0) {
+                matches.update({
+                    match_id: job.data.payload.match_id
+                }, {
+                    $set: {
+                        parse_status: 1
+                    }
+                })
+            }
             return cb(err)
         }
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
         var cp = spawn("java", ["-jar",
-            "-Xms256m",
-            "-Xmx256m",
+            "-Xms128m",
+            "-Xmx128m",
             parser_file,
             fileName,
             process.env.MONGOHQ_URL || "mongodb://localhost/dota"
