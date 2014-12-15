@@ -1,88 +1,41 @@
-extend match_base
+extend layout
 
-append content
-  .row
-    .col-md-12
-      h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-      table.table.table-hover.table-responsive.summable
+append head
+    meta(property="og:title",  content="Match #{match.match_id}")
+    | <!-- This page generated at #{moment(Date.now()).format('MMMM Do YYYY, h:mm:ss a')} -->
+    
+block content
+  .row.match-top
+    .col-md-6
+      h1 Match #{match.match_id}
+    .col-md-6
+      table.table.table-condensed
         thead
           tr
-            th Player
-            th Hero
-            th LV
-            th K
-            th D
-            th A
-            th LH
-            th DN
-            th GOLD
-            th GPM
-            th XPM
-            th HD
-            th TD
-            th HH
-            th Items
+            td Game Mode
+            td Region
+            td Duration
+            td Result
+            td Played
+            td Status
         tbody
-          each player, i in match.players
-           tr(class = player.player_slot<64 ? "success" : "danger")
-             td
-               if (player.account_id == constants.anonymous_account_id)
-                 ="Anonymous"
-               else
-                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id
-             - var hero = constants.heroes[player.hero_id]
-             td.hero
-               if hero
-                 img(src=hero.img, alt=hero.localized_name)
-               else
-                 =player.hero_id
-             td= player.level
-             td= player.kills
-             td= player.deaths
-             td= player.assists
-             td= player.last_hits
-             td= player.denies
-             td.format= ~~(player.gold_per_min*match.duration/60)
-             td= player.gold_per_min
-             td= player.xp_per_min
-             td.format= player.hero_damage
-             td.format= player.tower_damage
-             td.format= player.hero_healing
-             td.table-img
-               each val, index in player
-                 if (index.slice(0, 5)==="item_")
-                   - var item = constants.items[constants.item_ids[val]]
-                   if item
-                     img.item(src=item.img, alt=constants.item_ids[val])
-               if (player.hero_id === 80)
-                 br
-                 each val, index in player.additional_units[0]
-                   if (index.slice(0, 5)==="item_")
-                     - var item = constants.items[constants.item_ids[val]]                             
-                     if item
-                       img.item(src=item.img, alt=constants.item_ids[val])
-      h2 Skill Builds
-      table.table.table-hover.table-responsive
-        tr
-          th Hero
-          - for (var i = 1; i < 26; i++)
-            th= i
-        - each player, i in match.players
-           tr(class = player.player_slot<64 ? "success" : "danger")
-             - var hero = constants.heroes[player.hero_id]
-             td.hero
-               if hero
-                 img(src=hero.img, title=hero.localized_name)
-               else
-                 =player.hero_id
-               if player.ability_upgrades
-                 each ability in player.ability_upgrades
-                   - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                   td.abilities
-                     if abilityData
-                       img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
-                     else
-                       =ability.ability
-      h2 Buildings
-      #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
-        img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+          tr(class = match.radiant_win ? "success" : "danger")
+            td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+            td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
+            td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+            td.fromNow= match.start_time + match.duration
+            td= constants.parse_status[match.parse_status]
+  if match.parsed_data
+    .row
+      .col-md-10
+        ul.nav.nav-tabs
+          each val, key in tabs
+            li(class= (route == key ? 'active' : ''))
+                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+      .col-md-2
+        .addthis_sharing_toolbox.pull-right
+  else
+    .row
+      .addthis_sharing_toolbox.pull-right
+  script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")

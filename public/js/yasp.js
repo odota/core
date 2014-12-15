@@ -1,9 +1,9 @@
 function format(input) {
     input = Number(input)
-    if(input == 0) {
+    if (input === 0) {
         return "-"
     }
-    return(Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'))
+    return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
 }
 
 function pad(n, width, z) {
@@ -14,7 +14,7 @@ function pad(n, width, z) {
 
 function formatSeconds(input) {
     var absTime = Math.abs(input)
-    var minutes = ~~ (absTime / 60)
+    var minutes = ~~(absTime / 60)
     var seconds = pad(absTime % 60, 2)
     var time = ((input < 0) ? "-" : "")
     time += minutes + ":" + seconds
@@ -33,31 +33,31 @@ $(document).ready(function() {
         }
         var tbody = $(table).find('tbody')
         tbody.children().each(function(i, row) {
-            row = $(row)
-            var target = (row.hasClass('success')) ? sums.Radiant : sums.Dire
-            //iterate through cells
-            row.children().each(function(j, cell) {
-                cell = $(cell)
-                if(!target[j]) {
-                    target[j] = 0
-                }
-                var content = cell.clone() //clone the element
-                .children() //select all the children
-                .remove() //remove all the children
-                .end() //again go back to selected element
-                .text();
-                target[j] += Number(content) || 0
+                row = $(row)
+                var target = (row.hasClass('success')) ? sums.Radiant : sums.Dire
+                    //iterate through cells
+                row.children().each(function(j, cell) {
+                    cell = $(cell)
+                    if (!target[j]) {
+                        target[j] = 0
+                    }
+                    var content = cell.clone() //clone the element
+                        .children() //select all the children
+                        .remove() //remove all the children
+                        .end() //again go back to selected element
+                        .text();
+                    target[j] += Number(content) || 0
+                })
             })
-        })
-        //add sums to table
+            //add sums to table
         var tfoot = $("<tfoot>")
-        for(var key in sums) {
+        for (var key in sums) {
             var tr = $("<tr>")
             var sum = sums[key]
             sum["0"] = key
-            for(var index in sum) {
+            for (var index in sum) {
                 var td = $("<td>")
-                if(index != "0") {
+                if (index != "0") {
                     td.addClass('format')
                 }
                 td.text(sum[index])
@@ -69,6 +69,9 @@ $(document).ready(function() {
     })
     $('.format').each(function() {
         $(this).text(format($(this).text()))
+    })
+    $('.fromNow').each(function() {
+        $(this).text(moment.unix($(this).text()).fromNow())
     })
     $('.format-seconds').each(function() {
         $(this).text(formatSeconds($(this).text()))
@@ -111,15 +114,31 @@ $(document).ready(function() {
                         name: $(this).attr('alt')
                     }
                 }).then(function(data) {
-                    var html = ""
-                    html += data.cost + "<br>"
-                    html += data.desc + "<br>"
-                    html += data.notes + "<br>"
-                    html += data.attrib + "<br>"
-                    html += data.mc + data.cd + "<br>"
-                    html += data.lore + "<br>"
+                    var content = $("<div/>")
+                    content.append(data.cost ? $("<div/>", {
+                        html: data.cost + " gold"
+                    }) : "")
+                    content.append(data.desc ? $("<div/>", {
+                        html: data.desc
+                    }) : "")
+                    content.append(data.notes ? $("<div/>", {
+                        html: data.notes
+                    }) : "")
+                    content.append(data.attrib ? $("<div/>", {
+                        html: data.attrib
+                    }) : "")
+                    content.append(data.mc ? $("<div/>", {
+                        html: '<img alt="Mana Cost" title="Mana Cost" class="manaImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png" width="16" height="16" border="0" />' + data.mc
+                    }) : "")
+                    content.append(data.cd ? $("<div/>", {
+                        html: '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />' + data.cd
+                    }) : "")
+                    content.append(data.lore ? $("<div/>", {
+                        html: data.lore
+                    }) : "")
+
                     // Set the tooltip content upon successful retrieval
-                    api.set('content.text', html);
+                    api.set('content.text', content.html());
                     api.set('content.title', data.dname);
                 }, function(xhr, status, error) {
                     // Upon failure... set the tooltip content to the status and error value
@@ -127,7 +146,8 @@ $(document).ready(function() {
                 });
                 return 'Loading...'; // Set some initial text
             }
-        }
+        },
+        style: "qtip-dark"
     });
     $('.ability').qtip({
         content: {
@@ -146,7 +166,7 @@ $(document).ready(function() {
                     html += data.dmg + "<br>"
                     html += data.cmb + "<br>"
                     html += data.lore + "<br>"
-                    // Set the tooltip content upon successful retrieval
+                        // Set the tooltip content upon successful retrieval
                     api.set('content.text', html);
                     api.set('content.title', data.dname);
                 }, function(xhr, status, error) {
@@ -155,7 +175,8 @@ $(document).ready(function() {
                 });
                 return 'Loading...'; // Set some initial text
             }
-        }
+        },
+        style: "qtip-dark"
     });
     var buildingData = [{
         id: "t4tr",
@@ -272,11 +293,11 @@ $(document).ready(function() {
     bits += pad(Number($('#map').attr('data-barracks-dire')).toString(2), 6)
     bits += $('#map').attr('data-radiant-win') === "1" ? "10" : "01"
     console.log(bits)
-    //concat, iterate through bits of all four status values
-    //if 1, create image
-    //building data in correct order
-    //determine ancient display by match winner
-    for(var i = 0; i < bits.length; i++) {
+        //concat, iterate through bits of all four status values
+        //if 1, create image
+        //building data in correct order
+        //determine ancient display by match winner
+    for (var i = 0; i < bits.length; i++) {
         var d = buildingData[i]
         d.src = 'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/'
         d.src += buildingData[i].id.slice(0, 1) === "t" ? 'tower' : 'racks'
