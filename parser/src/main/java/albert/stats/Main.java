@@ -45,11 +45,12 @@ public class Main {
             Entity pr = match.getPlayerResource();
             //EntityCollection ec = match.getEntities();
 
-            if (!initialized) {   
+            if (!initialized) {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
                 doc.put("heroes", new JSONObject());
+                doc.put("kills", new JSONArray());
 
                 for (int i = 0; i < numPlayers; i++) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
@@ -65,10 +66,7 @@ public class Main {
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
-                CombatLogEntry.init(
-                    match.getStringTables().forName("CombatLogNames"), 
-                    combatLogDescriptor
-                );
+                CombatLogEntry.init(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
                 initialized = true;
             }
 
@@ -95,6 +93,7 @@ public class Main {
                 //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
             }
 */
+//data points for graphs
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
                 for (int i = 0; i < numPlayers; i++) {
@@ -147,10 +146,6 @@ public class Main {
                     }
                     else if (type.equals("CHAT_MESSAGE_INTHEBAG")){
                     }
-                    else if (type.contains("CONNECT")){
-                    }
-                    else if (type.contains("PAUSE")){
-                    }
                     else{ 
                         System.err.format("%s %s%n", time, u);
                     }
@@ -179,7 +174,6 @@ public class Main {
                     System.err.format("%s %s%n", time, u); 
                 }
             }
-
             for (GameEvent g : match.getGameEvents()) {
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
                     CombatLogEntry cle = new CombatLogEntry(g);
@@ -236,13 +230,7 @@ public class Main {
                         break;
                         case 3:
                         //lose buff/debuff
-                        /*
-                            log.info("{} {} loses {} buff/debuff", 
-                            time, 
-                            cle.getTargetNameCompiled(), 
-                            cle.getInflictorName()
-                        );
-                        */
+                           // log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiled(), cle.getInflictorName() );
                         break;
                         case 4:
                         //kill
@@ -330,7 +318,6 @@ public class Main {
                         break;
                         case 13:
                         //ability trigger
-                        //todo, so far, only seeing axe spins here
                         //System.err.format("%s %s proc %s %s%n", time, cle.getAttackerName(), cle.getInflictorName(), cle.getTargetName() != null ? "on " + cle.getTargetName() : "");
                         break;
                         default:
@@ -341,6 +328,7 @@ public class Main {
                 }
             }
         }
+        iter.close();
 
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
@@ -355,6 +343,9 @@ public class Main {
             if (type.equals("chat")){
                 doc.getJSONArray("chat").put(entry);
                 continue;
+            }
+            if (type.equals("kills")){
+                doc.getJSONArray("kills").put(entry);
             }
             JSONObject heroes = doc.getJSONObject("heroes");
             String unit = entry.getString("unit");

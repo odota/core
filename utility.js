@@ -21,14 +21,30 @@ utility.players.index('account_id', {
     unique: true
 })
 utility.constants = utility.db.get('constants');
+
+utility.clearActiveJobs = function(type, cb) {
+    utility.kue.Job.rangeByType(type, 'active', 0, 99999, 'ASC', function(err, docs) {
+        async.mapSeries(docs,
+            function(job, cb) {
+                job.state('inactive', function(err) {
+                    console.log('[KUE] Unstuck %s ', job.data.title);
+                    cb(err)
+                })
+            },
+            function(err) {
+                cb(err)
+            })
+    })
+}
+
 //given an array of player ids, join with data from players collection
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
             account_id: player.account_id
         }, function(err, dbPlayer) {
-            if(dbPlayer) {
-                for(var prop in dbPlayer) {
+            if (dbPlayer) {
+                for (var prop in dbPlayer) {
                     player[prop] = dbPlayer[prop]
                 }
             }
@@ -44,7 +60,7 @@ utility.getMatches = function(account_id, cb) {
             $exists: true
         }
     }
-    if(account_id) {
+    if (account_id) {
         search.players = {
             $elemMatch: {
                 account_id: account_id
@@ -65,10 +81,10 @@ utility.getMatches = function(account_id, cb) {
  */
 utility.makeSearch = function(search, columns) {
     var s = {}
-    columns.forEach(function(c){
+    columns.forEach(function(c) {
         s[c.data] = "/.*" + search + ".*/"
     })
-    
+
     return s;
 }
 
@@ -77,13 +93,13 @@ utility.makeSearch = function(search, columns) {
  */
 utility.makeSort = function(order, columns) {
     var sort = {}
-    order.forEach(function(s){
+    order.forEach(function(s) {
         var c = columns[Number(s.column)]
         if (c) {
             sort[c.data] = s.dir === 'desc' ? -1 : 1
         }
     })
-    
+
     return sort;
 }
 
@@ -93,13 +109,13 @@ utility.makeSort = function(order, columns) {
  * Returns a BigNumber
  */
 utility.convert64to32 = function(id) {
-    return BigNumber(id).minus('76561197960265728')
-}
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
+        return BigNumber(id).minus('76561197960265728')
+    }
+    /*
+     * Converts a steamid 64 to a steamid 32
+     *
+     * Returns a BigNumber
+     */
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id)
 }

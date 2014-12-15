@@ -3,27 +3,29 @@ html
   head
     title YASP
     meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.2/moment.min.js')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js')
+    
+    script(type='text/javascript' src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
+    script(type='text/javascript' src='//cdn.rawgit.com/adamwdraper/Numeral-js/master/numeral.js')
     script(type='text/javascript' src='//code.jquery.com/jquery-2.1.1.min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js')
-    script(type='text/javascript' src='//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js')
-    script(type='text/javascript' src='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js')
-    script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js')
+    script(type='text/javascript' src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
     script(src='//cdn.rawgit.com/masayuki0812/c3/master/c3.js') 
     script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
-    script(type='text/javascript' src='//cdn.jsdelivr.net/qtip2/2.2.1/jquery.qtip.min.js')
-    script(type='text/javascript' src='/public/js/utility.js')
-    script(type='text/javascript' src='/public/js/ga.js')
+    script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.js')
+    script(src='/public/js/yasp.js')
+    script(src='/public/js/ga.js')
     
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/2.2.1/jquery.qtip.min.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
     link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.css')
-    link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
-    link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css')  
+    link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel='stylesheet', href='/public/css/yasp.css')
     
+    script(type='text/javascript' src='//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js')
+    script(type='text/javascript' src='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js')
+    link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
+
     block head
     
   body
