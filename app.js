@@ -109,11 +109,11 @@ var basic = auth.basic({
     callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
 });
 ui.setup({
-    apiURL: '/kueapi' // IMPORTANT: specify the api url
+    apiURL: '/kue' // IMPORTANT: specify the api url
 });
-app.use("/kueapi", auth.connect(basic));
-app.use("/kueapi", kue.app);
-app.use('/kue', ui.app);
+//app.use("/kueapi", auth.connect(basic));
+app.use("/kue", kue.app);
+app.use('/kueui', ui.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
