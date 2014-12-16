@@ -134,10 +134,9 @@ $(document).ready(function() {
                         html: '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />' + data.cd
                     }) : "")
                     content.append(data.lore ? $("<div/>", {
-                        html: data.lore
-                    }) : "")
-
-                    // Set the tooltip content upon successful retrieval
+                            html: data.lore
+                        }) : "")
+                        // Set the tooltip content upon successful retrieval
                     api.set('content.text', content.html());
                     api.set('content.title', data.dname);
                 }, function(xhr, status, error) {
@@ -158,16 +157,31 @@ $(document).ready(function() {
                         name: $(this).attr('alt')
                     }
                 }).then(function(data) {
-                    var html = ""
-                    html += data.affects + "<br>"
-                    html += data.desc + "<br>"
-                    html += data.notes + "<br>"
-                    html += data.attrib + "<br>"
-                    html += data.dmg + "<br>"
-                    html += data.cmb + "<br>"
-                    html += data.lore + "<br>"
-                        // Set the tooltip content upon successful retrieval
-                    api.set('content.text', html);
+                    var content = $("<div/>")
+                    content.append(data.affects ? $("<div/>", {
+                        html: data.affects
+                    }) : "")
+                    content.append(data.desc ? $("<div/>", {
+                        html: data.desc
+                    }) : "")
+                    content.append(data.notes ? $("<div/>", {
+                        html: data.notes
+                    }) : "")
+                    content.append(data.attrib ? $("<div/>", {
+                        html: data.attrib
+                    }) : "")
+                    content.append(data.dmg ? $("<div/>", {
+                        html: data.dmg
+                    }) : "")
+                    content.append(data.cmb ? $("<div/>", {
+                        html: data.cmb
+                    }) : "")
+                    content.append(data.lore ? $("<div/>", {
+                        html: data.lore
+                    }) : "")
+
+                    // Set the tooltip content upon successful retrieval
+                    api.set('content.text', content.html());
                     api.set('content.title', data.dname);
                 }, function(xhr, status, error) {
                     // Upon failure... set the tooltip content to the status and error value
