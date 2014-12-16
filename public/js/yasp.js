@@ -116,7 +116,7 @@ $(document).ready(function() {
                 }).then(function(data) {
                     var content = $("<div/>")
                     content.append(data.cost ? $("<div/>", {
-                        html: data.cost + " gold"
+                        html: '<img alt="Gold Cost" title="Gold Cost" class="goldImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/gold.png" width="16" height="16" border="0" />' + data.cost 
                     }) : "")
                     content.append(data.desc ? $("<div/>", {
                         html: data.desc
