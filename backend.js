@@ -29,6 +29,11 @@ var logger = new(winston.Logger)({
 updateConstants(function(err) {});
 async.series([
     function(cb) {
+        utility.clearActiveJobs('api', function(err) {
+            cb(err)
+        })
+    },
+    function(cb) {
         //scrape full match history for requested players
         players.find({
                 full_history: 1
@@ -90,12 +95,10 @@ async.series([
         }
     }
 ], function(err) {
-    utility.clearActiveJobs('api', function(err) {
-        jobs.process('api', function(job, done) {
-            setTimeout(function() {
-                apiRequest(job, done)
-            }, 1000)
-        })
+    jobs.process('api', function(job, done) {
+        setTimeout(function() {
+            apiRequest(job, done)
+        }, 1000)
     })
 })
 
