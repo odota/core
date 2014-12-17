@@ -328,12 +328,11 @@ function insertMatch(match, cb) {
         if (track) {
             //todo get player summaries separately
             var summaries = {
-                summaries_id: 0
+                summaries_id: 1
             }
             var steamids = []
             match.players.forEach(function(player) {
                 steamids.push(utility.convert32to64(player.account_id).toString())
-                summaries.summaries_id += player.account_id
             })
             summaries.query = steamids.join()
             queueReq("api", summaries)
