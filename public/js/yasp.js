@@ -193,11 +193,11 @@ $(document).ready(function() {
         style: "qtip-dark"
     });
     var buildingData = [{
-        id: "t4tr",
-        style: "position: absolute; top: 77%; left: 15%;"
-    }, {
         id: "t4br",
         style: "position: absolute; top: 78%; left: 17%;"
+    }, {
+        id: "t4tr",
+        style: "position: absolute; top: 77%; left: 15%;"
     }, {
         id: "t3br",
         style: "position: absolute; top: 86%; left: 26%;"
@@ -244,11 +244,11 @@ $(document).ready(function() {
         id: "bmtr",
         style: "position: absolute; top: 69%; left: 10%;"
     }, {
-        id: "t4td",
-        style: "position: absolute; top: 18%; left: 81%;"
-    }, {
         id: "t4bd",
         style: "position: absolute; top: 19%; left: 83%;"
+    }, {
+        id: "t4td",
+        style: "position: absolute; top: 18%; left: 81%;"
     }, {
         id: "t3bd",
         style: "position: absolute; top: 31%; left: 87%;"
