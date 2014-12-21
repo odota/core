@@ -40,17 +40,12 @@
         <dependency>
             <groupId>com.skadistats</groupId>
             <artifactId>clarity</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20140107</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>2.12.4</version>
         </dependency>
     </dependencies>
 
