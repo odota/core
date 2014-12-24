@@ -326,9 +326,8 @@ function insertMatch(match, cb) {
             matches.insert(match);
         }
         if (track) {
-            //todo get player summaries separately
             var summaries = {
-                summaries_id: 1
+                summaries_id: new Date()
             }
             var steamids = []
             match.players.forEach(function(player) {
