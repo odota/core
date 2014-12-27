@@ -288,6 +288,7 @@ function apiRequest(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
+        cb("no url")
     }
     getData(job.data.url, function(err, data) {
         if (data.response) {
