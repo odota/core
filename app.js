@@ -217,7 +217,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
                         for (var attr in val) {
                             if (val[attr].constructor === Array) {
                                 merge[attr]=merge[attr].concat(val[attr])
-                                console.log(merge[attr])
                             }
                             else {
                                 for (var attr2 in val[attr]) {
