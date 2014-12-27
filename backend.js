@@ -147,6 +147,8 @@ function updateConstants(cb) {
         for (var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
         }
+        abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
+        abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
         abilities["stats"] = {
             dname: "Stats",
             img: '../../public/images/Stats.png',
@@ -284,7 +286,7 @@ function getMatchPage(url, cb) {
 
 function apiRequest(job, cb) {
     var payload = job.data.payload;
-    if (!job.data.url){
+    if (!job.data.url) {
         logger.info(job);
     }
     getData(job.data.url, function(err, data) {
