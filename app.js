@@ -65,6 +65,9 @@ var playerPages = {
         name: "Teammates"
     }
 }
+utility.constants.findOne({}, function(err, doc) {
+    app.locals.constants = doc
+})
 app.listen(port, function() {
     logger.info("[WEB] listening on port %s", port)
 })
@@ -121,12 +124,6 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
-app.use(function(req, res, next) {
-    utility.constants.findOne({}, function(err, doc) {
-        app.locals.constants = doc
-        next()
-    })
-})
 app.param('match_id', function(req, res, next, id) {
     cache.get(req.url, function(err, reply) {
         if (err || !reply || process.env.NODE_ENV != "production") {
@@ -202,7 +199,42 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     if (!matchPages[info]) {
         return next()
     }
-    if (info == "graphs") {
+    if (match.parsed_data) {
+        //loop through all heroes
+        //look up corresponding hero_id
+        //find player slot associated with that unit(hero_to_slot)
+        //merge into player's primary hero
+        for (var key in match.parsed_data.heroes) {
+            var val = match.parsed_data.heroes[key]
+            if (app.locals.constants.hero_names[key]) {
+                var hero_id = app.locals.constants.hero_names[key].id;
+                var slot = match.parsed_data.hero_to_slot[hero_id]
+                if (slot) {
+                    var primary = match.players[slot].hero_id
+                    var primary_name = app.locals.constants.heroes[primary].name
+                    var merge = match.parsed_data.heroes[primary_name]
+                    if (key !== primary_name) {
+                        for (var attr in val) {
+                            if (val[attr].constructor === Array) {
+                                merge[attr]=merge[attr].concat(val[attr])
+                            }
+                            else {
+                                for (var attr2 in val[attr]) {
+                                    if (!merge[attr][attr2]) {
+                                        merge[attr][attr2] = val[attr][attr2]
+                                    }
+                                    else {
+                                        merge[attr][attr2] += val[attr][attr2]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (info === "graphs") {
         if (match.parsed_data) {
             //compute graphs
             var goldDifference = ['Gold']
