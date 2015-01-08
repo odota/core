@@ -344,9 +344,6 @@ public class Main {
                 doc.getJSONArray("chat").put(entry);
                 continue;
             }
-            if (type.equals("kills")){
-                doc.getJSONArray("kills").put(entry);
-            }
             JSONObject heroes = doc.getJSONObject("heroes");
             String unit = entry.getString("unit");
             if (!heroes.has(unit)){

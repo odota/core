@@ -6,7 +6,6 @@ var async = require("async"),
     cheerio = require('cheerio'),
     winston = require('winston'),
     reds = require('reds');
-var kue = utility.kue;
 var jobs = utility.jobs;
 var api_url = "https://api.steampowered.com/IDOTA2Match_570"
 var summaries_url = "http://api.steampowered.com/ISteamUser"
@@ -148,6 +147,8 @@ function updateConstants(cb) {
         for (var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
         }
+        abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
+        abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
         abilities["stats"] = {
             dname: "Stats",
             img: '../../public/images/Stats.png',
@@ -256,7 +257,7 @@ function requestDetails(match, cb) {
             queueReq("api", match)
         }
         cb(null)
-    })
+    });
 }
 
 function getMatchPage(url, cb) {
@@ -285,6 +286,10 @@ function getMatchPage(url, cb) {
 
 function apiRequest(job, cb) {
     var payload = job.data.payload;
+    if (!job.data.url) {
+        logger.info(job);
+        cb("no url")
+    }
     getData(job.data.url, function(err, data) {
         if (data.response) {
             //summaries response
@@ -293,42 +298,42 @@ function apiRequest(job, cb) {
             });
         }
         else if (data.result.error || data.result.status == 2) {
+            //error response from dota api
             logger.info(data);
             return cb(data);
         }
         else if (payload.match_id) {
-            var match = data.result
+            //response for single match details
+            var match = data.result;
             insertMatch(match, function(err) {
                 cb(err);
-            })
+            });
         }
-        else {
-            var resp = data.result.matches
-            if (payload.account_id) {
-                async.map(resp, function(match, cb) {
-                    requestDetails(match, function(err) {
-                        cb(err)
-                    })
-                }, function(err) {
-                    cb(err)
-                })
-            }
+        else if (payload.account_id) {
+            //response for match history for single player
+            var resp = data.result.matches;
+            async.map(resp, function(match, cb2) {
+                requestDetails(match, function(err) {
+                    cb2(err);
+                });
+            }, function(err) {
+                cb(err);
+            });
         }
-    })
+    });
 }
 
 function insertMatch(match, cb) {
         var track = match.players.some(function(element) {
-            return (element.account_id in trackedPlayers)
+            return (element.account_id in trackedPlayers);
         })
         match.parse_status = (track ? 0 : 3)
         if (process.env.SAVE_ALL_MATCHES || track) {
             matches.insert(match);
         }
         if (track) {
-            //todo get player summaries separately
             var summaries = {
-                summaries_id: 1
+                summaries_id: new Date()
             }
             var steamids = []
             match.players.forEach(function(player) {
