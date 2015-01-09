@@ -22,13 +22,13 @@ append content
           each player, i in match.players
              tr(class = player.player_slot<64 ? "success" : "danger")
                - var hero = constants.heroes[player.hero_id]
-               td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
                - var parsedHero = match.parsed_data.heroes[hero.name]
                - var parsedPlayer = match.parsed_data.players[i]
+               td.hero
+                if hero
+                  img(src=hero.img, title=hero.localized_name)
+                else
+                  =player.hero_id
                td #{parsedHero.itembuys.tpscroll || "-"}
                td #{parsedHero.itembuys.ward_observer*2 || "-"}
                td #{parsedHero.itembuys.ward_sentry*2 || "-"}

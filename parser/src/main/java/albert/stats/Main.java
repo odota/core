@@ -42,6 +42,7 @@ public class Main {
         while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
+            int trueTime=time-gameZero;
             Entity pr = match.getPlayerResource();
             //EntityCollection ec = match.getEntities();
 
@@ -70,15 +71,13 @@ public class Main {
                 initialized = true;
             }
 
-            int trueTime=time-gameZero;
-
             for (int i = 0; i < numPlayers; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
                 hero_to_slot.put(hero, i);
                 JSONObject player = doc.getJSONArray("players").getJSONObject(i);
                 player.put("stuns", pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]));
-                int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
                 /*
+                int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
                 Entity e = ec.getByHandle(handle);
                 System.err.println(e);
                 if (e!=null){
@@ -92,8 +91,7 @@ public class Main {
                 Entity e = runes.next();
                 //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
             }
-*/
-//data points for graphs
+            */
             if (trueTime > nextInterval) {
                 doc.getJSONArray("times").put(trueTime);
                 for (int i = 0; i < numPlayers; i++) {
@@ -157,6 +155,7 @@ public class Main {
                     JSONArray players = doc.getJSONArray("players");
                     for (int i = 0;i<players.length();i++){
                         String playerName = players.getJSONObject(i).getString("personaname");
+                        //todo names here don't match up with api names if unicode chars
                         //System.err.format("%s-%s,%s-%s %n",prefix, Arrays.toString(prefix.getBytes()), playerName, Arrays.toString(playerName.getBytes()));
                         if (players.getJSONObject(i).getString("personaname").equals(prefix)){
                             slot=i;
