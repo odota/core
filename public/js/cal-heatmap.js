@@ -1,7 +1,7 @@
 var cal = new CalHeatMap();
 cal.init({
-    start: new Date(moment().subtract(11, 'month')),
-    range: 12,
+    start: new Date(moment().subtract(1, 'year')),
+    range: 13,
     domain: "month",
     subDomain: "day",
     data: data,
