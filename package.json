@@ -15,7 +15,7 @@
     "express": "~4.8.8",
     "express-session": "~1.8.2",
     "hiredis": "0.1.17",
-    "http-auth": "~2.2.4",
+    "http-auth": "~2.2.5",
     "http-proxy": "~1.5.3",
     "jade": "~1.8.2",
     "kue": "~0.8.11",

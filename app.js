@@ -213,27 +213,39 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
                     var primary = match.players[slot].hero_id
                     var primary_name = app.locals.constants.heroes[primary].name
                     var merge = match.parsed_data.heroes[primary_name]
+                    if (!match.players[slot].hero_ids) {
+                        match.players[slot].hero_ids = []
+                    }
+                    match.players[slot].hero_ids.push(hero_id);
                     if (key !== primary_name) {
-                        for (var attr in val) {
-                            if (val[attr].constructor === Array) {
-                                merge[attr]=merge[attr].concat(val[attr])
-                            }
-                            else {
-                                for (var attr2 in val[attr]) {
-                                    if (!merge[attr][attr2]) {
-                                        merge[attr][attr2] = val[attr][attr2]
-                                    }
-                                    else {
-                                        merge[attr][attr2] += val[attr][attr2]
-                                    }
-                                }
-                            }
-                        }
+                        mergeObjects(merge, val);
                     }
                 }
             }
         }
     }
+
+    function mergeObjects(merge, val) {
+        for (var attr in val) {
+            if (val[attr].constructor === Array) {
+                merge[attr] = merge[attr].concat(val[attr])
+            }
+            else if (typeof val[attr] === "object") {
+                mergeObjects(merge[attr], val[attr])
+            }
+            else {
+                //does property exist?
+                if (!merge[attr]) {
+                    merge[attr] = val[attr]
+                }
+                else {
+                    merge[attr] += val[attr]
+                }
+
+            }
+        }
+    }
+
     if (info === "graphs") {
         if (match.parsed_data) {
             //compute graphs
