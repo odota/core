@@ -2,11 +2,14 @@ extend layout
 block content
   h3 Players
   .row
-    table.table
-      tr
-        th Name
-      each player in players
+    .col-md-7
+      table.table
         tr
-          td
-            a(href='/players/#{player.account_id}')
-              =player.personaname || player.account_id
+          th Name
+        each player in players
+          tr
+            td
+              a(href='/players/#{player.account_id}')
+                =player.personaname || player.account_id
+    .col-md-5
+      include ads/skyscraper

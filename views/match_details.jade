@@ -76,6 +76,7 @@ append content
                        div=val
                    else
                      //=key
+        include ads/leaderboard_2
         .row
           .col-md-8
             h2 Gold
@@ -113,7 +114,7 @@ append content
                     - var parsedHero = match.parsed_data.heroes[hero.name]
                     each val, key in constants.xp_reasons
                       td #{parsedHero.xp_log[key] || "-"}
-
+        include ads/leaderboard_3
         .row
           .col-md-12
             h2 Purchases

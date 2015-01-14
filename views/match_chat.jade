@@ -5,7 +5,7 @@ append content
     .col-md-12  
   if match.parsed_data          
     .row
-      .col-md-6
+      .col-md-7
         h3 Chat
         table.table.table-hover.table-responsive
           tr
@@ -19,6 +19,9 @@ append content
               td= message.slot
               td= message.prefix 
               td= message.text
+      .col-md-5
+        style .skyscraper {margin-top: 2em;}
+        include ads/skyscraper
       script.
         $('.format').each(function(){
           $(this).text(formatSeconds($(this).text()))
