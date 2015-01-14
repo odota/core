@@ -10,11 +10,6 @@ block content
     div.col-md-4
       h2
         | Welcome back, #{user.personaname}!
-   if match
-    .row(style='margin-top:1em;')
-     .col-md-5
-      p The most recent match we have for you is match 
-        a(href='/matches/#{match.match_id}') #{match.match_id}.
     p: a(href='/logout') Logout
   else
     p.lead
