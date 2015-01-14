@@ -63,6 +63,7 @@ append content
                      - var item = constants.items[constants.item_ids[val]]                             
                      if item
                        img.item(src=item.img, alt=constants.item_ids[val])
+      include ads/leaderboard_2
       h2 Skill Builds
       table.table.table-hover.table-responsive
         tr
@@ -85,6 +86,10 @@ append content
                        img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
                      else
                        =ability.ability
-      h2 Buildings
+  .row      
+    h2 Buildings
+    .col-md-6
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
         img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+    .col-md-6
+      include ads/skyscraper
