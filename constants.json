@@ -57,7 +57,7 @@
         },
         "1": {
             "id": 1,
-            "name": "All Pick"
+            "name": "Classic All Pick"
         },
         "2": {
             "id": 2,
@@ -137,11 +137,11 @@
         },
         "21": {
             "id": 21,
-            "name": "1vs1 Solo Mid"
+            "name": "1v1 Solo Mid"
         },
         "22": {
             "id": 22,
-            "name": "Ranked All Pick"
+            "name": "All Pick"
         }
     },
     "regions": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json",

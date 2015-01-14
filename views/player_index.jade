@@ -1,8 +1,87 @@
 extend player
+
+append head
+  script.
+    var data = !{JSON.stringify(player.calheatmap)}
+    
 block playercontent
-         h3 Activity
-         p
-           button.btn.btn-default#prev <
-           button.btn.btn-default#next >
-         div#cal-heatmap         
-         script(async, src='/public/js/cal-heatmap.js')
+  h3 Activity
+  p
+    button.btn.btn-default#prev <
+    button.btn.btn-default#next >
+  div#cal-heatmap         
+  script(src='/public/js/cal-heatmap.js')
+  
+  .row
+    .col-md-7
+      h3 Recent Matches
+      table.table#recent
+        thead
+          tr
+           th Match ID
+           th Hero
+           th Result
+           th Game Mode
+           th Duration
+           th Played
+           th K
+           th D
+           th A
+        each match in player.matches.slice(0,10)
+          tr(class= match.player_win ? "success" : "danger")
+            td: a(href='/matches/#{match.match_id}')= match.match_id
+            - var hero = constants.heroes[match.players[match.slot].hero_id]
+            td.hero 
+              if hero
+                img(src=hero.img, title=hero.localized_name)
+              else
+                =match.players[match.slot].hero_id
+            td= match.player_win ? "WIN" : "LOSS"
+            td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+            td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= moment.unix(match.start_time + match.duration).fromNow()
+            td=match.players[match.slot].kills
+            td=match.players[match.slot].deaths
+            td=match.players[match.slot].assists
+          
+    .col-md-5
+      h3 Heroes
+      table.table#heroes
+        thead
+          tr
+            th Hero
+            th Hero Name
+            th Games
+            th Wins
+            th Losses
+            th Winrate
+        each hero in constants.heroes
+          tr
+            td.hero
+              img(src=hero.img, alt=hero.localized_name)
+            td 
+              =hero.localized_name
+            - var entry = player.heroes[hero.id]
+            td #{entry ? entry.games : 0}
+            td #{entry ? entry.win : 0}
+            td #{entry ? entry.lose : 0}
+            td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%
+                
+      h3 Teammates
+      table.table#teammates
+        thead
+          tr
+            th Name
+            th Games
+            th Wins
+            th Losses
+            th Winrate          
+        each teammate in player.teammates
+          tr
+            td
+              img(src=teammate.avatar)
+              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+            td=teammate.games
+            td=teammate.win
+            td=teammate.lose
+            td #{(100*teammate.win/teammate.games).toFixed(2)}%    
