@@ -85,7 +85,7 @@ $(document).ready(function() {
             "orderData": [2]
         }, {
             "targets": [2],
-            "visible": false
+            visible: false
         }]
     });
     $('#teammates').dataTable({
@@ -102,8 +102,11 @@ $(document).ready(function() {
             "orderData": [1]
         }, {
             "targets": [1],
-            "visible": false
+            visible: false
         }]
+    });
+    $('[title!=""]').qtip({
+        style: "qtip-dark"
     });
     $('.item').qtip({
         content: {

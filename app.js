@@ -55,14 +55,6 @@ var playerPages = {
     matches: {
         template: "player_matches",
         name: "Matches"
-    },
-    heroes: {
-        template: "player_heroes",
-        name: "Heroes"
-    },
-    teammates: {
-        template: "player_teammates",
-        name: "Teammates"
     }
 }
 utility.constants.findOne({}, function(err, doc) {
@@ -152,16 +144,8 @@ app.param('match_id', function(req, res, next, id) {
     })
 })
 app.route('/').get(function(req, res) {
-    if (req.user) {
-        utility.getMatches(req.user.account_id, function(err, docs) {
-            res.render('index.jade', {
-                match: docs[0]
-            })
-        })
-    }
-    else {
-        res.render('index.jade', {})
-    }
+
+    res.render('index.jade', {})
 })
 app.route('/api/items').get(function(req, res) {
     res.json(app.locals.constants.items[req.query.name])
@@ -170,12 +154,14 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name])
 })
 app.route('/api/matches').get(function(req, res) {
-    var search = req.query.search.value
-    var options = search ?
-        utility.makeSearch(search, req.query.columns) : {}
-
-    var sort = utility.makeSort(req.query.order, req.query.columns)
-    utility.matches.count({}, function(err, count) {
+    var options = {};
+    var sort = {};
+    if (req.query.draw) {
+        //var search = req.query.search.value
+        //options = utility.makeSearch(search, req.query.columns)
+        sort = utility.makeSort(req.query.order, req.query.columns)
+    }
+    utility.matches.count(options, function(err, count) {
         utility.matches.find(options, {
             limit: Number(req.query.length),
             skip: Number(req.query.start),
@@ -191,7 +177,9 @@ app.route('/api/matches').get(function(req, res) {
     });
 })
 app.route('/matches').get(function(req, res) {
-    res.render('matches.jade', {})
+    res.render('matches.jade', {
+        title: "Matches - YASP"
+    })
 })
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index'
@@ -199,7 +187,7 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     if (!matchPages[info]) {
         return next()
     }
-    if (match.parsed_data) {
+    if (info === "details") {
         //loop through all heroes
         //look up corresponding hero_id
         //find player slot associated with that unit(hero_to_slot)
@@ -286,7 +274,8 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         route: info,
         match: req.match,
         tabs: matchPages,
-        data: data
+        data: data,
+        title: "Match " + match.match_id + " - YASP"
     }, function(err, html) {
         if (err) return next(err)
         if (match.parsed_data) {
@@ -298,20 +287,21 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
-            players: docs
+            players: docs,
+            title: "Players - YASP"
         })
     })
 })
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index';
     if (!playerPages[info]) {
-        return next()
+        return next();
     }
     players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
         if (!player) {
-            return next()
+            return next();
         }
         else {
             utility.getMatches(player.account_id, function(err, matches) {
@@ -321,12 +311,20 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.win = 0
                 player.lose = 0
                 player.games = 0
+                player.teammates = []
+                player.calheatmap = {}
+
                 for (var i = 0; i < matches.length; i++) {
+                    //add start time to data for cal-heatmap
+                    player.calheatmap[matches[i].start_time] = 1;
+
+                    //compute top heroes
                     for (var j = 0; j < matches[i].players.length; j++) {
-                        var p = matches[i].players[j]
-                        if (p.account_id == account_id) {
-                            var playerRadiant = utility.isRadiant(p)
-                            matches[i].player_win = (playerRadiant == matches[i].radiant_win)
+                        var p = matches[i].players[j];
+                        if (p.account_id === account_id) {
+                            //find the "main" player's id
+                            var playerRadiant = utility.isRadiant(p);
+                            matches[i].player_win = (playerRadiant === matches[i].radiant_win)
                             matches[i].slot = j
                             matches[i].player_win ? player.win += 1 : player.lose += 1
                             player.games += 1
@@ -345,50 +343,39 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                             }
                         }
                     }
-                    if (info == "teammates") {
-                        for (j = 0; j < matches[i].players.length; j++) {
-                            var p = matches[i].players[j]
-                            if (utility.isRadiant(p) == playerRadiant) { //teammates of player
-                                if (!counts[p.account_id]) {
-                                    counts[p.account_id] = {}
-                                    counts[p.account_id]["account_id"] = p.account_id
-                                    counts[p.account_id]["win"] = 0
-                                    counts[p.account_id]["lose"] = 0
-                                    counts[p.account_id]["games"] = 0
-                                }
-                                counts[p.account_id]["games"] += 1
-                                if (matches[i].player_win) {
-                                    counts[p.account_id]["win"] += 1
-                                }
-                                else {
-                                    counts[p.account_id]["lose"] += 1
-                                }
+                    //compute top teammates
+                    for (j = 0; j < matches[i].players.length; j++) {
+                        p = matches[i].players[j]
+                        if (utility.isRadiant(p) === playerRadiant) { //teammates of player
+                            if (!counts[p.account_id]) {
+                                counts[p.account_id] = {
+                                    account_id: p.account_id,
+                                    win: 0,
+                                    lose: 0,
+                                    games: 0
+                                };
                             }
+                            counts[p.account_id]["games"] += 1
+                            matches[i].player_win ? counts[p.account_id]["win"] += 1 : counts[p.account_id]["lose"] += 1
                         }
                     }
                 }
-                //convert counts to array and filter
-                player.teammates = []
+                //convert teammate counts to array and filter
                 for (var id in counts) {
                     var count = counts[id]
                     if (id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
                         player.teammates.push(count)
                     }
                 }
+
+                player.matches = matches
                 player.heroes = heroes
                 utility.fillPlayerNames(player.teammates, function(err) {
-                    if (info == "index") {
-                        var data = {}
-                        matches.forEach(function(m) {
-                            data[m.start_time] = 1
-                        })
-                    }
                     res.render(playerPages[info].template, {
                         route: info,
                         player: player,
-                        matches: matches,
                         tabs: playerPages,
-                        data: data
+                        title: (player.personaname || player.account_id) + " - YASP"
                     })
                 })
             })
@@ -414,14 +401,18 @@ app.route('/logout').get(function(req, res) {
     res.redirect('/')
 })
 app.use(function(err, req, res, next) {
-        if (err && process.env.NODE_ENV == "production") {
-            return res.status(500).render('500.jade')
-        }
-        next()
-    })
-    // Handle 404
-app.use(function(req, res) {
-    if (process.env.NODE_ENV == "production") {
+    if (err && process.env.NODE_ENV === "production") {
+        res.status(500).render('500.jade')
+    }
+    else {
+        next();
+    }
+})
+app.use(function(req, res, next) {
+    if (process.env.NODE_ENV === "production") {
         res.status(404).render('404.jade');
+    }
+    else {
+        next();
     }
 });

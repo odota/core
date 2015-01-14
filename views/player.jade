@@ -1,8 +1,4 @@
 extend layout
-
-append head
-  script.
-    var data = !{JSON.stringify(data)}
     
 block content
      .row
@@ -25,7 +21,7 @@ block content
        .col-md-12
          ul.nav.nav-tabs
            each val, key in tabs
-             li(class= (route == key ? 'active' : ''))
+             li(class= (route === key ? 'active' : ''))
                  a(href="/players/#{player.account_id}/" + (key == 'index' ? "" : key))= val.name
      block playercontent 
 
