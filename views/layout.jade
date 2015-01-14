@@ -61,7 +61,8 @@ html
             li
               a(href="/players/"+user.account_id)=user.personaname
      div.container
-       include ads/leaderboard
+       if !error
+        include ads/leaderboard
        block content
        
      .footer(style="background-color: #BBF0FD; color: #777;\
