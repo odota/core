@@ -1,7 +1,6 @@
 /* ads */
- .leaderboard {
-    margin-left: auto;
-    margin-right: auto;
+.skyscraper, .leaderboard {
+    margin: 0 auto;
     display: block;
 }
 .match-top {
