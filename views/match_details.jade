@@ -8,17 +8,28 @@ append content
         table.table.table-hover.table-responsive.summable
           tr
             th Hero
-            th TP
-            th OBS
-            th SEN
-            th SMK
-            th DST
-            th GEM
-            th BB
-            th Stuns
-            th Skills (Hero Hits)
-            th Items
-            th Kills
+            th 
+              abbr(title="Town Portal Scrolls bought") TP
+            th 
+              abbr(title="Observer Wards bought") OBS
+            th
+              abbr(title="Sentry Wards bought") SEN
+            th
+              abbr(title="Smokes of Deceit bought") SMK
+            th
+              abbr(title="Dusts of Appearance bought") DST
+            th
+              abbr(title="Gems of True Sight bought") GEM
+            th
+              abbr(title="Number of Buybacks") BB
+            th
+              abbr(title="Seconds of disable on enemy heroes") STUN
+            th 
+              abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
+            th
+              abbr(title="Items used") Items
+            th
+              abbr(title="Enemies killed") Kills
           each player, i in match.players
              tr(class = player.player_slot<64 ? "success" : "danger")
                - var hero = constants.heroes[player.hero_id]
