@@ -1,8 +1,6 @@
 extend layout
 
 append head
-  include assets/datatables
-  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
   script.
     var parse_status = !{JSON.stringify(constants.parse_status)},
         regions = !{JSON.stringify(constants.regions)},
@@ -11,5 +9,10 @@ append head
 block content
   h3 Recent Matches
   table.table#table
-  script(src='/public/js/match_table.js')
   include ads/leaderboard_2
+  
+block footer_assets
+ include assets/datatables
+ script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
+ script
+   include ../public/js/match_table.js
