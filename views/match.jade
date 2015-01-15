@@ -14,20 +14,23 @@ block content
       table.table.table-condensed
         thead
           tr
+            td
+              abbr(title="Queued: Match reply is being downloaded/processed <br>\
+                           Parsed: Replay has been obtained and processed <br>\
+                           Unavailable: Replay has expired and no additional stats could be obtained") Status
             td Game Mode
             td Region
             td Duration
             td Result
             td Played
-            td Status
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
+            td= constants.parse_status[match.parse_status]
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-            td= constants.parse_status[match.parse_status]
   if match.parsed_data
     .row
       .col-md-10
@@ -40,4 +43,10 @@ block content
   else
     .row
       .addthis_sharing_toolbox.pull-right
+
+block footer_assets
+  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
   script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
+  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
+  script.
+    $('[title!=""]').qtip({style: "qtip-dark"});

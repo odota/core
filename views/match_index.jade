@@ -92,11 +92,9 @@ append content
     .col-md-6
       include ads/skyscraper
       
-block footer_assets
-  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+append footer_assets
   script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
   script(src='//cdn.rawgit.com/adamwdraper/Numeral-js/master/numeral.js')
-  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
   script
     include ../public/js/yasp.js
   script

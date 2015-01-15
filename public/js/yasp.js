@@ -76,9 +76,6 @@ $(document).ready(function() {
     $('.format-seconds').each(function() {
         $(this).text(formatSeconds($(this).text()))
     })
-    $('[title!=""]').qtip({
-        style: "qtip-dark"
-    });
     $('.item').qtip({
         content: {
             text: function(event, api) {
