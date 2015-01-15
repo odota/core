@@ -1,0 +1,17 @@
+extend layout
+
+block content
+    .row
+      .span8
+        block blog_content
+      .span4
+        .well.sidebar-nav
+          ul.nav.nav-list
+            li.nav-header categories
+            - each cat in getCategories()
+              li
+                a(href=categoryURL(cat)) #{cat}
+            li.nav-header tags
+            - each tag in getTags()
+              li
+                a(href=tagURL(tag)) #{tag}

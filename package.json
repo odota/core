@@ -29,6 +29,7 @@
     "request": "~2.40.0",
     "seek-bzip": "~1.0.3",
     "steam": "0.6.7",
-    "winston": "0.7.3"
+    "winston": "0.7.3",
+    "poet": "2.0.0"
   }
 }

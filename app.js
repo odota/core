@@ -13,7 +13,19 @@ var utility = require('./utility'),
     passport = require('passport'),
     cache = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
-    app = express();
+    app = express(),
+    Poet = require('poet');
+    
+var poet = Poet(app, {
+  posts: './_posts/',
+  postsPerPage: 5,
+  metaFormat: 'json'
+});
+
+poet.init().then(function () {
+  // ready to go!
+});
+
 var host = process.env.ROOT_URL
 var port = Number(process.env.PORT || 3000);
 var transports = []
