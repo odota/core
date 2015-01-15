@@ -116,29 +116,33 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
+app.use(function(req, res, next) {
+    app.locals.user = req.user
+    next()
+})
 app.param('match_id', function(req, res, next, id) {
-    cache.get(req.url, function(err, reply) {
-        if (err || !reply || process.env.NODE_ENV != "production") {
-            logger.info("Cache miss for HTML for request " + req.url)
+    cache.get(id, function(err, reply) {
+        if (err || !reply) {
+            logger.info("Cache miss for match " + id)
             matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
-                if (!match) {
+                if(err || !match) {
                     return next()
-                }
-                else {
+                } else {
                     utility.fillPlayerNames(match.players, function(err) {
                         req.match = match
+                        //Add to cache if we have parsed data
+                        if (match.parsed_data && process.env.NODE_ENV === "production") {
+                            cache.setex(id, 86400, JSON.stringify(match))
+                        }
                         return next()
                     })
                 }
             })
-        }
-        else if (reply) {
-            logger.info("Cache hit for HTML for request " + req.url)
-            return res.send(reply);
-        }
-        else {
+        } else if (reply) {
+            logger.info("Cache hit for match " + id)
+            req.match = JSON.parse(reply)
             return next()
         }
     })
@@ -278,9 +282,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         title: "Match " + match.match_id + " - YASP"
     }, function(err, html) {
         if (err) return next(err)
-        if (match.parsed_data) {
-            cache.setex(req.url, 86400, html)
-        }
         return res.send(html)
     })
 })

@@ -3,6 +3,8 @@ $('#table').dataTable({
     ajax: '/api/matches',
     serverSide: true,
     processing: true,
+    searching: false,
+    stateSave: true,
     columns: [
         {
             data: 'match_id',
