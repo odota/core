@@ -121,10 +121,6 @@ app.use(function(req, res, next) {
     next()
 })
 app.param('match_id', function(req, res, next, id) {
-    if (process.env.NODE_ENV !== "production") {
-        return next()
-    }
-    
     cache.get(id, function(err, reply) {
         if (err || !reply) {
             logger.info("Cache miss for match " + id)
@@ -137,7 +133,7 @@ app.param('match_id', function(req, res, next, id) {
                     utility.fillPlayerNames(match.players, function(err) {
                         req.match = match
                         //Add to cache if we have parsed data
-                        if (match.parsed_data) {
+                        if (match.parsed_data && process.env.NODE_ENV === "production") {
                             cache.setex(id, 86400, JSON.stringify(match))
                         }
                         return next()
