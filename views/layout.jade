@@ -3,6 +3,7 @@ html
   head
     title= title || "YASP"
     meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
+    //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='114x114', href='/public/images/apple-touch-icon-114x114.png')
     link(rel='apple-touch-icon', sizes='72x72', href='/public/images/apple-touch-icon-72x72.png')
@@ -21,13 +22,13 @@ html
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
+    
+    //- Stylesheets
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-    link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
     link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.css')
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel='stylesheet', href='/public/css/yasp.css')
-    
     link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
     
     script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
@@ -36,7 +37,6 @@ html
     script(src='//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js')
     script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
     script(src='//cdn.rawgit.com/masayuki0812/c3/master/c3.js') 
-    script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
     script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
     script(src='/public/js/yasp.js')
     script(src='/public/js/ga.js')
