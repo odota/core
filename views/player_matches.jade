@@ -1,8 +1,5 @@
 extend player
 
-append head
-  include assets/datatables
-  
 block playercontent
   h3 Matches
   table.table#matches
@@ -49,6 +46,8 @@ block playercontent
         td=match.players[match.slot].hero_damage
         td=match.players[match.slot].tower_damage
         td=match.players[match.slot].hero_healing
+block footer_assets
+  include assets/datatables
   script.
      $('#matches').dataTable({
         "order": [
