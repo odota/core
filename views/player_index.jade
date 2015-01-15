@@ -91,4 +91,34 @@ block playercontent
             td=teammate.games
             td=teammate.win
             td=teammate.lose
-            td #{(100*teammate.win/teammate.games).toFixed(2)}%    
+            td #{(100*teammate.win/teammate.games).toFixed(2)}%
+    script.
+     $('#matches').dataTable({
+        "order": [
+            [0, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [1],
+            "orderData": [2]
+        }, {
+            "targets": [2],
+            visible: false
+        }]
+      });
+      $('#teammates').dataTable({
+          "order": [
+              [1, "desc"]
+          ]
+      });
+      $('#heroes').dataTable({
+          "order": [
+              [2, "desc"]
+          ],
+          "columnDefs": [{
+              "targets": [0],
+              "orderData": [1]
+          }, {
+              "targets": [1],
+              visible: false
+          }]
+      });
