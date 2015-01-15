@@ -1,22 +1,11 @@
 extend player
 
-append head
-  include assets/datatables
-  //- Cal-Heatmap CSS and JS
-  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
-  script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
-  script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
-  script.
-    var data = !{JSON.stringify(player.calheatmap)}
-    
 block playercontent
   h3 Activity
   p
     button.btn.btn-default#prev <
     button.btn.btn-default#next >
-  div#cal-heatmap         
-  script(src='/public/js/cal-heatmap.js')
-  
+  div#cal-heatmap
   .row
     .col-md-7
       h3 Recent Matches
@@ -92,33 +81,44 @@ block playercontent
             td=teammate.win
             td=teammate.lose
             td #{(100*teammate.win/teammate.games).toFixed(2)}%
-    script.
-     $('#matches').dataTable({
+
+block footer_assets
+  include assets/datatables
+  //- Cal-Heatmap CSS and JS
+  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
+  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
+  script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
+  script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
+  script.
+    var data = !{JSON.stringify(player.calheatmap)}
+    $('#matches').dataTable({
+      "order": [
+          [0, "desc"]
+      ],
+      "columnDefs": [{
+          "targets": [1],
+          "orderData": [2]
+      }, {
+          "targets": [2],
+          visible: false
+      }]
+    });
+    $('#teammates').dataTable({
         "order": [
-            [0, "desc"]
+            [1, "desc"]
+        ]
+    });
+    $('#heroes').dataTable({
+        "order": [
+            [2, "desc"]
         ],
         "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
+            "targets": [0],
+            "orderData": [1]
         }, {
-            "targets": [2],
+            "targets": [1],
             visible: false
         }]
-      });
-      $('#teammates').dataTable({
-          "order": [
-              [1, "desc"]
-          ]
-      });
-      $('#heroes').dataTable({
-          "order": [
-              [2, "desc"]
-          ],
-          "columnDefs": [{
-              "targets": [0],
-              "orderData": [1]
-          }, {
-              "targets": [1],
-              visible: false
-          }]
-      });
+    });
+  script
+    include ../public/js/cal-heatmap.js

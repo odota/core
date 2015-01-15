@@ -400,23 +400,23 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/')
 })
-app.use(function(err, req, res, next) {
-    if (err && process.env.NODE_ENV === "production") {
-        res.status(500).render('500.jade', {
-            error: true
-        })
-    }
-    else {
-        next();
-    }
-})
-app.use(function(req, res, next) {
-    if (process.env.NODE_ENV === "production") {
-        res.status(404).render('404.jade', {
-            error: true
-        });
-    }
-    else {
-        next();
-    }
-});
+// app.use(function(err, req, res, next) {
+//     if (err && process.env.NODE_ENV === "production") {
+//         res.status(500).render('500.jade', {
+//             error: true
+//         })
+//     }
+//     else {
+//         next();
+//     }
+// })
+// app.use(function(req, res, next) {
+//     if (process.env.NODE_ENV === "production") {
+//         res.status(404).render('404.jade', {
+//             error: true
+//         });
+//     }
+//     else {
+//         next();
+//     }
+// });
