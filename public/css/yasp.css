@@ -43,6 +43,8 @@ td.abilities img {
 }
 .navbar-default {
     background-color: #BBF0FD;
+    border: none;
+    border-radius: 0px;
 }
 .hero img {
     width: 50px;
