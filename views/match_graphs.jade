@@ -24,7 +24,7 @@ append content
         else
           h1 This match has no parsed data!
 
-block footer_assets
+append footer_assets
   //- C3 assets
   link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.css')
   script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
@@ -33,3 +33,5 @@ block footer_assets
   script(src='//cdn.rawgit.com/masayuki0812/c3/master/c3.js')
   script
     include ../public/js/chart.js
+  script
+    include ../public/js/yasp.js
