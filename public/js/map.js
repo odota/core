@@ -114,7 +114,6 @@
         bits += pad(Number($('#map').attr('data-tower-dire')).toString(2), 11)
         bits += pad(Number($('#map').attr('data-barracks-dire')).toString(2), 6)
         bits += $('#map').attr('data-radiant-win') === "1" ? "10" : "01"
-        console.log(bits)
             //concat, iterate through bits of all four status values
             //if 1, create image
             //building data in correct order
