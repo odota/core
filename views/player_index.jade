@@ -1,6 +1,9 @@
 extend player
 
 append head
+  //- Cal-Heatmap CSS and JS
+  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
+  script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
   script.
     var data = !{JSON.stringify(player.calheatmap)}
     
