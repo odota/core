@@ -1,6 +1,4 @@
 extend match
-append head
-  script(src='/public/js/map.js')
 
 append content
   .row
@@ -93,3 +91,13 @@ append content
         img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-6
       include ads/skyscraper
+      
+block footer_assets
+  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
+  script(src='//cdn.rawgit.com/adamwdraper/Numeral-js/master/numeral.js')
+  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
+  script
+    include ../public/js/yasp.js
+  script
+    include ../public/js/map.js

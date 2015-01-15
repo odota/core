@@ -76,35 +76,6 @@ $(document).ready(function() {
     $('.format-seconds').each(function() {
         $(this).text(formatSeconds($(this).text()))
     })
-    $('#matches').dataTable({
-        "order": [
-            [0, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
-        }, {
-            "targets": [2],
-            visible: false
-        }]
-    });
-    $('#teammates').dataTable({
-        "order": [
-            [1, "desc"]
-        ]
-    });
-    $('#heroes').dataTable({
-        "order": [
-            [2, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-        }, {
-            "targets": [1],
-            visible: false
-        }]
-    });
     $('[title!=""]').qtip({
         style: "qtip-dark"
     });

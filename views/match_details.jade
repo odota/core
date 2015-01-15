@@ -146,3 +146,11 @@ append content
                             =key
       else
         h1 This match has no parsed data!
+
+block footer_assets
+  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
+  script(src='//cdn.rawgit.com/adamwdraper/Numeral-js/master/numeral.js')
+  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
+  script
+    include ../public/js/yasp.js
