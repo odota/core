@@ -26,10 +26,13 @@ html
     //- Stylesheets
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
-    link(rel='stylesheet', href='/public/css/yasp.css')
+    style
+      include ../public/css/yasp.css
+      
     //- JS
     script(src='//code.jquery.com/jquery-2.1.1.min.js')
-    script(src='/public/js/ga.js')
+    script
+      include ../public/js/ga.js
     
     block head
     
