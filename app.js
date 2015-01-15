@@ -121,6 +121,10 @@ app.use(function(req, res, next) {
     next()
 })
 app.param('match_id', function(req, res, next, id) {
+    if (process.env.NODE_ENV !== "production") {
+        return next()
+    }
+    
     cache.get(id, function(err, reply) {
         if (err || !reply) {
             logger.info("Cache miss for match " + id)
@@ -133,8 +137,8 @@ app.param('match_id', function(req, res, next, id) {
                     utility.fillPlayerNames(match.players, function(err) {
                         req.match = match
                         //Add to cache if we have parsed data
-                        if (match.parsed_data && process.env.NODE_ENV !== "production") {
-                            cache.set(id, JSON.stringify(match))    
+                        if (match.parsed_data) {
+                            cache.setex(id, 86400, JSON.stringify(match))
                         }
                         return next()
                     })
@@ -282,9 +286,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         title: "Match " + match.match_id + " - YASP"
     }, function(err, html) {
         if (err) return next(err)
-        if (match.parsed_data) {
-            cache.setex(req.url, 86400, html)
-        }
         return res.send(html)
     })
 })
