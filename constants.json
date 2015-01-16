@@ -1,5 +1,5 @@
 {
-    "gold_reasons":{
+    "gold_reasons": {
         "0": "Other",
         "1": "Deaths",
         "2": "Buybacks",
@@ -11,7 +11,7 @@
         "14": "Roshan",
         "15": "Couriers"
     },
-    "xp_reasons":{
+    "xp_reasons": {
         "0": "Other",
         "1": "Heroes",
         "2": "Creeps",
@@ -57,7 +57,7 @@
         },
         "1": {
             "id": 1,
-            "name": "Classic All Pick"
+            "name": "All Pick"
         },
         "2": {
             "id": 2,
@@ -141,12 +141,34 @@
         },
         "22": {
             "id": 22,
-            "name": "All Pick"
+            "name": "Alternating All Pick"
         }
     },
     "regions": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/regions.json",
     "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
     "heroes": "https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?language=en-us&key=",
     "ability_ids": "https://raw.githubusercontent.com/kronusme/dota2-api/master/data/abilities.json",
-    "abilities": "http://www.dota2.com/jsfeed/abilitydata"
+    "abilities": "http://www.dota2.com/jsfeed/abilitydata",
+    "patches": {
+        "6.83b": {
+            "start": "2015-01-13T00:00:00Z",
+            "end": ""
+        },
+        "6.83": {
+            "start": "2014-12-17T00:00:00Z",
+            "end": "2015-01-13T00:00:00Z"
+        },
+        "6.82c": {
+            "start": "2014-10-15T00:00:00Z",
+            "end": "2014-12-17T00:00:00Z"
+        },
+        "6.82b": {
+            "start": "2014-09-28T00:00:00Z",
+            "end": "2014-10-15T00:00:00Z"
+        },
+        "6.82": {
+            "start": "2014-09-24T00:00:00Z",
+            "end": "2014-09-28T00:00:00Z
+        }
+    }
 }
