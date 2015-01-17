@@ -129,7 +129,6 @@ function getReplayUrl(job, cb) {
         }
         else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-                // Try to get replay for 10 sec, else give up and try again later.
             var timeOut = setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()

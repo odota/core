@@ -205,7 +205,7 @@ function queueReq(type, data) {
             name = "summaries_" + data.summaries_id
         }
         else if (data.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id + "&matches_requested=5"
             name = "history_" + data.account_id
         }
     }
