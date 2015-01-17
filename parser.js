@@ -133,8 +133,10 @@ function getReplayUrl(job, cb) {
                 Steam = new steam.SteamClient()
                 Dota2 = new dota2.Dota2Client(Steam, false)
                 console.log("[DOTA] request for replay timed out.")
+                console.log(users)
+                console.log(users.length)
                 loginNum += 1
-                //loginNum = loginNum % users.length
+                loginNum = loginNum % users.length
                 console.log("[DOTA] loginNum: %s, numusers: %s", loginNum, users.length);
                 return cb("STEAM TIMEOUT")
             }, 15000)
