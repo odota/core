@@ -320,7 +320,7 @@ function insertMatch(match, cb) {
         if (process.env.SAVE_ALL_MATCHES || track) {
             matches.insert(match);
         }
-        if (track) {
+        if (track || process.env.PARSE_ALL_REPLAYS) {
             var summaries = {
                 summaries_id: new Date()
             }
