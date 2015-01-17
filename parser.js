@@ -228,8 +228,9 @@ function parseReplay(job, cb) {
                         parse_status: 1
                     }
                 })
+                return cb(null);
             }
-            return cb(err)
+            return cb(err);
         }
         console.log("[PARSER] running parse on %s", fileName)
         var output = ""
