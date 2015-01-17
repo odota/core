@@ -1,6 +1,5 @@
 var request = require("request"),
     fs = require("fs"),
-    spawn = require('child_process').spawn,
     moment = require('moment'),
     Bunzip = require('seek-bzip'),
     utility = require('./utility'),
@@ -18,7 +17,7 @@ var users = process.env.STEAM_USER.split(",")
 var passes = process.env.STEAM_PASS.split(",")
 var codes = process.env.STEAM_GUARD_CODE.split(",")
 var replay_dir = "replays/"
-var parser_file = "parser/target/stats-0.1.0.jar"
+
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
@@ -34,7 +33,7 @@ utility.clearActiveJobs('parse', function(err) {
 
 function download(job, cb) {
         var match_id = job.data.payload.match_id
-        var fileName = replay_dir + match_id + ".dem"
+        var fileName = job.data.payload.fileName || replay_dir + match_id + ".dem"
         if (fs.existsSync(fileName)) {
             console.log("[PARSER] found local replay for match %s", match_id)
             cb(null, fileName);
@@ -80,7 +79,7 @@ function download(job, cb) {
      */
 
 function logOnSteam(user, pass, authcode, cb) {
-    console.log("[STEAM] Trying to log on with %s,%s", user,pass)
+    console.log("[STEAM] Trying to log on with %s,%s", user, pass)
     var onSteamLogOn = function onSteamLogOn() {
             console.log("[STEAM] Logged on %s", Steam.steamID);
             cb(null)
@@ -232,38 +231,27 @@ function parseReplay(job, cb) {
             }
             return cb(err);
         }
-        console.log("[PARSER] running parse on %s", fileName)
-        var output = ""
-        var cp = spawn("java", ["-jar",
-            "-Xms128m",
-            "-Xmx128m",
-            parser_file,
-            fileName,
-            process.env.MONGOHQ_URL || "mongodb://localhost/dota"
-        ])
-        cp.stdout.on('data', function(data) {
-            output += data
-        })
-        cp.stderr.on('data', function(data) {
-            console.log('[PARSER] match: %s, stderr: %s', match_id, data);
-        })
-        cp.on('exit', function(code) {
-            console.log('[PARSER] match: %s, exit code: %s', match_id, code);
-            if (!code) {
-                //process parser output
-                matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parsed_data: JSON.parse(output),
-                        parse_status: 2
+        utility.runParse(fileName, function(err, output) {
+            if (!err) {
+                //verify that match exists in db
+                matches.findOne({
+                    match_id: output.match_id
+                }, function(err, doc) {
+                    if (doc) {
+                        //process parser output
+                        matches.update({
+                            match_id: output.match_id
+                        }, {
+                            $set: {
+                                parsed_data: JSON.parse(output),
+                                parse_status: 2
+                            }
+                        })
                     }
-                })
-                if (process.env.DELETE_REPLAYS) {
-                    fs.unlink(fileName)
-                }
+                });
+
             }
-            return cb(code)
+            return cb(err);
         })
     })
 }

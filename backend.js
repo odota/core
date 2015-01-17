@@ -4,14 +4,12 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players,
     cheerio = require('cheerio'),
-    winston = require('winston'),
-    reds = require('reds');
+    winston = require('winston');
 var jobs = utility.jobs;
-var api_url = "https://api.steampowered.com/IDOTA2Match_570"
-var summaries_url = "http://api.steampowered.com/ISteamUser"
 var remote = "http://dotabuff.com"
 var trackedPlayers = {}
 var transports = []
+var api_url = utility.api_url;
 if (process.env.NODE_ENV === "production") {
     transports.push(new(winston.transports.File)({
         filename: 'backend.log',
@@ -33,7 +31,7 @@ async.series([
         })
     },
     function(cb) {
-        //scrape full match history for requested players
+        //scrape full match history ONLY for specific players
         players.find({
                 full_history: 1
             }, function(err, docs) {
@@ -61,7 +59,7 @@ async.series([
             parse_status: 0
         }, function(err, docs) {
             docs.forEach(function(match) {
-                queueReq("parse", match)
+                utility.queueReq("parse", match)
             })
         })
         cb(null)
@@ -192,53 +190,12 @@ function getMatches(seq_num) {
     }, 1000)
 }
 
-function queueReq(type, data) {
-    var url;
-    var name;
-    if (type === "api") {
-        if (data.match_id) {
-            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + data.match_id;
-            name = "details_" + data.match_id
-        }
-        else if (data.summaries_id) {
-            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + data.query
-            name = "summaries_" + data.summaries_id
-        }
-        else if (data.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id + "&matches_requested=5"
-            name = "history_" + data.account_id
-        }
-    }
-    if (type === "parse") {
-        name = "parse_" + data.match_id
-        data = {
-            match_id: data.match_id,
-            start_time: data.start_time
-        }
-    }
-    reds.createSearch(jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        if (ids.length > 0) {
-            return;
-        }
-        jobs.create(type, {
-            title: name,
-            payload: data,
-            url: url
-        }).attempts(10).backoff({
-            delay: 60000,
-            type: 'exponential'
-        }).searchKeys(['title']).removeOnComplete(true).save(function(err) {
-            if (!err) logger.info('[KUE] %s', name)
-        });
-    })
-}
-
 function requestDetails(match, cb) {
     matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
         if (!doc) {
-            queueReq("api", match)
+            utility.queueReq("api", match)
         }
         cb(null)
     });
@@ -329,8 +286,8 @@ function insertMatch(match, cb) {
                 steamids.push(utility.convert32to64(player.account_id).toString())
             })
             summaries.query = steamids.join()
-            queueReq("api", summaries)
-            queueReq("parse", match)
+            utility.queueReq("api", summaries)
+            utility.queueReq("parse", match)
         }
         cb(null)
     }
@@ -339,7 +296,7 @@ function insertMatch(match, cb) {
      */
 
 function insertPlayer(player, cb) {
-    var account_id = Number(utility.convert64to32(player.steamid))
+    var account_id = Number(utility.convert64to32(player.steamid));
     players.update({
         account_id: account_id
     }, {
@@ -347,21 +304,21 @@ function insertPlayer(player, cb) {
     }, {
         upsert: true
     }, function(err) {
-        cb(err)
-    })
+        cb(err);
+    });
 }
 
 function getData(url, cb) {
     request(url, function(err, res, body) {
         //logger.info("[API] %s", url)
         if (err || res.statusCode != 200 || !body) {
-            logger.info("[API] error getting data, retrying")
+            logger.info("[API] error getting data, retrying");
             setTimeout(function() {
-                getData(url, cb)
-            }, 1000)
+                getData(url, cb);
+            }, 1000);
         }
         else {
-            cb(null, JSON.parse(body))
+            cb(null, JSON.parse(body));
         }
-    })
+    });
 }
