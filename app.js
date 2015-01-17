@@ -106,9 +106,9 @@ var basic = auth.basic({
 ui.setup({
     apiURL: '/kue' // IMPORTANT: specify the api url
 });
-//app.use("/kueapi", auth.connect(basic));
+app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
-app.use('/kueui', ui.app);
+//app.use('/kueui', ui.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
