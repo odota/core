@@ -13,10 +13,10 @@ var request = require("request"),
 var async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
-var loginNum = 0
-var users = process.env.STEAM_USER.split()
-var passes = process.env.STEAM_PASS.split()
-var codes = process.env.STEAM_GUARD_CODE.split()
+var loginNum = 1
+var users = process.env.STEAM_USER.split(",")
+var passes = process.env.STEAM_PASS.split(",")
+var codes = process.env.STEAM_GUARD_CODE.split(",")
 var replay_dir = "replays/"
 var parser_file = "parser/target/stats-0.1.0.jar"
 if (!fs.existsSync(replay_dir)) {
@@ -80,6 +80,7 @@ function download(job, cb) {
      */
 
 function logOnSteam(user, pass, authcode, cb) {
+    console.log("[STEAM] Trying to log on with " + user)
     var onSteamLogOn = function onSteamLogOn() {
             console.log("[STEAM] Logged on.");
             cb(null)
@@ -119,7 +120,7 @@ function getReplayUrl(job, cb) {
         if (!Steam.loggedOn) {
             loginNum += 1
             loginNum = loginNum % users.length
-            logOnSteam(users[loginNum], passes[loginNum], codes[loginNum], function(err) {
+            logOnSteam(users[loginNum], passes[loginNum], codes[loginNum] || "", function(err) {
                 Dota2.launch();
                 Dota2.on("ready", function() {
                     getReplayUrl(job, cb)
@@ -128,7 +129,6 @@ function getReplayUrl(job, cb) {
         }
         else {
             console.log("[DOTA] requesting replay %s", match.match_id)
-                // Try to get replay for 10 sec, else give up and try again later.
             var timeOut = setTimeout(function() {
                 Dota2.exit()
                 Steam.logOff()
