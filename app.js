@@ -117,8 +117,16 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.use(function(req, res, next) {
-    app.locals.user = req.user
-    next()
+    cache.get("banner", function(err, reply){
+        app.locals.user = req.user
+        if (err || !reply) {
+            app.locals.banner_msg = false
+            next()
+        } else {
+            app.locals.banner_msg = reply
+            next()
+        }
+    })
 })
 app.param('match_id', function(req, res, next, id) {
     cache.get(id, function(err, reply) {

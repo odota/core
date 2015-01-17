@@ -80,6 +80,7 @@ function download(job, cb) {
      */
 
 function logOnSteam(user, pass, authcode, cb) {
+    console.log("[STEAM] Trying to log on with " + user)
     var onSteamLogOn = function onSteamLogOn() {
             console.log("[STEAM] Logged on.");
             cb(null)
