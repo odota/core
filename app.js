@@ -106,9 +106,9 @@ var basic = auth.basic({
 ui.setup({
     apiURL: '/kue' // IMPORTANT: specify the api url
 });
-//app.use("/kueapi", auth.connect(basic));
+app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
-app.use('/kueui', ui.app);
+//app.use('/kueui', ui.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
@@ -117,8 +117,16 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.use(function(req, res, next) {
-    app.locals.user = req.user
-    next()
+    cache.get("banner", function(err, reply){
+        app.locals.user = req.user
+        if (err || !reply) {
+            app.locals.banner_msg = false
+            next()
+        } else {
+            app.locals.banner_msg = reply
+            next()
+        }
+    })
 })
 app.param('match_id', function(req, res, next, id) {
     cache.get(id, function(err, reply) {

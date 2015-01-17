@@ -56,14 +56,6 @@ async.series([
                     cb(null)
                 })
             })
-            //check most recent 100 matches for tracked players
-        players.find({
-                track: 1
-            }, function(err, docs) {
-                docs.forEach(function(player) {
-                    queueReq("api", player)
-                })
-            })
             //parse unparsed matches
         matches.find({
             parse_status: 0
@@ -76,22 +68,14 @@ async.series([
     },
     function(cb) {
         //determine sequence number to begin scan at
-        if (process.env.SAVE_ALL_MATCHES) {
-            matches.findOne({}, {
-                sort: {
-                    match_seq_num: -1
-                }
-            }, function(err, doc) {
-                getMatches(doc ? doc.match_seq_num + 1 : 0)
-                cb(null)
-            })
-        }
-        else {
-            getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                getMatches(data.result.matches[0].match_seq_num)
-                cb(null)
-            })
-        }
+        matches.findOne({}, {
+            sort: {
+                match_seq_num: -1
+            }
+        }, function(err, doc) {
+            getMatches(doc ? doc.match_seq_num + 1 : 0)
+            cb(null)
+        })
     }
 ], function(err) {
     jobs.process('api', function(job, done) {
@@ -221,7 +205,7 @@ function queueReq(type, data) {
             name = "summaries_" + data.summaries_id
         }
         else if (data.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id + "&matches_requested=5"
             name = "history_" + data.account_id
         }
     }
@@ -297,7 +281,12 @@ function apiRequest(job, cb) {
                 cb(err);
             });
         }
-        else if (data.result.error || data.result.status == 2) {
+        else if (data.result.status === 15) {
+            //user does not have stats enabled, return no error (don't retry)
+            logger.info(data)
+            return cb(null)
+        }
+        else if (data.result.error || data.result.status === 2) {
             //error response from dota api
             logger.info(data);
             return cb(data);
