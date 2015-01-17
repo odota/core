@@ -56,7 +56,7 @@ async.series([
                     cb(null)
                 })
             })
-        //parse unparsed matches
+            //parse unparsed matches
         matches.find({
             parse_status: 0
         }, function(err, docs) {
@@ -281,7 +281,12 @@ function apiRequest(job, cb) {
                 cb(err);
             });
         }
-        else if (data.result.error || data.result.status == 2) {
+        else if (data.result.status === 15) {
+            //user does not have stats enabled, return no error (don't retry)
+            logger.info(data)
+            return cb(null)
+        }
+        else if (data.result.error || data.result.status === 2) {
             //error response from dota api
             logger.info(data);
             return cb(data);
