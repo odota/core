@@ -13,7 +13,7 @@ var request = require("request"),
 var async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
-var loginNum = 0
+var loginNum = 1
 var users = process.env.STEAM_USER.split(",")
 var passes = process.env.STEAM_PASS.split(",")
 var codes = process.env.STEAM_GUARD_CODE.split(",")
@@ -120,7 +120,7 @@ function getReplayUrl(job, cb) {
         if (!Steam.loggedOn) {
             loginNum += 1
             loginNum = loginNum % users.length
-            logOnSteam(users[loginNum], passes[loginNum], codes[loginNum] || null, function(err) {
+            logOnSteam(users[loginNum], passes[loginNum], codes[loginNum] || "", function(err) {
                 Dota2.launch();
                 Dota2.on("ready", function() {
                     getReplayUrl(job, cb)
