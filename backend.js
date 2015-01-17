@@ -56,15 +56,7 @@ async.series([
                     cb(null)
                 })
             })
-            //check most recent 100 matches for tracked players
-        players.find({
-                track: 1
-            }, function(err, docs) {
-                docs.forEach(function(player) {
-                    queueReq("api", player)
-                })
-            })
-            //parse unparsed matches
+        //parse unparsed matches
         matches.find({
             parse_status: 0
         }, function(err, docs) {
