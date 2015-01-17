@@ -20,6 +20,7 @@ import java.io.FileReader;
 import java.util.Iterator;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.lang.reflect.Method;
 
 public class Main {
     public static final float INTERVAL = 60;
@@ -38,6 +39,9 @@ public class Main {
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
         int numPlayers = 10;
+        
+        CDemoFileInfo info = Clarity.infoForFile(args[0]);
+        doc.put("match_id", info.getGameInfo().getDota().getMatchId());
 
         while(iter.hasNext()) {
             iter.next().apply(match);
