@@ -68,22 +68,14 @@ async.series([
     },
     function(cb) {
         //determine sequence number to begin scan at
-        if (process.env.SAVE_ALL_MATCHES) {
-            matches.findOne({}, {
-                sort: {
-                    match_seq_num: -1
-                }
-            }, function(err, doc) {
-                getMatches(doc ? doc.match_seq_num + 1 : 0)
-                cb(null)
-            })
-        }
-        else {
-            getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                getMatches(data.result.matches[0].match_seq_num)
-                cb(null)
-            })
-        }
+        matches.findOne({}, {
+            sort: {
+                match_seq_num: -1
+            }
+        }, function(err, doc) {
+            getMatches(doc ? doc.match_seq_num + 1 : 0)
+            cb(null)
+        })
     }
 ], function(err) {
     jobs.process('api', function(job, done) {
