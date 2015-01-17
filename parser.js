@@ -135,7 +135,6 @@ function getReplayUrl(job, cb) {
                 console.log("[DOTA] request for replay timed out.")
                 loginNum += 1
                 loginNum = loginNum % users.length
-                console.log(users, users.length)
                 console.log("[DOTA] loginNum: %s, numusers: %s", loginNum, users.length);
                 return cb("STEAM TIMEOUT")
             }, 15000)
@@ -221,7 +220,7 @@ function parseReplay(job, cb) {
     download(job, function(err, fileName) {
         if (err) {
             console.log("[PARSER] Error for match %s: %s", match_id, err)
-            if (job.attempts.remaining === 0) {
+            if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
                 matches.update({
                     match_id: job.data.payload.match_id
                 }, {
