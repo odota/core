@@ -50,7 +50,7 @@ html
               a(href="/players/"+user.account_id)=user.personaname
      div.container
        if banner_msg
-         .alert.alert-success(role="alert") #{banner_msg}
+         .alert.alert-success(role="alert") !{banner_msg}
        if !error
         include ads/leaderboard
        block content
