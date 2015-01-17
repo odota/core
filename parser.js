@@ -82,7 +82,7 @@ function download(job, cb) {
 function logOnSteam(user, pass, authcode, cb) {
     console.log("[STEAM] Trying to log on with %s,%s", user,pass)
     var onSteamLogOn = function onSteamLogOn() {
-            console.log("[STEAM] Logged on.");
+            console.log("[STEAM] Logged on %s", Steam.steamID);
             cb(null)
         },
         onSteamSentry = function onSteamSentry(newSentry) {
@@ -131,7 +131,7 @@ function getReplayUrl(job, cb) {
                 Dota2.exit()
                 Steam.logOff()
                 Steam = new steam.SteamClient()
-                Dota2 = new dota2.Dota2Client(Steam, false)
+                Dota2 = new dota2.Dota2Client(Steam, true)
                 console.log("[DOTA] request for replay timed out.")
                 loginNum += 1
                 loginNum = loginNum % users.length
