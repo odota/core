@@ -118,8 +118,7 @@ function getReplayUrl(job, cb) {
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
         if (!Steam.loggedOn) {
-            loginNum += 1
-            loginNum = loginNum % users.length
+
             logOnSteam(users[loginNum], passes[loginNum], codes[loginNum] || "", function(err) {
                 Dota2.launch();
                 Dota2.on("ready", function() {
@@ -134,6 +133,9 @@ function getReplayUrl(job, cb) {
                 Steam.logOff()
                 Steam = new steam.SteamClient()
                 Dota2 = new dota2.Dota2Client(Steam, false)
+                loginNum += 1
+                loginNum = loginNum % users.length
+                console.log("[DOTA] loginNum: %s", loginNum);
                 console.log("[DOTA] request for replay timed out.")
                 return cb("STEAM TIMEOUT")
             }, 15000)
