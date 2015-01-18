@@ -4,7 +4,6 @@ var utility = exports,
     spawn = require('child_process').spawn,
     reds = require('reds'),
     BigNumber = require('big-number').n;
-var parser_file = "parser/target/stats-0.1.0.jar";
 utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
@@ -154,21 +153,30 @@ utility.queueReq = function(type, data) {
         }
     }
     reds.createSearch(utility.jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        if (ids.length > 0) {
-            return;
+        for (var i = 0; i < ids.length; i++) {
+            utility.kue.Job.get(ids[i], function(err, job) {
+                if (err) return;
+                job.remove(function(err) {
+                    if (err) throw err;
+                    console.log('removed job #%d', job.id);
+                });
+            });
         }
-        utility.jobs.create(type, {
+        var job = {
             title: name,
             payload: data,
             url: url
-        }).attempts(10).backoff({
+        };
+        console.log(job)
+        utility.jobs.create(type, job).attempts(10).backoff({
             delay: 60000,
             type: 'exponential'
         }).searchKeys(['title']).removeOnComplete(true).save(function(err) {});
     })
 }
 
-utility.runParse = function runParse(parser_file, fileName, cb) {
+utility.runParse = function runParse(fileName, cb) {
+    var parser_file = "parser/target/stats-0.1.0.jar";
     console.log("[PARSER] running parse on %s", fileName)
 
     var output = ""

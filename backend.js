@@ -65,6 +65,18 @@ async.series([
         cb(null)
     },
     function(cb) {
+        if (process.env.START_SEQ_NUM) {
+            if (process.env.START_SEQ_NUM === "AUTO") {
+                getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                    getMatches(data.result.matches[0].match_seq_num)
+                    return cb(null)
+                })
+            }
+            else {
+                getMatches(process.env.START_SEQ_NUM);
+                return cb(null);
+            }
+        }
         //determine sequence number to begin scan at
         matches.findOne({}, {
             sort: {
@@ -251,6 +263,7 @@ function apiRequest(job, cb) {
         else if (payload.match_id) {
             //response for single match details
             var match = data.result;
+            match.parsed_data = payload.parsed_data;
             insertMatch(match, function(err) {
                 cb(err);
             });
@@ -271,13 +284,11 @@ function apiRequest(job, cb) {
 
 function insertMatch(match, cb) {
         var track = match.players.some(function(element) {
-            return (element.account_id in trackedPlayers);
-        })
+                return (element.account_id in trackedPlayers);
+            })
+            //queued or untracked
         match.parse_status = (track ? 0 : 3)
-        if (process.env.SAVE_ALL_MATCHES || track) {
-            matches.insert(match);
-        }
-        if (track || process.env.PARSE_ALL_REPLAYS) {
+        if (track) {
             var summaries = {
                 summaries_id: new Date()
             }
@@ -285,11 +296,30 @@ function insertMatch(match, cb) {
             match.players.forEach(function(player) {
                 steamids.push(utility.convert32to64(player.account_id).toString())
             })
-            summaries.query = steamids.join()
-            utility.queueReq("api", summaries)
-            utility.queueReq("parse", match)
+            summaries.query = steamids.join();
+            //queue for player names
+            utility.queueReq("api", summaries);
+            //parse if unparsed
+            if (!match.parsed_data) {
+                utility.queueReq("parse", match);
+            }
+            else {
+                match.parse_status = 2;
+            }
+            matches.update({
+                    match_id: match.match_id
+                }, {
+                    $set: match
+                }, {
+                    upsert: true
+                },
+                function(err) {
+                    cb(err);
+                });
         }
-        cb(null)
+        else {
+            cb(null)
+        }
     }
     /*
      * Inserts/updates a player in the database
