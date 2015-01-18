@@ -90,9 +90,9 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var date = new Date();
-        var hours = date.getHours();
-        var retriever = hours % retrievers.length;
+        var t = new Date().getMinutes();
+        var retriever = t % retrievers.length;
+        logger.info(retriever);
         utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(body) {
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
             job.data['url'] = url;
