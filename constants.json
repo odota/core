@@ -46,8 +46,7 @@
     "parse_status": {
         "0": "Queued",
         "1": "Unavailable",
-        "2": "Parsed",
-        "3": "Untracked"
+        "2": "Parsed"
     },
     "anonymous_account_id": 4294967295,
     "modes": {

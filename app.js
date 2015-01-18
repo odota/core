@@ -14,6 +14,7 @@ var utility = require('./utility'),
     cache = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
+var multer = require('multer');
 var host = process.env.ROOT_URL
 var port = Number(process.env.PORT || 3000);
 var transports = []
@@ -117,12 +118,13 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.use(function(req, res, next) {
-    cache.get("banner", function(err, reply){
+    cache.get("banner", function(err, reply) {
         app.locals.user = req.user
         if (err || !reply) {
             app.locals.banner_msg = false
             next()
-        } else {
+        }
+        else {
             app.locals.banner_msg = reply
             next()
         }
@@ -135,12 +137,13 @@ app.param('match_id', function(req, res, next, id) {
             matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
-                if(err || !match) {
+                if (err || !match) {
                     return next()
-                } else {
+                }
+                else {
                     utility.fillPlayerNames(match.players, function(err) {
                         req.match = match
-                        //Add to cache if we have parsed data
+                            //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
                             cache.setex(id, 86400, JSON.stringify(match))
                         }
@@ -148,7 +151,8 @@ app.param('match_id', function(req, res, next, id) {
                     })
                 }
             })
-        } else if (reply) {
+        }
+        else if (reply) {
             logger.info("Cache hit for match " + id)
             req.match = JSON.parse(reply)
             return next()
@@ -409,6 +413,39 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/')
 })
+
+app.use(multer({
+    dest: './uploads',
+    onFileUploadStart: function(file) {
+        console.log(file.originalname + ' is starting ...')
+    },
+    onFileUploadComplete: function(file) {
+        console.log(file.fieldname + ' uploaded to  ' + file.path)
+        utility.runParse(file.path, function(err, output) {
+            if (!err) {
+                output = JSON.parse(output);
+                utility.queueReq("api", {
+                    match_id: output.match_id,
+                    parsed_data: output
+                });
+            }
+        })
+    }
+}));
+
+/*
+app.get('/upload', function(req, res) {
+    res.render("upload");
+});
+
+app.post('/upload', function(req, res) {
+    res.render("upload");
+});
+*/
+/*Run the server.*/
+app.listen(3000, function() {
+    console.log("Working on port 3000");
+});
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
         return res.status(500).render('500.jade', {

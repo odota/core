@@ -1,6 +1,8 @@
 var utility = exports,
     fs = require('fs'),
     async = require('async'),
+    spawn = require('child_process').spawn,
+    reds = require('reds'),
     BigNumber = require('big-number').n;
 utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
 utility.kue = require('kue');
@@ -121,4 +123,80 @@ utility.convert32to64 = function(id) {
 }
 utility.isRadiant = function(player) {
     return player.player_slot < 64
+}
+utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
+
+utility.queueReq = function(type, data) {
+    var api_url = utility.api_url;
+    var summaries_url = "http://api.steampowered.com/ISteamUser"
+    var url;
+    var name;
+    if (type === "api") {
+        if (data.match_id) {
+            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + data.match_id;
+            name = "details_" + data.match_id
+        }
+        else if (data.summaries_id) {
+            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + data.query
+            name = "summaries_" + data.summaries_id
+        }
+        else if (data.account_id) {
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id + "&matches_requested=5"
+            name = "history_" + data.account_id
+        }
+    }
+    if (type === "parse") {
+        name = "parse_" + data.match_id
+        data = {
+            match_id: data.match_id,
+            start_time: data.start_time
+        }
+    }
+    reds.createSearch(utility.jobs.client.getKey('search')).query(name).end(function(err, ids) {
+        for (var i = 0; i < ids.length; i++) {
+            utility.kue.Job.get(ids[i], function(err, job) {
+                if (err) return;
+                job.remove(function(err) {
+                    if (err) throw err;
+                    console.log('removed job #%d', job.id);
+                });
+            });
+        }
+        var job = {
+            title: name,
+            payload: data,
+            url: url
+        };
+        console.log(job)
+        utility.jobs.create(type, job).attempts(10).backoff({
+            delay: 60000,
+            type: 'exponential'
+        }).searchKeys(['title']).removeOnComplete(true).save(function(err) {});
+    })
+}
+
+utility.runParse = function runParse(fileName, cb) {
+    var parser_file = "parser/target/stats-0.1.0.jar";
+    console.log("[PARSER] running parse on %s", fileName)
+
+    var output = ""
+    var cp = spawn("java", ["-jar",
+        "-Xms128m",
+        "-Xmx128m",
+        parser_file,
+        fileName
+    ])
+    cp.stdout.on('data', function(data) {
+        output += data
+    })
+    cp.stderr.on('data', function(data) {
+        console.log('[PARSER] stderr: %s', data);
+    })
+    cp.on('exit', function(code) {
+        console.log('[PARSER] exit code: %s', code);
+        cb(code, output);
+        if (process.env.DELETE_REPLAYS && !code) {
+            fs.unlink(fileName)
+        }
+    })
 }
