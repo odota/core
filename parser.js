@@ -94,10 +94,15 @@ function getReplayUrl(job, cb) {
         var retriever = t % retrievers.length;
         logger.info(retriever);
         utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(body) {
-            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-            job.data['url'] = url;
-            job.update();
-            return cb(url);
+            if (body && body.match) {
+                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + body.match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                job.data['url'] = url;
+                job.update();
+                return cb(url);
+            }
+            else {
+                return cb(true)
+            }
         })
     }
     else {
