@@ -52,7 +52,12 @@ var playerPages = {
     }
 }
 updateConstants(function(err) {});
-
+setTimeout(function() {
+    utility.constants.findOne({}, function(err, doc) {
+        logger.info("[CONSTANTS] loading constants")
+        app.locals.constants = doc
+    })
+}, 5000);
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
@@ -323,9 +328,9 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         if (p.account_id === account_id) {
                             //find the "main" player's id
                             var playerRadiant = utility.isRadiant(p);
-                            matches[i].player_win = (playerRadiant === matches[i].radiant_win)
-                            matches[i].slot = j
-                            matches[i].player_win ? player.win += 1 : player.lose += 1
+                            matches[i].player_win = (playerRadiant === matches[i].radiant_win);
+                            matches[i].slot = j;
+                            matches[i].player_win ? player.win += 1 : player.lose += 1;
                             player.games += 1
                             if (!heroes[p.hero_id]) {
                                 heroes[p.hero_id] = {}
@@ -468,68 +473,58 @@ function updateConstants(cb) {
             cb(null)
         }
     }, function(err) {
-        if (err) {
-            //use backup
-            utility.constants.findOne({}, function(err, doc) {
-                logger.info("[CONSTANTS] using backup constants")
-                app.locals.constants = doc
-                cb(err);
-            })
+        var heroes = constants.heroes.result.heroes
+        heroes.forEach(function(hero) {
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
+        })
+        constants.heroes = buildLookup(heroes)
+        constants.hero_names = {}
+        for (var i = 0; i < heroes.length; i++) {
+            constants.hero_names[heroes[i].name] = heroes[i]
         }
-        else {
-            var heroes = constants.heroes.result.heroes
-            heroes.forEach(function(hero) {
-                hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
-            })
-            constants.heroes = buildLookup(heroes)
-            constants.hero_names = {}
-            for (var i = 0; i < heroes.length; i++) {
-                constants.hero_names[heroes[i].name] = heroes[i]
-            }
-            var items = constants.items.itemdata
-            constants.item_ids = {}
-            for (var key in items) {
-                constants.item_ids[items[key].id] = key
-                items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
-            }
-            constants.items = items
-            var lookup = {}
-            var ability_ids = constants.ability_ids.abilities
-            for (var i = 0; i < ability_ids.length; i++) {
-                lookup[ability_ids[i].id] = ability_ids[i].name
-            }
-            constants.ability_ids = lookup
-            constants.ability_ids["5601"] = "techies_suicide"
-            constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
-            constants.ability_ids["5060"] = "nevermore_shadowraze1"
-            constants.ability_ids["5061"] = "nevermore_shadowraze1"
-            var abilities = constants.abilities.abilitydata
-            for (var key in abilities) {
-                abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
-            }
-            abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
-            abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
-            abilities["stats"] = {
-                dname: "Stats",
-                img: '../../public/images/Stats.png',
-                attrib: "+2 All Attributes"
-            }
-            constants.abilities = abilities
-            lookup = {};
-            var regions = constants.regions.regions
-            for (var i = 0; i < regions.length; i++) {
-                lookup[regions[i].id] = regions[i].name
-            }
-            constants.regions = lookup
-            constants.regions["251"] = "Peru"
-            utility.constants.update({}, constants, {
-                upsert: true
-            }, function(err) {
-                logger.info("[CONSTANTS] updated constants")
-                app.locals.constants = constants
-                cb(err)
-            })
+        var items = constants.items.itemdata
+        constants.item_ids = {}
+        for (var key in items) {
+            constants.item_ids[items[key].id] = key
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
         }
+        constants.items = items
+        var lookup = {}
+        var ability_ids = constants.ability_ids.abilities
+        for (var i = 0; i < ability_ids.length; i++) {
+            lookup[ability_ids[i].id] = ability_ids[i].name
+        }
+        constants.ability_ids = lookup
+        constants.ability_ids["5601"] = "techies_suicide"
+        constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
+        constants.ability_ids["5060"] = "nevermore_shadowraze1"
+        constants.ability_ids["5061"] = "nevermore_shadowraze1"
+        var abilities = constants.abilities.abilitydata
+        for (var key in abilities) {
+            abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+        }
+        abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
+        abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
+        abilities["stats"] = {
+            dname: "Stats",
+            img: '../../public/images/Stats.png',
+            attrib: "+2 All Attributes"
+        }
+        constants.abilities = abilities
+        lookup = {};
+        var regions = constants.regions.regions
+        for (var i = 0; i < regions.length; i++) {
+            lookup[regions[i].id] = regions[i].name
+        }
+        constants.regions = lookup
+        constants.regions["251"] = "Peru"
+        utility.constants.update({}, constants, {
+            upsert: true
+        }, function(err) {
+            logger.info("[CONSTANTS] updated constants")
+            app.locals.constants = constants
+            cb(err)
+        })
     })
 }
 
