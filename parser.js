@@ -75,7 +75,7 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var date = new Date;
+        var date = new Date();
         var hours = date.getHours();
         var retriever = hours % retrievers.length
         request({
