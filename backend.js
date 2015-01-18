@@ -28,28 +28,30 @@ async.series([
     function(cb) {
         //scrape full match history ONLY for specific players
         players.find({
-                full_history: 1
-            }, function(err, docs) {
-                async.mapSeries(docs, function(player, cb2) {
-                    var account_id = player.account_id
-                    var player_url = remote + "/players/" + account_id + "/matches"
-                    getMatchPage(player_url, function(err) {
-                        //done scraping player
+            full_history: 1
+        }, function(err, docs) {
+            async.mapSeries(docs, function(player, cb2) {
+                var account_id = player.account_id
+                var player_url = remote + "/players/" + account_id + "/matches"
+                getMatchPage(player_url, function(err) {
+                    if (!err) {
                         players.update({
                             account_id: account_id
                         }, {
                             $set: {
                                 full_history: 0
                             }
+                        }, function(err) {
+                            cb2(err)
                         })
-                        cb2(null)
-                    })
-                }, function(err) {
-                    //done scraping all players
-                    cb(null)
+                    }
                 })
-            })
-            //parse unparsed matches
+            }, function(err) {})
+        })
+        cb(null)
+    },
+    function(cb) {
+        //parse unparsed matches
         matches.find({
             parse_status: 0
         }, function(err, docs) {
@@ -60,27 +62,27 @@ async.series([
         cb(null)
     },
     function(cb) {
-        if (process.env.START_SEQ_NUM) {
-            if (process.env.START_SEQ_NUM === "AUTO") {
-                utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                    getMatches(data.result.matches[0].match_seq_num)
-                    return cb(null)
-                })
-            }
-            else {
-                getMatches(process.env.START_SEQ_NUM);
-                return cb(null);
-            }
+        if (process.env.START_SEQ_NUM === "AUTO") {
+            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                getMatches(data.result.matches[0].match_seq_num)
+                cb(null)
+            })
         }
-        //determine sequence number to begin scan at
-        matches.findOne({}, {
-            sort: {
-                match_seq_num: -1
-            }
-        }, function(err, doc) {
-            getMatches(doc ? doc.match_seq_num + 1 : 0)
-            cb(null)
-        })
+        else if (process.env.START_SEQ_NUM) {
+            getMatches(process.env.START_SEQ_NUM);
+            cb(null);
+        }
+        else {
+            //start at highest id in db
+            matches.findOne({}, {
+                sort: {
+                    match_seq_num: -1
+                }
+            }, function(err, doc) {
+                getMatches(doc ? doc.match_seq_num + 1 : 0)
+                cb(null)
+            })
+        }
     }
 ], function(err) {
     jobs.process('api', function(job, done) {
@@ -131,30 +133,36 @@ function requestDetails(match, cb) {
 }
 
 function getMatchPage(url, cb) {
-        request(url, function(err, resp, body) {
-            logger.info("[REMOTE] %s", url);
-            var parsedHTML = cheerio.load(body);
-            var matchCells = parsedHTML('td[class=cell-xlarge]');
-            matchCells.each(function(i, matchCell) {
-                var match_url = remote + cheerio(matchCell).children().first().attr('href');
-                var match = {};
-                match.match_id = Number(match_url.split(/[/]+/).pop());
-                requestDetails(match, function(err) {});
-            });
-            var nextPath = parsedHTML('a[rel=next]').first().attr('href');
-            if (nextPath) {
-                getMatchPage(remote + nextPath, cb);
-            }
-            else {
-                cb(null);
-            }
+    request(url, function(err, resp, body) {
+        if (err || resp.statusCode !== 200) {
+            console.log(body);
+            return setTimeout(function() {
+                getMatchPage(url, cb);
+            }, 1000);
+        }
+        logger.info("[REMOTE] %s", url);
+        logger.info(body);
+        var parsedHTML = cheerio.load(body);
+        var matchCells = parsedHTML('td[class=cell-xlarge]');
+        matchCells.each(function(i, matchCell) {
+            var match_url = remote + cheerio(matchCell).children().first().attr('href');
+            var match = {};
+            match.match_id = Number(match_url.split(/[/]+/).pop());
+            logger.info(match)
+            requestDetails(match, function(err) {});
         });
-    }
-    /*
-     * Processes a request to an api
-     */
+        var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+        if (nextPath) {
+            getMatchPage(remote + nextPath, cb);
+        }
+        else {
+            cb(null);
+        }
+    });
+}
 
 function apiRequest(job, cb) {
+    //process an api request
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
