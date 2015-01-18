@@ -25,9 +25,6 @@ Deployment
 
 .env
 ====
-* STEAM_USER (required, a Steam username)
-* STEAM_PASS (required, a Steam password)
-* STEAM_GUARD_CODE (required, a Steam guard code, can be empty)
 * STEAM_API_KEY (required, a Steam API key)
 * SESSION_SECRET (required, a secret to use for sessions)
 * KUE_USER (required, for http authentication on KUE UI)
@@ -38,8 +35,8 @@ Deployment
 * AWS_S3_BUCKET (optional, replays are saved to S3 bucket if set)
 * AWS_ACCESS_KEY_ID (optional, allows use of S3)
 * AWS_SECRET_ACCESS_KEY (optional, allows use of S3)
-* SAVE_ALL_MATCHES (optional, saves all matches to db (not just tracked))
 * NODE_ENV (optional, when set to "production" causes express optimizations and suppressed error messages)
 * ROOT_URL (required, root URL of instance for oauth callbacks)
 * REDIS_PORT (optional, defaults to 16379, port for Redis instance)
 * REDIS_HOST (optional, defaults to localhost, host for Redis instance)
+* RETRIEVER_HOST (required, a host to send match replay url requests to)

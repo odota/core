@@ -79,9 +79,8 @@ function getReplayUrl(job, cb) {
             json: true,
             encoding: null
         }, function(err, resp, body) {
-            body = JSON.parse(body);
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-            job.data['url'] = JSON.parse(body).url;
+            job.data['url'] = url;
             job.update()
             return cb(err, url);
         })
