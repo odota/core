@@ -4,25 +4,17 @@ var request = require("request"),
     Bunzip = require('seek-bzip'),
     utility = require('./utility'),
     matches = utility.matches,
-    steam = require("steam"),
-    dota2 = require("dota2"),
-    Steam = new steam.SteamClient(),
-    Dota2 = new dota2.Dota2Client(Steam, false),
     AWS = require('aws-sdk');
 var async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
-var loginNum = 0
-var users = process.env.STEAM_USER.split(",")
-var passes = process.env.STEAM_PASS.split(",")
-var codes = process.env.STEAM_GUARD_CODE.split(",")
 var replay_dir = "replays/"
 
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
 utility.clearActiveJobs('parse', function(err) {
-    jobs.process('parse', function(job, done) {
+    jobs.process('parse', 2, function(job, done) {
         parseReplay(job, done)
     })
 })
@@ -32,83 +24,49 @@ utility.clearActiveJobs('parse', function(err) {
  */
 
 function download(job, cb) {
-        var match_id = job.data.payload.match_id
-        var fileName = replay_dir + match_id + ".dem"
-        if (fs.existsSync(fileName)) {
-            console.log("[PARSER] found local replay for match %s", match_id)
-            cb(null, fileName);
-        }
-        else {
-            getReplayUrl(job, function(err, url) {
-                if (err) {
-                    return cb(err)
+    var match_id = job.data.payload.match_id
+    var fileName = replay_dir + match_id + ".dem"
+    if (fs.existsSync(fileName)) {
+        console.log("[PARSER] found local replay for match %s", match_id)
+        cb(null, fileName);
+    }
+    else {
+        getReplayUrl(job, function(err, url) {
+            if (err) {
+                return cb(err)
+            }
+            console.log("[PARSER] downloading from %s", url)
+            request({
+                url: url,
+                encoding: null
+            }, function(err, response, body) {
+                if (err || response.statusCode !== 200) {
+                    console.log("[PARSER] failed to download from %s", url)
+                    return cb("DOWNLOAD TIMEOUT")
                 }
-                console.log("[PARSER] downloading from %s", url)
-                request({
-                    url: url,
-                    encoding: null
-                }, function(err, response, body) {
-                    if (err || response.statusCode !== 200) {
-                        console.log("[PARSER] failed to download from %s", url)
-                        return cb("DOWNLOAD TIMEOUT")
-                    }
-                    else {
-                        try {
-                            var decomp = Bunzip.decode(body)
-                            fs.writeFile(fileName, decomp, function(err) {
-                                if (err) {
-                                    return cb(err)
-                                }
-                                console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
-                                var archiveName = match_id + ".dem.bz2"
-                                uploadToS3(archiveName, body, function(err) {
-                                    return cb(err, fileName)
-                                })
+                else {
+                    try {
+                        var decomp = Bunzip.decode(body)
+                        fs.writeFile(fileName, decomp, function(err) {
+                            if (err) {
+                                return cb(err)
+                            }
+                            console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                            var archiveName = match_id + ".dem.bz2"
+                            uploadToS3(archiveName, body, function(err) {
+                                return cb(err, fileName)
                             })
-                        }
-                        catch (e) {
-                            return cb(e)
-                        }
+                        })
                     }
-                })
+                    catch (e) {
+                        return cb(e)
+                    }
+                }
             })
-        }
+        })
     }
-    /*
-     * Logs onto steam and launches Dota 2
-     */
-
-function logOnSteam(user, pass, authcode, cb) {
-    console.log("[STEAM] Trying to log on with %s,%s", user, pass)
-    var onSteamLogOn = function onSteamLogOn() {
-            console.log("[STEAM] Logged on %s", Steam.steamID);
-            cb(null)
-        },
-        onSteamSentry = function onSteamSentry(newSentry) {
-            console.log("[STEAM] Received sentry.");
-            fs.writeFileSync("sentry", newSentry);
-        },
-        onSteamServers = function onSteamServers(servers) {
-            console.log("[STEAM] Received servers.");
-            fs.writeFile("servers", JSON.stringify(servers));
-        },
-        onSteamError = function onSteamError(e) {
-            console.log(e)
-            cb(e)
-        };
-    if (!fs.existsSync("sentry")) {
-        fs.openSync("sentry", 'w')
-    }
-    var logOnDetails = {
-            "accountName": user,
-            "password": pass
-        },
-        sentry = fs.readFileSync("sentry");
-    if (authcode) logOnDetails.authCode = authcode;
-    if (sentry.length) logOnDetails.shaSentryfile = sentry;
-    Steam.logOn(logOnDetails);
-    Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
+
 
 function getReplayUrl(job, cb) {
     if ('url' in job.data) {
@@ -116,36 +74,17 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        if (!Steam.loggedOn) {
-            logOnSteam(users[loginNum], passes[loginNum], null, function(err) {
-                Dota2.launch();
-                Dota2.on("ready", function() {
-                    getReplayUrl(job, cb)
-                })
-            })
-        }
-        else {
-            console.log("[DOTA] requesting replay %s", match.match_id)
-            var timeOut = setTimeout(function() {
-                Dota2.exit()
-                Steam.logOff()
-                Steam = new steam.SteamClient()
-                Dota2 = new dota2.Dota2Client(Steam, true)
-                console.log("[DOTA] request for replay timed out.")
-                loginNum += 1
-                loginNum = loginNum % users.length
-                console.log("[DOTA] loginNum: %s, numusers: %s", loginNum, users.length);
-                return cb("STEAM TIMEOUT")
-            }, 15000)
-            Dota2.matchDetailsRequest(match.match_id, function(err, data) {
-                var url = "http://replay" + data.match.cluster + ".valve.net/570/" + match.match_id + "_" + data.match.replaySalt + ".dem.bz2";
-                clearTimeout(timeOut);
-                //Add url to job so we don't need to check again.
-                job.data['url'] = url
-                job.update()
-                return cb(null, url)
-            })
-        }
+        request({
+            url: process.env.RETRIEVER_HOST + "?match_id=" + job.data.payload.match_id,
+            json: true,
+            encoding: null
+        }, function(err, resp, body) {
+            body = JSON.parse(body);
+            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+            job.data['url'] = JSON.parse(body).url;
+            job.update()
+            return cb(err, url);
+        })
     }
     else {
         getS3URL(match.match_id, function(err, url) {
