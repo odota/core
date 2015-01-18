@@ -9,6 +9,7 @@ var async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
 var replay_dir = "replays/"
+var retrievers = process.env.RETRIEVER_HOST.split(",")
 
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
@@ -74,8 +75,11 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
+        var date = new Date;
+        var hours = date.getHours();
+        var retriever = hours % retrievers.length
         request({
-            url: process.env.RETRIEVER_HOST + "?match_id=" + job.data.payload.match_id,
+            url:  retrievers[retriever] + "?match_id=" + job.data.payload.match_id,
             json: true,
             encoding: null
         }, function(err, resp, body) {
