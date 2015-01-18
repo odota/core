@@ -10,7 +10,7 @@ git pull origin mastser
 
 npm install
 
-#mvn -f parser/pom.xml package
+mvn -f parser/pom.xml package
 
 nf export -o /etc/init/
 

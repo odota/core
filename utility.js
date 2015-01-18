@@ -2,7 +2,6 @@ var utility = exports,
     fs = require('fs'),
     async = require('async'),
     spawn = require('child_process').spawn,
-    reds = require('reds'),
     BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston');
@@ -163,21 +162,15 @@ utility.queueReq = function(type, data) {
             start_time: data.start_time
         }
     }
-    reds.createSearch(utility.jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        if (ids.length > 0) {
-            logger.info("found duplicate job ids %s", ids);
-            return;
-        }
-        var job = {
-            title: name,
-            payload: data,
-            url: url
-        };
-        utility.jobs.create(type, job).attempts(10).backoff({
-            delay: 60000,
-            type: 'exponential'
-        }).searchKeys(['title']).removeOnComplete(true).save(function(err) {});
-    })
+    var job = {
+        title: name,
+        payload: data,
+        url: url
+    };
+    utility.jobs.create(type, job).attempts(10).backoff({
+        delay: 60000,
+        type: 'exponential'
+    }).removeOnComplete(true).save(function(err) {});
 }
 
 utility.runParse = function runParse(fileName, cb) {

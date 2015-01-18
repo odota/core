@@ -3,7 +3,7 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "0.0.1",
   "private": true,
-  "scripts": {"preinstall":"mvn -f parser/pom.xml package"},
+  "scripts": {},
   "dependencies": {
     "async": "0.9.0",
     "aws-sdk": "~2.0.31",
@@ -23,7 +23,6 @@
     "passport": "0.2.1",
     "passport-steam": "0.1.4",
     "redis": "0.12.1",
-    "reds": "0.2.4",
     "request": "~2.40.0",
     "seek-bzip": "~1.0.3",
     "winston": "0.7.3",
