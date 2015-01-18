@@ -8,15 +8,17 @@ block content
        .col-md-5
          h1(style='font-weight: 700;')=player.personaname || player.account_id
        .col-md-6
-         table.table.table-condensed
-           thead
-             tr
-               td Record
-               td Win Rate
-           tbody
-             tr
-               td #{player.win || 0 }-#{player.lose || 0}
-               td #{(player.win/player.games*100).toFixed(2)}%
+          table.table.table-condensed
+            thead
+              tr
+                td Record
+                td Win Rate
+            tbody
+              tr
+                td #{player.win || 0 }-#{player.lose || 0}
+                td #{(player.win/player.games*100).toFixed(2)}%
+          .alert.alert-warning(role="alert") Only matches played since signup will appear here.
+
      .row
        .col-md-12
          ul.nav.nav-tabs
