@@ -58,7 +58,7 @@ function download(job, cb) {
                 }
                 else {
                     var t2 = new Date().getTime();
-                    logger.info("[PARSER] dl time: %s", (t2-t1)/1000)
+                    logger.info("[PARSER] dl time: %s", (t2 - t1) / 1000)
                     try {
                         var decomp = Bunzip.decode(body)
                         fs.writeFile(fileName, decomp, function(err) {
@@ -66,7 +66,7 @@ function download(job, cb) {
                                 return cb(err)
                             }
                             var t3 = new Date().getTime();
-                            logger.info("[PARSER] decomp time: %s", (t3-t2)/1000)
+                            logger.info("[PARSER] decomp time: %s", (t3 - t2) / 1000)
                             logger.info("[PARSER] downloaded/decompressed replay for match %s", match_id)
                             var archiveName = match_id + ".dem.bz2"
                             uploadToS3(archiveName, body, function(err) {
@@ -187,7 +187,7 @@ function parseReplay(job, cb) {
                                 parse_status: 1
                             }
                         })
-                        job.attempts.remaining = 0;
+                        job.failed().error(err);
                     }
                     return cb(err);
                 }

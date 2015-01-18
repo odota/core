@@ -6,7 +6,6 @@ var async = require("async"),
     cheerio = require('cheerio'),
     winston = require('winston');
 var jobs = utility.jobs;
-var remote = "http://dotabuff.com"
 var trackedPlayers = {}
 var api_url = utility.api_url;
 var transports = [new(winston.transports.Console)(),
@@ -18,6 +17,8 @@ var transports = [new(winston.transports.Console)(),
 var logger = new(winston.Logger)({
     transports: transports
 });
+var remote = "http://dotabuff.com";
+var match_ids = {};
 
 async.series([
     function(cb) {
@@ -26,7 +27,8 @@ async.series([
         })
     },
     function(cb) {
-        //scrape full match history ONLY for specific players
+        //get full match history ONLY for specific players
+        //build hash of match ids to request details for
         players.find({
             full_history: 1
         }, function(err, docs) {
@@ -35,6 +37,7 @@ async.series([
                 var player_url = remote + "/players/" + account_id + "/matches"
                 getMatchPage(player_url, function(err) {
                     if (!err) {
+                        //done with player
                         players.update({
                             account_id: account_id
                         }, {
@@ -42,13 +45,50 @@ async.series([
                                 full_history: 0
                             }
                         }, function(err) {
+                            //updated full_history value
                             cb2(err)
                         })
                     }
                 })
-            }, function(err) {})
+            }, function(err) {
+                //done with all players
+                for (var key in match_ids) {
+                    var match = {};
+                    match.match_id = key
+                    requestDetails(match);
+                }
+            })
         })
         cb(null)
+        function getMatchPage(url, cb) {
+            request({
+                url: url,
+                headers: {
+                    'User-Agent': 'request'
+                }
+            }, function(err, resp, body) {
+                if (err || resp.statusCode !== 200) {
+                    return setTimeout(function() {
+                        getMatchPage(url, cb);
+                    }, 1000);
+                }
+                logger.info("[REMOTE] %s", url);
+                var parsedHTML = cheerio.load(body);
+                var matchCells = parsedHTML('td[class=cell-xlarge]');
+                matchCells.each(function(i, matchCell) {
+                    var match_url = remote + cheerio(matchCell).children().first().attr('href');
+                    var match_id = Number(match_url.split(/[/]+/).pop());
+                    match_ids[match_id] = 1;
+                });
+                var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+                if (nextPath) {
+                    getMatchPage(remote + nextPath, cb);
+                }
+                else {
+                    cb(null);
+                }
+            });
+        }
     },
     function(cb) {
         //parse unparsed matches
@@ -132,35 +172,6 @@ function requestDetails(match, cb) {
     });
 }
 
-function getMatchPage(url, cb) {
-    request(url, function(err, resp, body) {
-        if (err || resp.statusCode !== 200) {
-            console.log(body);
-            return setTimeout(function() {
-                getMatchPage(url, cb);
-            }, 1000);
-        }
-        logger.info("[REMOTE] %s", url);
-        logger.info(body);
-        var parsedHTML = cheerio.load(body);
-        var matchCells = parsedHTML('td[class=cell-xlarge]');
-        matchCells.each(function(i, matchCell) {
-            var match_url = remote + cheerio(matchCell).children().first().attr('href');
-            var match = {};
-            match.match_id = Number(match_url.split(/[/]+/).pop());
-            logger.info(match)
-            requestDetails(match, function(err) {});
-        });
-        var nextPath = parsedHTML('a[rel=next]').first().attr('href');
-        if (nextPath) {
-            getMatchPage(remote + nextPath, cb);
-        }
-        else {
-            cb(null);
-        }
-    });
-}
-
 function apiRequest(job, cb) {
     //process an api request
     var payload = job.data.payload;
@@ -208,6 +219,7 @@ function apiRequest(job, cb) {
 }
 
 function insertMatch(match, cb) {
+
         var track = match.players.some(function(element) {
                 return (element.account_id in trackedPlayers);
             })
