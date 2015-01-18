@@ -8,17 +8,13 @@ var async = require("async"),
 var jobs = utility.jobs;
 var remote = "http://dotabuff.com"
 var trackedPlayers = {}
-var transports = []
 var api_url = utility.api_url;
-if (process.env.NODE_ENV === "production") {
-    transports.push(new(winston.transports.File)({
+var transports = [new(winston.transports.Console)(),
+    new(winston.transports.File)({
         filename: 'backend.log',
         level: 'info'
-    }))
-}
-else {
-    transports.push(new(winston.transports.Console)());
-}
+    })
+]
 var logger = new(winston.Logger)({
     transports: transports
 });

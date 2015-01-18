@@ -153,21 +153,20 @@ utility.queueReq = function(type, data) {
         }
     }
     reds.createSearch(utility.jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        for (var i = 0; i < ids.length; i++) {
-            utility.kue.Job.get(ids[i], function(err, job) {
+        ids.forEach(function(id) {
+            utility.kue.Job.get(id, function(err, job) {
                 if (err) return;
                 job.remove(function(err) {
-                    if (err) throw err;
+                    if (err) return;
                     console.log('removed job #%d', job.id);
                 });
             });
-        }
+        })
         var job = {
             title: name,
             payload: data,
             url: url
         };
-        console.log(job)
         utility.jobs.create(type, job).attempts(10).backoff({
             delay: 60000,
             type: 'exponential'
