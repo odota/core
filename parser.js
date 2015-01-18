@@ -193,7 +193,10 @@ function parseReplay(job, cb) {
                             }
                         })
                         job.failed().error(err);
+                        //don't retry
+                        return cb(null)
                     }
+                    //retry
                     return cb(err);
                 }
                 utility.runParse(fileName, function(err, output) {
