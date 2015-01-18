@@ -3,7 +3,7 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "0.0.1",
   "private": true,
-  "scripts": {},
+  "scripts": {"preinstall":"mvn -f parser/pom.xml package"},
   "dependencies": {
     "async": "0.9.0",
     "aws-sdk": "~2.0.31",
