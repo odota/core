@@ -17,16 +17,12 @@ var utility = require('./utility'),
 var multer = require('multer');
 var host = process.env.ROOT_URL
 var port = Number(process.env.PORT || 3000);
-var transports = []
-if (process.env.NODE_ENV === "production") {
-    transports.push(new(winston.transports.File)({
-        filename: 'app.log',
+var transports = [new(winston.transports.Console)(),
+    new(winston.transports.File)({
+        filename: 'web.log',
         level: 'info'
-    }))
-}
-else {
-    transports.push(new(winston.transports.Console)())
-}
+    })
+]
 var logger = new(winston.Logger)({
     transports: transports
 });

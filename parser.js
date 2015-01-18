@@ -4,8 +4,9 @@ var request = require("request"),
     Bunzip = require('seek-bzip'),
     utility = require('./utility'),
     matches = utility.matches,
-    AWS = require('aws-sdk');
-var async = require('async');
+    AWS = require('aws-sdk'),
+    winston = require('winston'),
+    async = require('async');
 var kue = utility.kue;
 var jobs = utility.jobs;
 var replay_dir = "replays/"
@@ -13,8 +14,17 @@ var replay_dir = "replays/"
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir)
 }
+var transports = [new(winston.transports.Console)(),
+    new(winston.transports.File)({
+        filename: 'parser.log',
+        level: 'info'
+    })
+]
+var logger = new(winston.Logger)({
+    transports: transports
+});
 utility.clearActiveJobs('parse', function(err) {
-    jobs.process('parse', 2, function(job, done) {
+    jobs.process('parse', 3, function(job, done) {
         parseReplay(job, done)
     })
 })
@@ -27,7 +37,7 @@ function download(job, cb) {
     var match_id = job.data.payload.match_id
     var fileName = replay_dir + match_id + ".dem"
     if (fs.existsSync(fileName)) {
-        console.log("[PARSER] found local replay for match %s", match_id)
+        logger.info("[PARSER] found local replay for match %s", match_id)
         cb(null, fileName);
     }
     else {
@@ -35,13 +45,13 @@ function download(job, cb) {
             if (err) {
                 return cb(err)
             }
-            console.log("[PARSER] downloading from %s", url)
+            logger.info("[PARSER] downloading from %s", url)
             request({
                 url: url,
                 encoding: null
             }, function(err, response, body) {
                 if (err || response.statusCode !== 200) {
-                    console.log("[PARSER] failed to download from %s", url)
+                    logger.info("[PARSER] failed to download from %s", url)
                     return cb("DOWNLOAD TIMEOUT")
                 }
                 else {
@@ -51,7 +61,7 @@ function download(job, cb) {
                             if (err) {
                                 return cb(err)
                             }
-                            console.log("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                            logger.info("[PARSER] downloaded/decompressed replay for match %s", match_id)
                             var archiveName = match_id + ".dem.bz2"
                             uploadToS3(archiveName, body, function(err) {
                                 return cb(err, fileName)
@@ -79,6 +89,9 @@ function getReplayUrl(job, cb) {
             json: true,
             encoding: null
         }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return cb(err)
+            }
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
             job.data['url'] = url;
             job.update()
@@ -106,7 +119,7 @@ function getS3URL(match_id, cb) {
                 cb(null, url)
             }
             else {
-                console.log("[S3] %s not in S3", match_id)
+                logger.info("[S3] %s not in S3", match_id)
                 cb("S3 UNAVAILABLE")
             }
         })
@@ -128,22 +141,22 @@ function uploadToS3(archiveName, body, cb) {
                     params.Body = body
                     s3.putObject(params, function(err, data) {
                         if (err) {
-                            console.log('[S3] could not upload to S3')
+                            logger.info('[S3] could not upload to S3')
                         }
                         else {
-                            console.log('[S3] Successfully uploaded replay to S3: %s ', archiveName)
+                            logger.info('[S3] Successfully uploaded replay to S3: %s ', archiveName)
                         }
                         cb(err)
                     })
                 }
                 else {
-                    console.log('[S3] replay already exists in S3')
+                    logger.info('[S3] replay already exists in S3')
                     cb(err)
                 }
             })
         }
         else {
-            console.log("[S3] S3 not defined (skipping upload)")
+            logger.info("[S3] S3 not defined (skipping upload)")
             cb(null)
         }
     }
@@ -153,10 +166,10 @@ function uploadToS3(archiveName, body, cb) {
 
 function parseReplay(job, cb) {
     var match_id = job.data.payload.match_id
-    console.log("[PARSER] match %s", match_id)
+    logger.info("[PARSER] match %s", match_id)
     download(job, function(err, fileName) {
         if (err) {
-            console.log("[PARSER] Error for match %s: %s", match_id, err)
+            logger.info("[PARSER] Error for match %s: %s", match_id, err)
             if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
                 matches.update({
                     match_id: job.data.payload.match_id
@@ -165,7 +178,7 @@ function parseReplay(job, cb) {
                         parse_status: 1
                     }
                 })
-                return cb(null);
+                job.attempts.remaining = 0;
             }
             return cb(err);
         }
