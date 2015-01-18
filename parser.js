@@ -33,7 +33,7 @@ utility.clearActiveJobs('parse', function(err) {
 
 function download(job, cb) {
         var match_id = job.data.payload.match_id
-        var fileName = job.data.payload.fileName || replay_dir + match_id + ".dem"
+        var fileName = replay_dir + match_id + ".dem"
         if (fs.existsSync(fileName)) {
             console.log("[PARSER] found local replay for match %s", match_id)
             cb(null, fileName);
@@ -233,23 +233,15 @@ function parseReplay(job, cb) {
         }
         utility.runParse(fileName, function(err, output) {
             if (!err) {
-                //verify that match exists in db
-                matches.findOne({
-                    match_id: output.match_id
-                }, function(err, doc) {
-                    if (doc) {
-                        //process parser output
-                        matches.update({
-                            match_id: output.match_id
-                        }, {
-                            $set: {
-                                parsed_data: JSON.parse(output),
-                                parse_status: 2
-                            }
-                        })
+                //process parser output
+                matches.update({
+                    match_id: match_id
+                }, {
+                    $set: {
+                        parsed_data: JSON.parse(output),
+                        parse_status: 2
                     }
-                });
-
+                })
             }
             return cb(err);
         })
