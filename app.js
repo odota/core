@@ -433,7 +433,7 @@ app.use(multer({
     }
 }));
 
-
+/*
 app.get('/upload', function(req, res) {
     res.render("upload");
 });
@@ -441,7 +441,7 @@ app.get('/upload', function(req, res) {
 app.post('/upload', function(req, res) {
     res.render("upload");
 });
-
+*/
 /*Run the server.*/
 app.listen(3000, function() {
     console.log("Working on port 3000");
