@@ -1,22 +1,19 @@
 var express = require('express');
 var session = require('cookie-session');
+var multer = require('multer');
 var utility = require('./utility'),
     kue = utility.kue,
     auth = require('http-auth'),
-    ui = require('kue-ui'),
     matches = utility.matches,
     players = utility.players,
     async = require('async'),
-    fs = require('fs'),
     path = require('path'),
     winston = require('winston'),
     passport = require('passport'),
-    cache = utility.redis,
+    redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var multer = require('multer');
 var host = process.env.ROOT_URL
-var port = Number(process.env.PORT || 3000);
 var transports = [new(winston.transports.Console)(),
     new(winston.transports.File)({
         filename: 'web.log',
@@ -54,12 +51,9 @@ var playerPages = {
         name: "Matches"
     }
 }
-utility.constants.findOne({}, function(err, doc) {
-    app.locals.constants = doc
-})
-app.listen(port, function() {
-    logger.info("[WEB] listening on port %s", port)
-})
+updateConstants(function(err) {});
+
+
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
 app.locals.moment = require('moment');
@@ -100,12 +94,8 @@ var basic = auth.basic({
 }, function(username, password, callback) { // Custom authentication method.
     callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
 });
-ui.setup({
-    apiURL: '/kue' // IMPORTANT: specify the api url
-});
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
-//app.use('/kueui', ui.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
@@ -114,7 +104,7 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
 app.use(function(req, res, next) {
-    cache.get("banner", function(err, reply) {
+    redis.get("banner", function(err, reply) {
         app.locals.user = req.user
         if (err || !reply) {
             app.locals.banner_msg = false
@@ -127,7 +117,7 @@ app.use(function(req, res, next) {
     })
 })
 app.param('match_id', function(req, res, next, id) {
-    cache.get(id, function(err, reply) {
+    redis.get(id, function(err, reply) {
         if (err || !reply) {
             logger.info("Cache miss for match " + id)
             matches.findOne({
@@ -141,7 +131,7 @@ app.param('match_id', function(req, res, next, id) {
                         req.match = match
                             //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
-                            cache.setex(id, 86400, JSON.stringify(match))
+                            redis.setex(id, 86400, JSON.stringify(match))
                         }
                         return next()
                     })
@@ -438,10 +428,12 @@ app.post('/upload', function(req, res) {
     res.render("upload");
 });
 */
-/*Run the server.*/
-app.listen(3000, function() {
-    console.log("Working on port 3000");
-});
+var server = app.listen(process.env.PORT || 3000, function() {
+    var host = server.address().address
+    var port = server.address().port
+    console.log('[WEB] listening at http://%s:%s', host, port)
+})
+
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
         return res.status(500).render('500.jade', {
@@ -459,3 +451,92 @@ app.use(function(req, res) {
         });
     }
 });
+
+function updateConstants(cb) {
+    var constants = require('./constants.json')
+    async.map(Object.keys(constants), function(key, cb) {
+        var val = constants[key]
+        if (typeof(val) == "string" && val.slice(0, 4) == "http") {
+            //insert API key if necessary
+            val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
+            utility.getData(val, function(err, result) {
+                constants[key] = result
+                cb(null)
+            })
+        }
+        else {
+            cb(null)
+        }
+    }, function(err) {
+        if (err) {
+            //use backup
+            utility.constants.findOne({}, function(err, doc) {
+                logger.info("[CONSTANTS] using backup constants")
+                app.locals.constants = doc
+                cb(err);
+            })
+        }
+        else {
+            var heroes = constants.heroes.result.heroes
+            heroes.forEach(function(hero) {
+                hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
+            })
+            constants.heroes = buildLookup(heroes)
+            constants.hero_names = {}
+            for (var i = 0; i < heroes.length; i++) {
+                constants.hero_names[heroes[i].name] = heroes[i]
+            }
+            var items = constants.items.itemdata
+            constants.item_ids = {}
+            for (var key in items) {
+                constants.item_ids[items[key].id] = key
+                items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
+            }
+            constants.items = items
+            var lookup = {}
+            var ability_ids = constants.ability_ids.abilities
+            for (var i = 0; i < ability_ids.length; i++) {
+                lookup[ability_ids[i].id] = ability_ids[i].name
+            }
+            constants.ability_ids = lookup
+            constants.ability_ids["5601"] = "techies_suicide"
+            constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
+            constants.ability_ids["5060"] = "nevermore_shadowraze1"
+            constants.ability_ids["5061"] = "nevermore_shadowraze1"
+            var abilities = constants.abilities.abilitydata
+            for (var key in abilities) {
+                abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
+            }
+            abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
+            abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
+            abilities["stats"] = {
+                dname: "Stats",
+                img: '../../public/images/Stats.png',
+                attrib: "+2 All Attributes"
+            }
+            constants.abilities = abilities
+            lookup = {};
+            var regions = constants.regions.regions
+            for (var i = 0; i < regions.length; i++) {
+                lookup[regions[i].id] = regions[i].name
+            }
+            constants.regions = lookup
+            constants.regions["251"] = "Peru"
+            utility.constants.update({}, constants, {
+                upsert: true
+            }, function(err) {
+                logger.info("[CONSTANTS] updated constants")
+                app.locals.constants = constants
+                cb(err)
+            })
+        }
+    })
+}
+
+function buildLookup(array) {
+    var lookup = {}
+    for (var i = 0; i < array.length; i++) {
+        lookup[array[i].id] = array[i]
+    }
+    return lookup;
+}

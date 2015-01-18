@@ -88,18 +88,11 @@ function getReplayUrl(job, cb) {
         var date = new Date();
         var hours = date.getHours();
         var retriever = hours % retrievers.length
-        request({
-            url:  retrievers[retriever] + "?match_id=" + job.data.payload.match_id,
-            json: true,
-            encoding: null
-        }, function(err, resp, body) {
-            if (err || resp.statusCode !== 200) {
-                return cb(err)
-            }
+        utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(body) {
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
             job.data['url'] = url;
-            job.update()
-            return cb(err, url);
+            job.update();
+            return cb(url);
         })
     }
     else {
@@ -171,34 +164,44 @@ function uploadToS3(archiveName, body, cb) {
 function parseReplay(job, cb) {
     var match_id = job.data.payload.match_id
     logger.info("[PARSER] match %s", match_id)
-    download(job, function(err, fileName) {
-        if (err) {
-            logger.info("[PARSER] Error for match %s: %s", match_id, err)
-            if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
-                matches.update({
-                    match_id: job.data.payload.match_id
-                }, {
-                    $set: {
-                        parse_status: 1
-                    }
-                })
-                job.attempts.remaining = 0;
-            }
-            return cb(err);
+    matches.findOne({
+        match_id: match_id
+    }, function(err, doc) {
+        if (doc.parsed_data) {
+            cb(null);
         }
-        utility.runParse(fileName, function(err, output) {
-            if (!err) {
-                //process parser output
-                matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parsed_data: JSON.parse(output),
-                        parse_status: 2
+        else {
+            download(job, function(err, fileName) {
+                if (err) {
+                    logger.info("[PARSER] Error for match %s: %s", match_id, err)
+                    if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
+                        matches.update({
+                            match_id: job.data.payload.match_id
+                        }, {
+                            $set: {
+                                parse_status: 1
+                            }
+                        })
+                        job.attempts.remaining = 0;
                     }
+                    return cb(err);
+                }
+                utility.runParse(fileName, function(err, output) {
+                    if (!err) {
+                        //process parser output
+                        matches.update({
+                            match_id: match_id
+                        }, {
+                            $set: {
+                                parsed_data: JSON.parse(output),
+                                parse_status: 2
+                            }
+                        })
+                    }
+                    return cb(err);
                 })
-            }
-            return cb(err);
-        })
+            })
+        }
     })
+
 }

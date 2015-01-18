@@ -19,7 +19,6 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
-updateConstants(function(err) {});
 async.series([
     function(cb) {
         utility.clearActiveJobs('api', function(err) {
@@ -63,7 +62,7 @@ async.series([
     function(cb) {
         if (process.env.START_SEQ_NUM) {
             if (process.env.START_SEQ_NUM === "AUTO") {
-                getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+                utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
                     getMatches(data.result.matches[0].match_seq_num)
                     return cb(null)
                 })
@@ -91,84 +90,6 @@ async.series([
     })
 })
 
-function updateConstants(cb) {
-    var constants = require('./constants.json')
-    async.map(Object.keys(constants), function(key, cb) {
-        var val = constants[key]
-        if (typeof(val) == "string" && val.slice(0, 4) == "http") {
-            //insert API key if necessary
-            val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
-            getData(val, function(err, result) {
-                constants[key] = result
-                cb(null)
-            })
-        }
-        else {
-            cb(null)
-        }
-    }, function(err) {
-        var heroes = constants.heroes.result.heroes
-        heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
-        })
-        constants.heroes = buildLookup(heroes)
-        constants.hero_names = {}
-        for (var i = 0; i < heroes.length; i++) {
-            constants.hero_names[heroes[i].name] = heroes[i]
-        }
-        var items = constants.items.itemdata
-        constants.item_ids = {}
-        for (var key in items) {
-            constants.item_ids[items[key].id] = key
-            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
-        }
-        constants.items = items
-        var lookup = {}
-        var ability_ids = constants.ability_ids.abilities
-        for (var i = 0; i < ability_ids.length; i++) {
-            lookup[ability_ids[i].id] = ability_ids[i].name
-        }
-        constants.ability_ids = lookup
-        constants.ability_ids["5601"] = "techies_suicide"
-        constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
-        constants.ability_ids["5060"] = "nevermore_shadowraze1"
-        constants.ability_ids["5061"] = "nevermore_shadowraze1"
-        var abilities = constants.abilities.abilitydata
-        for (var key in abilities) {
-            abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
-        }
-        abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
-        abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
-        abilities["stats"] = {
-            dname: "Stats",
-            img: '../../public/images/Stats.png',
-            attrib: "+2 All Attributes"
-        }
-        constants.abilities = abilities
-        lookup = {};
-        var regions = constants.regions.regions
-        for (var i = 0; i < regions.length; i++) {
-            lookup[regions[i].id] = regions[i].name
-        }
-        constants.regions = lookup
-        constants.regions["251"] = "Peru"
-        utility.constants.update({}, constants, {
-            upsert: true
-        }, function(err) {
-            logger.info("[CONSTANTS] updated constants")
-            cb(null)
-        })
-    })
-}
-
-function buildLookup(array) {
-    var lookup = {}
-    for (var i = 0; i < array.length; i++) {
-        lookup[array[i].id] = array[i]
-    }
-    return lookup
-}
-
 function getMatches(seq_num) {
     setTimeout(function() {
         players.find({
@@ -180,7 +101,7 @@ function getMatches(seq_num) {
                 trackedPlayers[player.account_id] = true
             })
             var url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
-            getData(url, function(err, data) {
+            utility.getData(url, function(err, data) {
                 if (data.result.error || data.result.status == 2) {
                     logger.info(data)
                     return getMatches(seq_num)
@@ -239,7 +160,7 @@ function apiRequest(job, cb) {
         logger.info(job);
         cb("no url")
     }
-    getData(job.data.url, function(err, data) {
+    utility.getData(job.data.url, function(err, data) {
         if (data.response) {
             //summaries response
             async.map(data.response.players, insertPlayer, function(err) {
@@ -331,20 +252,5 @@ function insertPlayer(player, cb) {
         upsert: true
     }, function(err) {
         cb(err);
-    });
-}
-
-function getData(url, cb) {
-    request(url, function(err, res, body) {
-        //logger.info("[API] %s", url)
-        if (err || res.statusCode != 200 || !body) {
-            logger.info("[API] error getting data, retrying");
-            setTimeout(function() {
-                getData(url, cb);
-            }, 1000);
-        }
-        else {
-            cb(null, JSON.parse(body));
-        }
     });
 }

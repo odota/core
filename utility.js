@@ -3,7 +3,18 @@ var utility = exports,
     async = require('async'),
     spawn = require('child_process').spawn,
     reds = require('reds'),
-    BigNumber = require('big-number').n;
+    BigNumber = require('big-number').n,
+    request = require('request'),
+    winston = require('winston');
+var transports = [new(winston.transports.Console)(),
+    new(winston.transports.File)({
+        filename: 'utility.log',
+        level: 'info'
+    })
+]
+var logger = new(winston.Logger)({
+    transports: transports
+});
 utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
@@ -29,7 +40,7 @@ utility.clearActiveJobs = function(type, cb) {
         async.mapSeries(docs,
             function(job, cb) {
                 job.state('inactive', function(err) {
-                    console.log('[KUE] Unstuck %s ', job.data.title);
+                    logger.info('[KUE] Unstuck %s ', job.data.title);
                     cb(err)
                 })
             },
@@ -153,15 +164,10 @@ utility.queueReq = function(type, data) {
         }
     }
     reds.createSearch(utility.jobs.client.getKey('search')).query(name).end(function(err, ids) {
-        ids.forEach(function(id) {
-            utility.kue.Job.get(id, function(err, job) {
-                if (err) return;
-                job.remove(function(err) {
-                    if (err) return;
-                    console.log('removed job #%d', job.id);
-                });
-            });
-        })
+        if (ids.length > 0) {
+            logger.info("found duplicate job ids %s", ids);
+            return;
+        }
         var job = {
             title: name,
             payload: data,
@@ -176,7 +182,7 @@ utility.queueReq = function(type, data) {
 
 utility.runParse = function runParse(fileName, cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
-    console.log("[PARSER] running parse on %s", fileName)
+    logger.info("[PARSER] running parse on %s", fileName);
 
     var output = ""
     var cp = spawn("java", ["-jar",
@@ -189,13 +195,28 @@ utility.runParse = function runParse(fileName, cb) {
         output += data
     })
     cp.stderr.on('data', function(data) {
-        console.log('[PARSER] stderr: %s', data);
+        logger.info('[PARSER] stderr: %s', data);
     })
     cp.on('exit', function(code) {
-        console.log('[PARSER] exit code: %s', code);
-        cb(code, output);
-        if (process.env.DELETE_REPLAYS && !code) {
+        logger.info('[PARSER] exit code: %s', code);
+        if (process.env.DELETE_REPLAYS) {
             fs.unlink(fileName)
         }
+        cb(code, output);
     })
+}
+
+utility.getData = function getData(url, cb) {
+    request(url, function(err, res, body) {
+        //logger.info("%s", url)
+        if (err || res.statusCode !== 200 || !body) {
+            logger.info("error getting data, retrying");
+            setTimeout(function() {
+                getData(url, cb);
+            }, 1000);
+        }
+        else {
+            cb(null, JSON.parse(body));
+        }
+    });
 }
