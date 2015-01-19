@@ -12,7 +12,7 @@ var async = require("async"),
         })
     ],
     logger = new(winston.Logger)({transports: transports})
-    untrack_interval = process.env.UNTRACK_INTERVAL;
+    untrack_interval = process.env.UNTRACK_INTERVAL || 3;
 
 async.series([
     function(cb) {
@@ -203,3 +203,6 @@ function untrackPlayers() {
         track : 0;
     })
 }
+
+untrackPlayers();
+setInterval(untrackPlayers(), 60*60*1000);
