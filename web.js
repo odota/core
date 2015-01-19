@@ -499,6 +499,11 @@ function updateConstants(cb) {
         constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
         constants.ability_ids["5060"] = "nevermore_shadowraze1"
         constants.ability_ids["5061"] = "nevermore_shadowraze1"
+        constants.ability_ids["5580"] = "beastmaster_call_of_the_wild"
+        constants.ability_ids["5637"] = "oracle_fortunes_end"
+        constants.ability_ids["5638"] = "oracle_fates_edict"
+        constants.ability_ids["5639"] = "oracle_purifying_flames"
+        constants.ability_ids["5640"] = "oracle_false_promise"
         var abilities = constants.abilities.abilitydata
         for (var key in abilities) {
             abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
