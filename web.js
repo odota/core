@@ -1,17 +1,19 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
 var utility = require('./utility'),
     auth = require('http-auth'),
-    matches = utility.matches,
-    players = utility.players,
-    kue = utility.kue,
-    jobs = utility.jobs,
     async = require('async'),
     path = require('path'),
     winston = require('winston'),
     passport = require('passport'),
     moment = require('moment'),
+    matches = utility.matches,
+    players = utility.players,
+    kue = utility.kue,
+    jobs = utility.jobs,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
@@ -347,7 +349,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         if (utility.isRadiant(tm) === playerRadiant) { //teammates of player
                             if (!counts[tm.account_id]) {
                                 counts[tm.account_id] = {
-                                    account_id: p.account_id,
+                                    account_id: tm.account_id,
                                     win: 0,
                                     lose: 0,
                                     games: 0
@@ -406,59 +408,73 @@ app.use(multer({
     }
 }));
 
-app.get('/upload', function(req, res) {
-    res.render("upload");
-});
-
-app.post('/upload', function(req, res) {
-    var files = req.files.replay;
-    console.log(files.fieldname + ' uploaded to  ' + files.path);
-    //todo create a third type of kue job
-    utility.runParse(files.path, function(code, output) {
-        if (!code) {
-            //put job on api queue to ensure we have it in db
-            var payload = {
-                uploader: req.user,
-                match_id: output.match_id,
-                parsed_data: output
-            };
-            utility.queueReq("api", payload);
-        }
-        else {
-            logger.info(code);
-        }
+app.route('/upload')
+    .get(function(req, res) {
+        res.render("upload");
+    })
+    .post(function(req, res) {
+        var files = req.files.replay;
+        console.log(files.fieldname + ' uploaded to  ' + files.path);
+        //todo create a third type of kue job
+        utility.runParse(files.path, function(code, output) {
+            if (!code) {
+                //put job on api queue to ensure we have it in db
+                var payload = {
+                    uploader: req.user,
+                    match_id: output.match_id,
+                    parsed_data: output
+                };
+                utility.queueReq("api", payload);
+            }
+            else {
+                logger.info(code);
+            }
+        });
+        res.render("upload", {
+            files: files
+        });
     });
-    res.render("upload", {
-        files: files
-    });
-});
 
-app.get('/stats', function(req, res) {
-    utility.matches.count({}, function(err, count) {
-        utility.players.count({}, function(err, count2) {
-            utility.players.count({
-                track: 1
-            }, function(err, count3) {
+app.get('/stats', function(req, res, next) {
+    async.parallel({
+            matches: function(cb) {
+                utility.matches.count({}, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            players: function(cb) {
+                utility.players.count({}, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            tracked_players: function(cb) {
+                utility.players.count({
+                    track: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            matches_last_day: function(cb) {
                 utility.matches.count({
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, count4) {
-                    jobs.inactiveCount(function(err, inactive) {
-                        jobs.delayedCount(function(err, delayed) {
-                            res.json({
-                                matches: count,
-                                players: count2,
-                                tracked_players: count3,
-                                matches_last_day: count4,
-                                queued_jobs: inactive + delayed
-                            });
-                        });
-                    });
+                }, function(err, res) {
+                    cb(err, res);
                 });
-            });
+            },
+            queued_jobs: function(cb) {
+                jobs.inactiveCount(function(err, res) {
+                    cb(err, res);
+                });
+            }
+        },
+        function(err, results) {
+            if (err) {
+                return next(err);
+            }
+            res.json(results);
         });
-    });
 });
 
 app.use(function(err, req, res, next) {
@@ -480,6 +496,10 @@ app.use(function(req, res) {
         });
     }
 });
+
+// In order to reach the app from other modules
+// we need to export the express application
+module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {
     var host = server.address().address;
