@@ -3,7 +3,10 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "0.0.1",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "start": "nf start",
+    "test": "grunt --verbose"
+  },
   "dependencies": {
     "async": "0.9.0",
     "aws-sdk": "~2.0.31",
@@ -26,6 +29,14 @@
     "request": "~2.40.0",
     "seek-bzip": "~1.0.3",
     "winston": "0.7.3",
-    "multer": "~0.1.7"
+    "multer": "~0.1.7",
+    "foreman": "~1.2.1",
+    "dotenv": "~0.4.0"
+  },
+  "devDependencies": {
+    "grunt-cli": "~0.1.13",
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-shell": "~1.1.1"
   }
 }
