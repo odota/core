@@ -95,7 +95,7 @@ function getReplayUrl(job, cb) {
         logger.info(retriever);
         utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(err, body) {
             if (body && body.match) {
-                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + body.match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
                 job.update();
                 return cb(null, url);
