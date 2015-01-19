@@ -54,7 +54,7 @@ function download(job, cb) {
             }, function(err, response, body) {
                 if (err || response.statusCode !== 200) {
                     logger.info("[PARSER] failed to download from %s", url)
-                    return cb("DOWNLOAD TIMEOUT")
+                    return cb("DOWNLOAD ERROR")
                 }
                 else {
                     var t2 = new Date().getTime();
