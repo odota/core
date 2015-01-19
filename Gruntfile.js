@@ -7,11 +7,21 @@ module.exports = function(grunt) {
       target: {
         command: 'mvn -f parser/pom.xml package'
       }
+    },
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec',
+        },
+        src: ['test/test.js']
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-mocha-test');
+
   grunt.registerTask('constants', function() {
     var done = this.async();
     updateConstants(done);
@@ -24,7 +34,7 @@ module.exports = function(grunt) {
     var done = this.async();
     unparsed(done);
   });
-  grunt.registerTask('default', ['jshint', 'shell', 'constants']);
+  grunt.registerTask('default', ['shell', 'constants', 'mochaTest']);
 
   var dotenv = require('dotenv');
   dotenv.load();
