@@ -195,14 +195,20 @@ function insertPlayer(player, cb) {
 }
 
 function untrackPlayers() {
+    logger.info("[UNTRACK] Untracking users...");
     players.update({
         last_visited: {
             $lte: Date.now() - 86400 * untrack_interval
         }
     }, {
-        track : 0;
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    },  function(err, num){
+        logger.info("[UNTRACK] Untracked " + num + " users.")
     })
 }
 
-untrackPlayers();
 setInterval(untrackPlayers(), 60*60*1000);
