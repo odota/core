@@ -416,8 +416,8 @@ app.post('/upload', function(req, res) {
     var files = req.files.replay
     console.log(files.fieldname + ' uploaded to  ' + files.path);
     //todo create a third type of kue job
-    utility.runParse(files.path, function(err, output) {
-        if (!err) {
+    utility.runParse(files.path, function(code, output) {
+        if (!code) {
             output = JSON.parse(output);
             //put job on api queue to ensure we have it in db
             var payload = {
@@ -426,6 +426,9 @@ app.post('/upload', function(req, res) {
                 parsed_data: output
             }
             utility.queueReq("api", payload);
+        }
+        else{
+            logger.info(code)
         }
     })
     res.render("upload", {
