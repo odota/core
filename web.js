@@ -84,16 +84,19 @@ passport.use(new SteamStrategy({
     insert.account_id = steam32;
     insert.track = 1;
     insert.last_visited = Date.now(); // $currentDate only exists in Mongo >= 2.6
-    players.update({
+    players.findAndModify({
         account_id: steam32
     }, {
         $set: insert
     }, {
-        upsert: true
-    }, function(err, num) {
+        upsert: true,
+        new: false
+    }, function(err, user) {
         if (err) return done(err, null);
+        console.log(user)
         return done(null, {
-            account_id: steam32
+            account_id: steam32,
+            untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
         });
     });
 }));
@@ -395,6 +398,7 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
     if (req.user) {
+        app.locals.untracked = req.user.untracked;
         res.redirect('/players/' + req.user.account_id);
     }
     else {
