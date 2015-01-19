@@ -52,12 +52,6 @@ var playerPages = {
     }
 }
 updateConstants(function(err) {});
-setTimeout(function() {
-    utility.constants.findOne({}, function(err, doc) {
-        logger.info("[CONSTANTS] loading constants")
-        app.locals.constants = doc
-    })
-}, 5000);
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
