@@ -177,7 +177,7 @@ utility.runParse = function runParse(fileName, cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
     logger.info("[PARSER] running parse on %s", fileName);
 
-    var output = ""
+    var output = "";
     var cp = spawn("java", ["-jar",
         "-Xms128m",
         "-Xmx128m",
