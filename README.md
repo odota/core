@@ -1,5 +1,6 @@
 YASP - YASP: Another Stats Page
 ====
+[![Build Status](https://travis-ci.org/yasp-dota/YASP.svg)](https://travis-ci.org/yasp-dota/YASP)  
 
 * Live version at http://yasp.co
 * Provides awesome replay-parsed stats for free!  
