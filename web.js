@@ -61,11 +61,14 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    players.update({
-        account_id: id
-    }, {
-        $set: {
-            last_visited: Date.now()
+    players.findAndModify({
+        query: {
+            account_id: id
+        },
+        update: {
+            $set: {
+                last_visited: Date.now()
+            }
         }
     }, function(err, user) {
         done(err, user);
@@ -80,7 +83,7 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.track = 1;
-    insert.last_visited = Date.now() // $currentDate only exists in Mongo >= 2.6
+    insert.last_visited = Date.now(); // $currentDate only exists in Mongo >= 2.6
     players.update({
         account_id: steam32
     }, {
@@ -417,7 +420,7 @@ app.get('/upload', function(req, res) {
 
 app.post('/upload', function(req, res) {
     var files = req.files.replay;
-    console.log(files.fieldname + ' uploaded to  ' + files.path);
+    logger.info(files.fieldname + ' uploaded to  ' + files.path);
     //todo create a third type of kue job
     utility.runParse(files.path, function(code, output) {
         if (!code) {
