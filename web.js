@@ -2,14 +2,16 @@ var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
 var utility = require('./utility'),
-    kue = utility.kue,
     auth = require('http-auth'),
     matches = utility.matches,
     players = utility.players,
+    kue = utility.kue,
+    jobs = utility.jobs,
     async = require('async'),
     path = require('path'),
     winston = require('winston'),
     passport = require('passport'),
+    moment = require('moment'),
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
@@ -52,12 +54,6 @@ var playerPages = {
     }
 }
 updateConstants(function(err) {});
-setTimeout(function() {
-    utility.constants.findOne({}, function(err, doc) {
-        logger.info("[CONSTANTS] loading constants")
-        app.locals.constants = doc
-    })
-}, 5000);
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade');
@@ -133,10 +129,10 @@ app.param('match_id', function(req, res, next, id) {
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
-                        req.match = match
-                            //Add to cache if we have parsed data
+                        req.match = match;
+                        //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
-                            redis.setex(id, 86400, JSON.stringify(match))
+                            redis.setex(id, 86400, JSON.stringify(match));
                         }
                         return next()
                     })
@@ -437,14 +433,43 @@ app.post('/upload', function(req, res) {
     });
 });
 
+app.get('/stats', function(req, res) {
+    utility.matches.count({}, function(err, count) {
+        utility.players.count({}, function(err, count2) {
+            utility.players.count({
+                track: 1
+            }, function(err, count3) {
+                utility.matches.count({
+                    start_time: {
+                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                    }
+                }, function(err, count4) {
+                    jobs.inactiveCount(function(err, inactive) {
+                        jobs.delayedCount(function(err, delayed) {
+                            res.json({
+                                matches: count,
+                                players: count2,
+                                tracked_players: count3,
+                                matches_last_day: count4,
+                                queued_jobs: inactive+delayed
+                            });
+                        })
+                    })
+                })
+            })
+        })
+    })
+});
+
 var server = app.listen(process.env.PORT || 3000, function() {
     var host = server.address().address
     var port = server.address().port
-    console.log('[WEB] listening at http://%s:%s', host, port)
+    logger.info('[WEB] listening at http://%s:%s', host, port)
 })
 
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
+        logger.info(err);
         return res.status(500).render('500.jade', {
             error: true
         });
@@ -453,6 +478,7 @@ app.use(function(err, req, res, next) {
         return next(err);
     }
 })
+
 app.use(function(req, res) {
     if (process.env.NODE_ENV === "production") {
         return res.status(404).render('404.jade', {
@@ -463,19 +489,13 @@ app.use(function(req, res) {
 
 function updateConstants(cb) {
     var constants = require('./constants.json')
-    async.map(Object.keys(constants), function(key, cb) {
-        var val = constants[key]
-        if (typeof(val) == "string" && val.slice(0, 4) == "http") {
-            //insert API key if necessary
-            val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
-            utility.getData(val, function(err, result) {
-                constants[key] = result
-                cb(null)
-            })
-        }
-        else {
-            cb(null)
-        }
+    async.map(Object.keys(constants.sources), function(key, cb) {
+        var val = constants.sources[key]
+        val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
+        utility.getData(val, function(err, result) {
+            constants[key] = result;
+            cb(null);
+        })
     }, function(err) {
         var heroes = constants.heroes.result.heroes
         heroes.forEach(function(hero) {
