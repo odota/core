@@ -90,10 +90,11 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var t = new Date().getMinutes();
+        var t = new Date().getTime();
         var retriever = t % retrievers.length;
-        logger.info(retriever);
-        utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(body) {
+        var target = retrievers[retriever] + "?match_id=" + job.data.payload.match_id;
+        logger.info(target);
+        utility.getData(target, function(body) {
             if (body && body.match) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + body.match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
@@ -101,7 +102,8 @@ function getReplayUrl(job, cb) {
                 return cb(url);
             }
             else {
-                return cb(true)
+                logger.info(body);
+                return cb("response error");
             }
         })
     }
@@ -173,7 +175,6 @@ function uploadToS3(archiveName, body, cb) {
 
 function parseReplay(job, cb) {
     var match_id = job.data.payload.match_id
-    logger.info("[PARSER] match %s", match_id)
     matches.findOne({
         match_id: match_id
     }, function(err, doc) {

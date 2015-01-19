@@ -60,6 +60,7 @@ async.series([
             })
         })
         cb(null)
+
         function getMatchPage(url, cb) {
             request({
                 url: url,
@@ -177,7 +178,7 @@ function apiRequest(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb("no url")
+        cb("no url");
     }
     utility.getData(job.data.url, function(err, data) {
         if (data.response) {
@@ -186,10 +187,12 @@ function apiRequest(job, cb) {
                 cb(err);
             });
         }
-        else if (data.result.status === 15) {
-            //user does not have stats enabled, return no error (don't retry)
-            logger.info(data)
-            return cb(null)
+        else if (data.result.status === 15 || data.result.error === "Practice matches are not available via GetMatchDetails") {
+            //user does not have stats enabled
+            //or attempting to get private match
+            //don't retry
+            logger.info(data);
+            return cb(null);
         }
         else if (data.result.error || data.result.status === 2) {
             //error response from dota api
@@ -219,50 +222,48 @@ function apiRequest(job, cb) {
 }
 
 function insertMatch(match, cb) {
-
-        var track = match.players.some(function(element) {
-                return (element.account_id in trackedPlayers);
-            })
-            //queued or untracked
-        match.parse_status = (track ? 0 : 3)
-        if (track) {
-            var summaries = {
-                summaries_id: new Date()
-            }
-            var steamids = []
-            match.players.forEach(function(player) {
-                steamids.push(utility.convert32to64(player.account_id).toString())
-            })
-            summaries.query = steamids.join();
-            //queue for player names
-            utility.queueReq("api", summaries);
-            //parse if unparsed
-            if (!match.parsed_data) {
-                utility.queueReq("parse", match);
-            }
-            else {
-                match.parse_status = 2;
-            }
-            matches.update({
-                    match_id: match.match_id
-                }, {
-                    $set: match
-                }, {
-                    upsert: true
-                },
-                function(err) {
-                    cb(err);
-                });
+    var track = match.players.some(function(element) {
+        return (element.account_id in trackedPlayers);
+    });
+    //queued or untracked
+    match.parse_status = (track ? 0 : 3);
+    if (track) {
+        var summaries = {
+            summaries_id: new Date()
+        }
+        var steamids = []
+        match.players.forEach(function(player) {
+            steamids.push(utility.convert32to64(player.account_id).toString())
+        })
+        summaries.query = steamids.join();
+        //queue for player names
+        utility.queueReq("api", summaries);
+        //parse if unparsed
+        if (match.parsed_data) {
+            match.parse_status = 2;
         }
         else {
-            cb(null)
+            utility.queueReq("parse", match);
         }
+        matches.update({
+                match_id: match.match_id
+            }, {
+                $set: match
+            }, {
+                upsert: true
+            },
+            function(err) {
+                cb(err);
+            });
     }
-    /*
-     * Inserts/updates a player in the database
-     */
+    else {
+        cb(null)
+    }
+}
 
 function insertPlayer(player, cb) {
+    //Inserts/updates a player in the database
+
     var account_id = Number(utility.convert64to32(player.steamid));
     players.update({
         account_id: account_id

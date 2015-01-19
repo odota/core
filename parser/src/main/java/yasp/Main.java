@@ -376,7 +376,7 @@ public class Main {
     
     private static void finish(long tStart, JSONObject doc){
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("%s sec%n", tMatch / 1000.0);
+        System.err.format("%ss\n", tMatch / 1000.0);
         System.out.println(doc);
         System.exit(0);
     }
