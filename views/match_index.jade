@@ -29,7 +29,7 @@ append content
                if (player.account_id == constants.anonymous_account_id)
                  ="Anonymous"
                else
-                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id || "Bot"
              - var hero = constants.heroes[player.hero_id]
              td.hero
                if hero
