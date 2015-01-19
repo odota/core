@@ -408,34 +408,34 @@ app.use(multer({
     }
 }));
 
-app.get('/upload', function(req, res) {
-    res.render("upload");
-});
-
-app.post('/upload', function(req, res) {
-    var files = req.files.replay;
-    console.log(files.fieldname + ' uploaded to  ' + files.path);
-    //todo create a third type of kue job
-    utility.runParse(files.path, function(code, output) {
-        if (!code) {
-            //put job on api queue to ensure we have it in db
-            var payload = {
-                uploader: req.user,
-                match_id: output.match_id,
-                parsed_data: output
-            };
-            utility.queueReq("api", payload);
-        }
-        else {
-            logger.info(code);
-        }
+app.route('/upload')
+    .get(function(req, res) {
+        res.render("upload");
+    })
+    .post(function(req, res) {
+        var files = req.files.replay;
+        console.log(files.fieldname + ' uploaded to  ' + files.path);
+        //todo create a third type of kue job
+        utility.runParse(files.path, function(code, output) {
+            if (!code) {
+                //put job on api queue to ensure we have it in db
+                var payload = {
+                    uploader: req.user,
+                    match_id: output.match_id,
+                    parsed_data: output
+                };
+                utility.queueReq("api", payload);
+            }
+            else {
+                logger.info(code);
+            }
+        });
+        res.render("upload", {
+            files: files
+        });
     });
-    res.render("upload", {
-        files: files
-    });
-});
 
-app.get('/stats', function(req, res) {
+app.get('/stats', function(req, res, next) {
     async.parallel({
             matches: function(cb) {
                 utility.matches.count({}, function(err, res) {
