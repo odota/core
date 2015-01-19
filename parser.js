@@ -25,7 +25,7 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 utility.clearActiveJobs('parse', function(err) {
-    jobs.process('parse', 3, function(job, done) {
+    jobs.process('parse', 1, function(job, done) {
         parseReplay(job, done)
     })
 })
@@ -94,7 +94,7 @@ function getReplayUrl(job, cb) {
         var retriever = t % retrievers.length;
         var target = retrievers[retriever] + "?match_id=" + job.data.payload.match_id;
         logger.info(target);
-        utility.getData(target, function(body) {
+        utility.getData(target, function(err, body) {
             if (body && body.match) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + body.match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
