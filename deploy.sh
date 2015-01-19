@@ -6,10 +6,12 @@ if (( EUID != 0 )); then
    exit 100
 fi
 
+git pull origin mastser
+
 npm install
 
 mvn -f parser/pom.xml package
 
 nf export -o /etc/init/
 
-start foreman
+restart foreman

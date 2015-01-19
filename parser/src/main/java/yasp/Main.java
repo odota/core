@@ -1,4 +1,4 @@
-package albert.stats;
+package yasp;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.Clarity;
 import skadistats.clarity.match.Match;
@@ -13,14 +13,8 @@ import com.dota2.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import com.dota2.proto.Demo.CDemoFileInfo;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import org.json.JSONTokener;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.FileReader;
 import java.util.Iterator;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.lang.reflect.Method;
+//import java.util.*;
 
 public class Main {
     public static final float INTERVAL = 60;
@@ -30,19 +24,23 @@ public class Main {
         long tStart = System.currentTimeMillis();
         boolean initialized = false;
         GameEventDescriptor combatLogDescriptor = null;
+        CombatLogContext ctx = null;
         JSONObject doc = new JSONObject();
         JSONArray log = new JSONArray();
         JSONObject hero_to_slot = new JSONObject();
         Match match = new Match();
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
         float nextInterval = 0;
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
         int numPlayers = 10;
         
+        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
         CDemoFileInfo info = Clarity.infoForFile(args[0]);
         doc.put("match_id", info.getGameInfo().getDota().getMatchId());
-
+        if (args.length>1 && args[1].equals("-epilogue")){
+            finish(tStart, doc);
+        }
+        
         while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
@@ -71,7 +69,10 @@ public class Main {
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
-                CombatLogEntry.init(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
+                                ctx = new CombatLogContext(
+	                match.getStringTables().forName("CombatLogNames"), 
+	                combatLogDescriptor
+                );
                 initialized = true;
             }
 
@@ -179,7 +180,7 @@ public class Main {
             }
             for (GameEvent g : match.getGameEvents()) {
                 if (g.getEventId() == combatLogDescriptor.getEventId()) {
-                    CombatLogEntry cle = new CombatLogEntry(g);
+                    CombatLogEntry cle = new CombatLogEntry(ctx, g);
                     String unit;
                     String key;
                     int val;
@@ -187,8 +188,8 @@ public class Main {
                     switch(cle.getType()) {
                         case 0:
                         //damage
-                        unit = cle.getAttackerName();
-                        key = cle.getTargetName();
+                        unit = cle.getAttackerNameCompiled();
+                        key = cle.getTargetNameCompiled();
                         val = cle.getValue();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
@@ -209,8 +210,8 @@ public class Main {
                         break;
                         case 1:
                         //healing
-                        unit = cle.getAttackerName();
-                        key = cle.getTargetName();
+                        unit = cle.getAttackerNameCompiled();
+                        key = cle.getTargetNameCompiled();
                         val = cle.getValue();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
@@ -221,9 +222,9 @@ public class Main {
                         break;
                         case 2:
                         //gain buff/debuff
-                        unit = cle.getAttackerName(); //source of buff
+                        unit = cle.getAttackerNameCompiled(); //source of buff
                         key = cle.getInflictorName(); //the buff
-                        String unit2 = cle.getTargetName(); //target of buff
+                        String unit2 = cle.getTargetNameCompiled(); //target of buff
                         entry.put("unit", unit);
                         entry.put("unit2", unit2);
                         entry.put("time", time);
@@ -233,12 +234,12 @@ public class Main {
                         break;
                         case 3:
                         //lose buff/debuff
-                           // log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiled(), cle.getInflictorName() );
+                           // log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
                         break;
                         case 4:
                         //kill
-                        unit = cle.getAttackerName();
-                        key = cle.getTargetName();
+                        unit = cle.getAttackerNameCompiled();
+                        key = cle.getTargetNameCompiled();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
                         entry.put("key", key);
@@ -247,7 +248,7 @@ public class Main {
                         break;
                         case 5:
                         //ability use
-                        unit = cle.getAttackerName();
+                        unit = cle.getAttackerNameCompiled();
                         key = cle.getInflictorName();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
@@ -257,7 +258,7 @@ public class Main {
                         break;
                         case 6:
                         //item use
-                        unit = cle.getAttackerName();
+                        unit = cle.getAttackerNameCompiled();
                         key = cle.getInflictorName();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
@@ -268,7 +269,7 @@ public class Main {
                         case 8:
                         //gold gain/loss
                         key = String.valueOf(cle.getGoldReason());
-                        unit = cle.getTargetName();
+                        unit = cle.getTargetNameCompiled();
                         val = cle.getValue();
                         entry.put("unit", unit);                        
                         entry.put("time", time);
@@ -289,7 +290,7 @@ public class Main {
                         break;
                         case 10:
                         //xp gain
-                        unit = cle.getTargetName();
+                        unit = cle.getTargetNameCompiled();
                         val = cle.getValue();
                         key = String.valueOf(cle.getXpReason());
                         entry.put("unit", unit);                        
@@ -301,7 +302,7 @@ public class Main {
                         break;
                         case 11:
                         //purchase
-                        unit = cle.getTargetName();
+                        unit = cle.getTargetNameCompiled();
                         key = cle.getValueName();
                         if (!key.contains("recipe")){
                             entry.put("unit", unit);                        
@@ -321,7 +322,7 @@ public class Main {
                         break;
                         case 13:
                         //ability trigger
-                        //System.err.format("%s %s proc %s %s%n", time, cle.getAttackerName(), cle.getInflictorName(), cle.getTargetName() != null ? "on " + cle.getTargetName() : "");
+                        //System.err.format("%s %s proc %s %s%n", time, cle.getAttackerNameCompiled(), cle.getInflictorName(), cle.getTargetNameCompiled() != null ? "on " + cle.getTargetNameCompiled() : "");
                         break;
                         default:
                         DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
@@ -369,11 +370,15 @@ public class Main {
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
         doc.put("hero_to_slot", hero_to_slot);
+        finish(tStart, doc);
 
-        System.out.println(doc);
-
+    }
+    
+    private static void finish(long tStart, JSONObject doc){
         long tMatch = System.currentTimeMillis() - tStart;
         System.err.format("%s sec%n", tMatch / 1000.0);
+        System.out.println(doc);
+        System.exit(0);
     }
 
     private static void addHero(String hero, JSONObject map){
