@@ -5,7 +5,7 @@
   <artifactId>stats</artifactId>
   <name>yasp-parser</name>
   <version>0.1.0</version>
-  <description>Gets the stats I want</description>
+  <description>Parser for YASP</description>
   <developers>
     <developer>
       <id>albertcui</id>
@@ -27,7 +27,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>albert.stats.Main</mainClass>
+                  <mainClass>yasp.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>
