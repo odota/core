@@ -38,7 +38,7 @@ function download(job, cb) {
     var match_id = job.data.payload.match_id
     var fileName = replay_dir + match_id + ".dem"
     if (fs.existsSync(fileName)) {
-        logger.info("[PARSER] found local replay for match %s", match_id)
+        logger.info("[PARSER] %s, found local replay", match_id)
         cb(null, fileName);
     }
     else {
@@ -58,7 +58,7 @@ function download(job, cb) {
                 }
                 else {
                     var t2 = new Date().getTime();
-                    logger.info("[PARSER] dl time: %s", (t2 - t1) / 1000)
+                    logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000)
                     try {
                         var decomp = Bunzip.decode(body)
                         fs.writeFile(fileName, decomp, function(err) {
@@ -66,8 +66,7 @@ function download(job, cb) {
                                 return cb(err)
                             }
                             var t3 = new Date().getTime();
-                            logger.info("[PARSER] decomp time: %s", (t3 - t2) / 1000)
-                            logger.info("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000)
                             var archiveName = match_id + ".dem.bz2"
                             uploadToS3(archiveName, body, function(err) {
                                 return cb(err, fileName)
@@ -200,9 +199,12 @@ function parseReplay(job, cb) {
                     //retry
                     return cb(err);
                 }
-                utility.runParse(fileName, function(err, output) {
+                var t1 = new Date().getTime();
+                utility.runParse(fileName, function(code, output) {
+                    var t2 = new Date().getTime();
+                    logger.info("[PARSER] %s, parse time: %s", match_id, (t2 - t1) / 1000);
+                    logger.info('[PARSER] exit code: %s', code);
                     if (!err) {
-
                         //process parser output
                         matches.update({
                             match_id: match_id
