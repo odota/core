@@ -98,7 +98,7 @@ function getReplayUrl(job, cb) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + body.match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
                 job.update();
-                return cb(url);
+                return cb(null, url);
             }
             else {
                 return cb(true)
