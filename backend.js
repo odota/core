@@ -1,94 +1,24 @@
 var async = require("async"),
-    request = require('request'),
     utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
-    cheerio = require('cheerio'),
-    winston = require('winston');
-var jobs = utility.jobs;
-var trackedPlayers = {}
-var api_url = utility.api_url;
-var transports = [new(winston.transports.Console)(),
-    new(winston.transports.File)({
-        filename: 'backend.log',
-        level: 'info'
-    })
-]
-var logger = new(winston.Logger)({
-    transports: transports
-});
-var remote = "http://dotabuff.com";
-var match_ids = {};
+    winston = require('winston'),
+    jobs = utility.jobs,
+    trackedPlayers = {},
+    transports = [new(winston.transports.Console)(),
+        new(winston.transports.File)({
+            filename: 'backend.log',
+            level: 'info'
+        })
+    ],
+    logger = new(winston.Logger)({transports: transports})
+    untrack_interval = process.env.UNTRACK_INTERVAL || 3;
 
 async.series([
     function(cb) {
         utility.clearActiveJobs('api', function(err) {
             cb(err)
         })
-    },
-    function(cb) {
-        //get full match history ONLY for specific players
-        //build hash of match ids to request details for
-        players.find({
-            full_history: 1
-        }, function(err, docs) {
-            async.mapSeries(docs, function(player, cb2) {
-                var account_id = player.account_id
-                var player_url = remote + "/players/" + account_id + "/matches"
-                getMatchPage(player_url, function(err) {
-                    if (!err) {
-                        //done with player
-                        players.update({
-                            account_id: account_id
-                        }, {
-                            $set: {
-                                full_history: 0
-                            }
-                        }, function(err) {
-                            //updated full_history value
-                            cb2(err)
-                        })
-                    }
-                })
-            }, function(err) {
-                //done with all players
-                for (var key in match_ids) {
-                    var match = {};
-                    match.match_id = key
-                    requestDetails(match);
-                }
-            })
-        })
-        cb(null)
-        function getMatchPage(url, cb) {
-            request({
-                url: url,
-                headers: {
-                    'User-Agent': 'request'
-                }
-            }, function(err, resp, body) {
-                if (err || resp.statusCode !== 200) {
-                    return setTimeout(function() {
-                        getMatchPage(url, cb);
-                    }, 1000);
-                }
-                logger.info("[REMOTE] %s", url);
-                var parsedHTML = cheerio.load(body);
-                var matchCells = parsedHTML('td[class=cell-xlarge]');
-                matchCells.each(function(i, matchCell) {
-                    var match_url = remote + cheerio(matchCell).children().first().attr('href');
-                    var match_id = Number(match_url.split(/[/]+/).pop());
-                    match_ids[match_id] = 1;
-                });
-                var nextPath = parsedHTML('a[rel=next]').first().attr('href');
-                if (nextPath) {
-                    getMatchPage(remote + nextPath, cb);
-                }
-                else {
-                    cb(null);
-                }
-            });
-        }
     },
     function(cb) {
         //parse unparsed matches
@@ -103,7 +33,7 @@ async.series([
     },
     function(cb) {
         if (process.env.START_SEQ_NUM === "AUTO") {
-            utility.getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+            utility.getData(utility.api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
                 getMatches(data.result.matches[0].match_seq_num)
                 cb(null)
             })
@@ -142,7 +72,7 @@ function getMatches(seq_num) {
             docs.forEach(function(player) {
                 trackedPlayers[player.account_id] = true
             })
-            var url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
+            var url = utility.api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
             utility.getData(url, function(err, data) {
                 if (data.result.error || data.result.status == 2) {
                     logger.info(data)
@@ -161,23 +91,12 @@ function getMatches(seq_num) {
     }, 1000)
 }
 
-function requestDetails(match, cb) {
-    matches.findOne({
-        match_id: match.match_id
-    }, function(err, doc) {
-        if (!doc) {
-            utility.queueReq("api", match)
-        }
-        cb(null)
-    });
-}
-
 function apiRequest(job, cb) {
     //process an api request
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb("no url")
+        cb("no url");
     }
     utility.getData(job.data.url, function(err, data) {
         if (data.response) {
@@ -186,10 +105,12 @@ function apiRequest(job, cb) {
                 cb(err);
             });
         }
-        else if (data.result.status === 15) {
-            //user does not have stats enabled, return no error (don't retry)
-            logger.info(data)
-            return cb(null)
+        else if (data.result.status === 15 || data.result.error === "Practice matches are not available via GetMatchDetails") {
+            //user does not have stats enabled
+            //or attempting to get private match
+            //don't retry
+            logger.info(data);
+            return cb(null);
         }
         else if (data.result.error || data.result.status === 2) {
             //error response from dota api
@@ -208,7 +129,7 @@ function apiRequest(job, cb) {
             //response for match history for single player
             var resp = data.result.matches;
             async.map(resp, function(match, cb2) {
-                requestDetails(match, function(err) {
+                utility.requestDetails(match, function(err) {
                     cb2(err);
                 });
             }, function(err) {
@@ -219,50 +140,48 @@ function apiRequest(job, cb) {
 }
 
 function insertMatch(match, cb) {
-
-        var track = match.players.some(function(element) {
-                return (element.account_id in trackedPlayers);
-            })
-            //queued or untracked
-        match.parse_status = (track ? 0 : 3)
-        if (track) {
-            var summaries = {
-                summaries_id: new Date()
-            }
-            var steamids = []
-            match.players.forEach(function(player) {
-                steamids.push(utility.convert32to64(player.account_id).toString())
-            })
-            summaries.query = steamids.join();
-            //queue for player names
-            utility.queueReq("api", summaries);
-            //parse if unparsed
-            if (!match.parsed_data) {
-                utility.queueReq("parse", match);
-            }
-            else {
-                match.parse_status = 2;
-            }
-            matches.update({
-                    match_id: match.match_id
-                }, {
-                    $set: match
-                }, {
-                    upsert: true
-                },
-                function(err) {
-                    cb(err);
-                });
+    var track = match.players.some(function(element) {
+        return (element.account_id in trackedPlayers);
+    });
+    //queued or untracked
+    match.parse_status = (track ? 0 : 3);
+    if (track) {
+        var summaries = {
+            summaries_id: new Date()
+        }
+        var steamids = []
+        match.players.forEach(function(player) {
+            steamids.push(utility.convert32to64(player.account_id).toString())
+        })
+        summaries.query = steamids.join();
+        //queue for player names
+        utility.queueReq("api", summaries);
+        //parse if unparsed
+        if (match.parsed_data) {
+            match.parse_status = 2;
         }
         else {
-            cb(null)
+            utility.queueReq("parse", match);
         }
+        matches.update({
+                match_id: match.match_id
+            }, {
+                $set: match
+            }, {
+                upsert: true
+            },
+            function(err) {
+                cb(err);
+            });
     }
-    /*
-     * Inserts/updates a player in the database
-     */
+    else {
+        cb(null)
+    }
+}
 
 function insertPlayer(player, cb) {
+    //Inserts/updates a player in the database
+
     var account_id = Number(utility.convert64to32(player.steamid));
     players.update({
         account_id: account_id
@@ -274,3 +193,22 @@ function insertPlayer(player, cb) {
         cb(err);
     });
 }
+
+function untrackPlayers() {
+    logger.info("[UNTRACK] Untracking users...");
+    players.update({
+        last_visited: {
+            $lte: Date.now() - 86400 * untrack_interval
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    },  function(err, num){
+        logger.info("[UNTRACK] Untracked " + num + " users.")
+    })
+}
+
+setInterval(untrackPlayers(), 60*60*1000);

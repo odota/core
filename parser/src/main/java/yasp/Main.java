@@ -175,7 +175,7 @@ public class Main {
                     log.put(entry);
                 }
                 else{
-                    System.err.format("%s %s%n", time, u); 
+                    //System.err.format("%s %s%n", time, u); 
                 }
             }
             for (GameEvent g : match.getGameEvents()) {
@@ -376,7 +376,7 @@ public class Main {
     
     private static void finish(long tStart, JSONObject doc){
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("%s sec%n", tMatch / 1000.0);
+        System.err.format("%s sec\n", tMatch / 1000.0);
         System.out.println(doc);
         System.exit(0);
     }
@@ -414,12 +414,10 @@ public class Main {
             for (int i =1 ;i<=unit.length();i++){
                 String s = unit.substring(0,i);
                 if (heroes.has(s)){
-                    //System.err.format("%s to %s%n", unit, s);
                     return hero_to_slot.getInt(heroes.getJSONObject(s).get("id").toString());
                 }
             }
         }
-        //System.err.format("couldn't find hero for unit %s%n", unit);
         return -1;
     }
 

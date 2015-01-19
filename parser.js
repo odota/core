@@ -25,7 +25,7 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 utility.clearActiveJobs('parse', function(err) {
-    jobs.process('parse', 3, function(job, done) {
+    jobs.process('parse', 4, function(job, done) {
         parseReplay(job, done)
     })
 })
@@ -38,7 +38,7 @@ function download(job, cb) {
     var match_id = job.data.payload.match_id
     var fileName = replay_dir + match_id + ".dem"
     if (fs.existsSync(fileName)) {
-        logger.info("[PARSER] found local replay for match %s", match_id)
+        logger.info("[PARSER] %s, found local replay", match_id)
         cb(null, fileName);
     }
     else {
@@ -58,7 +58,7 @@ function download(job, cb) {
                 }
                 else {
                     var t2 = new Date().getTime();
-                    logger.info("[PARSER] dl time: %s", (t2 - t1) / 1000)
+                    logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000)
                     try {
                         var decomp = Bunzip.decode(body)
                         fs.writeFile(fileName, decomp, function(err) {
@@ -66,8 +66,7 @@ function download(job, cb) {
                                 return cb(err)
                             }
                             var t3 = new Date().getTime();
-                            logger.info("[PARSER] decomp time: %s", (t3 - t2) / 1000)
-                            logger.info("[PARSER] downloaded/decompressed replay for match %s", match_id)
+                            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000)
                             var archiveName = match_id + ".dem.bz2"
                             uploadToS3(archiveName, body, function(err) {
                                 return cb(err, fileName)
@@ -90,10 +89,11 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var t = new Date().getMinutes();
+        var t = new Date().getTime();
         var retriever = t % retrievers.length;
-        logger.info(retriever);
-        utility.getData(retrievers[retriever] + "?match_id=" + job.data.payload.match_id, function(err, body) {
+        var target = retrievers[retriever] + "?match_id=" + job.data.payload.match_id;
+        logger.info(target);
+        utility.getData(target, function(err, body) {
             if (body && body.match) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
@@ -101,7 +101,8 @@ function getReplayUrl(job, cb) {
                 return cb(null, url);
             }
             else {
-                return cb(true)
+                logger.info(body);
+                return cb("response error");
             }
         })
     }
@@ -173,7 +174,6 @@ function uploadToS3(archiveName, body, cb) {
 
 function parseReplay(job, cb) {
     var match_id = job.data.payload.match_id
-    logger.info("[PARSER] match %s", match_id)
     matches.findOne({
         match_id: match_id
     }, function(err, doc) {
@@ -199,14 +199,18 @@ function parseReplay(job, cb) {
                     //retry
                     return cb(err);
                 }
-                utility.runParse(fileName, function(err, output) {
+                var t1 = new Date().getTime();
+                utility.runParse(fileName, function(code, output) {
+                    var t2 = new Date().getTime();
+                    logger.info("[PARSER] %s, parse time: %s", match_id, (t2 - t1) / 1000);
+                    logger.info('[PARSER] exit code: %s', code);
                     if (!err) {
                         //process parser output
                         matches.update({
                             match_id: match_id
                         }, {
                             $set: {
-                                parsed_data: JSON.parse(output),
+                                parsed_data: output,
                                 parse_status: 2
                             }
                         })
