@@ -6,7 +6,7 @@ if (( EUID != 0 )); then
    exit 100
 fi
 
-git pull origin mastser
+git pull origin master
 
 npm install
 
