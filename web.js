@@ -527,6 +527,7 @@ function updateConstants(cb) {
         }
         constants.regions = lookup
         constants.regions["251"] = "Peru"
+        constants.regions["261"] = "India"
         utility.constants.update({}, constants, {
             upsert: true
         }, function(err) {
