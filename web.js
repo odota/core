@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
@@ -494,6 +496,10 @@ app.use(function(req, res) {
         });
     }
 });
+
+// In order to reach the app from other modules
+// we need to export the express application
+module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {
     var host = server.address().address;
