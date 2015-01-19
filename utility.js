@@ -135,37 +135,37 @@ utility.isRadiant = function(player) {
     return player.player_slot < 64
 }
 utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
-
-utility.queueReq = function(type, data) {
+utility.summaries_url = "http://api.steampowered.com/ISteamUser";
+utility.queueReq = function queueReq(type, payload){
     var api_url = utility.api_url;
-    var summaries_url = "http://api.steampowered.com/ISteamUser"
+    var summaries_url = utility.summaries_url;
     var url;
     var name;
     if (type === "api") {
-        if (data.match_id) {
-            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + data.match_id;
-            name = "details_" + data.match_id
+        if (payload.match_id) {
+            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id;
+            name = "details_" + payload.match_id
         }
-        else if (data.summaries_id) {
-            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + data.query
-            name = "summaries_" + data.summaries_id
+        else if (payload.summaries_id) {
+            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + payload.query
+            name = "summaries_" + payload.summaries_id
         }
-        else if (data.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + data.account_id + "&matches_requested=5"
-            name = "history_" + data.account_id
+        else if (payload.account_id) {
+            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id + "&matches_requested=10"
+            name = "history_" + payload.account_id
         }
     }
     if (type === "parse") {
-        name = "parse_" + data.match_id
-        data = {
-            match_id: data.match_id,
-            start_time: data.start_time
+        name = "parse_" + payload.match_id
+        payload = {
+            match_id: payload.match_id,
+            start_time: payload.start_time
         }
     }
     var job = {
         title: name,
-        payload: data,
-        url: url
+        url: url,
+        payload: payload,
     };
     utility.jobs.create(type, job).attempts(10).backoff({
         delay: 60000,
@@ -203,7 +203,7 @@ utility.getData = function getData(url, cb) {
     request(url, function(err, res, body) {
         //logger.info("%s", url)
         if (err || res.statusCode !== 200 || !body) {
-            logger.info("error getting data, retrying");
+            logger.info("error getting data, retrying: %s, %s", err, res.statusCode);
             setTimeout(function() {
                 getData(url, cb);
             }, 1000);

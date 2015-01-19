@@ -1,5 +1,6 @@
 extend layout
 block content
+  if files
+    .alert.alert-success(role="alert") !{JSON.stringify(files)}
   form#upload(enctype="multipart/form-data", action="/upload", method="post")
-    input(type="file" name="replay")
-    input(type="submit" value="Upload" name="submit")
+    input(type="file" name="replay" onchange="this.form.submit()")

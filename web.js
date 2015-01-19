@@ -407,32 +407,36 @@ app.route('/logout').get(function(req, res) {
 
 app.use(multer({
     dest: './uploads',
-    onFileUploadStart: function(file) {
-        console.log(file.originalname + ' is starting ...')
-    },
-    onFileUploadComplete: function(file) {
-        console.log(file.fieldname + ' uploaded to  ' + file.path)
-        utility.runParse(file.path, function(err, output) {
-            if (!err) {
-                output = JSON.parse(output);
-                utility.queueReq("api", {
-                    match_id: output.match_id,
-                    parsed_data: output
-                });
-            }
-        })
+    limits: {
+        fileSize: 200000000
     }
 }));
 
-/*
 app.get('/upload', function(req, res) {
     res.render("upload");
 });
 
 app.post('/upload', function(req, res) {
-    res.render("upload");
+    var files = req.files.replay
+    console.log(files.fieldname + ' uploaded to  ' + files.path);
+    //todo create a third type of kue job
+    utility.runParse(files.path, function(err, output) {
+        if (!err) {
+            output = JSON.parse(output);
+            //put job on api queue to ensure we have it in db
+            var payload = {
+                uploader: req.user,
+                match_id: output.match_id,
+                parsed_data: output
+            }
+            utility.queueReq("api", payload);
+        }
+    })
+    res.render("upload", {
+        files: files
+    });
 });
-*/
+
 var server = app.listen(process.env.PORT || 3000, function() {
     var host = server.address().address
     var port = server.address().port
