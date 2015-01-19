@@ -136,7 +136,7 @@ utility.isRadiant = function(player) {
 }
 utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
 utility.summaries_url = "http://api.steampowered.com/ISteamUser";
-utility.queueReq = function queueReq(type, payload){
+utility.queueReq = function queueReq(type, payload) {
     var api_url = utility.api_url;
     var summaries_url = utility.summaries_url;
     var url;
@@ -174,6 +174,8 @@ utility.queueReq = function queueReq(type, payload){
 }
 
 utility.runParse = function runParse(fileName, cb) {
+    var t1 = new Date().getTime();
+
     var parser_file = "parser/target/stats-0.1.0.jar";
     logger.info("[PARSER] running parse on %s", fileName);
 
@@ -188,6 +190,8 @@ utility.runParse = function runParse(fileName, cb) {
         output += data
     })
     cp.on('exit', function(code) {
+        var t2 = new Date().getTime();
+        logger.info("[PARSER] parse time: %s", (t2 - t1) / 1000);
         logger.info('[PARSER] exit code: %s', code);
         if (process.env.DELETE_REPLAYS) {
             fs.unlink(fileName)
