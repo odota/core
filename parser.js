@@ -25,7 +25,7 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 utility.clearActiveJobs('parse', function(err) {
-    jobs.process('parse', 1, function(job, done) {
+    jobs.process('parse', 4, function(job, done) {
         parseReplay(job, done)
     })
 })
@@ -202,6 +202,7 @@ function parseReplay(job, cb) {
                 }
                 utility.runParse(fileName, function(err, output) {
                     if (!err) {
+
                         //process parser output
                         matches.update({
                             match_id: match_id
