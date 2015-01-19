@@ -197,7 +197,7 @@ utility.getData = function getData(url, cb) {
     request(url, function(err, res, body) {
         //logger.info("%s", url)
         if (err || res.statusCode !== 200 || !body) {
-            logger.info("error getting data, retrying: %s, %s", err, res.statusCode);
+            logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
             setTimeout(function() {
                 getData(url, cb);
             }, 1000);
@@ -205,5 +205,16 @@ utility.getData = function getData(url, cb) {
         else {
             cb(null, JSON.parse(body));
         }
+    });
+}
+
+utility.requestDetails = function requestDetails(match, cb) {
+    utility.matches.findOne({
+        match_id: match.match_id
+    }, function(err, doc) {
+        if (!doc) {
+            utility.queueReq("api", match)
+        }
+        cb(null)
     });
 }

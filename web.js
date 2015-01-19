@@ -15,13 +15,13 @@ var utility = require('./utility'),
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var host = process.env.ROOT_URL
+var host = process.env.ROOT_URL;
 var transports = [new(winston.transports.Console)(),
     new(winston.transports.File)({
         filename: 'web.log',
         level: 'info'
     })
-]
+];
 var logger = new(winston.Logger)({
     transports: transports
 });
@@ -42,7 +42,7 @@ var matchPages = {
         template: "match_chat",
         name: "Chat"
     }
-}
+};
 var playerPages = {
     index: {
         template: "player_index",
@@ -52,12 +52,11 @@ var playerPages = {
         template: "player_matches",
         name: "Matches"
     }
-}
-updateConstants(function(err) {});
-
-app.set('views', path.join(__dirname, 'views'))
+};
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.locals.moment = require('moment');
+app.locals.moment = moment;
+app.locals.constants = require('./constants.json');
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
@@ -65,8 +64,8 @@ passport.deserializeUser(function(id, done) {
     players.findOne({
         account_id: id
     }, function(err, user) {
-        done(err, user)
-    })
+        done(err, user);
+    });
 });
 passport.use(new SteamStrategy({
     returnURL: host + '/return',
@@ -74,7 +73,7 @@ passport.use(new SteamStrategy({
     apiKey: process.env.STEAM_API_KEY
 }, function(identifier, profile, done) { // start tracking the player
     var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
-    var insert = profile._json
+    var insert = profile._json;
     insert.account_id = steam32;
     insert.track = 1;
     players.update({
@@ -84,12 +83,12 @@ passport.use(new SteamStrategy({
     }, {
         upsert: true
     }, function(err, num) {
-        if (err) return done(err, null)
+        if (err) return done(err, null);
         return done(null, {
             account_id: steam32
-        })
-    })
-}))
+        });
+    });
+}));
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
@@ -147,7 +146,6 @@ app.param('match_id', function(req, res, next, id) {
     })
 })
 app.route('/').get(function(req, res) {
-
     res.render('index.jade', {})
 })
 app.route('/api/items').get(function(req, res) {
@@ -330,33 +328,33 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                             player.games += 1
                             if (!heroes[p.hero_id]) {
                                 heroes[p.hero_id] = {}
-                                heroes[p.hero_id]["games"] = 0
-                                heroes[p.hero_id]["win"] = 0
-                                heroes[p.hero_id]["lose"] = 0
+                                heroes[p.hero_id]["games"] = 0;
+                                heroes[p.hero_id]["win"] = 0;
+                                heroes[p.hero_id]["lose"] = 0;
                             }
-                            heroes[p.hero_id]["games"] += 1
+                            heroes[p.hero_id]["games"] += 1;
                             if (matches[i].player_win) {
-                                heroes[p.hero_id]["win"] += 1
+                                heroes[p.hero_id]["win"] += 1;
                             }
                             else {
-                                heroes[p.hero_id]["lose"] += 1
+                                heroes[p.hero_id]["lose"] += 1;
                             }
                         }
                     }
                     //compute top teammates
                     for (j = 0; j < matches[i].players.length; j++) {
-                        p = matches[i].players[j]
-                        if (utility.isRadiant(p) === playerRadiant) { //teammates of player
-                            if (!counts[p.account_id]) {
-                                counts[p.account_id] = {
+                        var tm = matches[i].players[j];
+                        if (utility.isRadiant(tm) === playerRadiant) { //teammates of player
+                            if (!counts[tm.account_id]) {
+                                counts[tm.account_id] = {
                                     account_id: p.account_id,
                                     win: 0,
                                     lose: 0,
                                     games: 0
                                 };
                             }
-                            counts[p.account_id]["games"] += 1
-                            matches[i].player_win ? counts[p.account_id]["win"] += 1 : counts[p.account_id]["lose"] += 1
+                            counts[tm.account_id]["games"] += 1;
+                            matches[i].player_win ? counts[tm.account_id]["win"] += 1 : counts[tm.account_id]["lose"] += 1;
                         }
                     }
                 }
@@ -378,28 +376,28 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         title: (player.personaname || player.account_id) + " - YASP"
                     })
                 })
-            })
+            });
         }
-    })
-})
+    });
+});
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
-}))
+}));
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
     if (req.user) {
-        res.redirect('/players/' + req.user.account_id)
+        res.redirect('/players/' + req.user.account_id);
     }
     else {
-        res.redirect('/')
+        res.redirect('/');
     }
-})
+});
 app.route('/logout').get(function(req, res) {
     req.logout();
     req.session = null;
-    res.redirect('/')
-})
+    res.redirect('/');
+});
 
 app.use(multer({
     dest: './uploads',
@@ -413,7 +411,7 @@ app.get('/upload', function(req, res) {
 });
 
 app.post('/upload', function(req, res) {
-    var files = req.files.replay
+    var files = req.files.replay;
     console.log(files.fieldname + ' uploaded to  ' + files.path);
     //todo create a third type of kue job
     utility.runParse(files.path, function(code, output) {
@@ -424,13 +422,13 @@ app.post('/upload', function(req, res) {
                 uploader: req.user,
                 match_id: output.match_id,
                 parsed_data: output
-            }
+            };
             utility.queueReq("api", payload);
         }
-        else{
-            logger.info(code)
+        else {
+            logger.info(code);
         }
-    })
+    });
     res.render("upload", {
         files: files
     });
@@ -454,21 +452,15 @@ app.get('/stats', function(req, res) {
                                 players: count2,
                                 tracked_players: count3,
                                 matches_last_day: count4,
-                                queued_jobs: inactive+delayed
+                                queued_jobs: inactive + delayed
                             });
-                        })
-                    })
-                })
-            })
-        })
-    })
+                        });
+                    });
+                });
+            });
+        });
+    });
 });
-
-var server = app.listen(process.env.PORT || 3000, function() {
-    var host = server.address().address
-    var port = server.address().port
-    logger.info('[WEB] listening at http://%s:%s', host, port)
-})
 
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
@@ -480,7 +472,7 @@ app.use(function(err, req, res, next) {
     else {
         return next(err);
     }
-})
+});
 
 app.use(function(req, res) {
     if (process.env.NODE_ENV === "production") {
@@ -490,81 +482,8 @@ app.use(function(req, res) {
     }
 });
 
-function updateConstants(cb) {
-    var constants = require('./constants.json')
-    async.map(Object.keys(constants.sources), function(key, cb) {
-        var val = constants.sources[key]
-        val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val
-        utility.getData(val, function(err, result) {
-            constants[key] = result;
-            cb(null);
-        })
-    }, function(err) {
-        var heroes = constants.heroes.result.heroes
-        heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png"
-        })
-        constants.heroes = buildLookup(heroes)
-        constants.hero_names = {}
-        for (var i = 0; i < heroes.length; i++) {
-            constants.hero_names[heroes[i].name] = heroes[i]
-        }
-        var items = constants.items.itemdata
-        constants.item_ids = {}
-        for (var key in items) {
-            constants.item_ids[items[key].id] = key
-            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img
-        }
-        constants.items = items
-        var lookup = {}
-        var ability_ids = constants.ability_ids.abilities
-        for (var i = 0; i < ability_ids.length; i++) {
-            lookup[ability_ids[i].id] = ability_ids[i].name
-        }
-        constants.ability_ids = lookup
-        constants.ability_ids["5601"] = "techies_suicide"
-        constants.ability_ids["5088"] = "skeleton_king_mortal_strike"
-        constants.ability_ids["5060"] = "nevermore_shadowraze1"
-        constants.ability_ids["5061"] = "nevermore_shadowraze1"
-        constants.ability_ids["5580"] = "beastmaster_call_of_the_wild"
-        constants.ability_ids["5637"] = "oracle_fortunes_end"
-        constants.ability_ids["5638"] = "oracle_fates_edict"
-        constants.ability_ids["5639"] = "oracle_purifying_flames"
-        constants.ability_ids["5640"] = "oracle_false_promise"
-        var abilities = constants.abilities.abilitydata
-        for (var key in abilities) {
-            abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png"
-        }
-        abilities["nevermore_shadowraze2"] = abilities["nevermore_shadowraze1"];
-        abilities["nevermore_shadowraze3"] = abilities["nevermore_shadowraze1"];
-        abilities["stats"] = {
-            dname: "Stats",
-            img: '../../public/images/Stats.png',
-            attrib: "+2 All Attributes"
-        }
-        constants.abilities = abilities
-        lookup = {};
-        var regions = constants.regions.regions
-        for (var i = 0; i < regions.length; i++) {
-            lookup[regions[i].id] = regions[i].name
-        }
-        constants.regions = lookup
-        constants.regions["251"] = "Peru"
-        constants.regions["261"] = "India"
-        utility.constants.update({}, constants, {
-            upsert: true
-        }, function(err) {
-            logger.info("[CONSTANTS] updated constants")
-            app.locals.constants = constants
-            cb(err)
-        })
-    })
-}
-
-function buildLookup(array) {
-    var lookup = {}
-    for (var i = 0; i < array.length; i++) {
-        lookup[array[i].id] = array[i]
-    }
-    return lookup;
-}
+var server = app.listen(process.env.PORT || 3000, function() {
+    var host = server.address().address;
+    var port = server.address().port;
+    logger.info('[WEB] listening at http://%s:%s', host, port);
+});
