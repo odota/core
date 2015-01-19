@@ -224,3 +224,12 @@ utility.requestDetails = function requestDetails(match, cb) {
         cb(null);
     });
 };
+
+utility.getCurrentSeqNum = function getCurrentSeqNum(cb) {
+    utility.getData(utility.api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
+        if (err) {
+            console.log(err);
+        }
+        cb(data.result.matches[0].match_seq_num);
+    })
+}

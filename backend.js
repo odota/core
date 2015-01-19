@@ -15,53 +15,38 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
-async.series([
-    function(cb) {
-        utility.clearActiveJobs('api', function(err) {
-            cb(err)
-        })
-    },
-    function(cb) {
-        //parse unparsed matches
-        matches.find({
-            parse_status: 0
-        }, function(err, docs) {
-            docs.forEach(function(match) {
-                utility.queueReq("parse", match)
-            })
-        })
-        cb(null)
-    },
-    function(cb) {
-        if (process.env.START_SEQ_NUM === "AUTO") {
-            utility.getData(utility.api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-                getMatches(data.result.matches[0].match_seq_num)
-                cb(null)
-            })
-        }
-        else if (process.env.START_SEQ_NUM) {
-            getMatches(process.env.START_SEQ_NUM);
-            cb(null);
-        }
-        else {
-            //start at highest id in db
-            matches.findOne({}, {
-                sort: {
-                    match_seq_num: -1
-                }
-            }, function(err, doc) {
-                getMatches(doc ? doc.match_seq_num + 1 : 0)
-                cb(null)
-            })
-        }
+utility.clearActiveJobs('api', function(err) {
+    if (err) {
+        logger.info(err);
     }
-], function(err) {
     jobs.process('api', function(job, done) {
         setTimeout(function() {
             apiRequest(job, done)
         }, 1000)
     })
 })
+
+if (process.env.START_SEQ_NUM === "AUTO") {
+    utility.getCurrentSeqNum(function(num) {
+        getMatches(num);
+    })
+}
+else if (process.env.START_SEQ_NUM) {
+    getMatches(process.env.START_SEQ_NUM);
+}
+else {
+    //start at highest id in db
+    matches.findOne({}, {
+        sort: {
+            match_seq_num: -1
+        }
+    }, function(err, doc) {
+        if (err) {
+            logger.info(err);
+        }
+        getMatches(doc ? doc.match_seq_num + 1 : 0)
+    })
+}
 
 function getMatches(seq_num) {
     setTimeout(function() {
