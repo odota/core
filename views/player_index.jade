@@ -21,7 +21,8 @@ block playercontent
            th K
            th D
            th A
-           th abbr(title=constants.tooltips.status) Status
+           th 
+             abbr(title=constants.tooltips.status) Status
         each match in player.matches.slice(0,10)
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
