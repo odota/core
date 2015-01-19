@@ -187,9 +187,6 @@ utility.runParse = function runParse(fileName, cb) {
     cp.stdout.on('data', function(data) {
         output += data
     })
-    cp.stderr.on('data', function(data) {
-        logger.info('[PARSER] stderr: %s', data);
-    })
     cp.on('exit', function(code) {
         logger.info('[PARSER] exit code: %s', code);
         if (process.env.DELETE_REPLAYS) {
