@@ -133,10 +133,10 @@ app.param('match_id', function(req, res, next, id) {
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
-                        req.match = match
-                            //Add to cache if we have parsed data
+                        req.match = match;
+                        //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
-                            redis.setex(id, 86400, JSON.stringify(match))
+                            redis.setex(id, 86400, JSON.stringify(match));
                         }
                         return next()
                     })
@@ -436,11 +436,12 @@ app.post('/upload', function(req, res) {
 var server = app.listen(process.env.PORT || 3000, function() {
     var host = server.address().address
     var port = server.address().port
-    console.log('[WEB] listening at http://%s:%s', host, port)
+    logger.info('[WEB] listening at http://%s:%s', host, port)
 })
 
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
+        logger.info(err);
         return res.status(500).render('500.jade', {
             error: true
         });
