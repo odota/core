@@ -434,31 +434,45 @@ app.post('/upload', function(req, res) {
 });
 
 app.get('/stats', function(req, res) {
-    utility.matches.count({}, function(err, count) {
-        utility.players.count({}, function(err, count2) {
-            utility.players.count({
-                track: 1
-            }, function(err, count3) {
+    async.parallel({
+            matches: function(cb) {
+                utility.matches.count({}, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            players: function(cb) {
+                utility.players.count({}, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            tracked_players: function(cb) {
+                utility.players.count({
+                    track: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            matches_last_day: function(cb) {
                 utility.matches.count({
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, count4) {
-                    jobs.inactiveCount(function(err, inactive) {
-                        jobs.delayedCount(function(err, delayed) {
-                            res.json({
-                                matches: count,
-                                players: count2,
-                                tracked_players: count3,
-                                matches_last_day: count4,
-                                queued_jobs: inactive + delayed
-                            });
-                        });
-                    });
+                }, function(err, res) {
+                    cb(err, res);
                 });
-            });
+            },
+            queued_jobs: function(cb) {
+                jobs.inactiveCount(function(err, res) {
+                    cb(err, res);
+                });
+            }
+        },
+        function(err, results) {
+            if (err) {
+                return next(err);
+            }
+            res.json(results);
         });
-    });
 });
 
 app.use(function(err, req, res, next) {

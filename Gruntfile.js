@@ -20,6 +20,10 @@ module.exports = function(grunt) {
     var done = this.async();
     getFullMatchHistory(done);
   });
+  grunt.registerTask('unparsed', function() {
+    var done = this.async();
+    unparsed(done);
+  });
   grunt.registerTask('default', ['jshint', 'shell', 'constants']);
 
   var dotenv = require('dotenv');
@@ -29,6 +33,18 @@ module.exports = function(grunt) {
   var fs = require('fs');
   var async = require('async');
   var utility = require('./utility');
+
+  function unparsed(done) {
+    utility.matches.find({
+      parse_status: 0
+    }, function(err, docs) {
+      docs.forEach(function(match) {
+        console.log(match.match_id);
+        utility.queueReq("parse", match);
+      });
+      done();
+    });
+  }
 
   function updateConstants(done) {
     var constants = require('./constants.json');
@@ -164,6 +180,5 @@ module.exports = function(grunt) {
       });
     }
   }
-
 
 };
