@@ -171,7 +171,7 @@ utility.queueReq = function queueReq(type, payload) {
         delay: 60000,
         type: 'exponential'
     }).removeOnComplete(true).save(function(err) {});
-}
+};
 
 utility.runParse = function runParse(fileName, cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
@@ -181,17 +181,23 @@ utility.runParse = function runParse(fileName, cb) {
         "-Xmx128m",
         parser_file,
         fileName
-    ])
+    ]);
     cp.stdout.on('data', function(data) {
-        output += data
-    })
+        output += data;
+    });
     cp.on('exit', function(code) {
-        if (process.env.DELETE_REPLAYS) {
-            fs.unlink(fileName)
+        try {
+            output = JSON.parse(output);
+            if (process.env.DELETE_REPLAYS) {
+                fs.unlink(fileName);
+            }
+            return cb(code, output);
         }
-        cb(code, output);
-    })
-}
+        catch (e) {
+            return cb(e);
+        }
+    });
+};
 
 utility.getData = function getData(url, cb) {
     request(url, function(err, res, body) {
@@ -206,15 +212,15 @@ utility.getData = function getData(url, cb) {
             cb(null, JSON.parse(body));
         }
     });
-}
+};
 
 utility.requestDetails = function requestDetails(match, cb) {
     utility.matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
         if (!doc) {
-            utility.queueReq("api", match)
+            utility.queueReq("api", match);
         }
-        cb(null)
+        cb(null);
     });
-}
+};

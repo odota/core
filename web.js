@@ -416,7 +416,6 @@ app.post('/upload', function(req, res) {
     //todo create a third type of kue job
     utility.runParse(files.path, function(code, output) {
         if (!code) {
-            output = JSON.parse(output);
             //put job on api queue to ensure we have it in db
             var payload = {
                 uploader: req.user,

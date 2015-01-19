@@ -210,7 +210,7 @@ function parseReplay(job, cb) {
                             match_id: match_id
                         }, {
                             $set: {
-                                parsed_data: JSON.parse(output),
+                                parsed_data: output,
                                 parse_status: 2
                             }
                         })
