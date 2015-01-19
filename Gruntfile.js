@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     var done = this.async();
     unparsed(done);
   });
-  grunt.registerTask('default', ['shell', 'constants', 'mochaTest']);
+  grunt.registerTask('default', ['shell', 'mochaTest']);
 
   var dotenv = require('dotenv');
   dotenv.load();
