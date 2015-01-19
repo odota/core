@@ -5,7 +5,7 @@ module.exports = function(grunt) {
     },
     shell: {
       target: {
-        command: 'mvn -f parser/pom.xml package'
+        command: 'mvn -qf parser/pom.xml package'
       }
     },
     mochaTest: {
