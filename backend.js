@@ -3,6 +3,7 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players,
     winston = require('winston'),
+    moment = require('moment'),
     jobs = utility.jobs,
     trackedPlayers = {},
     transports = [new(winston.transports.Console)(),
@@ -12,7 +13,7 @@ var async = require("async"),
         })
     ],
     logger = new(winston.Logger)({transports: transports})
-    untrack_interval = process.env.UNTRACK_INTERVAL || 3;
+    UNTRACK_INTERVAL = process.env.UNTRACK_INTERVAL || 3;
 
 async.series([
     function(cb) {
@@ -198,7 +199,7 @@ function untrackPlayers() {
     logger.info("[UNTRACK] Untracking users...");
     players.update({
         last_visited: {
-            $lte: Date.now() - 86400 * untrack_interval
+            $lt: moment().subtract(UNTRACK_INTERVAL, 'days').toDate()
         }
     }, {
         $set: {

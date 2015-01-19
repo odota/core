@@ -67,7 +67,7 @@ passport.deserializeUser(function(id, done) {
         },
         update: {
             $set: {
-                last_visited: Date.now()
+                last_visited: new Date()
             }
         }
     }, function(err, user) {
@@ -83,7 +83,7 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.track = 1;
-    insert.last_visited = Date.now(); // $currentDate only exists in Mongo >= 2.6
+    insert.last_visited = new Date(); // $currentDate only exists in Mongo >= 2.6
     players.findAndModify({
         account_id: steam32
     }, {
