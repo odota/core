@@ -349,7 +349,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         if (utility.isRadiant(tm) === playerRadiant) { //teammates of player
                             if (!counts[tm.account_id]) {
                                 counts[tm.account_id] = {
-                                    account_id: p.account_id,
+                                    account_id: tm.account_id,
                                     win: 0,
                                     lose: 0,
                                     games: 0
