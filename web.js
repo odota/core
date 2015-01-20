@@ -11,7 +11,7 @@ var utility = require('./utility'),
     passport = require('passport'),
     moment = require('moment'),
     Recaptcha = require('recaptcha').Recaptcha,
-    // bodyParser = require('body-parser'),
+    bodyParser = require('body-parser'),
     matches = utility.matches,
     players = utility.players,
     kue = utility.kue,
@@ -120,6 +120,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyParser.json());
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
         app.locals.user = req.user;

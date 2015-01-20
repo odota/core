@@ -24,7 +24,10 @@ block content
       console.log($('#recaptcha_challenge_field').val())
       $.post(
         "/verify_recaptcha",
-        "recaptcha_challenge_field=" +  $('#recaptcha_challenge_field').val() + "&recaptcha_response_field=" + $('#recaptcha_response_field').val(),
+        {
+          recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
+          recaptcha_response_field: $('#recaptcha_response_field').val()
+        },
         function(data) {
           console.log(data)
           if (data.verified) {
