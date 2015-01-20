@@ -25,6 +25,9 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 utility.clearActiveJobs('parse', function(err) {
+    if (err) {
+        logger.info(err);
+    }
     jobs.process('parse', 4, function(job, done) {
         parseReplay(job, done)
     })
