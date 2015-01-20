@@ -1,27 +1,4 @@
 module.exports = function(grunt) {
-  grunt.initConfig({
-    jshint: {
-      all: ['*.js']
-    },
-    shell: {
-      target: {
-        command: 'mvn -q -f parser/pom.xml package'
-      }
-    },
-    mochaTest: {
-      test: {
-        options: {
-          reporter: 'spec',
-        },
-        src: ['test/test.js']
-      }
-    }
-  });
-
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-mocha-test');
-
   grunt.registerTask('constants', function() {
     var done = this.async();
     updateConstants(done);
@@ -34,7 +11,6 @@ module.exports = function(grunt) {
     var done = this.async();
     unparsed(done);
   });
-  grunt.registerTask('default', ['shell', 'mochaTest']);
 
   var dotenv = require('dotenv');
   dotenv.load();
