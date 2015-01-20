@@ -203,11 +203,15 @@ function parseReplay(job, cb) {
                     return cb(err);
                 }
                 var t1 = new Date().getTime();
-                utility.runParse(fileName, function(code, output) {
+                utility.runParse(fileName, function(err, output) {
                     var t2 = new Date().getTime();
                     logger.info("[PARSER] %s, parse time: %s", match_id, (t2 - t1) / 1000);
-                    logger.info('[PARSER] exit code: %s', code);
                     if (!err) {
+                        if (process.env.DELETE_REPLAYS) {
+                            fs.unlink(fileName, function(err) {
+                                logger.info(err);
+                            });
+                        }
                         //process parser output
                         matches.update({
                             match_id: match_id
@@ -218,7 +222,7 @@ function parseReplay(job, cb) {
                             }
                         })
                     }
-                    return cb(err);
+                    return cb(new Error(err));
                 })
             })
         }

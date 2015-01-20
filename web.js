@@ -110,7 +110,7 @@ passport.use(new SteamStrategy({
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
-    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+    callback(username === (process.env.KUE_USER || "user") && password === (process.env.KUE_PASS || "pass"));
 });
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
