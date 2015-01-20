@@ -137,43 +137,66 @@ utility.isRadiant = function(player) {
 utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
 utility.summaries_url = "http://api.steampowered.com/ISteamUser";
 utility.queueReq = function queueReq(type, payload) {
+    var job = utility.generateJob(type, payload);
+    utility.jobs.create(job.type, job).attempts(10).backoff({
+        delay: 60000,
+        type: 'exponential'
+    }).removeOnComplete(true).save(function(err) {
+        logger.info(err);
+    });
+};
+
+utility.generateJob = function(type, payload) {
     var api_url = utility.api_url;
     var summaries_url = utility.summaries_url;
-    var url;
-    var name;
-    if (type === "api") {
-        if (payload.match_id) {
-            url = api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id;
-            name = "details_" + payload.match_id
+    if (type === "api_details") {
+        return {
+            url: api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id,
+            title: [type, payload.match_id].join(),
+            type: "api",
+            payload: payload
         }
-        else if (payload.summaries_id) {
-            url = summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + payload.query
-            name = "summaries_" + payload.summaries_id
+    }
+    if (type === "api_history") {
+        return {
+            url: api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id + "&matches_requested=10",
+            title: [type, payload.account_id].join(),
+            type: "api",
+            payload: payload
         }
-        else if (payload.account_id) {
-            url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id + "&matches_requested=10"
-            name = "history_" + payload.account_id
+    }
+    if (type === "api_summaries") {
+        return {
+            url: summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + payload.query,
+            title: [type, payload.summaries_id].join(),
+            type: "api",
+            payload: payload
+        }
+    }
+    if (type === "upload") {
+        return {
+            type: type,
+            title: [type, payload.fileName].join(),
+            payload: payload
         }
     }
     if (type === "parse") {
-        name = "parse_" + payload.match_id
-        payload = {
-            match_id: payload.match_id,
-            start_time: payload.start_time
+        return {
+            title: [type, payload.match_id].join(),
+            type: type,
+            payload: {
+                match_id: payload.match_id,
+                start_time: payload.start_time
+            }
         }
     }
-    var job = {
-        title: name,
-        url: url,
-        payload: payload,
-    };
-    utility.jobs.create(type, job).attempts(10).backoff({
-        delay: 60000,
-        type: 'exponential'
-    }).removeOnComplete(true).save(function(err) {});
-};
+    else {
+        logger.info("unknown type for generateJob");
+    }
+}
 
 utility.runParse = function runParse(fileName, cb) {
+    logger.info("[PARSER] running parse on %s", fileName);
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = "";
     var cp = spawn("java", ["-jar",
@@ -186,6 +209,7 @@ utility.runParse = function runParse(fileName, cb) {
         output += data;
     });
     cp.on('exit', function(code) {
+        logger.info("[PARSER] parse complete on %s", fileName);
         try {
             output = JSON.parse(output);
             if (process.env.DELETE_REPLAYS) {
@@ -200,17 +224,34 @@ utility.runParse = function runParse(fileName, cb) {
 };
 
 utility.getData = function getData(url, cb) {
-    request(url, function(err, res, body) {
+    request({
+        url: url,
+        json: true
+    }, function(err, res, body) {
         //logger.info("%s", url)
         if (err || res.statusCode !== 200 || !body) {
             logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
-            setTimeout(function() {
+            return setTimeout(function() {
                 getData(url, cb);
             }, 1000);
         }
-        else {
-            cb(null, JSON.parse(body));
+        if (body.result) {
+            //steam api response
+            if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
+                //user does not have stats enabled or attempting to get private match, don't retry
+                logger.info(body);
+                return cb(body);
+            }
+            else if (body.result.error || body.result.status === 2) {
+                //valid response, but invalid data, retry
+                logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+                return setTimeout(function() {
+                    getData(url, cb);
+                }, 1000);
+            }
         }
+        //generic valid response
+        cb(null, body);
     });
 };
 

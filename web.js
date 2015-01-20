@@ -426,22 +426,11 @@ app.route('/upload')
     })
     .post(function(req, res) {
         var files = req.files.replay;
-        console.log(files.fieldname + ' uploaded to  ' + files.path);
-        //todo create a third type of kue job
-        utility.runParse(files.path, function(code, output) {
-            if (!code) {
-                //put job on api queue to ensure we have it in db
-                var payload = {
-                    uploader: req.user,
-                    match_id: output.match_id,
-                    parsed_data: output
-                };
-                utility.queueReq("api", payload);
-            }
-            else {
-                logger.info(code);
-            }
-        });
+        logger.info(files.fieldname + ' uploaded to  ' + files.path);
+        utility.queueReq("upload", {
+            uploader: req.user,
+            fileName: files.path
+        })
         res.render("upload", {
             files: files
         });
