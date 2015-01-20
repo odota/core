@@ -5,13 +5,23 @@ module.exports = function(grunt) {
     },
     shell: {
       target: {
-        command: 'mvn -f parser/pom.xml package'
+        command: 'mvn -q -f parser/pom.xml package'
+      }
+    },
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec',
+        },
+        src: ['test/test.js']
       }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-mocha-test');
+
   grunt.registerTask('constants', function() {
     var done = this.async();
     updateConstants(done);
@@ -20,7 +30,11 @@ module.exports = function(grunt) {
     var done = this.async();
     getFullMatchHistory(done);
   });
-  grunt.registerTask('default', ['jshint', 'shell', 'constants']);
+  grunt.registerTask('unparsed', function() {
+    var done = this.async();
+    unparsed(done);
+  });
+  grunt.registerTask('default', ['shell', 'mochaTest']);
 
   var dotenv = require('dotenv');
   dotenv.load();
@@ -29,6 +43,18 @@ module.exports = function(grunt) {
   var fs = require('fs');
   var async = require('async');
   var utility = require('./utility');
+
+  function unparsed(done) {
+    utility.matches.find({
+      parse_status: 0
+    }, function(err, docs) {
+      docs.forEach(function(match) {
+        console.log(match.match_id);
+        utility.queueReq("parse", match);
+      });
+      done();
+    });
+  }
 
   function updateConstants(done) {
     var constants = require('./constants.json');
@@ -164,6 +190,5 @@ module.exports = function(grunt) {
       });
     }
   }
-
 
 };
