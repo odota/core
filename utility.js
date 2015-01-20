@@ -6,8 +6,8 @@ var utility = exports,
     request = require('request'),
     winston = require('winston');
 var transports = [new(winston.transports.Console)({
-            'timestamp': true
-        }),
+        'timestamp': true
+    }),
     new(winston.transports.File)({
         filename: 'utility.log',
         level: 'info'
@@ -46,7 +46,7 @@ utility.clearActiveJobs = function(type, cb) {
                 });
             },
             function(err) {
-                cb(err)
+                cb(err);
             });
     });
 };
@@ -123,13 +123,13 @@ utility.makeSort = function(order, columns) {
  * Returns a BigNumber
  */
 utility.convert64to32 = function(id) {
-        return BigNumber(id).minus('76561197960265728');
-    };
-    /*
-     * Converts a steamid 64 to a steamid 32
-     *
-     * Returns a BigNumber
-     */
+    return BigNumber(id).minus('76561197960265728');
+};
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
 utility.convert32to64 = function(id) {
     return BigNumber('76561197960265728').plus(id);
 };
@@ -139,21 +139,35 @@ utility.isRadiant = function(player) {
 utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
 utility.summaries_url = "http://api.steampowered.com/ISteamUser";
 utility.queueReq = function queueReq(type, payload, cb) {
-    var job = utility.generateJob(type, payload);
-    var kuejob = utility.jobs.create(job.type, job).attempts(10).backoff({
-        delay: 60000,
-        type: 'exponential'
-    }).removeOnComplete(true).save(function(err) {
+    utility.checkDuplicate(payload, function(err) {
         if (err) {
-            logger.info(err);
+            return cb(err);
         }
-        else {
+        var job = utility.generateJob(type, payload);
+        var kuejob = utility.jobs.create(job.type, job).attempts(10).backoff({
+            delay: 60000,
+            type: 'exponential'
+        }).removeOnComplete(true).save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
-        }
-        if (cb) {
             cb(err, kuejob.id);
-        }
+        });
     });
+};
+
+utility.checkDuplicate = function checkDuplicate(payload, cb) {
+    if (payload.match_id) {
+        utility.matches.findOne({
+            match_id: payload.match_id
+        }, function(err, doc) {
+            if (!err && !doc) {
+                cb(null);
+            }
+            cb("duplicate found");
+        });
+    }
+    else {
+        cb(null);
+    }
 };
 
 utility.generateJob = function(type, payload) {
@@ -263,19 +277,8 @@ utility.getData = function getData(url, cb) {
         cb(null, body);
     });
 };
-
-
-//todo replace this with queuereq(api), check for duplication in there
-utility.requestDetails = function requestDetails(match, cb) {
-    utility.matches.findOne({
-        match_id: match.match_id
-    }, function(err, doc) {
-        if (!doc) {
-            utility.queueReq("api", match);
-        }
-        cb(null);
-    });
-};
+//todo write function that can accept multiple urls and cycle retries
+//todo write function that fills missing names/updates current names
 
 utility.getCurrentSeqNum = function getCurrentSeqNum(cb) {
     utility.getData(utility.api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
