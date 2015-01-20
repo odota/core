@@ -17,8 +17,8 @@ Deployment
 ====
 * Create .env file with desired parameters
 * Install node dependencies: `npm install`
-* Compile parser: `mvn -f parser/pom.xml package`
-* Run: `npm start`
+* Build parser: `npm run buildparser`
+* Start: `npm start`
 
 .env
 ====
