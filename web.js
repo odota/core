@@ -101,7 +101,7 @@ app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')))
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
-    secret: process.env.SESSION_SECRET
+    secret: process.env.SESSION_SECRET || "null"
 }))
 app.use(passport.initialize())
 app.use(passport.session()) // persistent login
