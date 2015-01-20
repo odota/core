@@ -26,10 +26,14 @@ append content
           each player, i in match.players
            tr(class = player.player_slot<64 ? "success" : "danger")
              td
+               if (player["track"])
+                 img(src='/public/images/favicon-16x16.png', title="YASP User")
                if (player.account_id == constants.anonymous_account_id)
                  ="Anonymous"
+               else if (!player.account_id)
+                 ="Bot"
                else
-                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id || "Bot"
+                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id
              - var hero = constants.heroes[player.hero_id]
              td.hero
                if hero
