@@ -459,10 +459,12 @@ app.route('/upload')
                 fileName: files.path
             })
         }
-         
+        
+        var verified = req.session.captcha_verified;
+        req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
             files: files,
-            rc_pass: req.session.captcha_verified,
+            rc_pass: verified,
             recaptcha_form: recaptcha.toHTML(),
         });
     });
