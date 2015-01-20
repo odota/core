@@ -16,12 +16,10 @@ block content
     .form-group
       label Replay Upload
       input(type="file" name="replay")
-    button.btn.btn-success Upload
+    button.btn.btn-success#button Upload
   script.
-    $("#upload").submit(function(event){
-      console.log("called")
+    $("#button").click(function(event){
       event.preventDefault();
-      console.log($('#recaptcha_challenge_field').val())
       $.post(
         "/verify_recaptcha",
         {
@@ -31,7 +29,7 @@ block content
         function(data) {
           console.log(data)
           if (data.verified) {
-            $("#upload").submit();
+              $("#upload").submit();
           } else {
             $("h1").after("<div role='alert' class='alert alert-warning'> Recaptcha failed. Please Try again.</div");
             Recaptcha.reload();

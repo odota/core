@@ -434,8 +434,9 @@ app.route('/verify_recaptcha')
         };
         
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-        console.log(req.body)
+        
         recaptcha.verify(function(success, error_code) {
+            req.session.captcha_verified = success;
             res.json({verified: success})
         })
     })
@@ -449,29 +450,20 @@ app.route('/upload')
         });
     })
     .post(function(req, res) {
-        var data = {
-            remoteip:  req.connection.remoteAddress,
-            challenge: req.body.recaptcha_challenge_field,
-            response:  req.body.recaptcha_response_field
-        };
-        
-        var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-    
-        recaptcha.verify(function(success, error_code) {
-             if (success) {
-                var files = req.files.replay;
-                logger.info(files.fieldname + ' uploaded to  ' + files.path);
-                utility.queueReq("upload", {
-                    uploader: req.user,
-                    fileName: files.path
-                })
-             }
-             
-            res.render("upload", {
-                files: files,
-                rc_pass: success,
-                recaptcha_form: recaptcha.toHTML(),
-            });
+        var recaptcha = new Recaptcha(rc_public, rc_secret);
+        var files = req.files.replay;
+        if (req.session.captcha_verified && files) {
+            logger.info(files.fieldname + ' uploaded to  ' + files.path);
+            utility.queueReq("upload", {
+                uploader: req.user,
+                fileName: files.path
+            })
+        }
+         
+        res.render("upload", {
+            files: files,
+            rc_pass: req.session.captcha_verified,
+            recaptcha_form: recaptcha.toHTML(),
         });
     });
 
