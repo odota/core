@@ -5,8 +5,7 @@ var request = require("request"),
     utility = require('./utility'),
     matches = utility.matches,
     AWS = require('aws-sdk'),
-    winston = require('winston'),
-    async = require('async');
+    winston = require('winston');
 var jobs = utility.jobs;
 var replay_dir = "replays/";
 var retrievers = process.env.RETRIEVER_HOST.split(",");
@@ -88,11 +87,11 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var t = new Date().getTime();
-        var retriever = t % retrievers.length;
-        var target = retrievers[retriever] + "?match_id=" + job.data.payload.match_id;
-        logger.info(target);
-        utility.getData(target, function(err, body) {
+        var urls = [];
+        for (var i = 0; i < retrievers.length; i++) {
+            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
+        }
+        utility.getData(urls, function(err, body) {
             if (err) {
                 logger.info(err);
             }
