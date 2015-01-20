@@ -5,7 +5,7 @@ block content
     .col-md-8
       p Upload your replays here for faster results. <strong>We currently only support public lobbies.</strong>
   if files && rc_pass
-    .alert.alert-success(role="alert") File received! <br> !{JSON.stringify(files)}
+    .alert.alert-success(role="alert") File #{files.originalname} received! Size: #{files.size} bytes
   else
     if !rc_pass
       .alert.alert-danger(role="alert") Recaptcha failed. Please Try again.
