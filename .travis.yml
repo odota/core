@@ -10,7 +10,6 @@ services:
 - redis-server
 env:
 - SESSION_SECRET=travisci
-- secure: W1DioR2KX0RbvQsmUXpOhVShE+CT/W8O/IlYEdil4Sn7VVcRD5qyw+ejehTbtWzhzhKe938K5QGVkNbUhukUZLAgV71r08Dz/c+tUowtx3+DZg+AXkLtQg6M0dQgON9armdQwa9xTZ+FjwBXaTbQJ56ea/lP1pmftnhp967uQTM=
 deploy:
   provider: heroku
   api_key:
