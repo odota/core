@@ -26,7 +26,9 @@ Deployment
 * SESSION_SECRET (required, a secret to use for sessions)
 * ROOT_URL (required, root URL of instance for oauth callbacks)
 * RETRIEVER_HOST (required, a comma-separated list of hosts to send match replay url requests to)
-
+* RECAPTCHA_PUBLIC_KEY
+* RECAPTCHA_SECRET_KEY
+* 
 * KUE_USER (optional, for http authentication on KUE UI)
 * KUE_PASS (optional, for http authentication on KUE UI)
 * DELETE_REPLAYS (optional, deletes replays after parse if set)
@@ -38,7 +40,5 @@ Deployment
 * REDIS_PORT (optional, default 16379, port for Redis instance)
 * REDIS_HOST (optional, default localhost, host for Redis instance)
 * START_SEQ_NUM (optional, default highest value in db, starting sequence number for scan)
-* RECAPTCHA_PUBLIC_KEY
-* RECAPTCHA_SECRET_KEY
 * UNTRACK_INTERVAL_DAYS
 * PORT

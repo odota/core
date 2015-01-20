@@ -105,34 +105,38 @@ module.exports = function(grunt) {
       fs.writeFileSync("constants.json", JSON.stringify(constants, null, 2));
       done();
     });
-  }
 
-  function buildLookup(array) {
-    var lookup = {};
-    for (var i = 0; i < array.length; i++) {
-      lookup[array[i].id] = array[i];
+    function buildLookup(array) {
+      var lookup = {};
+      for (var i = 0; i < array.length; i++) {
+        lookup[array[i].id] = array[i];
+      }
+      return lookup;
     }
-    return lookup;
   }
 
   function getFullMatchHistory(done) {
-    var remote = "http://dotabuff.com";
+    var remote = process.env.REMOTE;
     var match_ids = {};
-    //get full match history ONLY for specific players
+    //get full match history for specific players
     //build hash of match ids to request details for
-    //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
     var docs = [{
       account_id: 88367253
     }];
-    async.mapSeries(docs, remoteRecursive, function(err) {
-      //done with all players
-      for (var key in match_ids) {
-        var match = {};
-        match.match_id = key;
-        console.log(match);
-        //utility.requestDetails(match);
+    async.mapSeries(docs, getHistoryByHero, function(err) {
+      if (err) {
+        done(err);
       }
-      done();
+      else {
+        //done with all players
+        for (var key in match_ids) {
+          var match = {};
+          match.match_id = key;
+          console.log(match);
+          //utility.requestDetails(match);
+        }
+        done();
+      }
     });
 
     function getMatchPage(url, cb) {
@@ -165,12 +169,16 @@ module.exports = function(grunt) {
       });
     }
 
-    function remoteRecursive(player, cb) {
-      var account_id = player.account_id;
-      var player_url = remote + "/players/" + account_id + "/matches";
-      getMatchPage(player_url, function(err) {
-        cb(err);
-      });
+    function getHistoryRemote(player, cb) {
+        var account_id = player.account_id;
+        var player_url = remote + "/players/" + account_id + "/matches";
+        getMatchPage(player_url, function(err) {
+          cb(err);
+        });
+      }
+      //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
+    function getHistoryByHero(player, cb) {
+
     }
   }
 
