@@ -64,9 +64,10 @@ module.exports = function(grunt) {
       console.log(val);
       utility.getData(val, function(err, result) {
         constants[key] = result;
-        cb(null);
+        cb(err);
       });
     }, function(err) {
+      if (err) throw err;
       var heroes = constants.heroes.result.heroes;
       heroes.forEach(function(hero) {
         hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";

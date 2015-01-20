@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "nf start",
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "unparsed": "grunt unparsed",
+    "constants": "grunt constants"
   },
   "dependencies": {
     "async": "0.9.0",
