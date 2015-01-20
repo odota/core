@@ -7,20 +7,25 @@ append head
 append content 
     .row
         if match.parsed_data
-          .col-md-12
-            h3 Radiant Advantage
-            #chart-diff
-          include ads/leaderboard_2
-          .col-md-12
-            h3 Gold
-            #chart-gold
-          include ads/leaderboard_3
-          .col-md-12
-            h3 XP
-            #chart-xp
-          .col-md-12
-            h3 LH
-            #chart-lh
+          .row
+            .col-md-12
+              h3 Radiant Advantage
+              #chart-diff
+          .row
+            include ads/leaderboard_2
+          .row
+            .col-md-12
+              h3 Gold
+              #chart-gold
+          .row
+            include ads/leaderboard_3
+          .row
+            .col-md-12
+              h3 XP
+              #chart-xp
+            .col-md-12
+              h3 LH
+              #chart-lh
         else
           h1 This match has no parsed data!
 
