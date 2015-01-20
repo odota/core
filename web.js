@@ -21,7 +21,8 @@ var utility = require('./utility'),
     app = express();
 var host = process.env.ROOT_URL,
     rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
-    rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+    rc_secret = process.env.RECAPTCHA_SECRET_KEY,
+    recaptcha = new Recaptcha(rc_public, rc_secret);
 var transports = [new(winston.transports.Console)(),
     new(winston.transports.File)({
         filename: 'web.log',
@@ -124,6 +125,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
         app.locals.user = req.user;
+        app.locals.login_req_msg = req.session.login_required;
+        req.session.login_required = false;
         if (err || !reply) {
             app.locals.banner_msg = false;
             next();
@@ -442,15 +445,21 @@ app.route('/verify_recaptcha')
     })
 
 app.route('/upload')
+    .all(function(req, res, next) {
+        if (req.user) {
+            next();
+        } else {
+            req.session.login_required = "upload";
+            res.redirect("/");
+        }
+    })
     .get(function(req, res) {
-        var recaptcha = new Recaptcha(rc_public, rc_secret);
         res.render("upload", {
             recaptcha_form: recaptcha.toHTML(),
             rc_pass: true
         });
     })
     .post(function(req, res) {
-        var recaptcha = new Recaptcha(rc_public, rc_secret);
         var files = req.files.replay;
         if (req.session.captcha_verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);

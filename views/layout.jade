@@ -44,9 +44,10 @@ html
         ul.nav.navbar-nav
           li
             a(href="/matches") Matches
-          li
-            a(href="/upload") Upload
-        if (user)
+          if user
+            li
+              a(href="/upload") Upload
+        if user
           ul.nav.navbar-nav.navbar-right
             li
               a(href="/players/"+user.account_id)=user.personaname
@@ -55,6 +56,8 @@ html
          .alert.alert-success(role="alert") !{banner_msg}
        if user && untracked
            .alert.alert-warning(role="alert") !{constants.untracked_msg}
+       if login_req_msg
+           .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
        if !error
         include ads/leaderboard
        block content
