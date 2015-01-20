@@ -424,6 +424,21 @@ app.use(multer({
     }
 }));
 
+app.route('/verify_recaptcha')
+    .post(function(req, res) {
+         var data = {
+            remoteip:  req.connection.remoteAddress,
+            challenge: req.body.recaptcha_challenge_field,
+            response:  req.body.recaptcha_response_field
+        };
+        
+        var recaptcha = new Recaptcha(rc_public, rc_secret, data);
+        console.log(req.body)
+        recaptcha.verify(function(success, error_code) {
+            res.json({verified: success})
+        })
+    })
+
 app.route('/upload')
     .get(function(req, res) {
         var recaptcha = new Recaptcha(rc_public, rc_secret);
