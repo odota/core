@@ -5,6 +5,7 @@ node_js:
 notifications:
     email:
         - howardc93@gmail.com
+        - aqc2109@columbia.edu
 services:
     - mongodb
     - redis-server
