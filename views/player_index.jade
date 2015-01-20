@@ -92,6 +92,11 @@ block footer_assets
   script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
   script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
   script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
+  //- QTip2 CSS and JS
+  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
+  script.
+    $('[title!=""]').qtip({style: "qtip-dark"});
   script.
     var data = !{JSON.stringify(player.calheatmap)}
     $('#matches').dataTable({
