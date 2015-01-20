@@ -28,7 +28,7 @@ utility.clearActiveJobs('parse', function(err) {
     if (err) {
         logger.info(err);
     }
-    jobs.process('parse', 4, function(job, done) {
+    jobs.process('parse', 8, function(job, done) {
         parseReplay(job, done)
     })
 })
