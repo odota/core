@@ -36,7 +36,8 @@
     "multer": "~0.1.7",
     "foreman": "~1.2.1",
     "dotenv": "~0.4.0",
-    "recaptcha": "1.2.0"
+    "recaptcha": "1.2.0",
+    "body-parser": "1.10.1"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
