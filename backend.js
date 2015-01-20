@@ -7,16 +7,19 @@ var async = require("async"),
     fs = require('fs'),
     request = require('request'),
     jobs = utility.jobs,
-    trackedPlayers = {},
-    transports = [new(winston.transports.Console)(),
-        new(winston.transports.File)({
-            filename: 'backend.log',
-            level: 'info'
-        })
-    ],
-    logger = new(winston.Logger)({
-        transports: transports
-    });
+    trackedPlayers = {};
+
+var transports = [new(winston.transports.Console)({
+        'timestamp': true
+    }),
+    new(winston.transports.File)({
+        filename: 'backend.log',
+        level: 'info'
+    })
+];
+var logger = new(winston.Logger)({
+    transports: transports
+});
 var UNTRACK_INTERVAL_DAYS = process.env.UNTRACK_INTERVAL_DAYS || 3;
 
 utility.clearActiveJobs('api', function(err) {

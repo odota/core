@@ -7,15 +7,12 @@ var request = require("request"),
     AWS = require('aws-sdk'),
     winston = require('winston'),
     async = require('async');
-var kue = utility.kue;
 var jobs = utility.jobs;
-var replay_dir = "replays/"
-var retrievers = process.env.RETRIEVER_HOST.split(",")
-
-if (!fs.existsSync(replay_dir)) {
-    fs.mkdir(replay_dir)
-}
-var transports = [new(winston.transports.Console)(),
+var replay_dir = "replays/";
+var retrievers = process.env.RETRIEVER_HOST.split(",");
+var transports = [new(winston.transports.Console)({
+        'timestamp': true
+    }),
     new(winston.transports.File)({
         filename: 'parser.log',
         level: 'info'
@@ -39,6 +36,9 @@ utility.clearActiveJobs('parse', function(err) {
 
 function download(job, cb) {
     var match_id = job.data.payload.match_id
+    if (!fs.existsSync(replay_dir)) {
+        fs.mkdir(replay_dir);
+    }
     var fileName = replay_dir + match_id + ".dem"
     if (fs.existsSync(fileName)) {
         logger.info("[PARSER] %s, found local replay", match_id)
@@ -97,6 +97,9 @@ function getReplayUrl(job, cb) {
         var target = retrievers[retriever] + "?match_id=" + job.data.payload.match_id;
         logger.info(target);
         utility.getData(target, function(err, body) {
+            if (err) {
+                logger.info(err);
+            }
             if (body && body.match) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
                 job.data['url'] = url;
@@ -107,7 +110,7 @@ function getReplayUrl(job, cb) {
                 logger.info(body);
                 return cb("response error");
             }
-        })
+        });
     }
     else {
         getS3URL(match.match_id, function(err, url) {
@@ -176,31 +179,32 @@ function uploadToS3(archiveName, body, cb) {
      */
 
 function parseReplay(job, cb) {
-    var match_id = job.data.payload.match_id
+    var match_id = job.data.payload.match_id;
     matches.findOne({
         match_id: match_id
     }, function(err, doc) {
-        if (doc && doc.parsed_data) {
+        if (!err && doc && doc.parsed_data) {
+            //match already has parsed data
             cb(null);
         }
         else {
             download(job, function(err, fileName) {
                 if (err) {
-                    logger.info("[PARSER] Error for match %s: %s", match_id, err)
+                    logger.info("[PARSER] Error for match %s: %s", match_id, err);
                     if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
+                        //don't retry
                         matches.update({
                             match_id: job.data.payload.match_id
                         }, {
                             $set: {
                                 parse_status: 1
                             }
-                        })
-                        job.failed().error(err);
-                        //don't retry
-                        return cb(null)
+                        });
+                        //todo this isn't optimal since this marks the job as complete, so it immediately disappears
+                        return cb(null);
                     }
                     //retry
-                    return cb(err);
+                    return cb(new Error(err));
                 }
                 var t1 = new Date().getTime();
                 utility.runParse(fileName, function(err, output) {
