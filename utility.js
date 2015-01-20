@@ -209,15 +209,14 @@ utility.runParse = function runParse(fileName, cb) {
         output += data;
     });
     cp.on('exit', function(code) {
-        logger.info("[PARSER] parse complete on %s", fileName);
+        logger.info("[PARSER] parse complete on %s, exitcode: %s", fileName, code);
         try {
             output = JSON.parse(output);
-            if (process.env.DELETE_REPLAYS) {
-                fs.unlink(fileName);
-            }
             return cb(code, output);
         }
         catch (e) {
+            //error parsing json output
+            logger.info(e);
             return cb(e);
         }
     });
