@@ -1,6 +1,11 @@
 extend layout
 block content
+  h1 Replay Uploads
+  .row
+    .col-md-8
+      p Upload your replays here for faster results. <strong>We currently only support public lobbies.</strong>
   if files
     .alert.alert-success(role="alert") !{JSON.stringify(files)}
   form#upload(enctype="multipart/form-data", action="/upload", method="post")
-    input(type="file" name="replay" onchange="this.form.submit()")
+    input.btn.btn-alert(type="file" name="replay" onchange="this.form.submit()")
+  include ads/leaderboard_2
