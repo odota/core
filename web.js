@@ -15,7 +15,6 @@ var utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
     kue = utility.kue,
-    jobs = utility.jobs,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
@@ -102,7 +101,7 @@ passport.use(new SteamStrategy({
         new: false
     }, function(err, user) {
         if (err) return done(err, null);
-        console.log(user)
+        console.log(user);
         return done(null, {
             account_id: steam32,
             untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
@@ -158,7 +157,7 @@ app.param('match_id', function(req, res, next, id) {
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
                             redis.setex(id, 86400, JSON.stringify(match));
                         }
-                        return next()
+                        return next();
                     })
                 }
             })
@@ -185,7 +184,7 @@ app.route('/api/matches').get(function(req, res) {
     if (req.query.draw) {
         //var search = req.query.search.value
         //options = utility.makeSearch(search, req.query.columns)
-        sort = utility.makeSort(req.query.order, req.query.columns)
+        sort = utility.makeSort(req.query.order, req.query.columns);
     }
     utility.matches.count(options, function(err, count) {
         utility.matches.find(options, {
@@ -198,20 +197,20 @@ app.route('/api/matches').get(function(req, res) {
                 recordsTotal: count,
                 recordsFiltered: count,
                 data: docs
-            })
-        })
+            });
+        });
     });
-})
+});
 app.route('/matches').get(function(req, res) {
     res.render('matches.jade', {
         title: "Matches - YASP"
-    })
-})
+    });
+});
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index'
-    var match = req.match
+    var info = req.params.info || 'index';
+    var match = req.match;
     if (!matchPages[info]) {
-        return next()
+        return next();
     }
     if (info === "details") {
         //loop through all heroes
@@ -473,7 +472,9 @@ app.route('/upload')
             utility.queueReq("upload", {
                 uploader: req.user,
                 fileName: files.path
-            })
+            }, function(err) {
+                if (err) return logger.info(err);
+            });
         }
 
         var verified = req.session.captcha_verified;
@@ -500,6 +501,13 @@ app.get('/stats', function(req, res, next) {
             tracked_players: function(cb) {
                 utility.players.count({
                     track: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            formerly_tracked_players: function(cb) {
+                utility.players.count({
+                    track: 0
                 }, function(err, res) {
                     cb(err, res);
                 });
@@ -570,8 +578,7 @@ app.use(function(req, res) {
     }
 });
 
-// In order to reach the app from other modules
-// we need to export the express application
+// Expose application to enable testing
 module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {
