@@ -513,11 +513,34 @@ app.get('/stats', function(req, res, next) {
                     cb(err, res);
                 });
             },
-            queued_jobs: function(cb) {
-                jobs.inactiveCount(function(err, res) {
+            queued_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 0
+                }, function(err, res) {
                     cb(err, res);
                 });
-            }
+            },
+            unavailable_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            parsed_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 2
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            uploaded_matches: function(cb) {
+                utility.matches.count({
+                    upload: true
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
         },
         function(err, results) {
             if (err) {
