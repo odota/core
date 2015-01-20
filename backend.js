@@ -191,6 +191,7 @@ function insertMatch(match, cb) {
 
 function insertPlayer(player, cb) {
     var account_id = Number(utility.convert64to32(player.steamid));
+    player.last_summaries_update = new Date();
     players.update({
         account_id: account_id
     }, {
