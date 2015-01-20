@@ -10,6 +10,8 @@ var utility = require('./utility'),
     winston = require('winston'),
     passport = require('passport'),
     moment = require('moment'),
+    Recaptcha = require('recaptcha').Recaptcha,
+    // bodyParser = require('body-parser'),
     matches = utility.matches,
     players = utility.players,
     kue = utility.kue,
@@ -17,7 +19,9 @@ var utility = require('./utility'),
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var host = process.env.ROOT_URL;
+var host = process.env.ROOT_URL,
+    rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
+    rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var transports = [new(winston.transports.Console)(),
     new(winston.transports.File)({
         filename: 'web.log',
@@ -422,28 +426,47 @@ app.use(multer({
 
 app.route('/upload')
     .get(function(req, res) {
-        res.render("upload");
+        var recaptcha = new Recaptcha(rc_public, rc_secret);
+        res.render("upload", {
+            recaptcha_form: recaptcha.toHTML(),
+            rc_pass: true
+        });
     })
     .post(function(req, res) {
-        var files = req.files.replay;
-        console.log(files.fieldname + ' uploaded to  ' + files.path);
-        //todo create a third type of kue job
-        utility.runParse(files.path, function(code, output) {
-            if (!code) {
-                //put job on api queue to ensure we have it in db
-                var payload = {
-                    uploader: req.user,
-                    match_id: output.match_id,
-                    parsed_data: output
-                };
-                utility.queueReq("api", payload);
-            }
-            else {
-                logger.info(code);
-            }
-        });
-        res.render("upload", {
-            files: files
+        var data = {
+            remoteip:  req.connection.remoteAddress,
+            challenge: req.body.recaptcha_challenge_field,
+            response:  req.body.recaptcha_response_field
+        };
+        
+        var recaptcha = new Recaptcha(rc_public, rc_secret, data);
+    
+        recaptcha.verify(function(success, error_code) {
+             if (success) {
+                var files = req.files.replay;
+                console.log(files.fieldname + ' uploaded to  ' + files.path);
+                //todo create a third type of kue job
+                utility.runParse(files.path, function(code, output) {
+                    if (!code) {
+                        //put job on api queue to ensure we have it in db
+                        var payload = {
+                            uploader: req.user,
+                            match_id: output.match_id,
+                            parsed_data: output
+                        };
+                        utility.queueReq("api", payload);
+                    }
+                    else {
+                        logger.info(code);
+                    }
+                });
+             }
+             
+            res.render("upload", {
+                files: files,
+                rc_pass: success,
+                recaptcha_form: recaptcha.toHTML(),
+            });
         });
     });
 
