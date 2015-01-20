@@ -27,10 +27,10 @@ describe('GET /stats', function() {
 });
 
 describe('GET /upload', function() {
-  it('got 200 response', function(done) {
+  it('got 302 response', function(done) {
     request(app)
       .get('/upload')
-      .expect(200)
+      .expect(302)
       .end(function(err, res) {
         done(err);
       });
