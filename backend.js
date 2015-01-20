@@ -2,18 +2,17 @@ var async = require("async"),
     utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
-    winston = require('winston');
-var jobs = utility.jobs;
-var trackedPlayers = {}
-var transports = [new(winston.transports.Console)(),
-    new(winston.transports.File)({
-        filename: 'backend.log',
-        level: 'info'
-    })
-]
-var logger = new(winston.Logger)({
-    transports: transports
-});
+    winston = require('winston'),
+    jobs = utility.jobs,
+    trackedPlayers = {},
+    transports = [new(winston.transports.Console)(),
+        new(winston.transports.File)({
+            filename: 'backend.log',
+            level: 'info'
+        })
+    ],
+    logger = new(winston.Logger)({transports: transports})
+    untrack_interval = process.env.UNTRACK_INTERVAL || 3;
 
 utility.clearActiveJobs('api', function(err) {
     if (err) {
@@ -179,3 +178,22 @@ function insertPlayer(player, cb) {
         cb(err);
     });
 }
+
+function untrackPlayers() {
+    logger.info("[UNTRACK] Untracking users...");
+    players.update({
+        last_visited: {
+            $lte: Date.now() - 86400 * untrack_interval
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    },  function(err, num){
+        logger.info("[UNTRACK] Untracked " + num + " users.")
+    })
+}
+
+setInterval(untrackPlayers(), 60*60*1000);
