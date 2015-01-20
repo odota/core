@@ -84,7 +84,7 @@ passport.deserializeUser(function(id, done) {
 passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
-    apiKey: process.env.STEAM_API_KEY || "null"
+    apiKey: process.env.STEAM_API_KEY
 }, function(identifier, profile, done) { // start tracking the player
     var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
