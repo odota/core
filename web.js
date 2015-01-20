@@ -23,7 +23,9 @@ var host = process.env.ROOT_URL,
     rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
     rc_secret = process.env.RECAPTCHA_SECRET_KEY,
     recaptcha = new Recaptcha(rc_public, rc_secret);
-var transports = [new(winston.transports.Console)(),
+var transports = [new(winston.transports.Console)({
+        'timestamp': true
+    }),
     new(winston.transports.File)({
         filename: 'web.log',
         level: 'info'
@@ -121,7 +123,9 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
         app.locals.user = req.user;
@@ -430,17 +434,19 @@ app.use(multer({
 
 app.route('/verify_recaptcha')
     .post(function(req, res) {
-         var data = {
-            remoteip:  req.connection.remoteAddress,
+        var data = {
+            remoteip: req.connection.remoteAddress,
             challenge: req.body.recaptcha_challenge_field,
-            response:  req.body.recaptcha_response_field
+            response: req.body.recaptcha_response_field
         };
-        
+
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-        
+
         recaptcha.verify(function(success, error_code) {
             req.session.captcha_verified = success;
-            res.json({verified: success})
+            res.json({
+                verified: success
+            })
         })
     })
 
@@ -448,7 +454,8 @@ app.route('/upload')
     .all(function(req, res, next) {
         if (req.user) {
             next();
-        } else {
+        }
+        else {
             req.session.login_required = "upload";
             res.redirect("/");
         }
@@ -468,7 +475,7 @@ app.route('/upload')
                 fileName: files.path
             })
         }
-        
+
         var verified = req.session.captcha_verified;
         req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
