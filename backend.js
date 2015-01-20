@@ -49,7 +49,11 @@ else if (process.env.START_SEQ_NUM) {
 }
 else {
     //start at highest id in db
-    matches.findOne({}, {
+    matches.findOne({
+        upload: {
+            $exists: false
+        }
+    }, {
         sort: {
             match_seq_num: -1
         }

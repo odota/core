@@ -136,13 +136,21 @@ utility.isRadiant = function(player) {
 }
 utility.api_url = "https://api.steampowered.com/IDOTA2Match_570";
 utility.summaries_url = "http://api.steampowered.com/ISteamUser";
-utility.queueReq = function queueReq(type, payload) {
+utility.queueReq = function queueReq(type, payload, cb) {
     var job = utility.generateJob(type, payload);
-    utility.jobs.create(job.type, job).attempts(10).backoff({
+    var kuejob = utility.jobs.create(job.type, job).attempts(10).backoff({
         delay: 60000,
         type: 'exponential'
     }).removeOnComplete(true).save(function(err) {
-        logger.info(err);
+        if (err) {
+            logger.info(err);
+        }
+        else {
+            logger.info("[KUE] created jobid: %s", kuejob.id);
+        }
+        if (cb) {
+            cb(err, kuejob.id)
+        }
     });
 };
 

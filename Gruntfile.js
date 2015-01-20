@@ -24,11 +24,17 @@ module.exports = function(grunt) {
     utility.matches.find({
       parse_status: 0
     }, function(err, docs) {
-      docs.forEach(function(match) {
-        console.log(match.match_id);
-        utility.queueReq("parse", match);
+      if (err) {
+        return done(err);
+      }
+      async.mapSeries(docs, function(match, cb) {
+        utility.queueReq("parse", match, function(err, id) {
+          console.log("[UNPARSED] match %s, id %s", match.match_id, id);
+          cb(err);
+        });
+      }, function(err) {
+        done(err);
       });
-      done();
     });
   }
 
