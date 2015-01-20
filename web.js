@@ -113,35 +113,35 @@ var basic = auth.basic({
 });
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
-app.use("/public", express.static(path.join(__dirname, '/public')))
+app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
-    secret: process.env.SESSION_SECRET || "null"
-}))
-app.use(passport.initialize())
-app.use(passport.session()) // persistent login
+    secret: process.env.SESSION_SECRET
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
-        app.locals.user = req.user
+        app.locals.user = req.user;
         if (err || !reply) {
-            app.locals.banner_msg = false
-            next()
+            app.locals.banner_msg = false;
+            next();
         }
         else {
-            app.locals.banner_msg = reply
-            next()
+            app.locals.banner_msg = reply;
+            next();
         }
-    })
-})
+    });
+});
 app.param('match_id', function(req, res, next, id) {
     redis.get(id, function(err, reply) {
         if (err || !reply) {
-            logger.info("Cache miss for match " + id)
+            logger.info("Cache miss for match " + id);
             matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
                 if (err || !match) {
-                    return next()
+                    return next();
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
@@ -295,10 +295,10 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         data: data,
         title: "Match " + match.match_id + " - YASP"
     }, function(err, html) {
-        if (err) return next(err)
-        return res.send(html)
-    })
-})
+        if (err) return next(err);
+        return res.send(html);
+    });
+});
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
@@ -459,22 +459,11 @@ app.route('/upload')
         recaptcha.verify(function(success, error_code) {
              if (success) {
                 var files = req.files.replay;
-                console.log(files.fieldname + ' uploaded to  ' + files.path);
-                //todo create a third type of kue job
-                utility.runParse(files.path, function(code, output) {
-                    if (!code) {
-                        //put job on api queue to ensure we have it in db
-                        var payload = {
-                            uploader: req.user,
-                            match_id: output.match_id,
-                            parsed_data: output
-                        };
-                        utility.queueReq("api", payload);
-                    }
-                    else {
-                        logger.info(code);
-                    }
-                });
+                logger.info(files.fieldname + ' uploaded to  ' + files.path);
+                utility.queueReq("upload", {
+                    uploader: req.user,
+                    fileName: files.path
+                })
              }
              
             res.render("upload", {

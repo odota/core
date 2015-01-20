@@ -8,3 +8,5 @@ notifications:
 services:
     - mongodb
     - redis-server
+env:
+    - SESSION_SECRET="traviscisecret"
