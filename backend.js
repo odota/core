@@ -202,8 +202,9 @@ function insertPlayer(player, cb) {
 function processUpload(job, cb) {
     var fileName = job.data.payload.fileName;
     utility.runParse(fileName, function(code, output) {
-        //delete all uploaded files immediately after parse
-        fs.unlink(fileName);
+        fs.unlink(fileName, function(err) {
+            logger.info(err);
+        });
         if (!code) {
             var api_container = utility.generateJob("api_details", {
                 match_id: output.match_id
