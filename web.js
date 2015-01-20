@@ -10,6 +10,8 @@ var utility = require('./utility'),
     winston = require('winston'),
     passport = require('passport'),
     moment = require('moment'),
+    Recaptcha = require('recaptcha').Recaptcha,
+    bodyParser = require('body-parser'),
     matches = utility.matches,
     players = utility.players,
     kue = utility.kue,
@@ -17,7 +19,10 @@ var utility = require('./utility'),
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
-var host = process.env.ROOT_URL;
+var host = process.env.ROOT_URL,
+    rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
+    rc_secret = process.env.RECAPTCHA_SECRET_KEY,
+    recaptcha = new Recaptcha(rc_public, rc_secret);
 var transports = [new(winston.transports.Console)(),
     new(winston.transports.File)({
         filename: 'web.log',
@@ -69,7 +74,7 @@ passport.deserializeUser(function(id, done) {
         },
         update: {
             $set: {
-                last_visited: Date.now()
+                last_visited: new Date()
             }
         }
     }, function(err, user) {
@@ -85,7 +90,7 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.track = 1;
-    insert.last_visited = Date.now(); // $currentDate only exists in Mongo >= 2.6
+    insert.last_visited = new Date(); // $currentDate only exists in Mongo >= 2.6
     players.findAndModify({
         account_id: steam32
     }, {
@@ -109,35 +114,38 @@ var basic = auth.basic({
 });
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
-app.use("/public", express.static(path.join(__dirname, '/public')))
+app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
-    secret: process.env.SESSION_SECRET || "null"
-}))
-app.use(passport.initialize())
-app.use(passport.session()) // persistent login
+    secret: process.env.SESSION_SECRET
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
-        app.locals.user = req.user
+        app.locals.user = req.user;
+        app.locals.login_req_msg = req.session.login_required;
+        req.session.login_required = false;
         if (err || !reply) {
-            app.locals.banner_msg = false
-            next()
+            app.locals.banner_msg = false;
+            next();
         }
         else {
-            app.locals.banner_msg = reply
-            next()
+            app.locals.banner_msg = reply;
+            next();
         }
-    })
-})
+    });
+});
 app.param('match_id', function(req, res, next, id) {
     redis.get(id, function(err, reply) {
         if (err || !reply) {
-            logger.info("Cache miss for match " + id)
+            logger.info("Cache miss for match " + id);
             matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
                 if (err || !match) {
-                    return next()
+                    return next();
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
@@ -291,10 +299,10 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         data: data,
         title: "Match " + match.match_id + " - YASP"
     }, function(err, html) {
-        if (err) return next(err)
-        return res.send(html)
-    })
-})
+        if (err) return next(err);
+        return res.send(html);
+    });
+});
 app.route('/players').get(function(req, res) {
     players.find({}, function(err, docs) {
         res.render('players.jade', {
@@ -420,30 +428,53 @@ app.use(multer({
     }
 }));
 
+app.route('/verify_recaptcha')
+    .post(function(req, res) {
+         var data = {
+            remoteip:  req.connection.remoteAddress,
+            challenge: req.body.recaptcha_challenge_field,
+            response:  req.body.recaptcha_response_field
+        };
+        
+        var recaptcha = new Recaptcha(rc_public, rc_secret, data);
+        
+        recaptcha.verify(function(success, error_code) {
+            req.session.captcha_verified = success;
+            res.json({verified: success})
+        })
+    })
+
 app.route('/upload')
+    .all(function(req, res, next) {
+        if (req.user) {
+            next();
+        } else {
+            req.session.login_required = "upload";
+            res.redirect("/");
+        }
+    })
     .get(function(req, res) {
-        res.render("upload");
+        res.render("upload", {
+            recaptcha_form: recaptcha.toHTML(),
+            rc_pass: true
+        });
     })
     .post(function(req, res) {
         var files = req.files.replay;
-        console.log(files.fieldname + ' uploaded to  ' + files.path);
-        //todo create a third type of kue job
-        utility.runParse(files.path, function(code, output) {
-            if (!code) {
-                //put job on api queue to ensure we have it in db
-                var payload = {
-                    uploader: req.user,
-                    match_id: output.match_id,
-                    parsed_data: output
-                };
-                utility.queueReq("api", payload);
-            }
-            else {
-                logger.info(code);
-            }
-        });
+        if (req.session.captcha_verified && files) {
+            logger.info(files.fieldname + ' uploaded to  ' + files.path);
+            utility.queueReq("upload", {
+                uploader: req.user,
+                fileName: files.path
+            })
+        }
+        
+        var verified = req.session.captcha_verified;
+        req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
-            files: files
+            files: files,
+            rc_pass: verified,
+            recaptcha_form: recaptcha.toHTML(),
         });
     });
 

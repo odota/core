@@ -29,23 +29,24 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-  if match.parsed_data
-    .row
+  .row
       .col-md-10
-        ul.nav.nav-tabs
-          each val, key in tabs
-            li(class= (route == key ? 'active' : ''))
-                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+        if match.parsed_data
+          ul.nav.nav-tabs
+            each val, key in tabs
+              li(class= (route == key ? 'active' : ''))
+                  a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+        else
+          .alert.alert-warning.text-center(role="alert") <strong>Are we too slow?</strong> Upload the replay yourself for quicker results 
+            a(href="/upload") here
+            |.
       .col-md-2
         .addthis_sharing_toolbox.pull-right
-  else
-    .row
-      .addthis_sharing_toolbox.pull-right
 
 block footer_assets
   link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
   script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
-  script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
+  script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")
   script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
   script.
     $('[title!=""]').qtip({style: "qtip-dark"});

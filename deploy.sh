@@ -9,7 +9,9 @@ git pull origin master
 
 sudo npm install
 
-mvn -f parser/pom.xml package
+npm run constants
+
+npm run buildparser
 
 nf export -o /etc/init/
 

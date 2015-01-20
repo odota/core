@@ -3,6 +3,9 @@ var async = require("async"),
     matches = utility.matches,
     players = utility.players,
     winston = require('winston'),
+    moment = require('moment'),
+    fs = require('fs'),
+    request = require('request'),
     jobs = utility.jobs,
     trackedPlayers = {},
     transports = [new(winston.transports.Console)(),
@@ -11,8 +14,10 @@ var async = require("async"),
             level: 'info'
         })
     ],
-    logger = new(winston.Logger)({transports: transports})
-    untrack_interval = process.env.UNTRACK_INTERVAL || 3;
+    logger = new(winston.Logger)({
+        transports: transports
+    });
+var UNTRACK_INTERVAL_DAYS = process.env.UNTRACK_INTERVAL_DAYS || 3;
 
 utility.clearActiveJobs('api', function(err) {
     if (err) {
@@ -20,15 +25,24 @@ utility.clearActiveJobs('api', function(err) {
     }
     jobs.process('api', function(job, done) {
         setTimeout(function() {
-            apiRequest(job, done)
-        }, 1000)
-    })
-})
+            apiRequest(job, done);
+        }, 1000);
+    });
+});
+
+utility.clearActiveJobs('upload', function(err) {
+    if (err) {
+        logger.info(err);
+    }
+    jobs.process('upload', function(job, done) {
+        processUpload(job, done);
+    });
+});
 
 if (process.env.START_SEQ_NUM === "AUTO") {
     utility.getCurrentSeqNum(function(num) {
         getMatches(num);
-    })
+    });
 }
 else if (process.env.START_SEQ_NUM) {
     getMatches(process.env.START_SEQ_NUM);
@@ -42,10 +56,26 @@ else {
     }, function(err, doc) {
         if (err) {
             logger.info(err);
-        }
-        getMatches(doc ? doc.match_seq_num + 1 : 0)
+        };
+        getMatches(doc ? doc.match_seq_num + 1 : 0);
     })
 }
+setInterval(function untrackPlayers() {
+    logger.info("[UNTRACK] Untracking users...");
+    players.update({
+        last_visited: {
+            $lt: moment().subtract(UNTRACK_INTERVAL_DAYS, 'days').toDate()
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    }, function(err, num) {
+        logger.info("[UNTRACK] Untracked " + num + " users.")
+    })
+}, 60 * 60 * 1000); //check every hour
 
 function getMatches(seq_num) {
     setTimeout(function() {
@@ -84,28 +114,18 @@ function apiRequest(job, cb) {
         cb("no url");
     }
     utility.getData(job.data.url, function(err, data) {
+        if (err) {
+            return cb(err);
+        }
         if (data.response) {
             //summaries response
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(err);
             });
         }
-        else if (data.result.status === 15 || data.result.error === "Practice matches are not available via GetMatchDetails") {
-            //user does not have stats enabled
-            //or attempting to get private match
-            //don't retry
-            logger.info(data);
-            return cb(null);
-        }
-        else if (data.result.error || data.result.status === 2) {
-            //error response from dota api
-            logger.info(data);
-            return cb(data);
-        }
         else if (payload.match_id) {
             //response for single match details
             var match = data.result;
-            match.parsed_data = payload.parsed_data;
             insertMatch(match, function(err) {
                 cb(err);
             });
@@ -130,17 +150,17 @@ function insertMatch(match, cb) {
     });
     //queued or untracked
     match.parse_status = (track ? 0 : 3);
-    if (track) {
+    if (track || match.upload) {
         var summaries = {
             summaries_id: new Date()
-        }
-        var steamids = []
+        };
+        var steamids = [];
         match.players.forEach(function(player) {
-            steamids.push(utility.convert32to64(player.account_id).toString())
-        })
+            steamids.push(utility.convert32to64(player.account_id).toString());
+        });
         summaries.query = steamids.join();
         //queue for player names
-        utility.queueReq("api", summaries);
+        utility.queueReq("api_summaries", summaries);
         //parse if unparsed
         if (match.parsed_data) {
             match.parse_status = 2;
@@ -160,7 +180,7 @@ function insertMatch(match, cb) {
             });
     }
     else {
-        cb(null)
+        cb(null);
     }
 }
 
@@ -179,21 +199,32 @@ function insertPlayer(player, cb) {
     });
 }
 
-function untrackPlayers() {
-    logger.info("[UNTRACK] Untracking users...");
-    players.update({
-        last_visited: {
-            $lte: Date.now() - 86400 * untrack_interval
+function processUpload(job, cb) {
+    var fileName = job.data.payload.fileName;
+    utility.runParse(fileName, function(code, output) {
+        fs.unlink(fileName, function(err) {
+            logger.info(err);
+        });
+        if (!code) {
+            var api_container = utility.generateJob("api_details", {
+                match_id: output.match_id
+            });
+            //check api to fill rest of match info
+            utility.getData(api_container.url, function(err, body) {
+                if (err) {
+                    return cb(err);
+                }
+                var match = body.result;
+                match.parsed_data = output;
+                match.upload = true;
+                insertMatch(match, function(err) {
+                    cb(err);
+                });
+            });
         }
-    }, {
-        $set: {
-            track: 0
+        else {
+            //only try once, mark done regardless of result
+            cb(null);
         }
-    }, {
-        multi: true
-    },  function(err, num){
-        logger.info("[UNTRACK] Untracked " + num + " users.")
-    })
+    });
 }
-
-setInterval(untrackPlayers(), 60*60*1000);

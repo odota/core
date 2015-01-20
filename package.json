@@ -5,7 +5,11 @@
   "private": true,
   "scripts": {
     "start": "nf start",
-    "test": "grunt --verbose"
+    "test": "mocha && npm run buildparser",
+    "unparsed": "grunt unparsed",
+    "constants": "grunt constants",
+    "fullhistory": "grunt fullhistory",
+    "buildparser": "mvn -q -f parser/pom.xml package"
   },
   "dependencies": {
     "async": "0.9.0",
@@ -31,15 +35,14 @@
     "winston": "0.7.3",
     "multer": "~0.1.7",
     "foreman": "~1.2.1",
-    "dotenv": "~0.4.0"
+    "dotenv": "~0.4.0",
+    "recaptcha": "1.2.0",
+    "body-parser": "1.10.1"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
     "grunt": "~0.4.5",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-shell": "~1.1.1",
     "supertest": "~0.15.0",
-    "mocha": "~2.1.0",
-    "grunt-mocha-test": "~0.12.6"
+    "mocha": "~2.1.0"
   }
 }
