@@ -53,6 +53,8 @@ html
      div.container
        if banner_msg
          .alert.alert-success(role="alert") !{banner_msg}
+       if user && untracked
+           .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if !error
         include ads/leaderboard
        block content

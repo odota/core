@@ -1,5 +1,6 @@
 YASP - YASP: Another Stats Page
 ====
+[![Build Status](https://travis-ci.org/yasp-dota/yasp.svg)](https://travis-ci.org/yasp-dota/yasp)  
 
 * Provides replay-parsed stats for free!  
 * Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  

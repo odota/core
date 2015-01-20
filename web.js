@@ -63,8 +63,15 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    players.findOne({
-        account_id: id
+    players.findAndModify({
+        query: {
+            account_id: id
+        },
+        update: {
+            $set: {
+                last_visited: Date.now()
+            }
+        }
     }, function(err, user) {
         done(err, user);
     });
@@ -78,16 +85,20 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.track = 1;
-    players.update({
+    insert.last_visited = Date.now(); // $currentDate only exists in Mongo >= 2.6
+    players.findAndModify({
         account_id: steam32
     }, {
         $set: insert
     }, {
-        upsert: true
-    }, function(err, num) {
+        upsert: true,
+        new: false
+    }, function(err, user) {
         if (err) return done(err, null);
+        console.log(user)
         return done(null, {
-            account_id: steam32
+            account_id: steam32,
+            untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
         });
     });
 }));
@@ -389,6 +400,7 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
     if (req.user) {
+        app.locals.untracked = req.user.untracked;
         res.redirect('/players/' + req.user.account_id);
     }
     else {
