@@ -9,9 +9,9 @@ var howard = {
 var redis = require('redis');
 var monk = require("monk");
 var client = redis.createClient(6379, '127.0.0.1');
-var db;
 
-//todo test upload
+//todo test all endpoints
+//test for expected errs
 describe('WEB', function() {
   var app = require("../yasp").app;
   it('GET /', function(done) {
@@ -50,8 +50,6 @@ describe('WEB', function() {
 })
 
 //todo, load test data, run functions against test data
-//refactor db operation functions
-//construct db instance with something like utility.db("connectionstring").matches
 describe("MONGODB", function() {
   beforeEach(function(done) {
     db = monk('localhost/test');
@@ -102,10 +100,11 @@ describe('PARSER', function() {
   //test epilogue
   //test streaming input
   //test file input
+  //test broken file
 });
 
 //todo add tests for retriever
 describe('RETRIEVER', function() {
-  //check if up
+  //check GET /
   //get a replay salt
 });

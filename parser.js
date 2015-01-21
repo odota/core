@@ -5,5 +5,5 @@ utility.clearActiveJobs('parse', function(err) {
     if (err) {
         logger.info(err);
     }
-    jobs.process('parse', utility.parseReplayStream);
+    jobs.process('parse', utility.processParse);
 });

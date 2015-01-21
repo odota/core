@@ -4,6 +4,7 @@ var async = require('async'),
     request = require('request'),
     redis = require('redis'),
     winston = require('winston'),
+    cheerio = require('cheerio'),
     fs = require('fs'),
     moment = require('moment'),
     AWS = require('aws-sdk'),
@@ -318,7 +319,7 @@ var getCurrentSeqNum = function getCurrentSeqNum(cb) {
         cb(data.result.matches[0].match_seq_num);
     });
 }
-var parseReplayFile = function parseReplayFile(job, cb) {
+var processParse = function(job, cb) {
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
@@ -331,7 +332,7 @@ var parseReplayFile = function parseReplayFile(job, cb) {
         });
     });
 }
-var parseReplayUrl = function parseReplayUrl(job, cb) {
+var processParseStream = function(job, cb) {
     async.waterfall([
         async.apply(getReplayUrl, job),
         parseStream,
@@ -369,7 +370,7 @@ var getReplayUrl = function getReplayUrl(job, cb) {
     }
 }
 
-var downloadReplay = function (job, url, cb) {
+var downloadReplay = function(job, url, cb) {
     if (job.data.fileName) {
         return cb(null, job, job.data.fileName);
     }
@@ -561,6 +562,343 @@ var insertParse = function insertParse(output, cb) {
     });
 }
 
+var insertMatch = function insertMatch(match, cb) {
+    var summaries = {
+        summaries_id: new Date(),
+        players: match.players
+    };
+    //queue for player names
+    queueReq("api_summaries", summaries, function(err) {
+        if (err) return logger.info(err);
+    });
+    //parse if unparsed
+    if (match.parsed_data) {
+        match.parse_status = 2;
+    }
+    else {
+        queueReq("parse", match, function(err) {
+            if (err) return logger.info(err);
+        });
+    }
+    db.matches.update({
+            match_id: match.match_id
+        }, {
+            $set: match
+        }, {
+            upsert: true
+        },
+        function(err) {
+            cb(err);
+        });
+}
+
+var insertPlayer = function insertPlayer(player, cb) {
+    var account_id = Number(convert64to32(player.steamid));
+    player.last_summaries_update = new Date();
+    db.players.update({
+        account_id: account_id
+    }, {
+        $set: player
+    }, {
+        upsert: true
+    }, function(err) {
+        cb(err);
+    });
+}
+
+var processApi = function(job, cb) {
+    //process an api request
+    var payload = job.data.payload;
+    if (!job.data.url) {
+        logger.info(job);
+        cb("no url");
+    }
+    getData(job.data.url, function(err, data) {
+        if (err) {
+            return cb(err);
+        }
+        if (data.response) {
+            //summaries response
+            async.map(data.response.players, insertPlayer, function(err) {
+                cb(err);
+            });
+        }
+        else if (payload.match_id) {
+            //response for single match details
+            var match = data.result;
+            insertMatch(match, function(err) {
+                cb(err);
+            });
+        }
+        else if (payload.account_id) {
+            //response for match history for single player
+            var resp = data.result.matches;
+            async.map(resp, function(match, cb2) {
+                queueReq("api_details", match, function(err) {
+                    cb2(err);
+                });
+            }, function(err) {
+                cb(err);
+            });
+        }
+    });
+}
+
+var processUpload = function processUpload(job, cb) {
+    var fileName = job.data.payload.fileName;
+    runParse(fileName, function(code, output) {
+        fs.unlink(fileName, function(err) {
+            logger.info(err);
+        });
+        if (!code) {
+            var api_container = generateJob("api_details", {
+                match_id: output.match_id
+            });
+            //check api to fill rest of match info
+            getData(api_container.url, function(err, body) {
+                if (err) {
+                    return cb(err);
+                }
+                var match = body.result;
+                match.parsed_data = output;
+                match.upload = true;
+                insertMatch(match, function(err) {
+                    cb(err);
+                });
+            });
+        }
+        else {
+            //only try once, mark done regardless of result
+            cb(null);
+        }
+    });
+}
+
+var scanApi = function scanApi(seq_num) {
+    var trackedPlayers = {};
+    db.players.find({
+        track: 1
+    }, function(err, docs) {
+        if (err) {
+            return getMatches(seq_num);
+        }
+        //rebuild set of tracked players before every check
+        trackedPlayers = {};
+        docs.forEach(function(player) {
+            trackedPlayers[player.account_id] = true;
+        });
+        var url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
+        getData(url, function(err, data) {
+            if (err) {
+                return getMatches(seq_num);
+            }
+            var resp = data.result.matches;
+            var filtered = resp.filter()
+            logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
+            async.mapSeries(resp, insertMatch, function(err) {
+                if (err) {
+                    return getMatches(seq_num);
+                }
+                if (resp.length > 0) {
+                    seq_num = resp[resp.length - 1].match_seq_num + 1;
+                }
+                return getMatches(seq_num);
+            });
+        });
+    });
+}
+
+function checkTracked(match, trackedPlayers, cb) {
+    var track = match.players.some(function(element) {
+        return (element.account_id in trackedPlayers);
+    });
+    //queued or untracked
+    match.parse_status = (track ? 0 : 3);
+}
+
+function unparsed(done) {
+    utility.matches.find({
+        parse_status: 0
+    }, function(err, docs) {
+        if (err) {
+            return done(err);
+        }
+        async.mapSeries(docs, function(match, cb) {
+            utility.queueReq("parse", match, function(err, id) {
+                console.log("[UNPARSED] match %s, id %s", match.match_id, id);
+                cb(err);
+            });
+        }, function(err) {
+            done(err);
+        });
+    });
+}
+
+function updateConstants(done) {
+    var constants = require('./constants.json');
+    async.map(Object.keys(constants.sources), function(key, cb) {
+        var val = constants.sources[key];
+        val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
+        console.log(val);
+        utility.getData(val, function(err, result) {
+            constants[key] = result;
+            cb(err);
+        });
+    }, function(err) {
+        if (err) throw err;
+        var heroes = constants.heroes.result.heroes;
+        heroes.forEach(function(hero) {
+            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";
+        });
+        constants.heroes = buildLookup(heroes);
+        constants.hero_names = {};
+        for (var i = 0; i < heroes.length; i++) {
+            constants.hero_names[heroes[i].name] = heroes[i];
+        }
+        var items = constants.items.itemdata;
+        constants.item_ids = {};
+        for (var key in items) {
+            constants.item_ids[items[key].id] = key;
+            items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
+        }
+        constants.items = items;
+        var lookup = {};
+        var ability_ids = constants.ability_ids.abilities;
+        for (var j = 0; j < ability_ids.length; j++) {
+            lookup[ability_ids[j].id] = ability_ids[j].name;
+        }
+        constants.ability_ids = lookup;
+        constants.ability_ids["5601"] = "techies_suicide";
+        constants.ability_ids["5088"] = "skeleton_king_mortal_strike";
+        constants.ability_ids["5060"] = "nevermore_shadowraze1";
+        constants.ability_ids["5061"] = "nevermore_shadowraze1";
+        constants.ability_ids["5580"] = "beastmaster_call_of_the_wild";
+        constants.ability_ids["5637"] = "oracle_fortunes_end";
+        constants.ability_ids["5638"] = "oracle_fates_edict";
+        constants.ability_ids["5639"] = "oracle_purifying_flames";
+        constants.ability_ids["5640"] = "oracle_false_promise";
+        var abilities = constants.abilities.abilitydata;
+        for (var key2 in abilities) {
+            abilities[key2].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
+        }
+        abilities.nevermore_shadowraze2 = abilities.nevermore_shadowraze1;
+        abilities.nevermore_shadowraze3 = abilities.nevermore_shadowraze1;
+        abilities.stats = {
+            dname: "Stats",
+            img: '../../public/images/Stats.png',
+            attrib: "+2 All Attributes"
+        };
+        constants.abilities = abilities;
+        lookup = {};
+        var regions = constants.regions.regions;
+        for (var k = 0; k < regions.length; k++) {
+            lookup[regions[k].id] = regions[k].name;
+        }
+        constants.regions = lookup;
+        constants.regions["251"] = "Peru";
+        constants.regions["261"] = "India";
+        console.log("[CONSTANTS] generated constants file");
+        fs.writeFileSync("constants.json", JSON.stringify(constants, null, 2));
+        done();
+    });
+
+    function buildLookup(array) {
+        var lookup = {};
+        for (var i = 0; i < array.length; i++) {
+            lookup[array[i].id] = array[i];
+        }
+        return lookup;
+    }
+}
+
+function getFullMatchHistory(done) {
+    var remote = process.env.REMOTE;
+    var match_ids = {};
+    //todo search db for ids to get full history
+    var docs = [{
+        account_id: 88367253
+    }];
+    async.mapSeries(docs, getHistoryByHero, function(err) {
+        if (err) {
+            done(err);
+        }
+        else {
+            //done with all players
+            for (var key in match_ids) {
+                var match = {};
+                match.match_id = key;
+                console.log(match);
+                //todo call the function
+                //utility.queueReq("api_details", match, function(err){});
+            }
+            done();
+        }
+    });
+
+    function getMatchPage(url, cb) {
+        request({
+            url: url,
+            headers: {
+                'User-Agent': 'request'
+            }
+        }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return setTimeout(function() {
+                    getMatchPage(url, cb);
+                }, 1000);
+            }
+            console.log("[REMOTE] %s", url);
+            var parsedHTML = cheerio.load(body);
+            var matchCells = parsedHTML('td[class=cell-xlarge]');
+            matchCells.each(function(i, matchCell) {
+                var match_url = remote + cheerio(matchCell).children().first().attr('href');
+                var match_id = Number(match_url.split(/[/]+/).pop());
+                match_ids[match_id] = 1;
+            });
+            var nextPath = parsedHTML('a[rel=next]').first().attr('href');
+            if (nextPath) {
+                getMatchPage(remote + nextPath, cb);
+            }
+            else {
+                cb(null);
+            }
+        });
+    }
+
+    function getHistoryRemote(player, cb) {
+        var account_id = player.account_id;
+        var player_url = remote + "/players/" + account_id + "/matches";
+        getMatchPage(player_url, function(err) {
+            cb(err);
+        });
+    }
+
+    function getHistoryByHero(player, cb) {
+        //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
+    }
+}
+
+function mergeObjects(merge, val) {
+    for (var attr in val) {
+        if (val[attr].constructor === Array) {
+            merge[attr] = merge[attr].concat(val[attr])
+        }
+        else if (typeof val[attr] === "object") {
+            mergeObjects(merge[attr], val[attr])
+        }
+        else {
+            //does property exist?
+            if (!merge[attr]) {
+                merge[attr] = val[attr]
+            }
+            else {
+                merge[attr] += val[attr]
+            }
+
+        }
+    }
+}
+
 module.exports = {
     redis: redisclient,
     logger: logger,
@@ -581,8 +919,10 @@ module.exports = {
     getData: getData,
     updateSummaries: updateSummaries,
     getCurrentSeqNum: getCurrentSeqNum,
-    parseReplayFile: parseReplayFile,
-    parseReplayUrl: parseReplayUrl,
+    processParse: processParseStream,
+    processApi: processApi,
+    processUpload: processUpload,
+    scanApi: scanApi,
     getReplayUrl: getReplayUrl,
     downloadReplay: downloadReplay,
     decompress: decompress,
@@ -590,5 +930,8 @@ module.exports = {
     parseStream: parseStream,
     handleErrors: handleErrors,
     getS3URL: getS3URL,
-    uploadToS3: uploadToS3
+    uploadToS3: uploadToS3,
+    insertPlayer: insertPlayer,
+    insertParse: insertParse,
+    insertMatch: insertMatch
 };
