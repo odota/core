@@ -18,17 +18,6 @@ for (var i = 0; i < users.length; i++) {
         success: 0
     };
 }
-
-var server = app.listen(process.env.PORT || 3000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('listening at http://%s:%s', host, port);
-});
-
-setTimeout(function() {
-    process.exit(0);
-}, 1000 * 60 * 60);
-
 app.get('/', function(req, res) {
     if (!req.query.match_id) {
         return res.json({
@@ -124,3 +113,14 @@ function reset() {
     ready = false;
     lock = false;
 }
+
+module.exports = app;
+
+setTimeout(function() {
+    process.exit(0);
+}, 1000 * 60 * 60);
+var server = app.listen(process.env.PORT || 3000, function() {
+    var host = server.address().address;
+    var port = server.address().port;
+    console.log('[WEB] listening at http://%s:%s', host, port);
+});
