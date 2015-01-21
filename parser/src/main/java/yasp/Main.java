@@ -34,8 +34,8 @@ public class Main {
         int gameEnd = 0;
         int numPlayers = 10;
         
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
-        CDemoFileInfo info = Clarity.infoForFile(args[0]);
+        TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
+        CDemoFileInfo info = Clarity.infoForStream(System.in);
         doc.put("match_id", info.getGameInfo().getDota().getMatchId());
         if (args.length>1 && args[1].equals("-epilogue")){
             finish(tStart, doc);

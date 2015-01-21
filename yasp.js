@@ -167,7 +167,7 @@ app.route('/api/items').get(function(req, res) {
 app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
-app.route('/api/matches').get(function(req, res) {
+app.route('/api/matches').get(function(req, res, next) {
     var options = {};
     var sort = {};
     if (req.query.draw) {
@@ -176,11 +176,17 @@ app.route('/api/matches').get(function(req, res) {
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
     utility.matches.count(options, function(err, count) {
+        if (err) {
+            return next(err);
+        }
         utility.matches.find(options, {
             limit: Number(req.query.length),
             skip: Number(req.query.start),
             sort: sort
         }, function(err, docs) {
+            if (err) {
+                return next(err);
+            }
             res.json({
                 draw: Number(req.query.draw),
                 recordsTotal: count,
