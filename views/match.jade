@@ -37,9 +37,10 @@ block content
               li(class= (route == key ? 'active' : ''))
                   a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
         else
-          .alert.alert-warning.text-center(role="alert") <strong>Are we too slow?</strong> Upload the replay yourself for quicker results 
-            a(href="/upload") here
-            |.
+          .alert.alert-warning(role="alert") 
+            | <strong>Have this replay?</strong> 
+            a(href="/upload") Upload it 
+            | and we'll parse it for you.
       .col-md-2
         .addthis_sharing_toolbox.pull-right
 
