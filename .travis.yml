@@ -10,6 +10,7 @@ services:
 - redis-server
 env:
 - SESSION_SECRET=travisci
+- NODE_ENV=production
 deploy:
   provider: heroku
   on: staging
