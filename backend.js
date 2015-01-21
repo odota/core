@@ -79,7 +79,10 @@ setInterval(function untrackPlayers() {
     }, {
         multi: true
     }, function(err, num) {
-        logger.info("[UNTRACK] Untracked " + num + " users.");
+        if (err) {
+            logger.info(err);
+        }
+        logger.info("[UNTRACK] Untracked %s users", num);
     });
 }, 60 * 60 * 1000); //check every hour
 
@@ -154,13 +157,9 @@ function insertMatch(match, cb) {
     match.parse_status = (track ? 0 : 3);
     if (track || match.upload) {
         var summaries = {
-            summaries_id: new Date()
+            summaries_id: new Date(),
+            players: match.players
         };
-        var steamids = [];
-        match.players.forEach(function(player) {
-            steamids.push(utility.convert32to64(player.account_id).toString());
-        });
-        summaries.query = steamids.join();
         //queue for player names
         utility.queueReq("api_summaries", summaries, function(err) {
             if (err) return logger.info(err);
@@ -192,6 +191,7 @@ function insertMatch(match, cb) {
 
 function insertPlayer(player, cb) {
     var account_id = Number(utility.convert64to32(player.steamid));
+    player.last_summaries_update = new Date();
     players.update({
         account_id: account_id
     }, {

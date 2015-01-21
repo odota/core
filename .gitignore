@@ -6,6 +6,5 @@ sentry
 servers
 *.dem
 *.bz2
-input.json
 output.json
 parser/target
