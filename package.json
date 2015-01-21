@@ -4,7 +4,8 @@
   "version": "1.2.0",
   "scripts": {
     "start": "nf start",
-    "test": "npm run buildparser && istanbul cover _mocha --report lcovonly -- -R spec",
+    "test": "mocha",
+    "fulltest": "npm run buildparser && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
@@ -49,6 +50,7 @@
     "grunt": "~0.4.5",
     "supertest": "~0.15.0",
     "mocha": "~2.1.0",
-    "istanbul": "~0.3.5"
+    "istanbul": "~0.3.5",
+    "coveralls": "~2.11.2"
   }
 }

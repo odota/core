@@ -10,6 +10,7 @@ services:
 - redis-server
 env:
 - SESSION_SECRET=travisci
+script: "npm run fulltest"
 deploy:
   provider: heroku
   skip_cleanup: true
