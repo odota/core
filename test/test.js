@@ -3,7 +3,7 @@ var blanket = require("blanket")({
 });
 var request = require('supertest');
 // Here we get hold of the express application 
-var app = require("../web").app;
+var app = require("../app");
 var redis = require('redis');
 var monk = require("monk");
 var assert = require("assert");
