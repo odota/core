@@ -20,7 +20,9 @@ var parseRedisUrl = require('parse-redis-url')(redis);
 var url = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 var options = parseRedisUrl.parse(url);
 options.auth = options.password;
-utility.redis = redis.createClient(options.port, options.host, {auth_pass: options.password});
+utility.redis = redis.createClient(options.port, options.host, {
+    auth_pass: options.password
+});
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
     redis: options
@@ -229,6 +231,9 @@ utility.generateJob = function(type, payload) {
 };
 
 utility.runParse = function runParse(fileName, cb) {
+    if (!fileName) {
+        return cb("no filename");
+    }
     logger.info("[PARSER] running parse on %s", fileName);
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = "";
@@ -245,6 +250,7 @@ utility.runParse = function runParse(fileName, cb) {
         logger.info("[PARSER] parse complete on %s, exitcode: %s", fileName, code);
         try {
             output = JSON.parse(output);
+            output.parsed_date = new Date();
             return cb(code, output);
         }
         catch (e) {

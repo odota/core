@@ -25,11 +25,7 @@ utility.clearActiveJobs('api', function(err) {
     if (err) {
         logger.info(err);
     }
-    jobs.process('api', function(job, done) {
-        setTimeout(function() {
-            apiRequest(job, done);
-        }, 1000);
-    });
+    jobs.process('api', apiRequest);
 });
 
 utility.clearActiveJobs('upload', function(err) {
@@ -112,41 +108,43 @@ function getMatches(seq_num) {
 }
 
 function apiRequest(job, cb) {
-    //process an api request
-    var payload = job.data.payload;
-    if (!job.data.url) {
-        logger.info(job);
-        cb("no url");
-    }
-    utility.getData(job.data.url, function(err, data) {
-        if (err) {
-            return cb(err);
+    setTimeout(function() {
+        //process an api request
+        var payload = job.data.payload;
+        if (!job.data.url) {
+            logger.info(job);
+            cb("no url");
         }
-        if (data.response) {
-            //summaries response
-            async.map(data.response.players, insertPlayer, function(err) {
-                cb(err);
-            });
-        }
-        else if (payload.match_id) {
-            //response for single match details
-            var match = data.result;
-            insertMatch(match, function(err) {
-                cb(err);
-            });
-        }
-        else if (payload.account_id) {
-            //response for match history for single player
-            var resp = data.result.matches;
-            async.map(resp, function(match, cb2) {
-                utility.queueReq("api_details", match, function(err) {
-                    cb2(err);
+        utility.getData(job.data.url, function(err, data) {
+            if (err) {
+                return cb(err);
+            }
+            if (data.response) {
+                //summaries response
+                async.map(data.response.players, insertPlayer, function(err) {
+                    cb(err);
                 });
-            }, function(err) {
-                cb(err);
-            });
-        }
-    });
+            }
+            else if (payload.match_id) {
+                //response for single match details
+                var match = data.result;
+                insertMatch(match, function(err) {
+                    cb(err);
+                });
+            }
+            else if (payload.account_id) {
+                //response for match history for single player
+                var resp = data.result.matches;
+                async.map(resp, function(match, cb2) {
+                    utility.queueReq("api_details", match, function(err) {
+                        cb2(err);
+                    });
+                }, function(err) {
+                    cb(err);
+                });
+            }
+        });
+    }, 1000);
 }
 
 function insertMatch(match, cb) {

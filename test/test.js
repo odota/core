@@ -6,6 +6,43 @@ var monk = require("monk");
 var assert = require("assert");
 var db;
 
+describe('WEB', function() {
+  it('GET /', function(done) {
+    request(app)
+      .get('/')
+      .expect(200)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /stats', function(done) {
+    request(app)
+      .get('/stats')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /upload, should 302', function(done) {
+    request(app)
+      .get('/upload')
+      .expect(302)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /matches', function(done) {
+    request(app)
+      .get('/matches')
+      .expect(200)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+})
+
+//todo, load test data, run functions in utility against test data
 describe("MONGODB", function() {
   beforeEach(function(done) {
     db = monk('localhost/test');
@@ -49,40 +86,11 @@ describe("REDIS", function() {
   });
 })
 
-describe('WEB', function() {
-  it('GET /', function(done) {
-    request(app)
-      .get('/')
-      .expect(200)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-  it('GET /stats', function(done) {
-    request(app)
-      .get('/stats')
-      .expect('Content-Type', /json/)
-      .expect(200)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-  it('GET /upload 302', function(done) {
-    request(app)
-      .get('/upload')
-      .expect(302)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
-  it('GET /matches', function(done) {
-    request(app)
-      .get('/matches')
-      .expect(200)
-      .end(function(err, res) {
-        done(err);
-      });
-  });
+//todo expose functions to tester
+describe('PARSER', function() {
+  //todo add tests for parser, coverage
+  //ardm game
+  //regular game
+  //compressed file
+  //test both decompression functions
 })
-
-//todo add tests for parser

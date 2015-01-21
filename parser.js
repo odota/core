@@ -2,9 +2,11 @@ var request = require("request"),
     fs = require("fs"),
     moment = require('moment'),
     Bunzip = require('seek-bzip'),
+    spawn = require('child_process').spawn,
     utility = require('./utility'),
     matches = utility.matches,
     AWS = require('aws-sdk'),
+    async = require('async'),
     winston = require('winston');
 var jobs = utility.jobs;
 var replay_dir = "replays/";
@@ -20,70 +22,78 @@ var transports = [new(winston.transports.Console)({
 var logger = new(winston.Logger)({
     transports: transports
 });
+if (!fs.existsSync(replay_dir)) {
+    fs.mkdir(replay_dir);
+}
 utility.clearActiveJobs('parse', function(err) {
     if (err) {
         logger.info(err);
     }
-    jobs.process('parse', 8, function(job, done) {
-        parseReplay(job, done);
-    });
+    jobs.process('parse', parseReplayFile);
 });
 
-function download(job, cb) {
+function parseReplayFile(job, cb) {
+    async.waterfall([
+        async.apply(checkDuplicate, job),
+        checkLocal,
+        getReplayUrl,
+        download,
+        parseFile,
+        insertParse,
+    ], function(err, job) {
+        handleErrors(err, job, function(err) {
+            cb(err);
+        });
+    });
+}
+
+function parseReplayStream(job, cb) {
+        async.waterfall([
+        async.apply(checkDuplicate, job),
+        getReplayUrl,
+        parseStream,
+        insertParse,
+    ], function(err, job) {
+        handleErrors(err, job, function(err) {
+            cb(err);
+        });
+    });
+}
+
+function parseStream(job, url, cb){
+    //todo stream download, decompress, and parse
+    //todo need to modify parser to support streaming input
+    //todo separate out parsestream function so it can be reused
+}
+
+function checkDuplicate(job, cb) {
+    matches.findOne({
+        match_id: job.data.payload.match_id
+    }, function(err, doc) {
+        if (!err && doc && doc.parsed_data) {
+            //match already has parsed data
+            cb("already parsed");
+        }
+        else {
+            cb(null, job);
+        }
+    });
+}
+
+function checkLocal(job, cb) {
     var match_id = job.data.payload.match_id;
-    if (!fs.existsSync(replay_dir)) {
-        fs.mkdir(replay_dir);
-    }
     var fileName = replay_dir + match_id + ".dem";
     if (fs.existsSync(fileName)) {
         logger.info("[PARSER] %s, found local replay", match_id);
-        cb(null, fileName);
-    }
-    else {
-        getReplayUrl(job, function(err, url) {
-            if (err) {
-                return cb(err);
-            }
-            logger.info("[PARSER] downloading from %s", url);
-            var t1 = new Date().getTime();
-            request({
-                url: url,
-                encoding: null
-            }, function(err, response, body) {
-                if (err || response.statusCode !== 200) {
-                    logger.info("[PARSER] failed to download from %s", url);
-                    return cb("DOWNLOAD ERROR");
-                }
-                else {
-                    var t2 = new Date().getTime();
-                    logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-                    try {
-                        var decomp = Bunzip.decode(body);
-                        fs.writeFile(fileName, decomp, function(err) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            var t3 = new Date().getTime();
-                            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-                            var archiveName = match_id + ".dem.bz2";
-                            uploadToS3(archiveName, body, function(err) {
-                                return cb(err, fileName);
-                            });
-                        });
-                    }
-                    catch (e) {
-                        return cb(e);
-                    }
-                }
-            });
-        });
+        job.data.fileName = fileName;
+        job.update();
+        cb(null, job);
     }
 }
 
-
 function getReplayUrl(job, cb) {
-    if ('url' in job.data) {
-        return cb(null, job.data.url);
+    if (job.data.url || job.data.fileName) {
+        return cb(null, job);
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
@@ -92,25 +102,146 @@ function getReplayUrl(job, cb) {
             urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
         }
         utility.getData(urls, function(err, body) {
-            if (err) {
-                logger.info(err);
-            }
-            if (body && body.match) {
+            if (!err && body && body.match) {
                 var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-                job.data['url'] = url;
-                job.update();
-                return cb(null, url);
+                return cb(null, job, url);
             }
-            else {
-                logger.info(body);
-                return cb("response error");
-            }
+            logger.info(err, body);
+            return cb("invalid body or error");
         });
     }
     else {
         getS3URL(match.match_id, function(err, url) {
-            cb(err, url);
+            cb(err, job, url);
         });
+    }
+}
+
+function download(job, url, cb) {
+    if (job.data.fileName) {
+        return cb(null, job, job.data.fileName);
+    }
+    job.data.url = url;
+    job.update();
+    var match_id = job.data.payload.match_id;
+    getReplayUrl(job, function(err, url) {
+        if (err) {
+            return cb(err);
+        }
+        logger.info("[PARSER] downloading from %s", url);
+        var t1 = new Date().getTime();
+        request({
+            url: url,
+            encoding: null
+        }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return cb("DOWNLOAD ERROR");
+            }
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            var fileName = replay_dir + match_id + ".dem";
+            var archiveName = fileName + ".bz2";
+            uploadToS3(archiveName, body, function(err) {
+                if (err) return logger.info(err);
+            });
+            //decompress the input data to given fileName
+            decompress(body, fileName, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                var t3 = new Date().getTime();
+                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+                cb(err, job, fileName);
+            });
+        });
+    });
+}
+
+function decompress(comp, fileName, cb) {
+    //writes to compressed file, then decompresses file using bzip2
+    var archiveName = fileName + ".bz2";
+    fs.writeFile(archiveName, comp, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        var cp = spawn("bunzip2", [archiveName]);
+        cp.on('exit', function(code) {
+            if (code) {
+                return cb(code);
+            }
+            cb(code, fileName);
+        });
+    });
+}
+
+function decompress2(comp, fileName, cb) {
+    //decompresses file in memory using seek-bzip, then writes to decompressed file
+    try {
+        var decomp = Bunzip.decode(comp);
+        fs.writeFile(fileName, decomp, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            cb(err, fileName);
+        });
+    }
+    catch (e) {
+        return cb(e);
+    }
+}
+
+function parseFile(job, fileName, cb) {
+    var match_id = job.data.payload.match_id;
+    var t3 = new Date().getTime();
+    utility.runParse(fileName, function(err, output) {
+        if (err) {
+            return cb(err);
+        }
+        var t4 = new Date().getTime();
+        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
+        if (process.env.DELETE_REPLAYS) {
+            fs.unlink(fileName, function(err) {
+                logger.info(err);
+            });
+        }
+        cb(err, job, output);
+    });
+}
+
+function insertParse(job, output, cb) {
+    //insert parse results into db
+    matches.update({
+        match_id: output.match_id
+    }, {
+        $set: {
+            parsed_data: output,
+            parse_status: 2
+        }
+    }, function(err) {
+        cb(err, job);
+    });
+}
+
+function handleErrors(err, job, cb) {
+    var match_id = job.data.payload.match_id;
+    if (err) {
+        logger.info("[PARSER] error on match %s: %s", match_id, err);
+        if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
+            //don't retry
+            matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parse_status: 1
+                }
+            });
+            //todo this isn't optimal since this marks the job as complete, so it immediately disappears
+            return cb(null);
+        }
+        else {
+            //retry
+            return cb(err);
+        }
     }
 }
 
@@ -145,82 +276,14 @@ function uploadToS3(archiveName, body, cb) {
             Bucket: process.env.AWS_S3_BUCKET,
             Key: archiveName
         };
-        s3.headObject(params, function(err, data) {
-            if (err) {
-                params.Body = body;
-                s3.putObject(params, function(err, data) {
-                    if (err) {
-                        logger.info('[S3] could not upload to S3');
-                    }
-                    else {
-                        logger.info('[S3] Successfully uploaded replay to S3: %s ', archiveName);
-                    }
-                    cb(err);
-                });
-            }
-            else {
-                logger.info('[S3] replay already exists in S3');
-                cb(err);
-            }
+        params.Body = body;
+        s3.putObject(params, function(err, data) {
+            logger.info(err, data);
+            cb(err);
         });
     }
     else {
         logger.info("[S3] S3 not defined (skipping upload)");
         cb(null);
     }
-}
-
-function parseReplay(job, cb) {
-    var match_id = job.data.payload.match_id;
-    matches.findOne({
-        match_id: match_id
-    }, function(err, doc) {
-        if (!err && doc && doc.parsed_data) {
-            //match already has parsed data
-            cb(null);
-        }
-        else {
-            download(job, function(err, fileName) {
-                if (err) {
-                    logger.info("[PARSER] Error for match %s: %s", match_id, err);
-                    if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
-                        //don't retry
-                        matches.update({
-                            match_id: job.data.payload.match_id
-                        }, {
-                            $set: {
-                                parse_status: 1
-                            }
-                        });
-                        //todo this isn't optimal since this marks the job as complete, so it immediately disappears
-                        return cb(null);
-                    }
-                    //retry
-                    return cb(new Error(err));
-                }
-                var t1 = new Date().getTime();
-                utility.runParse(fileName, function(err, output) {
-                    var t2 = new Date().getTime();
-                    logger.info("[PARSER] %s, parse time: %s", match_id, (t2 - t1) / 1000);
-                    if (!err) {
-                        if (process.env.DELETE_REPLAYS) {
-                            fs.unlink(fileName, function(err) {
-                                logger.info(err);
-                            });
-                        }
-                        //process parser output
-                        matches.update({
-                            match_id: match_id
-                        }, {
-                            $set: {
-                                parsed_data: output,
-                                parse_status: 2
-                            }
-                        });
-                    }
-                    return cb(new Error(err));
-                });
-            });
-        }
-    });
 }
