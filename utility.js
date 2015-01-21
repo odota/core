@@ -19,8 +19,8 @@ var redis = require('redis');
 var parseRedisUrl = require('parse-redis-url')(redis);
 var url = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 var options = parseRedisUrl.parse(url);
-utility.client = redis.createClient(options.port, options.host);
-utility.client.auth(options.password);
+utility.redis = redis.createClient(options.port, options.host);
+utility.redis.auth(options.password);
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
     redis: options
