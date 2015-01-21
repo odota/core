@@ -1,6 +1,4 @@
 var request = require('supertest');
-// Here we get hold of the express application 
-var app = require("../yasp").app;
 var assert = require("assert");
 var howard = {
   account_id: 88367253,
@@ -15,6 +13,7 @@ var db;
 
 //todo test upload
 describe('WEB', function() {
+  var app = require("../yasp").app;
   it('GET /', function(done) {
     request(app)
       .get('/')
@@ -98,12 +97,11 @@ describe("REDIS", function() {
 
 //todo expose functions to tester
 describe('PARSER', function() {
-  //todo add tests for parser, coverage
   //ardm game
   //regular game
-  //test both decompression functions
   //test epilogue
   //test streaming input
+  //test file input
 });
 
 //todo add tests for retriever

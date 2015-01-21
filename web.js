@@ -1,7 +1,6 @@
-var app;
 if (process.env.RETRIEVER) {
-    app = require('./retriever').app;
+    require('./retriever');
 }
 else {
-    app = require('./yasp').app;
+    require('./yasp');
 }
