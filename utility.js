@@ -20,9 +20,9 @@ var parseRedisUrl = require('parse-redis-url')(redis);
 var url = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 var options = parseRedisUrl.parse(url);
 parseRedisUrl.createClient(url, function(err, client) {
-   if (err) return logger.info(err);
-   utility.redis = client;
-   client.auth(options.password);
+    if (err) return logger.info(err);
+    client.auth(options.password);
+    utility.redis = client;
 });
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
