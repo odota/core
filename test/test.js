@@ -1,3 +1,6 @@
+var blanket = require("blanket")({
+  "pattern": "../"
+});
 var request = require('supertest');
 // Here we get hold of the express application 
 var app = require("../web").app;

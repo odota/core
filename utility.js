@@ -265,9 +265,9 @@ utility.getData = function getData(url, cb) {
         url: url,
         json: true
     }, function(err, res, body) {
-        logger.info("%s", url);
+        utility.logger.info("%s", url);
         if (err || res.statusCode !== 200 || !body) {
-            logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+            utility.logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
             return setTimeout(function() {
                 getData(url, cb);
             }, 1000);
@@ -276,12 +276,12 @@ utility.getData = function getData(url, cb) {
             //steam api response
             if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
                 //user does not have stats enabled or attempting to get private match, don't retry
-                logger.info(body);
+                utility.logger.info(body);
                 return cb(body);
             }
             else if (body.result.error || body.result.status === 2) {
                 //valid response, but invalid data, retry
-                logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+                utility.logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
@@ -303,7 +303,7 @@ utility.updateSummaries = function(cb) {
         }
         var arr = [];
         docs.forEach(function(player, i) {
-            logger.info(player);
+            utility.logger.info(player);
             arr.push(player);
             if (arr.length >= 100 || i >= docs.length) {
                 var summaries = {
@@ -312,7 +312,7 @@ utility.updateSummaries = function(cb) {
                 };
                 utility.queueReq("api_summaries", summaries, function(err) {
                     if (err) {
-                        logger.info(err);
+                        utility.logger.info(err);
                     }
                 });
                 arr = [];
