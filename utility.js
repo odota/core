@@ -15,16 +15,18 @@ var transports = [new(winston.transports.Console)({
 var logger = new(winston.Logger)({
     transports: transports
 });
-utility.redis = require('redis').createClient(process.env.REDIS_PORT || 6379, process.env.REDIS_HOST || '127.0.0.1', {});
+var redis = require('redis');
+var parseRedisUrl = require('parse-redis-url')(redis);
+var url = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+var options = parseRedisUrl.parse(url);
+options.auth = options.password;
+utility.redis = redis.createClient(options.port, options.host, {auth_pass: options.password});
 utility.kue = require('kue');
 utility.jobs = utility.kue.createQueue({
-    redis: {
-        port: process.env.REDIS_PORT || 6379,
-        host: process.env.REDIS_HOST || '127.0.0.1'
-    }
+    redis: options
 });
 utility.jobs.promote();
-utility.db = require('monk')(process.env.MONGOHQ_URL || "mongodb://localhost/dota");
+utility.db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
 utility.matches = utility.db.get('matches');
 utility.matches.index('match_id', {
     unique: true
