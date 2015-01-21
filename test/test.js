@@ -94,3 +94,5 @@ describe('PARSER', function() {
   //compressed file
   //test both decompression functions
 })
+
+//todo add tests for retriever
