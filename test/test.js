@@ -1,11 +1,19 @@
 var request = require('supertest');
 // Here we get hold of the express application 
 var app = require("../yasp").app;
+var assert = require("assert");
+var howard = {
+  account_id: 88367253,
+  track: 1,
+  full_history: 1
+};
+
 var redis = require('redis');
 var monk = require("monk");
-var assert = require("assert");
+var client = redis.createClient(6379, '127.0.0.1');
 var db;
 
+//todo test upload
 describe('WEB', function() {
   it('GET /', function(done) {
     request(app)
@@ -43,6 +51,8 @@ describe('WEB', function() {
 })
 
 //todo, load test data, run functions against test data
+//refactor db operation functions
+//construct db instance with something like utility.db("connectionstring").matches
 describe("MONGODB", function() {
   beforeEach(function(done) {
     db = monk('localhost/test');
@@ -55,13 +65,9 @@ describe("MONGODB", function() {
 
   it("added a player", function(done) {
     db.get('players').update({
-      account_id: 88367253
+      account_id: howard.account_id
     }, {
-      $set: {
-        account_id: 88367253,
-        track: 1,
-        full_history: 1
-      }
+      $set: howard
     }, {
       upsert: true
     }, function(err) {
@@ -76,23 +82,32 @@ describe("MONGODB", function() {
   });
 });
 
+//test against redis of utility
 describe("REDIS", function() {
-  it("added test values", function(done) {
-    var client = redis.createClient(6379, '127.0.0.1');
+  it("added test value", function(done) {
     client.set("some key", "some val");
-    client.get("some key", function(err, reply) {
-      done(err)
-    });
+    done();
   });
-})
+  it('retrieved test value', function(done) {
+    client.get("some key", function(err, reply) {
+      assert.equal(reply, "some val");
+      done(err);
+    });
+  })
+});
 
 //todo expose functions to tester
 describe('PARSER', function() {
   //todo add tests for parser, coverage
   //ardm game
   //regular game
-  //compressed file
   //test both decompression functions
-})
+  //test epilogue
+  //test streaming input
+});
 
 //todo add tests for retriever
+describe('RETRIEVER', function() {
+  //check if up
+  //get a replay salt
+});

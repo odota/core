@@ -20,13 +20,12 @@ utility.clearActiveJobs('parse', function(err) {
 
 function parseReplayFile(job, cb) {
     async.waterfall([
-        async.apply(checkDuplicate, job),
-        checkLocal,
+        async.apply(checkLocal, job),
         getReplayUrl,
         download,
         parseFile,
-        insertParse,
-    ], function(err, job) {
+        utility.insertParse,
+    ], function(err) {
         handleErrors(err, job, function(err) {
             cb(err);
         });
@@ -35,33 +34,13 @@ function parseReplayFile(job, cb) {
 
 function parseReplayStream(job, cb) {
     async.waterfall([
-        async.apply(checkDuplicate, job),
-        getReplayUrl,
+        async.apply(getReplayUrl, job),
         parseStream,
-        insertParse,
-    ], function(err, job) {
+        utility.insertParse,
+    ], function(err) {
         handleErrors(err, job, function(err) {
             cb(err);
         });
-    });
-}
-
-function parseStream(job, url, cb) {
-    //todo stream download, decompress, and parse
-    //todo need to modify parser to support streaming input
-}
-
-function checkDuplicate(job, cb) {
-    matches.findOne({
-        match_id: job.data.payload.match_id
-    }, function(err, doc) {
-        if (!err && doc && doc.parsed_data) {
-            //match already has parsed data
-            cb("already parsed");
-        }
-        else {
-            cb(null, job);
-        }
     });
 }
 
@@ -192,22 +171,13 @@ function parseFile(job, fileName, cb) {
                 logger.info(err);
             });
         }
-        cb(err, job, output);
+        cb(err, output);
     });
 }
 
-function insertParse(job, output, cb) {
-    //insert parse results into db
-    matches.update({
-        match_id: output.match_id
-    }, {
-        $set: {
-            parsed_data: output,
-            parse_status: 2
-        }
-    }, function(err) {
-        cb(err, job);
-    });
+function parseStream(job, url, cb) {
+    //todo stream download, decompress, and parse
+    //todo need to modify parser to support streaming input
 }
 
 function handleErrors(err, job, cb) {

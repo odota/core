@@ -57,7 +57,6 @@ utility.clearActiveJobs = function(type, cb) {
     });
 };
 
-//given an array of player ids, join with data from players collection
 utility.fillPlayerNames = function(players, cb) {
     async.mapSeries(players, function(player, cb) {
         utility.players.findOne({
@@ -75,11 +74,7 @@ utility.fillPlayerNames = function(players, cb) {
     });
 };
 utility.getMatches = function(account_id, cb) {
-    var search = {
-        duration: {
-            $exists: true
-        }
-    };
+    var search = {};
     if (account_id) {
         search.players = {
             $elemMatch: {
@@ -104,7 +99,6 @@ utility.makeSearch = function(search, columns) {
     columns.forEach(function(c) {
         s[c.data] = "/.*" + search + ".*/";
     });
-
     return s;
 };
 
@@ -119,7 +113,6 @@ utility.makeSort = function(order, columns) {
             sort[c.data] = s.dir === 'desc' ? -1 : 1;
         }
     });
-
     return sort;
 };
 
@@ -258,38 +251,40 @@ utility.runParse = function runParse(fileName, cb) {
 };
 
 utility.getData = function getData(url, cb) {
-    if (typeof url === "object") {
-        url = url[Math.floor(Math.random() * url.length)];
-    }
-    request({
-        url: url,
-        json: true
-    }, function(err, res, body) {
-        utility.logger.info("%s", url);
-        if (err || res.statusCode !== 200 || !body) {
-            utility.logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
-            return setTimeout(function() {
-                getData(url, cb);
-            }, 1000);
+    setTimeout(function() {
+        if (typeof url === "object") {
+            url = url[Math.floor(Math.random() * url.length)];
         }
-        if (body.result) {
-            //steam api response
-            if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
-                //user does not have stats enabled or attempting to get private match, don't retry
-                utility.logger.info(body);
-                return cb(body);
-            }
-            else if (body.result.error || body.result.status === 2) {
-                //valid response, but invalid data, retry
+        request({
+            url: url,
+            json: true
+        }, function(err, res, body) {
+            utility.logger.info("%s", url);
+            if (err || res.statusCode !== 200 || !body) {
                 utility.logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
             }
-        }
-        //generic valid response
-        cb(null, body);
-    });
+            if (body.result) {
+                //steam api response
+                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
+                    //user does not have stats enabled or attempting to get private match, don't retry
+                    utility.logger.info(body);
+                    return cb(body);
+                }
+                else if (body.result.error || body.result.status === 2) {
+                    //valid response, but invalid data, retry
+                    utility.logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+                    return setTimeout(function() {
+                        getData(url, cb);
+                    }, 1000);
+                }
+            }
+            //generic valid response
+            cb(null, body);
+        });
+    }, 1000);
 };
 
 utility.updateSummaries = function(cb) {
@@ -331,3 +326,17 @@ utility.getCurrentSeqNum = function getCurrentSeqNum(cb) {
         cb(data.result.matches[0].match_seq_num);
     });
 };
+
+utility.insertParse = function insertParse(output, cb) {
+    //insert parse results into db
+    utility.matches.update({
+        match_id: output.match_id
+    }, {
+        $set: {
+            parsed_data: output,
+            parse_status: 2
+        }
+    }, function(err) {
+        cb(err);
+    });
+}

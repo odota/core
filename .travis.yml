@@ -11,8 +11,3 @@ services:
 env:
 - SESSION_SECRET=travisci
 script: "npm run fulltest"
-deploy:
-  provider: heroku
-  skip_cleanup: true
-  api_key:
-    secure: hALpeJGfMD7A+7HfndHiyhPG6ig2CDa1+st/VYgICHhJ++EC8dwn/Cu2ElejmNTZ6sw0gSEpe8zkprCIxHnXvMMuhyYjfr9Ts9NJz/iv8KaVHvDki4JZdx7ceY8LSNFEYEx4Y6Jvo+uzmmMZH5dcYSpd1LLjZRl917AuLUEJU/U=
