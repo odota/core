@@ -3,23 +3,22 @@ var utility = exports,
     spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
     request = require('request'),
-    winston = require('winston');
-var transports = [new(winston.transports.Console)({
-        'timestamp': true
-    }),
-    new(winston.transports.File)({
-        filename: 'utility.log',
-        level: 'info'
-    })
-];
-var logger = new(winston.Logger)({
-    transports: transports
-});
-var redis = require('redis');
-var parseRedisUrl = require('parse-redis-url')(redis);
-var url = process.env.REDIS_URL || "redis://127.0.0.1:6379";
-var options = parseRedisUrl.parse(url);
+    redis = require('redis'),
+    winston = require('winston'),
+    parseRedisUrl = require('parse-redis-url')(redis);
+var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
 options.auth = options.password;
+
+utility.logger = new(winston.Logger)({
+    transports: [new(winston.transports.Console)({
+            'timestamp': true
+        }),
+        new(winston.transports.File)({
+            filename: 'yasp.log',
+            level: 'info'
+        })
+    ]
+});
 utility.redis = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
@@ -231,9 +230,6 @@ utility.generateJob = function(type, payload) {
 };
 
 utility.runParse = function runParse(fileName, cb) {
-    if (!fileName) {
-        return cb("no filename");
-    }
     logger.info("[PARSER] running parse on %s", fileName);
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = "";
@@ -250,7 +246,6 @@ utility.runParse = function runParse(fileName, cb) {
         logger.info("[PARSER] parse complete on %s, exitcode: %s", fileName, code);
         try {
             output = JSON.parse(output);
-            output.parsed_date = new Date();
             return cb(code, output);
         }
         catch (e) {

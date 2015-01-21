@@ -8,7 +8,6 @@ var utility = require('./utility'),
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
-    winston = require('winston'),
     passport = require('passport'),
     moment = require('moment'),
     Recaptcha = require('recaptcha').Recaptcha,
@@ -23,17 +22,7 @@ var host = process.env.ROOT_URL,
     rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
     rc_secret = process.env.RECAPTCHA_SECRET_KEY,
     recaptcha = new Recaptcha(rc_public, rc_secret);
-var transports = [new(winston.transports.Console)({
-        'timestamp': true
-    }),
-    new(winston.transports.File)({
-        filename: 'web.log',
-        level: 'info'
-    })
-];
-var logger = new(winston.Logger)({
-    transports: transports
-});
+var logger = utility.logger;
 var matchPages = {
     index: {
         template: "match_index",
@@ -98,13 +87,12 @@ passport.use(new SteamStrategy({
     }, {
         $set: insert
     }, {
-        upsert: true,
-        new: false
+        upsert: true
     }, function(err, user) {
         if (err) return done(err, null);
-        console.log(user);
         return done(null, {
             account_id: steam32,
+            //todo why not just check user.track===0 to see if untracked?  It doesn't exist on other players
             untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
         });
     });
@@ -159,26 +147,26 @@ app.param('match_id', function(req, res, next, id) {
                             redis.setex(id, 86400, JSON.stringify(match));
                         }
                         return next();
-                    })
+                    });
                 }
-            })
+            });
         }
         else if (reply) {
-            logger.info("Cache hit for match " + id)
-            req.match = JSON.parse(reply)
-            return next()
+            logger.info("Cache hit for match " + id);
+            req.match = JSON.parse(reply);
+            return next();
         }
-    })
-})
+    });
+});
 app.route('/').get(function(req, res) {
-    res.render('index.jade', {})
-})
+    res.render('index.jade', {});
+});
 app.route('/api/items').get(function(req, res) {
-    res.json(app.locals.constants.items[req.query.name])
-})
+    res.json(app.locals.constants.items[req.query.name]);
+});
 app.route('/api/abilities').get(function(req, res) {
-    res.json(app.locals.constants.abilities[req.query.name])
-})
+    res.json(app.locals.constants.abilities[req.query.name]);
+});
 app.route('/api/matches').get(function(req, res) {
     var options = {};
     var sort = {};
@@ -219,10 +207,10 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         //find player slot associated with that unit(hero_to_slot)
         //merge into player's primary hero
         for (var key in match.parsed_data.heroes) {
-            var val = match.parsed_data.heroes[key]
+            var val = match.parsed_data.heroes[key];
             if (app.locals.constants.hero_names[key]) {
                 var hero_id = app.locals.constants.hero_names[key].id;
-                var slot = match.parsed_data.hero_to_slot[hero_id]
+                var slot = match.parsed_data.hero_to_slot[hero_id];
                 if (slot) {
                     var primary = match.players[slot].hero_id
                     var primary_name = app.locals.constants.heroes[primary].name
@@ -263,8 +251,8 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     if (info === "graphs") {
         if (match.parsed_data) {
             //compute graphs
-            var goldDifference = ['Gold']
-            var xpDifference = ['XP']
+            var goldDifference = ['Gold'];
+            var xpDifference = ['XP'];
             for (var i = 0; i < match.parsed_data.times.length; i++) {
                 var goldtotal = 0
                 var xptotal = 0
@@ -307,14 +295,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
         return res.send(html);
     });
 });
-app.route('/players').get(function(req, res) {
-    players.find({}, function(err, docs) {
-        res.render('players.jade', {
-            players: docs,
-            title: "Players - YASP"
-        })
-    })
-})
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
     var info = req.params.info || 'index';
     if (!playerPages[info]) {
@@ -385,22 +365,22 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 }
                 //convert teammate counts to array and filter
                 for (var id in counts) {
-                    var count = counts[id]
+                    var count = counts[id];
                     if (id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
-                        player.teammates.push(count)
+                        player.teammates.push(count);
                     }
                 }
 
-                player.matches = matches
-                player.heroes = heroes
+                player.matches = matches;
+                player.heroes = heroes;
                 utility.fillPlayerNames(player.teammates, function(err) {
                     res.render(playerPages[info].template, {
                         route: info,
                         player: player,
                         tabs: playerPages,
                         title: (player.personaname || player.account_id) + " - YASP"
-                    })
-                })
+                    });
+                });
             });
         }
     });
@@ -446,9 +426,9 @@ app.route('/verify_recaptcha')
             req.session.captcha_verified = success;
             res.json({
                 verified: success
-            })
-        })
-    })
+            });
+        });
+    });
 
 app.route('/upload')
     .all(function(req, res, next) {
@@ -579,7 +559,6 @@ app.use(function(req, res) {
     }
 });
 
-// Expose application to enable testing
 module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {
