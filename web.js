@@ -4,6 +4,7 @@ var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
 var utility = require('./utility'),
+    os = require('os'),
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
@@ -582,6 +583,7 @@ app.use(function(req, res) {
 module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {
+    logger.info(os.hostname());
     var host = server.address().address;
     var port = server.address().port;
     logger.info('[WEB] listening at http://%s:%s', host, port);

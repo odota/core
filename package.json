@@ -15,7 +15,7 @@
     "async": "0.9.0",
     "aws-sdk": "~2.0.31",
     "big-number": "0.3.1",
-    "body-parser": "~1.9.3",
+    "body-parser": "1.10.1",
     "cheerio": "0.17.0",
     "cookie-session": "~1.0.2",
     "express": "~4.8.8",
@@ -37,7 +37,7 @@
     "foreman": "~1.2.1",
     "dotenv": "~0.4.0",
     "recaptcha": "1.2.0",
-    "body-parser": "1.10.1"
+    "parse-redis-url": "0.0.1"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
