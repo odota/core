@@ -1,12 +1,18 @@
 language: node_js
 node_js:
-  - "0.10"
+- '0.10'
 notifications:
-    email:
-        - howardc93@gmail.com
-        - aqc2109@columbia.edu
+  email:
+  - howardc93@gmail.com
+  - aqc2109@columbia.edu
 services:
-    - mongodb
-    - redis-server
+- mongodb
+- redis-server
 env:
-    - SESSION_SECRET="traviscisecret"
+- SESSION_SECRET=travisci
+deploy:
+  provider: heroku
+  on: staging
+  skip_cleanup: true
+  api_key:
+    secure: hALpeJGfMD7A+7HfndHiyhPG6ig2CDa1+st/VYgICHhJ++EC8dwn/Cu2ElejmNTZ6sw0gSEpe8zkprCIxHnXvMMuhyYjfr9Ts9NJz/iv8KaVHvDki4JZdx7ceY8LSNFEYEx4Y6Jvo+uzmmMZH5dcYSpd1LLjZRl917AuLUEJU/U=
