@@ -13,6 +13,7 @@ var utility = require('./utility'),
     bodyParser = require('body-parser'),
     matches = utility.matches,
     players = utility.players,
+    fs = require('fs'),
     kue = utility.kue,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
@@ -558,7 +559,6 @@ app.use(function(req, res) {
     }
 });
 
-var fs = require('fs');
 var jobs = utility.jobs;
 var trackedPlayers = {};
 

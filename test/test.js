@@ -42,7 +42,7 @@ describe('WEB', function() {
   });
 })
 
-//todo, load test data, run functions in utility against test data
+//todo, load test data, run functions against test data
 describe("MONGODB", function() {
   beforeEach(function(done) {
     db = monk('localhost/test');
