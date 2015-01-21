@@ -1,5 +1,4 @@
 var utility = exports,
-    fs = require('fs'),
     async = require('async'),
     spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
@@ -38,6 +37,9 @@ utility.constants = utility.db.get('constants');
 
 utility.clearActiveJobs = function(type, cb) {
     utility.kue.Job.rangeByType(type, 'active', 0, 999999999, 'ASC', function(err, docs) {
+        if (err) {
+            return cb(err);
+        }
         async.mapSeries(docs,
             function(job, cb) {
                 job.state('inactive', function(err) {
@@ -62,7 +64,7 @@ utility.fillPlayerNames = function(players, cb) {
                     player[prop] = dbPlayer[prop];
                 }
             }
-            cb(null);
+            cb(err);
         });
     }, function(err) {
         cb(err);
@@ -190,6 +192,11 @@ utility.generateJob = function(type, payload) {
         };
     }
     if (type === "api_summaries") {
+        var steamids = [];
+        payload.players.forEach(function(player) {
+            steamids.push(utility.convert32to64(player.account_id).toString());
+        });
+        payload.query = steamids.join();
         return {
             url: summaries_url + "/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + payload.query,
             title: [type, payload.summaries_id].join(),
@@ -247,11 +254,15 @@ utility.runParse = function runParse(fileName, cb) {
 };
 
 utility.getData = function getData(url, cb) {
+    if (typeof url === "object") {
+        var t = new Date().getTime();
+        url = url[t % url.length];
+    }
     request({
         url: url,
         json: true
     }, function(err, res, body) {
-        //logger.info("%s", url)
+        logger.info("%s", url);
         if (err || res.statusCode !== 200 || !body) {
             logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
             return setTimeout(function() {
@@ -277,8 +288,37 @@ utility.getData = function getData(url, cb) {
         cb(null, body);
     });
 };
-//todo write function that can accept multiple urls and cycle retries
-//todo write function that fills missing names/updates current names
+
+utility.updateSummaries = function(cb) {
+    utility.players.find({
+        personaname: {
+            $exists: false
+        }
+    }, function(err, docs) {
+        if (err) {
+            return cb(err);
+        }
+        var arr = [];
+        docs.forEach(function(player, i) {
+            logger.info(player);
+            arr.push(player);
+            if (arr.length >= 100 || i >= docs.length) {
+                var summaries = {
+                    summaries_id: new Date(),
+                    players: arr
+                };
+                utility.queueReq("api_summaries", summaries, function(err) {
+                    if (err) {
+                        logger.info(err);
+                    }
+                });
+                arr = [];
+            }
+        });
+        cb(err);
+    });
+};
+
 
 utility.getCurrentSeqNum = function getCurrentSeqNum(cb) {
     utility.getData(utility.api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
