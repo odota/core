@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "nf start",
-    "test": "mocha && npm run buildparser",
+    "test": "npm run buildparser && mocha",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
