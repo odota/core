@@ -8,3 +8,4 @@ servers
 *.bz2
 output.json
 parser/target
+uploads

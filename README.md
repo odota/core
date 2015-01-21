@@ -12,6 +12,7 @@ Dependencies
 * Maven
 * Redis
 * MongoDB
+* bzip2
 
 Deployment
 ====
