@@ -258,19 +258,20 @@ function getS3URL(match_id, cb) {
 }
 
 function uploadToS3(archiveName, body, cb) {
-        if (process.env.AWS_S3_BUCKET) {
-            var s3 = new AWS.S3();
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
-            };
-            params.Body = body;
-            s3.putObject(params, function(err, data) {
-                logger.info(err, data);
-                cb(err);
-            });
-        }
-        else {
-            logger.info("[S3] S3 not defined (skipping upload)");
-            cb(null);
-        }
+    if (process.env.AWS_S3_BUCKET) {
+        var s3 = new AWS.S3();
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        };
+        params.Body = body;
+        s3.putObject(params, function(err, data) {
+            logger.info(err, data);
+            cb(err);
+        });
+    }
+    else {
+        logger.info("[S3] S3 not defined (skipping upload)");
+        cb(null);
+    }
+}
