@@ -9,3 +9,4 @@ servers
 output.json
 parser/target
 uploads
+coverage
