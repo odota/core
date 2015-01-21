@@ -36,7 +36,9 @@
     "foreman": "~1.2.1",
     "dotenv": "~0.4.0",
     "recaptcha": "1.2.0",
-    "parse-redis-url": "0.0.1"
+    "parse-redis-url": "0.0.1",
+    "dota2": "~0.6.2",
+    "steam": "~0.6.7"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
