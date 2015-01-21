@@ -15,7 +15,6 @@ var utility = require('./utility'),
     matches = utility.matches,
     players = utility.players,
     kue = utility.kue,
-    jobs = utility.jobs,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express();
@@ -23,7 +22,9 @@ var host = process.env.ROOT_URL,
     rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
     rc_secret = process.env.RECAPTCHA_SECRET_KEY,
     recaptcha = new Recaptcha(rc_public, rc_secret);
-var transports = [new(winston.transports.Console)(),
+var transports = [new(winston.transports.Console)({
+        'timestamp': true
+    }),
     new(winston.transports.File)({
         filename: 'web.log',
         level: 'info'
@@ -100,7 +101,7 @@ passport.use(new SteamStrategy({
         new: false
     }, function(err, user) {
         if (err) return done(err, null);
-        console.log(user)
+        console.log(user);
         return done(null, {
             account_id: steam32,
             untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
@@ -121,7 +122,9 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
         app.locals.user = req.user;
@@ -154,7 +157,7 @@ app.param('match_id', function(req, res, next, id) {
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
                             redis.setex(id, 86400, JSON.stringify(match));
                         }
-                        return next()
+                        return next();
                     })
                 }
             })
@@ -181,7 +184,7 @@ app.route('/api/matches').get(function(req, res) {
     if (req.query.draw) {
         //var search = req.query.search.value
         //options = utility.makeSearch(search, req.query.columns)
-        sort = utility.makeSort(req.query.order, req.query.columns)
+        sort = utility.makeSort(req.query.order, req.query.columns);
     }
     utility.matches.count(options, function(err, count) {
         utility.matches.find(options, {
@@ -194,20 +197,20 @@ app.route('/api/matches').get(function(req, res) {
                 recordsTotal: count,
                 recordsFiltered: count,
                 data: docs
-            })
-        })
+            });
+        });
     });
-})
+});
 app.route('/matches').get(function(req, res) {
     res.render('matches.jade', {
         title: "Matches - YASP"
-    })
-})
+    });
+});
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index'
-    var match = req.match
+    var info = req.params.info || 'index';
+    var match = req.match;
     if (!matchPages[info]) {
-        return next()
+        return next();
     }
     if (info === "details") {
         //loop through all heroes
@@ -430,17 +433,19 @@ app.use(multer({
 
 app.route('/verify_recaptcha')
     .post(function(req, res) {
-         var data = {
-            remoteip:  req.connection.remoteAddress,
+        var data = {
+            remoteip: req.connection.remoteAddress,
             challenge: req.body.recaptcha_challenge_field,
-            response:  req.body.recaptcha_response_field
+            response: req.body.recaptcha_response_field
         };
-        
+
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-        
+
         recaptcha.verify(function(success, error_code) {
             req.session.captcha_verified = success;
-            res.json({verified: success})
+            res.json({
+                verified: success
+            })
         })
     })
 
@@ -448,7 +453,8 @@ app.route('/upload')
     .all(function(req, res, next) {
         if (req.user) {
             next();
-        } else {
+        }
+        else {
             req.session.login_required = "upload";
             res.redirect("/");
         }
@@ -466,9 +472,11 @@ app.route('/upload')
             utility.queueReq("upload", {
                 uploader: req.user,
                 fileName: files.path
-            })
+            }, function(err) {
+                if (err) return logger.info(err);
+            });
         }
-        
+
         var verified = req.session.captcha_verified;
         req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
@@ -497,6 +505,13 @@ app.get('/stats', function(req, res, next) {
                     cb(err, res);
                 });
             },
+            formerly_tracked_players: function(cb) {
+                utility.players.count({
+                    track: 0
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             matches_last_day: function(cb) {
                 utility.matches.count({
                     start_time: {
@@ -506,11 +521,34 @@ app.get('/stats', function(req, res, next) {
                     cb(err, res);
                 });
             },
-            queued_jobs: function(cb) {
-                jobs.inactiveCount(function(err, res) {
+            queued_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 0
+                }, function(err, res) {
                     cb(err, res);
                 });
-            }
+            },
+            unavailable_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            parsed_matches: function(cb) {
+                utility.matches.count({
+                    parse_status: 2
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            uploaded_matches: function(cb) {
+                utility.matches.count({
+                    upload: true
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
         },
         function(err, results) {
             if (err) {
@@ -540,8 +578,7 @@ app.use(function(req, res) {
     }
 });
 
-// In order to reach the app from other modules
-// we need to export the express application
+// Expose application to enable testing
 module.exports.app = app;
 
 var server = app.listen(process.env.PORT || 3000, function() {

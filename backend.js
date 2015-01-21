@@ -5,18 +5,20 @@ var async = require("async"),
     winston = require('winston'),
     moment = require('moment'),
     fs = require('fs'),
-    request = require('request'),
     jobs = utility.jobs,
-    trackedPlayers = {},
-    transports = [new(winston.transports.Console)(),
-        new(winston.transports.File)({
-            filename: 'backend.log',
-            level: 'info'
-        })
-    ],
-    logger = new(winston.Logger)({
-        transports: transports
-    });
+    trackedPlayers = {};
+
+var transports = [new(winston.transports.Console)({
+        'timestamp': true
+    }),
+    new(winston.transports.File)({
+        filename: 'backend.log',
+        level: 'info'
+    })
+];
+var logger = new(winston.Logger)({
+    transports: transports
+});
 var UNTRACK_INTERVAL_DAYS = process.env.UNTRACK_INTERVAL_DAYS || 3;
 
 utility.clearActiveJobs('api', function(err) {
@@ -60,9 +62,9 @@ else {
     }, function(err, doc) {
         if (err) {
             logger.info(err);
-        };
+        }
         getMatches(doc ? doc.match_seq_num + 1 : 0);
-    })
+    });
 }
 setInterval(function untrackPlayers() {
     logger.info("[UNTRACK] Untracking users...");
@@ -77,8 +79,8 @@ setInterval(function untrackPlayers() {
     }, {
         multi: true
     }, function(err, num) {
-        logger.info("[UNTRACK] Untracked " + num + " users.")
-    })
+        logger.info("[UNTRACK] Untracked " + num + " users.");
+    });
 }, 60 * 60 * 1000); //check every hour
 
 function getMatches(seq_num) {
@@ -87,27 +89,23 @@ function getMatches(seq_num) {
             track: 1
         }, function(err, docs) {
             //rebuild set of tracked players before every check
-            trackedPlayers = {}
+            trackedPlayers = {};
             docs.forEach(function(player) {
-                trackedPlayers[player.account_id] = true
-            })
+                trackedPlayers[player.account_id] = true;
+            });
             var url = utility.api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
             utility.getData(url, function(err, data) {
-                if (data.result.error || data.result.status == 2) {
-                    logger.info(data)
-                    return getMatches(seq_num)
-                }
-                var resp = data.result.matches
-                logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length)
+                var resp = data.result.matches;
+                logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
                 async.mapSeries(resp, insertMatch, function(err) {
                     if (resp.length > 0) {
-                        seq_num = resp[resp.length - 1].match_seq_num + 1
+                        seq_num = resp[resp.length - 1].match_seq_num + 1;
                     }
-                    return getMatches(seq_num)
-                })
-            })
-        })
-    }, 1000)
+                    return getMatches(seq_num);
+                });
+            });
+        });
+    }, 1000);
 }
 
 function apiRequest(job, cb) {
@@ -138,7 +136,7 @@ function apiRequest(job, cb) {
             //response for match history for single player
             var resp = data.result.matches;
             async.map(resp, function(match, cb2) {
-                utility.requestDetails(match, function(err) {
+                utility.queueReq("api_details", match, function(err) {
                     cb2(err);
                 });
             }, function(err) {
@@ -164,13 +162,17 @@ function insertMatch(match, cb) {
         });
         summaries.query = steamids.join();
         //queue for player names
-        utility.queueReq("api_summaries", summaries);
+        utility.queueReq("api_summaries", summaries, function(err) {
+            if (err) return logger.info(err);
+        });
         //parse if unparsed
         if (match.parsed_data) {
             match.parse_status = 2;
         }
         else {
-            utility.queueReq("parse", match);
+            utility.queueReq("parse", match, function(err) {
+                if (err) return logger.info(err);
+            });
         }
         matches.update({
                 match_id: match.match_id
@@ -189,8 +191,6 @@ function insertMatch(match, cb) {
 }
 
 function insertPlayer(player, cb) {
-    //Inserts/updates a player in the database
-
     var account_id = Number(utility.convert64to32(player.steamid));
     players.update({
         account_id: account_id
