@@ -1,6 +1,6 @@
 var request = require('supertest');
 // Here we get hold of the express application 
-var app = require("../yasp");
+var app = require("../yasp").app;
 var redis = require('redis');
 var monk = require("monk");
 var assert = require("assert");
