@@ -19,6 +19,7 @@ utility.logger = new(winston.Logger)({
         })
     ]
 });
+var logger = utility.logger;
 utility.redis = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
@@ -258,8 +259,7 @@ utility.runParse = function runParse(fileName, cb) {
 
 utility.getData = function getData(url, cb) {
     if (typeof url === "object") {
-        var t = new Date().getTime();
-        url = url[t % url.length];
+        url = url[Math.floor(Math.random() * url.length)];
     }
     request({
         url: url,

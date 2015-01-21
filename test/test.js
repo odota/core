@@ -1,9 +1,6 @@
-var blanket = require("blanket")({
-  "pattern": "../"
-});
 var request = require('supertest');
 // Here we get hold of the express application 
-var app = require("../app");
+var app = require("../yasp");
 var redis = require('redis');
 var monk = require("monk");
 var assert = require("assert");

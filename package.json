@@ -10,6 +10,10 @@
     "fullhistory": "grunt fullhistory",
     "buildparser": "mvn -q -f parser/pom.xml package"
   },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/yasp-dota/yasp"
+  },
   "dependencies": {
     "async": "0.9.0",
     "aws-sdk": "~2.1.7",
