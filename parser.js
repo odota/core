@@ -11,17 +11,7 @@ var request = require("request"),
 var jobs = utility.jobs;
 var replay_dir = "replays/";
 var retrievers = process.env.RETRIEVER_HOST.split(",");
-var transports = [new(winston.transports.Console)({
-        'timestamp': true
-    }),
-    new(winston.transports.File)({
-        filename: 'parser.log',
-        level: 'info'
-    })
-];
-var logger = new(winston.Logger)({
-    transports: transports
-});
+var logger = utility.logger;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
 }
@@ -48,7 +38,7 @@ function parseReplayFile(job, cb) {
 }
 
 function parseReplayStream(job, cb) {
-        async.waterfall([
+    async.waterfall([
         async.apply(checkDuplicate, job),
         getReplayUrl,
         parseStream,
@@ -60,10 +50,9 @@ function parseReplayStream(job, cb) {
     });
 }
 
-function parseStream(job, url, cb){
+function parseStream(job, url, cb) {
     //todo stream download, decompress, and parse
     //todo need to modify parser to support streaming input
-    //todo separate out parsestream function so it can be reused
 }
 
 function checkDuplicate(job, cb) {
@@ -93,7 +82,7 @@ function checkLocal(job, cb) {
 
 function getReplayUrl(job, cb) {
     if (job.data.url || job.data.fileName) {
-        return cb(null, job);
+        return cb(null, job, job.data.url);
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
