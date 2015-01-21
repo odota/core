@@ -693,38 +693,39 @@ var scanApi = function scanApi(seq_num) {
                 return getMatches(seq_num);
             }
             var resp = data.result.matches;
-            var filtered = resp.filter()
+            var new_seq_num = seq_num;
+            if (resp.length > 0) {
+                new_seq_num = resp[resp.length - 1].match_seq_num + 1;
+            }
+            var filtered = []
+            for (var i = 0; i < resp.length; i++) {
+                var match = resp[i];
+                if (match.players.some(function(element) {
+                        return (element.account_id in trackedPlayers);
+                    })) {
+                    filtered.push(match);
+                }
+            }
             logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
-            async.mapSeries(resp, insertMatch, function(err) {
+            async.mapSeries(filtered, insertMatch, function(err) {
                 if (err) {
-                    return getMatches(seq_num);
+                    logger.info(err);
                 }
-                if (resp.length > 0) {
-                    seq_num = resp[resp.length - 1].match_seq_num + 1;
-                }
-                return getMatches(seq_num);
+                return getMatches(new_seq_num);
             });
         });
     });
 }
 
-function checkTracked(match, trackedPlayers, cb) {
-    var track = match.players.some(function(element) {
-        return (element.account_id in trackedPlayers);
-    });
-    //queued or untracked
-    match.parse_status = (track ? 0 : 3);
-}
-
 function unparsed(done) {
-    utility.matches.find({
+    db.matches.find({
         parse_status: 0
     }, function(err, docs) {
         if (err) {
             return done(err);
         }
         async.mapSeries(docs, function(match, cb) {
-            utility.queueReq("parse", match, function(err, id) {
+            db.queueReq("parse", match, function(err, id) {
                 console.log("[UNPARSED] match %s, id %s", match.match_id, id);
                 cb(err);
             });
@@ -740,7 +741,7 @@ function updateConstants(done) {
         var val = constants.sources[key];
         val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
         console.log(val);
-        utility.getData(val, function(err, result) {
+        db.getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
         });
@@ -878,7 +879,7 @@ function getFullMatchHistory(done) {
     }
 }
 
-function mergeObjects(merge, val) {
+var mergeObjects = function mergeObjects(merge, val) {
     for (var attr in val) {
         if (val[attr].constructor === Array) {
             merge[attr] = merge[attr].concat(val[attr])
@@ -933,5 +934,6 @@ module.exports = {
     uploadToS3: uploadToS3,
     insertPlayer: insertPlayer,
     insertParse: insertParse,
-    insertMatch: insertMatch
+    insertMatch: insertMatch,
+    mergeObjects: mergeObjects
 };
