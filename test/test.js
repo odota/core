@@ -119,15 +119,16 @@ describe('RETRIEVER', function() {
 });
 
 describe('KUE', function(){
-    it("kue created", function(done) {
-    assert(kue);
+    it("kue", function(done) {
+    assert(utility.kue);
     done();
-  })
-    it("jobs queue created", function(done) {
-    assert(jobs);
+  });
+    it("jobs", function(done) {
+    assert(utility.jobs);
     done();
-  })
-})
+  });
+});
+
 //queueReq: queueReq, add a job to kue
 //getMatchesByPlayer: getMatchesByPlayer,
 //makeSearch: makeSearch,
