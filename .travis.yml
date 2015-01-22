@@ -9,16 +9,5 @@ services:
 - mongodb
 - redis-server
 env:
-- SESSION_SECRET=somesecretvalue
-- ROOT_URL=http://localhost:5000
-- START_SEQ_NUM=AUTO
-- RETRIEVER_HOST=http://localhost:5200,http://retrieverhost2.com
-- KUE_USER=user
-- KUE_PASS=pass
-- DELETE_REPLAYS=false
-- NODE_ENV=test
-- PORT=5000
-- STEAM_USER=user1,user2
-- STEAM_PASS=pass1,pass2
-- STEAM_GUARD_CODE=""
+- SESSION_SECRET=somesecretvalue ROOT_URL=http://localhost:5000 START_SEQ_NUM=AUTO RETRIEVER_HOST=http://localhost:5200 NODE_ENV=test PORT=5000 STEAM_USER=user1,user2 STEAM_PASS=pass1,pass2 STEAM_GUARD_CODE=""
 script: "npm run fulltest"
