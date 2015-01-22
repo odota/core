@@ -10,8 +10,43 @@ var howard = {
   full_history: 1
 };
 
-//todo test all endpoints
-//test for expected errs
+//todo, load test data, run functions against test data
+describe("MONGODB", function() {
+  it("connected", function(done) {
+    assert(db);
+    done();
+  });
+  it("added a player", function(done) {
+    db.players.insert(howard, function(err) {
+      done(err);
+    });
+  });
+  after(function(done) {
+    db.get('players')
+      .drop(function(err) {
+        done(err);
+      });
+  });
+});
+
+describe("REDIS", function() {
+  it("connected", function(done) {
+    assert(client);
+    done();
+  })
+  it("added test value", function(done) {
+    client.set("some key", "some val");
+    done();
+  });
+  it('retrieved test value', function(done) {
+    client.get("some key", function(err, reply) {
+      assert.equal(reply, "some val");
+      done(err);
+    });
+  });
+  //insert banner_msg
+});
+
 describe('WEB', function() {
   it('GET /', function(done) {
     request(app)
@@ -46,52 +81,78 @@ describe('WEB', function() {
         done(err);
       });
   });
+  //kue
+  //matches valid
+  //matches invalid
+  //matches/details
+  //matches/details unparsed
+  //players valid
+  //players invalid
+  //api/items valid
+  //api/items invalid
+  //api/abilities valid
+  //api/abilities invalid
+  //api/matches valid
+  //api/matches invalid
+  //login
+  //return
+  //logout
+  //GET /upload
+  //POST /upload
+  //check login require
+  //check untracked_msg
+  //check banner_msg
 })
-
-//todo, load test data, run functions against test data
-describe("MONGODB", function() {
-  it("connected", function(done) {
-    assert(db);
-    done();
-  });
-  it("added a player", function(done) {
-    db.players.insert(howard, function(err) {
-      done(err);
-    });
-  });
-  after(function(done) {
-    db.get('players')
-      .drop(function(err) {
-        done(err);
-      });
-  });
-});
-
-//test against redis of utility
-describe("REDIS", function() {
-  it("added test value", function(done) {
-    client.set("some key", "some val");
-    done();
-  });
-  it('retrieved test value', function(done) {
-    client.get("some key", function(err, reply) {
-      assert.equal(reply, "some val");
-      done(err);
-    });
-  });
-});
 
 describe('PARSER', function() {
   //ardm game
   //regular game
-  //test epilogue
+  //test epilogue parse
   //test streaming input
   //test file input
   //test broken file
 });
 
-//todo add tests for retriever
 describe('RETRIEVER', function() {
   //check GET /
-  //get a replay salt
+  //get a replay salt (need a steam acct)
 });
+
+describe('KUE', function(){
+    it("kue created", function(done) {
+    assert(kue);
+    done();
+  })
+    it("jobs queue created", function(done) {
+    assert(jobs);
+    done();
+  })
+})
+//queueReq: queueReq, add a job to kue
+//getMatchesByPlayer: getMatchesByPlayer,
+//makeSearch: makeSearch,
+//makeSort: makeSort,
+//convert32to64: convert32to64,
+//convert64to32: convert64to32,
+//isRadiant: isRadiant,
+//generateJob: generateJob,
+//runParse: runParse,
+//getData: getData,
+//updateSummaries: updateSummaries, //generate fake data and run
+//getCurrentSeqNum: getCurrentSeqNum,
+//processParse: processParse,
+//processParseStream: processParseStream,
+//processApi: processApi,
+//processUpload: processUpload,
+//decompress: decompress,
+//parseFile: parseFile,
+//parseStream: parseStream,
+//insertPlayer: insertPlayer,
+//insertParse: insertParse,
+//insertMatch: insertMatch,
+//mergeObjects: mergeObjects, //try numerous test cases, with increasing complexity
+//untrackPlayers: untrackPlayers, //create artificial player to be untracked
+//unparsed: unparsed, //generate fake data and see if jobs added to kue
+//getFullMatchHistory: getFullMatchHistory, //run on single player
+//generateConstants: generateConstants, //check if valid file?
+//clearactivejobs, assert 0 active left

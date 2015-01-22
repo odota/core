@@ -90,8 +90,6 @@ passport.use(new SteamStrategy({
         if (err) return done(err, null);
         return done(null, {
             account_id: steam32,
-            //todo why not just check user.track===0 to see if untracked?  It doesn't exist on other players
-            untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
         });
     });
 }));
@@ -114,17 +112,15 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
+        if (err) {
+            logger.info(err);
+        }
         app.locals.user = req.user;
+        //todo use flash
         app.locals.login_req_msg = req.session.login_required;
         req.session.login_required = false;
-        if (err || !reply) {
-            app.locals.banner_msg = false;
-            next();
-        }
-        else {
-            app.locals.banner_msg = reply;
-            next();
-        }
+        app.locals.banner_msg = reply;
+        next();
     });
 });
 app.param('match_id', function(req, res, next, id) {
@@ -380,7 +376,6 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
     if (req.user) {
-        app.locals.untracked = req.user.untracked;
         res.redirect('/players/' + req.user.account_id);
     }
     else {
