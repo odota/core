@@ -1,6 +1,6 @@
 var dotenv = require('dotenv');
 dotenv.load();
-var db = require('./db');
+var db = require('./db')();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
@@ -15,8 +15,8 @@ var utility = require('./utility'),
     kue = utility.kue,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
-    app = express();
-var host = process.env.ROOT_URL,
+    app = express(),
+    host = process.env.ROOT_URL || "http://localhost:5000",
     rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
     rc_secret = process.env.RECAPTCHA_SECRET_KEY,
     recaptcha = new Recaptcha(rc_public, rc_secret);
@@ -293,7 +293,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(err);
         }
         else {
-            utility.getMatches(player.account_id, function(err, matches) {
+            utility.getMatchesByPlayer(player.account_id, function(err, matches) {
                 if (err) {
                     return next(err);
                 }

@@ -1,14 +1,13 @@
 var request = require('supertest');
-var assert = require("assert");
+var assert = require('assert');
+var db = require('../db')("mongodb://localhost/dota");
+var utility = require('../utility');
+var client = utility.redis;
 var howard = {
   account_id: 88367253,
   track: 1,
   full_history: 1
 };
-
-var redis = require('redis');
-var monk = require("monk");
-var client = redis.createClient(6379, '127.0.0.1');
 
 //todo test all endpoints
 //test for expected errs
@@ -51,23 +50,12 @@ describe('WEB', function() {
 
 //todo, load test data, run functions against test data
 describe("MONGODB", function() {
-  beforeEach(function(done) {
-    db = monk('localhost/test');
-    done();
-  });
   it("connected", function(done) {
     assert(db);
     done();
   });
-
   it("added a player", function(done) {
-    db.get('players').update({
-      account_id: howard.account_id
-    }, {
-      $set: howard
-    }, {
-      upsert: true
-    }, function(err) {
+    db.players.insert(howard, function(err) {
       done(err);
     });
   });

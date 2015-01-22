@@ -1,11 +1,12 @@
-module.exports = function(dburl) {
-    var conn = require('monk')(dburl || process.env.MONGO_URL || "mongodb://localhost/dota");
-    conn.matches.index('match_id', {
+module.exports = function db(input) {
+    var db = require('monk')(input || process.env.MONGO_URL || "mongodb://localhost/dota");
+    db.get('matches').index('match_id', {
         unique: true
     });
-    conn.players.index('account_id', {
+    db.get('players').index('account_id', {
         unique: true
     });
-    this.matches = conn.get('matches');
-    this.players = conn.get('players');
-};
+    db.matches = db.get('matches');
+    db.players = db.get('players');
+    return db
+}

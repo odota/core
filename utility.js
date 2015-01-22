@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var async = require('async'),
     spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
@@ -9,7 +11,7 @@ var async = require('async'),
     moment = require('moment'),
     AWS = require('aws-sdk'),
     stream = require('stream'),
-    db = require('./db'),
+    db = require('./db')(),
     parseRedisUrl = require('parse-redis-url')(redis),
     compressjs = require('compressjs');
 var bz2 = compressjs.bzip2;
@@ -38,7 +40,7 @@ var logger = new(winston.Logger)({
     ]
 });
 
-var clearActiveJobs = function(type, cb) {
+function clearActiveJobs(type, cb) {
     kue.Job.rangeByType(type, 'active', 0, 999999999, 'ASC', function(err, docs) {
         if (err) {
             return cb(err);
@@ -56,7 +58,7 @@ var clearActiveJobs = function(type, cb) {
     });
 }
 
-var fillPlayerNames = function(players, cb) {
+function fillPlayerNames(players, cb) {
     async.mapSeries(players, function(player, cb) {
         db.players.findOne({
             account_id: player.account_id
@@ -73,7 +75,7 @@ var fillPlayerNames = function(players, cb) {
     });
 };
 
-var getMatches = function(account_id, cb) {
+function getMatchesByPlayer(account_id, cb) {
     var search = {};
     if (account_id) {
         search.players = {
@@ -94,7 +96,7 @@ var getMatches = function(account_id, cb) {
 /*
  * Makes search from a datatables call
  */
-var makeSearch = function(search, columns) {
+function makeSearch(search, columns) {
         var s = {};
         columns.forEach(function(c) {
             s[c.data] = "/.*" + search + ".*/";
@@ -104,7 +106,7 @@ var makeSearch = function(search, columns) {
     /*
      * Makes sort from a datatables call
      */
-var makeSort = function(order, columns) {
+function makeSort(order, columns) {
     var sort = {};
     order.forEach(function(s) {
         var c = columns[Number(s.column)];
@@ -119,7 +121,7 @@ var makeSort = function(order, columns) {
  *
  * Returns a BigNumber
  */
-var convert64to32 = function(id) {
+function convert64to32(id) {
     return BigNumber(id).minus('76561197960265728');
 };
 /*
@@ -127,14 +129,15 @@ var convert64to32 = function(id) {
  *
  * Returns a BigNumber
  */
-var convert32to64 = function(id) {
+function convert32to64(id) {
     return BigNumber('76561197960265728').plus(id);
 };
-var isRadiant = function(player) {
+
+function isRadiant(player) {
     return player.player_slot < 64;
 };
 
-var queueReq = function queueReq(type, payload, cb) {
+function queueReq(type, payload, cb) {
     db.checkDuplicate(payload, function(err) {
         if (err) {
             return cb(err);
@@ -149,7 +152,8 @@ var queueReq = function queueReq(type, payload, cb) {
         });
     });
 }
-var checkDuplicate = function checkDuplicate(payload, cb) {
+
+function checkDuplicate(payload, cb) {
     if (payload.match_id) {
         db.matches.findOne({
             match_id: payload.match_id
@@ -164,7 +168,8 @@ var checkDuplicate = function checkDuplicate(payload, cb) {
         cb(null);
     }
 }
-var generateJob = function(type, payload) {
+
+function generateJob(type, payload) {
     if (type === "api_details") {
         return {
             url: api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id,
@@ -215,7 +220,8 @@ var generateJob = function(type, payload) {
         logger.info("unknown type for generateJob");
     }
 }
-var runParse = function runParse(input, cb) {
+
+function runParse(input, cb) {
     //if string, read the file into a stream
     if (typeof input === "string") {
         input = fs.createReadStream(input);
@@ -245,7 +251,7 @@ var runParse = function runParse(input, cb) {
     });
 }
 
-var getData = function getData(url, cb) {
+function getData(url, cb) {
     setTimeout(function() {
         if (typeof url === "object") {
             url = url[Math.floor(Math.random() * url.length)];
@@ -282,7 +288,7 @@ var getData = function getData(url, cb) {
     }, 1000);
 }
 
-var updateSummaries = function(cb) {
+function updateSummaries(cb) {
     db.players.find({
         personaname: {
             $exists: false
@@ -311,7 +317,8 @@ var updateSummaries = function(cb) {
         cb(err);
     });
 }
-var getCurrentSeqNum = function getCurrentSeqNum(cb) {
+
+function getCurrentSeqNum(cb) {
     getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
         if (err) {
             console.log(err);
@@ -319,7 +326,8 @@ var getCurrentSeqNum = function getCurrentSeqNum(cb) {
         cb(data.result.matches[0].match_seq_num);
     });
 }
-var processParse = function(job, cb) {
+
+function processParse(job, cb) {
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
@@ -332,7 +340,8 @@ var processParse = function(job, cb) {
         });
     });
 }
-var processParseStream = function(job, cb) {
+
+function processParseStream(job, cb) {
     async.waterfall([
         async.apply(getReplayUrl, job),
         parseStream,
@@ -344,7 +353,7 @@ var processParseStream = function(job, cb) {
     });
 }
 
-var getReplayUrl = function getReplayUrl(job, cb) {
+function getReplayUrl(job, cb) {
     if (job.data.url || job.data.fileName) {
         return cb(null, job, job.data.url);
     }
@@ -370,7 +379,7 @@ var getReplayUrl = function getReplayUrl(job, cb) {
     }
 }
 
-var downloadReplay = function(job, url, cb) {
+function downloadReplay(job, url, cb) {
     if (job.data.fileName) {
         return cb(null, job, job.data.fileName);
     }
@@ -412,7 +421,7 @@ var downloadReplay = function(job, url, cb) {
     });
 }
 
-var decompress = function decompress(comp, fileName, cb) {
+function decompress(comp, fileName, cb) {
     //writes to compressed file, then decompresses file using bzip2
     var archiveName = fileName + ".bz2";
     fs.writeFile(archiveName, comp, function(err) {
@@ -440,7 +449,7 @@ function checkLocal(job, cb) {
     }
 }
 
-var parseFile = function parseFile(job, fileName, cb) {
+function parseFile(job, fileName, cb) {
     var match_id = job.data.payload.match_id;
     var t3 = new Date().getTime();
     runParse(fileName, function(err, output) {
@@ -453,7 +462,7 @@ var parseFile = function parseFile(job, fileName, cb) {
     });
 }
 
-var parseStream = function parseStream(job, url, cb) {
+function parseStream(job, url, cb) {
     var match_id = job.data.payload.match_id;
     var t3 = new Date().getTime();
     var ws = stream.Writable();
@@ -477,7 +486,7 @@ var parseStream = function parseStream(job, url, cb) {
     });
 }
 
-var handleErrors = function handleErrors(err, job, cb) {
+function handleErrors(err, job, cb) {
     var match_id = job.data.payload.match_id;
     if (err) {
         logger.info("[PARSER] error on match %s: %s", match_id, err);
@@ -506,7 +515,7 @@ var handleErrors = function handleErrors(err, job, cb) {
     cb(err);
 }
 
-var getS3URL = function getS3URL(match_id, cb) {
+function getS3URL(match_id, cb) {
     if (process.env.AWS_S3_BUCKET) {
         var archiveName = match_id + ".dem.bz2";
         var s3 = new AWS.S3();
@@ -530,7 +539,7 @@ var getS3URL = function getS3URL(match_id, cb) {
     }
 }
 
-var uploadToS3 = function uploadToS3(archiveName, body, cb) {
+function uploadToS3(archiveName, body, cb) {
     if (process.env.AWS_S3_BUCKET) {
         var s3 = new AWS.S3();
         var params = {
@@ -549,7 +558,7 @@ var uploadToS3 = function uploadToS3(archiveName, body, cb) {
     }
 }
 
-var insertParse = function insertParse(output, cb) {
+function insertParse(output, cb) {
     db.matches.update({
         match_id: output.match_id
     }, {
@@ -562,7 +571,7 @@ var insertParse = function insertParse(output, cb) {
     });
 }
 
-var insertMatch = function insertMatch(match, cb) {
+function insertMatch(match, cb) {
     var summaries = {
         summaries_id: new Date(),
         players: match.players
@@ -592,7 +601,7 @@ var insertMatch = function insertMatch(match, cb) {
         });
 }
 
-var insertPlayer = function insertPlayer(player, cb) {
+function insertPlayer(player, cb) {
     var account_id = Number(convert64to32(player.steamid));
     player.last_summaries_update = new Date();
     db.players.update({
@@ -606,7 +615,7 @@ var insertPlayer = function insertPlayer(player, cb) {
     });
 }
 
-var processApi = function(job, cb) {
+function processApi(job, cb) {
     //process an api request
     var payload = job.data.payload;
     if (!job.data.url) {
@@ -644,7 +653,7 @@ var processApi = function(job, cb) {
     });
 }
 
-var processUpload = function processUpload(job, cb) {
+function processUpload(job, cb) {
     var fileName = job.data.payload.fileName;
     runParse(fileName, function(code, output) {
         fs.unlink(fileName, function(err) {
@@ -674,13 +683,13 @@ var processUpload = function processUpload(job, cb) {
     });
 }
 
-var scanApi = function scanApi(seq_num) {
+function scanApi(seq_num) {
     var trackedPlayers = {};
     db.players.find({
         track: 1
     }, function(err, docs) {
         if (err) {
-            return getMatches(seq_num);
+            return scanApi(seq_num);
         }
         //rebuild set of tracked players before every check
         trackedPlayers = {};
@@ -690,14 +699,14 @@ var scanApi = function scanApi(seq_num) {
         var url = api_url + "/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + seq_num;
         getData(url, function(err, data) {
             if (err) {
-                return getMatches(seq_num);
+                return scanApi(seq_num);
             }
             var resp = data.result.matches;
             var new_seq_num = seq_num;
             if (resp.length > 0) {
                 new_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
-            var filtered = []
+            var filtered = [];
             for (var i = 0; i < resp.length; i++) {
                 var match = resp[i];
                 if (match.players.some(function(element) {
@@ -711,7 +720,7 @@ var scanApi = function scanApi(seq_num) {
                 if (err) {
                     logger.info(err);
                 }
-                return getMatches(new_seq_num);
+                return scanApi(new_seq_num);
             });
         });
     });
@@ -735,7 +744,7 @@ function unparsed(done) {
     });
 }
 
-function updateConstants(done) {
+function generateConstants(done) {
     var constants = require('./constants.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
@@ -879,21 +888,21 @@ function getFullMatchHistory(done) {
     }
 }
 
-var mergeObjects = function mergeObjects(merge, val) {
+function mergeObjects(merge, val) {
     for (var attr in val) {
         if (val[attr].constructor === Array) {
-            merge[attr] = merge[attr].concat(val[attr])
+            merge[attr] = merge[attr].concat(val[attr]);
         }
         else if (typeof val[attr] === "object") {
-            mergeObjects(merge[attr], val[attr])
+            mergeObjects(merge[attr], val[attr]);
         }
         else {
             //does property exist?
             if (!merge[attr]) {
-                merge[attr] = val[attr]
+                merge[attr] = val[attr];
             }
             else {
-                merge[attr] += val[attr]
+                merge[attr] += val[attr];
             }
 
         }
@@ -907,7 +916,7 @@ module.exports = {
     jobs: jobs,
     clearActiveJobs: clearActiveJobs,
     fillPlayerNames: fillPlayerNames,
-    getMatches: getMatches,
+    getMatchesByPlayer: getMatchesByPlayer,
     makeSearch: makeSearch,
     makeSort: makeSort,
     convert32to64: convert32to64,
@@ -935,5 +944,8 @@ module.exports = {
     insertPlayer: insertPlayer,
     insertParse: insertParse,
     insertMatch: insertMatch,
-    mergeObjects: mergeObjects
+    mergeObjects: mergeObjects,
+    unparsed: unparsed,
+    getFullMatchHistory: getFullMatchHistory,
+    generateConstants: generateConstants
 };
