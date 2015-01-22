@@ -2,7 +2,7 @@ module.exports = function(grunt) {
   var utility = require('./utility');
   grunt.registerTask('constants', function() {
     var done = this.async();
-    utility.updateConstants(done);
+    utility.generateConstants(done);
   });
   grunt.registerTask('fullhistory', function() {
     var done = this.async();
