@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-  var utility = require('./utility');
+  var utility = require('./utility')();
   grunt.registerTask('constants', function() {
     var done = this.async();
     utility.generateConstants(done);

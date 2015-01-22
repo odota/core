@@ -1,8 +1,9 @@
 var request = require('supertest');
 var assert = require('assert');
-var db = require('../db')("mongodb://localhost/dota");
-var utility = require('../utility');
+var utility = require('../utility')("mongodb://localhost/test");
+var app = require("../app");
 var client = utility.redis;
+var db = utility.db;
 var howard = {
   account_id: 88367253,
   track: 1,
@@ -12,7 +13,6 @@ var howard = {
 //todo test all endpoints
 //test for expected errs
 describe('WEB', function() {
-  var app = require("../yasp").app;
   it('GET /', function(done) {
     request(app)
       .get('/')
@@ -78,10 +78,9 @@ describe("REDIS", function() {
       assert.equal(reply, "some val");
       done(err);
     });
-  })
+  });
 });
 
-//todo expose functions to tester
 describe('PARSER', function() {
   //ardm game
   //regular game
