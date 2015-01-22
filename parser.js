@@ -1,4 +1,4 @@
-var utility = require('./utility');
+var utility = require('./utility')();
 var jobs = utility.jobs;
 var logger = utility.logger;
 utility.clearActiveJobs('parse', function(err) {

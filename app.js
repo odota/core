@@ -1,10 +1,10 @@
 var dotenv = require('dotenv');
 dotenv.load();
-var db = require('./db')();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
-var utility = require('./utility'),
+var utility = require('./utility')(),
+    db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
@@ -233,7 +233,6 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
             }
         }
     }
-
     if (info === "graphs") {
         if (match.parsed_data) {
             //compute graphs
@@ -305,11 +304,9 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.games = 0;
                 player.teammates = [];
                 player.calheatmap = {};
-
                 for (var i = 0; i < matches.length; i++) {
                     //add start time to data for cal-heatmap
                     player.calheatmap[matches[i].start_time] = 1;
-
                     //compute top heroes
                     for (var j = 0; j < matches[i].players.length; j++) {
                         var p = matches[i].players[j];
@@ -359,7 +356,6 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         player.teammates.push(count);
                     }
                 }
-
                 player.matches = matches;
                 player.heroes = heroes;
                 utility.fillPlayerNames(player.teammates, function(err) {
@@ -396,14 +392,12 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-
 app.use(multer({
     dest: './uploads',
     limits: {
         fileSize: 200000000
     }
 }));
-
 app.route('/verify_recaptcha')
     .post(function(req, res) {
         var data = {
@@ -411,9 +405,7 @@ app.route('/verify_recaptcha')
             challenge: req.body.recaptcha_challenge_field,
             response: req.body.recaptcha_response_field
         };
-
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-
         recaptcha.verify(function(success, error_code) {
             req.session.captcha_verified = success;
             res.json({
@@ -421,7 +413,6 @@ app.route('/verify_recaptcha')
             });
         });
     });
-
 app.route('/upload')
     .all(function(req, res, next) {
         if (req.user) {
@@ -449,7 +440,6 @@ app.route('/upload')
                 if (err) return logger.info(err);
             });
         }
-
         var verified = req.session.captcha_verified;
         req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
@@ -458,7 +448,6 @@ app.route('/upload')
             recaptcha_form: recaptcha.toHTML(),
         });
     });
-
 app.get('/stats', function(req, res, next) {
     async.parallel({
             matches: function(cb) {
@@ -530,7 +519,6 @@ app.get('/stats', function(req, res, next) {
             res.json(results);
         });
 });
-
 app.use(function(err, req, res, next) {
     if (err && process.env.NODE_ENV === "production") {
         logger.info(err);
@@ -542,7 +530,6 @@ app.use(function(err, req, res, next) {
         return next(err);
     }
 });
-
 app.use(function(req, res) {
     if (process.env.NODE_ENV === "production") {
         return res.status(404).render('404.jade', {
@@ -550,70 +537,4 @@ app.use(function(req, res) {
         });
     }
 });
-
-module.exports.app = app;
-
-var server = app.listen(process.env.PORT || 3000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
-});
-
-utility.clearActiveJobs('api', function(err) {
-    if (err) {
-        utility.logger.info(err);
-    }
-    utility.jobs.process('api', utility.processApiReq);
-});
-
-utility.clearActiveJobs('upload', function(err) {
-    if (err) {
-        utility.logger.info(err);
-    }
-    utility.jobs.process('upload', utility.processUpload);
-});
-
-if (process.env.START_SEQ_NUM === "AUTO") {
-    utility.getCurrentSeqNum(function(num) {
-        utility.scanApi(num);
-    });
-}
-else if (process.env.START_SEQ_NUM) {
-    utility.scanApi(process.env.START_SEQ_NUM);
-}
-else {
-    //start at highest id in db
-    db.matches.findOne({
-        upload: {
-            $exists: false
-        }
-    }, {
-        sort: {
-            match_seq_num: -1
-        }
-    }, function(err, doc) {
-        if (err) {
-            utility.logger.info(err);
-        }
-        utility.scanApi(doc ? doc.match_seq_num + 1 : 0);
-    });
-}
-setInterval(function untrackPlayers() {
-    utility.logger.info("[UNTRACK] Untracking users...");
-    db.players.update({
-        last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
-        }
-    }, {
-        $set: {
-            track: 0
-        }
-    }, {
-        multi: true
-    }, function(err, num) {
-        if (err) {
-            utility.logger.info(err);
-        }
-        utility.logger.info("[UNTRACK] Untracked %s users", num);
-    });
-}, 60 * 60 * 1000); //check every hour
+module.exports = app;
