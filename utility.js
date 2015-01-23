@@ -144,7 +144,7 @@ function isRadiant(player) {
 }
 
 function queueReq(type, payload, cb) {
-    db.checkDuplicate(payload, function(err) {
+    checkDuplicate(type, payload, function(err) {
         if (err) {
             return cb(err);
         }
@@ -154,23 +154,25 @@ function queueReq(type, payload, cb) {
             type: 'exponential'
         }).removeOnComplete(true).save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
-            cb(err, kuejob.id);
+            cb(err, kuejob);
         });
     });
 }
 
-function checkDuplicate(payload, cb) {
-    if (payload.match_id) {
+function checkDuplicate(type, payload, cb) {
+    if (type === "api_details" && payload.match_id) {
+        //make sure match doesn't exist already in db
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
             if (!err && !doc) {
-                cb(null);
+                return cb(null);
             }
-            cb("duplicate found");
+            cb(new Error("duplicate found"));
         });
     }
     else {
+        //no duplicate check for anything else
         cb(null);
     }
 }
@@ -269,7 +271,7 @@ function getData(url, cb) {
         }, function(err, res, body) {
             logger.info("%s", url);
             if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+                logger.info("retrying getData: %s", url);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
@@ -305,300 +307,33 @@ function updateSummaries(cb) {
             return cb(err);
         }
         var arr = [];
-        docs.forEach(function(player, i) {
+        var i = 0;
+        async.map(docs, function(player, cb) {
             logger.info(player);
             arr.push(player);
+            i += 1;
             if (arr.length >= 100 || i >= docs.length) {
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
                 };
                 queueReq("api_summaries", summaries, function(err) {
-                    if (err) {
-                        logger.info(err);
-                    }
+                    arr = [];
+                    return cb(err);
                 });
-                arr = [];
             }
+            else {
+                cb(null);
+            }
+        }, function(err) {
+            cb(err, i);
         });
-        cb(err);
     });
 }
 
 function getCurrentSeqNum(cb) {
     getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
         cb(err, data.result.matches[0].match_seq_num);
-    });
-}
-
-function processParse(job, cb) {
-    async.waterfall([
-        async.apply(checkLocal, job),
-        getReplayUrl,
-        getReplayData,
-        insertParse,
-    ], function(err) {
-        handleErrors(err, job, function(err) {
-            cb(err);
-        });
-    });
-}
-
-function checkLocal(job, cb) {
-    var match_id = job.data.payload.match_id;
-    if (!fs.existsSync(replay_dir)) {
-        fs.mkdir(replay_dir);
-    }
-    var fileName = replay_dir + match_id + ".dem";
-    if (fs.existsSync(fileName)) {
-        logger.info("[PARSER] %s, found local replay", match_id);
-        job.data.fileName = fileName;
-        job.update();
-        cb(null, job);
-    }
-}
-
-function getReplayUrl(job, cb) {
-    if (job.data.url || job.data.fileName) {
-        //can skip getting url
-        return cb(null, job, job.data.url);
-    }
-    var match = job.data.payload;
-    if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var urls = [];
-        for (var i = 0; i < retrievers.length; i++) {
-            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
-        }
-        getData(urls, function(err, body) {
-            if (!err && body && body.match) {
-                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-                return cb(null, job, url);
-            }
-            logger.info(err, body);
-            return cb("invalid body or error");
-        });
-    }
-    else {
-        getS3Url(match.match_id, function(err, url) {
-            cb(err, job, url);
-        });
-    }
-}
-
-function streamReplayData(url, match_id, cb) {
-    var t3 = new Date().getTime();
-    logger.info("[PARSER] streaming from %s", url);
-    var ws = stream.Writable();
-    var rs = stream.Readable();
-    ws.pipe(rs);
-    runParse(rs, function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        var t4 = new Date().getTime();
-        logger.info("[PARSER] %s, streamparse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-    bz2.decompress(request
-        .get({
-            url: url,
-            encoding: null
-        })
-        .on('error', function(err) {
-            return cb(err);
-        }), ws);
-}
-
-function downloadReplayData(url, match_id, cb) {
-    var fileName = replay_dir + match_id + ".dem";
-    logger.info("[PARSER] downloading from %s", url);
-    var t1 = new Date().getTime();
-    request({
-        url: url,
-        encoding: null
-    }, function(err, resp, body) {
-        if (err || resp.statusCode !== 200) {
-            return cb("DOWNLOAD ERROR");
-        }
-        var t2 = new Date().getTime();
-        logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-        decompress(body, fileName, function(err) {
-            if (err) {
-                return cb(err);
-            }
-            var t3 = new Date().getTime();
-            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-            return parseReplay(fileName, match_id, cb);
-        });
-    });
-}
-
-function parseReplay(fileName, match_id, cb) {
-    var t3 = new Date().getTime();
-    runParse(fileName, function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        var t4 = new Date().getTime();
-        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-}
-
-function getReplayData(job, url, cb) {
-    var match_id = job.data.payload.match_id;
-    job.data.url = url;
-    job.update();
-    if (job.data.fileName) {
-        //just use the local copy
-        return parseReplay(job.data.fileName, match_id, cb);
-    }
-    process.env.STREAM ? streamReplayData(url, match_id, cb) : downloadReplayData(url, match_id, cb);
-}
-
-function decompress(comp, fileName, cb) {
-    //writes to compressed file, then decompresses file using bzip2
-    var archiveName = fileName + ".bz2";
-    fs.writeFile(archiveName, comp, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        var cp = spawn("bunzip2", [archiveName]);
-        cp.on('exit', function(code) {
-            if (code) {
-                return cb(code);
-            }
-            cb(code, fileName);
-        });
-    });
-}
-
-function handleErrors(err, job, cb) {
-    var match_id = job.data.payload.match_id;
-    if (err) {
-        logger.info("[PARSER] error on match %s: %s", match_id, err);
-        if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
-            //don't retry
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            });
-            //todo this isn't optimal since this marks the job as complete, so it immediately disappears
-            return cb(null);
-        }
-        else {
-            //retry
-            return cb(err);
-        }
-    }
-    if (process.env.DELETE_REPLAYS) {
-        fs.unlink(job.data.fileName, function(err) {
-            logger.info(err);
-        });
-    }
-    cb(err);
-}
-
-function getS3Url(match_id, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var archiveName = match_id + ".dem.bz2";
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        s3.headObject(params, function(err, data) {
-            if (!err) {
-                var url = s3.getSignedUrl('getObject', params);
-                cb(null, url);
-            }
-            else {
-                logger.info("[S3] %s not in S3", match_id);
-                cb("S3 UNAVAILABLE");
-            }
-        });
-    }
-    else {
-        cb("S3 UNAVAILABLE");
-    }
-}
-
-function uploadToS3(archiveName, body, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        params.Body = body;
-        s3.putObject(params, function(err, data) {
-            logger.info(err, data);
-            cb(err);
-        });
-    }
-    else {
-        logger.info("[S3] S3 not defined (skipping upload)");
-        cb(null);
-    }
-}
-
-function insertParse(output, cb) {
-    db.matches.update({
-        match_id: output.match_id
-    }, {
-        $set: {
-            parsed_data: output,
-            parse_status: 2
-        }
-    }, function(err) {
-        cb(err);
-    });
-}
-
-function insertMatch(match, cb) {
-    var summaries = {
-        summaries_id: new Date(),
-        players: match.players
-    };
-    //queue for player names
-    queueReq("api_summaries", summaries, function(err) {
-        if (err) return logger.info(err);
-    });
-    //parse if unparsed
-    if (match.parsed_data) {
-        match.parse_status = 2;
-    }
-    else {
-        queueReq("parse", match, function(err) {
-            if (err) return logger.info(err);
-        });
-    }
-    db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, {
-            upsert: true
-        },
-        function(err) {
-            cb(err);
-        });
-}
-
-function insertPlayer(player, cb) {
-    var account_id = Number(convert64to32(player.steamid));
-    player.last_summaries_update = new Date();
-    db.players.update({
-        account_id: account_id
-    }, {
-        $set: player
-    }, {
-        upsert: true
-    }, function(err) {
-        cb(err);
     });
 }
 
@@ -670,6 +405,288 @@ function processUpload(job, cb) {
     });
 }
 
+function processParse(job, cb) {
+    async.waterfall([
+        async.apply(checkLocal, job),
+        getReplayUrl,
+        getReplayData,
+        insertParse,
+    ], function(err) {
+        handleErrors(err, job, function(err) {
+            cb(err);
+        });
+    });
+}
+
+function processParseStream(job, cb) {
+    job.data.stream = true;
+    processParse(job, cb);
+}
+
+function checkLocal(job, cb) {
+    var match_id = job.data.payload.match_id;
+    if (!fs.existsSync(replay_dir)) {
+        fs.mkdir(replay_dir);
+    }
+    var fileName = replay_dir + match_id + ".dem";
+    if (fs.existsSync(fileName)) {
+        logger.info("[PARSER] %s, found local replay", match_id);
+        job.data.fileName = fileName;
+        job.update();
+    }
+    cb(null, job);
+}
+
+function getReplayUrl(job, cb) {
+    if (job.data.url || job.data.fileName) {
+        //can skip getting url
+        return cb(null, job, job.data.url);
+    }
+    var match = job.data.payload;
+    if (match.start_time > moment().subtract(7, 'days').format('X')) {
+        var urls = [];
+        for (var i = 0; i < retrievers.length; i++) {
+            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
+        }
+        getData(urls, function(err, body) {
+            if (!err && body && body.match) {
+                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                return cb(null, job, url);
+            }
+            logger.info(err, body);
+            return cb("invalid body or error");
+        });
+    }
+    else {
+        getS3Url(match.match_id, function(err, url) {
+            cb(err, job, url);
+        });
+    }
+}
+
+function streamReplayData(job, url, cb) {
+    var match_id = job.data.payload.match_id;
+    var t3 = new Date().getTime();
+    logger.info("[PARSER] streaming from %s", url);
+    var ws = stream.Writable();
+    var rs = stream.Readable();
+    runParse(rs, function(err, output) {
+        if (err) {
+            return cb(err);
+        }
+        var t4 = new Date().getTime();
+        logger.info("[PARSER] %s, streamparse time: %s", match_id, (t4 - t3) / 1000);
+        cb(err, output);
+    });
+    bz2.decompress(request
+        .get({
+            url: url,
+            encoding: null
+        })
+        .on('error', function(err) {
+            return cb(err);
+        }), ws);
+    ws.pipe(rs);
+}
+
+function downloadReplayData(job, url, cb) {
+    var match_id = job.data.payload.match_id;
+    var fileName = replay_dir + match_id + ".dem";
+    logger.info("[PARSER] downloading from %s", url);
+    var t1 = new Date().getTime();
+    request({
+        url: url,
+        encoding: null
+    }, function(err, resp, body) {
+        if (err || resp.statusCode !== 200) {
+            return cb("DOWNLOAD ERROR");
+        }
+        var t2 = new Date().getTime();
+        logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+        decompress(body, fileName, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            job.data.fileName = fileName;
+            job.update();
+            var t3 = new Date().getTime();
+            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+            return parseReplay(fileName, match_id, cb);
+        });
+    });
+}
+
+function parseReplay(fileName, match_id, cb) {
+    var t3 = new Date().getTime();
+    runParse(fileName, function(err, output) {
+        if (err) {
+            return cb(err);
+        }
+        var t4 = new Date().getTime();
+        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
+        cb(err, output);
+    });
+}
+
+function getReplayData(job, url, cb) {
+    var match_id = job.data.payload.match_id;
+    job.data.url = url;
+    job.update();
+    if (job.data.fileName) {
+        //just use the local copy
+        return parseReplay(job.data.fileName, match_id, cb);
+    }
+    job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
+}
+
+function decompress(comp, fileName, cb) {
+    //writes to compressed file, then decompresses file using bzip2
+    var archiveName = fileName + ".bz2";
+    fs.writeFile(archiveName, comp, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        var cp = spawn("bunzip2", [archiveName]);
+        cp.on('exit', function(code) {
+            if (code) {
+                return cb(code);
+            }
+            cb(code, fileName);
+        });
+    });
+}
+
+function handleErrors(err, job, cb) {
+    var match_id = job.data.payload.match_id;
+    if (err) {
+        logger.info("[PARSER] error on match %s: %s", match_id, err);
+        if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
+            //don't retry
+            db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parse_status: 1
+                }
+            });
+            //todo this isn't optimal since this marks the job as complete, so it immediately disappears
+            return cb();
+        }
+        else {
+            //retry
+            return cb(err);
+        }
+    }
+    if (process.env.DELETE_REPLAYS) {
+        fs.unlinkSync(job.data.fileName);
+    }
+    cb(err);
+}
+
+function getS3Url(match_id, cb) {
+    if (process.env.AWS_S3_BUCKET) {
+        var archiveName = match_id + ".dem.bz2";
+        var s3 = new AWS.S3();
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        };
+        s3.headObject(params, function(err, data) {
+            if (!err) {
+                var url = s3.getSignedUrl('getObject', params);
+                cb(null, url);
+            }
+            else {
+                logger.info("[S3] %s not in S3", match_id);
+                cb("S3 UNAVAILABLE");
+            }
+        });
+    }
+    else {
+        cb("S3 UNAVAILABLE");
+    }
+}
+
+function uploadToS3(archiveName, body, cb) {
+    if (process.env.AWS_S3_BUCKET) {
+        var s3 = new AWS.S3();
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        };
+        params.Body = body;
+        s3.putObject(params, function(err, data) {
+            logger.info(err, data);
+            cb(err);
+        });
+    }
+    else {
+        logger.info("[S3] S3 not defined (skipping upload)");
+        cb(null);
+    }
+}
+
+function insertParse(output, cb) {
+    db.matches.update({
+        match_id: output.match_id
+    }, {
+        $set: {
+            parsed_data: output,
+            parse_status: 2
+        }
+    }, function(err) {
+        cb(err);
+    });
+}
+
+function insertMatch(match, cb) {
+    var summaries = {
+        summaries_id: new Date(),
+        players: match.players
+    };
+    //queue for player names
+    queueReq("api_summaries", summaries, function(err) {
+        if (err) {
+            return logger.info(err);
+        }
+    });
+    //parse if unparsed
+    if (match.parsed_data) {
+        match.parse_status = 2;
+    }
+    else {
+        queueReq("parse", match, function(err) {
+            if (err) {
+                return logger.info(err);
+            }
+        });
+    }
+    db.matches.update({
+            match_id: match.match_id
+        }, {
+            $set: match
+        }, {
+            upsert: true
+        },
+        function(err) {
+            cb(err);
+        });
+}
+
+function insertPlayer(player, cb) {
+    var account_id = Number(convert64to32(player.steamid));
+    player.last_summaries_update = new Date();
+    db.players.update({
+        account_id: account_id
+    }, {
+        $set: player
+    }, {
+        upsert: true
+    }, function(err) {
+        cb(err);
+    });
+}
+
 function scanApi(seq_num) {
     var trackedPlayers = {};
     db.players.find({
@@ -720,13 +737,15 @@ function unparsed(done) {
         if (err) {
             return done(err);
         }
+        var i = 0;
         async.mapSeries(docs, function(match, cb) {
-            queueReq("parse", match, function(err, id) {
-                console.log("[UNPARSED] match %s, id %s", match.match_id, id);
+            queueReq("parse", match, function(err, job) {
+                i += 1;
+                logger.info("[UNPARSED] match %s, jobid %s", match.match_id, job.id);
                 cb(err);
             });
         }, function(err) {
-            done(err);
+            done(err, i);
         });
     });
 }
@@ -736,13 +755,15 @@ function generateConstants(done) {
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
-        console.log(val);
+        logger.info(val);
         getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
         });
     }, function(err) {
-        if (err) throw err;
+        if (err) {
+            return done(err);
+        }
         var heroes = constants.heroes.result.heroes;
         heroes.forEach(function(hero) {
             hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";
@@ -799,9 +820,12 @@ function generateConstants(done) {
         constants.regions = lookup;
         constants.regions["251"] = "Peru";
         constants.regions["261"] = "India";
-        console.log("[CONSTANTS] generated constants file");
-        fs.writeFileSync("constants.json", JSON.stringify(constants, null, 2));
-        done();
+        fs.writeFile("constants.json", JSON.stringify(constants, null, 2), function(err) {
+            if (!err) {
+                logger.info("[CONSTANTS] generated constants file");
+            }
+            return done(err);
+        });
     });
 }
 
@@ -819,9 +843,9 @@ function getFullMatchHistory(done) {
             for (var key in match_ids) {
                 var match = {};
                 match.match_id = key;
-                console.log(match);
+                logger.info(match);
                 queueReq("api_details", match, function(err) {
-                    console.log(err);
+                    logger.info(err);
                 });
             }
             done(err);
@@ -840,7 +864,7 @@ function getFullMatchHistory(done) {
                     getMatchPage(url, cb);
                 }, 1000);
             }
-            console.log("[REMOTE] %s", url);
+            logger.info("[REMOTE] %s", url);
             var parsedHTML = cheerio.load(body);
             var matchCells = parsedHTML('td[class=cell-xlarge]');
             matchCells.each(function(i, matchCell) {
@@ -891,8 +915,7 @@ function mergeObjects(merge, val) {
     }
 }
 
-function untrackPlayers() {
-    logger.info("[UNTRACK] Untracking users...");
+function untrackPlayers(cb) {
     db.players.update({
         last_visited: {
             $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
@@ -904,7 +927,8 @@ function untrackPlayers() {
     }, {
         multi: true
     }, function(err, num) {
-        logger.info("[UNTRACK] Untracked %s users, err: %s", num, err);
+        logger.info("[UNTRACK] Untracked %s users", num);
+        cb(err, num);
     });
 }
 
@@ -1092,6 +1116,7 @@ module.exports = {
     updateSummaries: updateSummaries,
     getCurrentSeqNum: getCurrentSeqNum,
     processParse: processParse,
+    processParseStream: processParseStream,
     processApi: processApi,
     processUpload: processUpload,
     scanApi: scanApi,
