@@ -1,5 +1,10 @@
-process.env.NODE_ENV = "test";
+//process.env.NODE_ENV = "test";
 process.env.MONGO_URL = "mongodb://localhost/test";
+process.env.DELETE_REPLAYS=true;
+process.env.ROOT_URL="http://localhost:5000";
+process.env.RETRIEVER_HOST="http://localhost:5100";
+process.env.SESSION_SECRET="testsecretvalue";
+process.env.PORT=5000;
 var assert = require('assert');
 var async = require('async');
 var utility = require('../utility');
@@ -8,10 +13,36 @@ var request = require('supertest')(app);
 var client = utility.redis;
 var db = utility.db;
 var testdata = require('./test.json');
+var nock = require('nock');
+
+//fake retriever response
+nock('http://localhost:5100')
+  .filteringPath(function(path) {
+    return '/';
+  })
+  .get('/')
+  .times(2)
+  .reply(200, {
+    match: {
+      cluster: 1,
+      replaySalt: 1
+    }
+  });
+//fake replay response
+nock('http://replay1.valve.net')
+  .filteringPath(function(path) {
+    console.log(path);
+    return '/';
+  })
+  .get('/')
+  .times(2)
+  .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
+
 describe("TESTS", function() {
   before(function(done) {
     async.series([function(cb) {
       async.mapSeries(testdata.players, function(p, cb) {
+        p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
         db.players.insert(p, function(err) {
           cb(err);
         });
@@ -163,19 +194,6 @@ describe("TESTS", function() {
   //matches/graphs parsed
   //matches/chat parsed
 
-  //queueReq: queueReq, add a job to kue
-  //processApi: processApi,
-  //processUpload: processUpload,
-  //processParse: processParse, test in both streaming and download modes
-  process.env.STREAM = true;
-  process.env.STREAM = false;
-  //untrackPlayers: untrackPlayers, //create artificial player to be untracked
-  //ardm game
-  //regular game
-  //test epilogue parse
-  //test broken file
-  //test invalid file
-  //clearactivejobs, assert 0 active left
   it('banner', function(done) {
     request.get('/')
       .expect(200, /someval*/)
@@ -183,6 +201,90 @@ describe("TESTS", function() {
         done(err);
       });
   });
+  it('unparsed matches, parse jobs to kue', function(done) {
+    utility.unparsed(function(err, num) {
+      assert.equal(num, 1);
+      client.flushall();
+      done(err);
+    });
+  });
+  it('update summaries, api jobs to kue', function(done) {
+    utility.updateSummaries(function(err, num) {
+      assert.equal(num, 2);
+      client.flushall();
+      done(err);
+    });
+  });
+  it('untrack players', function(done) {
+    utility.untrackPlayers(function(err, num) {
+      assert.equal(num, 2);
+      done(err);
+    });
+  });
+  it('api job: req match, req summaries', function(done) {
+    //fake api response
+    nock('https://api.steampowered.com')
+      .filteringPath(function(path) {
+        if (path.slice(0, 8) === "/IDOTA2") {
+          return '/IDOTA2Match_570/GetMatchDetails/V001/';
+        }
+        else {
+          return '/ISteamUser/GetPlayerSummaries/v0002/';
+        }
+      })
+      .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+      .reply(200, {
+        result: testdata.matches[0]
+      })
+      .get('/ISteamUser/GetPlayerSummaries/v0002/')
+      .reply(200, testdata.summaries);
+    utility.queueReq("api_details", {
+      match_id: 115178218
+    }, function(err, job) {
+      utility.processApi(job,
+        function(err) {
+          done(err);
+        });
+    });
+  });
+  /*
+  it('upload job', function(done) {
+    utility.jobs.process('upload', utility.processUpload);
+  });
+  */
+  /*
+  //todo streaming doesnt work yet
+  it('parse job stream', function(done) {
+    this.timeout(15000);
+    //fake parse request
+    utility.queueReq("parse", {
+      match_id: 115178218,
+      start_time: new Date()
+    }, function(err, job) {
+      utility.processParseStream(job, function(err) {
+        done(err);
+      });
+    });
+  });
+  */
+  it('parse job file', function(done) {
+    this.timeout(15000);
+    //fake parse request
+    utility.queueReq("parse", {
+      match_id: 115178218,
+      start_time: new Date()
+    }, function(err, job) {
+      utility.processParse(job, function(err) {
+        done(err);
+      });
+    });
+  });
+  //1v1 game
+  //ardm game
+  //regular game
+  //test epilogue parse
+  //test broken file
+  //test invalid file
 });
 
 describe('RETRIEVER', function() {
@@ -191,25 +293,13 @@ describe('RETRIEVER', function() {
 });
 
 //unit test
-//convert32to64: convert32to64,
-//convert64to32: convert64to32,
-//isRadiant: isRadiant,
-//generateJob: generateJob,
-//makeSearch: makeSearch,
-//makeSort: makeSort,
 //mergeObjects: mergeObjects, //try numerous test cases, with increasing complexity
-//getCurrentSeqNum: getCurrentSeqNum,
 
 //web helpers
 //mergeMatchData: mergeMatchData,
 //generateGraphData: generateGraphData,
 ///fillPlayerInfo: fillPlayerInfo
 
-//grunt tasks
-//unparsed: unparsed, //generate fake data and see if jobs added to kue
-//getFullMatchHistory: getFullMatchHistory, //run on single player
-//generateConstants: generateConstants, //check if valid file?
-//updateSummaries: updateSummaries, //generate fake data and run
-
+//s3 methods are untested
 //load large dataset
 //check load time of player page

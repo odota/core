@@ -1,2 +1,2 @@
 web: node web.js
-retriever: node retriever.js
+retriever: RETRIEVER=true node web.js
