@@ -69,7 +69,7 @@ public class Main {
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
-                                ctx = new CombatLogContext(
+                ctx = new CombatLogContext(
 	                match.getStringTables().forName("CombatLogNames"), 
 	                combatLogDescriptor
                 );
@@ -350,6 +350,7 @@ public class Main {
             }
             JSONObject heroes = doc.getJSONObject("heroes");
             String unit = entry.getString("unit");
+            unit = getAssociatedHero(unit, heroes);
             if (!heroes.has(unit)){
                 addHero(unit, heroes);
             }
@@ -398,27 +399,28 @@ public class Main {
         map.put(hero, newHero);
     }
 
-    private static int getSlotByUnit(String unit, JSONObject heroes, JSONObject hero_to_slot){
+    private static String getAssociatedHero(String unit, JSONObject heroes){
+        //assume all illusions belong to that hero
         if (unit.startsWith("illusion_")){
             unit=unit.substring("illusion_".length());
         }
-        if (heroes.has(unit)){
-            String hero_id = heroes.getJSONObject(unit).get("id").toString();
-            if (hero_to_slot.has(hero_id)){
-                return hero_to_slot.getInt(hero_id);
-            }
-        }
         //attempt to recover hero name from unit
         if (unit.startsWith("npc_dota_")){
-            unit = unit.substring("npc_dota_".length());
-            for (int i =1 ;i<=unit.length();i++){
-                String s = unit.substring(0,i);
-                if (heroes.has(s)){
-                    return hero_to_slot.getInt(heroes.getJSONObject(s).get("id").toString());
-                }
-            }
-        }
-        return -1;
-    }
+          //split by _
+           String[] split = unit.split("_");
 
+          //get the third element
+           String identifier = split[2];
+
+           if (split[2].equals("shadow") && split[3].equals("shaman")){
+               identifier = "shadow_shaman";
+           }
+          //append to npc_dota_hero_, see if matches
+          String attempt = "npc_dota_hero_"+identifier;
+          if (heroes.has(attempt)){
+              unit = attempt;
+          }
+        }
+        return unit;
+    }
 }

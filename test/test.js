@@ -1,63 +1,65 @@
-var request = require('supertest');
 var assert = require('assert');
+var async = require('async');
 var utility = require('../utility')("mongodb://localhost/test");
-var app = require("../app");
+var request = require('supertest')(app);
+var app = require("../yasp");
 var client = utility.redis;
 var db = utility.db;
-var howard = {
-  account_id: 88367253,
-  track: 1,
-  full_history: 1
-};
-
-//todo, load test data, run functions against test data
+var testdata = require('./test.json');
 describe("MONGODB", function() {
   it("connected", function(done) {
     assert(db);
     done();
   });
-  it("added a player", function(done) {
-    db.players.insert(howard, function(err) {
+  it("added players", function(done) {
+    async.mapSeries(testdata.players, function(p, cb) {
+      db.players.insert(p, function(err) {
+        cb(err);
+      });
+    }, function(err) {
       done(err);
     });
   });
-  after(function(done) {
-    db.get('players')
-      .drop(function(err) {
-        done(err);
+  it("added matches", function(done) {
+    async.mapSeries(testdata.matches, function(p, cb) {
+      db.matches.insert(p, function(err) {
+        cb(err);
       });
+    }, function(err) {
+      done(err);
+    });
   });
+  //getMatchesByPlayer: getMatchesByPlayer,
 });
 
 describe("REDIS", function() {
   it("connected", function(done) {
     assert(client);
     done();
-  })
-  it("added test value", function(done) {
-    client.set("some key", "some val");
+  });
+  it("added banner_msg", function(done) {
+    client.set("banner_msg", "some val");
     done();
   });
-  it('retrieved test value', function(done) {
-    client.get("some key", function(err, reply) {
+  it('retrieved banner_msg', function(done) {
+    client.get("banner_msg", function(err, reply) {
       assert.equal(reply, "some val");
       done(err);
     });
   });
-  //insert banner_msg
 });
 
 describe('WEB', function() {
   it('GET /', function(done) {
-    request(app)
+    request
       .get('/')
-      .expect(200)
+      .expect(200, "YASP")
       .end(function(err, res) {
         done(err);
       });
   });
   it('GET /stats', function(done) {
-    request(app)
+    request
       .get('/stats')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -65,8 +67,8 @@ describe('WEB', function() {
         done(err);
       });
   });
-  it('GET /upload, should 302', function(done) {
-    request(app)
+  it('GET /upload not signed in', function(done) {
+    request
       .get('/upload')
       .expect(302)
       .end(function(err, res) {
@@ -74,20 +76,81 @@ describe('WEB', function() {
       });
   });
   it('GET /matches', function(done) {
-    request(app)
+    request
       .get('/matches')
-      .expect(200)
+      .expect(200, "Recent Matches")
       .end(function(err, res) {
         done(err);
       });
   });
-  //kue
-  //matches valid
-  //matches invalid
-  //matches/details
-  //matches/details unparsed
-  //players valid
-  //players invalid
+  it('GET /matches/? valid', function(done) {
+    request
+      .get('/matches/870061127')
+      .expect(200, "Match 870061127")
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /matches/? invalid', function(done) {
+    request
+      .get('/matches/1')
+      .expect(404)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /matches/?/details unparsed', function(done) {
+    request
+      .get('/matches/1')
+      .expect(500)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /matches/?/graphs unparsed', function(done) {
+    request
+      .get('/matches/870061127/graphs')
+      .expect(500)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /matches/?/chat unparsed', function(done) {
+    request
+      .get('/matches/870061127/chat')
+      .expect(500)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  //matches/details parsed
+  //matches/graphs parsed
+  //matches/chat parsed
+  it('GET /players/? valid', function(done) {
+    request
+      .get('/players/88367253')
+      .expect(200, "1-0")
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /players/? invalid', function(done) {
+    request
+      .get('/players/1')
+      .expect(404)
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  it('GET /players/?/matches valid', function(done) {
+    request
+      .get('/players/88367253/matches')
+      .expect(200, "88367253")
+      .end(function(err, res) {
+        done(err);
+      });
+  });
+  //players/?/matches invalid
   //api/items valid
   //api/items invalid
   //api/abilities valid
@@ -98,62 +161,90 @@ describe('WEB', function() {
   //return
   //logout
   //GET /upload
-  //POST /upload
+  //POST /upload proper file, too large, invalid file
   //check login require
   //check untracked_msg
-  //check banner_msg
+  it('GET / banner_msg', function(done) {
+    request
+      .get('/')
+      .expect(200, "some val")
+      .end(function(err, res) {
+        done(err);
+      });
+  });
 })
 
 describe('PARSER', function() {
+process.env.STREAM = true;
+process.env.STREAM = false;
   //ardm game
   //regular game
   //test epilogue parse
   //test streaming input
   //test file input
   //test broken file
+  //test invalid file
 });
 
 describe('RETRIEVER', function() {
   //check GET /
-  //get a replay salt (need a steam acct)
+  //get a replay salt
 });
 
-describe('KUE', function(){
-    it("kue", function(done) {
+describe('KUE', function() {
+  it("kue", function(done) {
     assert(utility.kue);
     done();
   });
-    it("jobs", function(done) {
+  it("jobs", function(done) {
     assert(utility.jobs);
     done();
   });
 });
 
+describe('CLEANUP', function() {
+  it("db", function(done) {
+    var DatabaseCleaner = require('database-cleaner');
+    var databaseCleaner = new DatabaseCleaner('mongodb');
+    var connect = require('mongodb').connect;
+    connect('mongodb://localhost/test', function(err, db) {
+      databaseCleaner.clean(db, function(err) {
+        done(err);
+      });
+    });
+  });
+  it("redis", function(done) {
+    client.flushall(function(err) {
+      done(err);
+    });
+  });
+});
+
+//functions to test
 //queueReq: queueReq, add a job to kue
-//getMatchesByPlayer: getMatchesByPlayer,
-//makeSearch: makeSearch,
-//makeSort: makeSort,
+//processApi: processApi,
+//processUpload: processUpload,
+//processParse: processParse, test in both streaming and download modes
+//untrackPlayers: untrackPlayers, //create artificial player to be untracked
+//clearactivejobs, assert 0 active left
+
+//unit test
 //convert32to64: convert32to64,
 //convert64to32: convert64to32,
 //isRadiant: isRadiant,
 //generateJob: generateJob,
-//runParse: runParse,
-//getData: getData,
-//updateSummaries: updateSummaries, //generate fake data and run
-//getCurrentSeqNum: getCurrentSeqNum,
-//processParse: processParse,
-//processParseStream: processParseStream,
-//processApi: processApi,
-//processUpload: processUpload,
-//decompress: decompress,
-//parseFile: parseFile,
-//parseStream: parseStream,
-//insertPlayer: insertPlayer,
-//insertParse: insertParse,
-//insertMatch: insertMatch,
+//makeSearch: makeSearch,
+//makeSort: makeSort,
 //mergeObjects: mergeObjects, //try numerous test cases, with increasing complexity
-//untrackPlayers: untrackPlayers, //create artificial player to be untracked
+//getCurrentSeqNum: getCurrentSeqNum,
+
+//web helpers
+//mergeMatchData: mergeMatchData,
+//generateGraphData: generateGraphData,
+///fillPlayerInfo: fillPlayerInfo
+
+//grunt tasks
 //unparsed: unparsed, //generate fake data and see if jobs added to kue
 //getFullMatchHistory: getFullMatchHistory, //run on single player
 //generateConstants: generateConstants, //check if valid file?
-//clearactivejobs, assert 0 active left
+//updateSummaries: updateSummaries, //generate fake data and run

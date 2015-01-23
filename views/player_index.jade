@@ -76,14 +76,15 @@ block playercontent
             th Losses
             th Winrate          
         each teammate in player.teammates
-          tr
-            td
-              img(src=teammate.avatar)
-              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-            td=teammate.games
-            td=teammate.win
-            td=teammate.lose
-            td #{(100*teammate.win/teammate.games).toFixed(2)}%
+          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id) 
+            tr
+              td
+                img(src=teammate.avatar)
+                a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+              td=teammate.games
+              td=teammate.win
+              td=teammate.lose
+              td #{(100*teammate.win/teammate.games).toFixed(2)}%
 
 block footer_assets
   include assets/datatables

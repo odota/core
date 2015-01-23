@@ -5,17 +5,23 @@ module.exports = function(dburl) {
         spawn = require('child_process').spawn,
         BigNumber = require('big-number').n,
         request = require('request'),
-        redis = require('redis'),
         winston = require('winston'),
         cheerio = require('cheerio'),
         fs = require('fs'),
         moment = require('moment'),
         AWS = require('aws-sdk'),
         stream = require('stream'),
+        redis = require('redis'),
         parseRedisUrl = require('parse-redis-url')(redis),
         compressjs = require('compressjs'),
-        bz2 = compressjs.bzip2,
-        kue = require('kue');
+        bz2 = compressjs.bzip2;
+    var retrievers = process.env.RETRIEVER_HOST.split(",");
+    var replay_dir = "replays/";
+    var api_url = "https://api.steampowered.com/IDOTA2Match_570";
+    var summaries_url = "http://api.steampowered.com/ISteamUser";
+    var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+    options.auth = options.password;
+    var kue = require('kue');
     var db = require('monk')(dburl || process.env.MONGO_URL || "mongodb://localhost/dota");
     db.get('matches').index('match_id', {
         unique: true
@@ -25,12 +31,6 @@ module.exports = function(dburl) {
     });
     db.matches = db.get('matches');
     db.players = db.get('players');
-    var retrievers = process.env.RETRIEVER_HOST.split(",");
-    var replay_dir = "replays/";
-    var api_url = "https://api.steampowered.com/IDOTA2Match_570";
-    var summaries_url = "http://api.steampowered.com/ISteamUser";
-    var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
-    options.auth = options.password;
     var redisclient = redis.createClient(options.port, options.host, {
         auth_pass: options.password
     });
@@ -226,6 +226,7 @@ module.exports = function(dburl) {
         }
         else {
             logger.info("unknown type for generateJob");
+            return null;
         }
     }
 
@@ -336,8 +337,7 @@ module.exports = function(dburl) {
         async.waterfall([
             async.apply(checkLocal, job),
             getReplayUrl,
-            downloadReplay,
-            parseFile,
+            getReplayData,
             insertParse,
         ], function(err) {
             handleErrors(err, job, function(err) {
@@ -346,20 +346,23 @@ module.exports = function(dburl) {
         });
     }
 
-    function processParseStream(job, cb) {
-        async.waterfall([
-            async.apply(getReplayUrl, job),
-            parseStream,
-            insertParse,
-        ], function(err) {
-            handleErrors(err, job, function(err) {
-                cb(err);
-            });
-        });
+    function checkLocal(job, cb) {
+        var match_id = job.data.payload.match_id;
+        if (!fs.existsSync(replay_dir)) {
+            fs.mkdir(replay_dir);
+        }
+        var fileName = replay_dir + match_id + ".dem";
+        if (fs.existsSync(fileName)) {
+            logger.info("[PARSER] %s, found local replay", match_id);
+            job.data.fileName = fileName;
+            job.update();
+            cb(null, job);
+        }
     }
 
     function getReplayUrl(job, cb) {
         if (job.data.url || job.data.fileName) {
+            //can skip getting url
             return cb(null, job, job.data.url);
         }
         var match = job.data.payload;
@@ -378,52 +381,81 @@ module.exports = function(dburl) {
             });
         }
         else {
-            getS3URL(match.match_id, function(err, url) {
+            getS3Url(match.match_id, function(err, url) {
                 cb(err, job, url);
             });
         }
     }
 
-    function downloadReplay(job, url, cb) {
-        if (job.data.fileName) {
-            return cb(null, job, job.data.fileName);
-        }
-        if (!fs.existsSync(replay_dir)) {
-            fs.mkdir(replay_dir);
-        }
-        job.data.url = url;
-        job.update();
-        var match_id = job.data.payload.match_id;
-        getReplayUrl(job, function(err, url) {
+    function streamReplayData(url, match_id, cb) {
+        var t3 = new Date().getTime();
+        logger.info("[PARSER] streaming from %s", url);
+        var ws = stream.Writable();
+        var rs = stream.Readable();
+        ws.pipe(rs);
+        runParse(rs, function(err, output) {
             if (err) {
                 return cb(err);
             }
-            logger.info("[PARSER] downloading from %s", url);
-            var t1 = new Date().getTime();
-            request({
+            var t4 = new Date().getTime();
+            logger.info("[PARSER] %s, streamparse time: %s", match_id, (t4 - t3) / 1000);
+            cb(err, output);
+        });
+        bz2.decompress(request
+            .get({
                 url: url,
                 encoding: null
-            }, function(err, resp, body) {
-                if (err || resp.statusCode !== 200) {
-                    return cb("DOWNLOAD ERROR");
+            })
+            .on('error', function(err) {
+                return cb(err);
+            }), ws);
+    }
+
+    function downloadReplayData(url, match_id, cb) {
+        var fileName = replay_dir + match_id + ".dem";
+        logger.info("[PARSER] downloading from %s", url);
+        var t1 = new Date().getTime();
+        request({
+            url: url,
+            encoding: null
+        }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return cb("DOWNLOAD ERROR");
+            }
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            decompress(body, fileName, function(err) {
+                if (err) {
+                    return cb(err);
                 }
-                var t2 = new Date().getTime();
-                logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-                var fileName = replay_dir + match_id + ".dem";
-                var archiveName = fileName + ".bz2";
-                uploadToS3(archiveName, body, function(err) {
-                    if (err) return logger.info(err);
-                });
-                decompress(body, fileName, function(err) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    var t3 = new Date().getTime();
-                    logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-                    cb(err, job, fileName);
-                });
+                var t3 = new Date().getTime();
+                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+                return parseReplay(fileName, match_id, cb);
             });
         });
+    }
+
+    function parseReplay(fileName, match_id, cb) {
+        var t3 = new Date().getTime();
+        runParse(fileName, function(err, output) {
+            if (err) {
+                return cb(err);
+            }
+            var t4 = new Date().getTime();
+            logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
+            cb(err, output);
+        });
+    }
+
+    function getReplayData(job, url, cb) {
+        var match_id = job.data.payload.match_id;
+        job.data.url = url;
+        job.update();
+        if (job.data.fileName) {
+            //just use the local copy
+            return parseReplay(job.data.fileName, match_id, cb);
+        }
+        process.env.STREAM ? streamReplayData(url, match_id, cb) : downloadReplayData(url, match_id, cb);
     }
 
     function decompress(comp, fileName, cb) {
@@ -440,54 +472,6 @@ module.exports = function(dburl) {
                 }
                 cb(code, fileName);
             });
-        });
-    }
-
-    function checkLocal(job, cb) {
-        var match_id = job.data.payload.match_id;
-        var fileName = replay_dir + match_id + ".dem";
-        if (fs.existsSync(fileName)) {
-            logger.info("[PARSER] %s, found local replay", match_id);
-            job.data.fileName = fileName;
-            job.update();
-            cb(null, job);
-        }
-    }
-
-    function parseFile(job, fileName, cb) {
-        var match_id = job.data.payload.match_id;
-        var t3 = new Date().getTime();
-        runParse(fileName, function(err, output) {
-            if (err) {
-                return cb(err);
-            }
-            var t4 = new Date().getTime();
-            logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-            cb(err, output);
-        });
-    }
-
-    function parseStream(job, url, cb) {
-        var match_id = job.data.payload.match_id;
-        var t3 = new Date().getTime();
-        var ws = stream.Writable();
-        var rs = stream.Readable();
-        ws.pipe(rs);
-        bz2.decompress(request
-            .get({
-                url: url,
-                encoding: null
-            })
-            .on('error', function(err) {
-                return cb(err);
-            }), ws);
-        runParse(rs, function(err, output) {
-            if (err) {
-                return cb(err);
-            }
-            var t4 = new Date().getTime();
-            logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-            cb(err, output);
         });
     }
 
@@ -520,7 +504,7 @@ module.exports = function(dburl) {
         cb(err);
     }
 
-    function getS3URL(match_id, cb) {
+    function getS3Url(match_id, cb) {
         if (process.env.AWS_S3_BUCKET) {
             var archiveName = match_id + ".dem.bz2";
             var s3 = new AWS.S3();
@@ -957,6 +941,137 @@ module.exports = function(dburl) {
         }
     }
 
+    function mergeMatchData(match, constants) {
+        //loop through all units
+        //look up corresponding hero_id
+        //hero if can find in constants
+        //find player slot associated with that unit(hero_to_slot)
+        //minion otherwise
+        //or get slot by interpretation of unit name
+        //merge into player's primary unit
+        for (var key in match.parsed_data.heroes) {
+            var val = match.parsed_data.heroes[key];
+            if (constants.hero_names[key]) {
+                var hero_id = constants.hero_names[key].id;
+                var slot = match.parsed_data.hero_to_slot[hero_id];
+                if (slot) {
+                    var primary = match.players[slot].hero_id;
+                    var primary_name = constants.heroes[primary].name;
+                    var merge = match.parsed_data.heroes[primary_name];
+                    if (!match.players[slot].hero_ids) {
+                        match.players[slot].hero_ids = [];
+                    }
+                    match.players[slot].hero_ids.push(hero_id);
+                    if (key !== primary_name) {
+                        mergeObjects(merge, val);
+                    }
+                }
+            }
+        }
+        return match;
+    }
+
+    function generateGraphData(match, constants) {
+        //compute graphs
+        var goldDifference = ['Gold'];
+        var xpDifference = ['XP'];
+        for (var i = 0; i < match.parsed_data.times.length; i++) {
+            var goldtotal = 0;
+            var xptotal = 0;
+            match.parsed_data.players.forEach(function(elem, j) {
+                if (match.players[j].player_slot < 64) {
+                    goldtotal += elem.gold[i];
+                    xptotal += elem.xp[i];
+                }
+                else {
+                    xptotal -= elem.xp[i];
+                    goldtotal -= elem.gold[i];
+                }
+            });
+            goldDifference.push(goldtotal);
+            xpDifference.push(xptotal);
+        }
+        var time = ["time"].concat(match.parsed_data.times);
+        var data = {
+            difference: [time, goldDifference, xpDifference],
+            gold: [time],
+            xp: [time],
+            lh: [time]
+        };
+        match.parsed_data.players.forEach(function(elem, i) {
+            var hero = constants.heroes[match.players[i].hero_id].localized_name;
+            data.gold.push([hero].concat(elem.gold));
+            data.xp.push([hero].concat(elem.xp));
+            data.lh.push([hero].concat(elem.lh));
+        });
+        return match;
+    }
+
+    function fillPlayerInfo(player, cb) {
+        getMatchesByPlayer(player.account_id, function(err, matches) {
+            if (err) {
+                return cb(err);
+            }
+            var account_id = player.account_id;
+            var counts = {};
+            var heroes = {};
+            player.teammates = [];
+            player.calheatmap = {};
+            for (var i = 0; i < matches.length; i++) {
+                //add start time to data for cal-heatmap
+                player.calheatmap[matches[i].start_time] = 1;
+                //compute top heroes
+                for (var j = 0; j < matches[i].players.length; j++) {
+                    var p = matches[i].players[j];
+                    if (p.account_id === account_id) {
+                        //find the "main" player's id
+                        var playerRadiant = isRadiant(p);
+                        matches[i].player_win = (playerRadiant === matches[i].radiant_win);
+                        matches[i].slot = j;
+                        matches[i].player_win ? player.win += 1 : player.lose += 1;
+                        player.games += 1;
+                        if (!heroes[p.hero_id]) {
+                            heroes[p.hero_id] = {
+                                games: 0,
+                                win: 0,
+                                lose: 0
+                            };
+                        }
+                        heroes[p.hero_id].games += 1;
+                        matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+                    }
+                }
+                //compute top teammates
+                for (j = 0; j < matches[i].players.length; j++) {
+                    var tm = matches[i].players[j];
+                    if (isRadiant(tm) === playerRadiant) { //teammates of player
+                        if (!counts[tm.account_id]) {
+                            counts[tm.account_id] = {
+                                account_id: tm.account_id,
+                                win: 0,
+                                lose: 0,
+                                games: 0
+                            };
+                        }
+                        counts[tm.account_id].games += 1;
+                        matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                    }
+                }
+            }
+            //convert teammate counts to array and filter
+            for (var id in counts) {
+                var count = counts[id];
+                if (count.games >= 2) {
+                    player.teammates.push(count);
+                }
+            }
+            player.matches = matches;
+            player.heroes = heroes;
+            fillPlayerNames(player.teammates, function(err) {
+                cb(err);
+            });
+        });
+    }
     return {
         db: db,
         redis: redisclient,
@@ -979,26 +1094,20 @@ module.exports = function(dburl) {
         updateSummaries: updateSummaries,
         getCurrentSeqNum: getCurrentSeqNum,
         processParse: processParse,
-        processParseStream: processParseStream,
         processApi: processApi,
         processUpload: processUpload,
         scanApi: scanApi,
         getReplayUrl: getReplayUrl,
-        downloadReplay: downloadReplay,
-        decompress: decompress,
-        parseFile: parseFile,
-        parseStream: parseStream,
-        handleErrors: handleErrors,
-        getS3URL: getS3URL,
+        getS3Url: getS3Url,
         uploadToS3: uploadToS3,
-        insertPlayer: insertPlayer,
-        insertParse: insertParse,
-        insertMatch: insertMatch,
         mergeObjects: mergeObjects,
         untrackPlayers: untrackPlayers,
         unparsed: unparsed,
         startScan: startScan,
         getFullMatchHistory: getFullMatchHistory,
-        generateConstants: generateConstants
+        generateConstants: generateConstants,
+        mergeMatchData: mergeMatchData,
+        generateGraphData: generateGraphData,
+        fillPlayerInfo: fillPlayerInfo
     };
 };

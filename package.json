@@ -9,6 +9,7 @@
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
+    "unnamed": "grunt unnamed",
     "buildparser": "mvn -q -f parser/pom.xml package"
   },
   "repository": {
@@ -52,6 +53,8 @@
     "supertest": "~0.15.0",
     "mocha": "~2.1.0",
     "istanbul": "~0.3.5",
-    "coveralls": "~2.11.2"
+    "coveralls": "~2.11.2",
+    "database-cleaner": "~0.9.0",
+    "mongodb": "~1.4.29"
   }
 }

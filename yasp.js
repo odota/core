@@ -199,88 +199,28 @@ app.route('/matches').get(function(req, res) {
     });
 });
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index';
+    var info = req.params.info;
     var match = req.match;
-    if (!matchPages[info]) {
-        return next();
+    if (info!==index && !match.parsed_data) {
+        return next("match not parsed")
     }
+    var data;
     if (info === "details") {
-        //loop through all heroes
-        //look up corresponding hero_id
-        //find player slot associated with that unit(hero_to_slot)
-        //merge into player's primary hero
-        for (var key in match.parsed_data.heroes) {
-            var val = match.parsed_data.heroes[key];
-            if (app.locals.constants.hero_names[key]) {
-                var hero_id = app.locals.constants.hero_names[key].id;
-                var slot = match.parsed_data.hero_to_slot[hero_id];
-                if (slot) {
-                    var primary = match.players[slot].hero_id;
-                    var primary_name = app.locals.constants.heroes[primary].name;
-                    var merge = match.parsed_data.heroes[primary_name];
-                    if (!match.players[slot].hero_ids) {
-                        match.players[slot].hero_ids = [];
-                    }
-                    match.players[slot].hero_ids.push(hero_id);
-                    if (key !== primary_name) {
-                        utility.mergeObjects(merge, val);
-                    }
-                }
-            }
-        }
+        match = utility.mergeMatchData(match, app.locals.constants);
     }
     if (info === "graphs") {
-        if (match.parsed_data) {
-            //compute graphs
-            var goldDifference = ['Gold'];
-            var xpDifference = ['XP'];
-            for (var i = 0; i < match.parsed_data.times.length; i++) {
-                var goldtotal = 0;
-                var xptotal = 0;
-                match.parsed_data.players.forEach(function(elem, j) {
-                    if (match.players[j].player_slot < 64) {
-                        goldtotal += elem.gold[i];
-                        xptotal += elem.xp[i];
-                    }
-                    else {
-                        xptotal -= elem.xp[i];
-                        goldtotal -= elem.gold[i];
-                    }
-                });
-                goldDifference.push(goldtotal);
-                xpDifference.push(xptotal);
-            }
-            var time = ["time"].concat(match.parsed_data.times);
-            var data = {
-                difference: [time, goldDifference, xpDifference],
-                gold: [time],
-                xp: [time],
-                lh: [time]
-            };
-            match.parsed_data.players.forEach(function(elem, i) {
-                var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name;
-                data.gold.push([hero].concat(elem.gold));
-                data.xp.push([hero].concat(elem.xp));
-                data.lh.push([hero].concat(elem.lh));
-            });
-        }
+        data = utility.generateGraphData(match, app.locals.constants);
     }
     res.render(matchPages[info].template, {
         route: info,
-        match: req.match,
+        match: match,
         tabs: matchPages,
         data: data,
         title: "Match " + match.match_id + " - YASP"
-    }, function(err, html) {
-        if (err) return next(err);
-        return res.send(html);
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index';
-    if (!playerPages[info]) {
-        return next();
-    }
+    var info = req.params.info;
     db.players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
@@ -288,82 +228,15 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(err);
         }
         else {
-            utility.getMatchesByPlayer(player.account_id, function(err, matches) {
+            utility.fillPlayerInfo(player, function(err, player) {
                 if (err) {
                     return next(err);
                 }
-                var account_id = player.account_id;
-                var counts = {};
-                var heroes = {};
-                player.win = 0;
-                player.lose = 0;
-                player.games = 0;
-                player.teammates = [];
-                player.calheatmap = {};
-                for (var i = 0; i < matches.length; i++) {
-                    //add start time to data for cal-heatmap
-                    player.calheatmap[matches[i].start_time] = 1;
-                    //compute top heroes
-                    for (var j = 0; j < matches[i].players.length; j++) {
-                        var p = matches[i].players[j];
-                        if (p.account_id === account_id) {
-                            //find the "main" player's id
-                            var playerRadiant = utility.isRadiant(p);
-                            matches[i].player_win = (playerRadiant === matches[i].radiant_win);
-                            matches[i].slot = j;
-                            matches[i].player_win ? player.win += 1 : player.lose += 1;
-                            player.games += 1;
-                            if (!heroes[p.hero_id]) {
-                                heroes[p.hero_id] = {};
-                                heroes[p.hero_id]["games"] = 0;
-                                heroes[p.hero_id]["win"] = 0;
-                                heroes[p.hero_id]["lose"] = 0;
-                            }
-                            heroes[p.hero_id]["games"] += 1;
-                            if (matches[i].player_win) {
-                                heroes[p.hero_id]["win"] += 1;
-                            }
-                            else {
-                                heroes[p.hero_id]["lose"] += 1;
-                            }
-                        }
-                    }
-                    //compute top teammates
-                    for (j = 0; j < matches[i].players.length; j++) {
-                        var tm = matches[i].players[j];
-                        if (utility.isRadiant(tm) === playerRadiant) { //teammates of player
-                            if (!counts[tm.account_id]) {
-                                counts[tm.account_id] = {
-                                    account_id: tm.account_id,
-                                    win: 0,
-                                    lose: 0,
-                                    games: 0
-                                };
-                            }
-                            counts[tm.account_id]["games"] += 1;
-                            matches[i].player_win ? counts[tm.account_id]["win"] += 1 : counts[tm.account_id]["lose"] += 1;
-                        }
-                    }
-                }
-                //convert teammate counts to array and filter
-                for (var id in counts) {
-                    var count = counts[id];
-                    if (id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
-                        player.teammates.push(count);
-                    }
-                }
-                player.matches = matches;
-                player.heroes = heroes;
-                utility.fillPlayerNames(player.teammates, function(err) {
-                    if (err) {
-                        return next(err);
-                    }
-                    res.render(playerPages[info].template, {
-                        route: info,
-                        player: player,
-                        tabs: playerPages,
-                        title: (player.personaname || player.account_id) + " - YASP"
-                    });
+                res.render(playerPages[info].template, {
+                    route: info,
+                    player: player,
+                    tabs: playerPages,
+                    title: (player.personaname || player.account_id) + " - YASP"
                 });
             });
         }
