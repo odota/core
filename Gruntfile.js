@@ -12,4 +12,8 @@ module.exports = function(grunt) {
     var done = this.async();
     utility.unparsed(done);
   });
+  grunt.registerTask('unnamed', function() {
+    var done = this.async();
+    utility.updateSummaries(done);
+  });
 };
