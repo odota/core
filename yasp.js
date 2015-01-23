@@ -3,7 +3,7 @@ dotenv.load();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
-var utility = require('./utility')(),
+var utility = require('./utility'),
     db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
@@ -131,12 +131,12 @@ app.param('match_id', function(req, res, next, id) {
                 match_id: Number(id)
             }, function(err, match) {
                 if (err || !match) {
-                    return next();
+                    return next(new Error("match not found"));
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
                         if (err) {
-                            return next(err);
+                            return next(new Error(err));
                         }
                         req.match = match;
                         //Add to cache if we have parsed data
@@ -174,7 +174,7 @@ app.route('/api/matches').get(function(req, res, next) {
     }
     db.matches.count(options, function(err, count) {
         if (err) {
-            return next(err);
+            return next(new Error(err));
         }
         db.matches.find(options, {
             limit: Number(req.query.length),
@@ -199,10 +199,10 @@ app.route('/matches').get(function(req, res) {
     });
 });
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info;
+    var info = req.params.info || "index";
     var match = req.match;
-    if (info!==index && !match.parsed_data) {
-        return next("match not parsed")
+    if (info !== "index" && !match.parsed_data) {
+        return next(new Error("match not parsed"));
     }
     var data;
     if (info === "details") {
@@ -220,17 +220,17 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
-    var info = req.params.info;
+    var info = req.params.info || "index";
     db.players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
         if (err || !player) {
-            return next(err);
+            return next(new Error("player not found"));
         }
         else {
-            utility.fillPlayerInfo(player, function(err, player) {
+            utility.fillPlayerInfo(player, function(err) {
                 if (err) {
-                    return next(err);
+                    return next(new Error(err));
                 }
                 res.render(playerPages[info].template, {
                     route: info,
@@ -382,14 +382,25 @@ app.get('/stats', function(req, res, next) {
         },
         function(err, results) {
             if (err) {
-                return next(err);
+                return next(new Error(err));
             }
             res.json(results);
         });
 });
+app.use(function(req, res, next) {
+    res.status(404);
+    if (process.env.NODE_ENV === "production") {
+        return res.render('404.jade', {
+            error: true
+        });
+    }
+    else {
+        return next();
+    }
+});
 app.use(function(err, req, res, next) {
+    logger.info(err);
     if (err && process.env.NODE_ENV === "production") {
-        logger.info(err);
         return res.status(500).render('500.jade', {
             error: true
         });
@@ -398,11 +409,5 @@ app.use(function(err, req, res, next) {
         return next(err);
     }
 });
-app.use(function(req, res) {
-    if (process.env.NODE_ENV === "production") {
-        return res.status(404).render('404.jade', {
-            error: true
-        });
-    }
-});
+
 module.exports = app;

@@ -16,8 +16,8 @@ block content
             tbody
               tr
                 - var self = player.teammates[player.account_id]
-                td #{self.win || 0 }-#{self.lose || 0}
-                td #{(self.win/self.games*100).toFixed(2)}%
+                td #{self ? self.win : 0}-#{self ? self.lose : 0}
+                td #{self ? (self.win/self.games*100).toFixed(2) : 0.00}%
           .alert.alert-warning(role="alert") Only matches played since signup will be parsed.
 
      .row
