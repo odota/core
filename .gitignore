@@ -10,4 +10,4 @@ output.json
 parser/target
 uploads
 coverage
-!test/*.bz2
+!test/*

@@ -1,4 +1,4 @@
-var utility = require('./utility')();
+var utility = require('./utility');
 utility.clearActiveJobs('api', function(err) {
     if (err) {
         utility.logger.info(err);
