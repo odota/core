@@ -5,12 +5,12 @@
   "scripts": {
     "start": "nf start",
     "test": "mocha",
-    "fulltest": "npm run buildparser && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | codeclimate && rm -rf ./coverage",
+    "travistest": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | codeclimate && rm -rf ./coverage",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
     "unnamed": "grunt unnamed",
-    "buildparser": "mvn -q -f parser/pom.xml package"
+    "preinstall": "mvn -q -f parser/pom.xml package && npm run constants"
   },
   "repository": {
     "type": "git",
@@ -45,7 +45,8 @@
     "parse-redis-url": "0.0.1",
     "dota2": "~0.6.2",
     "steam": "~0.6.7",
-    "compressjs": "~1.0.2"
+    "compressjs": "~1.0.2",
+    "streamifier": "~0.1.0"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",

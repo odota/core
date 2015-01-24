@@ -9,11 +9,10 @@ var async = require('async'),
     fs = require('fs'),
     moment = require('moment'),
     AWS = require('aws-sdk'),
-    stream = require('stream'),
     redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis),
-    compressjs = require('compressjs'),
-    bz2 = compressjs.bzip2;
+    bzip2 = require('compressjs').Bzip2,
+    streamifier = require('streamifier');
 var retrievers = process.env.RETRIEVER_HOST.split(",");
 var replay_dir = "replays/";
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
@@ -231,18 +230,19 @@ function generateJob(type, payload) {
 }
 
 function runParse(input, cb) {
-    //if string, read the file into a stream
-    if (typeof input === "string") {
-        input = fs.createReadStream(input);
-    }
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = "";
     var cp = spawn("java", ["-jar",
-        "-Xms128m",
-        "-Xmx128m",
         parser_file
     ]);
-    input.pipe(cp.stdin);
+    //if string, read the file into a stream
+    if (typeof input === "string") {
+        fs.createReadStream(input).pipe(cp.stdin);
+    }
+    //if buffer, make a new stream
+    if (Buffer.isBuffer(input)) {
+        streamifier.createReadStream(input).pipe(cp.stdin);
+    }
     cp.stdout.on('data', function(data) {
         output += data;
     });
@@ -269,13 +269,13 @@ function getData(url, cb) {
             url: url,
             json: true
         }, function(err, res, body) {
-            logger.info("%s", url);
             if (err || res.statusCode !== 200 || !body) {
                 logger.info("retrying getData: %s", url);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
             }
+            logger.info("got data: %s", url);
             if (body.result) {
                 //steam api response
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
@@ -410,11 +410,30 @@ function processParse(job, cb) {
         async.apply(checkLocal, job),
         getReplayUrl,
         getReplayData,
-        insertParse,
-    ], function(err) {
-        handleErrors(err, job, function(err) {
-            cb(err);
-        });
+    ], function(err, job2) {
+        var match_id = job2.data.payload.match_id;
+        if (err) {
+            logger.info("[PARSER] %s, error: %s", match_id, err);
+            if (err === "S3 UNAVAILABLE") {
+                //don't retry
+                db.matches.update({
+                    match_id: match_id
+                }, {
+                    $set: {
+                        parse_status: 1
+                    }
+                });
+                //todo this isn't optimal since this marks the job as complete, so it immediately disappears
+                return cb();
+            }
+            return cb(err);
+        }
+        else {
+            if (process.env.DELETE_REPLAYS) {
+                fs.unlinkSync(job2.data.fileName);
+            }
+            return cb(err);
+        }
     });
 }
 
@@ -466,121 +485,93 @@ function getReplayUrl(job, cb) {
 
 function streamReplayData(job, url, cb) {
     var match_id = job.data.payload.match_id;
-    var t3 = new Date().getTime();
+    var t1 = new Date().getTime();
     logger.info("[PARSER] streaming from %s", url);
-    var ws = stream.Writable();
-    var rs = stream.Readable();
-    runParse(rs, function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        var t4 = new Date().getTime();
-        logger.info("[PARSER] %s, streamparse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-    bz2.decompress(request
+    request
         .get({
             url: url,
             encoding: null
-        })
-        .on('error', function(err) {
-            return cb(err);
-        }), ws);
-    ws.pipe(rs);
+        }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return cb("DOWNLOAD ERROR");
+            }
+            //todo figure out how to stream data directly through decompressor
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            var decomp = bzip2.decompressFile(body);
+            var t3 = new Date().getTime();
+            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+            return parseReplay(job, decomp, cb);
+        });
 }
 
 function downloadReplayData(job, url, cb) {
     var match_id = job.data.payload.match_id;
     var fileName = replay_dir + match_id + ".dem";
+    var archiveName = fileName + ".bz2";
     logger.info("[PARSER] downloading from %s", url);
     var t1 = new Date().getTime();
     request({
-        url: url,
-        encoding: null
-    }, function(err, resp, body) {
-        if (err || resp.statusCode !== 200) {
-            return cb("DOWNLOAD ERROR");
-        }
-        var t2 = new Date().getTime();
-        logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-        decompress(body, fileName, function(err) {
-            if (err) {
-                return cb(err);
-            }
-            job.data.fileName = fileName;
-            job.update();
-            var t3 = new Date().getTime();
-            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-            return parseReplay(fileName, match_id, cb);
-        });
-    });
+            url: url,
+            encoding: null
+        }).on('error', function(err) {
+            return cb(err);
+        })
+        .on('response', function(resp) {
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            decompress(archiveName, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                job.data.fileName = fileName;
+                job.update();
+                var t3 = new Date().getTime();
+                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+                return parseReplay(job, fileName, cb);
+            });
+        })
+        .pipe(fs.createWriteStream(archiveName));
 }
 
-function parseReplay(fileName, match_id, cb) {
+function parseReplay(job, input, cb) {
+    var match_id = job.data.payload.match_id;
     var t3 = new Date().getTime();
-    runParse(fileName, function(err, output) {
+    runParse(input, function(err, output) {
         if (err) {
             return cb(err);
         }
         var t4 = new Date().getTime();
         logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-}
-
-function getReplayData(job, url, cb) {
-    var match_id = job.data.payload.match_id;
-    job.data.url = url;
-    job.update();
-    if (job.data.fileName) {
-        //just use the local copy
-        return parseReplay(job.data.fileName, match_id, cb);
-    }
-    job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
-}
-
-function decompress(comp, fileName, cb) {
-    //writes to compressed file, then decompresses file using bzip2
-    var archiveName = fileName + ".bz2";
-    fs.writeFile(archiveName, comp, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        var cp = spawn("bunzip2", [archiveName]);
-        cp.on('exit', function(code) {
-            if (code) {
-                return cb(code);
+        db.matches.update({
+            match_id: output.match_id
+        }, {
+            $set: {
+                parsed_data: output,
+                parse_status: 2
             }
-            cb(code, fileName);
+        }, function(err) {
+            cb(err, job);
         });
     });
 }
 
-function handleErrors(err, job, cb) {
-    var match_id = job.data.payload.match_id;
-    if (err) {
-        logger.info("[PARSER] error on match %s: %s", match_id, err);
-        if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
-            //don't retry
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            });
-            //todo this isn't optimal since this marks the job as complete, so it immediately disappears
-            return cb();
-        }
-        else {
-            //retry
-            return cb(err);
-        }
+function getReplayData(job, url, cb) {
+    job.data.url = url;
+    job.update();
+    if (job.data.fileName) {
+        parseReplay(job, job.data.fileName, cb);
     }
-    if (process.env.DELETE_REPLAYS) {
-        fs.unlinkSync(job.data.fileName);
+    else {
+        job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
     }
-    cb(err);
+}
+
+function decompress(archiveName, cb) {
+    var cp = spawn("bunzip2", [archiveName]);
+    cp.on('exit', function(code) {
+        cb(code);
+    });
 }
 
 function getS3Url(match_id, cb) {
@@ -624,19 +615,6 @@ function uploadToS3(archiveName, body, cb) {
         logger.info("[S3] S3 not defined (skipping upload)");
         cb(null);
     }
-}
-
-function insertParse(output, cb) {
-    db.matches.update({
-        match_id: output.match_id
-    }, {
-        $set: {
-            parsed_data: output,
-            parse_status: 2
-        }
-    }, function(err) {
-        cb(err);
-    });
 }
 
 function insertMatch(match, cb) {
@@ -755,7 +733,6 @@ function generateConstants(done) {
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
-        logger.info(val);
         getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
@@ -892,6 +869,10 @@ function getFullMatchHistory(done) {
 
     function getHistoryByHero(player, cb) {
         //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        //for this player, make calls to getmatchhistory
+        //one call for each hero in constants
+        //paginate through to 500 games if necessary
+        //generateJob();
     }
 }
 

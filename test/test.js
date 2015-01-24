@@ -1,10 +1,10 @@
 //process.env.NODE_ENV = "test";
 process.env.MONGO_URL = "mongodb://localhost/test";
-process.env.DELETE_REPLAYS=true;
-process.env.ROOT_URL="http://localhost:5000";
-process.env.RETRIEVER_HOST="http://localhost:5100";
-process.env.SESSION_SECRET="testsecretvalue";
-process.env.PORT=5000;
+process.env.DELETE_REPLAYS = true;
+process.env.ROOT_URL = "http://localhost:5000";
+process.env.RETRIEVER_HOST = "http://localhost:5100";
+process.env.SESSION_SECRET = "testsecretvalue";
+process.env.PORT = 5000;
 var assert = require('assert');
 var async = require('async');
 var utility = require('../utility');
@@ -31,7 +31,6 @@ nock('http://localhost:5100')
 //fake replay response
 nock('http://replay1.valve.net')
   .filteringPath(function(path) {
-    console.log(path);
     return '/';
   })
   .get('/')
@@ -252,10 +251,21 @@ describe("TESTS", function() {
     utility.jobs.process('upload', utility.processUpload);
   });
   */
+  it('parse job file', function(done) {
+    this.timeout(30000);
+    //fake parse request
+    utility.queueReq("parse", {
+      match_id: 115178218,
+      start_time: new Date()
+    }, function(err, job) {
+      utility.processParse(job, function(err) {
+        done(err);
+      });
+    });
+  });
   /*
-  //todo streaming doesnt work yet
   it('parse job stream', function(done) {
-    this.timeout(15000);
+    this.timeout(30000);
     //fake parse request
     utility.queueReq("parse", {
       match_id: 115178218,
@@ -267,18 +277,6 @@ describe("TESTS", function() {
     });
   });
   */
-  it('parse job file', function(done) {
-    this.timeout(15000);
-    //fake parse request
-    utility.queueReq("parse", {
-      match_id: 115178218,
-      start_time: new Date()
-    }, function(err, job) {
-      utility.processParse(job, function(err) {
-        done(err);
-      });
-    });
-  });
   //1v1 game
   //ardm game
   //regular game
