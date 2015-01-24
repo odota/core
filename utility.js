@@ -364,16 +364,8 @@ function processApi(job, cb) {
                 cb(err);
             });
         }
-        else if (payload.account_id) {
-            //response for match history for single player
-            var resp = data.result.matches;
-            async.map(resp, function(match, cb2) {
-                queueReq("api_details", match, function(err) {
-                    cb2(err);
-                });
-            }, function(err) {
-                cb(err);
-            });
+        else {
+            return cb(new Error("unknown response"));
         }
     });
 }
@@ -841,7 +833,7 @@ function getFullMatchHistory(done) {
             matchCells.each(function(i, matchCell) {
                 var match_url = remote + cheerio(matchCell).children().first().attr('href');
                 var match_id = Number(match_url.split(/[/]+/).pop());
-                match_ids[match_id] = 1;
+                match_ids[match_id] = true;
             });
             var nextPath = parsedHTML('a[rel=next]').first().attr('href');
             if (nextPath) {
@@ -861,6 +853,30 @@ function getFullMatchHistory(done) {
         });
     }
 
+    function getApiMatchPage(url, cb) {
+        getData(url, function(err, body) {
+            if (err) {
+                return cb(err);
+            }
+            //response for match history for single player
+            var resp = body.result.matches;
+            async.mapSeries(resp, function(match, cb) {
+                //add match ids on each page to match_ids
+                match_ids[match.match_id] = true;
+            }, function(err) {
+                //keep track of the smallest sequence number
+                //paginate through to 500 games if necessary with start_at_match_id=
+                if (body.result.results_remaining === 0) {
+                    cb(err);
+                }
+                else {
+                    url += "&start_at_match_id=" + start_id;
+                    getApiMatchPage(url, cb);
+                }
+            });
+        });
+    }
+
     function getHistoryByHero(player, cb) {
         //use steamapi via specific player history and specific hero id (up to 500 games per hero)
         for (var key in constants.heroes) {
@@ -869,13 +885,9 @@ function getFullMatchHistory(done) {
                 account_id: player.account_id,
                 hero_id: key
             });
-            getData(container.url, function(err, body) {
-                if (err) {
-                    return cb(err);
-                }
-                //add match ids on each page to match_ids
-                //paginate through to 500 games if necessary
-            });
+            getApiMatchPage(container.url, function(err) {
+
+            })
         }
     }
 }
