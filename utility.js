@@ -406,34 +406,28 @@ function processUpload(job, cb) {
 }
 
 function processParse(job, cb) {
+    var match_id = job.data.payload.match_id;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        var match_id = job2.data.payload.match_id;
-        if (err) {
+        if (err && err !== "S3 UNAVAILABLE") {
             logger.info("[PARSER] %s, error: %s", match_id, err);
-            if (err === "S3 UNAVAILABLE") {
-                //don't retry
-                db.matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parse_status: 1
-                    }
-                });
-                //todo this isn't optimal since this marks the job as complete, so it immediately disappears
-                return cb();
-            }
             return cb(err);
         }
-        else {
-            if (process.env.DELETE_REPLAYS) {
-                fs.unlinkSync(job2.data.fileName);
-            }
-            return cb(err);
+        if (process.env.DELETE_REPLAYS) {
+            fs.unlinkSync(job2.data.fileName);
         }
+        db.matches.update({
+            match_id: match_id
+        }, {
+            $set: {
+                parse_status: 1
+            }
+        }, function(err) {
+            return cb(err);
+        });
     });
 }
 
@@ -480,6 +474,17 @@ function getReplayUrl(job, cb) {
         getS3Url(match.match_id, function(err, url) {
             cb(err, job, url);
         });
+    }
+}
+
+function getReplayData(job, url, cb) {
+    job.data.url = url;
+    job.update();
+    if (job.data.fileName) {
+        parseReplay(job, job.data.fileName, cb);
+    }
+    else {
+        job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
     }
 }
 
@@ -556,17 +561,6 @@ function parseReplay(job, input, cb) {
     });
 }
 
-function getReplayData(job, url, cb) {
-    job.data.url = url;
-    job.update();
-    if (job.data.fileName) {
-        parseReplay(job, job.data.fileName, cb);
-    }
-    else {
-        job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
-    }
-}
-
 function decompress(archiveName, cb) {
     var cp = spawn("bunzip2", [archiveName]);
     cp.on('exit', function(code) {
@@ -628,7 +622,6 @@ function insertMatch(match, cb) {
             return logger.info(err);
         }
     });
-    //parse if unparsed
     if (match.parsed_data) {
         match.parse_status = 2;
     }
@@ -876,7 +869,7 @@ function getFullMatchHistory(done) {
         //one call for each hero in constants
         //paginate through to 500 games if necessary
         //generateJob();
-        
+
     }
 }
 
