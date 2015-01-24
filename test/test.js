@@ -5,6 +5,7 @@ process.env.ROOT_URL = "http://localhost:5000";
 process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
+process.env.REPLAY_DIR="./testreplays";
 var assert = require('assert');
 var async = require('async');
 var utility = require('../utility');
