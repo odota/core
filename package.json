@@ -10,7 +10,7 @@
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
     "unnamed": "grunt unnamed",
-    "preinstall": "mvn -q -f parser/pom.xml package && npm run constants"
+    "postinstall": "mvn -q -f parser/pom.xml package && npm run constants"
   },
   "repository": {
     "type": "git",

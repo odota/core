@@ -745,12 +745,13 @@ function generateConstants(done) {
         heroes.forEach(function(hero) {
             hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";
         });
+        //key heroes by id
         var lookup = {};
-        var array = constants.heroes;
-        for (var i = 0; i < array.length; i++) {
-            lookup[array[i].id] = array[i];
+        for (var i = 0; i < heroes.length; i++) {
+            lookup[heroes[i].id] = heroes[i];
         }
         constants.heroes = lookup;
+        //key heroes by name
         constants.hero_names = {};
         for (var i = 0; i < heroes.length; i++) {
             constants.hero_names[heroes[i].name] = heroes[i];
@@ -762,6 +763,7 @@ function generateConstants(done) {
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
+        //key ability_ids by id
         lookup = {};
         var ability_ids = constants.ability_ids.abilities;
         for (var j = 0; j < ability_ids.length; j++) {
@@ -789,6 +791,7 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
+        //key regions by id
         lookup = {};
         var regions = constants.regions.regions;
         for (var k = 0; k < regions.length; k++) {
@@ -873,6 +876,7 @@ function getFullMatchHistory(done) {
         //one call for each hero in constants
         //paginate through to 500 games if necessary
         //generateJob();
+        
     }
 }
 
