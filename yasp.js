@@ -1,10 +1,10 @@
 var dotenv = require('dotenv');
 dotenv.load();
-var db = require('./db')();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
 var utility = require('./utility'),
+    db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
@@ -90,8 +90,6 @@ passport.use(new SteamStrategy({
         if (err) return done(err, null);
         return done(null, {
             account_id: steam32,
-            //todo why not just check user.track===0 to see if untracked?  It doesn't exist on other players
-            untracked: (user && user.track === 0) ? true : false // If set to 0, we untracked them
         });
     });
 }));
@@ -114,17 +112,15 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
+        if (err) {
+            logger.info(err);
+        }
         app.locals.user = req.user;
+        //todo use flash
         app.locals.login_req_msg = req.session.login_required;
         req.session.login_required = false;
-        if (err || !reply) {
-            app.locals.banner_msg = false;
-            next();
-        }
-        else {
-            app.locals.banner_msg = reply;
-            next();
-        }
+        app.locals.banner_msg = reply;
+        next();
     });
 });
 app.param('match_id', function(req, res, next, id) {
@@ -135,12 +131,12 @@ app.param('match_id', function(req, res, next, id) {
                 match_id: Number(id)
             }, function(err, match) {
                 if (err || !match) {
-                    return next();
+                    return next(new Error("match not found"));
                 }
                 else {
                     utility.fillPlayerNames(match.players, function(err) {
                         if (err) {
-                            return next(err);
+                            return next(new Error(err));
                         }
                         req.match = match;
                         //Add to cache if we have parsed data
@@ -178,7 +174,7 @@ app.route('/api/matches').get(function(req, res, next) {
     }
     db.matches.count(options, function(err, count) {
         if (err) {
-            return next(err);
+            return next(new Error(err));
         }
         db.matches.find(options, {
             limit: Number(req.query.length),
@@ -203,175 +199,44 @@ app.route('/matches').get(function(req, res) {
     });
 });
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index';
+    var info = req.params.info || "index";
     var match = req.match;
-    if (!matchPages[info]) {
-        return next();
+    if (info !== "index" && !match.parsed_data) {
+        return next(new Error("match not parsed"));
     }
+    var data;
     if (info === "details") {
-        //loop through all heroes
-        //look up corresponding hero_id
-        //find player slot associated with that unit(hero_to_slot)
-        //merge into player's primary hero
-        for (var key in match.parsed_data.heroes) {
-            var val = match.parsed_data.heroes[key];
-            if (app.locals.constants.hero_names[key]) {
-                var hero_id = app.locals.constants.hero_names[key].id;
-                var slot = match.parsed_data.hero_to_slot[hero_id];
-                if (slot) {
-                    var primary = match.players[slot].hero_id;
-                    var primary_name = app.locals.constants.heroes[primary].name;
-                    var merge = match.parsed_data.heroes[primary_name];
-                    if (!match.players[slot].hero_ids) {
-                        match.players[slot].hero_ids = [];
-                    }
-                    match.players[slot].hero_ids.push(hero_id);
-                    if (key !== primary_name) {
-                        utility.mergeObjects(merge, val);
-                    }
-                }
-            }
-        }
+        match = utility.mergeMatchData(match, app.locals.constants);
     }
-
     if (info === "graphs") {
-        if (match.parsed_data) {
-            //compute graphs
-            var goldDifference = ['Gold'];
-            var xpDifference = ['XP'];
-            for (var i = 0; i < match.parsed_data.times.length; i++) {
-                var goldtotal = 0;
-                var xptotal = 0;
-                match.parsed_data.players.forEach(function(elem, j) {
-                    if (match.players[j].player_slot < 64) {
-                        goldtotal += elem.gold[i];
-                        xptotal += elem.xp[i];
-                    }
-                    else {
-                        xptotal -= elem.xp[i];
-                        goldtotal -= elem.gold[i];
-                    }
-                });
-                goldDifference.push(goldtotal);
-                xpDifference.push(xptotal);
-            }
-            var time = ["time"].concat(match.parsed_data.times);
-            var data = {
-                difference: [time, goldDifference, xpDifference],
-                gold: [time],
-                xp: [time],
-                lh: [time]
-            };
-            match.parsed_data.players.forEach(function(elem, i) {
-                var hero = app.locals.constants.heroes[match.players[i].hero_id].localized_name;
-                data.gold.push([hero].concat(elem.gold));
-                data.xp.push([hero].concat(elem.xp));
-                data.lh.push([hero].concat(elem.lh));
-            });
-        }
+        data = utility.generateGraphData(match, app.locals.constants);
     }
     res.render(matchPages[info].template, {
         route: info,
-        match: req.match,
+        match: match,
         tabs: matchPages,
         data: data,
         title: "Match " + match.match_id + " - YASP"
-    }, function(err, html) {
-        if (err) return next(err);
-        return res.send(html);
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || 'index';
-    if (!playerPages[info]) {
-        return next();
-    }
+    var info = req.params.info || "index";
     db.players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
         if (err || !player) {
-            return next(err);
+            return next(new Error("player not found"));
         }
         else {
-            utility.getMatchesByPlayer(player.account_id, function(err, matches) {
+            utility.fillPlayerInfo(player, function(err) {
                 if (err) {
-                    return next(err);
+                    return next(new Error(err));
                 }
-                var account_id = player.account_id;
-                var counts = {};
-                var heroes = {};
-                player.win = 0;
-                player.lose = 0;
-                player.games = 0;
-                player.teammates = [];
-                player.calheatmap = {};
-
-                for (var i = 0; i < matches.length; i++) {
-                    //add start time to data for cal-heatmap
-                    player.calheatmap[matches[i].start_time] = 1;
-
-                    //compute top heroes
-                    for (var j = 0; j < matches[i].players.length; j++) {
-                        var p = matches[i].players[j];
-                        if (p.account_id === account_id) {
-                            //find the "main" player's id
-                            var playerRadiant = utility.isRadiant(p);
-                            matches[i].player_win = (playerRadiant === matches[i].radiant_win);
-                            matches[i].slot = j;
-                            matches[i].player_win ? player.win += 1 : player.lose += 1;
-                            player.games += 1;
-                            if (!heroes[p.hero_id]) {
-                                heroes[p.hero_id] = {};
-                                heroes[p.hero_id]["games"] = 0;
-                                heroes[p.hero_id]["win"] = 0;
-                                heroes[p.hero_id]["lose"] = 0;
-                            }
-                            heroes[p.hero_id]["games"] += 1;
-                            if (matches[i].player_win) {
-                                heroes[p.hero_id]["win"] += 1;
-                            }
-                            else {
-                                heroes[p.hero_id]["lose"] += 1;
-                            }
-                        }
-                    }
-                    //compute top teammates
-                    for (j = 0; j < matches[i].players.length; j++) {
-                        var tm = matches[i].players[j];
-                        if (utility.isRadiant(tm) === playerRadiant) { //teammates of player
-                            if (!counts[tm.account_id]) {
-                                counts[tm.account_id] = {
-                                    account_id: tm.account_id,
-                                    win: 0,
-                                    lose: 0,
-                                    games: 0
-                                };
-                            }
-                            counts[tm.account_id]["games"] += 1;
-                            matches[i].player_win ? counts[tm.account_id]["win"] += 1 : counts[tm.account_id]["lose"] += 1;
-                        }
-                    }
-                }
-                //convert teammate counts to array and filter
-                for (var id in counts) {
-                    var count = counts[id];
-                    if (id != app.locals.constants.anonymous_account_id && id != player.account_id && count.games >= 2) {
-                        player.teammates.push(count);
-                    }
-                }
-
-                player.matches = matches;
-                player.heroes = heroes;
-                utility.fillPlayerNames(player.teammates, function(err) {
-                    if (err) {
-                        return next(err);
-                    }
-                    res.render(playerPages[info].template, {
-                        route: info,
-                        player: player,
-                        tabs: playerPages,
-                        title: (player.personaname || player.account_id) + " - YASP"
-                    });
+                res.render(playerPages[info].template, {
+                    route: info,
+                    player: player,
+                    tabs: playerPages,
+                    title: (player.personaname || player.account_id) + " - YASP"
                 });
             });
         }
@@ -384,7 +249,6 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
     if (req.user) {
-        app.locals.untracked = req.user.untracked;
         res.redirect('/players/' + req.user.account_id);
     }
     else {
@@ -396,14 +260,12 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-
 app.use(multer({
     dest: './uploads',
     limits: {
         fileSize: 200000000
     }
 }));
-
 app.route('/verify_recaptcha')
     .post(function(req, res) {
         var data = {
@@ -411,9 +273,7 @@ app.route('/verify_recaptcha')
             challenge: req.body.recaptcha_challenge_field,
             response: req.body.recaptcha_response_field
         };
-
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-
         recaptcha.verify(function(success, error_code) {
             req.session.captcha_verified = success;
             res.json({
@@ -421,7 +281,6 @@ app.route('/verify_recaptcha')
             });
         });
     });
-
 app.route('/upload')
     .all(function(req, res, next) {
         if (req.user) {
@@ -449,7 +308,6 @@ app.route('/upload')
                 if (err) return logger.info(err);
             });
         }
-
         var verified = req.session.captcha_verified;
         req.session.captcha_verified = false; //Set back to false
         res.render("upload", {
@@ -458,7 +316,6 @@ app.route('/upload')
             recaptcha_form: recaptcha.toHTML(),
         });
     });
-
 app.get('/stats', function(req, res, next) {
     async.parallel({
             matches: function(cb) {
@@ -525,15 +382,25 @@ app.get('/stats', function(req, res, next) {
         },
         function(err, results) {
             if (err) {
-                return next(err);
+                return next(new Error(err));
             }
             res.json(results);
         });
 });
-
+app.use(function(req, res, next) {
+    res.status(404);
+    if (process.env.NODE_ENV === "production") {
+        return res.render('404.jade', {
+            error: true
+        });
+    }
+    else {
+        return next();
+    }
+});
 app.use(function(err, req, res, next) {
+    logger.info(err);
     if (err && process.env.NODE_ENV === "production") {
-        logger.info(err);
         return res.status(500).render('500.jade', {
             error: true
         });
@@ -543,77 +410,4 @@ app.use(function(err, req, res, next) {
     }
 });
 
-app.use(function(req, res) {
-    if (process.env.NODE_ENV === "production") {
-        return res.status(404).render('404.jade', {
-            error: true
-        });
-    }
-});
-
-module.exports.app = app;
-
-var server = app.listen(process.env.PORT || 3000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
-});
-
-utility.clearActiveJobs('api', function(err) {
-    if (err) {
-        utility.logger.info(err);
-    }
-    utility.jobs.process('api', utility.processApiReq);
-});
-
-utility.clearActiveJobs('upload', function(err) {
-    if (err) {
-        utility.logger.info(err);
-    }
-    utility.jobs.process('upload', utility.processUpload);
-});
-
-if (process.env.START_SEQ_NUM === "AUTO") {
-    utility.getCurrentSeqNum(function(num) {
-        utility.scanApi(num);
-    });
-}
-else if (process.env.START_SEQ_NUM) {
-    utility.scanApi(process.env.START_SEQ_NUM);
-}
-else {
-    //start at highest id in db
-    db.matches.findOne({
-        upload: {
-            $exists: false
-        }
-    }, {
-        sort: {
-            match_seq_num: -1
-        }
-    }, function(err, doc) {
-        if (err) {
-            utility.logger.info(err);
-        }
-        utility.scanApi(doc ? doc.match_seq_num + 1 : 0);
-    });
-}
-setInterval(function untrackPlayers() {
-    utility.logger.info("[UNTRACK] Untracking users...");
-    db.players.update({
-        last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
-        }
-    }, {
-        $set: {
-            track: 0
-        }
-    }, {
-        multi: true
-    }, function(err, num) {
-        if (err) {
-            utility.logger.info(err);
-        }
-        utility.logger.info("[UNTRACK] Untracked %s users", num);
-    });
-}, 60 * 60 * 1000); //check every hour
+module.exports = app;

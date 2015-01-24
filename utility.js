@@ -4,40 +4,46 @@ var async = require('async'),
     spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
     request = require('request'),
-    redis = require('redis'),
     winston = require('winston'),
     cheerio = require('cheerio'),
     fs = require('fs'),
     moment = require('moment'),
     AWS = require('aws-sdk'),
-    stream = require('stream'),
-    db = require('./db')(),
+    redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis),
-    compressjs = require('compressjs');
-var bz2 = compressjs.bzip2;
-var retrievers = process.env.RETRIEVER_HOST.split(",");
-var replay_dir = "replays/";
+    bzip2 = require('compressjs').Bzip2,
+    streamifier = require('streamifier');
+var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
+var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
 options.auth = options.password;
+var kue = require('kue');
+var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
+db.get('matches').index('match_id', {
+    unique: true
+});
+db.get('players').index('account_id', {
+    unique: true
+});
+db.matches = db.get('matches');
+db.players = db.get('players');
 var redisclient = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
-var kue = require('kue');
 var jobs = kue.createQueue({
     redis: options
 });
 jobs.promote();
+var transports = [];
+if (process.env.NODE_ENV !== "test") {
+    transports.push(new(winston.transports.Console)({
+        'timestamp': true
+    }));
+}
 var logger = new(winston.Logger)({
-    transports: [new(winston.transports.Console)({
-            'timestamp': true
-        }),
-        new(winston.transports.File)({
-            filename: 'yasp.log',
-            level: 'info'
-        })
-    ]
+    transports: transports
 });
 
 function clearActiveJobs(type, cb) {
@@ -73,29 +79,28 @@ function fillPlayerNames(players, cb) {
     }, function(err) {
         cb(err);
     });
-};
-
-function getMatchesByPlayer(account_id, cb) {
-    var search = {};
-    if (account_id) {
-        search.players = {
-            $elemMatch: {
-                account_id: account_id
-            }
-        };
-    }
-    db.matches.find(search, {
-        sort: {
-            match_id: -1
-        }
-    }, function(err, docs) {
-        cb(err, docs);
-    });
 }
 
-/*
- * Makes search from a datatables call
- */
+function getMatchesByPlayer(account_id, cb) {
+        var search = {};
+        if (account_id) {
+            search.players = {
+                $elemMatch: {
+                    account_id: account_id
+                }
+            };
+        }
+        db.matches.find(search, {
+            sort: {
+                match_id: -1
+            }
+        }, function(err, docs) {
+            cb(err, docs);
+        });
+    }
+    /*
+     * Makes search from a datatables call
+     */
 function makeSearch(search, columns) {
         var s = {};
         columns.forEach(function(c) {
@@ -107,38 +112,38 @@ function makeSearch(search, columns) {
      * Makes sort from a datatables call
      */
 function makeSort(order, columns) {
-    var sort = {};
-    order.forEach(function(s) {
-        var c = columns[Number(s.column)];
-        if (c) {
-            sort[c.data] = s.dir === 'desc' ? -1 : 1;
-        }
-    });
-    return sort;
-};
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
+        var sort = {};
+        order.forEach(function(s) {
+            var c = columns[Number(s.column)];
+            if (c) {
+                sort[c.data] = s.dir === 'desc' ? -1 : 1;
+            }
+        });
+        return sort;
+    }
+    /*
+     * Converts a steamid 64 to a steamid 32
+     *
+     * Returns a BigNumber
+     */
 function convert64to32(id) {
-    return BigNumber(id).minus('76561197960265728');
-};
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
+        return BigNumber(id).minus('76561197960265728');
+    }
+    /*
+     * Converts a steamid 64 to a steamid 32
+     *
+     * Returns a BigNumber
+     */
 function convert32to64(id) {
     return BigNumber('76561197960265728').plus(id);
-};
+}
 
 function isRadiant(player) {
     return player.player_slot < 64;
-};
+}
 
 function queueReq(type, payload, cb) {
-    db.checkDuplicate(payload, function(err) {
+    checkDuplicate(type, payload, function(err) {
         if (err) {
             return cb(err);
         }
@@ -148,23 +153,25 @@ function queueReq(type, payload, cb) {
             type: 'exponential'
         }).removeOnComplete(true).save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
-            cb(err, kuejob.id);
+            cb(err, kuejob);
         });
     });
 }
 
-function checkDuplicate(payload, cb) {
-    if (payload.match_id) {
+function checkDuplicate(type, payload, cb) {
+    if (type === "api_details" && payload.match_id) {
+        //make sure match doesn't exist already in db
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
             if (!err && !doc) {
-                cb(null);
+                return cb(null);
             }
-            cb("duplicate found");
+            cb(new Error("duplicate found"));
         });
     }
     else {
+        //no duplicate check for anything else
         cb(null);
     }
 }
@@ -179,8 +186,11 @@ function generateJob(type, payload) {
         };
     }
     if (type === "api_history") {
+        var url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id;
+        url += payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "";
+        url += payload.hero_id ? "&hero_id=" + payload.hero_id : "";
         return {
-            url: api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id + "&matches_requested=10",
+            url: url,
             title: [type, payload.account_id].join(),
             type: "api",
             payload: payload
@@ -218,22 +228,24 @@ function generateJob(type, payload) {
     }
     else {
         logger.info("unknown type for generateJob");
+        return null;
     }
 }
 
 function runParse(input, cb) {
-    //if string, read the file into a stream
-    if (typeof input === "string") {
-        input = fs.createReadStream(input);
-    }
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = "";
     var cp = spawn("java", ["-jar",
-        "-Xms128m",
-        "-Xmx128m",
         parser_file
     ]);
-    input.pipe(cp.stdin);
+    //if string, read the file into a stream
+    if (typeof input === "string") {
+        fs.createReadStream(input).pipe(cp.stdin);
+    }
+    //if buffer, make a new stream
+    if (Buffer.isBuffer(input)) {
+        streamifier.createReadStream(input).pipe(cp.stdin);
+    }
     cp.stdout.on('data', function(data) {
         output += data;
     });
@@ -260,13 +272,13 @@ function getData(url, cb) {
             url: url,
             json: true
         }, function(err, res, body) {
-            logger.info("%s", url);
             if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
+                logger.info("retrying getData: %s", url);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
             }
+            logger.info("got data: %s", url);
             if (body.result) {
                 //steam api response
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
@@ -298,320 +310,33 @@ function updateSummaries(cb) {
             return cb(err);
         }
         var arr = [];
-        docs.forEach(function(player, i) {
+        var i = 0;
+        async.map(docs, function(player, cb) {
             logger.info(player);
             arr.push(player);
+            i += 1;
             if (arr.length >= 100 || i >= docs.length) {
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
                 };
                 queueReq("api_summaries", summaries, function(err) {
-                    if (err) {
-                        logger.info(err);
-                    }
+                    arr = [];
+                    return cb(err);
                 });
-                arr = [];
             }
+            else {
+                cb(null);
+            }
+        }, function(err) {
+            cb(err, i);
         });
-        cb(err);
     });
 }
 
 function getCurrentSeqNum(cb) {
     getData(api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY, function(err, data) {
-        if (err) {
-            console.log(err);
-        }
-        cb(data.result.matches[0].match_seq_num);
-    });
-}
-
-function processParse(job, cb) {
-    async.waterfall([
-        async.apply(checkLocal, job),
-        getReplayUrl,
-        downloadReplay,
-        parseFile,
-        insertParse,
-    ], function(err) {
-        handleErrors(err, job, function(err) {
-            cb(err);
-        });
-    });
-}
-
-function processParseStream(job, cb) {
-    async.waterfall([
-        async.apply(getReplayUrl, job),
-        parseStream,
-        insertParse,
-    ], function(err) {
-        handleErrors(err, job, function(err) {
-            cb(err);
-        });
-    });
-}
-
-function getReplayUrl(job, cb) {
-    if (job.data.url || job.data.fileName) {
-        return cb(null, job, job.data.url);
-    }
-    var match = job.data.payload;
-    if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        var urls = [];
-        for (var i = 0; i < retrievers.length; i++) {
-            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
-        }
-        getData(urls, function(err, body) {
-            if (!err && body && body.match) {
-                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-                return cb(null, job, url);
-            }
-            logger.info(err, body);
-            return cb("invalid body or error");
-        });
-    }
-    else {
-        getS3URL(match.match_id, function(err, url) {
-            cb(err, job, url);
-        });
-    }
-}
-
-function downloadReplay(job, url, cb) {
-    if (job.data.fileName) {
-        return cb(null, job, job.data.fileName);
-    }
-    if (!fs.existsSync(replay_dir)) {
-        fs.mkdir(replay_dir);
-    }
-    job.data.url = url;
-    job.update();
-    var match_id = job.data.payload.match_id;
-    getReplayUrl(job, function(err, url) {
-        if (err) {
-            return cb(err);
-        }
-        logger.info("[PARSER] downloading from %s", url);
-        var t1 = new Date().getTime();
-        request({
-            url: url,
-            encoding: null
-        }, function(err, resp, body) {
-            if (err || resp.statusCode !== 200) {
-                return cb("DOWNLOAD ERROR");
-            }
-            var t2 = new Date().getTime();
-            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-            var fileName = replay_dir + match_id + ".dem";
-            var archiveName = fileName + ".bz2";
-            uploadToS3(archiveName, body, function(err) {
-                if (err) return logger.info(err);
-            });
-            decompress(body, fileName, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                var t3 = new Date().getTime();
-                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-                cb(err, job, fileName);
-            });
-        });
-    });
-}
-
-function decompress(comp, fileName, cb) {
-    //writes to compressed file, then decompresses file using bzip2
-    var archiveName = fileName + ".bz2";
-    fs.writeFile(archiveName, comp, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        var cp = spawn("bunzip2", [archiveName]);
-        cp.on('exit', function(code) {
-            if (code) {
-                return cb(code);
-            }
-            cb(code, fileName);
-        });
-    });
-}
-
-function checkLocal(job, cb) {
-    var match_id = job.data.payload.match_id;
-    var fileName = replay_dir + match_id + ".dem";
-    if (fs.existsSync(fileName)) {
-        logger.info("[PARSER] %s, found local replay", match_id);
-        job.data.fileName = fileName;
-        job.update();
-        cb(null, job);
-    }
-}
-
-function parseFile(job, fileName, cb) {
-    var match_id = job.data.payload.match_id;
-    var t3 = new Date().getTime();
-    runParse(fileName, function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        var t4 = new Date().getTime();
-        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-}
-
-function parseStream(job, url, cb) {
-    var match_id = job.data.payload.match_id;
-    var t3 = new Date().getTime();
-    var ws = stream.Writable();
-    var rs = stream.Readable();
-    ws.pipe(rs);
-    bz2.decompress(request
-        .get({
-            url: url,
-            encoding: null
-        })
-        .on('error', function(err) {
-            return cb(err);
-        }), ws);
-    runParse(rs, function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        var t4 = new Date().getTime();
-        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        cb(err, output);
-    });
-}
-
-function handleErrors(err, job, cb) {
-    var match_id = job.data.payload.match_id;
-    if (err) {
-        logger.info("[PARSER] error on match %s: %s", match_id, err);
-        if (job.attempts.remaining === 0 || err === "S3 UNAVAILABLE") {
-            //don't retry
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            });
-            //todo this isn't optimal since this marks the job as complete, so it immediately disappears
-            return cb(null);
-        }
-        else {
-            //retry
-            return cb(err);
-        }
-    }
-    if (process.env.DELETE_REPLAYS) {
-        fs.unlink(job.data.fileName, function(err) {
-            logger.info(err);
-        });
-    }
-    cb(err);
-}
-
-function getS3URL(match_id, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var archiveName = match_id + ".dem.bz2";
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        s3.headObject(params, function(err, data) {
-            if (!err) {
-                var url = s3.getSignedUrl('getObject', params);
-                cb(null, url);
-            }
-            else {
-                logger.info("[S3] %s not in S3", match_id);
-                cb("S3 UNAVAILABLE");
-            }
-        });
-    }
-    else {
-        cb("S3 UNAVAILABLE");
-    }
-}
-
-function uploadToS3(archiveName, body, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        params.Body = body;
-        s3.putObject(params, function(err, data) {
-            logger.info(err, data);
-            cb(err);
-        });
-    }
-    else {
-        logger.info("[S3] S3 not defined (skipping upload)");
-        cb(null);
-    }
-}
-
-function insertParse(output, cb) {
-    db.matches.update({
-        match_id: output.match_id
-    }, {
-        $set: {
-            parsed_data: output,
-            parse_status: 2
-        }
-    }, function(err) {
-        cb(err);
-    });
-}
-
-function insertMatch(match, cb) {
-    var summaries = {
-        summaries_id: new Date(),
-        players: match.players
-    };
-    //queue for player names
-    queueReq("api_summaries", summaries, function(err) {
-        if (err) return logger.info(err);
-    });
-    //parse if unparsed
-    if (match.parsed_data) {
-        match.parse_status = 2;
-    }
-    else {
-        queueReq("parse", match, function(err) {
-            if (err) return logger.info(err);
-        });
-    }
-    db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, {
-            upsert: true
-        },
-        function(err) {
-            cb(err);
-        });
-}
-
-function insertPlayer(player, cb) {
-    var account_id = Number(convert64to32(player.steamid));
-    player.last_summaries_update = new Date();
-    db.players.update({
-        account_id: account_id
-    }, {
-        $set: player
-    }, {
-        upsert: true
-    }, function(err) {
-        cb(err);
+        cb(err, data.result.matches[0].match_seq_num);
     });
 }
 
@@ -620,7 +345,7 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb("no url");
+        cb(new Error("no url"));
     }
     getData(job.data.url, function(err, data) {
         if (err) {
@@ -639,16 +364,8 @@ function processApi(job, cb) {
                 cb(err);
             });
         }
-        else if (payload.account_id) {
-            //response for match history for single player
-            var resp = data.result.matches;
-            async.map(resp, function(match, cb2) {
-                queueReq("api_details", match, function(err) {
-                    cb2(err);
-                });
-            }, function(err) {
-                cb(err);
-            });
+        else {
+            return cb(new Error("unknown response"));
         }
     });
 }
@@ -680,6 +397,253 @@ function processUpload(job, cb) {
             //only try once, mark done regardless of result
             cb(null);
         }
+    });
+}
+
+function processParse(job, cb) {
+    var match_id = job.data.payload.match_id;
+    async.waterfall([
+        async.apply(checkLocal, job),
+        getReplayUrl,
+        getReplayData,
+    ], function(err, job2) {
+        if (err && err.message !== "S3 UNAVAILABLE") {
+            return cb(new Error(err));
+        }
+        if (process.env.DELETE_REPLAYS && job2.data.fileName) {
+            fs.unlinkSync(job2.data.fileName);
+        }
+        db.matches.update({
+            match_id: match_id
+        }, {
+            $set: {
+                parse_status: 1
+            }
+        }, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            cb();
+        });
+    });
+}
+
+function processParseStream(job, cb) {
+    job.data.stream = true;
+    processParse(job, cb);
+}
+
+function checkLocal(job, cb) {
+    var match_id = job.data.payload.match_id;
+    if (!fs.existsSync(replay_dir)) {
+        fs.mkdir(replay_dir);
+    }
+    var fileName = replay_dir + match_id + ".dem";
+    if (fs.existsSync(fileName)) {
+        logger.info("[PARSER] %s, found local replay", match_id);
+        job.data.fileName = fileName;
+        job.update();
+    }
+    cb(null, job);
+}
+
+function getReplayUrl(job, cb) {
+    if (job.data.url || job.data.fileName) {
+        logger.info("has url or fileName");
+        return cb(null, job, job.data.url);
+    }
+    var match = job.data.payload;
+    if (match.start_time > moment().subtract(7, 'days').format('X')) {
+        logger.info("requesting match from dota2");
+        var urls = [];
+        for (var i = 0; i < retrievers.length; i++) {
+            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
+        }
+        getData(urls, function(err, body) {
+            if (!err && body && body.match) {
+                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                return cb(null, job, url);
+            }
+            logger.info(err, body);
+            return cb(new Error("invalid body or error"));
+        });
+    }
+    else if (process.env.AWS_S3_BUCKET) {
+        getS3Url(match.match_id, function(err, url) {
+            return cb(err, job, url);
+        });
+    }
+    else {
+        cb(new Error("replay expired"));
+    }
+}
+
+function getReplayData(job, url, cb) {
+    job.data.url = url;
+    job.update();
+    if (job.data.fileName) {
+        parseReplay(job, job.data.fileName, cb);
+    }
+    else {
+        job.data.stream ? streamReplayData(job, url, cb) : downloadReplayData(job, url, cb);
+    }
+}
+
+function streamReplayData(job, url, cb) {
+    var match_id = job.data.payload.match_id;
+    var t1 = new Date().getTime();
+    logger.info("[PARSER] streaming from %s", url);
+    request
+        .get({
+            url: url,
+            encoding: null
+        }, function(err, resp, body) {
+            if (err || resp.statusCode !== 200) {
+                return cb(new Error("DOWNLOAD ERROR"));
+            }
+            //todo figure out how to stream data directly through decompressor
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            var decomp = bzip2.decompressFile(body);
+            var t3 = new Date().getTime();
+            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+            return parseReplay(job, decomp, cb);
+        });
+}
+
+function downloadReplayData(job, url, cb) {
+    var match_id = job.data.payload.match_id;
+    var fileName = replay_dir + match_id + ".dem";
+    var archiveName = fileName + ".bz2";
+    logger.info("[PARSER] downloading from %s", url);
+    var t1 = new Date().getTime();
+    request({
+            url: url,
+            encoding: null
+        }, function(err, resp) {
+            if (err || resp.statusCode !== 200) {
+                return cb(err);
+            }
+            var t2 = new Date().getTime();
+            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+            decompress(archiveName, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                job.data.fileName = fileName;
+                job.update();
+                var t3 = new Date().getTime();
+                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+                return parseReplay(job, fileName, cb);
+            });
+        })
+        .pipe(fs.createWriteStream(archiveName));
+}
+
+function parseReplay(job, input, cb) {
+    var match_id = job.data.payload.match_id;
+    var t3 = new Date().getTime();
+    runParse(input, function(err, output) {
+        if (err) {
+            return cb(err);
+        }
+        var t4 = new Date().getTime();
+        logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
+        db.matches.update({
+            match_id: output.match_id
+        }, {
+            $set: {
+                parsed_data: output,
+                parse_status: 2
+            }
+        }, function(err) {
+            cb(err, job);
+        });
+    });
+}
+
+function decompress(archiveName, cb) {
+    var cp = spawn("bunzip2", [archiveName]);
+    cp.on('exit', function(code) {
+        logger.info("[BZIP2] exit code: %s", code);
+        cb(code);
+    });
+}
+
+function getS3Url(match_id, cb) {
+    var archiveName = match_id + ".dem.bz2";
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    var url;
+    try {
+        url = s3.getSignedUrl('getObject', params);
+        cb(null, url);
+    }
+    catch (e) {
+        logger.info("[S3] %s not in S3", match_id);
+        cb(new Error("S3 UNAVAILABLE"));
+    }
+}
+
+function uploadToS3(archiveName, body, cb) {
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    params.Body = body;
+    s3.putObject(params, function(err, data) {
+        cb(err);
+    });
+}
+
+function insertMatch(match, cb) {
+    var summaries = {
+        summaries_id: new Date(),
+        players: match.players
+    };
+    //queue for player names
+    queueReq("api_summaries", summaries, function(err) {
+        if (err) {
+            return logger.info(err);
+        }
+    });
+    if (match.parsed_data) {
+        match.parse_status = 2;
+    }
+    else {
+        queueReq("parse", match, function(err) {
+            if (err) {
+                return logger.info(err);
+            }
+        });
+    }
+    db.matches.update({
+            match_id: match.match_id
+        }, {
+            $set: match
+        }, {
+            upsert: true
+        },
+        function(err) {
+            cb(err);
+        });
+}
+
+function insertPlayer(player, cb) {
+    var account_id = Number(convert64to32(player.steamid));
+    player.last_summaries_update = new Date();
+    db.players.update({
+        account_id: account_id
+    }, {
+        $set: player
+    }, {
+        upsert: true
+    }, function(err) {
+        cb(err);
     });
 }
 
@@ -733,13 +697,15 @@ function unparsed(done) {
         if (err) {
             return done(err);
         }
+        var i = 0;
         async.mapSeries(docs, function(match, cb) {
-            db.queueReq("parse", match, function(err, id) {
-                console.log("[UNPARSED] match %s, id %s", match.match_id, id);
+            queueReq("parse", match, function(err, job) {
+                i += 1;
+                logger.info("[UNPARSED] match %s, jobid %s", match.match_id, job.id);
                 cb(err);
             });
         }, function(err) {
-            done(err);
+            done(err, i);
         });
     });
 }
@@ -749,18 +715,25 @@ function generateConstants(done) {
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
-        console.log(val);
-        db.getData(val, function(err, result) {
+        getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
         });
     }, function(err) {
-        if (err) throw err;
+        if (err) {
+            return done(err);
+        }
         var heroes = constants.heroes.result.heroes;
         heroes.forEach(function(hero) {
             hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";
         });
-        constants.heroes = buildLookup(heroes);
+        //key heroes by id
+        var lookup = {};
+        for (var i = 0; i < heroes.length; i++) {
+            lookup[heroes[i].id] = heroes[i];
+        }
+        constants.heroes = lookup;
+        //key heroes by name
         constants.hero_names = {};
         for (var i = 0; i < heroes.length; i++) {
             constants.hero_names[heroes[i].name] = heroes[i];
@@ -772,7 +745,8 @@ function generateConstants(done) {
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
-        var lookup = {};
+        //key ability_ids by id
+        lookup = {};
         var ability_ids = constants.ability_ids.abilities;
         for (var j = 0; j < ability_ids.length; j++) {
             lookup[ability_ids[j].id] = ability_ids[j].name;
@@ -799,6 +773,7 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
+        //key regions by id
         lookup = {};
         var regions = constants.regions.regions;
         for (var k = 0; k < regions.length; k++) {
@@ -807,42 +782,37 @@ function generateConstants(done) {
         constants.regions = lookup;
         constants.regions["251"] = "Peru";
         constants.regions["261"] = "India";
-        console.log("[CONSTANTS] generated constants file");
-        fs.writeFileSync("constants.json", JSON.stringify(constants, null, 2));
-        done();
+        fs.writeFile("constants.json", JSON.stringify(constants, null, 2), function(err) {
+            if (!err) {
+                logger.info("[CONSTANTS] generated constants file");
+            }
+            return done(err);
+        });
     });
-
-    function buildLookup(array) {
-        var lookup = {};
-        for (var i = 0; i < array.length; i++) {
-            lookup[array[i].id] = array[i];
-        }
-        return lookup;
-    }
 }
 
 function getFullMatchHistory(done) {
+    var constants = require('./constants');
     var remote = process.env.REMOTE;
+    var func = remote ? getHistoryRemote : getHistoryByHero;
     var match_ids = {};
-    //todo search db for ids to get full history
-    var docs = [{
-        account_id: 88367253
-    }];
-    async.mapSeries(docs, getHistoryByHero, function(err) {
+    db.players.find({
+        track: 1
+    }, function(err, docs) {
         if (err) {
-            done(err);
+            return done(err);
         }
-        else {
-            //done with all players
+        async.mapSeries(docs, func, function(err) {
             for (var key in match_ids) {
                 var match = {};
                 match.match_id = key;
-                console.log(match);
-                //todo call the function
-                //utility.queueReq("api_details", match, function(err){});
+                logger.info(match);
+                queueReq("api_details", match, function(err) {
+                    logger.info(err);
+                });
             }
-            done();
-        }
+            done(err);
+        });
     });
 
     function getMatchPage(url, cb) {
@@ -857,13 +827,13 @@ function getFullMatchHistory(done) {
                     getMatchPage(url, cb);
                 }, 1000);
             }
-            console.log("[REMOTE] %s", url);
+            logger.info("[REMOTE] %s", url);
             var parsedHTML = cheerio.load(body);
             var matchCells = parsedHTML('td[class=cell-xlarge]');
             matchCells.each(function(i, matchCell) {
                 var match_url = remote + cheerio(matchCell).children().first().attr('href');
                 var match_id = Number(match_url.split(/[/]+/).pop());
-                match_ids[match_id] = 1;
+                match_ids[match_id] = true;
             });
             var nextPath = parsedHTML('a[rel=next]').first().attr('href');
             if (nextPath) {
@@ -883,8 +853,42 @@ function getFullMatchHistory(done) {
         });
     }
 
+    function getApiMatchPage(url, cb) {
+        getData(url, function(err, body) {
+            if (err) {
+                return cb(err);
+            }
+            //response for match history for single player
+            var resp = body.result.matches;
+            async.mapSeries(resp, function(match, cb) {
+                //add match ids on each page to match_ids
+                match_ids[match.match_id] = true;
+            }, function(err) {
+                //keep track of the smallest sequence number
+                //paginate through to 500 games if necessary with start_at_match_id=
+                if (body.result.results_remaining === 0) {
+                    cb(err);
+                }
+                else {
+                    url += "&start_at_match_id=" + start_id;
+                    getApiMatchPage(url, cb);
+                }
+            });
+        });
+    }
+
     function getHistoryByHero(player, cb) {
-        //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        for (var key in constants.heroes) {
+            //make a request for every possible hero
+            var container = generateJob("api_history", {
+                account_id: player.account_id,
+                hero_id: key
+            });
+            getApiMatchPage(container.url, function(err) {
+
+            })
+        }
     }
 }
 
@@ -904,12 +908,224 @@ function mergeObjects(merge, val) {
             else {
                 merge[attr] += val[attr];
             }
-
         }
     }
 }
 
+function untrackPlayers(cb) {
+    db.players.update({
+        last_visited: {
+            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    }, function(err, num) {
+        logger.info("[UNTRACK] Untracked %s users", num);
+        cb(err, num);
+    });
+}
+
+function startScan() {
+    if (process.env.START_SEQ_NUM === "AUTO") {
+        getCurrentSeqNum(function(err, num) {
+            if (err) {
+                return startScan();
+            }
+            scanApi(num);
+        });
+    }
+    else if (process.env.START_SEQ_NUM) {
+        scanApi(process.env.START_SEQ_NUM);
+    }
+    else {
+        //start at highest id in db
+        db.matches.findOne({
+            upload: {
+                $exists: false
+            }
+        }, {
+            sort: {
+                match_seq_num: -1
+            }
+        }, function(err, doc) {
+            if (err) {
+                return startScan();
+            }
+            scanApi(doc ? doc.match_seq_num + 1 : 0);
+        });
+    }
+}
+
+function mergeMatchData(match, constants) {
+    var heroes = match.parsed_data.heroes;
+    //loop through all units
+    //look up corresponding hero_id
+    //hero if can find in constants
+    //find player slot associated with that unit(hero_to_slot)
+    //merge into player's primary unit
+    //if not hero attempt to associate with a hero
+    for (var key in heroes) {
+        var val = heroes[key];
+        var primary = key;
+        if (constants.hero_names[key]) {
+            //is a hero
+            var hero_id = constants.hero_names[key].id;
+            var slot = match.parsed_data.hero_to_slot[hero_id];
+            if (slot) {
+                var primary_id = match.players[slot].hero_id;
+                primary = constants.heroes[primary_id].name;
+                //build hero_ids for each player
+                if (!match.players[slot].hero_ids) {
+                    match.players[slot].hero_ids = [];
+                }
+                match.players[slot].hero_ids.push(hero_id);
+            }
+            else {
+                console.log("couldn't find slot for hero id %s", hero_id);
+            }
+        }
+        else {
+            //is not a hero
+            primary = getAssociatedHero(key, heroes);
+        }
+        if (key !== primary) {
+            //merge the objects into primary, but not with itself
+            mergeObjects(heroes[primary], val);
+        }
+    }
+    return match;
+}
+
+function getAssociatedHero(unit, heroes) {
+    //assume all illusions belong to that hero
+    if (unit.slice(0, "illusion_".length) === "illusion_") {
+        unit = unit.slice("illusion_".length);
+    }
+    //attempt to recover hero name from unit
+    if (unit.slice(0, "npc_dota_".length) === "npc_dota_") {
+        //split by _
+        var split = unit.split("_");
+        //get the third element
+        var identifier = split[2];
+        if (split[2] === "shadow" && split[3] === "shaman") {
+            identifier = "shadow_shaman";
+        }
+        //append to npc_dota_hero_, see if matches
+        var attempt = "npc_dota_hero_" + identifier;
+        if (heroes[attempt]) {
+            unit = attempt;
+        }
+    }
+    return unit;
+}
+
+function generateGraphData(match, constants) {
+    //compute graphs
+    var goldDifference = ['Gold'];
+    var xpDifference = ['XP'];
+    for (var i = 0; i < match.parsed_data.times.length; i++) {
+        var goldtotal = 0;
+        var xptotal = 0;
+        match.parsed_data.players.forEach(function(elem, j) {
+            if (match.players[j].player_slot < 64) {
+                goldtotal += elem.gold[i];
+                xptotal += elem.xp[i];
+            }
+            else {
+                xptotal -= elem.xp[i];
+                goldtotal -= elem.gold[i];
+            }
+        });
+        goldDifference.push(goldtotal);
+        xpDifference.push(xptotal);
+    }
+    var time = ["time"].concat(match.parsed_data.times);
+    var data = {
+        difference: [time, goldDifference, xpDifference],
+        gold: [time],
+        xp: [time],
+        lh: [time]
+    };
+    match.parsed_data.players.forEach(function(elem, i) {
+        var hero = constants.heroes[match.players[i].hero_id].localized_name;
+        data.gold.push([hero].concat(elem.gold));
+        data.xp.push([hero].concat(elem.xp));
+        data.lh.push([hero].concat(elem.lh));
+    });
+    return match;
+}
+
+function fillPlayerInfo(player, cb) {
+    getMatchesByPlayer(player.account_id, function(err, matches) {
+        if (err) {
+            return cb(err);
+        }
+        var account_id = player.account_id;
+        var counts = {};
+        var heroes = {};
+        player.teammates = [];
+        player.calheatmap = {};
+        for (var i = 0; i < matches.length; i++) {
+            //add start time to data for cal-heatmap
+            player.calheatmap[matches[i].start_time] = 1;
+            //compute top heroes
+            for (var j = 0; j < matches[i].players.length; j++) {
+                var p = matches[i].players[j];
+                if (p.account_id === account_id) {
+                    //find the "main" player's id
+                    var playerRadiant = isRadiant(p);
+                    matches[i].player_win = (playerRadiant === matches[i].radiant_win);
+                    matches[i].slot = j;
+                    matches[i].player_win ? player.win += 1 : player.lose += 1;
+                    player.games += 1;
+                    if (!heroes[p.hero_id]) {
+                        heroes[p.hero_id] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
+                    }
+                    heroes[p.hero_id].games += 1;
+                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+                }
+            }
+            //compute top teammates
+            for (j = 0; j < matches[i].players.length; j++) {
+                var tm = matches[i].players[j];
+                if (isRadiant(tm) === playerRadiant) { //teammates of player
+                    if (!counts[tm.account_id]) {
+                        counts[tm.account_id] = {
+                            account_id: tm.account_id,
+                            win: 0,
+                            lose: 0,
+                            games: 0
+                        };
+                    }
+                    counts[tm.account_id].games += 1;
+                    matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                }
+            }
+        }
+        //convert teammate counts to array and filter
+        for (var id in counts) {
+            var count = counts[id];
+            if (count.games >= 2) {
+                player.teammates.push(count);
+            }
+        }
+        player.matches = matches;
+        player.heroes = heroes;
+        fillPlayerNames(player.teammates, function(err) {
+            cb(err);
+        });
+    });
+}
 module.exports = {
+    db: db,
     redis: redisclient,
     logger: logger,
     kue: kue,
@@ -929,23 +1145,21 @@ module.exports = {
     getData: getData,
     updateSummaries: updateSummaries,
     getCurrentSeqNum: getCurrentSeqNum,
-    processParse: processParseStream,
+    processParse: processParse,
+    processParseStream: processParseStream,
     processApi: processApi,
     processUpload: processUpload,
     scanApi: scanApi,
     getReplayUrl: getReplayUrl,
-    downloadReplay: downloadReplay,
-    decompress: decompress,
-    parseFile: parseFile,
-    parseStream: parseStream,
-    handleErrors: handleErrors,
-    getS3URL: getS3URL,
+    getS3Url: getS3Url,
     uploadToS3: uploadToS3,
-    insertPlayer: insertPlayer,
-    insertParse: insertParse,
-    insertMatch: insertMatch,
     mergeObjects: mergeObjects,
+    untrackPlayers: untrackPlayers,
     unparsed: unparsed,
+    startScan: startScan,
     getFullMatchHistory: getFullMatchHistory,
-    generateConstants: generateConstants
+    generateConstants: generateConstants,
+    mergeMatchData: mergeMatchData,
+    generateGraphData: generateGraphData,
+    fillPlayerInfo: fillPlayerInfo
 };

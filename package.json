@@ -1,15 +1,16 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.3",
+  "version": "1.2.9",
   "scripts": {
     "start": "nf start",
     "test": "mocha",
-    "fulltest": "npm run buildparser && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "travistest": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | codeclimate && rm -rf ./coverage",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
-    "buildparser": "mvn -q -f parser/pom.xml package"
+    "unnamed": "grunt unnamed",
+    "build": "mvn -q -f parser/pom.xml package && npm run constants"
   },
   "repository": {
     "type": "git",
@@ -24,9 +25,7 @@
     "cookie-session": "~1.1.0",
     "express": "~4.11.1",
     "express-session": "~1.10.1",
-    "hiredis": "0.1.17",
     "http-auth": "~2.2.5",
-    "http-proxy": "~1.8.1",
     "jade": "~1.9.1",
     "kue": "~0.8.11",
     "moment": "2.9.0",
@@ -35,7 +34,6 @@
     "passport-steam": "0.1.4",
     "redis": "0.12.1",
     "request": "~2.51.0",
-    "seek-bzip": "~1.0.4",
     "winston": "0.8.3",
     "multer": "~0.1.7",
     "foreman": "~1.2.1",
@@ -44,7 +42,8 @@
     "parse-redis-url": "0.0.1",
     "dota2": "~0.6.2",
     "steam": "~0.6.7",
-    "compressjs": "~1.0.2"
+    "compressjs": "~1.0.2",
+    "streamifier": "~0.1.0"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
@@ -52,6 +51,9 @@
     "supertest": "~0.15.0",
     "mocha": "~2.1.0",
     "istanbul": "~0.3.5",
-    "coveralls": "~2.11.2"
+    "database-cleaner": "~0.9.0",
+    "mongodb": "~1.4.29",
+    "codeclimate-test-reporter": "0.0.4",
+    "nock": "~0.57.0"
   }
 }

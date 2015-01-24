@@ -1,6 +1,7 @@
 .env
 node_modules
 replays
+testreplays
 *.log
 sentry
 servers
@@ -10,3 +11,4 @@ output.json
 parser/target
 uploads
 coverage
+!test/*

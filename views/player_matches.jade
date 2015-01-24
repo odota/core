@@ -31,7 +31,7 @@ block playercontent
             img(src=hero.img, title=hero.localized_name)
           else
             =match.players[match.slot].hero_id
-        td= hero ? hero.localized_name : hero.id
+        td= hero ? hero.localized_name : "unknown hero"
         td= match.player_win ? "Won" : "Lost"
         td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
         td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
