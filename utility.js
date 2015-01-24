@@ -14,7 +14,7 @@ var async = require('async'),
     bzip2 = require('compressjs').Bzip2,
     streamifier = require('streamifier');
 var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
-var replay_dir = "replays/";
+var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
@@ -186,8 +186,11 @@ function generateJob(type, payload) {
         };
     }
     if (type === "api_history") {
+        var url = api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id;
+        url += payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "";
+        url += payload.hero_id ? "&hero_id=" + payload.hero_id : "";
         return {
-            url: api_url + "/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY + "&account_id=" + payload.account_id + "&matches_requested=10",
+            url: url,
             title: [type, payload.account_id].join(),
             type: "api",
             payload: payload
@@ -525,10 +528,10 @@ function downloadReplayData(job, url, cb) {
     request({
             url: url,
             encoding: null
-        }).on('error', function(err) {
-            return cb(err);
-        })
-        .on('response', function(resp) {
+        }, function(err, resp) {
+            if (err || resp.statusCode !== 200) {
+                return cb(err);
+            }
             var t2 = new Date().getTime();
             logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
             decompress(archiveName, function(err) {
@@ -797,6 +800,7 @@ function generateConstants(done) {
 }
 
 function getFullMatchHistory(done) {
+    var constants = require('./constants');
     var remote = process.env.REMOTE;
     var func = remote ? getHistoryRemote : getHistoryByHero;
     var match_ids = {};
@@ -858,12 +862,21 @@ function getFullMatchHistory(done) {
     }
 
     function getHistoryByHero(player, cb) {
-        //todo add option to use steamapi via specific player history and specific hero id (up to 500 games per hero)
-        //for this player, make calls to getmatchhistory
-        //one call for each hero in constants
-        //paginate through to 500 games if necessary
-        //generateJob();
-
+        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        for (var key in constants.heroes) {
+            //make a request for every possible hero
+            var container = generateJob("api_history", {
+                account_id: player.account_id,
+                hero_id: key
+            });
+            getData(container.url, function(err, body) {
+                if (err) {
+                    return cb(err);
+                }
+                //add match ids on each page to match_ids
+                //paginate through to 500 games if necessary
+            });
+        }
     }
 }
 

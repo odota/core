@@ -1,6 +1,7 @@
 .env
 node_modules
 replays
+testreplays
 *.log
 sentry
 servers
