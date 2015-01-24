@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "scripts": {
     "start": "nf start",
     "test": "mocha",
