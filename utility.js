@@ -10,6 +10,7 @@ var async = require('async'),
     moment = require('moment'),
     AWS = require('aws-sdk'),
     redis = require('redis'),
+    urllib = require('url'),
     parseRedisUrl = require('parse-redis-url')(redis),
     bzip2 = require('compressjs').Bzip2,
     streamifier = require('streamifier');
@@ -792,10 +793,15 @@ function generateConstants(done) {
 }
 
 function getFullMatchHistory(done) {
-    var constants = require('./constants');
+    var constants = require('./constants.json');
     var remote = process.env.REMOTE;
     var func = remote ? getHistoryRemote : getHistoryByHero;
+    var heroArray = [];
+    for (var key in constants.heroes) {
+        heroArray.push(key);
+    }
     var match_ids = {};
+
     db.players.find({
         track: 1
     }, function(err, docs) {
@@ -849,6 +855,7 @@ function getFullMatchHistory(done) {
         var account_id = player.account_id;
         var player_url = remote + "/players/" + account_id + "/matches";
         getMatchPage(player_url, function(err) {
+            console.log("%s matches found", Object.keys(match_ids).length);
             cb(err);
         });
     }
@@ -860,35 +867,44 @@ function getFullMatchHistory(done) {
             }
             //response for match history for single player
             var resp = body.result.matches;
-            async.mapSeries(resp, function(match, cb) {
+            var start_id = 0;
+            resp.forEach(function(match, i) {
                 //add match ids on each page to match_ids
                 match_ids[match.match_id] = true;
-            }, function(err) {
-                //keep track of the smallest sequence number
-                //paginate through to 500 games if necessary with start_at_match_id=
-                if (body.result.results_remaining === 0) {
-                    cb(err);
-                }
-                else {
-                    url += "&start_at_match_id=" + start_id;
-                    getApiMatchPage(url, cb);
-                }
+                start_id = match.match_id;
             });
+            var rem = body.result.results_remaining;
+            if (rem === 0) {
+                //no more pages
+                cb(err);
+            }
+            else {
+                //paginate through to max 500 games if necessary with start_at_match_id=
+                var parse = urllib.parse(url, true);
+                parse.query.start_at_match_id = (start_id - 1);
+                parse.search = null;
+                url = urllib.format(parse);
+                getApiMatchPage(url, cb);
+            }
         });
     }
 
     function getHistoryByHero(player, cb) {
         //use steamapi via specific player history and specific hero id (up to 500 games per hero)
-        for (var key in constants.heroes) {
+        async.mapSeries(heroArray, function(hero_id, cb) {
             //make a request for every possible hero
             var container = generateJob("api_history", {
                 account_id: player.account_id,
-                hero_id: key
+                hero_id: hero_id,
+                matches_requested: 100
             });
             getApiMatchPage(container.url, function(err) {
-
-            })
-        }
+                console.log("%s matches found", Object.keys(match_ids).length);
+                cb(err);
+            });
+        }, function(err) {
+            cb(err);
+        });
     }
 }
 
