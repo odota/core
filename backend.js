@@ -3,7 +3,7 @@ utility.clearActiveJobs('api', function(err) {
     if (err) {
         utility.logger.info(err);
     }
-    utility.jobs.process('api', utility.processApiReq);
+    utility.jobs.process('api', utility.processApi);
 });
 utility.clearActiveJobs('upload', function(err) {
     if (err) {

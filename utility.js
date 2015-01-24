@@ -408,7 +408,7 @@ function processParse(job, cb) {
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        if (err && err.message !== "S3 UNAVAILABLE") {
+        if (err) {
             return cb(new Error(err));
         }
         if (process.env.DELETE_REPLAYS && job2.data.fileName) {
@@ -795,7 +795,7 @@ function generateConstants(done) {
 function getFullMatchHistory(done) {
     var constants = require('./constants.json');
     var remote = process.env.REMOTE;
-    var func = remote ? getHistoryRemote : getHistoryByHero;
+    var collectorFunc = remote ? getHistoryRemote : getHistoryByHero;
     var heroArray = [];
     for (var key in constants.heroes) {
         heroArray.push(key);
@@ -804,20 +804,32 @@ function getFullMatchHistory(done) {
 
     db.players.find({
         track: 1
-    }, function(err, docs) {
+    }, function(err, players) {
         if (err) {
             return done(err);
         }
-        async.mapSeries(docs, func, function(err) {
+        //find all the matches to add to kue
+        async.mapSeries(players, collectorFunc, function(err) {
+            if (err) {
+                return done(err);
+            }
+            //convert hash to array
+            var arr = [];
             for (var key in match_ids) {
-                var match = {};
-                match.match_id = key;
+                arr.push(key);
+            }
+            //add the jobs to kue
+            async.mapSeries(arr, function(match_id, cb) {
+                var match = {
+                    match_id: match_id
+                };
                 logger.info(match);
                 queueReq("api_details", match, function(err) {
-                    logger.info(err);
+                    cb(err);
                 });
-            }
-            done(err);
+            }, function(err) {
+                done(err);
+            });
         });
     });
 
@@ -870,7 +882,8 @@ function getFullMatchHistory(done) {
             var start_id = 0;
             resp.forEach(function(match, i) {
                 //add match ids on each page to match_ids
-                match_ids[match.match_id] = true;
+                var match_id = match.match_id;
+                match_ids[match_id] = true;
                 start_id = match.match_id;
             });
             var rem = body.result.results_remaining;
