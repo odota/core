@@ -14,6 +14,7 @@ var client = utility.redis;
 var db = utility.db;
 var testdata = require('./test.json');
 var nock = require('nock');
+var moment = require('moment');
 
 //fake retriever response
 nock('http://localhost:5100')
@@ -36,6 +37,22 @@ nock('http://replay1.valve.net')
   .get('/')
   .times(2)
   .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
+//fake api response
+nock('https://api.steampowered.com')
+  .filteringPath(function(path) {
+    if (path.slice(0, 8) === "/IDOTA2") {
+      return '/IDOTA2Match_570/GetMatchDetails/V001/';
+    }
+    else {
+      return '/ISteamUser/GetPlayerSummaries/v0002/';
+    }
+  })
+  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+  .reply(200, {
+    result: testdata.matches[0]
+  })
+  .get('/ISteamUser/GetPlayerSummaries/v0002/')
+  .reply(200, testdata.summaries);
 
 describe("TESTS", function() {
   before(function(done) {
@@ -220,23 +237,7 @@ describe("TESTS", function() {
       done(err);
     });
   });
-  it('api job: req match, req summaries', function(done) {
-    //fake api response
-    nock('https://api.steampowered.com')
-      .filteringPath(function(path) {
-        if (path.slice(0, 8) === "/IDOTA2") {
-          return '/IDOTA2Match_570/GetMatchDetails/V001/';
-        }
-        else {
-          return '/ISteamUser/GetPlayerSummaries/v0002/';
-        }
-      })
-      .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-      .reply(200, {
-        result: testdata.matches[0]
-      })
-      .get('/ISteamUser/GetPlayerSummaries/v0002/')
-      .reply(200, testdata.summaries);
+  it('request match details, summaries through kue', function(done) {
     utility.queueReq("api_details", {
       match_id: 115178218
     }, function(err, job) {
@@ -251,20 +252,40 @@ describe("TESTS", function() {
     utility.jobs.process('upload', utility.processUpload);
   });
   */
-  it('parse job file', function(done) {
+  it('parse expired match through kue', function(done) {
+    this.timeout(30000);
+    //fake parse request
+    utility.queueReq("parse", {
+      match_id: 1,
+      start_time: moment().subtract(1, 'month').format('X')
+    }, function(err, job) {
+      if (err) {
+        return done(err);
+      }
+      utility.processParse(job, function(err) {
+        assert(err);
+        assert.equal(err.message, "Error: replay expired");
+        done();
+      });
+    });
+  });
+  it('parse match through kue (file)', function(done) {
     this.timeout(30000);
     //fake parse request
     utility.queueReq("parse", {
       match_id: 115178218,
-      start_time: new Date()
+      start_time: moment().format('X')
     }, function(err, job) {
+      if (err) {
+        return done(err);
+      }
       utility.processParse(job, function(err) {
         done(err);
       });
     });
   });
   /*
-  it('parse job stream', function(done) {
+  it('parse match through kue (stream)', function(done) {
     this.timeout(30000);
     //fake parse request
     utility.queueReq("parse", {

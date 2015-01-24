@@ -342,7 +342,7 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb("no url");
+        cb(new Error("no url"));
     }
     getData(job.data.url, function(err, data) {
         if (err) {
@@ -412,11 +412,10 @@ function processParse(job, cb) {
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        if (err && err !== "S3 UNAVAILABLE") {
-            logger.info("[PARSER] %s, error: %s", match_id, err);
-            return cb(err);
+        if (err && err.message !== "S3 UNAVAILABLE") {
+            return cb(new Error(err));
         }
-        if (process.env.DELETE_REPLAYS) {
+        if (process.env.DELETE_REPLAYS && job2.data.fileName) {
             fs.unlinkSync(job2.data.fileName);
         }
         db.matches.update({
@@ -426,7 +425,10 @@ function processParse(job, cb) {
                 parse_status: 1
             }
         }, function(err) {
-            return cb(err);
+            if (err) {
+                return cb(err);
+            }
+            cb();
         });
     });
 }
@@ -452,11 +454,12 @@ function checkLocal(job, cb) {
 
 function getReplayUrl(job, cb) {
     if (job.data.url || job.data.fileName) {
-        //can skip getting url
+        logger.info("has url or fileName");
         return cb(null, job, job.data.url);
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
+        logger.info("requesting match from dota2");
         var urls = [];
         for (var i = 0; i < retrievers.length; i++) {
             urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
@@ -467,13 +470,16 @@ function getReplayUrl(job, cb) {
                 return cb(null, job, url);
             }
             logger.info(err, body);
-            return cb("invalid body or error");
+            return cb(new Error("invalid body or error"));
+        });
+    }
+    else if (process.env.AWS_S3_BUCKET) {
+        getS3Url(match.match_id, function(err, url) {
+            return cb(err, job, url);
         });
     }
     else {
-        getS3Url(match.match_id, function(err, url) {
-            cb(err, job, url);
-        });
+        cb(new Error("replay expired"));
     }
 }
 
@@ -498,7 +504,7 @@ function streamReplayData(job, url, cb) {
             encoding: null
         }, function(err, resp, body) {
             if (err || resp.statusCode !== 200) {
-                return cb("DOWNLOAD ERROR");
+                return cb(new Error("DOWNLOAD ERROR"));
             }
             //todo figure out how to stream data directly through decompressor
             var t2 = new Date().getTime();
@@ -564,51 +570,39 @@ function parseReplay(job, input, cb) {
 function decompress(archiveName, cb) {
     var cp = spawn("bunzip2", [archiveName]);
     cp.on('exit', function(code) {
+        logger.info("[BZIP2] exit code: %s", code);
         cb(code);
     });
 }
 
 function getS3Url(match_id, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var archiveName = match_id + ".dem.bz2";
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        s3.headObject(params, function(err, data) {
-            if (!err) {
-                var url = s3.getSignedUrl('getObject', params);
-                cb(null, url);
-            }
-            else {
-                logger.info("[S3] %s not in S3", match_id);
-                cb("S3 UNAVAILABLE");
-            }
-        });
+    var archiveName = match_id + ".dem.bz2";
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    var url;
+    try {
+        url = s3.getSignedUrl('getObject', params);
+        cb(null, url);
     }
-    else {
-        cb("S3 UNAVAILABLE");
+    catch (e) {
+        logger.info("[S3] %s not in S3", match_id);
+        cb(new Error("S3 UNAVAILABLE"));
     }
 }
 
 function uploadToS3(archiveName, body, cb) {
-    if (process.env.AWS_S3_BUCKET) {
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        params.Body = body;
-        s3.putObject(params, function(err, data) {
-            logger.info(err, data);
-            cb(err);
-        });
-    }
-    else {
-        logger.info("[S3] S3 not defined (skipping upload)");
-        cb(null);
-    }
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    params.Body = body;
+    s3.putObject(params, function(err, data) {
+        cb(err);
+    });
 }
 
 function insertMatch(match, cb) {
