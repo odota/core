@@ -616,6 +616,7 @@ function insertMatch(match, cb) {
         match.parse_status = 2;
     }
     else {
+        match.parse_status = 0;
         queueReq("parse", match, function(err) {
             if (err) {
                 return logger.info(err);
