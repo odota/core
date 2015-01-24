@@ -10,4 +10,4 @@ services:
 - redis-server
 env:
 - NODE_ENV=test
-script: "npm run fulltest"
+script: "npm run travistest"
