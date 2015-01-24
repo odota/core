@@ -350,7 +350,7 @@ public static void main(String[] args) throws Exception {
         }
         JSONObject heroes = doc.getJSONObject("heroes");
         String unit = entry.getString("unit");
-        unit = getAssociatedHero(unit, heroes);
+        //unit = getAssociatedHero(unit, heroes);
         if (!heroes.has(unit)){
             addHero(unit, heroes);
         }

@@ -945,33 +945,66 @@ function startScan() {
 }
 
 function mergeMatchData(match, constants) {
+    var heroes = match.parsed_data.heroes;
     //loop through all units
     //look up corresponding hero_id
     //hero if can find in constants
     //find player slot associated with that unit(hero_to_slot)
-    //minion otherwise
-    //or get slot by interpretation of unit name
     //merge into player's primary unit
-    for (var key in match.parsed_data.heroes) {
-        var val = match.parsed_data.heroes[key];
+    //if not hero attempt to associate with a hero
+    for (var key in heroes) {
+        var val = heroes[key];
+        var primary = key;
         if (constants.hero_names[key]) {
+            //is a hero
             var hero_id = constants.hero_names[key].id;
             var slot = match.parsed_data.hero_to_slot[hero_id];
             if (slot) {
-                var primary = match.players[slot].hero_id;
-                var primary_name = constants.heroes[primary].name;
-                var merge = match.parsed_data.heroes[primary_name];
+                var primary_id = match.players[slot].hero_id;
+                primary = constants.heroes[primary_id].name;
+                //build hero_ids for each player
                 if (!match.players[slot].hero_ids) {
                     match.players[slot].hero_ids = [];
                 }
                 match.players[slot].hero_ids.push(hero_id);
-                if (key !== primary_name) {
-                    mergeObjects(merge, val);
-                }
             }
+            else {
+                console.log("couldn't find slot for hero id %s", hero_id);
+            }
+        }
+        else {
+            //is not a hero
+            primary = getAssociatedHero(key, heroes);
+        }
+        if (key !== primary) {
+            //merge the objects into primary, but not with itself
+            mergeObjects(heroes[primary], val);
         }
     }
     return match;
+}
+
+function getAssociatedHero(unit, heroes) {
+    //assume all illusions belong to that hero
+    if (unit.slice(0, "illusion_".length) === "illusion_") {
+        unit = unit.slice("illusion_".length);
+    }
+    //attempt to recover hero name from unit
+    if (unit.slice(0, "npc_dota_".length) === "npc_dota_") {
+        //split by _
+        var split = unit.split("_");
+        //get the third element
+        var identifier = split[2];
+        if (split[2] === "shadow" && split[3] === "shaman") {
+            identifier = "shadow_shaman";
+        }
+        //append to npc_dota_hero_, see if matches
+        var attempt = "npc_dota_hero_" + identifier;
+        if (heroes[attempt]) {
+            unit = attempt;
+        }
+    }
+    return unit;
 }
 
 function generateGraphData(match, constants) {
