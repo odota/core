@@ -66,3 +66,7 @@ body {
 .c3-axis-y .tick, .c3-axis-x .tick, .c3-axis-x-label, .c3-axis-y-label, .c3-legend-item {
     fill: rgb(199, 199, 199);
 }
+
+div.dataTables_processing {
+    background: inherit !important;
+}
