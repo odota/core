@@ -1,19 +1,19 @@
 module.exports = function(grunt) {
-  var utility = require('./utility');
+  var tasks = require('./tasks');
   grunt.registerTask('constants', function() {
     var done = this.async();
-    utility.generateConstants(done);
+    tasks.generateConstants(done);
   });
   grunt.registerTask('fullhistory', function() {
     var done = this.async();
-    utility.getFullMatchHistory(done);
+    tasks.getFullMatchHistory(done);
   });
   grunt.registerTask('unparsed', function() {
     var done = this.async();
-    utility.unparsed(done);
+    tasks.unparsed(done);
   });
   grunt.registerTask('unnamed', function() {
     var done = this.async();
-    utility.updateSummaries(done);
+    tasks.updateSummaries(done);
   });
 };

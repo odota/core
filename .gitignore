@@ -1,14 +1,13 @@
 .env
 node_modules
 replays
-testreplays
+replays_test
 *.log
 sentry
 servers
 *.dem
 *.bz2
 output.json
-parser/target
 uploads
 coverage
 !test/*

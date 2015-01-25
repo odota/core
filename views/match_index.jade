@@ -27,7 +27,7 @@ append content
            tr(class = player.player_slot<64 ? "success" : "danger")
              td
                if (player["track"])
-                 img(src='/public/images/favicon-16x16.png', title="YASP User")
+                 img.user(src='/public/images/favicon-16x16.png', title="YASP User")
                if (player.account_id == constants.anonymous_account_id)
                  ="Anonymous"
                else if (!player.account_id)

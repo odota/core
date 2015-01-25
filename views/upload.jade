@@ -27,11 +27,11 @@ block content
           recaptcha_response_field: $('#recaptcha_response_field').val()
         },
         function(data) {
-          console.log(data)
           if (data.verified) {
               $("#upload").submit();
           } else {
-            $("h1").after("<div role='alert' class='alert alert-warning'> Recaptcha failed. Please Try again.</div");
+            $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please Try again.</div");
+            $(".failure").fadeOut(3000);
             Recaptcha.reload();
           }
         }
