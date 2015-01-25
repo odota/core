@@ -41,7 +41,6 @@ function getFullMatchHistory(done) {
                 var match = {
                     match_id: match_id
                 };
-                console.log(match);
                 queueReq("api_details", match, function(err) {
                     cb(err);
                 });
