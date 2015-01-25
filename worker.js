@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var utility = require('./utility');
 var processors = require('./processors');
 var tasks = require('./tasks');
@@ -11,9 +13,10 @@ var jobs = utility.jobs;
 var kue = utility.kue;
 
 clearActiveJobs();
+startScan();
 jobs.process('api', processors.processApi);
 jobs.process('upload', processors.processUpload);
-startScan();
+jobs.process('parse', process.env.STREAM ? processors.processParseStream : processors.processParse);
 setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function(err, num) {
     logger.info(err, num);
 }); //check every hour
