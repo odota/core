@@ -4,7 +4,11 @@
 
 
 a {
-    color: #EDEDED;    
+    color: #BBF0FD;
+}
+
+a.navbar-brand strong, h1, h2 {
+    color: #BBF0FD;
 }
 
 body {
@@ -45,10 +49,20 @@ body {
     background-color: rgb(199, 199, 199);
 }
 
+.alert-warning {
+    color: #000000;
+    background-color: #B5A449;
+    border-color: #846F42;
+}
+
+.alert-warning strong {
+    color: #000;
+}
+
 .c3 path, .c3 line {
     stroke: rgb(199, 199, 199) !important;
 }
 
-.c3 text>tspan {
-    color: rgb(199, 199, 199) !important;
+.c3-axis-y .tick, .c3-axis-x .tick, .c3-axis-x-label, .c3-axis-y-label, .c3-legend-item {
+    fill: rgb(199, 199, 199);
 }
