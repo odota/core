@@ -205,7 +205,7 @@ describe("parser", function() {
     //test epilogue parse
     //test broken file
     //test invalid file
-})
+});
 
 describe("web", function() {
     this.timeout(5000);
