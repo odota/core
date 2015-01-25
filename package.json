@@ -36,7 +36,7 @@
     "request": "~2.51.0",
     "winston": "0.8.3",
     "multer": "~0.1.7",
-    "foreman": "~1.2.1",
+    "foreman": "~1.3.0",
     "dotenv": "~0.4.0",
     "recaptcha": "1.2.0",
     "parse-redis-url": "0.0.1",
@@ -48,9 +48,9 @@
     "grunt": "~0.4.5",
     "mocha": "~2.1.0",
     "istanbul": "~0.3.5",
-    "database-cleaner": "~0.9.0",
+    "database-cleaner": "~0.9.1",
     "mongodb": "~1.4.29",
-    "coveralls": "0.0.4",
+    "coveralls": "2.11.2",
     "nock": "~0.57.0",
     "zombie": "~2.5.1"
   }
