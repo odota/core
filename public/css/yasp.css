@@ -64,3 +64,29 @@ td.abilities img {
 .icon {
     width:15px;
 }
+
+.wrapper {
+    position: relative;
+    height: 100%;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+.sticky_footer_row {
+    display: table-row;
+    height: 1px;
+}
+
+.sticky_footer_row.expand {
+    height: auto;
+}
