@@ -242,6 +242,21 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
         }
     });
 });
+app.route('/preferences').post(function(req, res) {
+    if (req.user) {
+        db.players.findAndModify({
+            account_id: req.user.account_id
+        }, {
+            $set: {dark_theme: req.body.dark}
+        }, function(err, user) {
+            if (err || !user) {
+                res.json({sync: false});
+            } else {
+                req.json({sync: true});
+            }
+        })
+    }
+})
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));

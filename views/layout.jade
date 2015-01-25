@@ -28,8 +28,9 @@ html
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     style
       include ../public/css/yasp.css
-    style
-      include ../public/css/dark.css
+    if user && user.dark_theme
+      style
+        include ../public/css/dark.css
     //- JS
     script(src='//code.jquery.com/jquery-2.1.1.min.js')
     script
