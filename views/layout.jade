@@ -28,7 +28,8 @@ html
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     style
       include ../public/css/yasp.css
-      
+    style
+      include ../public/css/dark.css
     //- JS
     script(src='//code.jquery.com/jquery-2.1.1.min.js')
     script
@@ -41,7 +42,7 @@ html
        nav.navbar.navbar-default
         .container
           .navbar-header
-            a(href='/', class = 'navbar-brand') YASP
+            a(href='/', class = 'navbar-brand') <strong>YASP</strong>
           ul.nav.navbar-nav
             li
               a(href="/matches") Matches
@@ -67,7 +68,7 @@ html
         include ads/leaderboard
        block content
      .sticky_footer_row
-      footer.footer(style="background-color: #BBF0FD; color: #777;\
+      footer.footer(style="color: #777;\
                       width: 100%; padding: 1.5em; margin-top: 2em;\
                       font-size: .8em;")
         .container
