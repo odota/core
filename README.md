@@ -25,6 +25,7 @@ Deployment
 ====
 * Create .env file, see `.env_example`
 * Install node dependencies: `npm install`
+* Get required submodules (parser and retriever): `git submodule update`
 * Build parser and constants: `npm run build`
 * Start: `npm start`
 
