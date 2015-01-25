@@ -24,8 +24,8 @@ Dependencies
 Deployment
 ====
 * Create .env file, see `.env_example`
-* Install node dependencies and build parser/constants: `npm install`
-* Build parser and constants `npm run build`
+* Install node dependencies: `npm install`
+* Build parser and constants: `npm run build`
 * Start: `npm start`
 
 Tests
