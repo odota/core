@@ -304,7 +304,7 @@ describe("TESTS", function() {
     });
   });
 
-  //runParse directly onfiles, verify output fields
+  //runParse directly onfiles, verify output
   //1v1 game
   //ardm game
   //regular game
@@ -328,4 +328,4 @@ describe('RETRIEVER', function() {
 
 //s3 methods are untested
 //load large dataset
-//check load time of player page
+//check load time of player page (teammates take a while)
