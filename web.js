@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var app = require('./yasp');
 var server = app.listen(process.env.PORT || 5000, function() {
     var host = server.address().address;

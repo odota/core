@@ -242,7 +242,7 @@ describe("web", function() {
             done();
         });
     });
-    describe("/upload not logged in", function() {
+    describe("/upload (not logged in)", function() {
         before(function(done) {
             browser.visit('/upload');
             browser.wait(2000, function(err) {

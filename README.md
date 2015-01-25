@@ -25,7 +25,7 @@ Deployment
 ====
 * Create .env file, see `.env_example`
 * Install node dependencies: `npm install`
-* Get required submodules: `git submodule update`
+* Get required submodules: `git submodule update --init`
 * Build parser and constants: `npm run build`
 * Start a retriever: `cd retriever && npm start`
 * Start YASP: `npm start`
