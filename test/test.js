@@ -16,6 +16,7 @@ var db = utility.db;
 var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
+//todo write to fake kue
 
 //fake retriever response
 nock('http://localhost:5100')
@@ -285,7 +286,7 @@ describe("TESTS", function() {
       });
     });
   });
-  /*
+  
   it('parse match through kue (stream)', function(done) {
     this.timeout(30000);
     //fake parse request
@@ -293,12 +294,16 @@ describe("TESTS", function() {
       match_id: 115178218,
       start_time: new Date()
     }, function(err, job) {
+      if (err){
+        return done(err);
+      }
       utility.processParseStream(job, function(err) {
         done(err);
       });
     });
   });
-  */
+
+  //runParse directly onfiles, verify output fields
   //1v1 game
   //ardm game
   //regular game
