@@ -1,7 +1,3 @@
 var utility = require('./utility');
-utility.clearActiveJobs('parse', function(err) {
-    if (err) {
-        utility.logger.info(err);
-    }
-    utility.jobs.process('parse', process.env.STREAM ? utility.processParseStream : utility.processParse);
-});
+var processors = require('./processors');
+utility.jobs.process('parse', process.env.STREAM ? processors.processParseStream : processors.processParse);
