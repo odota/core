@@ -11,6 +11,7 @@ import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.GameRulesStateType;
 import com.dota2.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import com.dota2.proto.Demo.CDemoFileInfo;
+import com.dota2.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.Iterator;
@@ -19,7 +20,7 @@ import java.util.Iterator;
 public class Main {
     public static final float INTERVAL = 60;
     public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
-
+    
     public static void main(String[] args) throws Exception {
         long tStart = System.currentTimeMillis();
         boolean initialized = false;
@@ -33,28 +34,28 @@ public class Main {
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
         int numPlayers = 10;
-        
-        TickIterator iter = Clarity.tickIteratorForFile(args[0], CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT);
-        CDemoFileInfo info = Clarity.infoForFile(args[0]);
-        doc.put("match_id", info.getGameInfo().getDota().getMatchId());
-        if (args.length>1 && args[1].equals("-epilogue")){
+
+        if (args.length>0 && args[0].equals("-epilogue")){
+            CDemoFileInfo info = Clarity.infoForStream(System.in);
+            doc.put("match_id", info.getGameInfo().getDota().getMatchId());
             finish(tStart, doc);
         }
-        
-        while(iter.hasNext()) {
+        else{
+            TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO);
+            while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
             int trueTime=time-gameZero;
             Entity pr = match.getPlayerResource();
             //EntityCollection ec = match.getEntities();
-
+    
             if (!initialized) {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
                 doc.put("chat", new JSONArray());
                 doc.put("heroes", new JSONObject());
                 doc.put("kills", new JSONArray());
-
+    
                 for (int i = 0; i < numPlayers; i++) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
                     byte[] b = st.getBytes();
@@ -69,13 +70,13 @@ public class Main {
                     doc.getJSONArray("players").put(player);
                 }
                 combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog"); 
-                                ctx = new CombatLogContext(
-	                match.getStringTables().forName("CombatLogNames"), 
-	                combatLogDescriptor
+                ctx = new CombatLogContext(
+                    match.getStringTables().forName("CombatLogNames"), 
+                    combatLogDescriptor
                 );
                 initialized = true;
             }
-
+    
             for (int i = 0; i < numPlayers; i++) {
                 String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
                 hero_to_slot.put(hero, i);
@@ -156,21 +157,10 @@ public class Main {
                 }
                 else if (name.equals("CUserMsg_SayText2")){
                     String prefix = u.getProperty("prefix").toString();
-                    int slot = -1;
-                    JSONArray players = doc.getJSONArray("players");
-                    for (int i = 0;i<players.length();i++){
-                        String playerName = players.getJSONObject(i).getString("personaname");
-                        //todo names here don't match up with api names if unicode chars
-                        //System.err.format("%s-%s,%s-%s %n",prefix, Arrays.toString(prefix.getBytes()), playerName, Arrays.toString(playerName.getBytes()));
-                        if (players.getJSONObject(i).getString("personaname").equals(prefix)){
-                            slot=i;
-                        }
-                    }
                     JSONObject entry = new JSONObject();
                     entry.put("prefix", prefix);
                     entry.put("text", u.getProperty("text"));
                     entry.put("time", time);
-                    entry.put("slot", slot);
                     entry.put("type", "chat");
                     log.put(entry);
                 }
@@ -333,7 +323,26 @@ public class Main {
             }
         }
         iter.close();
-
+    
+        //load epilogue
+        CDemoFileInfo info = match.getFileInfo();
+        //System.err.println(info);
+        //List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
+        //for (CPlayerInfo p : players) {
+        //    System.out.println(p.getPlayerName());
+        //}
+        //build map for looking up slot of chat messages
+        JSONObject name_to_slot = new JSONObject();
+        for (int i = 0;i<numPlayers;i++){
+            String replayName = info.getGameInfo().getDota().getPlayerInfo(i).getPlayerName();
+            name_to_slot.put(replayName, i);
+        }
+        doc.put("match_id", info.getGameInfo().getDota().getMatchId());
+        doc.put("game_zero", gameZero);
+        doc.put("game_end", gameEnd);
+        doc.put("hero_to_slot", hero_to_slot);
+        
+        //process events in log
         for (int i =0;i<log.length();i++){
             JSONObject entry = log.getJSONObject(i);
             entry.put("time", entry.getInt("time")-gameZero);
@@ -345,11 +354,13 @@ public class Main {
                 continue;
             }
             if (type.equals("chat")){
+                entry.put("slot", name_to_slot.getInt(entry.getString("prefix")));
                 doc.getJSONArray("chat").put(entry);
                 continue;
             }
             JSONObject heroes = doc.getJSONObject("heroes");
             String unit = entry.getString("unit");
+            //unit = getAssociatedHero(unit, heroes);
             if (!heroes.has(unit)){
                 addHero(unit, heroes);
             }
@@ -367,20 +378,18 @@ public class Main {
                 hero.getJSONArray("timeline").put(entry);
             }
         }
-        doc.put("game_zero", gameZero);
-        doc.put("game_end", gameEnd);
-        doc.put("hero_to_slot", hero_to_slot);
+        
         finish(tStart, doc);
-
+        }
     }
     
     private static void finish(long tStart, JSONObject doc){
         long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("%s sec\n", tMatch / 1000.0);
         System.out.println(doc);
+        System.err.format("%s sec\n", tMatch / 1000.0);
         System.exit(0);
     }
-
+    
     private static void addHero(String hero, JSONObject map){
         JSONObject newHero = new JSONObject();
         newHero.put("timeline", new JSONArray());
@@ -397,28 +406,29 @@ public class Main {
         newHero.put("modifier_applied", new JSONObject());
         map.put(hero, newHero);
     }
-
-    private static int getSlotByUnit(String unit, JSONObject heroes, JSONObject hero_to_slot){
+    
+    private static String getAssociatedHero(String unit, JSONObject heroes){
+        //assume all illusions belong to that hero
         if (unit.startsWith("illusion_")){
             unit=unit.substring("illusion_".length());
         }
-        if (heroes.has(unit)){
-            String hero_id = heroes.getJSONObject(unit).get("id").toString();
-            if (hero_to_slot.has(hero_id)){
-                return hero_to_slot.getInt(hero_id);
-            }
-        }
         //attempt to recover hero name from unit
         if (unit.startsWith("npc_dota_")){
-            unit = unit.substring("npc_dota_".length());
-            for (int i =1 ;i<=unit.length();i++){
-                String s = unit.substring(0,i);
-                if (heroes.has(s)){
-                    return hero_to_slot.getInt(heroes.getJSONObject(s).get("id").toString());
-                }
-            }
+          //split by _
+           String[] split = unit.split("_");
+    
+          //get the third element
+           String identifier = split[2];
+    
+           if (split[2].equals("shadow") && split[3].equals("shaman")){
+               identifier = "shadow_shaman";
+           }
+          //append to npc_dota_hero_, see if matches
+          String attempt = "npc_dota_hero_"+identifier;
+          if (heroes.has(attempt)){
+              unit = attempt;
+          }
         }
-        return -1;
+        return unit;
     }
-
 }

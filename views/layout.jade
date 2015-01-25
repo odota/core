@@ -58,7 +58,7 @@ html
      div.container
        if banner_msg
          .alert.alert-success(role="alert") !{banner_msg}
-       if user && untracked
+       if user && user.track===0
            .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if login_req_msg
            .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
