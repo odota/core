@@ -289,7 +289,7 @@ describe("TESTS", function() {
     });
   });
   it('parse match through kue (stream)', function(done) {
-    this.timeout(30000);
+    this.timeout(40000);
     //fake parse request
     utility.queueReq("parse", {
       match_id: 115178218,
