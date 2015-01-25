@@ -1,2 +1,3 @@
 web: node web.js
-retriever: RETRIEVER=true node web.js
+backend: node backend.js
+parser: node parser.js

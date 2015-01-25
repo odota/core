@@ -40,20 +40,18 @@
     "dotenv": "~0.4.0",
     "recaptcha": "1.2.0",
     "parse-redis-url": "0.0.1",
-    "dota2": "~0.6.2",
-    "steam": "~0.6.7",
     "compressjs": "~1.0.2",
     "streamifier": "~0.1.0"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",
     "grunt": "~0.4.5",
-    "supertest": "~0.15.0",
     "mocha": "~2.1.0",
     "istanbul": "~0.3.5",
     "database-cleaner": "~0.9.0",
     "mongodb": "~1.4.29",
     "codeclimate-test-reporter": "0.0.4",
-    "nock": "~0.57.0"
+    "nock": "~0.57.0",
+    "zombie": "~2.5.1"
   }
 }
