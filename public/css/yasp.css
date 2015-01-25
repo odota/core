@@ -65,11 +65,6 @@ td.abilities img {
     width:15px;
 }
 
-.wrapper {
-    position: relative;
-    height: 100%;
-}
-
 html, body {
     margin: 0;
     padding: 0;
@@ -82,6 +77,10 @@ body {
     width: 100%;
 }
 
+footer {
+    background-color: #BBF0FD;
+}
+
 .sticky_footer_row {
     display: table-row;
     height: 1px;
@@ -89,4 +88,13 @@ body {
 
 .sticky_footer_row.expand {
     height: auto;
+}
+
+td {
+    vertical-align: middle !important;
+}
+
+
+td>img.user {
+    margin-right: .5em;
 }
