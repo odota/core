@@ -1,14 +1,13 @@
 #!/bin/bash
+git pull origin master
+git submodule update --init
 
 if (( EUID != 0 )); then
    echo "You must be root to do this." 1>&2
    exit 100
 fi
-sudo npm install
 
-npm run constants
-
-npm run buildparser
+npm install --production && npm run build
 
 nf export -o /etc/init/
 
