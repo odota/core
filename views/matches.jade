@@ -5,7 +5,7 @@ append head
     var parse_status = !{JSON.stringify(constants.parse_status)},
         regions = !{JSON.stringify(constants.regions)},
         modes = !{JSON.stringify(constants.modes)}
-    
+
 block content
   h3 Recent Matches
   table.table#table
@@ -16,3 +16,4 @@ block footer_assets
  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
  script
    include ../public/js/match_table.js
+ style .leaderboard { margin-top: 1.5em;}
