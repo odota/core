@@ -300,11 +300,14 @@ app.route('/upload')
         var files = req.files.replay;
         if (req.session.captcha_verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);
-            utility.queueReq("upload", {
+            utility.queueReq("parse", {
                 uploader: req.user,
-                fileName: files.path
+                fileName: files.path,
+                priority: 'high'
             }, function(err) {
-                if (err) return logger.info(err);
+                if (err) {
+                    return logger.info(err);
+                }
             });
         }
         var verified = req.session.captcha_verified;
