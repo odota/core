@@ -14,7 +14,7 @@ var runParse = utility.runParse;
 var decompress = utility.decompress;
 var insertPlayer = utility.insertPlayer;
 var insertMatch = utility.insertMatch;
-var generateJob = utility.generateJob;
+var queueReq = utility.queueReq;
 
 function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
@@ -40,7 +40,10 @@ function processParse(job, cb) {
         if (process.env.DELETE_REPLAYS && job2.data.fileName) {
             fs.unlinkSync(job2.data.fileName);
         }
-        cb(null);
+        //queue job for api to make sure it's in db
+        queueReq("api_details", job2.data.payload, function(err) {
+            cb(err);
+        });
     });
 }
 
@@ -229,39 +232,8 @@ function processApi(job, cb) {
     });
 }
 
-function processUpload(job, cb) {
-    var fileName = job.data.payload.fileName;
-    runParse(fileName, function(code, output) {
-        fs.unlink(fileName, function(err) {
-            logger.info(err);
-        });
-        if (!code) {
-            var api_container = generateJob("api_details", {
-                match_id: output.match_id
-            });
-            //check api to fill rest of match info
-            getData(api_container.url, function(err, body) {
-                if (err) {
-                    return cb(err);
-                }
-                var match = body.result;
-                match.parsed_data = output;
-                match.upload = true;
-                insertMatch(match, function(err) {
-                    cb(err);
-                });
-            });
-        }
-        else {
-            //only try once, mark done regardless of result
-            cb(null);
-        }
-    });
-}
-
 module.exports = {
     processParse: processParse,
     processParseStream: processParseStream,
-    processApi: processApi,
-    processUpload: processUpload
+    processApi: processApi
 };

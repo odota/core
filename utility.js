@@ -92,13 +92,14 @@ function isRadiant(player) {
 function queueReq(type, payload, cb) {
     checkDuplicate(type, payload, function(err) {
         if (err) {
-            return cb(err);
+            logger.info(err);
+            return cb(null);
         }
         var job = generateJob(type, payload);
         var kuejob = jobs.create(job.type, job).attempts(10).backoff({
             delay: 60000,
             type: 'exponential'
-        }).removeOnComplete(true).save(function(err) {
+        }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
             cb(err, kuejob);
         });
@@ -108,6 +109,7 @@ function queueReq(type, payload, cb) {
 function checkDuplicate(type, payload, cb) {
     if (type === "api_details" && payload.match_id) {
         //make sure match doesn't exist already in db
+        //parse requests are allowed to repeat
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
@@ -165,17 +167,11 @@ function generateJob(type, payload) {
             payload: payload
         };
     }
-    if (type === "upload") {
-        return {
-            type: type,
-            title: [type, payload.fileName].join(),
-            payload: payload
-        };
-    }
     if (type === "parse") {
         return {
             title: [type, payload.match_id].join(),
             type: type,
+            fileName: payload.fileName,
             payload: {
                 match_id: payload.match_id,
                 start_time: payload.start_time
