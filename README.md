@@ -10,7 +10,7 @@ YASP - YASP: Another Stats Page
 About
 ====
 * Provides replay-parsed stats for free!  
-* Replay parsing powered by [clarity](https://github.com/skadistats/clarity).  
+* Parser powered by [clarity](https://github.com/skadistats/clarity).  
 
 Dependencies
 ====
@@ -25,10 +25,10 @@ Deployment
 ====
 * Create .env file, see `.env_example`
 * Install node dependencies: `npm install`
-* Get required submodules (parser and retriever): `git submodule update`
+* Get required submodules: `git submodule update`
 * Build parser and constants: `npm run build`
 * Start: `npm start`
 
 Tests
 ====
-`npm test`
+* Mocha tests: `npm test`

@@ -15,9 +15,12 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
+var app = require('../yasp').listen(process.env.PORT);
+var processors = require('../processors');
+var tasks = require('../tasks');
+
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie();
-var app = require('../web').app;
 
 //fake retriever response
 nock('http://localhost:5100')
@@ -25,7 +28,7 @@ nock('http://localhost:5100')
         return '/';
     })
     .get('/')
-    .times(2)
+    .times(3)
     .reply(200, {
         match: {
             cluster: 1,
@@ -59,7 +62,6 @@ nock('https://api.steampowered.com')
     .reply(200, testdata.summaries);
 
 before(function(done) {
-    //app.listen(process.env.PORT);
     console.log("loading test data");
     async.series([function(cb) {
         //insert test players
@@ -87,8 +89,7 @@ before(function(done) {
     });
 });
 after(function(done) {
-    //app.close();
-    //todo stop webserver
+    app.close();
     //wipe mongodb and redis
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
@@ -102,7 +103,7 @@ after(function(done) {
     });
 })
 
-describe("SERVICES", function() {
+describe("services", function() {
     it("mongodb connected", function(done) {
         assert(utility.db);
         done();
@@ -121,88 +122,98 @@ describe("SERVICES", function() {
     });
 });
 
-describe("BACKEND", function() {
-    it('unparsed matches, parse jobs to kue', function(done) {
-        utility.unparsed(function(err, num) {
+describe("TASKS", function() {
+    it('unparsed matches', function(done) {
+        tasks.unparsed(function(err, num) {
             assert.equal(num, 1);
             done(err);
         });
     });
-    it('update summaries, api jobs to kue', function(done) {
-        utility.updateSummaries(function(err, num) {
+    it('update summaries', function(done) {
+        tasks.updateSummaries(function(err, num) {
             assert.equal(num, 2);
             done(err);
         });
     });
     it('untrack players', function(done) {
-        utility.untrackPlayers(function(err, num) {
+        tasks.untrackPlayers(function(err, num) {
             assert.equal(num, 2);
             done(err);
         });
     });
-    it('request match details, summaries through kue', function(done) {
+    /*
+    it('full history', function(done) {
+        done();
+    });
+    it('generate constants', function(done) {
+        done();
+    });
+    */
+});
+
+describe("backend", function() {
+    it('queue details request', function(done) {
         utility.queueReq("api_details", {
             match_id: 115178218
         }, function(err, job) {
-            utility.processApi(job,
-                function(err) {
-                    done(err);
-                });
+            assert(job);
+            done(err);
         });
     });
-    it('parse expired match through kue', function(done) {
-        //fake parse request
-        utility.queueReq("parse", {
-            match_id: 1,
-            start_time: moment().subtract(1, 'month').format('X')
-        }, function(err, job) {
-            if (err) {
-                return done(err);
-            }
-            utility.processParse(job, function(err) {
-                assert(err);
-                assert.equal(err.message, "Error: replay expired");
-                done();
-            });
-        });
-    });
-    it('parse match through kue (file)', function(done) {
-        this.timeout(30000);
-        //fake parse request
-        utility.queueReq("parse", {
-            match_id: 115178218,
-            start_time: moment().format('X')
-        }, function(err, job) {
-            if (err) {
-                return done(err);
-            }
-            utility.processParse(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('parse match through kue (stream)', function(done) {
-        this.timeout(40000);
-        //fake parse request
-        utility.queueReq("parse", {
-            match_id: 115178218,
-            start_time: new Date()
-        }, function(err, job) {
-            if (err) {
-                return done(err);
-            }
-            utility.processParseStream(job, function(err) {
-                done(err);
-            });
-        });
-    });
+    //run processApi
+    //run processUpload
 });
 
+describe("parser", function() {
+    it('parse match (file)', function(done) {
+        this.timeout(30000);
+        var job = {
+            match_id: 115178218,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse match (stream)', function(done) {
+        this.timeout(40000);
+        var job = {
+            match_id: 115178218,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            processors.processParseStream(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse expired match', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: 1
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    //runParse directly on files, verify no crash
+    //1v1 game
+    //ardm game
+    //regular game
+    //test epilogue parse
+    //test broken file
+    //test invalid file
+})
 
-describe("WEB", function() {
+describe("web", function() {
     describe("/", function() {
         before(function(done) {
-            browser.visit('/', function(err) {
+            browser.visit('/');
+            browser.wait(2000, function(err) {
                 done(err);
             });
         });
@@ -215,13 +226,14 @@ describe("WEB", function() {
             done();
         });
         it('should have a banner', function(done) {
-            //todo browser.assert.text('body', /YASP/);
+            browser.assert.text('.alert', /someval/);
             done();
         });
     });
     describe("/stats", function() {
         before(function(done) {
-            browser.visit('/stats', function(err) {
+            browser.visit('/stats');
+            browser.wait(2000, function(err) {
                 done(err);
             });
         });
@@ -230,118 +242,118 @@ describe("WEB", function() {
             done();
         });
     });
-    /*
-      describe("/upload", function() {
+    describe("/upload not logged in", function() {
         before(function(done) {
-          browser.visit('/upload', function(err) {
-            done(err);
-          });
-        });
-        it('should redirect', function(done) {
-          browser.assert.status(302);
-          done();
+            browser.visit('/upload');
+            browser.wait(2000, function(err) {
+                done(err);
+            });
         });
         it('should have a login message', function(done) {
-          //todo assert login
-          done();
+            browser.assert.text('.alert', /log in/);
+            done();
         });
-      });
+    });
+    /*
+        describe("/matches", function() {
+            before(function(done) {
+                browser.visit('/matches');
+                browser.wait(2000, function(err) {
+                    done(err);
+                });
+            });
+            it('should load', function(done) {
+                browser.assert.status(200);
+                done();
+            });
+            it('should have a match', function(done) {
+                browser.assert.text('.td', /1151783218/);
+                done();
+            });
+        });
 
-      describe("/matches", function() {
+
+    describe("/matches/:valid", function() {
         before(function(done) {
-          browser.visit('/matches', function(err) {
-            done(err);
-          });
+            browser.visit('/matches/1151783218');
+            browser.wait(2000, function(err) {
+                done(err);
+            });
         });
         it('should load', function(done) {
-          browser.assert.status(200);
-          done();
+            browser.assert.status(200);
+            done();
         });
         it('should have a match', function(done) {
-          //todo match
-          done();
+            browser.assert.text('.h1', /"Match 1151783218"/);
+            done();
         });
-      });
+    });
 
-          it('GET /matches/:valid', function(done) {
-            browser.visit('/matches/1151783218', function(err) {
-              browser.assert.text('body', /Victory/);
-              done(err);
-            });
-          });
-          it('GET /matches/:invalid', function(done) {
-            browser.visit('/matches/1', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /matches/:invalid/details unparsed', function(done) {
-            browser.visit('/matches/1/details', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /matches/:invalid/graphs unparsed', function(done) {
-            browser.visit('/matches/1/graphs', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /matches/:invalid/chat unparsed', function(done) {
-            browser.visit('/matches/1/chat', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /players/:valid', function(done) {
-            browser.visit('/players/88367253', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /players/:invalid', function(done) {
-            browser.visit('/players/1', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-          it('GET /players/:valid/matches', function(done) {
-            browser.visit('/players/88367253/matches', function(err) {
-              assert.ifError(err);
-              browser.assert.text('body', /1151783218/);
-              done(err);
-            });
-          });
-          it('GET /players/:invalid/matches', function(done) {
-            browser.visit('/players/1/matches', function(err) {
-              browser.assert.status(500);
-              done(err);
-            });
-          });
-
-          //api/items valid
-          //api/items invalid
-          //api/abilities valid
-          //api/abilities invalid
-          //api/matches valid
-          //api/matches invalid
-          //login
-          //return
-          //logout
-          //GET /upload
-          //POST /upload proper file, too large, invalid file
-          //check login require
-          //check untracked_msg
-          //matches/details parsed
-          //matches/graphs parsed
-          //matches/chat parsed
-          */
+    it('GET /matches/:invalid', function(done) {
+        browser.visit('/matches/1', function(err) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+    it('GET /matches/:invalid/details', function(done) {
+        browser.visit('/matches/1/details', function(err) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+ 
+            it('GET /players/:valid', function(done) {
+                browser.visit('/players/88367253', function(err) {
+                    browser.assert.status(200);
+                    done(err);
+                });
+              });
+  
+              it('GET /players/:invalid', function(done) {
+                browser.visit('/players/1', function(err) {
+                  browser.assert.status(500);
+                  done(err);
+                });
+              });
+              it('GET /players/:valid/matches', function(done) {
+                browser.visit('/players/88367253/matches', function(err) {
+                  assert.ifError(err);
+                  browser.assert.text('body', /1151783218/);
+                  done(err);
+                });
+              });
+              it('GET /players/:invalid/matches', function(done) {
+                browser.visit('/players/1/matches', function(err) {
+                  browser.assert.status(500);
+                  done(err);
+                });
+              });
+              it('GET /matches/:valid/details unparsed', function(done) {
+                browser.visit('/matches/1/details', function(err) {
+                  browser.assert.status(500);
+                  done(err);
+                });
+              });
+              //api/items valid
+              //api/items invalid
+              //api/abilities valid
+              //api/abilities invalid
+              //api/matches valid
+              //api/matches invalid
+              //login
+              //return
+              //logout
+              //GET /upload
+              //POST /upload proper file, too large, invalid file
+              //check untracked_msg
+              //matches/details parsed
+              //matches/graphs parsed
+              //matches/chat parsed
+              */
 });
 
-//unit test
-//mergeObjects: mergeObjects, //try numerous test cases, with increasing complexity
-
-//web helpers
+//queries
 //mergeMatchData: mergeMatchData,
 //generateGraphData: generateGraphData,
 ///fillPlayerInfo: fillPlayerInfo
@@ -355,10 +367,3 @@ it('upload job', function(done) {
   utility.jobs.process('upload', utility.processUpload);
 });
 */
-//runParse directly onfiles, verify output
-//1v1 game
-//ardm game
-//regular game
-//test epilogue parse
-//test broken file
-//test invalid file
