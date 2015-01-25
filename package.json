@@ -3,7 +3,7 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "1.2.13",
   "scripts": {
-    "start": "node worker.js & node web.js",
+    "start": "node worker.js & cd retriever && node retriever.js & node web.js",
     "test": "mocha",
     "travistest": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "unparsed": "grunt unparsed",
