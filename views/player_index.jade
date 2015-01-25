@@ -79,7 +79,7 @@ block playercontent
           if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id) 
             tr
               td
-                img(src=teammate.avatar)
+                img.user(src=teammate.avatar)
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td=teammate.games
               td=teammate.win

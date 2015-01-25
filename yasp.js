@@ -1,8 +1,7 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var express = require('express');
 var session = require('cookie-session');
 var multer = require('multer');
+var queries = require('./queries');
 var utility = require('./utility'),
     db = utility.db,
     auth = require('http-auth'),
@@ -134,7 +133,7 @@ app.param('match_id', function(req, res, next, id) {
                     return next(new Error("match not found"));
                 }
                 else {
-                    utility.fillPlayerNames(match.players, function(err) {
+                    queries.fillPlayerNames(match.players, function(err) {
                         if (err) {
                             return next(new Error(err));
                         }
@@ -206,10 +205,10 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     }
     var data;
     if (info === "details") {
-        match = utility.mergeMatchData(match, app.locals.constants);
+        match = queries.mergeMatchData(match, app.locals.constants);
     }
     if (info === "graphs") {
-        data = utility.generateGraphData(match, app.locals.constants);
+        data = queries.generateGraphData(match, app.locals.constants);
     }
     res.render(matchPages[info].template, {
         route: info,
@@ -228,7 +227,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            utility.fillPlayerInfo(player, function(err) {
+            queries.fillPlayerInfo(player, function(err) {
                 if (err) {
                     return next(new Error(err));
                 }
@@ -242,6 +241,25 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
         }
     });
 });
+app.route('/preferences').post(function(req, res) {
+    if (req.user) {
+        db.players.update({
+            account_id: req.user.account_id
+        }, {
+            $set: {
+                "dark_theme": req.body.dark === 'true' ? 1 : 0
+            }
+        }, function(err, user) {
+            if (err || !user) {
+                res.json({sync: false});
+            } else {
+                res.json({sync: true});
+            }
+        })
+    } else {
+        res.json({sync: false});
+    }
+})
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
@@ -301,11 +319,14 @@ app.route('/upload')
         var files = req.files.replay;
         if (req.session.captcha_verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);
-            utility.queueReq("upload", {
+            utility.queueReq("parse", {
                 uploader: req.user,
-                fileName: files.path
+                fileName: files.path,
+                priority: 'high'
             }, function(err) {
-                if (err) return logger.info(err);
+                if (err) {
+                    return logger.info(err);
+                }
             });
         }
         var verified = req.session.captcha_verified;
