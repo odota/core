@@ -36,7 +36,7 @@ block content
           },
           function(data) {
             if (data.sync) {
-              $(".page-header").after("<div role='alert' class='sync alert alert-success'>Preferences updated</div>");
+              location.reload(true);
             } else {
               $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
             }
