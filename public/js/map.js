@@ -124,7 +124,7 @@
             d.src += buildingData[i].id.slice(0, 1) === "t" ? 'tower' : 'racks'
             d.src += buildingData[i].id.slice(-1) === "r" ? '_radiant.png' : '_dire.png'
             d.class = buildingData[i].id.slice(0, 1) === "a" ? "" : "icon"
-            d.style += bits[i] === "1" ? "" : "-webkit-filter: grayscale(100%);"
+            d.style += bits[i] === "1" ? "" : "opacity: 0.2;"
             $('#map').append(($('<img>', d)))
         }
     })
