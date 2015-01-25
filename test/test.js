@@ -164,8 +164,8 @@ describe("backend", function() {
 });
 
 describe("parser", function() {
+    this.timeout(40000);
     it('parse match (file)', function(done) {
-        this.timeout(30000);
         var job = {
             match_id: 115178218,
             start_time: moment().format('X')
@@ -177,7 +177,6 @@ describe("parser", function() {
         });
     });
     it('parse match (stream)', function(done) {
-        this.timeout(40000);
         var job = {
             match_id: 115178218,
             start_time: moment().format('X')
@@ -209,6 +208,7 @@ describe("parser", function() {
 })
 
 describe("web", function() {
+    this.timeout(5000);
     describe("/", function() {
         before(function(done) {
             browser.visit('/');
