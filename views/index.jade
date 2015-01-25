@@ -20,19 +20,29 @@ block content
      h3 Preferences
      .checkbox
        label
-        input#dark(type="checkbox")
+        if user.dark_theme
+          input#dark(type="checkbox", checked="true")
+        else
+          input#dark(type="checkbox")
         | Use Dark Theme
      script.
        $dark = $("#dark");
        $dark.change(function() {
+        console.log($dark.is(":checked"));
         $.post(
           "/preferences",
           {
             dark: $dark.is(":checked")
           },
           function(data) {
-          
+            if (data.sync) {
+              $(".page-header").after("<div role='alert' class='sync alert alert-success'>Preferences updated</div>");
+            } else {
+              $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+            }
+            $(".sync").fadeOut(3000);
           }
+        )
        })
   else
     p.lead
