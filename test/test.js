@@ -5,7 +5,7 @@ process.env.ROOT_URL = "http://localhost:5000";
 process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
-process.env.REPLAY_DIR="./testreplays";
+process.env.REPLAY_DIR = "./testreplays/";
 var assert = require('assert');
 var async = require('async');
 var utility = require('../utility');
@@ -31,14 +31,17 @@ nock('http://localhost:5100')
       replaySalt: 1
     }
   });
+
 //fake replay response
 nock('http://replay1.valve.net')
   .filteringPath(function(path) {
     return '/';
   })
   .get('/')
-  .times(2)
+  .replyWithFile(200, __dirname + '/1151783218.dem.bz2')
+  .get('/')
   .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
+
 //fake api response
 nock('https://api.steampowered.com')
   .filteringPath(function(path) {
@@ -255,7 +258,6 @@ describe("TESTS", function() {
   });
   */
   it('parse expired match through kue', function(done) {
-    this.timeout(30000);
     //fake parse request
     utility.queueReq("parse", {
       match_id: 1,
@@ -286,7 +288,6 @@ describe("TESTS", function() {
       });
     });
   });
-  
   it('parse match through kue (stream)', function(done) {
     this.timeout(30000);
     //fake parse request
@@ -294,7 +295,7 @@ describe("TESTS", function() {
       match_id: 115178218,
       start_time: new Date()
     }, function(err, job) {
-      if (err){
+      if (err) {
         return done(err);
       }
       utility.processParseStream(job, function(err) {

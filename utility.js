@@ -504,7 +504,7 @@ function streamReplayData(job, url, cb) {
             url: url,
             encoding: null
         }, function(err, resp, body) {
-            if (err || resp.statusCode !== 200) {
+            if (err || resp.statusCode !== 200 || !body) {
                 return cb(new Error("DOWNLOAD ERROR"));
             }
             var t2 = new Date().getTime();
