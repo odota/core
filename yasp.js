@@ -243,13 +243,13 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
-        console.log(req.body.dark)
-        db.players.findAndModify({
+        db.players.update({
             account_id: req.user.account_id
         }, {
-            $set: {dark_theme: req.body.dark ? 1 : 0}
+            $set: {
+                "dark_theme": req.body.dark === 'true' ? 1 : 0
+            }
         }, function(err, user) {
-            console.log(user)
             if (err || !user) {
                 res.json({sync: false});
             } else {
