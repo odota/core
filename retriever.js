@@ -114,8 +114,4 @@ function reset() {
     lock = false;
 }
 
-setTimeout(function() {
-    process.exit(0);
-}, 1000 * 60 * 60);
-
 module.exports = app;

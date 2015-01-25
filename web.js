@@ -6,7 +6,12 @@ var server = app.listen(process.env.PORT || 5000, function() {
     var port = server.address().port;
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
-if (!process.env.RETRIEVER) {
+if (process.env.RETRIEVER) {
+    setTimeout(function() {
+        process.exit(0);
+    }, 1000 * 60 * 60);
+}
+else {
     require('./backend');
     require('./parser');
 }
