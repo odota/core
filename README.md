@@ -24,11 +24,16 @@ Dependencies
 Deployment
 ====
 * Create .env file, see `.env_example`
-* Create retriever .env file, see `retriever/.env_example`
 * Get required submodules: `git submodule update --init`
-* Install node dependencies: `npm install && cd retriever && npm install && cd ..`
-* Build parser and constants: `npm run build`
+* Install node dependencies: `npm install`
+* Build: `npm run build`
 * Start YASP: `npm start`
+
+Retriever
+====
+* YASP requires a running retriever to fetch replay salts.
+* Create retriever .env file, see `retriever/.env_example`
+* Install its dependencies and start: `cd retriever && npm install && npm start`
 
 Tests
 ====

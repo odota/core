@@ -25,6 +25,7 @@ html
     
     //- Stylesheets
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     style
       include ../public/css/yasp.css
@@ -33,9 +34,14 @@ html
         include ../public/css/dark.css
     //- JS
     script(src='//code.jquery.com/jquery-2.1.1.min.js')
+    script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
     script
       include ../public/js/ga.js
-    
+      include ../public/js/bundle.js
+    script.
+      var modes = !{JSON.stringify(constants.modes)}
+      var regions = !{JSON.stringify(constants.regions)}
+      var parse_status = !{JSON.stringify(constants.parse_status)}
     block head
     
   body

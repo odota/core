@@ -77,6 +77,9 @@ function getAssociatedHero(unit, heroes) {
         if (split[2] === "shadow" && split[3] === "shaman") {
             identifier = "shadow_shaman";
         }
+        if (split[2] === "witch" && split[3] === "doctor") {
+            identifier = "witch_doctor";
+        }
         //append to npc_dota_hero_, see if matches
         var attempt = "npc_dota_hero_" + identifier;
         if (heroes[attempt]) {
@@ -207,22 +210,22 @@ function fillPlayerNames(players, cb) {
 }
 
 function getMatchesByPlayer(account_id, cb) {
-        var search = {};
-        if (account_id) {
-            search.players = {
-                $elemMatch: {
-                    account_id: account_id
-                }
-            };
-        }
-        db.matches.find(search, {
-            sort: {
-                match_id: -1
+    var search = {};
+    if (account_id) {
+        search.players = {
+            $elemMatch: {
+                account_id: account_id
             }
-        }, function(err, docs) {
-            cb(err, docs);
-        });
+        };
     }
+    db.matches.find(search, {
+        sort: {
+            match_id: -1
+        }
+    }, function(err, docs) {
+        cb(err, docs);
+    });
+}
 
 
 module.exports = {
