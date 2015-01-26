@@ -90,6 +90,7 @@ before(function(done) {
     });
 });
 after(function(done) {
+    console.log("cleaning test data");
     app.close();
     //wipe mongodb and redis
     var DatabaseCleaner = require('database-cleaner');
@@ -102,7 +103,7 @@ after(function(done) {
             });
         });
     });
-})
+});
 
 describe("services", function() {
     it("mongodb connected", function(done) {
@@ -209,11 +210,12 @@ describe("parser", function() {
 });
 
 describe("web", function() {
-    this.timeout(5000);
+    var wait = 5000;
+    this.timeout(wait);
     describe("/", function() {
         before(function(done) {
             browser.visit('/');
-            browser.wait(2000, function(err) {
+            browser.wait(wait, function(err) {
                 done(err);
             });
         });
@@ -233,7 +235,7 @@ describe("web", function() {
     describe("/stats", function() {
         before(function(done) {
             browser.visit('/stats');
-            browser.wait(2000, function(err) {
+            browser.wait(wait, function(err) {
                 done(err);
             });
         });
@@ -245,7 +247,7 @@ describe("web", function() {
     describe("/upload (not logged in)", function() {
         before(function(done) {
             browser.visit('/upload');
-            browser.wait(2000, function(err) {
+            browser.wait(wait, function(err) {
                 done(err);
             });
         });
@@ -254,28 +256,28 @@ describe("web", function() {
             done();
         });
     });
-    /*
-        describe("/matches", function() {
-            before(function(done) {
-                browser.visit('/matches');
-                browser.wait(2000, function(err) {
-                    done(err);
-                });
-            });
-            it('should load', function(done) {
-                browser.assert.status(200);
-                done();
-            });
-            it('should have a match', function(done) {
-                browser.assert.text('.td', /1151783218/);
-                done();
+/*
+    describe("/matches", function() {
+        before(function(done) {
+            browser.visit('/matches');
+            browser.wait(wait, function(err) {
+                done(err);
             });
         });
+        it('should load', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should have a match', function(done) {
+            browser.assert.text('.td', /1151783218/);
+            done();
+        });
+    });
 
     describe("/matches/:valid", function() {
         before(function(done) {
             browser.visit('/matches/1151783218');
-            browser.wait(2000, function(err) {
+            browser.wait(wait, function(err) {
                 done(err);
             });
         });
@@ -301,14 +303,14 @@ describe("web", function() {
             done();
         });
     });
- 
+
             it('GET /players/:valid', function(done) {
                 browser.visit('/players/88367253', function(err) {
                     browser.assert.status(200);
                     done(err);
                 });
               });
-  
+
               it('GET /players/:invalid', function(done) {
                 browser.visit('/players/1', function(err) {
                   browser.assert.status(500);
@@ -363,6 +365,6 @@ describe("web", function() {
 
 /*
 it('upload job', function(done) {
-  utility.jobs.process('upload', utility.processUpload);
+utility.jobs.process('upload', utility.processUpload);
 });
 */
