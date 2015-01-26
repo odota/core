@@ -124,7 +124,7 @@ describe("services", function() {
     });
 });
 
-describe("TASKS", function() {
+describe("tasks", function() {
     it('unparsed matches', function(done) {
         tasks.unparsed(function(err, num) {
             assert.equal(num, 1);
