@@ -9,6 +9,78 @@ $(document).ready(function() {
 });
 global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
+global.matchTable = matchTable;
+global.playerTables = playerTables;
+
+function playerTables() {
+    $('#teammates').dataTable({
+        "order": [
+            [1, "desc"]
+        ]
+    });
+    $('#heroes').dataTable({
+        "order": [
+            [2, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [0],
+            "orderData": [1]
+        }, {
+            "targets": [1],
+            visible: false
+        }]
+    });
+}
+
+function matchTable() {
+    $('#table').dataTable({
+        "order": [
+            [0, "desc"]
+        ],
+        ajax: '/api/matches',
+        serverSide: true,
+        processing: true,
+        searching: false,
+        stateSave: true,
+        columns: [{
+            data: 'match_id',
+            title: 'Match ID',
+            render: function(data, type, row, meta) {
+                return '<a href="/matches/' + data + '">' + data + '</a>'
+            }
+        }, {
+            data: 'game_mode',
+            title: 'Game Mode',
+            render: function(data, type, row, meta) {
+                return modes[data] ? modes[data].name : data
+            }
+        }, {
+            data: 'cluster',
+            title: 'Region',
+            render: function(data, type, row, meta) {
+                return regions[data] ? regions[data] : data
+            }
+        }, {
+            data: 'duration',
+            title: 'Duration',
+            render: function(data, type, row, meta) {
+                return moment().startOf('day').seconds(data).format("H:mm:ss")
+            }
+        }, {
+            data: 'start_time',
+            title: 'Played',
+            render: function(data, type, row, meta) {
+                return moment.unix(data + row.duration).fromNow()
+            }
+        }, {
+            data: 'parse_status',
+            title: 'Status',
+            render: function(data, type, row, meta) {
+                return parse_status[data] ? parse_status[data] : data
+            }
+        }]
+    });
+}
 
 function process() {
     console.log('processing html');
@@ -377,6 +449,7 @@ function generateCharts(data) {
 }
 
 function generateCalHeatmap(data) {
+    var cal = new CalHeatMap();
     cal.init({
         start: new Date(moment().subtract(1, 'year')),
         range: 13,
