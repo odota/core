@@ -9,6 +9,6 @@ fi
 
 npm install --production && npm run build
 
-nf export -o /etc/init/
+nf export web=1,worker=1,parser=1 -o /etc/init/
 
 restart foreman
