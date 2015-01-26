@@ -91,33 +91,5 @@ block footer_assets
   include assets/calheatmap
   script.
     var calData = !{JSON.stringify(player.calheatmap)}
-    generateCalHeatmap();
-    $('#matches').dataTable({
-      "order": [
-          [0, "desc"]
-      ],
-      "columnDefs": [{
-          "targets": [1],
-          "orderData": [2]
-      }, {
-          "targets": [2],
-          visible: false
-      }]
-    });
-    $('#teammates').dataTable({
-        "order": [
-            [1, "desc"]
-        ]
-    });
-    $('#heroes').dataTable({
-        "order": [
-            [2, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-        }, {
-            "targets": [1],
-            visible: false
-        }]
-    });
+    generateCalHeatmap(calData);
+    playerTables();
