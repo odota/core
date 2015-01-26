@@ -87,7 +87,7 @@ block playercontent
 
 block footer_assets
   include assets/datatables
-  include assets/calheatmap
+  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
     var calData = !{JSON.stringify(player.calheatmap)}
     generateCalHeatmap(calData);
