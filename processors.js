@@ -86,7 +86,7 @@ function getReplayUrl(job, cb) {
                 return cb(null, job, url);
             }
             logger.info(err, body);
-            return cb(new Error("invalid body or error"));
+            return cb("invalid body or error");
         });
     }
     else if (process.env.AWS_S3_BUCKET) {
@@ -124,7 +124,7 @@ function streamReplayData(job, url, cb) {
             encoding: null
         }, function(err, resp, body) {
             if (err || resp.statusCode !== 200 || !body) {
-                return cb(new Error("DOWNLOAD ERROR"));
+                return cb("download error");
             }
             var t2 = new Date().getTime();
             logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
@@ -209,7 +209,7 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb(new Error("no url"));
+        cb("no url");
     }
     getData(job.data.url, function(err, data) {
         if (err) {
@@ -229,7 +229,7 @@ function processApi(job, cb) {
             });
         }
         else {
-            return cb(new Error("unknown response"));
+            return cb("unknown response");
         }
     });
 }
