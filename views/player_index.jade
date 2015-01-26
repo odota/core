@@ -88,18 +88,10 @@ block playercontent
 
 block footer_assets
   include assets/datatables
-  //- Cal-Heatmap CSS and JS
-  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
-  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
-  script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
-  script(src='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.js')
-  //- QTip2 CSS and JS
-  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
+  include assets/calheatmap
   script.
-    $('[title!=""]').qtip({style: "qtip-dark"});
-  script.
-    var data = !{JSON.stringify(player.calheatmap)}
+    var calData = !{JSON.stringify(player.calheatmap)}
+    generateCalHeatmap();
     $('#matches').dataTable({
       "order": [
           [0, "desc"]
@@ -129,5 +121,3 @@ block footer_assets
             visible: false
         }]
     });
-  script
-    include ../public/js/cal-heatmap.js
