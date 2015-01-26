@@ -13,6 +13,10 @@ global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
+var constants = require('./sources.json');
+var modes = constants.modes;
+var regions = constants.regions;
+var parse_status = constants.parse_status;
 
 $(document).ready(function() {
     process();
@@ -255,8 +259,10 @@ function tooltips() {
         },
         style: "qtip-dark"
     });
-    $('[title]').qtip({ style: "qtip-dark"});
-   
+    $('[title]').qtip({
+        style: "qtip-dark"
+    });
+
 }
 
 function buildMap() {

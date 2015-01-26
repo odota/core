@@ -159,7 +159,7 @@ function unparsed(done) {
 }
 
 function generateConstants(done) {
-    var constants = require('./constants.json');
+    var constants = require('./sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
@@ -193,22 +193,6 @@ function generateConstants(done) {
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
-        //key ability_ids by id
-        lookup = {};
-        var ability_ids = constants.ability_ids.abilities;
-        for (var j = 0; j < ability_ids.length; j++) {
-            lookup[ability_ids[j].id] = ability_ids[j].name;
-        }
-        constants.ability_ids = lookup;
-        constants.ability_ids["5601"] = "techies_suicide";
-        constants.ability_ids["5088"] = "skeleton_king_mortal_strike";
-        constants.ability_ids["5060"] = "nevermore_shadowraze1";
-        constants.ability_ids["5061"] = "nevermore_shadowraze1";
-        constants.ability_ids["5580"] = "beastmaster_call_of_the_wild";
-        constants.ability_ids["5637"] = "oracle_fortunes_end";
-        constants.ability_ids["5638"] = "oracle_fates_edict";
-        constants.ability_ids["5639"] = "oracle_purifying_flames";
-        constants.ability_ids["5640"] = "oracle_false_promise";
         var abilities = constants.abilities.abilitydata;
         for (var key2 in abilities) {
             abilities[key2].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
@@ -221,18 +205,9 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        //key regions by id
-        lookup = {};
-        var regions = constants.regions.regions;
-        for (var k = 0; k < regions.length; k++) {
-            lookup[regions[k].id] = regions[k].name;
-        }
-        constants.regions = lookup;
-        constants.regions["251"] = "Peru";
-        constants.regions["261"] = "India";
         fs.writeFile("constants.json", JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
-                console.log("[CONSTANTS] generated constants file");
+                console.log("[CONSTANTS] generated constants.json");
             }
             return done(err);
         });
