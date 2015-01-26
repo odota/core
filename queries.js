@@ -134,7 +134,6 @@ function fillPlayerInfo(player, cb) {
         var account_id = player.account_id;
         var counts = {};
         var heroes = {};
-        player.teammates = [];
         player.calheatmap = {};
         for (var i = 0; i < matches.length; i++) {
             //add start time to data for cal-heatmap
@@ -177,12 +176,15 @@ function fillPlayerInfo(player, cb) {
                 }
             }
         }
-        //convert teammate counts to array and filter
+        player.teammates = [];
         for (var id in counts) {
             var count = counts[id];
-            if (count.games >= 2) {
-                player.teammates.push(count);
+            if (id == account_id) {
+                player.win = count.win;
+                player.lose = count.lose;
+                player.games = count.games;
             }
+            player.teammates.push(count);
         }
         player.matches = matches;
         player.heroes = heroes;
