@@ -396,6 +396,16 @@ app.get('/stats', function(req, res, next) {
                     cb(err, res);
                 });
             },
+            parsed_matches_last_day: function(cb) {
+                db.matches.count({
+                    parse_status: 2,
+                    start_time: {
+                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                    }
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             uploaded_matches: function(cb) {
                 db.matches.count({
                     upload: true

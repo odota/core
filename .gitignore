@@ -11,4 +11,5 @@ output.json
 uploads
 coverage
 bundle.js
+constants.json
 !test/*
