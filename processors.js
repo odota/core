@@ -161,27 +161,27 @@ function downloadReplayData(job, url, cb) {
     var archiveName = fileName + ".bz2";
     logger.info("[PARSER] downloading from %s", url);
     var t1 = new Date().getTime();
-    request({
-            url: url,
-            encoding: null
-        }, function(err, resp) {
-            if (err || resp.statusCode !== 200) {
-                return cb("download error");
+    var r = request({
+        url: url,
+        encoding: null
+    }).pipe(fs.createWriteStream(archiveName));
+    r.on('error', function(err) {
+        return cb("err");
+    });
+    r.on('finish', function() {
+        var t2 = new Date().getTime();
+        logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
+        decompress(archiveName, function(err) {
+            if (err) {
+                return cb(err);
             }
-            var t2 = new Date().getTime();
-            logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
-            decompress(archiveName, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                job.data.fileName = fileName;
-                job.update();
-                var t3 = new Date().getTime();
-                logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
-                return parseReplay(job, fileName, cb);
-            });
-        })
-        .pipe(fs.createWriteStream(archiveName));
+            job.data.fileName = fileName;
+            job.update();
+            var t3 = new Date().getTime();
+            logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
+            return parseReplay(job, fileName, cb);
+        });
+    });
 }
 
 function parseReplay(job, input, cb) {
