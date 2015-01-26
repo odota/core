@@ -39,9 +39,9 @@ html
       include ../public/js/ga.js
       include ../public/js/bundle.js
     script.
-      var modes = constants.modes;
-      var regions = constants.regions;
-      var parse_status = constants.parse_status;
+      var modes = !{JSON.stringify(constants.modes)}
+      var regions = !{JSON.stringify(constants.regions)}
+      var parse_status = !{JSON.stringify(constants.parse_status)}
     block head
     
   body

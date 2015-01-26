@@ -3,14 +3,14 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "1.2.15",
   "scripts": {
-    "start": "node worker.js & node parser.js & cd retriever && node retriever.js & node web.js",
+    "start": "node worker.js & node parser.js & node web.js",
     "test": "mocha",
     "travistest": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
     "unnamed": "grunt unnamed",
-    "browserify": "browserify browser.js | uglifyjs > bundle.js",
+    "browserify": "browserify browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify browser.js -o public/js/bundle.js --debug --verbose",
     "build": "mvn -q -f parser/pom.xml package && npm run constants && npm run browserify"
   },
