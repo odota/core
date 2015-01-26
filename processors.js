@@ -24,6 +24,7 @@ function processParse(job, cb) {
         getReplayData,
     ], function(err, job2) {
         if (err === "replay expired") {
+            logger.info(err);
             db.matches.update({
                 match_id: match_id
             }, {
@@ -35,6 +36,7 @@ function processParse(job, cb) {
             });
         }
         else if (err) {
+            logger.info(err);
             cb(err);
         }
         else {
@@ -164,7 +166,7 @@ function downloadReplayData(job, url, cb) {
             encoding: null
         }, function(err, resp) {
             if (err || resp.statusCode !== 200) {
-                return cb(err);
+                return cb("download error");
             }
             var t2 = new Date().getTime();
             logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
