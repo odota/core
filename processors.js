@@ -161,12 +161,14 @@ function downloadReplayData(job, url, cb) {
     var archiveName = fileName + ".bz2";
     logger.info("[PARSER] downloading from %s", url);
     var t1 = new Date().getTime();
-    request({
+    var r = request({
         url: url,
         encoding: null
-    }).on('error', function(err) {
+    }).pipe(fs.createWriteStream(archiveName));
+    r.on('error', function(err) {
         return cb(err);
-    }).on('finish', function() {
+    })
+    r.on('finish', function() {
         var t2 = new Date().getTime();
         logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
         decompress(archiveName, function(err) {
@@ -179,8 +181,7 @@ function downloadReplayData(job, url, cb) {
             logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
             return parseReplay(job, fileName, cb);
         });
-    }).pipe(fs.createWriteStream(archiveName));
-
+    })
 }
 
 function parseReplay(job, input, cb) {
