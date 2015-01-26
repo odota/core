@@ -33,7 +33,7 @@ Retriever
 ====
 * YASP requires a running retriever to fetch replay salts.
 * Create retriever .env file, see `retriever/.env_example`
-* Install its dependencies and start: `cd retriever && npm install && npm start`
+* Install its dependencies and start on a different port: `PORT=5100 cd retriever && npm install && npm start`
 
 Tests
 ====
