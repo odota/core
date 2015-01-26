@@ -10,4 +10,5 @@ servers
 output.json
 uploads
 coverage
+bundle.js
 !test/*
