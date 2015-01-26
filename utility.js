@@ -11,6 +11,8 @@ var spawn = require('child_process').spawn,
     redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis),
     streamifier = require('streamifier');
+var moment = require('moment');
+var numeral = require('numeral');
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
@@ -365,5 +367,5 @@ module.exports = {
 
     //parse
     runParse: runParse,
-    decompress: decompress
+    decompress: decompress,
 };

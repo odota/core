@@ -27,7 +27,7 @@ Deployment
 * Create retriever .env file, see `retriever/.env_example`
 * Get required submodules: `git submodule update --init`
 * Install node dependencies: `npm install && cd retriever && npm install && cd ..`
-* Build parser and constants: `npm run build`
+* Build: `npm run build`
 * Start YASP: `npm start`
 
 Tests
