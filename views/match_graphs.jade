@@ -1,8 +1,4 @@
 extend match
-
-append head
-  script.
-    var data = !{JSON.stringify(match.graphData)}
     
 append content 
     .row
@@ -27,15 +23,10 @@ append content
               h3 LH
               #chart-lh
         else
-          h1 This match has no parsed data!
-
-append footer_assets
-  //- C3 assets
-  link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.css')
-  script(src='//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js')
-  script(src='//cdn.jsdelivr.net/d3js/latest/d3.min.js')
-  script(src='//cdn.rawgit.com/masayuki0812/c3/master/c3.js')
-  script
-    include ../public/js/chart.js
-  script
-    include ../public/js/yasp.js
+          h1 This match has no parsed data
+          
+block footer_assets
+  include assets/c3
+  script.
+    var graphData = !{JSON.stringify(match.graphData)}
+    generateCharts(graphData);

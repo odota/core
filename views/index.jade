@@ -25,25 +25,6 @@ block content
         else
           input#dark(type="checkbox")
         | Use Dark Theme
-     script.
-       $dark = $("#dark");
-       $dark.change(function() {
-        console.log($dark.is(":checked"));
-        $.post(
-          "/preferences",
-          {
-            dark: $dark.is(":checked")
-          },
-          function(data) {
-            if (data.sync) {
-              location.reload(true);
-            } else {
-              $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-            }
-            $(".sync").fadeOut(3000);
-          }
-        )
-       })
   else
     p.lead
      | As the name suggests, we're yet <em>another</em> Dota 2 stats site.

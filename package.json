@@ -10,7 +10,9 @@
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
     "unnamed": "grunt unnamed",
-    "build": "mvn -q -f parser/pom.xml package && npm run constants"
+    "browserify": "browserify browser.js | uglifyjs > bundle.js",
+    "watchify": "watchify browser.js -o public/js/bundle.js --debug --verbose",
+    "build": "mvn -q -f parser/pom.xml package && npm run constants && npm run browserify"
   },
   "repository": {
     "type": "git",
@@ -28,7 +30,7 @@
     "http-auth": "~2.2.5",
     "jade": "~1.9.1",
     "kue": "~0.8.11",
-    "moment": "2.9.0",
+    "moment": "~2.9.0",
     "monk": "0.9.1",
     "passport": "0.2.1",
     "passport-steam": "0.1.4",
@@ -40,7 +42,17 @@
     "recaptcha": "1.2.0",
     "parse-redis-url": "0.0.1",
     "compressjs": "~1.0.2",
-    "streamifier": "~0.1.0"
+    "streamifier": "~0.1.0",
+    "browserify": "~8.1.1",
+    "numeral": "~1.5.3",
+    "datatables": "~1.10.5-dev",
+    "jquery": "~2.1.3",
+    "d3": "~3.5.3",
+    "c3": "~0.4.9",
+    "watchify": "~2.2.1",
+    "cal-heatmap": "~3.5.1",
+    "qtip2": "~2.2.0",
+    "uglify-js": "~2.4.16"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",

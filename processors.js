@@ -199,6 +199,8 @@ function parseReplay(job, input, cb) {
                 parse_status: 2
             }
         }, function(err) {
+            job.payload.match_id = output.match_id;
+            job.payload.parsed_data = output;
             cb(err, job);
         });
     });
@@ -207,10 +209,6 @@ function parseReplay(job, input, cb) {
 function processApi(job, cb) {
     //process an api request
     var payload = job.data.payload;
-    if (!job.data.url) {
-        logger.info(job);
-        cb("no url");
-    }
     getData(job.data.url, function(err, data) {
         if (err) {
             return cb(err);
@@ -224,6 +222,8 @@ function processApi(job, cb) {
         else if (payload.match_id) {
             //response for single match details
             var match = data.result;
+            //add parsed_data if already there
+            match.parsed_data = payload.parsed_data;
             insertMatch(match, function(err) {
                 cb(err);
             });
