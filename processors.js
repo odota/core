@@ -24,26 +24,28 @@ function processParse(job, cb) {
         getReplayData,
     ], function(err, job2) {
         if (err === "replay expired") {
-            return db.matches.update({
+            db.matches.update({
                 match_id: match_id
             }, {
                 $set: {
                     parse_status: 1
                 }
-            }, function(err, doc) {
+            }, function(err) {
                 cb(err);
             });
         }
-        if (err) {
-            return cb(new Error(err));
-        }
-        if (process.env.DELETE_REPLAYS && job2.data.fileName) {
-            fs.unlinkSync(job2.data.fileName);
-        }
-        //queue job for api to make sure it's in db
-        queueReq("api_details", job2.data.payload, function(err) {
+        else if (err) {
             cb(err);
-        });
+        }
+        else {
+            if (process.env.DELETE_REPLAYS && job2.data.fileName) {
+                fs.unlinkSync(job2.data.fileName);
+            }
+            //queue job for api to make sure it's in db
+            queueReq("api_details", job2.data.payload, function(err) {
+                cb(err);
+            });
+        }
     });
 }
 
@@ -84,7 +86,7 @@ function getReplayUrl(job, cb) {
                 return cb(null, job, url);
             }
             logger.info(err, body);
-            return cb(new Error("invalid body or error"));
+            return cb("invalid body or error");
         });
     }
     else if (process.env.AWS_S3_BUCKET) {
@@ -122,7 +124,7 @@ function streamReplayData(job, url, cb) {
             encoding: null
         }, function(err, resp, body) {
             if (err || resp.statusCode !== 200 || !body) {
-                return cb(new Error("DOWNLOAD ERROR"));
+                return cb("download error");
             }
             var t2 = new Date().getTime();
             logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
@@ -207,7 +209,7 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     if (!job.data.url) {
         logger.info(job);
-        cb(new Error("no url"));
+        cb("no url");
     }
     getData(job.data.url, function(err, data) {
         if (err) {
@@ -227,7 +229,7 @@ function processApi(job, cb) {
             });
         }
         else {
-            return cb(new Error("unknown response"));
+            return cb("unknown response");
         }
     });
 }

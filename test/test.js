@@ -18,6 +18,7 @@ var Zombie = require('zombie');
 var app = require('../yasp').listen(process.env.PORT);
 var processors = require('../processors');
 var tasks = require('../tasks');
+var fs = require('fs');
 
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie();

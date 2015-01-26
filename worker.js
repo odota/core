@@ -12,32 +12,29 @@ var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
 var kue = utility.kue;
 
-clearActiveJobs();
 startScan();
 jobs.process('api', processors.processApi);
-jobs.process('parse', process.env.STREAM ? processors.processParseStream : processors.processParse);
-setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function(err, num) {
-    logger.info(err, num);
-}); //check every hour
+setInterval(clearActiveJobs, 60 * 3 * 1000, function() {});
+setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
 
-function clearActiveJobs() {
+function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
         if (err) {
-            logger.info(err);
-            return clearActiveJobs();
+            return cb(err);
         }
-        ids.forEach(function(id) {
+        async.mapSeries(ids, function(id, cb) {
             kue.Job.get(id, function(err, job) {
                 if (err) {
-                    logger.info(err);
-                    return clearActiveJobs();
+                    return cb(err);
                 }
-                //reset stuck jobs
-                if ((new Date() - job.updated_at) > 60 * 1000) {
+                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
                     logger.info("[BACKEND] unstuck job %s", id);
                     job.inactive();
                 }
+                cb(err);
             });
+        }, function(err) {
+            cb(err);
         });
     });
 }
