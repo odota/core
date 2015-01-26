@@ -1,4 +1,3 @@
-var constants = require('./constants.json');
 var utility = require('./utility');
 var db = utility.db;
 var fs= require('fs');
@@ -13,6 +12,7 @@ var urllib = require('url');
 var moment = require('moment');
 
 function getFullMatchHistory(done) {
+    var constants = require('./constants.json');
     var collectorFunc = remote ? getHistoryRemote : getHistoryByHero;
     var heroArray = [];
     for (var key in constants.heroes) {
