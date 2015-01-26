@@ -1,16 +1,17 @@
 var moment = require('moment');
 var async = require('async');
 var numeral = require('numeral');
+global.generateCharts = generateCharts;
+global.generateCalHeatmap = generateCalHeatmap;
+global.matchTable = matchTable;
+global.playerTables = playerTables;
+
 $(document).ready(function() {
     process();
     changeTheme();
     tooltips();
     buildMap();
 });
-global.generateCharts = generateCharts;
-global.generateCalHeatmap = generateCalHeatmap;
-global.matchTable = matchTable;
-global.playerTables = playerTables;
 
 function playerTables() {
     $('#teammates').dataTable({
@@ -246,6 +247,8 @@ function tooltips() {
         },
         style: "qtip-dark"
     });
+    $('[title]').qtip({ style: "qtip-dark"});
+   
 }
 
 function buildMap() {

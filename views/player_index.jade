@@ -21,8 +21,7 @@ block playercontent
            th K
            th D
            th A
-           th 
-             abbr(title=constants.tooltips.status) Status
+           th: abbr(title=constants.tooltips.status) Status
         each match in player.matches.slice(0,10)
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
@@ -76,7 +75,7 @@ block playercontent
             th Losses
             th Winrate          
         each teammate in player.teammates
-          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id) 
+          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id && teammate.games > 2) 
             tr
               td
                 img.user(src=teammate.avatar)
