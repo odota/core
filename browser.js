@@ -1,6 +1,14 @@
 var moment = require('moment');
 var async = require('async');
 var numeral = require('numeral');
+var d3 = require('d3');
+var c3 = require('c3');
+var CalHeatMap = require('cal-heatmap');
+var $ = jQuery = require('jquery');
+var qtip = require('qtip2');
+$.qtip = qtip;
+//var dataTable = DataTable = require('datatables');
+//$.dataTable = dataTable;
 global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
