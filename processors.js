@@ -24,26 +24,28 @@ function processParse(job, cb) {
         getReplayData,
     ], function(err, job2) {
         if (err === "replay expired") {
-            return db.matches.update({
+            db.matches.update({
                 match_id: match_id
             }, {
                 $set: {
                     parse_status: 1
                 }
-            }, function(err, doc) {
+            }, function(err) {
                 cb(err);
             });
         }
-        if (err) {
-            return cb(new Error(err));
-        }
-        if (process.env.DELETE_REPLAYS && job2.data.fileName) {
-            fs.unlinkSync(job2.data.fileName);
-        }
-        //queue job for api to make sure it's in db
-        queueReq("api_details", job2.data.payload, function(err) {
+        else if (err) {
             cb(err);
-        });
+        }
+        else {
+            if (process.env.DELETE_REPLAYS && job2.data.fileName) {
+                fs.unlinkSync(job2.data.fileName);
+            }
+            //queue job for api to make sure it's in db
+            queueReq("api_details", job2.data.payload, function(err) {
+                cb(err);
+            });
+        }
     });
 }
 
