@@ -199,8 +199,8 @@ function parseReplay(job, input, cb) {
                 parse_status: 2
             }
         }, function(err) {
-            job.payload.match_id = output.match_id;
-            job.payload.parsed_data = output;
+            job.data.payload.match_id = output.match_id;
+            job.data.payload.parsed_data = output;
             cb(err, job);
         });
     });
