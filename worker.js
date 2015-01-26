@@ -14,7 +14,6 @@ var kue = utility.kue;
 
 startScan();
 jobs.process('api', processors.processApi);
-jobs.process('parse', process.env.STREAM ? processors.processParseStream : processors.processParse);
 setInterval(clearActiveJobs, 60 * 3 * 1000, function() {});
 setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
 
