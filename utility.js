@@ -221,11 +221,13 @@ function runParse(input, cb) {
 
 function getData(url, cb) {
     setTimeout(function() {
+        var target = url;
+        //array given, pick one randomly
         if (typeof url === "object") {
-            url = url[Math.floor(Math.random() * url.length)];
+            target = url[Math.floor(Math.random() * url.length)];
         }
         request({
-            url: url,
+            url: target,
             json: true
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
