@@ -21,13 +21,11 @@ Dependencies
 * MongoDB
 * bzip2
 
-Deployment
+Quickstart
 ====
 * Create .env file, see `.env_example`
-* Get required submodules: `git submodule update --init`
-* Install node dependencies: `npm install`
-* Build: `npm run build`
-* Start YASP: `npm start`
+* Install node dependencies and build: `npm install && npm run build`
+* Start YASP in dev mode (spawns a single retriever): `npm run dev`
 
 Tests
 ====
