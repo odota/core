@@ -1,4 +1,3 @@
-//process.env.NODE_ENV = "test";
 process.env.MONGO_URL = "mongodb://localhost/test";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
@@ -20,8 +19,9 @@ var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
 
+var wait = 10000;
 Zombie.localhost('localhost', process.env.PORT);
-var browser = new Zombie();
+var browser = new Zombie({maxWait: wait, runScripts:false});
 
 //fake retriever response
 nock('http://localhost:5100')
@@ -165,6 +165,201 @@ describe("backend", function() {
     //run processApi
 });
 
+describe("web", function() {
+    this.timeout(wait);
+    describe("/", function() {
+        before(function(done) {
+            browser.visit('/');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say YASP', function(done) {
+            browser.assert.text('body', /YASP/);
+            done();
+        });
+        it('should have a banner', function(done) {
+            browser.assert.text('.alert', /someval/);
+            done();
+        });
+    });
+    describe("/stats", function() {
+        before(function(done) {
+            browser.visit('/stats');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/upload (not logged in)", function() {
+        before(function(done) {
+            browser.visit('/upload');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should have a login message', function(done) {
+            browser.assert.text('.alert', /log in/);
+            done();
+        });
+    });
+    describe("/matches", function() {
+        before(function(done) {
+            browser.visit('/matches');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Recent Matches', function(done) {
+            browser.assert.text('h3', /Recent\sMatches/);
+            done();
+        });
+    });
+
+    describe("/matches/:valid", function() {
+        before(function(done) {
+            browser.visit('/matches/1151783218');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should have a match', function(done) {
+            browser.assert.text('h1', /Match\s1151783218/);
+            done();
+        });
+    });
+
+    describe("/matches/:invalid", function() {
+        before(function(done) {
+            browser.visit('/matches/1');
+            browser.wait(wait, function(err) {
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+
+    describe("/matches/:invalid/details", function() {
+        before(function(done) {
+            browser.visit('/matches/1/details');
+            browser.wait(wait, function(err) {
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+
+    describe("/players/:invalid", function() {
+        before(function(done) {
+            browser.visit('/players/1');
+            browser.wait(wait, function(err) {
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+
+    describe("/players/:valid", function() {
+        before(function(done) {
+            browser.visit('/players/88367253');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/players/:valid/matches", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/matches');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should have a match', function(done) {
+            browser.assert.text('td', /1151783218/);
+            done();
+        });
+    });
+    describe("/players/:invalid/matches", function() {
+        before(function(done) {
+            browser.visit('/players/1/matches');
+            browser.wait(wait, function(err) {
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+    describe("/matches/:valid/details (unparsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1151783218/details');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say no parsed data', function(done) {
+            browser.assert.text('body', /no\sparsed\sdata/);
+            done();
+        });
+    });
+
+    /*
+              //api/items valid
+              //api/items invalid
+              //api/abilities valid
+              //api/abilities invalid
+              //api/matches valid
+              //api/matches invalid
+              //login
+              //return
+              //logout
+              //GET /upload
+              //POST /upload proper file, too large, invalid file
+              //check untracked_msg
+              //matches/details parsed
+              //matches/graphs parsed
+              //matches/chat parsed
+              */
+});
+
 describe("parser", function() {
     this.timeout(40000);
     it('parse match (file)', function(done) {
@@ -209,159 +404,12 @@ describe("parser", function() {
     //test invalid file
 });
 
-describe("web", function() {
-    var wait = 7000;
-    this.timeout(wait);
-    describe("/", function() {
-        before(function(done) {
-            browser.visit('/');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should load', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-        it('should say YASP', function(done) {
-            browser.assert.text('body', /YASP/);
-            done();
-        });
-        it('should have a banner', function(done) {
-            browser.assert.text('.alert', /someval/);
-            done();
-        });
-    });
-    describe("/stats", function() {
-        before(function(done) {
-            browser.visit('/stats');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should load', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-    });
-    describe("/upload (not logged in)", function() {
-        before(function(done) {
-            browser.visit('/upload');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should have a login message', function(done) {
-            browser.assert.text('.alert', /log in/);
-            done();
-        });
-    });
-/*
-    describe("/matches", function() {
-        before(function(done) {
-            browser.visit('/matches');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should load', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-        it('should have a match', function(done) {
-            browser.assert.text('.td', /1151783218/);
-            done();
-        });
-    });
-
-    describe("/matches/:valid", function() {
-        before(function(done) {
-            browser.visit('/matches/1151783218');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should load', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-        it('should have a match', function(done) {
-            browser.assert.text('.h1', /"Match 1151783218"/);
-            done();
-        });
-    });
-
-    it('GET /matches/:invalid', function(done) {
-        browser.visit('/matches/1', function(err) {
-            browser.assert.status(500);
-            done();
-        });
-    });
-    it('GET /matches/:invalid/details', function(done) {
-        browser.visit('/matches/1/details', function(err) {
-            browser.assert.status(500);
-            done();
-        });
-    });
-
-            it('GET /players/:valid', function(done) {
-                browser.visit('/players/88367253', function(err) {
-                    browser.assert.status(200);
-                    done(err);
-                });
-              });
-
-              it('GET /players/:invalid', function(done) {
-                browser.visit('/players/1', function(err) {
-                  browser.assert.status(500);
-                  done(err);
-                });
-              });
-              it('GET /players/:valid/matches', function(done) {
-                browser.visit('/players/88367253/matches', function(err) {
-                  assert.ifError(err);
-                  browser.assert.text('body', /1151783218/);
-                  done(err);
-                });
-              });
-              it('GET /players/:invalid/matches', function(done) {
-                browser.visit('/players/1/matches', function(err) {
-                  browser.assert.status(500);
-                  done(err);
-                });
-              });
-              it('GET /matches/:valid/details unparsed', function(done) {
-                browser.visit('/matches/1/details', function(err) {
-                  browser.assert.status(500);
-                  done(err);
-                });
-              });
-              //api/items valid
-              //api/items invalid
-              //api/abilities valid
-              //api/abilities invalid
-              //api/matches valid
-              //api/matches invalid
-              //login
-              //return
-              //logout
-              //GET /upload
-              //POST /upload proper file, too large, invalid file
-              //check untracked_msg
-              //matches/details parsed
-              //matches/graphs parsed
-              //matches/chat parsed
-              */
-});
-
 //queries
 //mergeMatchData: mergeMatchData,
 //generateGraphData: generateGraphData,
-///fillPlayerInfo: fillPlayerInfo
+///fillPlayerInfo: fillPlayerInfo (slow for large datasets)
 
 //s3 methods are untested
-//load large dataset
-//check load time of player page (teammates take a while)
 
 /*
 it('upload job', function(done) {
