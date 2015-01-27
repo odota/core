@@ -11,8 +11,6 @@ var spawn = require('child_process').spawn,
     redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis),
     streamifier = require('streamifier');
-var moment = require('moment');
-var numeral = require('numeral');
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
@@ -192,13 +190,18 @@ function runParse(input, cb) {
     var cp = spawn("java", ["-jar",
         parser_file
     ]);
-    //if string, read the file into a stream
+    var inStream;
     if (typeof input === "string") {
-        fs.createReadStream(input).pipe(cp.stdin);
+        inStream = fs.createReadStream(input);
     }
     else {
-        streamifier.createReadStream(input).pipe(cp.stdin);
+        inStream = streamifier.createReadStream(input);
     }
+    inStream.pipe(cp.stdin);
+    inStream.on('error', function(err) {
+        logger.info(err);
+        return cb(err);
+    });
     cp.stdout.on('data', function(data) {
         output += data;
     });
@@ -208,10 +211,10 @@ function runParse(input, cb) {
             output = JSON.parse(output);
             return cb(code, output);
         }
-        catch (e) {
+        catch (err) {
             //error parsing json output
-            logger.info(e);
-            return cb(e);
+            logger.info(err);
+            return cb(err);
         }
     });
 }

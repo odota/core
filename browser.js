@@ -20,13 +20,14 @@ global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
 global.playerMatchTables = playerMatchTables;
+global.upload = upload;
+global.buildMap = buildMap;
 
 //run on each page
 $(document).ready(function() {
     process();
     changeTheme();
     tooltips();
-    buildMap();
 });
 
 //ga
@@ -44,6 +45,28 @@ $(document).ready(function() {
 ga('create', 'UA-55757642-1', 'auto');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
+
+function upload() {
+    $("#button").click(function(event) {
+        event.preventDefault();
+        $.post(
+            "/verify_recaptcha", {
+                recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
+                recaptcha_response_field: $('#recaptcha_response_field').val()
+            },
+            function(data) {
+                if (data.verified) {
+                    $("#upload").submit();
+                }
+                else {
+                    $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please Try again.</div");
+                    $(".failure").fadeOut(3000);
+                    Recaptcha.reload();
+                }
+            }
+        );
+    });
+}
 
 function playerMatchTables() {
     $('#matches').dataTable({
