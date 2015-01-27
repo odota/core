@@ -10,4 +10,3 @@ services:
 - redis-server
 env:
 - NODE_ENV=test
-script: "npm run travistest"
