@@ -14,8 +14,7 @@ import com.dota2.proto.Demo.CDemoFileInfo;
 import com.dota2.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import java.util.Iterator;
-//import java.util.*;
+import java.util.*;
 
 public class Main {
     public static final float INTERVAL = 60;
@@ -327,18 +326,19 @@ public class Main {
         //load epilogue
         CDemoFileInfo info = match.getFileInfo();
         //System.err.println(info);
-        //List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
-        //for (CPlayerInfo p : players) {
-        //    System.out.println(p.getPlayerName());
-        //}
+        List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
+        
         //build map for looking up slot of chat messages
         JSONObject name_to_slot = new JSONObject();
-        for (int i = 0;i<numPlayers;i++){
-            String replayName = info.getGameInfo().getDota().getPlayerInfo(i).getPlayerName();
-            name_to_slot.put(replayName, i);
+        
+        for (int i = 0;i<players.size();i++) {
+            String replayName = players.get(i).getPlayerName();
+            name_to_slot.put(replayName, i);        
         }
+        int match_id = info.getGameInfo().getDota().getMatchId();
+        System.err.println(match_id);
         System.err.println(name_to_slot);
-        doc.put("match_id", info.getGameInfo().getDota().getMatchId());
+        doc.put("match_id", match_id);
         doc.put("game_zero", gameZero);
         doc.put("game_end", gameEnd);
         doc.put("hero_to_slot", hero_to_slot);
