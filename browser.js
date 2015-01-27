@@ -9,7 +9,7 @@ var qtip = require('qtip2');
 $.qtip = qtip;
 //var dataTable = DataTable = require('datatables');
 //$.dataTable = dataTable;
-var constants = require('../../sources.json');
+var constants = require('./sources.json');
 var modes = constants.modes;
 var regions = constants.regions;
 var parse_status = constants.parse_status;
@@ -19,6 +19,7 @@ global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
+global.playerMatchTables = playerMatchTables;
 
 //run on each page
 $(document).ready(function() {
@@ -35,7 +36,7 @@ $(document).ready(function() {
         (i[r].q = i[r].q || []).push(arguments)
     }, i[r].l = 1 * new Date();
     a = s.createElement(o),
-    m = s.getElementsByTagName(o)[0];
+        m = s.getElementsByTagName(o)[0];
     a.async = 1;
     a.src = g;
     m.parentNode.insertBefore(a, m)
@@ -43,6 +44,21 @@ $(document).ready(function() {
 ga('create', 'UA-55757642-1', 'auto');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
+
+function playerMatchTables() {
+    $('#matches').dataTable({
+        "order": [
+            [0, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [1],
+            "orderData": [2]
+        }, {
+            "targets": [2],
+            visible: false
+        }]
+    });
+}
 
 function playerTables() {
     $('#teammates').dataTable({

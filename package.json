@@ -10,8 +10,8 @@
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
     "unnamed": "grunt unnamed",
-    "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
-    "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
+    "browserify": "browserify browser.js | uglifyjs > public/bundle.js",
+    "watchify": "watchify browser.js -o public/bundle.js --debug --verbose",
     "build": "mvn -q -f parser/pom.xml package && npm run constants && npm run browserify"
   },
   "repository": {

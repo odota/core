@@ -98,3 +98,8 @@ td {
 td>img.user {
     margin-right: .5em;
 }
+
+.attribVal{
+    color:#f5c433;
+    font-weight: bolder;
+}
