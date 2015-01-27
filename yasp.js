@@ -138,6 +138,10 @@ app.param('match_id', function(req, res, next, id) {
                             return next(new Error(err));
                         }
                         req.match = match;
+                        if (match.parsed_data) {
+                            queries.mergeMatchData(match, app.locals.constants);
+                            queries.generateGraphData(match, app.locals.constants);
+                        }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV === "production") {
                             redis.setex(id, 86400, JSON.stringify(match));
@@ -198,28 +202,25 @@ app.route('/matches').get(function(req, res) {
     });
 });
 app.route('/matches/:match_id/:info?').get(function(req, res, next) {
-    var info = req.params.info || "index";
     var match = req.match;
-    if (info !== "index" && !match.parsed_data) {
-        return next(new Error("match not parsed"));
-    }
-    var data;
-    if (info === "details") {
-        match = queries.mergeMatchData(match, app.locals.constants);
-    }
-    if (info === "graphs") {
-        data = queries.generateGraphData(match, app.locals.constants);
+    var info = req.params.info || "index";
+    //handle bad info
+    if (!matchPages[info]) {
+        return next(new Error("page not found"));
     }
     res.render(matchPages[info].template, {
         route: info,
         match: match,
         tabs: matchPages,
-        data: data,
         title: "Match " + match.match_id + " - YASP"
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
     var info = req.params.info || "index";
+    //handle bad info
+    if (!playerPages[info]) {
+        return next(new Error("page not found"));
+    }
     db.players.findOne({
         account_id: Number(req.params.account_id)
     }, function(err, player) {
@@ -250,16 +251,18 @@ app.route('/preferences').post(function(req, res) {
                 "dark_theme": req.body.dark === 'true' ? 1 : 0
             }
         }, function(err, user) {
-            if (err || !user) {
-                res.json({sync: false});
-            } else {
-                res.json({sync: true});
-            }
+            var success = !(err || !user);
+            res.json({
+                sync: success
+            });
         })
-    } else {
-        res.json({sync: false});
     }
-})
+    else {
+        res.json({
+            sync: false
+        });
+    }
+});
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
@@ -389,6 +392,16 @@ app.get('/stats', function(req, res, next) {
             parsed_matches: function(cb) {
                 db.matches.count({
                     parse_status: 2
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            parsed_matches_last_day: function(cb) {
+                db.matches.count({
+                    parse_status: 2,
+                    start_time: {
+                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                    }
                 }, function(err, res) {
                     cb(err, res);
                 });
