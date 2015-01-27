@@ -1,16 +1,48 @@
 var moment = require('moment');
 var async = require('async');
 var numeral = require('numeral');
+var d3 = require('d3');
+var c3 = require('c3');
+var CalHeatMap = require('cal-heatmap');
+var $ = jQuery = require('jquery');
+var qtip = require('qtip2');
+$.qtip = qtip;
+//var dataTable = DataTable = require('datatables');
+//$.dataTable = dataTable;
+var constants = require('./sources.json');
+var modes = constants.modes;
+var regions = constants.regions;
+var parse_status = constants.parse_status;
+
+//functions to call on demand
+global.generateCharts = generateCharts;
+global.generateCalHeatmap = generateCalHeatmap;
+global.matchTable = matchTable;
+global.playerTables = playerTables;
+
+//run on each page
 $(document).ready(function() {
     process();
     changeTheme();
     tooltips();
     buildMap();
 });
-global.generateCharts = generateCharts;
-global.generateCalHeatmap = generateCalHeatmap;
-global.matchTable = matchTable;
-global.playerTables = playerTables;
+
+//ga
+(function(i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function() {
+        (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+    m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+ga('create', 'UA-55757642-1', 'auto');
+ga('require', 'displayfeatures');
+ga('send', 'pageview');
 
 function playerTables() {
     $('#teammates').dataTable({
@@ -246,6 +278,10 @@ function tooltips() {
         },
         style: "qtip-dark"
     });
+    $('[title]').qtip({
+        style: "qtip-dark"
+    });
+
 }
 
 function buildMap() {

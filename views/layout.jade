@@ -25,23 +25,13 @@ html
     
     //- Stylesheets
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     style
       include ../public/css/yasp.css
     if (user && user.dark_theme)
       style
         include ../public/css/dark.css
-    //constants
-    script.
-      var modes = !{JSON.stringify(constants.modes)};
-      var regions = !{JSON.stringify(constants.regions)};
-      var parse_status = !{JSON.stringify(constants.parse_status)};
-    script(src='//code.jquery.com/jquery-2.1.1.min.js')
-    script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
-    script
-      include ../public/js/ga.js
-      include ../public/js/bundle.js
     block head
     
   body
@@ -102,4 +92,5 @@ html
                <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+        script(src="/public/js/bundle.js")
         block footer_assets

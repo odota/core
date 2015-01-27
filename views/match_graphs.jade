@@ -26,7 +26,7 @@ append content
           h1 This match has no parsed data
           
 block footer_assets
-  include assets/c3
+  link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.css')
   script.
     var graphData = !{JSON.stringify(match.graphData)}
     generateCharts(graphData);
