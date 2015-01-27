@@ -49,15 +49,4 @@ block playercontent
 block footer_assets
   include assets/datatables
   script.
-     $('#matches').dataTable({
-        "order": [
-            [0, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
-        }, {
-            "targets": [2],
-            visible: false
-        }]
-      });
+    playerMatchTables()
