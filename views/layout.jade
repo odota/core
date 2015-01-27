@@ -26,60 +26,71 @@ html
     //- Stylesheets
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     style
       include ../public/css/yasp.css
-      
-    //- JS
-    script(src='//code.jquery.com/jquery-2.1.1.min.js')
-    script
-      include ../public/js/ga.js
-    
+    if (user && user.dark_theme)
+      style
+        include ../public/css/dark.css
     block head
     
   body
-     nav.navbar.navbar-default
-      .container
-        .navbar-header
-          a(href='/', class = 'navbar-brand') YASP
-        ul.nav.navbar-nav
-          li
-            a(href="/matches") Matches
-          li
-            a(href="/players") Players
-        if (user)
-          ul.nav.navbar-nav.navbar-right
+     .sticky_footer_row
+       nav.navbar.navbar-default
+        .container
+          .navbar-header
+            a(href='/', class = 'navbar-brand') <strong>YASP</strong>
+          ul.nav.navbar-nav
             li
-              a(href="/players/"+user.account_id)=user.personaname
-     .container
+              a(href="/matches") Matches
+            li
+              a(href="/blog") Blog
+          if user
+            ul.nav.navbar-nav.navbar-right
+              li
+                a(href="/upload") Upload
+              li
+                a(href="/players/"+user.account_id)=user.personaname
+              li
+                a(href="/logout") Logout
+     .sticky_footer_row.expand
+      .container
+       if banner_msg
+         .alert.alert-success(role="alert") !{banner_msg}
+       if user && user.track===0
+           .alert.alert-warning(role="alert") !{constants.untracked_msg}
+       if login_req_msg
+           .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
        if !error
         include ads/leaderboard
        block content
-       
-     footer.footer(style="background-color: #BBF0FD; color: #777;\
-                    width: 100%; padding: 1.5em; margin-top: 2em;\
-                    font-size: .8em;")
-      .container
-        .row
-          .col-md-4.text-center
-           p.
-            Dota 2, Dota 2 related images, and all that other stuff belongs to 
-            <a href='http://store.steampowered.com/', target="_blank"> Valve</a>. <br>
-            We use Google Adwords and Analytics. They might be using some 
-            <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
-            cookies</a>.
-            We also use cookies for sessions.
-          .col-md-4.text-center(style="font-size: 1.2em;")
-            p.
-              &copy; YASP 2015. If that means anything. <br>
-              Built from apathy, boredom, and procrastination. <br>
-              Comments, suggestions? 
-              <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
-              Thanks!
-          .col-md-4.text-center
-           p.
-             <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
-             Match parsing powered by
-             <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
-             Source code can be found on 
-             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
-      block footer_assets
+     .sticky_footer_row
+      footer.footer(style="color: #777;\
+                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;\
+                      font-size: .8em;")
+        .container
+          .row
+            .col-md-4.text-center
+             p.
+              Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
+              We use Google AdSense and Analytics. They might be using some 
+              <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
+              cookies</a>.
+              We also use cookies for sessions.
+            .col-md-4.text-center(style="font-size: 1.2em;")
+              p.
+                &copy; YASP #{moment().get('year')}. If that means anything. <br>
+                Built from apathy, boredom, and procrastination. <br>
+                Comments, suggestions? 
+                <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
+                Thanks! <br>
+                <a href="/stats"> Stats for nerds </a>
+            .col-md-4.text-center
+             p.
+               <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
+               Match parsing powered by
+               <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
+               Source code can be found on 
+               <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+        script(src="/public/bundle.js")
+        block footer_assets

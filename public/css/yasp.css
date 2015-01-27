@@ -64,3 +64,42 @@ td.abilities img {
 .icon {
     width:15px;
 }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+footer {
+    background-color: #BBF0FD;
+}
+
+.sticky_footer_row {
+    display: table-row;
+    height: 1px;
+}
+
+.sticky_footer_row.expand {
+    height: auto;
+}
+
+td {
+    vertical-align: middle !important;
+}
+
+
+td>img.user {
+    margin-right: .5em;
+}
+
+.attribVal{
+    color:#f5c433;
+    font-weight: bolder;
+}

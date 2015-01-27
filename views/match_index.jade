@@ -26,8 +26,12 @@ append content
           each player, i in match.players
            tr(class = player.player_slot<64 ? "success" : "danger")
              td
+               if (player["track"])
+                 img.user(src='/public/images/favicon-16x16.png', title="YASP User")
                if (player.account_id == constants.anonymous_account_id)
                  ="Anonymous"
+               else if (!player.account_id)
+                 ="Bot"
                else
                  a(href='/players/#{player.account_id}')= player.personaname || player.account_id
              - var hero = constants.heroes[player.hero_id]
@@ -92,12 +96,6 @@ append content
     .col-md-6
       include ads/skyscraper
       
-block footer_assets
-  link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-  script(src='//cdn.jsdelivr.net/momentjs/latest/moment.min.js')
-  script(src='//cdn.rawgit.com/adamwdraper/Numeral-js/master/numeral.js')
-  script(src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.js')
-  script
-    include ../public/js/yasp.js
-  script
-    include ../public/js/map.js
+append footer_assets
+  script.
+    buildMap();

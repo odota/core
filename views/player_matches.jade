@@ -31,8 +31,8 @@ block playercontent
             img(src=hero.img, title=hero.localized_name)
           else
             =match.players[match.slot].hero_id
-        td= hero ? hero.localized_name : hero.id
-        td= match.player_win ? "WIN" : "LOSS"
+        td= hero ? hero.localized_name : "unknown hero"
+        td= match.player_win ? "Won" : "Lost"
         td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
         td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
         td= moment.unix(match.start_time + match.duration).fromNow()
@@ -49,15 +49,4 @@ block playercontent
 block footer_assets
   include assets/datatables
   script.
-     $('#matches').dataTable({
-        "order": [
-            [0, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
-        }, {
-            "targets": [2],
-            visible: false
-        }]
-      });
+    playerMatchTables()

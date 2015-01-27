@@ -14,30 +14,35 @@ block content
       table.table.table-condensed
         thead
           tr
+            td
+              abbr(title=constants.tooltips.status) Status
             td Game Mode
             td Region
             td Duration
             td Result
             td Played
-            td Status
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
+            td= constants.parse_status[match.parse_status]
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-            td= constants.parse_status[match.parse_status]
-  if match.parsed_data
-    .row
+  .row
       .col-md-10
-        ul.nav.nav-tabs
-          each val, key in tabs
-            li(class= (route == key ? 'active' : ''))
-                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+        if match.parsed_data
+          ul.nav.nav-tabs
+            each val, key in tabs
+              li(class= (route == key ? 'active' : ''))
+                  a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+        else
+          .alert.alert-warning(role="alert") 
+            | <strong>Have this replay?</strong> 
+            a(href="/upload") Upload it 
+            | and we'll parse it for you.
       .col-md-2
         .addthis_sharing_toolbox.pull-right
-  else
-    .row
-      .addthis_sharing_toolbox.pull-right
-  script(type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5" async="async")
+
+block footer_assets
+  script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")

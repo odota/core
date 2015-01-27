@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+- '0.10'
+notifications:
+  email:
+  - howardc93@gmail.com
+  - aqc2109@columbia.edu
+services:
+- mongodb
+- redis-server
+env:
+- NODE_ENV=test
