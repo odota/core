@@ -210,7 +210,7 @@ describe("parser", function() {
 });
 
 describe("web", function() {
-    var wait = 5000;
+    var wait = 7000;
     this.timeout(wait);
     describe("/", function() {
         before(function(done) {
