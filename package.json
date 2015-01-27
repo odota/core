@@ -3,9 +3,9 @@
   "description": "Yet Another (Dota) Stats Page",
   "version": "1.2.19",
   "scripts": {
-    "start": "node worker.js & node parser.js & node web.js",
-    "test": "mocha",
-    "travistest": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "start": "node worker.js & node parser.js & node retriever.js & node web.js",
+    "test": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "mocha": "mocha",
     "unparsed": "grunt unparsed",
     "constants": "grunt constants",
     "fullhistory": "grunt fullhistory",
@@ -51,7 +51,9 @@
     "c3": "~0.4.9",
     "cal-heatmap": "~3.5.1",
     "qtip2": "~2.2.0",
-    "uglify-js": "~2.4.16"
+    "uglify-js": "~2.4.16",
+    "steam": "~0.6.7",
+    "dota2": "~0.6.2"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.13",

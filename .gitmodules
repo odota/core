@@ -1,6 +1,0 @@
-[submodule "parser"]
-	path = parser
-	url = https://github.com/yasp-dota/parser.git
-[submodule "retriever"]
-	path = retriever
-	url = https://github.com/yasp-dota/retriever.git

@@ -29,12 +29,6 @@ Deployment
 * Build: `npm run build`
 * Start YASP: `npm start`
 
-Retriever
-====
-* YASP requires a running retriever to fetch replay salts.
-* Create retriever .env file, see `retriever/.env_example`
-* Install its dependencies and start: `cd retriever && npm install && npm start`
-
 Tests
 ====
-* Mocha tests: `npm test`
+* Mocha: `npm test`

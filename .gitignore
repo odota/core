@@ -11,6 +11,7 @@ output.json
 uploads
 coverage
 bundle.js
+.bundle.js
 constants.json
 parser/target
 !test/*
