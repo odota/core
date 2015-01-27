@@ -9,7 +9,7 @@ var qtip = require('qtip2');
 $.qtip = qtip;
 //var dataTable = DataTable = require('datatables');
 //$.dataTable = dataTable;
-var constants = require('./sources.json');
+var constants = require('../../sources.json');
 var modes = constants.modes;
 var regions = constants.regions;
 var parse_status = constants.parse_status;
