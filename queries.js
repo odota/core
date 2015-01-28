@@ -133,47 +133,6 @@ function generateGraphData(match, constants) {
     return match;
 }
 
-function fillPlayerInfo(player, cb) {
-    getMatchesByPlayer(player.account_id, function(err, matches) {
-        if (err) {
-            return cb(err);
-        }
-        var account_id = player.account_id;
-        var counts = {};
-        var against = {};
-        var together = {};
-
-        for (var i = 0; i < matches.length; i++) {
-            //compute top teammates/heroes
-            for (j = 0; j < matches[i].players.length; j++) {
-                var tm = matches[i].players[j];
-                var tm_hero = tm.hero_id;
-                if (isRadiant(tm) === playerRadiant) { //teammates of player
-                    if (!counts[tm.account_id]) {
-                        counts[tm.account_id] = {
-                            account_id: tm.account_id,
-                            win: 0,
-                            lose: 0,
-                            games: 0
-                        };
-                    }
-                    counts[tm.account_id].games += 1;
-                    matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
-                }
-                //add to hero matchups
-            }
-        }
-        player.teammates = [];
-        for (var id in counts) {
-            var count = counts[id];
-            player.teammates.push(count);
-        }
-        fillPlayerNames(player.teammates, function(err) {
-            cb(err);
-        });
-    });
-}
-
 function fillPlayerNames(players, cb) {
     async.mapSeries(players, function(player, cb) {
         db.players.findOne({
@@ -194,6 +153,5 @@ function fillPlayerNames(players, cb) {
 module.exports = {
     fillPlayerNames: fillPlayerNames,
     mergeMatchData: mergeMatchData,
-    generateGraphData: generateGraphData,
-    fillPlayerInfo: fillPlayerInfo
+    generateGraphData: generateGraphData
 };
