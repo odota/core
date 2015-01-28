@@ -168,7 +168,7 @@ function downloadReplayData(job, url, cb) {
     }).pipe(fs.createWriteStream(archiveName));
     r.on('error', function(err) {
         return cb(err);
-    })
+    });
     r.on('finish', function() {
         var t2 = new Date().getTime();
         logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
@@ -182,7 +182,7 @@ function downloadReplayData(job, url, cb) {
             logger.info("[PARSER] %s, decomp time: %s", match_id, (t3 - t2) / 1000);
             return parseReplay(job, fileName, cb);
         });
-    })
+    });
 }
 
 function parseReplay(job, input, cb) {

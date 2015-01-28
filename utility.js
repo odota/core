@@ -233,9 +233,7 @@ function getData(url, cb) {
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
                 logger.info("retrying getData: %s", target);
-                return setTimeout(function() {
-                    getData(url, cb);
-                }, 1000);
+                cb("retrying getData");
             }
             logger.info("got data: %s", url);
             if (body.result) {
@@ -247,10 +245,8 @@ function getData(url, cb) {
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
-                    return setTimeout(function() {
-                        getData(url, cb);
-                    }, 1000);
+                    logger.info("retrying getData: %s", target);
+                    cb("retrying getData");
                 }
             }
             //generic valid response

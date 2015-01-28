@@ -250,7 +250,7 @@ function updateSummaries(cb) {
 function untrackPlayers(cb) {
     db.players.update({
         last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
+            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 5, 'days').toDate()
         }
     }, {
         $set: {
