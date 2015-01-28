@@ -21,11 +21,13 @@ function getFullMatchHistory(done) {
     var match_ids = {};
 
     db.players.find({
-        track: 1
+        full_history: 0
     }, function(err, players) {
         if (err) {
             return done(err);
         }
+        //only do one per pass
+        players = players.slice(0, 1);
         //find all the matches to add to kue
         async.mapSeries(players, collectorFunc, function(err) {
             if (err) {
@@ -46,8 +48,24 @@ function getFullMatchHistory(done) {
                     cb(err);
                 });
             }, function(err) {
-                //added all requested matches to kue
-                done(err);
+                if (err) {
+                    return done(err);
+                }
+                //update full_history field
+                async.mapSeries(players, function(player, cb) {
+                    db.players.update({
+                        account_id: player.account_id
+                    }, {
+                        $set: {
+                            full_history: 2
+                        }
+                    }, function(err) {
+                        console.log("got full match history for %s", player.account_id);
+                        cb(err);
+                    });
+                }, function(err) {
+                    done(err);
+                });
             });
         });
     });
