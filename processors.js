@@ -44,8 +44,11 @@ function processParse(job, cb) {
                 fs.unlinkSync(job2.data.fileName);
             }
             //queue job for api to make sure it's in db
-            //todo do we want to add uploader/file information to this job?
-            queueReq("api_details", job2.data.payload, function(err) {
+            queueReq("api_details", job2.data.payload, function(err, apijob) {
+                if (apijob) {
+                    apijob.data.uploader = job2.data.uploader;
+                    apijob.update();
+                }
                 cb(err);
             });
         }
@@ -194,6 +197,8 @@ function parseReplay(job, input, cb) {
         }
         var t4 = new Date().getTime();
         logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
+        job.data.payload.match_id = output.match_id;
+        job.data.payload.parsed_data = output;
         db.matches.update({
             match_id: output.match_id
         }, {
@@ -202,8 +207,6 @@ function parseReplay(job, input, cb) {
                 parse_status: 2
             }
         }, function(err) {
-            job.data.payload.match_id = output.match_id;
-            job.data.payload.parsed_data = output;
             cb(err, job);
         });
     });

@@ -232,21 +232,21 @@ function getData(url, cb) {
             json: true
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying getData: %s", target);
-                cb("retrying getData");
+                logger.info("retrying: %s", target);
+                getData(url, cb);
             }
             logger.info("got data: %s", url);
             if (body.result) {
                 //steam api response
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
+                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
                     //user does not have stats enabled or attempting to get private match, don't retry
                     logger.info(body);
                     return cb(body);
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("retrying getData: %s", target);
-                    cb("retrying getData");
+                    logger.info("invalid data: %s", target);
+                    cb("invalid data");
                 }
             }
             //generic valid response
