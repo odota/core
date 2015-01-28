@@ -36,9 +36,11 @@ function mergeMatchData(match, constants) {
         var primary = key;
         if (constants.hero_names[key]) {
             //is a hero
+            //merging multiple heroes together, only occurs in ARDM
+            //doesn't work for 1v1, but ARDM is only played with 10 players
             var hero_id = constants.hero_names[key].id;
             var slot = match.parsed_data.hero_to_slot[hero_id];
-            if (slot) {
+            if (match.players[slot]) {
                 var primary_id = match.players[slot].hero_id;
                 primary = constants.heroes[primary_id].name;
                 //build hero_ids for each player
@@ -90,6 +92,11 @@ function getAssociatedHero(unit, heroes) {
 }
 
 function generateGraphData(match, constants) {
+    var oneVone = (match.players.length === 2);
+    if (oneVone) {
+        //rebuild parsed data players array if 1v1 match
+        match.parsed_data.players = [match.parsed_data.players[0], match.parsed_data.players[5]];
+    }
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -117,7 +124,7 @@ function generateGraphData(match, constants) {
         lh: [time]
     };
     match.parsed_data.players.forEach(function(elem, i) {
-        var hero = constants.heroes[match.players[i].hero_id].localized_name;
+        var hero = constants.heroes[match.players[i].hero_id].localized_name + (oneVone ? " - " + match.players[i].personaname : "");
         data.gold.push([hero].concat(elem.gold));
         data.xp.push([hero].concat(elem.xp));
         data.lh.push([hero].concat(elem.lh));
@@ -133,35 +140,14 @@ function fillPlayerInfo(player, cb) {
         }
         var account_id = player.account_id;
         var counts = {};
-        var heroes = {};
-        player.calheatmap = {};
+        var against = {};
+        var together = {};
+
         for (var i = 0; i < matches.length; i++) {
-            //add start time to data for cal-heatmap
-            player.calheatmap[matches[i].start_time] = 1;
-            //compute top heroes
-            for (var j = 0; j < matches[i].players.length; j++) {
-                var p = matches[i].players[j];
-                if (p.account_id === account_id) {
-                    //find the "main" player's id
-                    var playerRadiant = isRadiant(p);
-                    matches[i].player_win = (playerRadiant === matches[i].radiant_win);
-                    matches[i].slot = j;
-                    matches[i].player_win ? player.win += 1 : player.lose += 1;
-                    player.games += 1;
-                    if (!heroes[p.hero_id]) {
-                        heroes[p.hero_id] = {
-                            games: 0,
-                            win: 0,
-                            lose: 0
-                        };
-                    }
-                    heroes[p.hero_id].games += 1;
-                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
-                }
-            }
-            //compute top teammates
+            //compute top teammates/heroes
             for (j = 0; j < matches[i].players.length; j++) {
                 var tm = matches[i].players[j];
+                var tm_hero = tm.hero_id;
                 if (isRadiant(tm) === playerRadiant) { //teammates of player
                     if (!counts[tm.account_id]) {
                         counts[tm.account_id] = {
@@ -174,20 +160,14 @@ function fillPlayerInfo(player, cb) {
                     counts[tm.account_id].games += 1;
                     matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
                 }
+                //add to hero matchups
             }
         }
         player.teammates = [];
         for (var id in counts) {
             var count = counts[id];
-            if (id == account_id) {
-                player.win = count.win;
-                player.lose = count.lose;
-                player.games = count.games;
-            }
             player.teammates.push(count);
         }
-        player.matches = matches;
-        player.heroes = heroes;
         fillPlayerNames(player.teammates, function(err) {
             cb(err);
         });
@@ -211,29 +191,9 @@ function fillPlayerNames(players, cb) {
     });
 }
 
-function getMatchesByPlayer(account_id, cb) {
-    var search = {};
-    if (account_id) {
-        search.players = {
-            $elemMatch: {
-                account_id: account_id
-            }
-        };
-    }
-    db.matches.find(search, {
-        sort: {
-            match_id: -1
-        }
-    }, function(err, docs) {
-        cb(err, docs);
-    });
-}
-
-
 module.exports = {
     fillPlayerNames: fillPlayerNames,
-    getMatchesByPlayer: getMatchesByPlayer,
     mergeMatchData: mergeMatchData,
     generateGraphData: generateGraphData,
     fillPlayerInfo: fillPlayerInfo
-}
+};

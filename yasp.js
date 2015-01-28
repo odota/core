@@ -46,6 +46,10 @@ var playerPages = {
     matches: {
         template: "player_matches",
         name: "Matches"
+    },
+    matchups: {
+        template: "player_stats",
+        name: "Statistics"
     }
 };
 app.set('views', path.join(__dirname, 'views'));
@@ -216,29 +220,74 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
+    var account_id = Number(req.params.account_id);
     var info = req.params.info || "index";
     //handle bad info
     if (!playerPages[info]) {
         return next(new Error("page not found"));
     }
     db.players.findOne({
-        account_id: Number(req.params.account_id)
+        account_id: account_id
     }, function(err, player) {
         if (err || !player) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerInfo(player, function(err) {
-                if (err) {
-                    return next(new Error(err));
-                }
-                res.render(playerPages[info].template, {
-                    route: info,
-                    player: player,
-                    tabs: playerPages,
-                    title: (player.personaname || player.account_id) + " - YASP"
-                });
-            });
+            db.matches.find({
+                    'players.account_id': account_id
+                }, {
+                    'players.$': 1
+                }, function(err, matches) {
+                    player.win = 0;
+                    player.lose = 0;
+                    player.games = 0;
+                    var heroes = {};
+                    player.calheatmap = {};
+                    for (var i = 0; i < matches.length; i++) {
+                        //add start time to data for cal-heatmap
+                        player.calheatmap[matches[i].start_time] = 1;
+                        for (var j = 0; j < matches[i].players.length; j++) {
+                            var p = matches[i].players[j];
+                            if (p.account_id === player.account_id) {
+                                matches[i].slot = j;
+                                var playerRadiant = utility.isRadiant(p);
+                                matches[i].player_win = (playerRadiant === matches[i].radiant_win); //did the player win?
+                                player.games += 1;
+                                matches[i].player_win ? player.win += 1 : player.lose += 1;
+                                if (!heroes[p.hero_id]) {
+                                    heroes[p.hero_id] = {
+                                        games: 0,
+                                        win: 0,
+                                        lose: 0
+                                    };
+                                }
+                                heroes[p.hero_id].games += 1;
+                                matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+                            }
+                        }
+                    }
+                    player.matches = matches;
+                    player.heroes = heroes;
+                    res.render(playerPages[info].template, {
+                        route: info,
+                        player: player,
+                        tabs: playerPages,
+                        title: (player.personaname || player.account_id) + " - YASP"
+                    });
+                })
+                //tab1
+                //project matches
+                //count win/loss
+                //count heroes played
+                //tab2
+                //project matches
+                //display this particular player's performance
+                //tab3
+                //get matches full
+                //compute teammates, fill names
+                //compute hero matchups
+                //game length distribution
+                //queries.computeStatistics(player, function(err){});
         }
     });
 });
