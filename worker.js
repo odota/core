@@ -28,7 +28,7 @@ function clearActiveJobs(cb) {
                     return cb(err);
                 }
                 if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
-                    logger.info("[BACKEND] unstuck job %s", id);
+                    logger.info("unstuck job %s", id);
                     job.inactive();
                 }
                 cb(err);
