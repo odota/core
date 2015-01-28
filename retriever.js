@@ -127,5 +127,5 @@ setTimeout(function() {
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;
     var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
+    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });

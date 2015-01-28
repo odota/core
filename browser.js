@@ -20,7 +20,7 @@ global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
 global.playerMatchTables = playerMatchTables;
-global.upload = upload;
+global.uploadReplay = uploadReplay;
 global.buildMap = buildMap;
 
 //run on each page
@@ -46,7 +46,7 @@ ga('create', 'UA-55757642-1', 'auto');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
 
-function upload() {
+function uploadReplay() {
     $("#button").click(function(event) {
         event.preventDefault();
         $.post(
