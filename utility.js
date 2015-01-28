@@ -231,7 +231,7 @@ function getData(url, cb) {
             json: true
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying getData: %s", url);
+                logger.info("retrying getData: %s", target);
                 return setTimeout(function() {
                     getData(url, cb);
                 }, 1000);
