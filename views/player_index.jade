@@ -10,7 +10,7 @@ block playercontent
             td Win Rate
         tbody
           tr
-            td #{player.win || match.slot}-#{player.lose || match.slot}
+            td #{player.win}-#{player.lose}
             td #{(player.win/player.games*100).toFixed(2) || 0.00}%  
   .row
     .col-md-12
@@ -72,7 +72,8 @@ block playercontent
             td #{entry ? entry.games : 0}
             td #{entry ? entry.win : 0}
             td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
-   include ads/skyscraper
-   script.
-     var calData = !{JSON.stringify(player.calheatmap)}
-     generateCalHeatmap(calData);
+  include ads/skyscraper
+  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
+  script.
+    var calData = !{JSON.stringify(player.calheatmap)}
+    generateCalHeatmap(calData);
