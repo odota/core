@@ -384,7 +384,7 @@ describe("web", function() {
 });
 
 describe("parser", function() {
-    this.timeout(45000);
+    this.timeout(60000);
     it('parse match (file)', function(done) {
         var job = {
             match_id: 115178218,

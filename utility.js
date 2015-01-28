@@ -233,7 +233,7 @@ function getData(url, cb) {
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
                 logger.info("retrying: %s", target);
-                getData(url, cb);
+                return getData(url, cb);
             }
             logger.info("got data: %s", url);
             if (body.result) {
@@ -245,8 +245,8 @@ function getData(url, cb) {
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("invalid data: %s", target);
-                    cb("invalid data");
+                    logger.info("invalid data: %s, %s", target, body);
+                    return cb("invalid data");
                 }
             }
             //generic valid response

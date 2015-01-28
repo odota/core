@@ -364,8 +364,8 @@ app.route('/preferences').post(function(req, res) {
             $set: {
                 "dark_theme": req.body.dark === 'true' ? 1 : 0
             }
-        }, function(err, user) {
-            var success = !(err || !user);
+        }, function(err, num) {
+            var success = !(err || !num);
             res.json({
                 sync: success
             });
@@ -454,6 +454,25 @@ app.route('/upload')
             recaptcha_form: recaptcha.toHTML(),
         });
     });
+app.route('/fullhistory').post(function(req, res) {
+    if (!req.user) {
+        return res.json({
+            error: "not signed in"
+        });
+    }
+    db.players.update({
+        account_id: req.user.account_id
+    }, {
+        $set: {
+            full_history: 0
+        }
+    }, function(err, num) {
+        var error = (err || !num);
+        res.json({
+            error: error
+        });
+    });
+});
 app.get('/stats', function(req, res, next) {
     async.parallel({
             matches: function(cb) {
@@ -527,6 +546,20 @@ app.get('/stats', function(req, res, next) {
                     cb(err, res);
                 });
             },
+            queued_full_history: function(cb) {
+                db.players.count({
+                    full_history: 0
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            obtained_full_history: function(cb) {
+                db.players.count({
+                    full_history: 2
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            }
         },
         function(err, results) {
             if (err) {
