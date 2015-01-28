@@ -1,20 +1,24 @@
 extend player
 
 block playercontent
-  h3 Activity
-  p
-    button.btn.btn-default#prev <
-    button.btn.btn-default#next >
-  div#cal-heatmap
-  table.table.table-condensed
-    thead
-      tr
-        td Record
-        td Win Rate
-    tbody
-      tr
-        td #{player.win || match.slot}-#{player.lose || match.slot}
-        td #{(player.win/player.games*1match.slotmatch.slot).toFixed(2) || match.slot.match.slotmatch.slot}%  
+  .row
+    .col-md-6
+      table.table.table-condensed
+        thead
+          tr
+            td Record
+            td Win Rate
+        tbody
+          tr
+            td #{player.win || match.slot}-#{player.lose || match.slot}
+            td #{(player.win/player.games*100).toFixed(2) || 0.00}%  
+  .row
+    .col-md-12
+      h3 Activity
+      p
+        button.btn.btn-default#prev <
+        button.btn.btn-default#next >
+      div#cal-heatmap
   .row
     .col-md-7
       h3 Recent Matches
@@ -57,7 +61,6 @@ block playercontent
             th Hero Name
             th Games
             th Wins
-            th Losses
             th Winrate
         each hero in constants.heroes
           tr
@@ -66,14 +69,10 @@ block playercontent
             td 
               =hero.localized_name
             - var entry = player.heroes[hero.id]
-            td #{entry ? entry.games : match.slot}
-            td #{entry ? entry.win : match.slot}
-            td #{entry ? entry.lose : match.slot}
-            td #{entry ? (1match.slotmatch.slot*entry.win/entry.games).toFixed(2) : match.slot.match.slotmatch.slot}%      
+            td #{entry ? entry.games : 0}
+            td #{entry ? entry.win : 0}
+            td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
    include ads/skyscraper
-            
-block footer_assets
-  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
-  script.
-    var calData = !{JSON.stringify(player.calheatmap)}
-    generateCalHeatmap(calData);
+   script.
+     var calData = !{JSON.stringify(player.calheatmap)}
+     generateCalHeatmap(calData);
