@@ -275,7 +275,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     }
                 }
 
-                while (arr[arr.length - 1] === 0) { // While the lest element is a 0,
+                while (arr[arr.length - 1] === 0) { // While the last element is a 0,
                     arr.pop(); // Remove that last element
                 }
                 player.durations = arr;

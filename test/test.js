@@ -21,7 +21,10 @@ var fs = require('fs');
 
 var wait = 10000;
 Zombie.localhost('localhost', process.env.PORT);
-var browser = new Zombie({maxWait: wait, runScripts:false});
+var browser = new Zombie({
+    maxWait: wait,
+    runScripts: false
+});
 
 //fake retriever response
 nock('http://localhost:5100')
@@ -293,6 +296,26 @@ describe("web", function() {
         });
         it('should 200', function(done) {
             browser.assert.status(200);
+            done();
+        });
+        it('should have 0-1 record', function(done) {
+            browser.assert.text('td', /0-1/);
+            done();
+        });
+    });
+    describe("/players/:valid (no matches)", function() {
+        before(function(done) {
+            browser.visit('/players/99999');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should have 0-0 record', function(done) {
+            browser.assert.text('td', /0-0/);
             done();
         });
     });
