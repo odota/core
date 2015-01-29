@@ -175,6 +175,7 @@ function unparsed(done) {
                 cb(err);
             });
         }, function(err) {
+            console.log("added %s matches to parse queue", i);
             done(err, i);
         });
     });
@@ -264,6 +265,7 @@ function updateSummaries(cb) {
                 cb(null);
             }
         }, function(err) {
+            console.log("updated %s users", i);
             cb(err, i);
         });
     });
