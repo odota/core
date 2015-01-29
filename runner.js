@@ -9,6 +9,5 @@ var functionMap = {
     "unparsed": tasks.unparsed
 };
 functionMap[args[0]](function(err, res) {
-    console.log(err, res);
     process.exit(err);
 });
