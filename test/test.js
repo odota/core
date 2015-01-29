@@ -610,7 +610,6 @@ describe("parser", function() {
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            console.log(job.data.payload);
             processors.processParse(job, function(err) {
                 assert(err);
                 console.log(err);
