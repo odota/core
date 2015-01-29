@@ -20,6 +20,7 @@ var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
 db.get('matches').index('match_id', {
     unique: true
 });
+db.get('matches').index('players.account_id');
 db.get('players').index('account_id', {
     unique: true
 });
@@ -231,25 +232,21 @@ function getData(url, cb) {
             json: true
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying getData: %s", url);
-                return setTimeout(function() {
-                    getData(url, cb);
-                }, 1000);
+                logger.info("retrying: %s", target);
+                getData(url, cb);
             }
             logger.info("got data: %s", url);
             if (body.result) {
                 //steam api response
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails") {
+                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
                     //user does not have stats enabled or attempting to get private match, don't retry
                     logger.info(body);
                     return cb(body);
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("retrying getData: %s, %s, %s", err, res.statusCode, url);
-                    return setTimeout(function() {
-                        getData(url, cb);
-                    }, 1000);
+                    logger.info("invalid data: %s", target);
+                    cb("invalid data");
                 }
             }
             //generic valid response
