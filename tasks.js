@@ -252,7 +252,7 @@ function updateSummaries(cb) {
         async.map(docs, function(player, cb) {
             arr.push(player);
             i += 1;
-            if (arr.length >= 100 || docs[i + 1]) {
+            if (arr.length >= 100 || !docs[i + 1]) {
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr

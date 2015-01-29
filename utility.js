@@ -34,9 +34,11 @@ var jobs = kue.createQueue({
 });
 jobs.promote();
 var transports = [];
-transports.push(new(winston.transports.Console)({
-    'timestamp': true
-}));
+if (process.env.NODE_ENV !== "test") {
+    transports.push(new(winston.transports.Console)({
+        'timestamp': true
+    }));
+}
 var logger = new(winston.Logger)({
     transports: transports
 });
