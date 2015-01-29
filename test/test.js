@@ -459,7 +459,8 @@ describe("parser", function() {
     it('parse local replay', function(done) {
         var job = {
             match_id: 1193091757,
-            start_time: moment().format('X')
+            start_time: moment().format('X'),
+            fileName: __dirname + "/1193091757.dem"
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
