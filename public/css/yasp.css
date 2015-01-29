@@ -29,7 +29,10 @@ h3 img {
     width: 35px;
 }
 .kill {
-    width: 35px;
+    width: 40px;
+}
+.dmg {
+    width: 40px;
 }
 td.abilities {
     padding: 8px 1px !important;

@@ -361,7 +361,7 @@ describe("web", function() {
 });
 
 describe("parser", function() {
-    this.timeout(40000);
+    this.timeout(45000);
     it('parse match (file)', function(done) {
         var job = {
             match_id: 115178218,
