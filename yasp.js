@@ -46,6 +46,10 @@ var playerPages = {
     matches: {
         template: "player_matches",
         name: "Matches"
+    },
+    stats: {
+        template: "player_stats",
+        name: "Statistics"
     }
 };
 app.set('views', path.join(__dirname, 'views'));
@@ -216,29 +220,139 @@ app.route('/matches/:match_id/:info?').get(function(req, res, next) {
     });
 });
 app.route('/players/:account_id/:info?').get(function(req, res, next) {
+    var account_id = Number(req.params.account_id);
     var info = req.params.info || "index";
     //handle bad info
     if (!playerPages[info]) {
         return next(new Error("page not found"));
     }
     db.players.findOne({
-        account_id: Number(req.params.account_id)
+        account_id: account_id
     }, function(err, player) {
         if (err || !player) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerInfo(player, function(err) {
-                if (err) {
-                    return next(new Error(err));
+            db.matches.find({
+                'players.account_id': account_id
+            }, {
+                sort: {
+                    match_id: -1
                 }
-                res.render(playerPages[info].template, {
-                    route: info,
-                    player: player,
-                    tabs: playerPages,
-                    title: (player.personaname || player.account_id) + " - YASP"
+            }, function(err, matches) {
+                player.win = 0;
+                player.lose = 0;
+                player.games = 0;
+                var heroes = {};
+                player.calheatmap = {};
+                var arr = Array.apply(null, new Array(300)).map(Number.prototype.valueOf, 0);
+
+                for (var i = 0; i < matches.length; i++) {
+                    //add start time to data for cal-heatmap
+                    player.calheatmap[matches[i].start_time] = 1;
+                    var mins = Math.floor(matches[i].duration / 60);
+                    arr[mins] += 1;
+                    for (var j = 0; j < matches[i].players.length; j++) {
+                        var p = matches[i].players[j];
+                        if (p.account_id === player.account_id) {
+                            matches[i].slot = j;
+                            matches[i].playerRadiant = utility.isRadiant(p);
+                            matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
+                            //count win/loss
+                            player.games += 1;
+                            matches[i].player_win ? player.win += 1 : player.lose += 1;
+                            //count heroes played
+                            if (!heroes[p.hero_id]) {
+                                heroes[p.hero_id] = {
+                                    games: 0,
+                                    win: 0,
+                                    lose: 0
+                                };
+                            }
+                            heroes[p.hero_id].games += 1;
+                            matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+                        }
+                    }
+                }
+
+                while (arr[arr.length - 1] === 0) { // While the last element is a 0,
+                    arr.pop(); // Remove that last element
+                }
+                player.durations = arr;
+
+                var counts = {};
+                var against = {};
+                var together = {};
+                for (var i = 0; i < matches.length; i++) {
+                    for (j = 0; j < matches[i].players.length; j++) {
+                        var tm = matches[i].players[j];
+                        var tm_hero = tm.hero_id;
+                        if (utility.isRadiant(tm) === matches[i].playerRadiant) {
+                            //count teammate players
+                            if (!counts[tm.account_id]) {
+                                counts[tm.account_id] = {
+                                    account_id: tm.account_id,
+                                    win: 0,
+                                    lose: 0,
+                                    games: 0
+                                };
+                            }
+                            counts[tm.account_id].games += 1;
+                            matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                            //count teammate heroes
+                            if (!together[tm_hero]) {
+                                together[tm_hero] = {
+                                    games: 0,
+                                    win: 0,
+                                    lose: 0
+                                };
+                            }
+                            together[tm_hero].games += 1;
+                            matches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+                        }
+                        else {
+                            //count enemy heroes
+                            if (!against[tm_hero]) {
+                                against[tm_hero] = {
+                                    games: 0,
+                                    win: 0,
+                                    lose: 0
+                                };
+                            }
+                            against[tm_hero].games += 1;
+                            matches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
+                        }
+                    }
+                }
+                player.matches = matches;
+                player.heroes = heroes;
+                player.together = together;
+                player.against = against;
+                player.teammates = [];
+                for (var id in counts) {
+                    var count = counts[id];
+                    player.teammates.push(count);
+                }
+                queries.fillPlayerNames(player.teammates, function(err) {
+                    res.render(playerPages[info].template, {
+                        route: info,
+                        player: player,
+                        tabs: playerPages,
+                        title: (player.personaname || player.account_id) + " - YASP"
+                    });
                 });
             });
+            //tab1
+            //count win/loss
+            //count heroes played
+            //tab2
+            //display this particular player's performance
+            //tab3
+            //get matches full
+            //compute teammates, fill names
+            //compute hero matchups
+            //game length distribution
+            //queries.computeStatistics(player, function(err){});
         }
     });
 });

@@ -42,9 +42,11 @@ function getFullMatchHistory(done) {
                     match_id: match_id
                 };
                 queueReq("api_details", match, function(err) {
+                    //added a single job to kue
                     cb(err);
                 });
             }, function(err) {
+                //added all requested matches to kue
                 done(err);
             });
         });
@@ -92,7 +94,8 @@ function getFullMatchHistory(done) {
     function getApiMatchPage(url, cb) {
         getData(url, function(err, body) {
             if (err) {
-                return cb(err);
+                //retry
+                return getApiMatchPage(url, cb);
             }
             //response for match history for single player
             var resp = body.result.matches;
@@ -133,6 +136,7 @@ function getFullMatchHistory(done) {
                 cb(err);
             });
         }, function(err) {
+            //done with this player
             cb(err);
         });
     }
@@ -250,7 +254,7 @@ function updateSummaries(cb) {
 function untrackPlayers(cb) {
     db.players.update({
         last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 3, 'days').toDate()
+            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 5, 'days').toDate()
         }
     }, {
         $set: {

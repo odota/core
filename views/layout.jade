@@ -27,11 +27,13 @@ html
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.min.css')
     style
       include ../public/css/yasp.css
     if (user && user.dark_theme)
       style
         include ../public/css/dark.css
+    script(src="/public/bundle.js")
     block head
     
   body
@@ -92,5 +94,4 @@ html
                <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
-        script(src="/public/bundle.js")
         block footer_assets

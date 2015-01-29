@@ -1,0 +1,3 @@
+web: node web.js
+worker: node worker.js
+parser: node parser.js
