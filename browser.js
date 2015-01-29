@@ -19,8 +19,7 @@ global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
-global.playerMatchTables = playerMatchTables;
-global.upload = upload;
+global.uploadReplay = uploadReplay;
 global.buildMap = buildMap;
 
 //run on each page
@@ -46,7 +45,7 @@ ga('create', 'UA-55757642-1', 'auto');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
 
-function upload() {
+function uploadReplay() {
     $("#button").click(function(event) {
         event.preventDefault();
         $.post(
@@ -68,22 +67,8 @@ function upload() {
     });
 }
 
-function playerMatchTables() {
-    $('#matches').dataTable({
-        "order": [
-            [0, "desc"]
-        ],
-        "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
-        }, {
-            "targets": [2],
-            visible: false
-        }]
-    });
-}
-
 function playerTables() {
+    console.log("player tables");
     $('#teammates').dataTable({
         "order": [
             [1, "desc"]
@@ -101,6 +86,59 @@ function playerTables() {
             visible: false
         }]
     });
+    $('#together').dataTable({
+        "order": [
+            [2, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [0],
+            "orderData": [1]
+        }, {
+            "targets": [1],
+            visible: false
+        }]
+    });
+    $('#against').dataTable({
+        "order": [
+            [2, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [0],
+            "orderData": [1]
+        }, {
+            "targets": [1],
+            visible: false
+        }]
+    });
+    $('#matches').dataTable({
+        "order": [
+            [0, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [1],
+            "orderData": [2]
+        }, {
+            "targets": [2],
+            visible: false
+        }]
+    });
+    console.log(durations);
+    c3.generate({
+        bindto: "#chart-duration",
+        data: {
+            columns: [
+                ['# Matches'].concat(durations)
+            ],
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+            // or
+            //width: 100 // this makes bar width 100px
+        }
+    });
 }
 
 function matchTable() {
@@ -117,37 +155,37 @@ function matchTable() {
             data: 'match_id',
             title: 'Match ID',
             render: function(data, type, row, meta) {
-                return '<a href="/matches/' + data + '">' + data + '</a>'
+                return '<a href="/matches/' + data + '">' + data + '</a>';
             }
         }, {
             data: 'game_mode',
             title: 'Game Mode',
             render: function(data, type, row, meta) {
-                return modes[data] ? modes[data].name : data
+                return modes[data] ? modes[data].name : data;
             }
         }, {
             data: 'cluster',
             title: 'Region',
             render: function(data, type, row, meta) {
-                return regions[data] ? regions[data] : data
+                return regions[data] ? regions[data] : data;
             }
         }, {
             data: 'duration',
             title: 'Duration',
             render: function(data, type, row, meta) {
-                return moment().startOf('day').seconds(data).format("H:mm:ss")
+                return moment().startOf('day').seconds(data).format("H:mm:ss");
             }
         }, {
             data: 'start_time',
             title: 'Played',
             render: function(data, type, row, meta) {
-                return moment.unix(data + row.duration).fromNow()
+                return moment.unix(data + row.duration).fromNow();
             }
         }, {
             data: 'parse_status',
             title: 'Status',
             render: function(data, type, row, meta) {
-                return parse_status[data] ? parse_status[data] : data
+                return parse_status[data] ? parse_status[data] : data;
             }
         }]
     });
@@ -522,90 +560,90 @@ function generateCharts(data) {
 }
 
 function generateCalHeatmap(data) {
-    var cal = new CalHeatMap();
-    cal.init({
-        start: new Date(moment().subtract(1, 'year')),
-        range: 13,
-        domain: "month",
-        subDomain: "day",
-        data: data,
-        tooltip: true,
-        legend: [1, 2, 3, 4],
-        highlight: new Date(),
-        itemName: ["match", "matches"],
-        subDomainTextFormat: function(date, value) {
-            return value;
-        },
-        cellSize: 15,
-        previousSelector: "#prev",
-        nextSelector: "#next"
-    });
-}
-/*
-function generateTimeline(match) {
-    $(document).on('ready', function() {
-        for (var player in match.parsed_data.heroes) {
-            var items = []
-            var heroes = 0
-            var player = match.parsed_data.heroes[player]
-            if (player.timeline.length < 1) continue
-            for (var i = 0; i < player.timeline.length; i++) {
-                var event = player.timeline[i]
-                var bar = {}
-                var time = formatSeconds(event.time)
-                time = "<div style='font-size:10px;'>" + time + "<div>"
-                bar.start = moment().startOf('day').seconds(event.time)
-                if (event.type == "itembuys") {
-                    //var img = constants.items[event.key].img
-                    //bar.content = "<img src='" + img + "' width=30 />" + time
-                    bar.content = event.key
-                    bar.group = 1
-                    items.push(bar)
-                }
-                if (event.type == "hero_history") {
-                    bar.className = "background-" + (heroes % 10)
-                    heroes += 1
-                        //var img = constants.heroes[event.key].img
-                        //bar.content = "<img src='" + img + "' width=40 />" + "<span style='font-size:10px;'>" + constants.heroes[event.key].localized_name + "</span>"
-                    bar.content = event.key
+        var cal = new CalHeatMap();
+        cal.init({
+            start: new Date(moment().subtract(1, 'year')),
+            range: 13,
+            domain: "month",
+            subDomain: "day",
+            data: data,
+            tooltip: true,
+            legend: [1, 2, 3, 4],
+            highlight: new Date(),
+            itemName: ["match", "matches"],
+            subDomainTextFormat: function(date, value) {
+                return value;
+            },
+            cellSize: 15,
+            previousSelector: "#prev",
+            nextSelector: "#next"
+        });
+    }
+    /*
+    function generateTimeline(match) {
+        $(document).on('ready', function() {
+            for (var player in match.parsed_data.heroes) {
+                var items = []
+                var heroes = 0
+                var player = match.parsed_data.heroes[player]
+                if (player.timeline.length < 1) continue
+                for (var i = 0; i < player.timeline.length; i++) {
+                    var event = player.timeline[i]
+                    var bar = {}
+                    var time = formatSeconds(event.time)
+                    time = "<div style='font-size:10px;'>" + time + "<div>"
                     bar.start = moment().startOf('day').seconds(event.time)
-                    bar.end = moment().startOf('day').seconds(event.end)
-                    bar.type = "background"
-                    bar.group = 1
-                    items.push(bar)
+                    if (event.type == "itembuys") {
+                        //var img = constants.items[event.key].img
+                        //bar.content = "<img src='" + img + "' width=30 />" + time
+                        bar.content = event.key
+                        bar.group = 1
+                        items.push(bar)
+                    }
+                    if (event.type == "hero_history") {
+                        bar.className = "background-" + (heroes % 10)
+                        heroes += 1
+                            //var img = constants.heroes[event.key].img
+                            //bar.content = "<img src='" + img + "' width=40 />" + "<span style='font-size:10px;'>" + constants.heroes[event.key].localized_name + "</span>"
+                        bar.content = event.key
+                        bar.start = moment().startOf('day').seconds(event.time)
+                        bar.end = moment().startOf('day').seconds(event.end)
+                        bar.type = "background"
+                        bar.group = 1
+                        items.push(bar)
+                    }
                 }
+                var groups = [{
+                        id: 0,
+                        content: "Hero"
+                    }, {
+                        id: 1,
+                        content: "Item"
+                    }]
+                    // create visualization
+                var container = document.getElementById('timeline');
+                var options = {
+                    zoomable: false,
+                    moveable: false,
+                    showCurrentTime: false,
+                    //stack: false,
+                    margin: {
+                        item: 2
+                    },
+                    padding: 1,
+                    start: moment().startOf('day').subtract(300, 'seconds'),
+                    end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
+                    showMajorLabels: false,
+                    showMinorLabels: false
+                };
+                var timeline = new vis.Timeline(container);
+                timeline.setOptions(options);
+                timeline.setItems(items);
+                timeline.setGroups(groups);
             }
-            var groups = [{
-                    id: 0,
-                    content: "Hero"
-                }, {
-                    id: 1,
-                    content: "Item"
-                }]
-                // create visualization
-            var container = document.getElementById('timeline');
-            var options = {
-                zoomable: false,
-                moveable: false,
-                showCurrentTime: false,
-                //stack: false,
-                margin: {
-                    item: 2
-                },
-                padding: 1,
-                start: moment().startOf('day').subtract(300, 'seconds'),
-                end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
-                showMajorLabels: false,
-                showMinorLabels: false
-            };
-            var timeline = new vis.Timeline(container);
-            timeline.setOptions(options);
-            timeline.setItems(items);
-            timeline.setGroups(groups);
-        }
-    });
-}
-*/
+        });
+    }
+    */
 function format(input) {
     input = Number(input);
     if (input === 0) {
