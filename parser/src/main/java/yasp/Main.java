@@ -21,6 +21,8 @@ public class Main {
     public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
     
     public static void main(String[] args) throws Exception {
+        //increment version when adding breaking changes
+        int VERSION = 2;
         long tStart = System.currentTimeMillis();
         boolean initialized = false;
         GameEventDescriptor combatLogDescriptor = null;
@@ -33,6 +35,7 @@ public class Main {
         int gameZero = Integer.MIN_VALUE;
         int gameEnd = 0;
         int numPlayers = 10;
+        doc.put("version", VERSION);
 
         if (args.length>0 && args[0].equals("-epilogue")){
             CDemoFileInfo info = Clarity.infoForStream(System.in);
@@ -40,7 +43,7 @@ public class Main {
             finish(tStart, doc);
         }
         else{
-            TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO);
+            TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ALL);
             while(iter.hasNext()) {
             iter.next().apply(match);
             int time = (int) match.getGameTime();
@@ -51,9 +54,8 @@ public class Main {
             if (!initialized) {
                 doc.put("players", new JSONArray());
                 doc.put("times", new JSONArray());
-                doc.put("chat", new JSONArray());
                 doc.put("heroes", new JSONObject());
-                doc.put("kills", new JSONArray());
+                doc.put("chat", new JSONArray());
     
                 for (int i = 0; i < numPlayers; i++) {
                     String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
@@ -163,8 +165,11 @@ public class Main {
                     entry.put("type", "chat");
                     log.put(entry);
                 }
+                else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
+                    //System.err.format("%s %s\n", time, u); 
+                }
                 else{
-                    //System.err.format("%s %s%n", time, u); 
+                    //System.err.format("%s %s\n", time, u); 
                 }
             }
             for (GameEvent g : match.getGameEvents()) {
@@ -233,6 +238,9 @@ public class Main {
                         entry.put("time", time);
                         entry.put("key", key);
                         entry.put("type", "kills");
+                        if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
+                            entry.put("herokills", true);
+                        }
                         log.put(entry);
                         break;
                         case 5:
@@ -358,7 +366,8 @@ public class Main {
                 String prefix = entry.getString("prefix");
                 //System.err.println(prefix);
                 if( name_to_slot.has(prefix)){
-                    entry.put("slot", name_to_slot.getInt(prefix));
+                    Integer slot = name_to_slot.getInt(prefix);
+                    entry.put("slot", slot);
                     doc.getJSONArray("chat").put(entry);
                 }
                 else{
@@ -382,8 +391,13 @@ public class Main {
             else{
                 counts.put(key, count + 1);  
             }
+            //put the item into this hero's purchases
             if (type.equals("itembuys")){
                 hero.getJSONArray("timeline").put(entry);
+            }
+            //put the kill into this hero's hero kills
+            if (entry.has("herokills")){
+                hero.getJSONArray("herokills").put(entry);
             }
         }
         
@@ -412,6 +426,7 @@ public class Main {
         newHero.put("abilityuses", new JSONObject());
         newHero.put("hero_hits", new JSONObject());
         newHero.put("modifier_applied", new JSONObject());
+        newHero.put("herokills", new JSONArray());
         map.put(hero, newHero);
     }
     
