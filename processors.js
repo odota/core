@@ -228,7 +228,7 @@ function processApi(job, cb) {
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
-                match[prop] = payload.prop;
+                match[prop] = payload[prop];
             }
             insertMatch(match, function(err) {
                 cb(err);
