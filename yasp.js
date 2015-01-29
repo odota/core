@@ -240,6 +240,9 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     match_id: -1
                 }
             }, function(err, matches) {
+                if (err){
+                    return next(err);
+                }
                 player.win = 0;
                 player.lose = 0;
                 player.games = 0;
@@ -334,6 +337,9 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     player.teammates.push(count);
                 }
                 queries.fillPlayerNames(player.teammates, function(err) {
+                    if (err){
+                        return next(err);
+                    }
                     res.render(playerPages[info].template, {
                         route: info,
                         player: player,

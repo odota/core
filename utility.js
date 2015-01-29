@@ -239,7 +239,7 @@ function getData(url, cb) {
             if (body.result) {
                 //steam api response
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
-                    //user does not have stats enabled or attempting to get private match, don't retry
+                    //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                     logger.info(body);
                     return cb(body);
                 }

@@ -1,0 +1,35 @@
+extend layout
+
+block content
+  h3 What is YASP?
+  p YASP is a free, open-source stats site that provides replay parsing for Dota 2 matches free of charge.  This allows us to present statistics such as ward placement, item build times/usage, and breakdowns of hero damage, kills, and gold/XP.
+  
+  h3 What does YASP stand for?
+  p YASP stands for YASP: Another Stats Page, which makes it a recursive acronym along the lines of GNU and YAML.
+  
+  h3 How do you make money/keep the site running?
+  p YASP is a side project of a group of college students.  As such, we're not looking to make money off the site, although we do run ads to help pay for server costs.
+  
+  h3 How do I use YASP?
+  p Simply sign in through Steam, and we'll start following your matches.  You can also choose to upload replays to us, and in the future possibly request parses by match ID.
+  
+  h3 What do I do if I have a bug/feature request?
+  p The best way to submit these is by making an issue on GitHub.  This way the developers are notified immediately and can discuss the issue/request with you.  You could also try Twitter.
+  
+  h3 Why are my matches showing up, but stay queued forever?
+  p This can be due to Valve simply not making the replay available, which happens occasionally (particularly in the SEA region).  If so, there's nothing we can do about it.  Alternatively, our parser couldn't process the match.  In this case, we're continuously looking for bugs and re-running matches when we can.
+  
+  h3 Why aren't my matches showing up at all?
+  p To keep the load reasonable, we stop tracking players' matches after a period of inactivity.  Each visit to the YASP site while logged in through Steam resets this time.
+  
+  h3 Why are my parsed stats wrong?
+  p Replay parsing is not an exact art.  Often, assumptions have to be made, and sometimes data is just inconsistent/available.  If you find an issue, please report it!
+  
+  h3 Can I use YASP in my own project?
+  p YASP is licensed under the GNU GPLv3.  This means that YASP is free to use in our project, if your project is also licensed the same way (free and open source).  We also ask that you give us an attribution in your project if you use our code.
+  
+  h3 How do I contribute to YASP?
+  p YASP is open source!  Pull requests are always welcome if you want to work on/improve a feature.  If you'd rather contribute in a non-technical way, feel free to click on an ad that interests you.
+  
+  h3 What is YASP built with?
+  p YASP's main site and replay retriever are built with Node.js.  The parser is written in Java, making use of the excellent clarity replay parsing library.  
