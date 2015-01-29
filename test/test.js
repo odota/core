@@ -116,19 +116,19 @@ before(function(done) {
                 if (!fs.existsSync(replay_dir)) {
                     fs.mkdir(replay_dir);
                 }
-                async.map([
+                async.parallel([
                     function(cb) {
-                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function() {
-                            cb();
+                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                            cb(err);
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function() {
-                            cb();
+                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                            cb(err);
                         });
                     }
-                ], function() {
-                    cb();
+                ], function(err) {
+                    cb(err);
                 });
             }
         ],
