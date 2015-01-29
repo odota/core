@@ -109,12 +109,6 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
-        },
-        function(cb) {
-            console.log("copying replay to test dir");
-            fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(process.env.REPLAY_DIR + '1193091757.dem')).on('finish', function(err) {
-                done(err);
-            });
         }
     ], function(err) {
         done(err);
