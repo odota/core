@@ -491,7 +491,9 @@ app.get('/status', function(req, res, next) {
             },
             uploaded_matches: function(cb) {
                 db.matches.count({
-                    upload: true
+                    uploader: {
+                        $exists: 1
+                    }
                 }, function(err, res) {
                     cb(err, res);
                 });

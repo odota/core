@@ -8,7 +8,6 @@ var logger = utility.logger;
 var fs = require('fs');
 var moment = require('moment');
 var getData = utility.getData;
-var getS3Url = utility.getS3Url;
 var request = require('request');
 var runParse = utility.runParse;
 var decompress = utility.decompress;
@@ -43,8 +42,6 @@ function processParse(job, cb) {
             if (process.env.DELETE_REPLAYS && job2.data.fileName) {
                 fs.unlinkSync(job2.data.fileName);
             }
-            //todo handle case where !job.data.payload.match_id
-            //this means it's a match not available in the api and we'll have to reconstruct the api data from replay
             //queue job for api to make sure it's in db
             queueReq("api_details", job2.data.payload, function(err, apijob) {
                 cb(err);
@@ -63,7 +60,7 @@ function checkLocal(job, cb) {
     if (!fs.existsSync(replay_dir)) {
         fs.mkdir(replay_dir);
     }
-    var fileName = replay_dir + match_id + ".dem";
+    var fileName = job.data.fileName || replay_dir + match_id + ".dem";
     if (fs.existsSync(fileName)) {
         logger.info("[PARSER] %s, found local replay", match_id);
         job.data.fileName = fileName;
@@ -93,6 +90,7 @@ function getReplayUrl(job, cb) {
             return cb("invalid body or error");
         });
     }
+    /*
     else if (process.env.AWS_S3_BUCKET) {
         getS3Url(match.match_id, function(err, url) {
             if (!url) {
@@ -101,6 +99,7 @@ function getReplayUrl(job, cb) {
             return cb(err, job, url);
         });
     }
+    */
     else {
         logger.info("replay expired");
         cb("replay expired");
