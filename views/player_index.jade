@@ -3,15 +3,9 @@ extend player
 block playercontent
   .row
     .col-md-6
-      table.table.table-condensed
-        thead
-          tr
-            td Record
-            td Win Rate
-        tbody
-          tr
-            td #{player.win}-#{player.lose}
-            td #{(player.win/player.games*100).toFixed(2) || 0.00}%  
+      h2 Record: #{player.win}-#{player.lose}
+    .col-md-6
+      h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%   
   .row
     .col-md-12
       h3 Activity
@@ -52,7 +46,10 @@ block playercontent
             td=match.players[match.slot].deaths
             td=match.players[match.slot].assists
             td=constants.parse_status[match.parse_status]
-    .col-md-5
+    .col-md-5(style="margin-top:3em")
+      include ads/skyscraper
+  .row
+    .col-md-12
       h3 Heroes
       table.table#heroes
         thead
@@ -72,7 +69,8 @@ block playercontent
             td #{entry ? entry.games : 0}
             td #{entry ? entry.win : 0}
             td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
-  include ads/skyscraper
+  .row
+    include ads/leaderboard_2
   link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
     var calData = !{JSON.stringify(player.calheatmap)}
