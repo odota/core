@@ -196,6 +196,7 @@ function runParse(input, cb) {
     inStream.pipe(cp.stdin);
     inStream.on('error', function(err) {
         logger.info(err);
+        cp.kill();
         return cb(err);
     });
     cp.stdout.on('data', function(data) {
