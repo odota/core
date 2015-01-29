@@ -119,7 +119,6 @@ app.use(function(req, res, next) {
             logger.info(err);
         }
         app.locals.user = req.user;
-        //todo use flash
         app.locals.login_req_msg = req.session.login_required;
         req.session.login_required = false;
         app.locals.banner_msg = reply;
@@ -186,7 +185,15 @@ app.route('/api/matches').get(function(req, res, next) {
         db.matches.find(options, {
             limit: Number(req.query.length),
             skip: Number(req.query.start),
-            sort: sort
+            sort: sort,
+            fields: {
+                start_time: 1,
+                match_id: 1,
+                cluster: 1,
+                parse_status: 1,
+                game_mode: 1,
+                duration: 1
+            }
         }, function(err, docs) {
             if (err) {
                 return next(err);
@@ -236,129 +243,66 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             db.matches.find({
                 'players.account_id': account_id
             }, {
+                fields: {
+                    start_time: 1,
+                    match_id: 1,
+                    game_mode: 1,
+                    duration: 1,
+                    cluster: 1,
+                    radiant_win: 1,
+                    parse_status: 1,
+                    "players.$": 1
+                },
                 sort: {
                     match_id: -1
                 }
             }, function(err, matches) {
-                if (err){
+                if (err) {
                     return next(err);
                 }
+                player.matches = matches;
                 player.win = 0;
                 player.lose = 0;
                 player.games = 0;
-                var heroes = {};
+                player.heroes = {};
                 player.calheatmap = {};
-                var arr = Array.apply(null, new Array(300)).map(Number.prototype.valueOf, 0);
-
+                var heroes = player.heroes;
                 for (var i = 0; i < matches.length; i++) {
-                    //add start time to data for cal-heatmap
                     player.calheatmap[matches[i].start_time] = 1;
-                    var mins = Math.floor(matches[i].duration / 60);
-                    arr[mins] += 1;
-                    for (var j = 0; j < matches[i].players.length; j++) {
-                        var p = matches[i].players[j];
-                        if (p.account_id === player.account_id) {
-                            matches[i].slot = j;
-                            matches[i].playerRadiant = utility.isRadiant(p);
-                            matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
-                            //count win/loss
-                            player.games += 1;
-                            matches[i].player_win ? player.win += 1 : player.lose += 1;
-                            //count heroes played
-                            if (!heroes[p.hero_id]) {
-                                heroes[p.hero_id] = {
-                                    games: 0,
-                                    win: 0,
-                                    lose: 0
-                                };
-                            }
-                            heroes[p.hero_id].games += 1;
-                            matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
-                        }
+                    var p = matches[i].players[0];
+                    matches[i].playerRadiant = utility.isRadiant(p);
+                    matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
+                    player.games += 1;
+                    matches[i].player_win ? player.win += 1 : player.lose += 1;
+                    if (!heroes[p.hero_id]) {
+                        heroes[p.hero_id] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
                     }
+                    heroes[p.hero_id].games += 1;
+                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
                 }
-
-                while (arr[arr.length - 1] === 0) { // While the last element is a 0,
-                    arr.pop(); // Remove that last element
-                }
-                player.durations = arr;
-
-                var counts = {};
-                var against = {};
-                var together = {};
-                for (var i = 0; i < matches.length; i++) {
-                    for (j = 0; j < matches[i].players.length; j++) {
-                        var tm = matches[i].players[j];
-                        var tm_hero = tm.hero_id;
-                        if (utility.isRadiant(tm) === matches[i].playerRadiant) {
-                            //count teammate players
-                            if (!counts[tm.account_id]) {
-                                counts[tm.account_id] = {
-                                    account_id: tm.account_id,
-                                    win: 0,
-                                    lose: 0,
-                                    games: 0
-                                };
-                            }
-                            counts[tm.account_id].games += 1;
-                            matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
-                            //count teammate heroes
-                            if (!together[tm_hero]) {
-                                together[tm_hero] = {
-                                    games: 0,
-                                    win: 0,
-                                    lose: 0
-                                };
-                            }
-                            together[tm_hero].games += 1;
-                            matches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+                var renderOpts = {
+                    route: info,
+                    player: player,
+                    tabs: playerPages,
+                    title: (player.personaname || player.account_id) + " - YASP"
+                };
+                if (info === "stats") {
+                    queries.computeStatistics(player, function(err) {
+                        if (err) {
+                            return next(err);
                         }
-                        else {
-                            //count enemy heroes
-                            if (!against[tm_hero]) {
-                                against[tm_hero] = {
-                                    games: 0,
-                                    win: 0,
-                                    lose: 0
-                                };
-                            }
-                            against[tm_hero].games += 1;
-                            matches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
-                        }
-                    }
-                }
-                player.matches = matches;
-                player.heroes = heroes;
-                player.together = together;
-                player.against = against;
-                player.teammates = [];
-                for (var id in counts) {
-                    var count = counts[id];
-                    player.teammates.push(count);
-                }
-                queries.fillPlayerNames(player.teammates, function(err) {
-                    if (err){
-                        return next(err);
-                    }
-                    res.render(playerPages[info].template, {
-                        route: info,
-                        player: player,
-                        tabs: playerPages,
-                        title: (player.personaname || player.account_id) + " - YASP"
+                        //render
+                        res.render(playerPages[info].template, renderOpts);
                     });
-                });
+                }
+                else {
+                    res.render(playerPages[info].template, renderOpts);
+                }
             });
-            //tab1
-            //count win/loss
-            //count heroes played
-            //tab2
-            //display this particular player's performance
-            //tab3
-            //get matches full
-            //compute teammates, fill names
-            //compute hero matchups
-            //game length distribution
-            //queries.computeStatistics(player, function(err){});
         }
     });
 });
@@ -443,7 +387,7 @@ app.route('/upload')
         if (req.session.captcha_verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);
             utility.queueReq("parse", {
-                uploader: req.user,
+                uploader: req.user.account_id,
                 fileName: files.path,
                 priority: 'high'
             }, function(err) {
@@ -479,7 +423,7 @@ app.route('/fullhistory').post(function(req, res) {
         });
     });
 });
-app.get('/stats', function(req, res, next) {
+app.get('/status', function(req, res, next) {
     async.parallel({
             matches: function(cb) {
                 db.matches.count({}, function(err, res) {
@@ -571,8 +515,13 @@ app.get('/stats', function(req, res, next) {
             if (err) {
                 return next(new Error(err));
             }
-            res.json(results);
+            res.render("status", {
+                results: results
+            });
         });
+});
+app.get('/about', function(req, res, next) {
+    res.render("about");
 });
 app.use(function(req, res, next) {
     res.status(404);

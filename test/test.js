@@ -190,9 +190,9 @@ describe("web", function() {
             done();
         });
     });
-    describe("/stats", function() {
+    describe("/status", function() {
         before(function(done) {
-            browser.visit('/stats');
+            browser.visit('/status');
             browser.wait(wait, function(err) {
                 done(err);
             });
@@ -299,7 +299,7 @@ describe("web", function() {
             done();
         });
         it('should have 0-1 record', function(done) {
-            browser.assert.text('td', /0-1/);
+            browser.assert.text('h2', /Record:\s0-1/);
             done();
         });
     });
@@ -315,7 +315,7 @@ describe("web", function() {
             done();
         });
         it('should have 0-0 record', function(done) {
-            browser.assert.text('td', /0-0/);
+            browser.assert.text('h2', /Record:\s0-0/);
             done();
         });
     });

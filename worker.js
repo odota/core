@@ -56,9 +56,7 @@ function startScan() {
     else {
         //start at highest id in db
         db.matches.findOne({
-            upload: {
-                $exists: false
-            }
+            uploader: null
         }, {
             sort: {
                 match_seq_num: -1
