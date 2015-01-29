@@ -54,7 +54,6 @@ nock('https://api.steampowered.com')
     .filteringPath(function(path) {
         var split = path.split("?");
         var split2 = split[0].split(".com");
-        console.log(split2[0]);
         return split2[0];
     })
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
@@ -68,51 +67,62 @@ nock('https://api.steampowered.com')
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .times(1)
     .reply(200, testdata.heroes_api);
-    
+
 before(function(done) {
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
     async.series([
-        function(cb) {
-            console.log("wiping mongodb");
-            connect(process.env.MONGO_URL, function(err, db) {
-                assert(!err);
-                databaseCleaner.clean(db, function(err) {
+            function(cb) {
+                console.log("wiping mongodb");
+                connect(process.env.MONGO_URL, function(err, db) {
+                    assert(!err);
+                    databaseCleaner.clean(db, function(err) {
+                        cb(err);
+                    });
+                });
+            },
+            function(cb) {
+                console.log("wiping redis");
+                utility.redis.flushall(function(err) {
                     cb(err);
                 });
-            });
-        },
-        function(cb) {
-            console.log("wiping redis");
-            utility.redis.flushall(function(err) {
-                cb(err);
-            });
-        },
-        function(cb) {
-            console.log("loading players");
-            async.mapSeries(testdata.players, function(p, cb) {
-                p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
-                db.players.insert(p, function(err) {
+            },
+            function(cb) {
+                console.log("loading players");
+                async.mapSeries(testdata.players, function(p, cb) {
+                    p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                    db.players.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
                     cb(err);
                 });
-            }, function(err) {
-                cb(err);
-            });
-        },
-        function(cb) {
-            console.log("loading matches");
-            async.mapSeries(testdata.matches, function(p, cb) {
-                db.matches.insert(p, function(err) {
+            },
+            function(cb) {
+                console.log("loading matches");
+                async.mapSeries(testdata.matches, function(p, cb) {
+                    db.matches.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
                     cb(err);
                 });
-            }, function(err) {
-                cb(err);
-            });
-        }
-    ], function(err) {
-        done(err);
-    });
+            },
+            function(cb) {
+                console.log("copying replay to test dir");
+                var replay_dir = process.env.REPLAY_DIR;
+                if (!fs.existsSync(replay_dir)) {
+                    fs.mkdir(replay_dir);
+                }
+                fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                    done(err);
+                });
+            }
+        ],
+        function(err) {
+            done(err);
+        });
 });
 after(function(done) {
     //shut down webserver
@@ -453,8 +463,7 @@ describe("parser", function() {
     it('parse local replay', function(done) {
         var job = {
             match_id: 1193091757,
-            start_time: moment().format('X'),
-            fileName: __dirname + "/1193091757.dem"
+            start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
