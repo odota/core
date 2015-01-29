@@ -250,7 +250,7 @@ function getData(url, cb) {
                 }
             }
             //generic valid response
-            cb(null, body);
+            return cb(null, body);
         });
     }, 1000);
 }
