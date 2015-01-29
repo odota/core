@@ -21,11 +21,11 @@ global.matchTable = matchTable;
 global.playerTables = playerTables;
 global.uploadReplay = uploadReplay;
 global.buildMap = buildMap;
+global.listeners = listeners;
 
 //run on each page
 $(document).ready(function() {
     process();
-    changeTheme();
     tooltips();
 });
 
@@ -126,13 +126,21 @@ function playerTables() {
         bindto: "#chart-duration",
         data: {
             columns: [
-                ['# Matches'].concat(durations)
+                ['Matches'].concat(durations)
             ],
             type: 'bar'
         },
         bar: {
             width: {
-                ratio: 0.9
+                ratio: 0.8
+            }
+        },
+        axis: {
+            x: {
+                label: 'Minutes'
+            },
+            y: {
+                label: 'Matches'
             }
         }
     });
@@ -243,7 +251,7 @@ function process() {
     })
 }
 
-function changeTheme() {
+function listeners() {
     var $dark = $("#dark");
     $dark.change(function() {
         console.log($dark.is(":checked"));
@@ -503,6 +511,8 @@ function buildMap() {
 }
 
 function generateCharts(data) {
+    c3.generate(goldBreakdown);
+
     var height = 400;
     var difference = data.difference;
     var gold = data.gold;

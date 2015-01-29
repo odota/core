@@ -128,7 +128,55 @@ function generateGraphData(match, constants) {
         data.gold.push([hero].concat(elem.gold));
         data.xp.push([hero].concat(elem.xp));
         data.lh.push([hero].concat(elem.lh));
+        var key = constants.heroes[match.players[i].hero_id].name;
+
     });
+
+    var gold_reasons = [];
+    var columns = [];
+    var categories = [];
+    var orderedPlayers = match.players.slice(0);
+    orderedPlayers.sort(function(a, b) {
+        return b.gold_per_min - a.gold_per_min;
+    });
+    //console.log(orderedPlayers);
+    orderedPlayers.forEach(function(player) {
+        var hero = constants.heroes[player.hero_id];
+        categories.push(hero.localized_name);
+    });
+    for (var key in constants.gold_reasons) {
+        var reason = constants.gold_reasons[key];
+        var col = [reason];
+        orderedPlayers.forEach(function(player) {
+            var hero = constants.heroes[player.hero_id];
+            var parsedHero = match.parsed_data.heroes[hero.name];
+            col.push(parsedHero.gold_log[key] || 0);
+        });
+        columns.push(col);
+        gold_reasons.push(reason);
+    }
+    match.goldBreakdown = {
+        bindto: "#chart-gold-breakdown",
+        data: {
+            columns: columns,
+            type: 'bar',
+            order: null,
+            groups: [
+                //gold_reasons
+            ]
+        },
+        bar: {
+            width: {
+                ratio: 1
+            }
+        },
+        axis: {
+            x: {
+                type: "category",
+                categories: categories
+            }
+        }
+    };
     match.graphData = data;
     return match;
 }
