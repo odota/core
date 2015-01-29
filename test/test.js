@@ -19,8 +19,9 @@ var app = require('../yasp').listen(process.env.PORT);
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
-
+var queries = require('../queries');
 var wait = 10000;
+var constants = require('../constants')
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -110,13 +111,24 @@ before(function(done) {
                 });
             },
             function(cb) {
-                console.log("copying replay to test dir");
+                console.log("copying replays to test dir");
                 var replay_dir = process.env.REPLAY_DIR;
                 if (!fs.existsSync(replay_dir)) {
                     fs.mkdir(replay_dir);
                 }
-                fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
-                    done(err);
+                async.map([
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function() {
+                            cb();
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function() {
+                            cb();
+                        });
+                    }
+                ], function() {
+                    cb();
                 });
             }
         ],
@@ -125,7 +137,6 @@ before(function(done) {
         });
 });
 after(function(done) {
-    //shut down webserver
     app.close();
     done();
 });
@@ -274,8 +285,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have 0-2 record', function(done) {
-            browser.assert.text('h2', /.*0-1.*/);
+        it('should have a w/l record', function(done) {
+            browser.assert.text('h2', /.*1-1.*/);
             done();
         });
     });
@@ -290,7 +301,7 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have 0-0 record', function(done) {
+        it('should have a w/l record', function(done) {
             browser.assert.text('h2', /.*0-0.*/);
             done();
         });
@@ -308,6 +319,22 @@ describe("web", function() {
         });
         it('should have a match', function(done) {
             browser.assert.text('td', /1151783218/);
+            done();
+        });
+    });
+    describe("/players/:valid/stats", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/stats');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Teammates', function(done) {
+            browser.assert.text('body', /Teammates/);
             done();
         });
     });
@@ -339,8 +366,68 @@ describe("web", function() {
             done();
         });
     });
+    describe("/matches/:valid/details (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/details');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Purchases', function(done) {
+            browser.assert.text('body', /Purchases/);
+            done();
+        });
+    });
+    describe("/matches/:valid/graphs (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/graphs');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Gold', function(done) {
+            browser.assert.text('body', /Gold/);
+            done();
+        });
+    });
+    describe("/matches/:valid/chat (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/chat');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Chat', function(done) {
+            browser.assert.text('body', /Chat/);
+            done();
+        });
+    });
+    describe("/api/matches", function() {
+        //todo use supertest for api?
+        before(function(done) {
+            browser.visit('/api/matches');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
     /*
-    //players/:valid/stats
     //api/items valid
     //api/items invalid
     //api/abilities valid
@@ -352,10 +439,6 @@ describe("web", function() {
     //logout
     ///upload (logged in)
     //POST /upload proper file, too large, invalid file
-    //check untracked_msg
-    //matches/details parsed
-    //matches/graphs parsed
-    //matches/chat parsed
     //preferences
     //fullhistory
     //verify_recaptcha
@@ -387,11 +470,11 @@ describe("tasks", function() {
             done(err);
         });
     });
-    /*
     it('full history', function(done) {
-        done();
+        tasks.getFullMatchHistory(function(err) {
+            done(err);
+        });
     });
-    */
 });
 
 describe("backend", function() {
@@ -472,6 +555,18 @@ describe("parser", function() {
             });
         });
     });
+    it('parse 1v1', function(done) {
+        var job = {
+            match_id: 1181392470,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
     it('parse truncated replay', function(done) {
         var job = {
             match_id: 1,
@@ -503,13 +598,6 @@ describe("parser", function() {
             });
         });
     });
-    //1v1 game
-    //ardm game
-    //test epilogue parse
+    //todo ardm game
+    //todo epilogue parse
 });
-
-//queries
-//mergeObjects, multiple cases?
-//mergeMatchData: mergeMatchData,
-//generateGraphData: generateGraphData,
-//computeStatistics
