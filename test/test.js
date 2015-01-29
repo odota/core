@@ -1,4 +1,5 @@
 process.env.MONGO_URL = "mongodb://localhost/test";
+process.env.REDIS_URL = 'redis://localhost:6379/1';
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
 process.env.RETRIEVER_HOST = "http://localhost:5100";
@@ -32,7 +33,7 @@ nock('http://localhost:5100')
         return '/';
     })
     .get('/')
-    .times(3)
+    .times(2)
     .reply(200, {
         match: {
             cluster: 1,
@@ -51,61 +52,78 @@ nock('http://replay1.valve.net')
 //fake api response
 nock('https://api.steampowered.com')
     .filteringPath(function(path) {
-        if (path.slice(0, 8) === "/IDOTA2") {
-            return '/IDOTA2Match_570/GetMatchDetails/V001/';
-        }
-        else {
-            return '/ISteamUser/GetPlayerSummaries/v0002/';
-        }
+        var split = path.split("?");
+        var split2 = split[0].split(".com");
+        console.log(split2[0]);
+        return split2[0];
     })
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .times(1)
     .reply(200, {
         result: testdata.matches[0]
     })
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
-    .reply(200, testdata.summaries);
-
+    .times(2)
+    .reply(200, testdata.summaries_api)
+    .get('/IEconDOTA2_570/GetHeroes/v0001/')
+    .times(1)
+    .reply(200, testdata.heroes_api);
+    
 before(function(done) {
-    console.log("loading test data");
-    async.series([function(cb) {
-        //insert test players
-        async.mapSeries(testdata.players, function(p, cb) {
-            p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
-            db.players.insert(p, function(err) {
+    var DatabaseCleaner = require('database-cleaner');
+    var databaseCleaner = new DatabaseCleaner('mongodb');
+    var connect = require('mongodb').connect;
+    async.series([
+        function(cb) {
+            console.log("wiping mongodb");
+            connect(process.env.MONGO_URL, function(err, db) {
+                assert(!err);
+                databaseCleaner.clean(db, function(err) {
+                    cb(err);
+                });
+            });
+        },
+        function(cb) {
+            console.log("wiping redis");
+            utility.redis.flushall(function(err) {
                 cb(err);
             });
-        }, function(err) {
-            cb(err);
-        });
-    }, function(cb) {
-        //insert test matches
-        async.mapSeries(testdata.matches, function(p, cb) {
-            db.matches.insert(p, function(err) {
+        },
+        function(cb) {
+            console.log("loading players");
+            async.mapSeries(testdata.players, function(p, cb) {
+                p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                db.players.insert(p, function(err) {
+                    cb(err);
+                });
+            }, function(err) {
                 cb(err);
             });
-        }, function(err) {
-            cb(err);
-        });
-    }], function(err) {
-        //set the banner msg
-        utility.redis.set("banner", "someval");
+        },
+        function(cb) {
+            console.log("loading matches");
+            async.mapSeries(testdata.matches, function(p, cb) {
+                db.matches.insert(p, function(err) {
+                    cb(err);
+                });
+            }, function(err) {
+                cb(err);
+            });
+        },
+        function(cb) {
+            console.log("copying replay to test dir");
+            fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(process.env.REPLAY_DIR + '1193091757.dem')).on('finish', function(err) {
+                done(err);
+            });
+        }
+    ], function(err) {
         done(err);
     });
 });
 after(function(done) {
-    console.log("cleaning test data");
+    //shut down webserver
     app.close();
-    //wipe mongodb and redis
-    var DatabaseCleaner = require('database-cleaner');
-    var databaseCleaner = new DatabaseCleaner('mongodb');
-    var connect = require('mongodb').connect;
-    connect(process.env.MONGO_URL, function(err, db) {
-        databaseCleaner.clean(db, function(err) {
-            utility.redis.flushall(function(err) {
-                done(err);
-            });
-        });
-    });
+    done();
 });
 
 describe("services", function() {
@@ -127,47 +145,6 @@ describe("services", function() {
     });
 });
 
-describe("tasks", function() {
-    it('unparsed matches', function(done) {
-        tasks.unparsed(function(err, num) {
-            assert.equal(num, 1);
-            done(err);
-        });
-    });
-    it('update summaries', function(done) {
-        tasks.updateSummaries(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    it('untrack players', function(done) {
-        tasks.untrackPlayers(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    /*
-    it('full history', function(done) {
-        done();
-    });
-    it('generate constants', function(done) {
-        done();
-    });
-    */
-});
-
-describe("backend", function() {
-    it('queue details request', function(done) {
-        utility.queueReq("api_details", {
-            match_id: 115178218
-        }, function(err, job) {
-            assert(job);
-            done(err);
-        });
-    });
-    //run processApi
-});
-
 describe("web", function() {
     this.timeout(wait);
     describe("/", function() {
@@ -183,10 +160,6 @@ describe("web", function() {
         });
         it('should say YASP', function(done) {
             browser.assert.text('body', /YASP/);
-            done();
-        });
-        it('should have a banner', function(done) {
-            browser.assert.text('.alert', /someval/);
             done();
         });
     });
@@ -286,7 +259,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/players/:valid", function() {
         before(function(done) {
             browser.visit('/players/88367253');
@@ -298,8 +270,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have 0-1 record', function(done) {
-            browser.assert.text('h2', /Record:\s0-1/);
+        it('should have 0-2 record', function(done) {
+            browser.assert.text('h2', /.*0-1.*/);
             done();
         });
     });
@@ -315,7 +287,7 @@ describe("web", function() {
             done();
         });
         it('should have 0-0 record', function(done) {
-            browser.assert.text('h2', /Record:\s0-0/);
+            browser.assert.text('h2', /.*0-0.*/);
             done();
         });
     });
@@ -363,24 +335,84 @@ describe("web", function() {
             done();
         });
     });
-
     /*
-              //api/items valid
-              //api/items invalid
-              //api/abilities valid
-              //api/abilities invalid
-              //api/matches valid
-              //api/matches invalid
-              //login
-              //return
-              //logout
-              //GET /upload
-              //POST /upload proper file, too large, invalid file
-              //check untracked_msg
-              //matches/details parsed
-              //matches/graphs parsed
-              //matches/chat parsed
-              */
+    //players/:valid/stats
+    //api/items valid
+    //api/items invalid
+    //api/abilities valid
+    //api/abilities invalid
+    //api/matches valid
+    //api/matches invalid
+    //login
+    //return
+    //logout
+    ///upload (logged in)
+    //POST /upload proper file, too large, invalid file
+    //check untracked_msg
+    //matches/details parsed
+    //matches/graphs parsed
+    //matches/chat parsed
+    //preferences
+    //fullhistory
+    //verify_recaptcha
+    */
+});
+
+describe("tasks", function() {
+    this.timeout(wait);
+    it('unparsed matches', function(done) {
+        tasks.unparsed(function(err, num) {
+            assert.equal(num, 1);
+            done(err);
+        });
+    });
+    it('update summaries', function(done) {
+        tasks.updateSummaries(function(err, num) {
+            assert.equal(num, 2);
+            done(err);
+        });
+    });
+    it('untrack players', function(done) {
+        tasks.untrackPlayers(function(err, num) {
+            assert.equal(num, 2);
+            done(err);
+        });
+    });
+    it('generate constants', function(done) {
+        tasks.generateConstants(function(err) {
+            done(err);
+        });
+    });
+    /*
+    it('full history', function(done) {
+        done();
+    });
+    */
+});
+
+describe("backend", function() {
+    it('process details request', function(done) {
+        utility.queueReq("api_details", {
+            match_id: 115178218
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            })
+        });
+    });
+    it('process summaries request', function(done) {
+        utility.queueReq("api_summaries", {
+            players: [{
+                account_id: 88367253
+            }]
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
 });
 
 describe("parser", function() {
@@ -391,6 +423,8 @@ describe("parser", function() {
             start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParse(job, function(err) {
                 done(err);
             });
@@ -402,6 +436,8 @@ describe("parser", function() {
             start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParseStream(job, function(err) {
                 done(err);
             });
@@ -413,29 +449,63 @@ describe("parser", function() {
             start_time: 1
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParse(job, function(err) {
                 done(err);
             });
         });
     });
-    //runParse directly on files, verify no crash
+    it('parse local replay', function(done) {
+        var job = {
+            match_id: 1193091757,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse truncated replay', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: moment().format('X'),
+            fileName: __dirname + "/truncate.dem"
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                assert(err);
+                console.log(err);
+                done();
+            });
+        });
+    });
+    it('parse invalid file', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: moment().format('X'),
+            fileName: __dirname + "/invalid.dem"
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            console.log(job.data.payload);
+            processors.processParse(job, function(err) {
+                assert(err);
+                console.log(err);
+                done();
+            });
+        });
+    });
     //1v1 game
     //ardm game
-    //regular game
     //test epilogue parse
-    //test broken file
-    //test invalid file
 });
 
 //queries
+//mergeObjects, multiple cases?
 //mergeMatchData: mergeMatchData,
 //generateGraphData: generateGraphData,
-///fillPlayerInfo: fillPlayerInfo (slow for large datasets)
-
-//s3 methods are untested
-
-/*
-it('upload job', function(done) {
-utility.jobs.process('upload', utility.processUpload);
-});
-*/
+//computeStatistics
