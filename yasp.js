@@ -146,7 +146,7 @@ app.param('match_id', function(req, res, next, id) {
                             queries.generateGraphData(match, app.locals.constants);
                         }
                         //Add to cache if we have parsed data
-                        if (match.parsed_data && process.env.NODE_ENV === "production") {
+                        if (match.parsed_data && process.env.NODE_ENV !== "development") {
                             redis.setex(id, 86400, JSON.stringify(match));
                         }
                         return next();
@@ -173,6 +173,7 @@ app.route('/api/abilities').get(function(req, res) {
 app.route('/api/matches').get(function(req, res, next) {
     var options = {};
     var sort = {};
+    var limit = Number(req.query.length) || 10;
     if (req.query.draw) {
         //var search = req.query.search.value
         //options = utility.makeSearch(search, req.query.columns)
@@ -183,7 +184,7 @@ app.route('/api/matches').get(function(req, res, next) {
             return next(new Error(err));
         }
         db.matches.find(options, {
-            limit: Number(req.query.length),
+            limit: limit,
             skip: Number(req.query.start),
             sort: sort,
             fields: {
@@ -527,7 +528,7 @@ app.get('/about', function(req, res, next) {
 });
 app.use(function(req, res, next) {
     res.status(404);
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV !== "development") {
         return res.render('404.jade', {
             error: true
         });
@@ -538,7 +539,7 @@ app.use(function(req, res, next) {
 });
 app.use(function(err, req, res, next) {
     logger.info(err);
-    if (err && process.env.NODE_ENV === "production") {
+    if (err && process.env.NODE_ENV !== "development") {
         return res.status(500).render('500.jade', {
             error: true
         });

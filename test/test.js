@@ -20,6 +20,7 @@ var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
 var queries = require('../queries');
+var request = require('request');
 var wait = 10000;
 var constants = require('../constants')
 Zombie.localhost('localhost', process.env.PORT);
@@ -415,30 +416,49 @@ describe("web", function() {
         });
     });
     describe("/api/matches", function() {
-        //todo use supertest for api?
-        before(function(done) {
-            browser.visit('/api/matches');
-            browser.wait(wait, function(err) {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL+'/api/matches', function(err, resp, body) {
+                assert(resp.statusCode === 200);
                 done(err);
             });
         });
+    });
+    describe("/api/items", function() {
         it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
+            request.get(process.env.ROOT_URL+'/api/items', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("/api/abilities", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL+'/api/abilities', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
         });
     });
     /*
-    //api/items valid
-    //api/items invalid
-    //api/abilities valid
-    //api/abilities invalid
-    //api/matches valid
-    //api/matches invalid
+    describe("POST /upload", function() {
+        it('should upload', function(done) {
+            var formData = {
+                replay: fs.createReadStream(__dirname + '/1193091757.dem')
+            };
+            request.post({
+                url: process.env.ROOT_URL+'/upload',
+                formData: formData
+            }, function(err, resp, body) {
+                done(err);
+            });
+        });
+    });
+    */
+    /*
     //login
     //return
     //logout
-    ///upload (logged in)
-    //POST /upload proper file, too large, invalid file
+    //GET /upload (logged in)
     //preferences
     //fullhistory
     //verify_recaptcha
@@ -601,3 +621,5 @@ describe("parser", function() {
     //todo ardm game
     //todo epilogue parse
 });
+//todo test makesearch
+//todo test makesort
