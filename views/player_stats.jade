@@ -2,7 +2,7 @@ extend player
 
 block playercontent
   .row        
-    .col-md-4        
+    .col-md-12        
       h3 Teammates (Players)
       table.table#teammates
         thead
@@ -20,7 +20,11 @@ block playercontent
               td= teammate.games
               td= teammate.win
               td #{(100*teammate.win/teammate.games).toFixed(2)}%
-    .col-md-4
+  .row
+    .col-md-12
+      include ads/leaderboard_2
+  .row
+    .col-md-12
       h3 Teammates (Heroes)
       table.table#together
         thead
@@ -39,7 +43,11 @@ block playercontent
             td #{t ? t.games : 0}
             td #{t ? t.win : 0}
             td #{t ? (100*t.win/t.games).toFixed(2) : 0.00}%
-    .col-md-4
+  .row
+    .col-md-12
+      include ads/leaderboard_3
+  .row
+    .col-md-12
       h3 Enemies (Heroes)
       table.table#against
         thead
