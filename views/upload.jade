@@ -17,24 +17,6 @@ block content
       label Replay Upload
       input(type="file" name="replay")
     button.btn.btn-success#button Upload
-  script.
-    $("#button").click(function(event){
-      event.preventDefault();
-      $.post(
-        "/verify_recaptcha",
-        {
-          recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
-          recaptcha_response_field: $('#recaptcha_response_field').val()
-        },
-        function(data) {
-          if (data.verified) {
-              $("#upload").submit();
-          } else {
-            $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please Try again.</div");
-            $(".failure").fadeOut(3000);
-            Recaptcha.reload();
-          }
-        }
-      )
-    })
   include ads/leaderboard_2
+  script.
+    upload();

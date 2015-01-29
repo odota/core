@@ -9,7 +9,7 @@ var qtip = require('qtip2');
 $.qtip = qtip;
 //var dataTable = DataTable = require('datatables');
 //$.dataTable = dataTable;
-var constants = require('../../sources.json');
+var constants = require('./sources.json');
 var modes = constants.modes;
 var regions = constants.regions;
 var parse_status = constants.parse_status;
@@ -19,13 +19,15 @@ global.generateCharts = generateCharts;
 global.generateCalHeatmap = generateCalHeatmap;
 global.matchTable = matchTable;
 global.playerTables = playerTables;
+global.playerMatchTables = playerMatchTables;
+global.upload = upload;
+global.buildMap = buildMap;
 
 //run on each page
 $(document).ready(function() {
     process();
     changeTheme();
     tooltips();
-    buildMap();
 });
 
 //ga
@@ -35,7 +37,7 @@ $(document).ready(function() {
         (i[r].q = i[r].q || []).push(arguments)
     }, i[r].l = 1 * new Date();
     a = s.createElement(o),
-    m = s.getElementsByTagName(o)[0];
+        m = s.getElementsByTagName(o)[0];
     a.async = 1;
     a.src = g;
     m.parentNode.insertBefore(a, m)
@@ -43,6 +45,43 @@ $(document).ready(function() {
 ga('create', 'UA-55757642-1', 'auto');
 ga('require', 'displayfeatures');
 ga('send', 'pageview');
+
+function upload() {
+    $("#button").click(function(event) {
+        event.preventDefault();
+        $.post(
+            "/verify_recaptcha", {
+                recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
+                recaptcha_response_field: $('#recaptcha_response_field').val()
+            },
+            function(data) {
+                if (data.verified) {
+                    $("#upload").submit();
+                }
+                else {
+                    $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please Try again.</div");
+                    $(".failure").fadeOut(3000);
+                    Recaptcha.reload();
+                }
+            }
+        );
+    });
+}
+
+function playerMatchTables() {
+    $('#matches').dataTable({
+        "order": [
+            [0, "desc"]
+        ],
+        "columnDefs": [{
+            "targets": [1],
+            "orderData": [2]
+        }, {
+            "targets": [2],
+            visible: false
+        }]
+    });
+}
 
 function playerTables() {
     $('#teammates').dataTable({
@@ -285,145 +324,143 @@ function tooltips() {
 }
 
 function buildMap() {
-    if ($("#map").length) {
-        console.log('building map');
-        var buildingData = [{
-            id: "t4br",
-            style: "position: absolute; top: 78%; left: 17%;"
-        }, {
-            id: "t4tr",
-            style: "position: absolute; top: 77%; left: 15%;"
-        }, {
-            id: "t3br",
-            style: "position: absolute; top: 86%; left: 26%;"
-        }, {
-            id: "t2br",
-            style: "position: absolute; top: 86%; left: 43%;"
-        }, {
-            id: "t1br",
-            style: "position: absolute; top: 86%; left: 80%;"
-        }, {
-            id: "t3mr",
-            style: "position: absolute; top: 72%; left: 22%;"
-        }, {
-            id: "t2mr",
-            style: "position: absolute; top: 64%; left: 30%;"
-        }, {
-            id: "t1mr",
-            style: "position: absolute; top: 56%; left: 38%;"
-        }, {
-            id: "t3tr",
-            style: "position: absolute; top: 67%; left: 9%;"
-        }, {
-            id: "t2tr",
-            style: "position: absolute; top: 50%; left: 9%;"
-        }, {
-            id: "t1tr",
-            style: "position: absolute; top: 40%; left: 9%;"
-        }, {
-            id: "brbr",
-            style: "position: absolute; top: 85%; left: 24%;"
-        }, {
-            id: "bmbr",
-            style: "position: absolute; top: 87%; left: 24%;"
-        }, {
-            id: "brmr",
-            style: "position: absolute; top: 73%; left: 18%;"
-        }, {
-            id: "bmmr",
-            style: "position: absolute; top: 74%; left: 20%;"
-        }, {
-            id: "brtr",
-            style: "position: absolute; top: 69%; left: 8%;"
-        }, {
-            id: "bmtr",
-            style: "position: absolute; top: 69%; left: 10%;"
-        }, {
-            id: "t4bd",
-            style: "position: absolute; top: 19%; left: 83%;"
-        }, {
-            id: "t4td",
-            style: "position: absolute; top: 18%; left: 81%;"
-        }, {
-            id: "t3bd",
-            style: "position: absolute; top: 31%; left: 87%;"
-        }, {
-            id: "t2bd",
-            style: "position: absolute; top: 45%; left: 87%;"
-        }, {
-            id: "t1bd",
-            style: "position: absolute; top: 60%; left: 87%;"
-        }, {
-            id: "t3md",
-            style: "position: absolute; top: 27%; left: 73%;"
-        }, {
-            id: "t2md",
-            style: "position: absolute; top: 37%; left: 63%;"
-        }, {
-            id: "t1md",
-            style: "position: absolute; top: 47%; left: 53%;"
-        }, {
-            id: "t3td",
-            style: "position: absolute; top: 13%; left: 70%;"
-        }, {
-            id: "t2td",
-            style: "position: absolute; top: 13%; left: 50%;"
-        }, {
-            id: "t1td",
-            style: "position: absolute; top: 13%; left: 20%;"
-        }, {
-            id: "brbd",
-            style: "position: absolute; top: 29%; left: 86%;"
-        }, {
-            id: "bmbd",
-            style: "position: absolute; top: 29%; left: 88%;"
-        }, {
-            id: "brmd",
-            style: "position: absolute; top: 25%; left: 74%;"
-        }, {
-            id: "bmmd",
-            style: "position: absolute; top: 26%; left: 76%;"
-        }, {
-            id: "brtd",
-            style: "position: absolute; top: 12%; left: 72%;"
-        }, {
-            id: "bmtd",
-            style: "position: absolute; top: 14%; left: 72%;"
-        }, {
-            id: "ar",
-            style: "position: absolute; top: 79%; left: 12%;"
-        }, {
-            id: "ad",
-            style: "position: absolute; top: 14%; left: 83%;"
-        }]
+    console.log('building map');
+    var buildingData = [{
+        id: "t4br",
+        style: "position: absolute; top: 78%; left: 17%;"
+    }, {
+        id: "t4tr",
+        style: "position: absolute; top: 77%; left: 15%;"
+    }, {
+        id: "t3br",
+        style: "position: absolute; top: 86%; left: 26%;"
+    }, {
+        id: "t2br",
+        style: "position: absolute; top: 86%; left: 43%;"
+    }, {
+        id: "t1br",
+        style: "position: absolute; top: 86%; left: 80%;"
+    }, {
+        id: "t3mr",
+        style: "position: absolute; top: 72%; left: 22%;"
+    }, {
+        id: "t2mr",
+        style: "position: absolute; top: 64%; left: 30%;"
+    }, {
+        id: "t1mr",
+        style: "position: absolute; top: 56%; left: 38%;"
+    }, {
+        id: "t3tr",
+        style: "position: absolute; top: 67%; left: 9%;"
+    }, {
+        id: "t2tr",
+        style: "position: absolute; top: 50%; left: 9%;"
+    }, {
+        id: "t1tr",
+        style: "position: absolute; top: 40%; left: 9%;"
+    }, {
+        id: "brbr",
+        style: "position: absolute; top: 85%; left: 24%;"
+    }, {
+        id: "bmbr",
+        style: "position: absolute; top: 87%; left: 24%;"
+    }, {
+        id: "brmr",
+        style: "position: absolute; top: 73%; left: 18%;"
+    }, {
+        id: "bmmr",
+        style: "position: absolute; top: 74%; left: 20%;"
+    }, {
+        id: "brtr",
+        style: "position: absolute; top: 69%; left: 8%;"
+    }, {
+        id: "bmtr",
+        style: "position: absolute; top: 69%; left: 10%;"
+    }, {
+        id: "t4bd",
+        style: "position: absolute; top: 19%; left: 83%;"
+    }, {
+        id: "t4td",
+        style: "position: absolute; top: 18%; left: 81%;"
+    }, {
+        id: "t3bd",
+        style: "position: absolute; top: 31%; left: 87%;"
+    }, {
+        id: "t2bd",
+        style: "position: absolute; top: 45%; left: 87%;"
+    }, {
+        id: "t1bd",
+        style: "position: absolute; top: 60%; left: 87%;"
+    }, {
+        id: "t3md",
+        style: "position: absolute; top: 27%; left: 73%;"
+    }, {
+        id: "t2md",
+        style: "position: absolute; top: 37%; left: 63%;"
+    }, {
+        id: "t1md",
+        style: "position: absolute; top: 47%; left: 53%;"
+    }, {
+        id: "t3td",
+        style: "position: absolute; top: 13%; left: 70%;"
+    }, {
+        id: "t2td",
+        style: "position: absolute; top: 13%; left: 50%;"
+    }, {
+        id: "t1td",
+        style: "position: absolute; top: 13%; left: 20%;"
+    }, {
+        id: "brbd",
+        style: "position: absolute; top: 29%; left: 86%;"
+    }, {
+        id: "bmbd",
+        style: "position: absolute; top: 29%; left: 88%;"
+    }, {
+        id: "brmd",
+        style: "position: absolute; top: 25%; left: 74%;"
+    }, {
+        id: "bmmd",
+        style: "position: absolute; top: 26%; left: 76%;"
+    }, {
+        id: "brtd",
+        style: "position: absolute; top: 12%; left: 72%;"
+    }, {
+        id: "bmtd",
+        style: "position: absolute; top: 14%; left: 72%;"
+    }, {
+        id: "ar",
+        style: "position: absolute; top: 79%; left: 12%;"
+    }, {
+        id: "ad",
+        style: "position: absolute; top: 14%; left: 83%;"
+    }]
 
-        var bits = pad(Number($('#map').attr('data-tower-radiant')).toString(2), 11)
-        bits += pad(Number($('#map').attr('data-barracks-radiant')).toString(2), 6)
-        bits += pad(Number($('#map').attr('data-tower-dire')).toString(2), 11)
-        bits += pad(Number($('#map').attr('data-barracks-dire')).toString(2), 6)
-        bits += $('#map').attr('data-radiant-win') === "1" ? "10" : "01";
-        //concat, iterate through bits of all four status values
-        //if 1, create image
-        //building data in correct order
-        //determine ancient display by match winner
-        for (var i = 0; i < bits.length; i++) {
-            var d = buildingData[i]
-            d.src = 'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/'
-            d.src += buildingData[i].id.slice(0, 1) === "t" ? 'tower' : 'racks'
-            d.src += buildingData[i].id.slice(-1) === "r" ? '_radiant.png' : '_dire.png'
-            d.class = buildingData[i].id.slice(0, 1) === "a" ? "" : "icon"
-            d.style += bits[i] === "1" ? "" : "opacity: 0.2;"
-            $('#map').append(($('<img>', d)))
-        }
+    var bits = pad(Number($('#map').attr('data-tower-radiant')).toString(2), 11);
+    bits += pad(Number($('#map').attr('data-barracks-radiant')).toString(2), 6);
+    bits += pad(Number($('#map').attr('data-tower-dire')).toString(2), 11);
+    bits += pad(Number($('#map').attr('data-barracks-dire')).toString(2), 6);
+    bits += $('#map').attr('data-radiant-win') === "1" ? "10" : "01";
+    //concat, iterate through bits of all four status values
+    //if 1, create image
+    //building data in correct order
+    //determine ancient display by match winner
+    for (var i = 0; i < bits.length; i++) {
+        var d = buildingData[i];
+        d.src = 'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/';
+        d.src += buildingData[i].id.slice(0, 1) === "t" ? 'tower' : 'racks';
+        d.src += buildingData[i].id.slice(-1) === "r" ? '_radiant.png' : '_dire.png';
+        d.class = buildingData[i].id.slice(0, 1) === "a" ? "" : "icon";
+        d.style += bits[i] === "1" ? "" : "opacity: 0.2;";
+        $('#map').append(($('<img>', d)));
     }
 }
 
 function generateCharts(data) {
-    var height = 400
-    var difference = data.difference
-    var gold = data.gold
-    var xp = data.xp
-    var lh = data.lh
+    var height = 400;
+    var difference = data.difference;
+    var gold = data.gold;
+    var xp = data.xp;
+    var lh = data.lh;
     var charts = [{
         bindTo: "#chart-diff",
         columns: difference,
@@ -452,7 +489,7 @@ function generateCharts(data) {
         type: "spline",
         xLabel: 'Game Time (minutes)',
         yLabel: 'LH'
-    }]
+    }];
 
     async.eachSeries(charts, function(chart, cb) {
         c3.generate({
@@ -470,7 +507,7 @@ function generateCharts(data) {
                     type: 'timeseries',
                     tick: {
                         format: function(x) {
-                            return moment().startOf('day').seconds(x).format("H:mm")
+                            return moment().startOf('day').seconds(x).format("H:mm");
                         }
                     },
                     label: chart.xLabel
@@ -479,9 +516,9 @@ function generateCharts(data) {
                     label: chart.yLabel
                 }
             }
-        })
-        setTimeout(cb, 50)
-    })
+        });
+        setTimeout(cb, 50);
+    });
 }
 
 function generateCalHeatmap(data) {
@@ -504,7 +541,7 @@ function generateCalHeatmap(data) {
         nextSelector: "#next"
     });
 }
-
+/*
 function generateTimeline(match) {
     $(document).on('ready', function() {
         for (var player in match.parsed_data.heroes) {
@@ -568,7 +605,7 @@ function generateTimeline(match) {
         }
     });
 }
-
+*/
 function format(input) {
     input = Number(input);
     if (input === 0) {
@@ -584,10 +621,10 @@ function pad(n, width, z) {
 }
 
 function formatSeconds(input) {
-    var absTime = Math.abs(input)
-    var minutes = ~~(absTime / 60)
-    var seconds = pad(absTime % 60, 2)
-    var time = ((input < 0) ? "-" : "")
-    time += minutes + ":" + seconds
+    var absTime = Math.abs(input);
+    var minutes = ~~(absTime / 60);
+    var seconds = pad(absTime % 60, 2);
+    var time = ((input < 0) ? "-" : "");
+    time += minutes + ":" + seconds;
     return time;
 }

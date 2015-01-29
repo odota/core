@@ -44,6 +44,7 @@ function processParse(job, cb) {
                 fs.unlinkSync(job2.data.fileName);
             }
             //queue job for api to make sure it's in db
+            //todo do we want to add uploader/file information to this job?
             queueReq("api_details", job2.data.payload, function(err) {
                 cb(err);
             });

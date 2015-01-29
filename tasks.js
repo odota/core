@@ -1,6 +1,6 @@
 var utility = require('./utility');
 var db = utility.db;
-var fs= require('fs');
+var fs = require('fs');
 var async = require('async');
 var remote = process.env.REMOTE;
 var queueReq = utility.queueReq;
@@ -226,10 +226,9 @@ function updateSummaries(cb) {
         var arr = [];
         var i = 0;
         async.map(docs, function(player, cb) {
-            console.log(player);
             arr.push(player);
             i += 1;
-            if (arr.length >= 100 || i >= docs.length) {
+            if (arr.length >= 100 || docs[i + 1]) {
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
