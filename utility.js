@@ -93,6 +93,7 @@ function isRadiant(player) {
 function queueReq(type, payload, cb) {
     checkDuplicate(type, payload, function(err) {
         if (err) {
+            //already have this match in db
             logger.info(err);
             return cb(null);
         }
@@ -175,7 +176,8 @@ function generateJob(type, payload) {
             fileName: payload.fileName,
             payload: {
                 match_id: payload.match_id,
-                start_time: payload.start_time
+                start_time: payload.start_time,
+                uploader: payload.uploader
             }
         };
     }

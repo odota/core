@@ -122,7 +122,6 @@ function playerTables() {
             visible: false
         }]
     });
-    console.log(durations);
     c3.generate({
         bindto: "#chart-duration",
         data: {
@@ -133,10 +132,8 @@ function playerTables() {
         },
         bar: {
             width: {
-                ratio: 0.5 // this makes bar width 50% of length between ticks
+                ratio: 0.9
             }
-            // or
-            //width: 100 // this makes bar width 100px
         }
     });
 }
@@ -262,8 +259,8 @@ function changeTheme() {
                     $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
                 }
                 $(".sync").fadeOut(3000);
-            })
-    })
+            });
+    });
     var fh = $("#fullhistory");
     fh.on('click', function() {
         $.post(
@@ -274,8 +271,8 @@ function changeTheme() {
                     $(".page-header").after("<div role='alert' class='sync alert alert-success'>Queued for full history!</div>");
                     $(".sync").fadeOut(3000);
                 }
-            })
-    })
+            });
+    });
 }
 
 function tooltips() {

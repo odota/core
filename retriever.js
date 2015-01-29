@@ -14,6 +14,7 @@ var app = express();
 var lock = false;
 var ready = false;
 var counts = {};
+var totalAttempts = 0;
 for (var i = 0; i < users.length; i++) {
     counts[i] = {
         attempts: 0,
@@ -24,6 +25,7 @@ app.get('/', function(req, res) {
     if (!req.query.match_id) {
         return res.json({
             loginNum: loginNum,
+            totalAttempts: totalAttempts,
             counts: counts
         });
     }
@@ -43,7 +45,7 @@ app.get('/', function(req, res) {
 
 function logOnSteam() {
     if (lock) {
-        //console.log("locked");
+        console.log("locked");
         return;
     }
     lock = true;
@@ -84,8 +86,8 @@ function logOnSteam() {
             fs.writeFile("servers", JSON.stringify(servers));
         },
         onSteamError = function onSteamError(e) {
-            ready = false;
             console.log(e);
+            reset();
         };
     Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
 }
@@ -97,14 +99,18 @@ function getGCReplayUrl(match_id, cb) {
     }
     else {
         console.log("[DOTA] requesting replay %s, loginNum: %s, numusers: %s", match_id, loginNum, users.length);
-        var timeOut = setTimeout(function() {
+        var dotaTimeOut = setTimeout(function() {
             console.log("[DOTA] request for replay timed out");
             reset();
             cb("timeout");
         }, 10000);
+        totalAttempts += 1;
+        if (totalAttempts >= 500) {
+            selfDestruct();
+        }
         counts[loginNum].attempts += 1;
         Dota2.matchDetailsRequest(match_id, function(err, data) {
-            clearTimeout(timeOut);
+            clearTimeout(dotaTimeOut);
             counts[loginNum].success += 1;
             cb(err, data);
         });
@@ -120,9 +126,11 @@ function reset() {
     lock = false;
 }
 
-setTimeout(function() {
+function selfDestruct() {
     process.exit(0);
-}, 1000 * 60 * 60);
+}
+
+setTimeout(selfDestruct, 1000 * 60 * 60 * 2);
 
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;

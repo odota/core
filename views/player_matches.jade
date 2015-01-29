@@ -11,6 +11,7 @@ block playercontent
        th Result
        th Game Mode
        th Duration
+       th Region
        th Played
        th K
        th D
@@ -35,6 +36,7 @@ block playercontent
         td= match.player_win ? "Won" : "Lost"
         td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
         td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+        td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
         td= moment.unix(match.start_time + match.duration).fromNow()
         td=match.players[0].kills
         td=match.players[0].deaths

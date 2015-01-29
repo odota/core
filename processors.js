@@ -43,12 +43,10 @@ function processParse(job, cb) {
             if (process.env.DELETE_REPLAYS && job2.data.fileName) {
                 fs.unlinkSync(job2.data.fileName);
             }
+            //todo handle case where !job.data.payload.match_id
+            //this means it's a match not available in the api and we'll have to reconstruct the api data from replay
             //queue job for api to make sure it's in db
             queueReq("api_details", job2.data.payload, function(err, apijob) {
-                if (apijob) {
-                    apijob.data.uploader = job2.data.uploader;
-                    apijob.update();
-                }
                 cb(err);
             });
         }
@@ -228,8 +226,10 @@ function processApi(job, cb) {
         else if (payload.match_id) {
             //response for single match details
             var match = data.result;
-            //add parsed_data if already there
-            match.parsed_data = payload.parsed_data;
+            //join payload with match
+            for (var prop in payload) {
+                match[prop] = payload.prop;
+            }
             insertMatch(match, function(err) {
                 cb(err);
             });
