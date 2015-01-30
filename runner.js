@@ -1,5 +1,6 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var tasks = require('./tasks');
-
 var args = process.argv.slice(2);
 var functionMap = {
     "fullhistory": tasks.getFullMatchHistory,
