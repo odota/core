@@ -58,15 +58,16 @@ nock('https://api.steampowered.com')
     })
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
     .times(1)
-    .reply(200, {
-        result: testdata.matches[0]
-    })
+    .reply(200, testdata.details_api)
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
     .times(2)
     .reply(200, testdata.summaries_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
     .times(1)
     .reply(200, testdata.history_api)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .times(1)
+    .reply(200, testdata.history_api2)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .times(1)
     .reply(200, testdata.heroes_api);
@@ -345,6 +346,19 @@ describe("web", function() {
             done();
         });
     });
+    describe("/players/:valid/:invalid", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
     describe("/players/:invalid/matches", function() {
         before(function(done) {
             browser.visit('/players/1/matches');
@@ -422,6 +436,104 @@ describe("web", function() {
             done();
         });
     });
+    describe("/matches/:valid/:invalid (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+    describe("/login", function() {
+        before(function(done) {
+            browser.visit('/login');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/return", function() {
+        before(function(done) {
+            browser.visit('/return');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/about", function() {
+        before(function(done) {
+            browser.visit('/about');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    /*
+    describe("/upload (logged in)", function() {
+        before(function(done) {
+            browser.visit('/upload');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("POST /upload", function() {
+        it('should upload', function(done) {
+            var formData = {
+                replay: fs.createReadStream(__dirname + '/1193091757.dem')
+            };
+            request.post({
+                url: process.env.ROOT_URL+'/upload',
+                formData: formData
+            }, function(err, resp, body) {
+                done(err);
+            });
+        });
+    });
+    */
+    describe("/logout", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("invalid page", function() {
+        before(function(done) {
+            browser.visit('/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 404', function(done) {
+            browser.assert.status(404);
+            done();
+        });
+    });
+    //todo, use supertest for api endpoints
     describe("/api/matches", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/api/matches', function(err, resp, body) {
@@ -446,64 +558,28 @@ describe("web", function() {
             });
         });
     });
-    describe("/login", function() {
-        before(function(done) {
-            browser.visit('/login');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-    });
-    describe("/about", function() {
-        before(function(done) {
-            browser.visit('/about');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should 200', function(done) {
-            browser.assert.status(200);
-            done();
-        });
-    });
-    /*
-    describe("POST /upload", function() {
-        it('should upload', function(done) {
-            var formData = {
-                replay: fs.createReadStream(__dirname + '/1193091757.dem')
-            };
-            request.post({
-                url: process.env.ROOT_URL+'/upload',
-                formData: formData
-            }, function(err, resp, body) {
+    describe("/preferences", function() {
+        it('should load', function(done) {
+            request.get(process.env.ROOT_URL + '/preferences', function(err, resp, body) {
+                //todo assert
                 done(err);
             });
         });
     });
-    */
-    /*
-    //return
-    //GET /upload (logged in)
-    //preferences
-    //fullhistory
-    //verify_recaptcha
-    //logout
-    */
-    describe("invalid page", function() {
-        before(function(done) {
-            browser.visit('/asdf');
-            browser.wait(wait, function(err) {
-                assert(err);
-                done();
+    describe("/fullhistory", function() {
+        it('should load', function(done) {
+            request.get(process.env.ROOT_URL + '/fullhistory', function(err, resp, body) {
+                //todo assert
+                done(err);
             });
         });
-        it('should 404', function(done) {
-            browser.assert.status(404);
-            done();
+    });
+    describe("/verify_captcha", function() {
+        it('should load', function(done) {
+            request.get(process.env.ROOT_URL + '/verify_captcha', function(err, resp, body) {
+                //todo assert
+                done(err);
+            });
         });
     });
 });
@@ -543,7 +619,7 @@ describe("tasks", function() {
 describe("backend", function() {
     it('process details request', function(done) {
         utility.queueReq("api_details", {
-            match_id: 115178218
+            match_id: 870061127
         }, function(err, job) {
             assert(job);
             processors.processApi(job, function(err) {
@@ -663,6 +739,14 @@ describe("parser", function() {
     //todo ardm game
     //todo epilogue parse
 });
-//todo test makesearch
-//todo test makesort
-//todo api error, invalid data (supertest)
+describe('unit tests', function() {
+    it('makesearch', function(done) {
+        utility.makeSearch({}, []);
+        done();
+    });
+    it('makesort', function(done) {
+        utility.makeSort([], []);
+        done();
+    });
+});
+//todo test fullhistory pagination
