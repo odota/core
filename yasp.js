@@ -174,10 +174,17 @@ app.route('/api/matches').get(function(req, res, next) {
     var sort = {};
     var limit = Number(req.query.length) || 10;
     if (req.query.draw) {
-        //var search = req.query.search.value
-        //options = utility.makeSearch(search, req.query.columns)
-        console.log(req.query.order);
-        console.log(req.query.columns);
+        var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+        var fs = require('fs');
+        fs.writeFile("./output.json", fullUrl, function(err) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                console.log("The file was saved!");
+            }
+        });
+        options = utility.makeSearch(req.query.search.value, req.query.columns);
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
     db.matches.count(options, function(err, count) {
@@ -421,24 +428,26 @@ app.route('/upload')
         });
     });
 app.route('/fullhistory').post(function(req, res) {
-    if (!req.user) {
+    if (req.user) {
+        db.players.update({
+            account_id: req.user.account_id
+        }, {
+            $set: {
+                full_history: 0,
+                full_history_time: new Date()
+            }
+        }, function(err, num) {
+            var error = (err || !num);
+            res.json({
+                error: error
+            });
+        });
+    }
+    else {
         return res.json({
             error: "not signed in"
         });
     }
-    db.players.update({
-        account_id: req.user.account_id
-    }, {
-        $set: {
-            full_history: 0,
-            full_history_time: new Date()
-        }
-    }, function(err, num) {
-        var error = (err || !num);
-        res.json({
-            error: error
-        });
-    });
 });
 app.route('/status').get(function(req, res, next) {
     async.parallel({
