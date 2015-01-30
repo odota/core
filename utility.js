@@ -243,7 +243,7 @@ function getData(url, cb) {
                     }
                     else if (body.result.error || body.result.status === 2) {
                         //valid response, but invalid data, retry
-                        logger.info("invalid data: %s, %s", target, body);
+                        logger.info("invalid data: %s, %s", target, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
