@@ -31,6 +31,4 @@ append content
 block footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
-    var goldBreakdown = !{JSON.stringify(match.goldBreakdown)};
     generateCharts(graphData);
-    
