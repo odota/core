@@ -4,8 +4,6 @@ var fs = require('fs');
 var async = require('async');
 var queueReq = utility.queueReq;
 var generateJob = utility.generateJob;
-var request = require('request');
-var cheerio = require('cheerio');
 var getData = utility.getData;
 var urllib = require('url');
 var moment = require('moment');
@@ -125,47 +123,7 @@ function getFullMatchHistory(done) {
                 //done with this player
                 cb(err);
             });
-        }
-        /*
-            function getMatchPage(url, cb) {
-                request({
-                    url: url,
-                    headers: {
-                        'User-Agent': 'request'
-                    }
-                }, function(err, resp, body) {
-                    if (err || resp.statusCode !== 200) {
-                        return setTimeout(function() {
-                            getMatchPage(url, cb);
-                        }, 1000);
-                    }
-                    console.log("[REMOTE] %s", url);
-                    var parsedHTML = cheerio.load(body);
-                    var matchCells = parsedHTML('td[class=cell-xlarge]');
-                    matchCells.each(function(i, matchCell) {
-                        var match_url = remote + cheerio(matchCell).children().first().attr('href');
-                        var match_id = Number(match_url.split(/[/]+/).pop());
-                        match_ids[match_id] = true;
-                    });
-                    var nextPath = parsedHTML('a[rel=next]').first().attr('href');
-                    if (nextPath) {
-                        getMatchPage(remote + nextPath, cb);
-                    }
-                    else {
-                        cb(null);
-                    }
-                });
-            }
-
-            function getHistoryRemote(player, cb) {
-                var account_id = player.account_id;
-                var player_url = remote + "/players/" + account_id + "/matches";
-                getMatchPage(player_url, function(err) {
-                    console.log("%s matches found", Object.keys(match_ids).length);
-                    cb(err);
-                });
-            }
-        */
+    }
 }
 
 function unparsed(done) {
