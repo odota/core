@@ -10,13 +10,55 @@ var generateJob = utility.generateJob;
 var async = require('async');
 var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
+var kue = utility.kue;
+var moment = require('moment');
 
 startScan();
 jobs.process('api', processors.processApi);
-setInterval(tasks.clearActiveJobs, 60 * 1000, function() {});
-setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
+setInterval(clearActiveJobs, 60 * 1000, function() {});
+setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
 setInterval(tasks.getFullMatchHistory, 2 * 60 * 60 * 1000, function() {});
 setInterval(tasks.unnamed, 30 * 60 * 1000, function() {});
+
+function clearActiveJobs(cb) {
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (err) {
+                    return cb(err);
+                }
+                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
+                    console.log("unstuck job %s", id);
+                    job.inactive();
+                }
+                cb(err);
+            });
+        }, function(err) {
+            cb(err);
+        });
+    });
+}
+
+function untrackPlayers(cb) {
+    db.players.update({
+        track: 1,
+        last_visited: {
+            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 5, 'days').toDate()
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    }, function(err, num) {
+        console.log("[UNTRACK] Untracked %s users", num);
+        cb(err, num);
+    });
+}
 
 function startScan() {
     if (process.env.START_SEQ_NUM === "AUTO") {

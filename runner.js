@@ -5,7 +5,6 @@ var functionMap = {
     "fullhistory": tasks.getFullMatchHistory,
     "unnamed": tasks.unnamed,
     "constants": tasks.generateConstants,
-    "untracked": tasks.untrackPlayers,
     "unparsed": tasks.unparsed
 };
 functionMap[args[0]](function(err, res) {
