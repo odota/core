@@ -274,7 +274,6 @@ function listeners() {
         $.post(
             "/fullhistory", {},
             function(data) {
-                console.log(data);
                 if (!data.error) {
                     $(".page-header").after("<div role='alert' class='sync alert alert-success'>Queued for full history!</div>");
                     $(".sync").fadeOut(3000);
