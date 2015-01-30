@@ -244,7 +244,7 @@ function getData(url, cb) {
                     else if (body.result.error || body.result.status === 2) {
                         //valid response, but invalid data, retry
                         logger.info("invalid data: %s, %s", target, body);
-                        return cb("invalid data");
+                        return getData(url, cb);
                     }
                 }
                 //generic valid response
