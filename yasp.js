@@ -425,7 +425,7 @@ app.route('/fullhistory').post(function(req, res) {
         });
     });
 });
-app.get('/status', function(req, res, next) {
+app.route('/status').get(function(req, res, next) {
     async.parallel({
             matches: function(cb) {
                 db.matches.count({}, function(err, res) {
@@ -524,7 +524,7 @@ app.get('/status', function(req, res, next) {
             });
         });
 });
-app.get('/about', function(req, res, next) {
+app.route('/about').get(function(req, res, next) {
     res.render("about");
 });
 app.use(function(req, res, next) {
