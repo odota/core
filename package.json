@@ -54,7 +54,7 @@
     "database-cleaner": "~0.9.1",
     "mongodb": "~1.4.29",
     "coveralls": "2.11.2",
-    "nock": "~0.58.0",
+    "nock": "~0.59.0",
     "zombie": "~2.5.1",
     "watchify": "~2.2.1",
     "browserify": "~8.1.1",

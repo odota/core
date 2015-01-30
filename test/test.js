@@ -1,5 +1,5 @@
 process.env.MONGO_URL = "mongodb://localhost/test";
-process.env.REDIS_URL = 'redis://localhost:6379/1';
+process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
 process.env.RETRIEVER_HOST = "http://localhost:5100";
@@ -21,8 +21,6 @@ var tasks = require('../tasks');
 var fs = require('fs');
 var request = require('request');
 var wait = 10000;
-var kue = utility.kue;
-var jobs = utility.jobs;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -30,7 +28,7 @@ var browser = new Zombie({
 });
 
 //fake retriever response
-nock('http://localhost:5100')
+nock(process.env.RETRIEVER_HOST)
     .filteringPath(function(path) {
         return '/';
     })

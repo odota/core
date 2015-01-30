@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var utility = require('./utility');
 var processors = require('./processors');
 var tasks = require('./tasks');
