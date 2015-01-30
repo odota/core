@@ -49,7 +49,7 @@ var logger = new(winston.Logger)({
  * Returns a BigNumber
  */
 function convert64to32(id) {
-    return BigNumber(id).minus('76561197960265728');
+    return new BigNumber(id).minus('76561197960265728');
 }
 
 /*
@@ -58,7 +58,7 @@ function convert64to32(id) {
  * Returns a BigNumber
  */
 function convert32to64(id) {
-    return BigNumber('76561197960265728').plus(id);
+    return new BigNumber('76561197960265728').plus(id);
 }
 
 /*
@@ -193,12 +193,12 @@ function runParse(input, cb) {
     else {
         inStream = streamifier.createReadStream(input);
     }
-    inStream.pipe(cp.stdin);
     inStream.on('error', function(err) {
         logger.info(err);
         cp.kill();
         return cb(err);
     });
+    inStream.pipe(cp.stdin);
     cp.stdout.on('data', function(data) {
         output += data;
     });
@@ -284,29 +284,7 @@ function getData(url, cb) {
     }
     */
 function insertMatch(match, cb) {
-    var summaries = {
-        summaries_id: new Date(),
-        players: match.players
-    };
-    //queue for player names
-    /*
-    queueReq("api_summaries", summaries, function(err) {
-        if (err) {
-            return logger.info(err);
-        }
-    });
-    */
-    if (match.parsed_data) {
-        match.parse_status = 2;
-    }
-    else {
-        match.parse_status = 0;
-        queueReq("parse", match, function(err) {
-            if (err) {
-                return logger.info(err);
-            }
-        });
-    }
+    match.parse_status = match.parsed_data ? 2 : 0;
     db.matches.update({
             match_id: match.match_id
         }, {
@@ -315,7 +293,14 @@ function insertMatch(match, cb) {
             upsert: true
         },
         function(err) {
-            cb(err);
+            if (match.parse_status === 0) {
+                queueReq("parse", match, function(err) {
+                    cb(err);
+                });
+            }
+            else {
+                cb(err);
+            }
         });
 }
 

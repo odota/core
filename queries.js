@@ -191,14 +191,10 @@ function computeStatistics(player, cb) {
         if (err) {
             return cb(err);
         }
-        //array to store match durations in minutes
-        var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var counts = {};
         var against = {};
         var together = {};
         for (var i = 0; i < matches.length; i++) {
-            var mins = Math.floor(matches[i].duration / 60) % 120;
-            arr[mins] += 1;
             for (var j = 0; j < matches[i].players.length; j++) {
                 var tm = matches[i].players[j];
                 var tm_hero = tm.hero_id;
@@ -239,7 +235,6 @@ function computeStatistics(player, cb) {
                 }
             }
         }
-        player.durations = arr;
         player.together = together;
         player.against = against;
         player.teammates = [];

@@ -12,8 +12,8 @@
     "constants": "node runner.js constants ",
     "fullhistory": "node runner.js fullhistory",
     "unnamed": "node runner.js unnamed",
-    "browserify": "browserify browser.js | uglifyjs > public/bundle.js",
-    "watchify": "watchify browser.js -o public/bundle.js --debug --verbose",
+    "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
+    "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
     "build": "mvn -q -f parser/pom.xml package && npm run constants && npm run browserify"
   },
   "repository": {
@@ -47,8 +47,7 @@
     "streamifier": "~0.1.0",
     "steam": "~0.6.7",
     "dota2": "~0.6.2",
-    "foreman": "~1.3.0",
-    "mongodb": "~1.4.29"
+    "foreman": "~1.3.0"
   },
   "devDependencies": {
     "mocha": "~2.1.0",
@@ -63,7 +62,6 @@
     "numeral": "~1.5.3",
     "datatables": "~1.10.5-dev",
     "jquery": "~2.1.3",
-    "d3": "~3.5.3",
     "c3": "~0.4.9",
     "cal-heatmap": "~3.5.1",
     "qtip2": "~2.2.0",

@@ -19,10 +19,8 @@ var app = require('../yasp').listen(process.env.PORT);
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
-var queries = require('../queries');
 var request = require('request');
 var wait = 10000;
-var constants = require('../constants')
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -241,6 +239,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -254,6 +253,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1/details');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -267,6 +267,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/players/1');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -343,6 +344,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/players/1/matches');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -417,7 +419,7 @@ describe("web", function() {
     });
     describe("/api/matches", function() {
         it('should 200', function(done) {
-            request.get(process.env.ROOT_URL+'/api/matches', function(err, resp, body) {
+            request.get(process.env.ROOT_URL + '/api/matches', function(err, resp, body) {
                 assert(resp.statusCode === 200);
                 done(err);
             });
@@ -425,7 +427,7 @@ describe("web", function() {
     });
     describe("/api/items", function() {
         it('should 200', function(done) {
-            request.get(process.env.ROOT_URL+'/api/items', function(err, resp, body) {
+            request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
                 assert(resp.statusCode === 200);
                 done(err);
             });
@@ -433,10 +435,34 @@ describe("web", function() {
     });
     describe("/api/abilities", function() {
         it('should 200', function(done) {
-            request.get(process.env.ROOT_URL+'/api/abilities', function(err, resp, body) {
+            request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
                 assert(resp.statusCode === 200);
                 done(err);
             });
+        });
+    });
+    describe("/login", function() {
+        before(function(done) {
+            browser.visit('/login');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/about", function() {
+        before(function(done) {
+            browser.visit('/about');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
         });
     });
     /*
@@ -455,14 +481,26 @@ describe("web", function() {
     });
     */
     /*
-    //login
     //return
-    //logout
     //GET /upload (logged in)
     //preferences
     //fullhistory
     //verify_recaptcha
+    //logout
     */
+    describe("invalid page", function() {
+        before(function(done) {
+            browser.visit('/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 404', function(done) {
+            browser.assert.status(404);
+            done();
+        });
+    });
 });
 
 describe("tasks", function() {
@@ -622,3 +660,5 @@ describe("parser", function() {
 });
 //todo test makesearch
 //todo test makesort
+//todo fullhistory with mock api
+//todo api error, invalid data (supertest)

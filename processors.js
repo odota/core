@@ -22,7 +22,7 @@ function processParse(job, cb) {
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        if (err === "replay expired") {
+        if (err === "replay expired" || (job2 && job2.attempts.remaining <= 0)) {
             logger.info(err);
             db.matches.update({
                 match_id: match_id
@@ -162,14 +162,15 @@ function downloadReplayData(job, url, cb) {
     var archiveName = fileName + ".bz2";
     logger.info("[PARSER] downloading from %s", url);
     var t1 = new Date().getTime();
-    var r = request({
+    var downStream = request.get({
         url: url,
         encoding: null
-    }).pipe(fs.createWriteStream(archiveName));
-    r.on('error', function(err) {
+    })
+    downStream.on('error', function(err) {
+        logger.info(err);
         return cb(err);
     });
-    r.on('finish', function() {
+    downStream.on('end', function() {
         var t2 = new Date().getTime();
         logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
         decompress(archiveName, function(err) {
@@ -183,6 +184,7 @@ function downloadReplayData(job, url, cb) {
             return parseReplay(job, fileName, cb);
         });
     });
+    downStream.pipe(fs.createWriteStream(archiveName));
 }
 
 function parseReplay(job, input, cb) {
