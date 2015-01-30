@@ -64,6 +64,9 @@ nock('https://api.steampowered.com')
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
     .times(2)
     .reply(200, testdata.summaries_api)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .times(120)
+    .reply(200, testdata.history_api)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .times(1)
     .reply(200, testdata.heroes_api);
@@ -660,5 +663,4 @@ describe("parser", function() {
 });
 //todo test makesearch
 //todo test makesort
-//todo fullhistory with mock api
 //todo api error, invalid data (supertest)

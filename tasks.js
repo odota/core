@@ -20,8 +20,7 @@ function getFullMatchHistory(done) {
     }
     var match_ids = {};
 
-    //only get full history if the player is tracked and doesn't have it already
-    //do in order they were requested
+    //only get full history if the player is tracked and doesn't have it already, do in queue order
     db.players.find({
         full_history: 0,
         track: 1
@@ -33,6 +32,7 @@ function getFullMatchHistory(done) {
         if (err) {
             return done(err);
         }
+        console.log(players);
         //only do one per pass
         players = players.slice(0, 1);
         //find all the matches to add to kue
