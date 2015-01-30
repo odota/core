@@ -2,32 +2,39 @@ var utility = require('./utility');
 var db = utility.db;
 var fs = require('fs');
 var async = require('async');
-var remote = process.env.REMOTE;
 var queueReq = utility.queueReq;
 var generateJob = utility.generateJob;
-var request = require('request');
-var cheerio = require('cheerio');
 var getData = utility.getData;
 var urllib = require('url');
 var moment = require('moment');
 
 function getFullMatchHistory(done) {
     var constants = require('./constants.json');
-    var collectorFunc = remote ? getHistoryRemote : getHistoryByHero;
+    //var remote = process.env.REMOTE;
+    //var collectorFunc = remote ? getHistoryRemote : getHistoryByHero;
     var heroArray = [];
     for (var key in constants.heroes) {
         heroArray.push(key);
     }
     var match_ids = {};
 
+    //only get full history if the player is tracked and doesn't have it already
+    //do in order they were requested
     db.players.find({
+        full_history: 0,
         track: 1
+    }, {
+        sort: {
+            full_history_time: 1
+        }
     }, function(err, players) {
         if (err) {
             return done(err);
         }
+        //only do one per pass
+        players = players.slice(0, 1);
         //find all the matches to add to kue
-        async.mapSeries(players, collectorFunc, function(err) {
+        async.mapSeries(players, getHistoryByHero, function(err) {
             if (err) {
                 return done(err);
             }
@@ -46,50 +53,27 @@ function getFullMatchHistory(done) {
                     cb(err);
                 });
             }, function(err) {
-                //added all requested matches to kue
-                done(err);
+                if (err) {
+                    return done(err);
+                }
+                //update full_history field
+                async.mapSeries(players, function(player, cb) {
+                    db.players.update({
+                        account_id: player.account_id
+                    }, {
+                        $set: {
+                            full_history: 2
+                        }
+                    }, function(err) {
+                        console.log("got full match history for %s", player.account_id);
+                        cb(err);
+                    });
+                }, function(err) {
+                    done(err);
+                });
             });
         });
     });
-
-    function getMatchPage(url, cb) {
-        request({
-            url: url,
-            headers: {
-                'User-Agent': 'request'
-            }
-        }, function(err, resp, body) {
-            if (err || resp.statusCode !== 200) {
-                return setTimeout(function() {
-                    getMatchPage(url, cb);
-                }, 1000);
-            }
-            console.log("[REMOTE] %s", url);
-            var parsedHTML = cheerio.load(body);
-            var matchCells = parsedHTML('td[class=cell-xlarge]');
-            matchCells.each(function(i, matchCell) {
-                var match_url = remote + cheerio(matchCell).children().first().attr('href');
-                var match_id = Number(match_url.split(/[/]+/).pop());
-                match_ids[match_id] = true;
-            });
-            var nextPath = parsedHTML('a[rel=next]').first().attr('href');
-            if (nextPath) {
-                getMatchPage(remote + nextPath, cb);
-            }
-            else {
-                cb(null);
-            }
-        });
-    }
-
-    function getHistoryRemote(player, cb) {
-        var account_id = player.account_id;
-        var player_url = remote + "/players/" + account_id + "/matches";
-        getMatchPage(player_url, function(err) {
-            console.log("%s matches found", Object.keys(match_ids).length);
-            cb(err);
-        });
-    }
 
     function getApiMatchPage(url, cb) {
         getData(url, function(err, body) {
@@ -123,22 +107,22 @@ function getFullMatchHistory(done) {
     }
 
     function getHistoryByHero(player, cb) {
-        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
-        async.mapSeries(heroArray, function(hero_id, cb) {
-            //make a request for every possible hero
-            var container = generateJob("api_history", {
-                account_id: player.account_id,
-                hero_id: hero_id,
-                matches_requested: 100
-            });
-            getApiMatchPage(container.url, function(err) {
-                console.log("%s matches found", Object.keys(match_ids).length);
+            //use steamapi via specific player history and specific hero id (up to 500 games per hero)
+            async.mapSeries(heroArray, function(hero_id, cb) {
+                //make a request for every possible hero
+                var container = generateJob("api_history", {
+                    account_id: player.account_id,
+                    hero_id: hero_id,
+                    matches_requested: 100
+                });
+                getApiMatchPage(container.url, function(err) {
+                    console.log("%s matches found", Object.keys(match_ids).length);
+                    cb(err);
+                });
+            }, function(err) {
+                //done with this player
                 cb(err);
             });
-        }, function(err) {
-            //done with this player
-            cb(err);
-        });
     }
 }
 
@@ -157,6 +141,7 @@ function unparsed(done) {
                 cb(err);
             });
         }, function(err) {
+            console.log("added %s matches to parse queue", i);
             done(err, i);
         });
     });
@@ -218,7 +203,7 @@ function generateConstants(done) {
     });
 }
 
-function updateSummaries(cb) {
+function unnamed(cb) {
     db.players.find({
         personaname: {
             $exists: false
@@ -232,7 +217,7 @@ function updateSummaries(cb) {
         async.map(docs, function(player, cb) {
             arr.push(player);
             i += 1;
-            if (arr.length >= 100 || docs[i + 1]) {
+            if (arr.length >= 100 || !docs[i + 1]) {
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
@@ -246,6 +231,7 @@ function updateSummaries(cb) {
                 cb(null);
             }
         }, function(err) {
+            console.log("updated %s users", i);
             cb(err, i);
         });
     });
@@ -269,7 +255,7 @@ function untrackPlayers(cb) {
 }
 
 module.exports = {
-    updateSummaries: updateSummaries,
+    unnamed: unnamed,
     unparsed: unparsed,
     getFullMatchHistory: getFullMatchHistory,
     generateConstants: generateConstants,

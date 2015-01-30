@@ -21,11 +21,11 @@ global.matchTable = matchTable;
 global.playerTables = playerTables;
 global.uploadReplay = uploadReplay;
 global.buildMap = buildMap;
+global.listeners = listeners;
 
 //run on each page
 $(document).ready(function() {
     process();
-    changeTheme();
     tooltips();
 });
 
@@ -122,21 +122,26 @@ function playerTables() {
             visible: false
         }]
     });
-    console.log(durations);
     c3.generate({
         bindto: "#chart-duration",
         data: {
             columns: [
-                ['# Matches'].concat(durations)
+                ['Matches'].concat(durations)
             ],
             type: 'bar'
         },
         bar: {
             width: {
-                ratio: 0.5 // this makes bar width 50% of length between ticks
+                ratio: 0.8
             }
-            // or
-            //width: 100 // this makes bar width 100px
+        },
+        axis: {
+            x: {
+                label: 'Minutes'
+            },
+            y: {
+                label: 'Matches'
+            }
         }
     });
 }
@@ -246,7 +251,7 @@ function process() {
     })
 }
 
-function changeTheme() {
+function listeners() {
     var $dark = $("#dark");
     $dark.change(function() {
         console.log($dark.is(":checked"));
@@ -262,8 +267,19 @@ function changeTheme() {
                     $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
                 }
                 $(".sync").fadeOut(3000);
-            })
-    })
+            });
+    });
+    var fh = $("#fullhistory");
+    fh.on('click', function() {
+        $.post(
+            "/fullhistory", {},
+            function(data) {
+                if (!data.error) {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-success'>Queued for full history!</div>");
+                    $(".sync").fadeOut(3000);
+                }
+            });
+    });
 }
 
 function tooltips() {
@@ -494,6 +510,29 @@ function buildMap() {
 }
 
 function generateCharts(data) {
+    c3.generate({
+        bindto: "#chart-gold-breakdown",
+        data: {
+            columns: data.goldCols,
+            type: 'bar',
+            order: 'desc',
+            groups: [
+                data.gold_reasons
+            ]
+        },
+        bar: {
+            width: {
+                ratio: 0.9
+            }
+        },
+        axis: {
+            x: {
+                type: "category",
+                categories: data.cats
+            }
+        }
+    });
+
     var height = 400;
     var difference = data.difference;
     var gold = data.gold;

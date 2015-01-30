@@ -1,4 +1,5 @@
 process.env.MONGO_URL = "mongodb://localhost/test";
+process.env.REDIS_URL = 'redis://localhost:6379/1';
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
 process.env.RETRIEVER_HOST = "http://localhost:5100";
@@ -18,8 +19,10 @@ var app = require('../yasp').listen(process.env.PORT);
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
-
+var queries = require('../queries');
+var request = require('request');
 var wait = 10000;
+var constants = require('../constants')
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -32,7 +35,7 @@ nock('http://localhost:5100')
         return '/';
     })
     .get('/')
-    .times(3)
+    .times(2)
     .reply(200, {
         match: {
             cluster: 1,
@@ -51,61 +54,92 @@ nock('http://replay1.valve.net')
 //fake api response
 nock('https://api.steampowered.com')
     .filteringPath(function(path) {
-        if (path.slice(0, 8) === "/IDOTA2") {
-            return '/IDOTA2Match_570/GetMatchDetails/V001/';
-        }
-        else {
-            return '/ISteamUser/GetPlayerSummaries/v0002/';
-        }
+        var split = path.split("?");
+        var split2 = split[0].split(".com");
+        return split2[0];
     })
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .times(1)
     .reply(200, {
         result: testdata.matches[0]
     })
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
-    .reply(200, testdata.summaries);
+    .times(2)
+    .reply(200, testdata.summaries_api)
+    .get('/IEconDOTA2_570/GetHeroes/v0001/')
+    .times(1)
+    .reply(200, testdata.heroes_api);
 
 before(function(done) {
-    console.log("loading test data");
-    async.series([function(cb) {
-        //insert test players
-        async.mapSeries(testdata.players, function(p, cb) {
-            p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
-            db.players.insert(p, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }, function(cb) {
-        //insert test matches
-        async.mapSeries(testdata.matches, function(p, cb) {
-            db.matches.insert(p, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }], function(err) {
-        //set the banner msg
-        utility.redis.set("banner", "someval");
-        done(err);
-    });
-});
-after(function(done) {
-    console.log("cleaning test data");
-    app.close();
-    //wipe mongodb and redis
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
-    connect(process.env.MONGO_URL, function(err, db) {
-        databaseCleaner.clean(db, function(err) {
-            utility.redis.flushall(function(err) {
-                done(err);
-            });
+    async.series([
+            function(cb) {
+                console.log("wiping mongodb");
+                connect(process.env.MONGO_URL, function(err, db) {
+                    assert(!err);
+                    databaseCleaner.clean(db, function(err) {
+                        cb(err);
+                    });
+                });
+            },
+            function(cb) {
+                console.log("wiping redis");
+                utility.redis.flushall(function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("loading players");
+                async.mapSeries(testdata.players, function(p, cb) {
+                    p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                    db.players.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("loading matches");
+                async.mapSeries(testdata.matches, function(p, cb) {
+                    db.matches.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("copying replays to test dir");
+                var replay_dir = process.env.REPLAY_DIR;
+                if (!fs.existsSync(replay_dir)) {
+                    fs.mkdir(replay_dir);
+                }
+                async.parallel([
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    }
+                ], function(err) {
+                    cb(err);
+                });
+            }
+        ],
+        function(err) {
+            done(err);
         });
-    });
+});
+after(function(done) {
+    app.close();
+    done();
 });
 
 describe("services", function() {
@@ -127,47 +161,6 @@ describe("services", function() {
     });
 });
 
-describe("tasks", function() {
-    it('unparsed matches', function(done) {
-        tasks.unparsed(function(err, num) {
-            assert.equal(num, 1);
-            done(err);
-        });
-    });
-    it('update summaries', function(done) {
-        tasks.updateSummaries(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    it('untrack players', function(done) {
-        tasks.untrackPlayers(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    /*
-    it('full history', function(done) {
-        done();
-    });
-    it('generate constants', function(done) {
-        done();
-    });
-    */
-});
-
-describe("backend", function() {
-    it('queue details request', function(done) {
-        utility.queueReq("api_details", {
-            match_id: 115178218
-        }, function(err, job) {
-            assert(job);
-            done(err);
-        });
-    });
-    //run processApi
-});
-
 describe("web", function() {
     this.timeout(wait);
     describe("/", function() {
@@ -185,14 +178,10 @@ describe("web", function() {
             browser.assert.text('body', /YASP/);
             done();
         });
-        it('should have a banner', function(done) {
-            browser.assert.text('.alert', /someval/);
-            done();
-        });
     });
-    describe("/stats", function() {
+    describe("/status", function() {
         before(function(done) {
-            browser.visit('/stats');
+            browser.visit('/status');
             browser.wait(wait, function(err) {
                 done(err);
             });
@@ -286,7 +275,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/players/:valid", function() {
         before(function(done) {
             browser.visit('/players/88367253');
@@ -298,8 +286,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have 0-1 record', function(done) {
-            browser.assert.text('td', /0-1/);
+        it('should have a w/l record', function(done) {
+            browser.assert.text('h2', /.*1-1.*/);
             done();
         });
     });
@@ -314,8 +302,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have 0-0 record', function(done) {
-            browser.assert.text('td', /0-0/);
+        it('should have a w/l record', function(done) {
+            browser.assert.text('h2', /.*0-0.*/);
             done();
         });
     });
@@ -332,6 +320,22 @@ describe("web", function() {
         });
         it('should have a match', function(done) {
             browser.assert.text('td', /1151783218/);
+            done();
+        });
+    });
+    describe("/players/:valid/stats", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/stats');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Teammates', function(done) {
+            browser.assert.text('body', /Teammates/);
             done();
         });
     });
@@ -363,34 +367,171 @@ describe("web", function() {
             done();
         });
     });
-
+    describe("/matches/:valid/details (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/details');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Purchases', function(done) {
+            browser.assert.text('body', /Purchases/);
+            done();
+        });
+    });
+    describe("/matches/:valid/graphs (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/graphs');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Gold', function(done) {
+            browser.assert.text('body', /Gold/);
+            done();
+        });
+    });
+    describe("/matches/:valid/chat (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/chat');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Chat', function(done) {
+            browser.assert.text('body', /Chat/);
+            done();
+        });
+    });
+    describe("/api/matches", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL+'/api/matches', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("/api/items", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL+'/api/items', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("/api/abilities", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL+'/api/abilities', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
     /*
-              //api/items valid
-              //api/items invalid
-              //api/abilities valid
-              //api/abilities invalid
-              //api/matches valid
-              //api/matches invalid
-              //login
-              //return
-              //logout
-              //GET /upload
-              //POST /upload proper file, too large, invalid file
-              //check untracked_msg
-              //matches/details parsed
-              //matches/graphs parsed
-              //matches/chat parsed
-              */
+    describe("POST /upload", function() {
+        it('should upload', function(done) {
+            var formData = {
+                replay: fs.createReadStream(__dirname + '/1193091757.dem')
+            };
+            request.post({
+                url: process.env.ROOT_URL+'/upload',
+                formData: formData
+            }, function(err, resp, body) {
+                done(err);
+            });
+        });
+    });
+    */
+    /*
+    //login
+    //return
+    //logout
+    //GET /upload (logged in)
+    //preferences
+    //fullhistory
+    //verify_recaptcha
+    */
+});
+
+describe("tasks", function() {
+    this.timeout(wait);
+    it('unparsed matches', function(done) {
+        tasks.unparsed(function(err, num) {
+            assert.equal(num, 1);
+            done(err);
+        });
+    });
+    it('unnamed players', function(done) {
+        tasks.unnamed(function(err, num) {
+            assert.equal(num, 2);
+            done(err);
+        });
+    });
+    it('untrack players', function(done) {
+        tasks.untrackPlayers(function(err, num) {
+            assert.equal(num, 2);
+            done(err);
+        });
+    });
+    it('generate constants', function(done) {
+        tasks.generateConstants(function(err) {
+            done(err);
+        });
+    });
+    it('full history', function(done) {
+        tasks.getFullMatchHistory(function(err) {
+            done(err);
+        });
+    });
+});
+
+describe("backend", function() {
+    it('process details request', function(done) {
+        utility.queueReq("api_details", {
+            match_id: 115178218
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            })
+        });
+    });
+    it('process summaries request', function(done) {
+        utility.queueReq("api_summaries", {
+            players: [{
+                account_id: 88367253
+            }]
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
 });
 
 describe("parser", function() {
-    this.timeout(45000);
+    this.timeout(60000);
     it('parse match (file)', function(done) {
         var job = {
             match_id: 115178218,
             start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParse(job, function(err) {
                 done(err);
             });
@@ -402,6 +543,8 @@ describe("parser", function() {
             start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParseStream(job, function(err) {
                 done(err);
             });
@@ -413,29 +556,69 @@ describe("parser", function() {
             start_time: 1
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParse(job, function(err) {
                 done(err);
             });
         });
     });
-    //runParse directly on files, verify no crash
-    //1v1 game
-    //ardm game
-    //regular game
-    //test epilogue parse
-    //test broken file
-    //test invalid file
+    it('parse local replay', function(done) {
+        var job = {
+            match_id: 1193091757,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse 1v1', function(done) {
+        var job = {
+            match_id: 1181392470,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse truncated replay', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: moment().format('X'),
+            fileName: __dirname + "/truncate.dem"
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                assert(err);
+                console.log(err);
+                done();
+            });
+        });
+    });
+    it('parse invalid file', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: moment().format('X'),
+            fileName: __dirname + "/invalid.dem"
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                assert(err);
+                console.log(err);
+                done();
+            });
+        });
+    });
+    //todo ardm game
+    //todo epilogue parse
 });
-
-//queries
-//mergeMatchData: mergeMatchData,
-//generateGraphData: generateGraphData,
-///fillPlayerInfo: fillPlayerInfo (slow for large datasets)
-
-//s3 methods are untested
-
-/*
-it('upload job', function(done) {
-utility.jobs.process('upload', utility.processUpload);
-});
-*/
+//todo test makesearch
+//todo test makesort

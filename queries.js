@@ -129,6 +129,35 @@ function generateGraphData(match, constants) {
         data.xp.push([hero].concat(elem.xp));
         data.lh.push([hero].concat(elem.lh));
     });
+
+    //data for income chart
+    var gold_reasons = [];
+    var columns = [];
+    var categories = [];
+    var orderedPlayers = match.players.slice(0);
+    orderedPlayers.sort(function(a, b) {
+        return b.gold_per_min - a.gold_per_min;
+    });
+    //console.log(orderedPlayers);
+    orderedPlayers.forEach(function(player) {
+        var hero = constants.heroes[player.hero_id];
+        categories.push(hero.localized_name);
+    });
+    for (var key in constants.gold_reasons) {
+        var reason = constants.gold_reasons[key];
+        gold_reasons.push(reason);
+        var col = [reason];
+        orderedPlayers.forEach(function(player) {
+            var hero = constants.heroes[player.hero_id];
+            var parsedHero = match.parsed_data.heroes[hero.name];
+            col.push(parsedHero.gold_log[key] || 0);
+        });
+        columns.push(col);
+    }
+
+    data.cats = categories;
+    data.goldCols = columns;
+    data.gold_reasons = gold_reasons;
     match.graphData = data;
     return match;
 }
@@ -150,8 +179,83 @@ function fillPlayerNames(players, cb) {
     });
 }
 
+function computeStatistics(player, cb) {
+    var playerMatches = player.matches;
+    db.matches.find({
+        'players.account_id': player.account_id
+    }, {
+        sort: {
+            match_id: -1
+        }
+    }, function(err, matches) {
+        if (err) {
+            return cb(err);
+        }
+        //array to store match durations in minutes
+        var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+        var counts = {};
+        var against = {};
+        var together = {};
+        for (var i = 0; i < matches.length; i++) {
+            var mins = Math.floor(matches[i].duration / 60) % 120;
+            arr[mins] += 1;
+            for (var j = 0; j < matches[i].players.length; j++) {
+                var tm = matches[i].players[j];
+                var tm_hero = tm.hero_id;
+                if (utility.isRadiant(tm) === playerMatches[i].playerRadiant) {
+                    //count teammate players
+                    if (!counts[tm.account_id]) {
+                        counts[tm.account_id] = {
+                            account_id: tm.account_id,
+                            win: 0,
+                            lose: 0,
+                            games: 0
+                        };
+                    }
+                    counts[tm.account_id].games += 1;
+                    playerMatches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                    //count teammate heroes
+                    if (!together[tm_hero]) {
+                        together[tm_hero] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
+                    }
+                    together[tm_hero].games += 1;
+                    playerMatches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+                }
+                else {
+                    //count enemy heroes
+                    if (!against[tm_hero]) {
+                        against[tm_hero] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
+                    }
+                    against[tm_hero].games += 1;
+                    playerMatches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
+                }
+            }
+        }
+        player.durations = arr;
+        player.together = together;
+        player.against = against;
+        player.teammates = [];
+        for (var id in counts) {
+            var count = counts[id];
+            player.teammates.push(count);
+        }
+        fillPlayerNames(player.teammates, function(err) {
+            cb(err);
+        });
+    });
+}
+
 module.exports = {
     fillPlayerNames: fillPlayerNames,
     mergeMatchData: mergeMatchData,
-    generateGraphData: generateGraphData
+    generateGraphData: generateGraphData,
+    computeStatistics: computeStatistics
 };

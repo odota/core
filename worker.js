@@ -14,8 +14,10 @@ var kue = utility.kue;
 
 startScan();
 jobs.process('api', processors.processApi);
-setInterval(clearActiveJobs, 60 * 3 * 1000, function() {});
+setInterval(clearActiveJobs, 60 * 1000, function() {});
 setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
+setInterval(tasks.getFullMatchHistory, 3 * 60 * 60 * 1000, function() {});
+setInterval(tasks.unnamed, 60 * 60 * 1000, function() {});
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -55,9 +57,7 @@ function startScan() {
     else {
         //start at highest id in db
         db.matches.findOne({
-            upload: {
-                $exists: false
-            }
+            uploader: null
         }, {
             sort: {
                 match_seq_num: -1

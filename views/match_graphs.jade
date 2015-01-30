@@ -22,10 +22,13 @@ append content
             .col-md-12
               h3 LH
               #chart-lh
+            .col-md-12
+              h3 Income Sources
+              #chart-gold-breakdown
         else
           h1 This match has no parsed data
           
 block footer_assets
   script.
-    var graphData = !{JSON.stringify(match.graphData)}
+    var graphData = !{JSON.stringify(match.graphData)};
     generateCharts(graphData);
