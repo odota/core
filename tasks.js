@@ -48,7 +48,7 @@ function getFullMatchHistory(done) {
             //add the jobs to kue
             async.mapSeries(arr, function(match_id, cb) {
                 var match = {
-                    match_id: match_id
+                    match_id: Number(match_id)
                 };
                 queueReq("api_details", match, function(err) {
                     //added a single job to kue
@@ -256,15 +256,17 @@ function unnamed(cb) {
         }
         var arr = [];
         var i = 0;
-        async.map(docs, function(player, cb) {
+        async.mapSeries(docs, function(player, cb) {
             arr.push(player);
             i += 1;
             if (arr.length >= 100 || !docs[i + 1]) {
+                console.log(i);
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
                 };
                 queueReq("api_summaries", summaries, function(err) {
+                    console.log("added job to kue");
                     arr = [];
                     return cb(err);
                 });

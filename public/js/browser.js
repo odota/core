@@ -1,7 +1,6 @@
 var moment = require('moment');
 var async = require('async');
 var numeral = require('numeral');
-var d3 = require('d3');
 var c3 = require('c3');
 var CalHeatMap = require('cal-heatmap');
 var $ = jQuery = require('jquery');
@@ -9,7 +8,7 @@ var qtip = require('qtip2');
 $.qtip = qtip;
 //var dataTable = DataTable = require('datatables');
 //$.dataTable = dataTable;
-var constants = require('./sources.json');
+var constants = require('../../sources.json');
 var modes = constants.modes;
 var regions = constants.regions;
 var parse_status = constants.parse_status;
@@ -22,28 +21,13 @@ global.playerTables = playerTables;
 global.uploadReplay = uploadReplay;
 global.buildMap = buildMap;
 global.listeners = listeners;
+global.generateHistograms = generateHistograms;
 
 //run on each page
 $(document).ready(function() {
     process();
     tooltips();
 });
-
-//ga
-(function(i, s, o, g, r, a, m) {
-    i['GoogleAnalyticsObject'] = r;
-    i[r] = i[r] || function() {
-        (i[r].q = i[r].q || []).push(arguments)
-    }, i[r].l = 1 * new Date();
-    a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0];
-    a.async = 1;
-    a.src = g;
-    m.parentNode.insertBefore(a, m)
-})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-ga('create', 'UA-55757642-1', 'auto');
-ga('require', 'displayfeatures');
-ga('send', 'pageview');
 
 function uploadReplay() {
     $("#button").click(function(event) {
@@ -122,11 +106,15 @@ function playerTables() {
             visible: false
         }]
     });
+}
+
+function generateHistograms(data) {
+    console.log(data);
     c3.generate({
         bindto: "#chart-duration",
         data: {
             columns: [
-                ['Matches'].concat(durations)
+                ['Matches'].concat(data.durations)
             ],
             type: 'bar'
         },
@@ -138,6 +126,33 @@ function playerTables() {
         axis: {
             x: {
                 label: 'Minutes'
+            },
+            y: {
+                label: 'Matches'
+            }
+        }
+    });
+    c3.generate({
+        bindto: "#chart-gpms",
+        data: {
+            columns: [
+                ['Matches'].concat(data.gpms)
+            ],
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.8
+            }
+        },
+        axis: {
+            x: {
+                label: 'GPM',
+                tick: {
+                    format: function(x) {
+                        return String(x * 10);
+                    }
+                }
             },
             y: {
                 label: 'Matches'
@@ -197,7 +212,6 @@ function matchTable() {
 }
 
 function process() {
-    console.log('processing html');
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
@@ -284,7 +298,6 @@ function listeners() {
 }
 
 function tooltips() {
-    console.log('init tooltips');
     $('.item').qtip({
         content: {
             text: function(event, api) {

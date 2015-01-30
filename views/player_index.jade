@@ -71,7 +71,14 @@ block playercontent
             td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
   .row
     include ads/leaderboard_2
+  .row
+    .col-md-12
+      h3 Match Durations
+      #chart-duration
+      h3 GPMs
+      #chart-gpms
   link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
-    var calData = !{JSON.stringify(player.calheatmap)}
-    generateCalHeatmap(calData);
+    var data = !{JSON.stringify(player.histogramData)}
+    generateHistograms(data);
+    generateCalHeatmap(data.calheatmap);

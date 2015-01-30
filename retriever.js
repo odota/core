@@ -105,6 +105,7 @@ function getGCReplayUrl(match_id, cb) {
             cb("timeout");
         }, 10000);
         totalAttempts += 1;
+        console.log("attempts: %s", totalAttempts);
         if (totalAttempts >= 500) {
             selfDestruct();
         }
