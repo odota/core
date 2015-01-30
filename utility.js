@@ -318,8 +318,6 @@ function insertPlayer(player, cb) {
     });
 }
 
-
-
 function decompress(archiveName, cb) {
     var cp = spawn("bunzip2", [archiveName]);
     cp.on('exit', function(code) {

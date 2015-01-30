@@ -75,18 +75,14 @@ function getAssociatedHero(unit, heroes) {
         //split by _
         var split = unit.split("_");
         //get the third element
-        var identifier = split[2];
-        if (split[2] === "shadow" && split[3] === "shaman") {
-            identifier = "shadow_shaman";
-        }
-        if (split[2] === "witch" && split[3] === "doctor") {
-            identifier = "witch_doctor";
-        }
-        //append to npc_dota_hero_, see if matches
-        var attempt = "npc_dota_hero_" + identifier;
-        if (heroes[attempt]) {
-            unit = attempt;
-        }
+        var identifiers = [split[2], split[2] + "_" + split[3]];
+        identifiers.forEach(function(id) {
+            //append to npc_dota_hero_, see if matches
+            var attempt = "npc_dota_hero_" + id;
+            if (heroes[attempt]) {
+                unit = attempt;
+            }
+        });
     }
     return unit;
 }

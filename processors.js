@@ -82,12 +82,11 @@ function getReplayUrl(job, cb) {
             urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
         }
         getData(urls, function(err, body) {
-            if (!err && body && body.match) {
-                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-                return cb(null, job, url);
+            if (err || !body || !body.match) {
+                return cb("invalid body or error");
             }
-            logger.info(err, body);
-            return cb("invalid body or error");
+            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+            return cb(null, job, url);
         });
     }
     /*
@@ -229,7 +228,7 @@ function processApi(job, cb) {
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
-                match[prop] = payload[prop];
+                match[prop] = match[prop] ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
                 cb(err);

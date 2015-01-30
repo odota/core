@@ -236,51 +236,9 @@ function unnamed(cb) {
     });
 }
 
-function untrackPlayers(cb) {
-    db.players.update({
-        track: 1,
-        last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 5, 'days').toDate()
-        }
-    }, {
-        $set: {
-            track: 0
-        }
-    }, {
-        multi: true
-    }, function(err, num) {
-        console.log("[UNTRACK] Untracked %s users", num);
-        cb(err, num);
-    });
-}
-
-function clearActiveJobs(cb) {
-    jobs.active(function(err, ids) {
-        if (err) {
-            return cb(err);
-        }
-        async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (err) {
-                    return cb(err);
-                }
-                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
-                    console.log("unstuck job %s", id);
-                    job.inactive();
-                }
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    });
-}
-
 module.exports = {
-    clearActiveJobs: clearActiveJobs,
     unnamed: unnamed,
     unparsed: unparsed,
     getFullMatchHistory: getFullMatchHistory,
-    generateConstants: generateConstants,
-    untrackPlayers: untrackPlayers
+    generateConstants: generateConstants
 };
