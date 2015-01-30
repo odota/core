@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.24",
+  "version": "1.2.25",
   "scripts": {
     "start": "node retriever.js",
     "dev": "nf -j Procfile.dev start",
