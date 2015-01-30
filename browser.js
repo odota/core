@@ -511,7 +511,28 @@ function buildMap() {
 }
 
 function generateCharts(data) {
-    c3.generate(goldBreakdown);
+    c3.generate({
+        bindto: "#chart-gold-breakdown",
+        data: {
+            columns: data.goldCols,
+            type: 'bar',
+            order: 'desc',
+            groups: [
+                data.gold_reasons
+            ]
+        },
+        bar: {
+            width: {
+                ratio: 0.9
+            }
+        },
+        axis: {
+            x: {
+                type: "category",
+                categories: data.cats
+            }
+        }
+    });
 
     var height = 400;
     var difference = data.difference;
