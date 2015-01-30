@@ -473,8 +473,8 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('update summaries', function(done) {
-        tasks.updateSummaries(function(err, num) {
+    it('unnamed players', function(done) {
+        tasks.unnamed(function(err, num) {
             assert.equal(num, 2);
             done(err);
         });
