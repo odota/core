@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
     request = require('request'),
@@ -13,7 +11,7 @@ var spawn = require('child_process').spawn,
     streamifier = require('streamifier');
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
-var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 options.auth = options.password; //set 'auth' key for kue
 var kue = require('kue');
 var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");

@@ -7,7 +7,6 @@ var steam = require("steam"),
     fs = require('fs');
 var users = process.env.STEAM_USER.split(",");
 var passes = process.env.STEAM_PASS.split(",");
-//var codes = process.env.STEAM_GUARD_CODE.split(",");
 var loginNum = Math.floor((Math.random() * users.length));
 var express = require('express');
 var app = express();
@@ -58,6 +57,7 @@ function logOnSteam() {
         "password": pass
     };
     /*
+    var codes = process.env.STEAM_GUARD_CODE.split(",");
     var authcode = codes[loginNum];
     if (authcode) {
         logOnDetails.authCode = authcode;
