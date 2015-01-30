@@ -65,7 +65,7 @@ nock('https://api.steampowered.com')
     .times(2)
     .reply(200, testdata.summaries_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .times(120)
+    .times(1)
     .reply(200, testdata.history_api)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .times(1)
@@ -93,8 +93,10 @@ before(function(done) {
             },
             function(cb) {
                 console.log("loading players");
+                //set visited date on first player
+                testdata.players[0].last_visited = new Date();
+                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
                 async.mapSeries(testdata.players, function(p, cb) {
-                    p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
                     db.players.insert(p, function(err) {
                         cb(err);
                     });
@@ -297,7 +299,7 @@ describe("web", function() {
     });
     describe("/players/:valid (no matches)", function() {
         before(function(done) {
-            browser.visit('/players/99999');
+            browser.visit('/players/88367251');
             browser.wait(wait, function(err) {
                 done(err);
             });
@@ -516,13 +518,13 @@ describe("tasks", function() {
     });
     it('unnamed players', function(done) {
         tasks.unnamed(function(err, num) {
-            assert.equal(num, 2);
+            assert.equal(num, 3);
             done(err);
         });
     });
     it('untrack players', function(done) {
         tasks.untrackPlayers(function(err, num) {
-            assert.equal(num, 2);
+            assert.equal(num, 1);
             done(err);
         });
     });
@@ -534,7 +536,7 @@ describe("tasks", function() {
     it('full history', function(done) {
         tasks.getFullMatchHistory(function(err) {
             done(err);
-        });
+        }, ["1"]);
     });
 });
 

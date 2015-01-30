@@ -22,7 +22,7 @@ function processParse(job, cb) {
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        if (err === "replay expired" || (job2 && job2.attempts.remaining <= 0)) {
+        if (err === "replay expired" || (err && job2 && job2.attempts.remaining <= 0)) {
             logger.info(err);
             db.matches.update({
                 match_id: match_id
