@@ -174,16 +174,6 @@ app.route('/api/matches').get(function(req, res, next) {
     var sort = {};
     var limit = Number(req.query.length) || 10;
     if (req.query.draw) {
-        var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-        var fs = require('fs');
-        fs.writeFile("./output.json", fullUrl, function(err) {
-            if (err) {
-                console.log(err);
-            }
-            else {
-                console.log("The file was saved!");
-            }
-        });
         options = utility.makeSearch(req.query.search.value, req.query.columns);
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
