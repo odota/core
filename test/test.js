@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 process.env.MONGO_URL = "mongodb://localhost/test";
 process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
