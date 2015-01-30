@@ -90,9 +90,8 @@ passport.use(new SteamStrategy({
     }, {
         upsert: true
     }, function(err, user) {
-        if (err) return done(err, null);
-        return done(null, {
-            account_id: steam32,
+        return done(err, {
+            account_id: user.account_id,
         });
     });
 }));
@@ -177,6 +176,8 @@ app.route('/api/matches').get(function(req, res, next) {
     if (req.query.draw) {
         //var search = req.query.search.value
         //options = utility.makeSearch(search, req.query.columns)
+        console.log(req.query.order);
+        console.log(req.query.columns);
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
     db.matches.count(options, function(err, count) {
@@ -342,16 +343,19 @@ app.route('/preferences').post(function(req, res) {
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
-app.route('/return').get(passport.authenticate('steam', {
-    failureRedirect: '/'
-}), function(req, res) {
-    if (req.user) {
-        res.redirect('/players/' + req.user.account_id);
+app.route('/return').get(
+    passport.authenticate('steam', {
+        failureRedirect: '/'
+    }),
+    function(req, res) {
+        if (req.user) {
+            res.redirect('/players/' + req.user.account_id);
+        }
+        else {
+            res.redirect('/');
+        }
     }
-    else {
-        res.redirect('/');
-    }
-});
+);
 app.route('/logout').get(function(req, res) {
     req.logout();
     req.session = null;
@@ -546,7 +550,7 @@ app.use(function(req, res, next) {
         });
     }
     else {
-        return next();
+        next();
     }
 });
 app.use(function(err, req, res, next) {
@@ -557,7 +561,7 @@ app.use(function(err, req, res, next) {
         });
     }
     else {
-        return next(err);
+        next(err);
     }
 });
 

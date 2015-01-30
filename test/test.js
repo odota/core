@@ -56,20 +56,24 @@ nock('https://api.steampowered.com')
         var split2 = split[0].split(".com");
         return split2[0];
     })
+    //throw some errors to test handling
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-    .times(1)
+    .reply(500, {})
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
     .reply(200, testdata.details_api)
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
-    .times(2)
+    .reply(200, {
+        result: {
+            error: "error"
+        }
+    })
+    .get('/ISteamUser/GetPlayerSummaries/v0002/')
     .reply(200, testdata.summaries_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .times(1)
     .reply(200, testdata.history_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .times(1)
     .reply(200, testdata.history_api2)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
-    .times(1)
     .reply(200, testdata.heroes_api);
 
 before(function(done) {
@@ -512,6 +516,7 @@ describe("web", function() {
         });
     });
     */
+    //todo test passport-steam login function
     describe("/logout", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
@@ -560,7 +565,7 @@ describe("web", function() {
     });
     describe("/preferences", function() {
         it('should load', function(done) {
-            request.get(process.env.ROOT_URL + '/preferences', function(err, resp, body) {
+            request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
                 //todo assert
                 done(err);
             });
@@ -568,7 +573,7 @@ describe("web", function() {
     });
     describe("/fullhistory", function() {
         it('should load', function(done) {
-            request.get(process.env.ROOT_URL + '/fullhistory', function(err, resp, body) {
+            request.post(process.env.ROOT_URL + '/fullhistory', {}, function(err, resp, body) {
                 //todo assert
                 done(err);
             });
@@ -576,7 +581,7 @@ describe("web", function() {
     });
     describe("/verify_captcha", function() {
         it('should load', function(done) {
-            request.get(process.env.ROOT_URL + '/verify_captcha', function(err, resp, body) {
+            request.post(process.env.ROOT_URL + '/verify_captcha', {}, function(err, resp, body) {
                 //todo assert
                 done(err);
             });
@@ -594,7 +599,7 @@ describe("tasks", function() {
     });
     it('unnamed players', function(done) {
         tasks.unnamed(function(err, num) {
-            assert.equal(num, 3);
+            assert.equal(num, 2);
             done(err);
         });
     });
@@ -614,9 +619,15 @@ describe("tasks", function() {
             done(err);
         }, ["1"]);
     });
+    it('clear active jobs', function(done) {
+        tasks.clearActiveJobs(function(err) {
+            done(err);
+        });
+    });
 });
 
 describe("backend", function() {
+    this.timeout(wait);
     it('process details request', function(done) {
         utility.queueReq("api_details", {
             match_id: 870061127
@@ -745,8 +756,64 @@ describe('unit tests', function() {
         done();
     });
     it('makesort', function(done) {
-        utility.makeSort([], []);
+        utility.makeSort([{
+            column: '0',
+            dir: 'asc'
+        }], [{
+            data: 'match_id',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }, {
+            data: 'game_mode',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }, {
+            data: 'cluster',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }, {
+            data: 'duration',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }, {
+            data: 'start_time',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }, {
+            data: 'parse_status',
+            name: '',
+            searchable: 'true',
+            orderable: 'true',
+            search: {
+                value: '',
+                regex: 'false'
+            }
+        }]);
         done();
     });
 });
-//todo test fullhistory pagination

@@ -7,6 +7,8 @@ var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
 var moment = require('moment');
+var jobs = utility.jobs;
+var kue = utility.kue;
 
 function getFullMatchHistory(done, heroesToUse) {
     var constants = require('./constants.json');
@@ -252,7 +254,30 @@ function untrackPlayers(cb) {
     });
 }
 
+function clearActiveJobs(cb) {
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (err) {
+                    return cb(err);
+                }
+                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
+                    console.log("unstuck job %s", id);
+                    job.inactive();
+                }
+                cb(err);
+            });
+        }, function(err) {
+            cb(err);
+        });
+    });
+}
+
 module.exports = {
+    clearActiveJobs: clearActiveJobs,
     unnamed: unnamed,
     unparsed: unparsed,
     getFullMatchHistory: getFullMatchHistory,

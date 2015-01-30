@@ -10,36 +10,13 @@ var generateJob = utility.generateJob;
 var async = require('async');
 var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
-var kue = utility.kue;
 
 startScan();
 jobs.process('api', processors.processApi);
-setInterval(clearActiveJobs, 60 * 1000, function() {});
+setInterval(tasks.clearActiveJobs, 60 * 1000, function() {});
 setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
 setInterval(tasks.getFullMatchHistory, 2 * 60 * 60 * 1000, function() {});
 setInterval(tasks.unnamed, 30 * 60 * 1000, function() {});
-
-function clearActiveJobs(cb) {
-    jobs.active(function(err, ids) {
-        if (err) {
-            return cb(err);
-        }
-        async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (err) {
-                    return cb(err);
-                }
-                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
-                    logger.info("unstuck job %s", id);
-                    job.inactive();
-                }
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    });
-}
 
 function startScan() {
     if (process.env.START_SEQ_NUM === "AUTO") {
