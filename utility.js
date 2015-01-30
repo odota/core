@@ -289,11 +289,13 @@ function insertMatch(match, cb) {
         players: match.players
     };
     //queue for player names
+    /*
     queueReq("api_summaries", summaries, function(err) {
         if (err) {
             return logger.info(err);
         }
     });
+    */
     if (match.parsed_data) {
         match.parse_status = 2;
     }

@@ -415,7 +415,8 @@ app.route('/fullhistory').post(function(req, res) {
         account_id: req.user.account_id
     }, {
         $set: {
-            full_history: 0
+            full_history: 0,
+            full_history_time: new Date()
         }
     }, function(err, num) {
         var error = (err || !num);
