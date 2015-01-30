@@ -8,7 +8,6 @@ var logger = utility.logger;
 var fs = require('fs');
 var moment = require('moment');
 var getData = utility.getData;
-var getS3Url = utility.getS3Url;
 var request = require('request');
 var runParse = utility.runParse;
 var decompress = utility.decompress;
@@ -45,10 +44,6 @@ function processParse(job, cb) {
             }
             //queue job for api to make sure it's in db
             queueReq("api_details", job2.data.payload, function(err, apijob) {
-                if (apijob) {
-                    apijob.data.uploader = job2.data.uploader;
-                    apijob.update();
-                }
                 cb(err);
             });
         }
@@ -65,7 +60,7 @@ function checkLocal(job, cb) {
     if (!fs.existsSync(replay_dir)) {
         fs.mkdir(replay_dir);
     }
-    var fileName = replay_dir + match_id + ".dem";
+    var fileName = job.data.fileName || replay_dir + match_id + ".dem";
     if (fs.existsSync(fileName)) {
         logger.info("[PARSER] %s, found local replay", match_id);
         job.data.fileName = fileName;
@@ -95,6 +90,7 @@ function getReplayUrl(job, cb) {
             return cb("invalid body or error");
         });
     }
+    /*
     else if (process.env.AWS_S3_BUCKET) {
         getS3Url(match.match_id, function(err, url) {
             if (!url) {
@@ -103,6 +99,7 @@ function getReplayUrl(job, cb) {
             return cb(err, job, url);
         });
     }
+    */
     else {
         logger.info("replay expired");
         cb("replay expired");
@@ -228,8 +225,10 @@ function processApi(job, cb) {
         else if (payload.match_id) {
             //response for single match details
             var match = data.result;
-            //add parsed_data if already there
-            match.parsed_data = payload.parsed_data;
+            //join payload with match
+            for (var prop in payload) {
+                match[prop] = payload[prop];
+            }
             insertMatch(match, function(err) {
                 cb(err);
             });

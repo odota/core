@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.20",
+  "version": "1.2.26",
   "scripts": {
     "start": "node retriever.js",
     "dev": "nf -j Procfile.dev start",
@@ -22,10 +22,9 @@
   },
   "dependencies": {
     "async": "0.9.0",
-    "aws-sdk": "~2.1.7",
+    "aws-sdk": "~2.1.8",
     "big-number": "0.3.1",
     "body-parser": "1.10.2",
-    "cheerio": "0.18.0",
     "cookie-session": "~1.1.0",
     "express": "~4.11.1",
     "express-session": "~1.10.1",
@@ -40,7 +39,7 @@
     "request": "~2.51.0",
     "winston": "0.8.3",
     "multer": "~0.1.7",
-    "dotenv": "~0.4.0",
+    "dotenv": "~0.5.1",
     "recaptcha": "1.2.0",
     "parse-redis-url": "0.0.1",
     "compressjs": "~1.0.2",
@@ -56,7 +55,7 @@
     "database-cleaner": "~0.9.1",
     "mongodb": "~1.4.29",
     "coveralls": "2.11.2",
-    "nock": "~0.57.0",
+    "nock": "~0.58.0",
     "zombie": "~2.5.1",
     "watchify": "~2.2.1",
     "browserify": "~8.1.1",

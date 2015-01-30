@@ -9,7 +9,7 @@ block content
       small YASP: Another Stats Page
       a.pull-right.twitter-follow-button(href='https://twitter.com/yasp_dota', data-show-count='false', data-size='large') Follow @yasp_dota
   if user
-   .row
+   .row(style="margin-bottom:2em;")
     .col-md-1
       img(src='#{user.avatarmedium}').img-thumbnail
     .col-md-4
@@ -17,6 +17,7 @@ block content
         | Welcome back, #{user.personaname}!
    .row
     .col-md-4
+     button.btn.btn-success#fullhistory Request Full Match History
      h3 Preferences
      .checkbox
        label
@@ -36,4 +37,5 @@ block content
         img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_small.png')
     p.lead Follow us on Twitter for updates. Expect some issues while we iron things out. Sowwies.
   script.
+    listeners();
     !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');

@@ -93,6 +93,7 @@ function isRadiant(player) {
 function queueReq(type, payload, cb) {
     checkDuplicate(type, payload, function(err) {
         if (err) {
+            //already have this match in db
             logger.info(err);
             return cb(null);
         }
@@ -173,15 +174,9 @@ function generateJob(type, payload) {
             title: [type, payload.match_id].join(),
             type: type,
             fileName: payload.fileName,
-            payload: {
-                match_id: payload.match_id,
-                start_time: payload.start_time
-            }
+            uploader: payload.uploader,
+            payload: payload
         };
-    }
-    else {
-        logger.info("unknown type for generateJob");
-        return null;
     }
 }
 
@@ -201,6 +196,7 @@ function runParse(input, cb) {
     inStream.pipe(cp.stdin);
     inStream.on('error', function(err) {
         logger.info(err);
+        cp.kill();
         return cb(err);
     });
     cp.stdout.on('data', function(data) {
@@ -221,81 +217,85 @@ function runParse(input, cb) {
 }
 
 function getData(url, cb) {
-    setTimeout(function() {
-        var target = url;
-        //array given, pick one randomly
-        if (typeof url === "object") {
-            target = url[Math.floor(Math.random() * url.length)];
+        setTimeout(function() {
+            var target = url;
+            //array given, pick one randomly
+            if (typeof url === "object") {
+                target = url[Math.floor(Math.random() * url.length)];
+            }
+            request({
+                url: target,
+                json: true
+            }, function(err, res, body) {
+                if (err || res.statusCode !== 200 || !body) {
+                    logger.info("retrying: %s", target);
+                    return getData(url, cb);
+                }
+                logger.info("got data: %s", target);
+                if (body.result) {
+                    //steam api response
+                    if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
+                        //user does not have stats enabled or attempting to get private match/invalid id, don't retry
+                        //todo handle case where no match id, this means it's a uploaded match not available in the api
+                        //we'll have to reconstruct the api data from replay
+                        logger.info(body);
+                        return cb(body);
+                    }
+                    else if (body.result.error || body.result.status === 2) {
+                        //valid response, but invalid data, retry
+                        logger.info("invalid data: %s, %s", target, body);
+                        return cb("invalid data");
+                    }
+                }
+                //generic valid response
+                return cb(null, body);
+            });
+        }, 1000);
+    }
+    /*
+    function getS3Url(match_id, cb) {
+        var archiveName = match_id + ".dem.bz2";
+        var s3 = new AWS.S3();
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        };
+        var url;
+        try {
+            url = s3.getSignedUrl('getObject', params);
+            cb(null, url);
         }
-        request({
-            url: target,
-            json: true
-        }, function(err, res, body) {
-            if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying: %s", target);
-                return getData(url, cb);
-            }
-            logger.info("got data: %s", url);
-            if (body.result) {
-                //steam api response
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
-                    //user does not have stats enabled or attempting to get private match, don't retry
-                    logger.info(body);
-                    return cb(body);
-                }
-                else if (body.result.error || body.result.status === 2) {
-                    //valid response, but invalid data, retry
-                    logger.info("invalid data: %s", target);
-                    return cb("invalid data");
-                }
-            }
-            //generic valid response
-            return cb(null, body);
+        catch (e) {
+            logger.info("[S3] %s not in S3", match_id);
+            cb(new Error("S3 UNAVAILABLE"));
+        }
+    }
+
+    function uploadToS3(data, archiveName, cb) {
+        var s3 = new AWS.S3();
+        var params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: archiveName
+        };
+        params.Body = data;
+        s3.putObject(params, function(err, data) {
+            cb(err);
         });
-    }, 1000);
-}
-
-function getS3Url(match_id, cb) {
-    var archiveName = match_id + ".dem.bz2";
-    var s3 = new AWS.S3();
-    var params = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: archiveName
-    };
-    var url;
-    try {
-        url = s3.getSignedUrl('getObject', params);
-        cb(null, url);
     }
-    catch (e) {
-        logger.info("[S3] %s not in S3", match_id);
-        cb(new Error("S3 UNAVAILABLE"));
-    }
-}
-
-function uploadToS3(data, archiveName, cb) {
-    var s3 = new AWS.S3();
-    var params = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: archiveName
-    };
-    params.Body = data;
-    s3.putObject(params, function(err, data) {
-        cb(err);
-    });
-}
-
+    */
 function insertMatch(match, cb) {
     var summaries = {
         summaries_id: new Date(),
         players: match.players
     };
     //queue for player names
+    /*
     queueReq("api_summaries", summaries, function(err) {
         if (err) {
             return logger.info(err);
         }
     });
+    */
     if (match.parsed_data) {
         match.parse_status = 2;
     }
@@ -358,10 +358,6 @@ module.exports = {
     queueReq: queueReq,
     makeSearch: makeSearch,
     makeSort: makeSort,
-
-    //s3
-    getS3Url: getS3Url,
-    uploadToS3: uploadToS3,
 
     //insertion
     insertPlayer: insertPlayer,

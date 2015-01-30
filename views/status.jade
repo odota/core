@@ -1,0 +1,8 @@
+extend layout
+
+block content
+  h1 Status
+  pre(style="margin-top:2em;") #{JSON.stringify(results, null, 2)}
+  p Graphs and more stats in the works!
+  .row
+    include ads/leaderboard_2
