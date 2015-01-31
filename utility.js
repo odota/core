@@ -30,7 +30,6 @@ var redisclient = redis.createClient(options.port, options.host, {
 var jobs = kue.createQueue({
     redis: options
 });
-jobs.promote();
 var transports = [];
 if (process.env.NODE_ENV !== "test") {
     transports.push(new(winston.transports.Console)({

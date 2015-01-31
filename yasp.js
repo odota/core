@@ -329,7 +329,7 @@ app.route('/preferences').post(function(req, res) {
             res.json({
                 sync: success
             });
-        })
+        });
     }
     else {
         res.json({

@@ -12,6 +12,7 @@ var kue = utility.kue;
 var moment = require('moment');
 
 startScan();
+jobs.promote();
 jobs.process('api', processors.processApi);
 setInterval(clearActiveJobs, 60 * 1000, function() {});
 setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
