@@ -131,7 +131,7 @@ function selfDestruct() {
     process.exit(0);
 }
 
-setTimeout(selfDestruct, 1000 * 60 * 60 * 2);
+setTimeout(selfDestruct, 1000 * 60 * 60 * 6);
 
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;

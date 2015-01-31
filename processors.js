@@ -164,7 +164,7 @@ function downloadReplayData(job, url, cb) {
     var downStream = request.get({
         url: url,
         encoding: null
-    })
+    });
     downStream.on('error', function(err) {
         logger.info(err);
         return cb(err);
