@@ -19,7 +19,7 @@ append content
               if hero
                 td: img(src=hero.img,title=hero.localized_name)
               else
-                td=prefix.message
+                td= message.slot
               td.format-seconds= message.time
               td= message.text
       .col-md-5
