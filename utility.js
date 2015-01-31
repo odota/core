@@ -290,7 +290,7 @@ function insertMatch(match, cb) {
             upsert: true
         },
         function(err) {
-            if (match.parse_status === 0) {
+            if (!match.parse_status) {
                 queueReq("parse", match, function(err) {
                     cb(err);
                 });

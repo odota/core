@@ -91,7 +91,7 @@ passport.use(new SteamStrategy({
         upsert: true
     }, function(err, user) {
         return done(err, {
-            account_id: user.account_id,
+            account_id: steam32,
         });
     });
 }));
