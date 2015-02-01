@@ -333,7 +333,7 @@ public class Main {
     
         //load epilogue
         CDemoFileInfo info = match.getFileInfo();
-        //System.err.println(info);
+        System.err.println(info);
         List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
         
         //build map for looking up slot of chat messages

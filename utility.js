@@ -96,7 +96,7 @@ function queueReq(type, payload, cb) {
         }
         var job = generateJob(type, payload);
         var kuejob = jobs.create(job.type, job).attempts(10).backoff({
-            delay: 60000,
+            delay: 60*1000,
             type: 'exponential'
         }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
@@ -233,8 +233,6 @@ function getData(url, cb) {
                     //steam api response
                     if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
                         //user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                        //todo handle case where no match id, this means it's a uploaded match not available in the api
-                        //we'll have to reconstruct the api data from replay
                         logger.info(body);
                         return cb(body);
                     }

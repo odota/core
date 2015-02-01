@@ -519,6 +519,7 @@ describe("web", function() {
     });
     */
     //todo test passport-steam login function
+    //todo test upload
     describe("/logout", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
@@ -540,7 +541,7 @@ describe("web", function() {
             done();
         });
     });
-    //todo, use supertest for api endpoints
+    //todo use supertest for api endpoints
     describe("/api/matches", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/api/matches', function(err, resp, body) {
@@ -752,5 +753,4 @@ describe("parser", function() {
         });
     });
     //todo ardm game
-    //todo epilogue parse
 });

@@ -42,10 +42,18 @@ function processParse(job, cb) {
             if (process.env.DELETE_REPLAYS && job2.data.fileName) {
                 fs.unlinkSync(job2.data.fileName);
             }
-            //queue job for api to make sure it's in db
-            queueReq("api_details", job2.data.payload, function(err, apijob) {
+            //todo what if the match was a private lobby?  does it have an id?
+            //todo what about local lobby?
+            //todo data won't get inserted if uploaded replay without match id, or private match without api data
+            if (job2.data.payload.match_id) {
+                //queue job for api to make sure it's in db
+                queueReq("api_details", job2.data.payload, function(err, apijob) {
+                    cb(err);
+                });
+            }
+            else {
                 cb(err);
-            });
+            }
         }
     });
 }
@@ -195,10 +203,11 @@ function parseReplay(job, input, cb) {
         }
         var t4 = new Date().getTime();
         logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        job.data.payload.match_id = output.match_id;
+        match_id = match_id || output.match_id;
         job.data.payload.parsed_data = output;
+        //todo get api data out of replay in case of private
         db.matches.update({
-            match_id: output.match_id
+            match_id: match_id
         }, {
             $set: {
                 parsed_data: output,
