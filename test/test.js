@@ -91,12 +91,6 @@ before(function(done) {
     var connect = require('mongodb').connect;
     async.series([
             function(cb) {
-                console.log("generating test constants");
-                tasks.generateConstants(function(err) {
-                    cb(err);
-                });
-            },
-            function(cb) {
                 console.log("wiping mongodb");
                 connect(process.env.MONGO_URL, function(err, db) {
                     assert(!err);
@@ -657,6 +651,11 @@ describe("tasks", function() {
         tasks.getFullMatchHistory(function(err) {
             done(err);
         }, ["1"]);
+    });
+    it('generate constants', function(done) {
+        tasks.generateConstants(function(err) {
+            done(err);
+        }, "./constants_test.json");
     });
 });
 

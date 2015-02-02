@@ -17,6 +17,7 @@ function getFullMatchHistory(done, opt) {
         full_history: 0,
         track: 1
     }, {
+        limit: 1,
         sort: {
             full_history_time: 1
         }
@@ -24,8 +25,6 @@ function getFullMatchHistory(done, opt) {
         if (err) {
             return done(err);
         }
-        //only do one per pass
-        players = players.slice(0, 1);
         //find all the matches to add to kue
         async.mapSeries(players, getHistoryByHero, function(err) {
             if (err) {
@@ -49,6 +48,7 @@ function getFullMatchHistory(done, opt) {
                 if (err) {
                     return done(err);
                 }
+                //added all the matches to kue
                 //update full_history field
                 async.mapSeries(players, function(player, cb) {
                     db.players.update({
@@ -140,7 +140,7 @@ function unparsed(done) {
     });
 }
 
-function generateConstants(done) {
+function generateConstants(done, opt) {
     var constants = require('./sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
@@ -187,7 +187,7 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile(process.env.CONSTANTS_FILE || './constants.json', JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(opt || './constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }
