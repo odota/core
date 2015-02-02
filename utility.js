@@ -4,8 +4,6 @@ var BigNumber = require('big-number').n,
     AWS = require('aws-sdk'),
     redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis);
-var api_url = "https://api.steampowered.com/IDOTA2Match_570";
-var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 options.auth = options.password; //set 'auth' key for kue
 var kue = require('kue');
@@ -92,7 +90,7 @@ function queueReq(type, payload, cb) {
         }
         var job = generateJob(type, payload);
         var kuejob = jobs.create(job.type, job).attempts(10).backoff({
-            delay: 60*1000,
+            delay: 60 * 1000,
             type: 'exponential'
         }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
@@ -121,6 +119,8 @@ function checkDuplicate(type, payload, cb) {
 }
 
 function generateJob(type, payload) {
+    var api_url = "http://api.steampowered.com/IDOTA2Match_570";
+    var summaries_url = "http://api.steampowered.com/ISteamUser";
     if (type === "api_details") {
         return {
             url: api_url + "/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id,
@@ -208,35 +208,35 @@ function getData(url, cb) {
         }, 1000);
     }
     /*
-    function getS3Url(match_id, cb) {
-        var archiveName = match_id + ".dem.bz2";
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        var url;
-        try {
-            url = s3.getSignedUrl('getObject', params);
-            cb(null, url);
+        function getS3Url(match_id, cb) {
+            var archiveName = match_id + ".dem.bz2";
+            var s3 = new AWS.S3();
+            var params = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: archiveName
+            };
+            var url;
+            try {
+                url = s3.getSignedUrl('getObject', params);
+                cb(null, url);
+            }
+            catch (e) {
+                logger.info("[S3] %s not in S3", match_id);
+                cb(new Error("S3 UNAVAILABLE"));
+            }
         }
-        catch (e) {
-            logger.info("[S3] %s not in S3", match_id);
-            cb(new Error("S3 UNAVAILABLE"));
-        }
-    }
 
-    function uploadToS3(data, archiveName, cb) {
-        var s3 = new AWS.S3();
-        var params = {
-            Bucket: process.env.AWS_S3_BUCKET,
-            Key: archiveName
-        };
-        params.Body = data;
-        s3.putObject(params, function(err, data) {
-            cb(err);
-        });
-    }
+        function uploadToS3(data, archiveName, cb) {
+            var s3 = new AWS.S3();
+            var params = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: archiveName
+            };
+            params.Body = data;
+            s3.putObject(params, function(err, data) {
+                cb(err);
+            });
+        }
     */
 function insertMatch(match, cb) {
     match.parse_status = match.parsed_data ? 2 : 0;
