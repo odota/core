@@ -94,6 +94,7 @@ function playerTables() {
             visible: false
         }]
     });
+    //todo serverside filtering
     $('#matches').dataTable({
         "order": [
             [0, "desc"]
