@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import com.google.gson.Gson;
+
 public class Output {
     //increment version when adding breaking changes
     public int version = 3;
@@ -12,10 +13,10 @@ public class Output {
     public int game_end;
     public HashMap<String, Integer> hero_to_slot = new HashMap<String,Integer>();
     public HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
-    public List<Player> players;
-    public List<Integer> times;
-    public HashMap<String, Unit> heroes;
-    public List<Entry> chat;
+    public List<Player> players = new ArrayList<Player>();
+    public List<Integer> times = new ArrayList<Integer>();
+    public HashMap<String, Unit> heroes = new HashMap<String, Unit>();
+    public List<Entry> chat = new ArrayList<Entry>();
     
     public void addUnit(String unit){
         heroes.put(unit, new Unit());
@@ -27,7 +28,7 @@ public class Output {
     
     public String toString(){
         Gson gson = new Gson();
-        String json = gson.toJson(doc);
+        String json = gson.toJson(this);
         return json;
     }
 }
