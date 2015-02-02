@@ -6,13 +6,10 @@ var queueReq = utility.queueReq;
 var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
-var moment = require('moment');
-var jobs = utility.jobs;
-var kue = utility.kue;
 
-function getFullMatchHistory(done, heroesToUse) {
-    var constants = require('./constants.json');
-    var heroArray = heroesToUse || Object.keys(constants.heroes);
+function getFullMatchHistory(done) {
+    var constants = require(process.env.CONSTANTS_FILE || './constants.json');
+    var heroArray = Object.keys(constants.heroes);
     var match_ids = {};
 
     //only get full history if the player is tracked and doesn't have it already, do in queue order
@@ -190,9 +187,9 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile("constants.json", JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(process.env.CONSTANTS_FILE || './constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
-                console.log("[CONSTANTS] generated constants.json");
+                console.log("[CONSTANTS] generated constants file");
             }
             return done(err);
         });
