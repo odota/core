@@ -81,10 +81,10 @@ function isRadiant(player) {
 }
 
 function queueReq(type, payload, cb) {
-    checkDuplicate(type, payload, function(err) {
-        if (err) {
+    checkDuplicate(type, payload, function(dup) {
+        if (dup) {
             //already have this match in db
-            logger.info(err);
+            logger.info("match already in db");
             return cb(null);
         }
         var job = generateJob(type, payload);
@@ -100,15 +100,14 @@ function queueReq(type, payload, cb) {
 
 function checkDuplicate(type, payload, cb) {
     if (type === "api_details" && payload.match_id) {
-        //make sure match doesn't exist already in db
-        //parse requests are allowed to repeat
+        //make sure match doesn't exist already in db before queueing for api
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
-            if (!err && !doc) {
-                return cb(null);
+            if (!err && doc) {
+                return cb(true);
             }
-            cb(new Error("duplicate found"));
+            cb(null);
         });
     }
     else {
