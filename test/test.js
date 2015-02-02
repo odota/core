@@ -48,9 +48,8 @@ nock('http://replay1.valve.net')
         return '/';
     })
     .get('/')
-    .replyWithFile(200, __dirname + '/1151783218.dem.bz2')
-    .get('/')
     .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
+
 //fake api response
 nock('https://api.steampowered.com')
     .filteringPath(function(path) {
@@ -135,6 +134,16 @@ before(function(done) {
                     },
                     function(cb) {
                         fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/truncate.dem').pipe(fs.createWriteStream(replay_dir + 'truncate.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     }
@@ -659,7 +668,7 @@ describe("backend", function() {
 
 describe("parser", function() {
     this.timeout(60000);
-    it('parse match (file)', function(done) {
+    it('parse replay (download)', function(done) {
         var job = {
             match_id: 115178218,
             start_time: moment().format('X')
@@ -668,19 +677,6 @@ describe("parser", function() {
             assert(job && !err);
 
             processors.processParse(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('parse match (stream)', function(done) {
-        var job = {
-            match_id: 115178218,
-            start_time: moment().format('X')
-        };
-        utility.queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-
-            processors.processParseStream(job, function(err) {
                 done(err);
             });
         });
@@ -698,7 +694,7 @@ describe("parser", function() {
             });
         });
     });
-    it('parse local replay', function(done) {
+    it('parse replay (local)', function(done) {
         var job = {
             match_id: 1193091757,
             start_time: moment().format('X')
@@ -726,7 +722,7 @@ describe("parser", function() {
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
-            fileName: __dirname + "/truncate.dem"
+            fileName: process.env.REPLAY_DIR + "/truncate.dem"
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -741,7 +737,7 @@ describe("parser", function() {
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
-            fileName: __dirname + "/invalid.dem"
+            fileName: process.env.REPLAY_DIR + "/invalid.dem"
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);

@@ -42,7 +42,6 @@
     "dotenv": "~0.5.1",
     "recaptcha": "1.2.0",
     "parse-redis-url": "0.0.1",
-    "compressjs": "~1.0.2",
     "streamifier": "~0.1.0",
     "steam": "~0.6.7",
     "dota2": "~0.6.2",
