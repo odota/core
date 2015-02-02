@@ -24,31 +24,37 @@ Steam.logOn(logOnDetails);
 console.log("[STEAM] Trying to log on with %s,%s", user, pass);
 var onSteamLogOn = function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", Steam.steamID);
+        Steam.setPersonaName("[YASP]");
     },
     onSteamRelationships = function() {
         Dota2.launch();
         Dota2.on("ready", function() {
             //todo iterate through friends profiles
             console.log(Steam.friends);
+            Dota2.profileRequest(88367253, false);
+            Dota2.on('profileData', function(accountId, profileData) {
+                console.log(profileData);
+                //todo get their mmr
+                //todo go through their match history
+                //add ranked game ids, time, and delta
+            });
             /*
-            Dota2.profileRequest(accountId, false).on('profileData', function(accountId, profileData){
-                            //todo get their mmr
-            //todo go through their match history
-            //add ranked game ids, time, and delta
+            Dota2.matchmakingStatsRequest();
+            Dota2.on('matchmakingStatsData', function(waitTimesByGroup, searchingPlayersByGroup, disabledGroups, matchmakingStatsResponse) {
+                console.log(matchmakingStatsResponse);
             });
             */
-            //Dota2.matchmakingStatsRequest().on('matchmakingStatsData', function(waitTimesByGroup, searchingPlayersByGroup, disabledGroups, matchmakingStatsResponse){})
         });
-    },
-    onSteamSentry = function onSteamSentry(newSentry) {
-        console.log("[STEAM] Received sentry.");
-        fs.writeFileSync("sentry", newSentry);
-    },
-    onSteamServers = function onSteamServers(servers) {
-        console.log("[STEAM] Received servers.");
-        fs.writeFile("servers", JSON.stringify(servers));
     },
     onSteamError = function onSteamError(e) {
         console.log(e);
     };
-Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError).on("relationships", onSteamRelationships);
+Steam.on('friend', function(other, type) {
+    console.log(type);
+    if (type == Steam.EFriendRelationship.PendingInvitee) {
+        Steam.addFriend(other);
+    }
+});
+Steam.on("loggedOn", onSteamLogOn);
+Steam.on('error', onSteamError);
+Steam.on("relationships", onSteamRelationships);

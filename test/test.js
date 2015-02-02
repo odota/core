@@ -151,11 +151,6 @@ before(function(done) {
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/truncate.dem').pipe(fs.createWriteStream(replay_dir + 'truncate.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
-                    },
-                    function(cb) {
                         fs.createReadStream(__dirname + '/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
@@ -747,21 +742,6 @@ describe("parser", function() {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
-            });
-        });
-    });
-    it('parse truncated replay', function(done) {
-        var job = {
-            match_id: 1,
-            start_time: moment().format('X'),
-            fileName: process.env.REPLAY_DIR + "/truncate.dem"
-        };
-        utility.queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            processors.processParse(job, function(err) {
-                assert(err);
-                console.log(err);
-                done();
             });
         });
     });
