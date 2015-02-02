@@ -202,7 +202,7 @@ function getData(url, cb) {
                 //generic valid response
                 return cb(null, body);
             });
-        }, 1000);
+        }, 800);
     }
     /*
         function getS3Url(match_id, cb) {

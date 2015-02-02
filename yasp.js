@@ -396,7 +396,7 @@ app.route('/upload')
             rc_pass: true
         });
     })
-    .post(function(req, res, next) {
+    .post(function(req, res) {
         var files = req.files.replay;
         var verified = req.session.captcha_verified;
         if (verified && files) {

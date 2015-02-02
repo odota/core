@@ -170,8 +170,6 @@ before(function(done) {
         });
 });
 after(function(done) {
-    console.log("stopping web");
-    app.close();
     done();
 });
 
