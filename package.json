@@ -14,7 +14,7 @@
     "unnamed": "node runner.js unnamed",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
-    "build": "mvn -q -f parser/pom.xml package && npm run constants && npm run browserify"
+    "build": "mvn -q -f parser/pom.xml package && npm run browserify && npm run constants"
   },
   "repository": {
     "type": "git",

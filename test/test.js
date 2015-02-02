@@ -8,7 +8,6 @@ process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
 process.env.DELETE_REPLAYS = true;
 process.env.ROOT_URL = "http://localhost:5000";
-process.env.CONSTANTS_FILE = "./constants_test.json";
 
 var async = require('async');
 var utility = require('../utility');
@@ -18,7 +17,7 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var app = require('../yasp').listen(process.env.PORT);
+var app;
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
@@ -78,11 +77,25 @@ nock('http://api.steampowered.com')
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .reply(200, testdata.heroes_api);
 
+//fake dota2 response
+nock('http://www.dota2.com')
+    .get('/jsfeed/itemdata?l=english')
+    .reply(200, testdata.item_api)
+    .get('/jsfeed/abilitydata')
+    .reply(200, testdata.ability_api);
+
 before(function(done) {
+    this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
     async.series([
+            function(cb) {
+                console.log("generating test constants");
+                tasks.generateConstants(function(err) {
+                    cb(err);
+                });
+            },
             function(cb) {
                 console.log("wiping mongodb");
                 connect(process.env.MONGO_URL, function(err, db) {
@@ -156,6 +169,11 @@ before(function(done) {
                 ], function(err) {
                     cb(err);
                 });
+            },
+            function(cb) {
+                console.log("starting web");
+                app = require('../yasp').listen(process.env.PORT);
+                cb();
             }
         ],
         function(err) {
@@ -163,6 +181,7 @@ before(function(done) {
         });
 });
 after(function(done) {
+    console.log("stopping web");
     app.close();
     done();
 });
@@ -631,11 +650,6 @@ describe("tasks", function() {
     it('unnamed players', function(done) {
         tasks.unnamed(function(err, num) {
             assert.equal(num, 2);
-            done(err);
-        });
-    });
-    it('generate constants', function(done) {
-        tasks.generateConstants(function(err) {
             done(err);
         });
     });

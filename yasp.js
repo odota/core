@@ -554,7 +554,7 @@ app.use(function(req, res, next) {
     }
 });
 app.use(function(err, req, res, next) {
-    logger.info(err);
+    //logger.info(err);
     if (err && process.env.NODE_ENV !== "development") {
         return res.status(500).render('500.jade', {
             error: true
