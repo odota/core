@@ -8,6 +8,7 @@ process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
 process.env.DELETE_REPLAYS = true;
 process.env.ROOT_URL = "http://localhost:5000";
+process.env.CONSTANTS_FILE = "./constants_test.json";
 
 var async = require('async');
 var utility = require('../utility');

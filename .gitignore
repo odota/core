@@ -13,6 +13,7 @@ coverage
 bundle.js
 .bundle.js
 constants.json
+constants_test.json
 parser/target
 !test/*
 /bin/
