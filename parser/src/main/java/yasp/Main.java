@@ -18,16 +18,23 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class Main {
-	public static final float INTERVAL = 60;
-	public static final String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
+	public static void finish(long tStart, Output doc){
+			long tMatch = System.currentTimeMillis() - tStart;
+			System.out.println(doc);
+			System.err.format("%s sec\n", tMatch / 1000.0);
+			System.exit(0);	
+	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception{
 		long tStart = System.currentTimeMillis();
+		float MINUTE = 60;
+		String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
+		HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
 		boolean initialized = false;
 		GameEventDescriptor combatLogDescriptor = null;
 		CombatLogContext ctx = null;
 		Match match = new Match();
-		float nextInterval = 0;
+		float nextMinute = 0;
 		int gameZero = Integer.MIN_VALUE;
 		int gameEnd = 0;
 		int numPlayers = 10;
@@ -37,10 +44,7 @@ public class Main {
 		if (args.length>0 && args[0].equals("-epilogue")){
 			CDemoFileInfo info = Clarity.infoForStream(System.in);
 			doc.match_id = info.getGameInfo().getDota().getMatchId();
-			long tMatch = System.currentTimeMillis() - tStart;
-			System.out.println(doc);
-			System.err.format("%s sec\n", tMatch / 1000.0);
-			System.exit(0);
+			finish(tStart, doc);
 		}
 		else{
 			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ALL);
@@ -49,7 +53,7 @@ public class Main {
 				int time = (int) match.getGameTime();
 				int trueTime=time-gameZero;
 				Entity pr = match.getPlayerResource();
-				//EntityCollection ec = match.getEntities();
+				EntityCollection ec = match.getEntities();
 
 				if (!initialized) {
 					for (int i = 0; i < numPlayers; i++) {
@@ -63,29 +67,30 @@ public class Main {
 					ctx = new CombatLogContext(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
 					initialized = true;
 				}
-				if (trueTime > nextInterval) {
+
+				if (trueTime > nextMinute) {
 					doc.times.add(trueTime);
 					for (int i = 0; i < numPlayers; i++) {
 						Player player = doc.players.get(i);
 						player.lh.add((Integer)pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
 						player.xp.add((Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
 						player.gold.add((Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
+						/*
+				        int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
+                        Entity e = ec.getByHandle(handle);
+                        if (e!=null){
+                        	//System.err.println(e);
+                        	System.err.format("time: %s, hero: %s, x: %s, y: %s,\n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                        }
+                        */
 					}
-					nextInterval += INTERVAL;
+					nextMinute += MINUTE;
 				}
 				for (int i = 0; i < numPlayers; i++) {
 					String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
 					doc.hero_to_slot.put(hero, i);
-					double stuns = pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]);
+					float stuns = pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]);
 					doc.players.get(i).stuns = stuns;
-					/*
-                    int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
-                    Entity e = ec.getByHandle(handle);
-                    System.err.println(e);
-                    if (e!=null){
-                    //System.err.format("hero: %s %s %s,%s %n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
-                    }
-					 */
 				}
 				/*
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
@@ -93,7 +98,7 @@ public class Main {
                 Entity e = runes.next();
                 //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                 }
-				 */
+				*/
 				for (UserMessage u : match.getUserMessages()) {
 					String name = u.getName();
 					if (name.equals("CDOTAUserMsg_ChatEvent")){
@@ -293,7 +298,7 @@ public class Main {
 			List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
 			for (int i = 0;i<players.size();i++) {
 				String replayName = players.get(i).getPlayerName();
-				doc.name_to_slot.put(replayName, i);
+				name_to_slot.put(replayName, i);
 			}
 			int match_id = info.getGameInfo().getDota().getMatchId();
 			doc.match_id = match_id;
@@ -307,13 +312,13 @@ public class Main {
 				String type = entry.type;
 				if (type.equals("buybacks")){
 					Integer slot = entry.slot;
-					doc.players.get(i).buybacks.add(entry);
+					doc.players.get(slot).buybacks.add(entry);
 					continue;
 				}
 				if (type.equals("chat")){
 					String prefix = entry.prefix;
-					if(doc.name_to_slot.containsKey(prefix)){
-						Integer slot = doc.name_to_slot.get(prefix);
+					if(name_to_slot.containsKey(prefix)){
+						Integer slot = name_to_slot.get(prefix);
 						entry.slot = slot;
 						doc.chat.add(entry);
 					}
@@ -341,10 +346,7 @@ public class Main {
 					hero.herokills.add(entry);
 				}
 			}
-			long tMatch = System.currentTimeMillis() - tStart;
-			System.out.println(doc);
-			System.err.format("%s sec\n", tMatch / 1000.0);
-			System.exit(0);
+			finish(tStart, doc);
 		}
 	}
 }

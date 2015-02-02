@@ -12,7 +12,6 @@ public class Output {
     public int game_zero;
     public int game_end;
     public HashMap<String, Integer> hero_to_slot = new HashMap<String,Integer>();
-    public HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
     public List<Player> players = new ArrayList<Player>();
     public List<Integer> times = new ArrayList<Integer>();
     public HashMap<String, Unit> heroes = new HashMap<String, Unit>();

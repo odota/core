@@ -4,12 +4,12 @@ public class Entry {
     public String prefix;
     public String text;
     public int time;
-    public String type;
-    public String unit;
+    public transient String type;
+    public transient String unit;
     public String key;
-    public int value = 1;
-    public int slot;
-    public boolean herokills;
+    public transient int value = 1;
+    public Integer slot;
+    public transient boolean herokills;
     public Entry(Integer time){
         this.time = time;
     }
