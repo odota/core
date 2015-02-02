@@ -19,9 +19,3 @@ Dependencies
 * Redis
 * MongoDB
 * bzip2
-
-Quickstart
-====
-* Create .env file, see `.env_example`
-* Install node dependencies and build: `npm install && npm run build`
-* Start YASP in dev mode (spawns a single retriever): `npm run dev`

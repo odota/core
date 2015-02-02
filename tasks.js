@@ -7,9 +7,9 @@ var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
 
-function getFullMatchHistory(done) {
-    var constants = require(process.env.CONSTANTS_FILE || './constants.json');
-    var heroArray = Object.keys(constants.heroes);
+function getFullMatchHistory(done, opt) {
+    var constants = require('./constants.json');
+    var heroArray = opt || Object.keys(constants.heroes);
     var match_ids = {};
 
     //only get full history if the player is tracked and doesn't have it already, do in queue order
