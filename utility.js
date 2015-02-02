@@ -81,9 +81,11 @@ function isRadiant(player) {
 }
 
 function queueReq(type, payload, cb) {
-    checkDuplicate(type, payload, function(dup) {
-        if (dup) {
-            //already have this match in db
+    checkDuplicate(type, payload, function(err, doc) {
+        if (err) {
+            return cb(err);
+        }
+        if (doc) {
             logger.info("match already in db");
             return cb(null);
         }
@@ -104,10 +106,7 @@ function checkDuplicate(type, payload, cb) {
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
-            if (!err && doc) {
-                return cb(true);
-            }
-            cb(null);
+            cb(err, doc);
         });
     }
     else {

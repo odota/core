@@ -17,7 +17,7 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var app;
+var app = require('../yasp');
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
@@ -161,7 +161,7 @@ before(function(done) {
             },
             function(cb) {
                 console.log("starting web");
-                app = require('../yasp').listen(process.env.PORT);
+                app.listen(process.env.PORT);
                 cb();
             }
         ],
