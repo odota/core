@@ -51,7 +51,7 @@ nock('http://replay1.valve.net')
     .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
 
 //fake api response
-nock('https://api.steampowered.com')
+nock('http://api.steampowered.com')
     .filteringPath(function(path) {
         var split = path.split("?");
         var split2 = split[0].split(".com");
@@ -134,6 +134,11 @@ before(function(done) {
                     },
                     function(cb) {
                         fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
@@ -659,6 +664,7 @@ describe("backend", function() {
             }]
         }, function(err, job) {
             assert(job);
+            console.log(job.data.url);
             processors.processApi(job, function(err) {
                 done(err);
             });
@@ -718,6 +724,18 @@ describe("parser", function() {
             });
         });
     });
+    it('parse ardm', function(done) {
+        var job = {
+            match_id: 1189263979,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
     it('parse truncated replay', function(done) {
         var job = {
             match_id: 1,
@@ -748,5 +766,4 @@ describe("parser", function() {
             });
         });
     });
-    //todo ardm game
 });
