@@ -38,7 +38,7 @@ function processParse(job, cb) {
             }
         }
         else {
-            //todo what if the match was a private lobby?  does it have an id?
+            //todo what if the match was a private lobby?  does it have an id?  
             //todo what about local lobby?
             //todo data won't get inserted if uploaded replay without match id, or private match without api data
             if (job2.data.payload.match_id) {
@@ -181,13 +181,13 @@ function processApi(job, cb) {
             return cb(err);
         }
         if (data.response) {
-            //summaries response
+            logger.info("summaries response");
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(err);
             });
         }
         else if (payload.match_id) {
-            //response for single match details
+            logger.info("details response");
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
