@@ -27,7 +27,6 @@ function getFullMatchHistory(done, heroesToUse) {
         if (err) {
             return done(err);
         }
-        console.log(players);
         //only do one per pass
         players = players.slice(0, 1);
         //find all the matches to add to kue
