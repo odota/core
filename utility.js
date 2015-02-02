@@ -62,6 +62,7 @@ function convert32to64(id) {
  * Makes search from a datatables call
  */
 function makeSearch(search, columns) {
+    //todo operate on passed data to filter
     var s = {};
     columns.forEach(function(c) {
         s[c.data] = "/.*" + search + ".*/";
