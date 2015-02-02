@@ -10,7 +10,7 @@ public class Player {
     public List<Integer> lh = new ArrayList<Integer>();
     public List<Integer> gold = new ArrayList<Integer>();
     public List<Integer> xp = new ArrayList<Integer>();
-    public double stuns;
+    public float stuns;
     public Player(String personaname, long steamid){
         this.personaname = personaname;
         this.steamid = steamid;
