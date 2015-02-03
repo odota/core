@@ -1,7 +1,6 @@
 {
   "sources": {
     "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
-    "heroes": "https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?language=en-us&key=",
     "abilities": "http://www.dota2.com/jsfeed/abilitydata"
   },
   "gold_reasons": {
@@ -52,6 +51,11 @@
     "0": "Queued",
     "1": "Unavailable",
     "2": "Parsed"
+  },
+  "full_history_status": {
+    "0": "Queued",
+    "1": "Unavailable",
+    "2": "Obtained"
   },
   "untracked_msg": "<h3><strong>Missing matches?</strong></h1><br> Welcome back!! We stopped tracking your matches because we haven't seen you in a while. :( This is necessary for us to handle the ever increasing load. Your matches from now on will be tracked as long as you remain active.<br><small>This message will disappear upon relogging in.</small>",
   "tooltips": {
@@ -152,28 +156,142 @@
       "name": "Ranked All Pick"
     }
   },
-  "patches": {
-    "6.83b": {
-      "start": "2015-01-13T00:00:00Z",
-      "end": ""
-    },
-    "6.83": {
-      "start": "2014-12-17T00:00:00Z",
-      "end": "2015-01-13T00:00:00Z"
-    },
-    "6.82c": {
-      "start": "2014-10-15T00:00:00Z",
-      "end": "2014-12-17T00:00:00Z"
-    },
-    "6.82b": {
-      "start": "2014-09-28T00:00:00Z",
-      "end": "2014-10-15T00:00:00Z"
-    },
-    "6.82": {
-      "start": "2014-09-24T00:00:00Z",
-      "end": "2014-09-28T00:00:00Z"
-    }
-  },
+  "patches": [{
+    "name": "6.83b",
+    "date": "2015-01-13T00:00:00Z"
+  }, {
+    "name": "6.83",
+    "date": "2014-12-17T00:00:00Z"
+  }, {
+    "name": "6.82c",
+    "date": "2014-10-15T00:00:00Z"
+  }, {
+    "name": "6.82b",
+    "date": "2014-09-28T00:00:00Z"
+  }, {
+    "name": "6.82",
+    "date": "2014-09-24T00:00:00Z"
+  }, {
+    "name": "6.81d",
+    "date": "2014-08-09T00:00:00Z"
+  }, {
+    "name": "6.81c",
+    "date": "2014-08-03T00:00:00Z"
+  }, {
+    "name": "6.81b",
+    "date": "2014-06-02T00:00:00Z"
+  }, {
+    "name": "6.81",
+    "date": "2014-04-29T00:00:00Z"
+  }, {
+    "name": "6.80c",
+    "date": "2014-03-03T00:00:00Z"
+  }, {
+    "name": "6.80b",
+    "date": "2014-03-02T00:00:00Z"
+  }, {
+    "name": "6.80",
+    "date": "2014-01-27T00:00:00Z"
+  }, {
+    "name": "6.79e",
+    "date": "2014-01-12T00:00:00Z"
+  }, {
+    "name": "6.79d",
+    "date": "2014-01-07T00:00:00Z"
+  }, {
+    "name": "6.79c",
+    "date": "2013-12-11T00:00:00Z"
+  }, {
+    "name": "6.79b",
+    "date": "2013-11-27T00:00:00Z"
+  }, {
+    "name": "6.79",
+    "date": "2013-11-24T00:00:00Z"
+  }, {
+    "name": "6.78c",
+    "date": "2013-06-30T00:00:00Z"
+  }, {
+    "name": "6.78b",
+    "date": "2013-06-03T00:00:00Z"
+  }, {
+    "name": "6.78",
+    "date": "2013-05-30T00:00:00Z"
+  }, {
+    "name": "6.77c",
+    "date": "2013-03-16T00:00:00Z"
+  }, {
+    "name": "6.77b",
+    "date": "2013-01-15T00:00:00Z"
+  }, {
+    "name": "6.77",
+    "date": "2012-12-15T00:00:00Z"
+  }, {
+    "name": "6.76c",
+    "date": "2012-10-28T00:00:00Z"
+  }, {
+    "name": "6.76b",
+    "date": "2012-10-22T00:00:00Z"
+  }, {
+    "name": "6.76",
+    "date": "2012-10-21T00:00:00Z"
+  }, {
+    "name": "6.75b",
+    "date": "2012-10-02T00:00:00Z"
+  }, {
+    "name": "6.75",
+    "date": "2012-09-30T00:00:00Z"
+  }, {
+    "name": "6.74c",
+    "date": "2012-03-21T00:00:00Z"
+  }, {
+    "name": "6.74b",
+    "date": "2012-03-20T00:00:00Z"
+  }, {
+    "name": "6.74",
+    "date": "2012-03-10T00:00:00Z"
+  }, {
+    "name": "6.73c",
+    "date": "2012-01-10T00:00:00Z"
+  }, {
+    "name": "6.73b",
+    "date": "2011-12-28T00:00:00Z"
+  }, {
+    "name": "6.73",
+    "date": "2011-12-24T00:00:00Z"
+  }, {
+    "name": "6.72f",
+    "date": "2011-07-22T00:00:00Z"
+  }, {
+    "name": "6.72e",
+    "date": "2011-07-18T00:00:00Z"
+  }, {
+    "name": "6.72d",
+    "date": "2011-07-17T00:00:00Z"
+  }, {
+    "name": "6.72c",
+    "date": "2011-06-03T00:00:00Z"
+  }, {
+    "name": "6.72b",
+    "date": "2011-05-04T00:00:00Z"
+  }, {
+    "name": "6.72",
+    "date": "2011-04-27T00:00:00Z"
+  }, {
+    "name": "6.71b",
+    "date": "2011-01-23T00:00:00Z"
+  }, {
+    "name": "6.71",
+    "date": "2011-01-21T00:00:00Z"
+  }, {
+    "name": "6.70c",
+    "date": "2010-12-30T00:00:00Z"
+  }, {
+    "name": "6.70b",
+    "date": "2010-12-28T00:00:00Z"
+  }, {
+    "name": "6.70",
+    "date": "2010-12-24T00:00:00Z"
+  }],
   "ability_ids": {
     "5001": "default_attack",
     "5002": "stats",
@@ -668,6 +786,7 @@
     "5519": "magnataur_empower",
     "5520": "magnataur_skewer",
     "5521": "magnataur_reverse_polarity",
+    "5522": "chen_test_of_faith_teleport",
     "5524": "shredder_whirling_death",
     "5525": "shredder_timber_chain",
     "5526": "shredder_reactive_armor",
@@ -730,8 +849,8 @@
     "5639": "oracle_purifying_flames",
     "5640": "oracle_false_promise",
     "wisp_spirits_out": "wisp_spirits_in"
-},
-"regions": {
+  },
+  "regions": {
     "111": "US West",
     "112": "US West",
     "114": "US West",

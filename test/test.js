@@ -1,4 +1,7 @@
+var dotenv = require('dotenv');
+dotenv.load();
 process.env.MONGO_URL = "mongodb://localhost/test";
+process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
 process.env.RETRIEVER_HOST = "http://localhost:5100";
@@ -14,22 +17,28 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var app = require('../yasp').listen(process.env.PORT);
+var app = require('../yasp');
 var processors = require('../processors');
-var tasks = require('../tasks');
 var fs = require('fs');
-
+var request = require('request');
+var unparsed = require('../unparsed');
+var updatenames = require('../updatenames');
+var fullhistory = require('../fullhistory');
+var constants = require('../constants');
 var wait = 10000;
 Zombie.localhost('localhost', process.env.PORT);
-var browser = new Zombie({maxWait: wait, runScripts:false});
+var browser = new Zombie({
+    maxWait: wait,
+    runScripts: false
+});
 
 //fake retriever response
-nock('http://localhost:5100')
+nock(process.env.RETRIEVER_HOST)
     .filteringPath(function(path) {
         return '/';
     })
     .get('/')
-    .times(3)
+    .times(2)
     .reply(200, {
         match: {
             cluster: 1,
@@ -42,67 +51,129 @@ nock('http://replay1.valve.net')
         return '/';
     })
     .get('/')
-    .replyWithFile(200, __dirname + '/1151783218.dem.bz2')
-    .get('/')
     .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
+
 //fake api response
-nock('https://api.steampowered.com')
+nock('http://api.steampowered.com')
     .filteringPath(function(path) {
-        if (path.slice(0, 8) === "/IDOTA2") {
-            return '/IDOTA2Match_570/GetMatchDetails/V001/';
-        }
-        else {
-            return '/ISteamUser/GetPlayerSummaries/v0002/';
-        }
+        var split = path.split("?");
+        var split2 = split[0].split(".com");
+        return split2[0];
     })
+    //throw some errors to test handling
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-    .reply(200, {
-        result: testdata.matches[0]
-    })
+    .reply(500, {})
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .reply(200, testdata.details_api)
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
-    .reply(200, testdata.summaries);
+    .reply(200, testdata.summaries_api)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .reply(200, {
+        result: {
+            error: "error"
+        }
+    })
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .reply(200, testdata.history_api)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .reply(200, testdata.history_api2)
+    .get('/IEconDOTA2_570/GetHeroes/v0001/')
+    .reply(200, testdata.heroes_api);
+
+//fake dota2 response
+nock('http://www.dota2.com')
+    .get('/jsfeed/itemdata?l=english')
+    .reply(200, testdata.item_api)
+    .get('/jsfeed/abilitydata')
+    .reply(200, testdata.ability_api);
 
 before(function(done) {
-    console.log("loading test data");
-    async.series([function(cb) {
-        //insert test players
-        async.mapSeries(testdata.players, function(p, cb) {
-            p.last_visited = new Date("2012-08-31T15:59:02.161+0100");
-            db.players.insert(p, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }, function(cb) {
-        //insert test matches
-        async.mapSeries(testdata.matches, function(p, cb) {
-            db.matches.insert(p, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }], function(err) {
-        //set the banner msg
-        utility.redis.set("banner", "someval");
-        done(err);
-    });
-});
-after(function(done) {
-    console.log("cleaning test data");
-    app.close();
-    //wipe mongodb and redis
+    this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
-    connect(process.env.MONGO_URL, function(err, db) {
-        databaseCleaner.clean(db, function(err) {
-            utility.redis.flushall(function(err) {
-                done(err);
-            });
+    async.series([
+            function(cb) {
+                console.log("wiping mongodb");
+                connect(process.env.MONGO_URL, function(err, db) {
+                    assert(!err);
+                    databaseCleaner.clean(db, function(err) {
+                        cb(err);
+                    });
+                });
+            },
+            function(cb) {
+                console.log("wiping redis");
+                utility.redis.flushall(function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("loading players");
+                //set visited date on first player
+                testdata.players[0].last_visited = new Date();
+                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                async.mapSeries(testdata.players, function(p, cb) {
+                    db.players.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("loading matches");
+                async.mapSeries(testdata.matches, function(p, cb) {
+                    db.matches.insert(p, function(err) {
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("copying replays to test dir");
+                var replay_dir = process.env.REPLAY_DIR;
+                if (!fs.existsSync(replay_dir)) {
+                    fs.mkdir(replay_dir);
+                }
+                async.parallel([
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        fs.createReadStream(__dirname + '/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    }
+                ], function(err) {
+                    cb(err);
+                });
+            },
+            function(cb) {
+                console.log("starting web");
+                app.listen(process.env.PORT);
+                cb();
+            }
+        ],
+        function(err) {
+            done(err);
         });
-    });
+});
+after(function(done) {
+    done();
 });
 
 describe("services", function() {
@@ -124,47 +195,6 @@ describe("services", function() {
     });
 });
 
-describe("tasks", function() {
-    it('unparsed matches', function(done) {
-        tasks.unparsed(function(err, num) {
-            assert.equal(num, 1);
-            done(err);
-        });
-    });
-    it('update summaries', function(done) {
-        tasks.updateSummaries(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    it('untrack players', function(done) {
-        tasks.untrackPlayers(function(err, num) {
-            assert.equal(num, 2);
-            done(err);
-        });
-    });
-    /*
-    it('full history', function(done) {
-        done();
-    });
-    it('generate constants', function(done) {
-        done();
-    });
-    */
-});
-
-describe("backend", function() {
-    it('queue details request', function(done) {
-        utility.queueReq("api_details", {
-            match_id: 115178218
-        }, function(err, job) {
-            assert(job);
-            done(err);
-        });
-    });
-    //run processApi
-});
-
 describe("web", function() {
     this.timeout(wait);
     describe("/", function() {
@@ -182,14 +212,10 @@ describe("web", function() {
             browser.assert.text('body', /YASP/);
             done();
         });
-        it('should have a banner', function(done) {
-            browser.assert.text('.alert', /someval/);
-            done();
-        });
     });
-    describe("/stats", function() {
+    describe("/status", function() {
         before(function(done) {
-            browser.visit('/stats');
+            browser.visit('/status');
             browser.wait(wait, function(err) {
                 done(err);
             });
@@ -249,6 +275,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -262,6 +289,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1/details');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -275,6 +303,7 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/players/1');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -283,7 +312,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/players/:valid", function() {
         before(function(done) {
             browser.visit('/players/88367253');
@@ -293,6 +321,26 @@ describe("web", function() {
         });
         it('should 200', function(done) {
             browser.assert.status(200);
+            done();
+        });
+        it('should have a w/l record', function(done) {
+            browser.assert.text('h2', /.*1-1.*/);
+            done();
+        });
+    });
+    describe("/players/:valid (no matches)", function() {
+        before(function(done) {
+            browser.visit('/players/88367251');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should have a w/l record', function(done) {
+            browser.assert.text('h2', /.*0-0.*/);
             done();
         });
     });
@@ -312,10 +360,40 @@ describe("web", function() {
             done();
         });
     });
+    describe("/players/:valid/stats", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/stats');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Teammates', function(done) {
+            browser.assert.text('body', /Teammates/);
+            done();
+        });
+    });
+    describe("/players/:valid/:invalid", function() {
+        before(function(done) {
+            browser.visit('/players/88367253/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
     describe("/players/:invalid/matches", function() {
         before(function(done) {
             browser.visit('/players/1/matches');
             browser.wait(wait, function(err) {
+                assert(err);
                 done();
             });
         });
@@ -340,46 +418,280 @@ describe("web", function() {
             done();
         });
     });
-
+    describe("/matches/:valid/details (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/details');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Purchases', function(done) {
+            browser.assert.text('body', /Purchases/);
+            done();
+        });
+    });
+    describe("/matches/:valid/graphs (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/graphs');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Gold', function(done) {
+            browser.assert.text('body', /Gold/);
+            done();
+        });
+    });
+    describe("/matches/:valid/chat (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/chat');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Chat', function(done) {
+            browser.assert.text('body', /Chat/);
+            done();
+        });
+    });
+    describe("/matches/:valid/:invalid (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 500', function(done) {
+            browser.assert.status(500);
+            done();
+        });
+    });
+    describe("/login", function() {
+        before(function(done) {
+            browser.visit('/login');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/return", function() {
+        before(function(done) {
+            browser.visit('/return');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("/about", function() {
+        before(function(done) {
+            browser.visit('/about');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
     /*
-              //api/items valid
-              //api/items invalid
-              //api/abilities valid
-              //api/abilities invalid
-              //api/matches valid
-              //api/matches invalid
-              //login
-              //return
-              //logout
-              //GET /upload
-              //POST /upload proper file, too large, invalid file
-              //check untracked_msg
-              //matches/details parsed
-              //matches/graphs parsed
-              //matches/chat parsed
-              */
-});
-
-describe("parser", function() {
-    this.timeout(40000);
-    it('parse match (file)', function(done) {
-        var job = {
-            match_id: 115178218,
-            start_time: moment().format('X')
-        };
-        utility.queueReq("parse", job, function(err, job) {
-            processors.processParse(job, function(err) {
+    describe("/upload (logged in)", function() {
+        before(function(done) {
+            browser.visit('/upload');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+    });
+    describe("POST /upload", function() {
+        it('should upload', function(done) {
+            var formData = {
+                replay: fs.createReadStream(__dirname + '/1193091757.dem')
+            };
+            request.post({
+                url: process.env.ROOT_URL+'/upload',
+                formData: formData
+            }, function(err, resp, body) {
                 done(err);
             });
         });
     });
-    it('parse match (stream)', function(done) {
+    */
+    //todo test passport-steam login function
+    //todo test upload
+    describe("/logout", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("invalid page", function() {
+        before(function(done) {
+            browser.visit('/asdf');
+            browser.wait(wait, function(err) {
+                assert(err);
+                done();
+            });
+        });
+        it('should 404', function(done) {
+            browser.assert.status(404);
+            done();
+        });
+    });
+    //todo use supertest for api endpoints
+    describe("/api/matches", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/api/matches', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+        it('should return JSON', function(done) {
+            request.get(process.env.ROOT_URL + '/api/matches?draw=2&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                assert(body);
+                done(err);
+            });
+        });
+    });
+    describe("/api/items", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("/api/abilities", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
+            });
+        });
+    });
+    describe("/preferences", function() {
+        it('should return JSON', function(done) {
+            request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
+                assert(body)
+                done(err);
+            });
+        });
+    });
+    describe("/fullhistory", function() {
+        it('should return JSON', function(done) {
+            request.post(process.env.ROOT_URL + '/fullhistory', {}, function(err, resp, body) {
+                assert(body);
+                done(err);
+            });
+        });
+    });
+    describe("/verify_recaptcha", function() {
+        it('should return JSON', function(done) {
+            request.post(process.env.ROOT_URL + '/verify_recaptcha', {
+                form: {
+                    recaptcha_challenge_field: "asdf",
+                    recaptcha_response_field: "jkl;"
+                }
+            }, function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                assert(body);
+                done(err);
+            });
+        });
+    });
+});
+
+describe("tasks", function() {
+    this.timeout(wait);
+    it('unparsed matches', function(done) {
+        unparsed(function(err, num) {
+            assert.equal(num, 1);
+            done(err);
+        });
+    });
+    it('updateNames', function(done) {
+        updatenames(function(err, num) {
+            done(err);
+        });
+    });
+    it('full history', function(done) {
+        fullhistory(function(err) {
+            done(err);
+        }, ["1"]);
+    });
+    it('generate constants', function(done) {
+        constants(function(err) {
+            done(err);
+        }, "./constants_test.json");
+    });
+});
+
+describe("backend", function() {
+    this.timeout(wait);
+    it('process details request', function(done) {
+        utility.queueReq("api_details", {
+            match_id: 870061127
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            })
+        });
+    });
+    it('process summaries request', function(done) {
+        utility.queueReq("api_summaries", {
+            players: [{
+                account_id: 88367253
+            }]
+        }, function(err, job) {
+            assert(job);
+            console.log(job.data.url);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
+});
+
+describe("parser", function() {
+    this.timeout(60000);
+    it('parse replay (download)', function(done) {
         var job = {
             match_id: 115178218,
             start_time: moment().format('X')
         };
         utility.queueReq("parse", job, function(err, job) {
-            processors.processParseStream(job, function(err) {
+            assert(job && !err);
+
+            processors.processParse(job, function(err) {
                 done(err);
             });
         });
@@ -390,29 +702,62 @@ describe("parser", function() {
             start_time: 1
         };
         utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+
             processors.processParse(job, function(err) {
                 done(err);
             });
         });
     });
-    //runParse directly on files, verify no crash
-    //1v1 game
-    //ardm game
-    //regular game
-    //test epilogue parse
-    //test broken file
-    //test invalid file
+    it('parse replay (local)', function(done) {
+        var job = {
+            match_id: 1193091757,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse 1v1', function(done) {
+        var job = {
+            match_id: 1181392470,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse ardm', function(done) {
+        var job = {
+            match_id: 1189263979,
+            start_time: moment().format('X')
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('parse invalid file', function(done) {
+        var job = {
+            match_id: 1,
+            start_time: moment().format('X'),
+            fileName: process.env.REPLAY_DIR + "/invalid.dem"
+        };
+        utility.queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            processors.processParse(job, function(err) {
+                assert(err);
+                console.log(err);
+                done();
+            });
+        });
+    });
 });
-
-//queries
-//mergeMatchData: mergeMatchData,
-//generateGraphData: generateGraphData,
-///fillPlayerInfo: fillPlayerInfo (slow for large datasets)
-
-//s3 methods are untested
-
-/*
-it('upload job', function(done) {
-utility.jobs.process('upload', utility.processUpload);
-});
-*/

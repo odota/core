@@ -1,11 +1,18 @@
 extend player
 
 block playercontent
-  h3 Activity
-  p
-    button.btn.btn-default#prev <
-    button.btn.btn-default#next >
-  div#cal-heatmap
+  .row
+    .col-md-6
+      h2 Record: #{player.win}-#{player.lose}
+    .col-md-6
+      h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%   
+  .row
+    .col-md-12
+      h3 Activity
+      p
+        button.btn.btn-default#prev <
+        button.btn.btn-default#next >
+      div#cal-heatmap
   .row
     .col-md-7
       h3 Recent Matches
@@ -15,6 +22,7 @@ block playercontent
            th Match ID
            th Hero
            th Result
+           th Region
            th Game Mode
            th Duration
            th Played
@@ -25,24 +33,25 @@ block playercontent
         each match in player.matches.slice(0,10)
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
-            - var hero = constants.heroes[match.players[match.slot].hero_id]
+            - var hero = constants.heroes[match.players[0].hero_id]
             td.hero 
               if hero
                 img(src=hero.img, title=hero.localized_name)
               else
-                =match.players[match.slot].hero_id
+                =match.players[0].hero_id
             td= match.player_win ? "Won" : "Lost"
+            td= constants.regions[match.cluster] || match.cluster
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
-            td=match.players[match.slot].kills
-            td=match.players[match.slot].deaths
-            td=match.players[match.slot].assists
+            td=match.players[0].kills
+            td=match.players[0].deaths
+            td=match.players[0].assists
             td=constants.parse_status[match.parse_status]
-    .col-md-5
+    .col-md-5(style="margin-top:3em")
       include ads/skyscraper
-  .row        
-    .col-md-6
+  .row
+    .col-md-12
       h3 Heroes
       table.table#heroes
         thead
@@ -51,44 +60,26 @@ block playercontent
             th Hero Name
             th Games
             th Wins
-            th Losses
             th Winrate
         each hero in constants.heroes
           tr
             td.hero
-              img(src=hero.img, alt=hero.localized_name)
+              img(src=hero.img, title=hero.localized_name)
             td 
               =hero.localized_name
             - var entry = player.heroes[hero.id]
             td #{entry ? entry.games : 0}
             td #{entry ? entry.win : 0}
-            td #{entry ? entry.lose : 0}
-            td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%
-    .col-md-6            
-      h3 Teammates
-      table.table#teammates
-        thead
-          tr
-            th Name
-            th Games
-            th Wins
-            th Losses
-            th Winrate          
-        each teammate in player.teammates
-          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id && teammate.games > 2) 
-            tr
-              td
-                img.user(src=teammate.avatar)
-                a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-              td=teammate.games
-              td=teammate.win
-              td=teammate.lose
-              td #{(100*teammate.win/teammate.games).toFixed(2)}%
-
-block footer_assets
-  include assets/datatables
+            td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
+  .row
+    include ads/leaderboard_2
+  .row
+    .col-md-12
+      h3 Match Durations
+      #chart-duration
+      h3 GPMs
+      #chart-gpms
   link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
-    var calData = !{JSON.stringify(player.calheatmap)}
-    generateCalHeatmap(calData);
-    playerTables();
+    var data = !{JSON.stringify(player.histogramData)}
+    generateHistograms(data);

@@ -1,7 +1,8 @@
 YASP - YASP: Another Stats Page
 ====
+
+[![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/yasp-dota/yasp.svg)](https://travis-ci.org/yasp-dota/yasp)
-[![npm version](https://badge.fury.io/js/yasp.svg)](http://badge.fury.io/js/yasp)
 [![Code Climate](https://codeclimate.com/github/yasp-dota/yasp/badges/gpa.svg)](https://codeclimate.com/github/yasp-dota/yasp)
 [![Coverage Status](https://coveralls.io/repos/yasp-dota/yasp/badge.svg)](https://coveralls.io/r/yasp-dota/yasp)
 [![Dependency Status](https://david-dm.org/yasp-dota/yasp.svg)](https://david-dm.org/yasp-dota/yasp)
@@ -23,6 +24,5 @@ Dependencies
 
 Quickstart
 ====
-* Create .env file, see `.env_example`
-* Install node dependencies and build: `npm install && npm run build`
-* Start YASP in dev mode (spawns a single retriever): `npm run dev`
+* Create .env file, add required config values: `cp .env_example .env`
+* Launch in dev mode: `npm start`

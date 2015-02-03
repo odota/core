@@ -36,9 +36,11 @@ function mergeMatchData(match, constants) {
         var primary = key;
         if (constants.hero_names[key]) {
             //is a hero
+            //merging multiple heroes together, only occurs in ARDM
+            //doesn't work for 1v1, but ARDM is only played with 10 players
             var hero_id = constants.hero_names[key].id;
             var slot = match.parsed_data.hero_to_slot[hero_id];
-            if (slot) {
+            if (match.players[slot]) {
                 var primary_id = match.players[slot].hero_id;
                 primary = constants.heroes[primary_id].name;
                 //build hero_ids for each player
@@ -73,23 +75,24 @@ function getAssociatedHero(unit, heroes) {
         //split by _
         var split = unit.split("_");
         //get the third element
-        var identifier = split[2];
-        if (split[2] === "shadow" && split[3] === "shaman") {
-            identifier = "shadow_shaman";
-        }
-        if (split[2] === "witch" && split[3] === "doctor") {
-            identifier = "witch_doctor";
-        }
-        //append to npc_dota_hero_, see if matches
-        var attempt = "npc_dota_hero_" + identifier;
-        if (heroes[attempt]) {
-            unit = attempt;
-        }
+        var identifiers = [split[2], split[2] + "_" + split[3]];
+        identifiers.forEach(function(id) {
+            //append to npc_dota_hero_, see if matches
+            var attempt = "npc_dota_hero_" + id;
+            if (heroes[attempt]) {
+                unit = attempt;
+            }
+        });
     }
     return unit;
 }
 
 function generateGraphData(match, constants) {
+    var oneVone = (match.players.length === 2);
+    if (oneVone) {
+        //rebuild parsed data players array if 1v1 match
+        match.parsed_data.players = [match.parsed_data.players[0], match.parsed_data.players[5]];
+    }
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -117,81 +120,42 @@ function generateGraphData(match, constants) {
         lh: [time]
     };
     match.parsed_data.players.forEach(function(elem, i) {
-        var hero = constants.heroes[match.players[i].hero_id].localized_name;
+        var hero = constants.heroes[match.players[i].hero_id].localized_name + (oneVone ? " - " + match.players[i].personaname : "");
         data.gold.push([hero].concat(elem.gold));
         data.xp.push([hero].concat(elem.xp));
         data.lh.push([hero].concat(elem.lh));
     });
+
+    //data for income chart
+    var gold_reasons = [];
+    var columns = [];
+    var categories = [];
+    var orderedPlayers = match.players.slice(0);
+    orderedPlayers.sort(function(a, b) {
+        return b.gold_per_min - a.gold_per_min;
+    });
+    //console.log(orderedPlayers);
+    orderedPlayers.forEach(function(player) {
+        var hero = constants.heroes[player.hero_id];
+        categories.push(hero.localized_name);
+    });
+    for (var key in constants.gold_reasons) {
+        var reason = constants.gold_reasons[key];
+        gold_reasons.push(reason);
+        var col = [reason];
+        orderedPlayers.forEach(function(player) {
+            var hero = constants.heroes[player.hero_id];
+            var parsedHero = match.parsed_data.heroes[hero.name];
+            col.push(parsedHero.gold_log[key] || 0);
+        });
+        columns.push(col);
+    }
+
+    data.cats = categories;
+    data.goldCols = columns;
+    data.gold_reasons = gold_reasons;
     match.graphData = data;
     return match;
-}
-
-function fillPlayerInfo(player, cb) {
-    getMatchesByPlayer(player.account_id, function(err, matches) {
-        if (err) {
-            return cb(err);
-        }
-        var account_id = player.account_id;
-        var counts = {};
-        var heroes = {};
-        player.calheatmap = {};
-        for (var i = 0; i < matches.length; i++) {
-            //add start time to data for cal-heatmap
-            player.calheatmap[matches[i].start_time] = 1;
-            //compute top heroes
-            for (var j = 0; j < matches[i].players.length; j++) {
-                var p = matches[i].players[j];
-                if (p.account_id === account_id) {
-                    //find the "main" player's id
-                    var playerRadiant = isRadiant(p);
-                    matches[i].player_win = (playerRadiant === matches[i].radiant_win);
-                    matches[i].slot = j;
-                    matches[i].player_win ? player.win += 1 : player.lose += 1;
-                    player.games += 1;
-                    if (!heroes[p.hero_id]) {
-                        heroes[p.hero_id] = {
-                            games: 0,
-                            win: 0,
-                            lose: 0
-                        };
-                    }
-                    heroes[p.hero_id].games += 1;
-                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
-                }
-            }
-            //compute top teammates
-            for (j = 0; j < matches[i].players.length; j++) {
-                var tm = matches[i].players[j];
-                if (isRadiant(tm) === playerRadiant) { //teammates of player
-                    if (!counts[tm.account_id]) {
-                        counts[tm.account_id] = {
-                            account_id: tm.account_id,
-                            win: 0,
-                            lose: 0,
-                            games: 0
-                        };
-                    }
-                    counts[tm.account_id].games += 1;
-                    matches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
-                }
-            }
-        }
-        player.teammates = [];
-        for (var id in counts) {
-            var count = counts[id];
-            if (id == account_id) {
-                player.win = count.win;
-                player.lose = count.lose;
-                player.games = count.games;
-            }
-            player.teammates.push(count);
-        }
-        player.matches = matches;
-        player.heroes = heroes;
-        fillPlayerNames(player.teammates, function(err) {
-            cb(err);
-        });
-    });
 }
 
 function fillPlayerNames(players, cb) {
@@ -211,29 +175,78 @@ function fillPlayerNames(players, cb) {
     });
 }
 
-function getMatchesByPlayer(account_id, cb) {
-    var search = {};
-    if (account_id) {
-        search.players = {
-            $elemMatch: {
-                account_id: account_id
-            }
-        };
-    }
-    db.matches.find(search, {
+function computeStatistics(player, cb) {
+    var playerMatches = player.matches;
+    db.matches.find({
+        'players.account_id': player.account_id
+    }, {
         sort: {
             match_id: -1
         }
-    }, function(err, docs) {
-        cb(err, docs);
+    }, function(err, matches) {
+        if (err) {
+            return cb(err);
+        }
+        var counts = {};
+        var against = {};
+        var together = {};
+        for (var i = 0; i < matches.length; i++) {
+            for (var j = 0; j < matches[i].players.length; j++) {
+                var tm = matches[i].players[j];
+                var tm_hero = tm.hero_id;
+                if (utility.isRadiant(tm) === playerMatches[i].playerRadiant) {
+                    //count teammate players
+                    if (!counts[tm.account_id]) {
+                        counts[tm.account_id] = {
+                            account_id: tm.account_id,
+                            win: 0,
+                            lose: 0,
+                            games: 0
+                        };
+                    }
+                    counts[tm.account_id].games += 1;
+                    playerMatches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                    //count teammate heroes
+                    if (!together[tm_hero]) {
+                        together[tm_hero] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
+                    }
+                    together[tm_hero].games += 1;
+                    playerMatches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+                }
+                else {
+                    //count enemy heroes
+                    if (!against[tm_hero]) {
+                        against[tm_hero] = {
+                            games: 0,
+                            win: 0,
+                            lose: 0
+                        };
+                    }
+                    against[tm_hero].games += 1;
+                    playerMatches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
+                }
+            }
+        }
+        player.together = together;
+        player.against = against;
+        player.teammates = [];
+        for (var id in counts) {
+            var count = counts[id];
+            player.teammates.push(count);
+        }
+        fillPlayerNames(player.teammates, function(err) {
+            cb(err);
+        });
     });
 }
 
-
 module.exports = {
     fillPlayerNames: fillPlayerNames,
-    getMatchesByPlayer: getMatchesByPlayer,
     mergeMatchData: mergeMatchData,
     generateGraphData: generateGraphData,
-    fillPlayerInfo: fillPlayerInfo
-}
+    computeStatistics: computeStatistics
+};

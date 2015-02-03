@@ -11,6 +11,7 @@ block playercontent
        th Result
        th Game Mode
        th Duration
+       th Region
        th Played
        th K
        th D
@@ -25,28 +26,27 @@ block playercontent
     each match in player.matches
       tr(class= match.player_win ? "success" : "danger")
         td: a(href='/matches/#{match.match_id}')= match.match_id
-        - var hero = constants.heroes[match.players[match.slot].hero_id]
+        - var hero = constants.heroes[match.players[0].hero_id]
         td.hero 
           if hero
             img(src=hero.img, title=hero.localized_name)
           else
-            =match.players[match.slot].hero_id
+            =match.players[0].hero_id
         td= hero ? hero.localized_name : "unknown hero"
         td= match.player_win ? "Won" : "Lost"
         td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
         td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+        td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
         td= moment.unix(match.start_time + match.duration).fromNow()
-        td=match.players[match.slot].kills
-        td=match.players[match.slot].deaths
-        td=match.players[match.slot].assists
-        td=match.players[match.slot].last_hits
-        td=match.players[match.slot].denies
-        td=match.players[match.slot].gold_per_min
-        td=match.players[match.slot].xp_per_min
-        td=match.players[match.slot].hero_damage
-        td=match.players[match.slot].tower_damage
-        td=match.players[match.slot].hero_healing
-block footer_assets
-  include assets/datatables
-  script.
-    playerMatchTables()
+        td=match.players[0].kills
+        td=match.players[0].deaths
+        td=match.players[0].assists
+        td=match.players[0].last_hits
+        td=match.players[0].denies
+        td=match.players[0].gold_per_min
+        td=match.players[0].xp_per_min
+        td=match.players[0].hero_damage
+        td=match.players[0].tower_damage
+        td=match.players[0].hero_healing
+  .row
+    include ads/leaderboard_2

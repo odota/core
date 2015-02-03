@@ -3,6 +3,8 @@ html
   head
     title= title || "YASP"
     meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
+    meta(charset='utf-8')
+    meta(name="viewport", content="initial-scale=1")
     //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='114x114', href='/public/images/apple-touch-icon-114x114.png')
@@ -27,11 +29,14 @@ html
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.min.css')
     style
       include ../public/css/yasp.css
     if (user && user.dark_theme)
       style
         include ../public/css/dark.css
+    script(src="/public/js/bundle.js")
+    script(src="/public/js/ga.js")
     block head
     
   body
@@ -43,6 +48,10 @@ html
           ul.nav.navbar-nav
             li
               a(href="/matches") Matches
+            li
+              a(href="/status") Status
+            li
+              a(href="/about") FAQ/About
             li
               a(href="/blog") Blog
           if user
@@ -84,7 +93,6 @@ html
                 Comments, suggestions? 
                 <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
                 Thanks! <br>
-                <a href="/stats"> Stats for nerds </a>
             .col-md-4.text-center
              p.
                <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
@@ -92,5 +100,9 @@ html
                <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+<<<<<<< HEAD
         script(src="/public/bundle.js")
         block footer_assets
+=======
+        block footer_assets
+>>>>>>> refactor
