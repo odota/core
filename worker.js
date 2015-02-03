@@ -1,6 +1,5 @@
 var utility = require('./utility');
 var processors = require('./processors');
-var tasks = require('./tasks');
 var getData = utility.getData;
 var db = utility.db;
 var logger = utility.logger;
@@ -10,6 +9,7 @@ var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
 var kue = utility.kue;
 var moment = require('moment');
+var fullhistory = require('./fullhistory');
 
 console.log("[WORKER] starting worker");
 startScan();
@@ -17,7 +17,7 @@ jobs.promote();
 jobs.process('api', processors.processApi);
 setInterval(clearActiveJobs, 60 * 1000, function() {});
 setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
-setInterval(tasks.getFullMatchHistory, 60 * 60 * 1000, function() {});
+setInterval(fullhistory, 60 * 60 * 1000, function() {});
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
