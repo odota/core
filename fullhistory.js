@@ -13,7 +13,7 @@ module.exports = function getFullMatchHistory(done, heroes) {
     db.players.find(utility.fullHistoryEligible(), {
         limit: 1,
         sort: {
-            _id: 1
+            join_time: 1
         }
     }, function(err, players) {
         if (err) {
