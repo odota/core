@@ -81,10 +81,12 @@ function isRadiant(player) {
 }
 
 function queueReq(type, payload, cb) {
-    checkDuplicate(type, payload, function(err) {
+    checkDuplicate(type, payload, function(err, doc) {
         if (err) {
-            //already have this match in db
-            logger.info(err);
+            return cb(err);
+        }
+        if (doc) {
+            logger.info("match already in db");
             return cb(null);
         }
         var job = generateJob(type, payload);
@@ -100,15 +102,11 @@ function queueReq(type, payload, cb) {
 
 function checkDuplicate(type, payload, cb) {
     if (type === "api_details" && payload.match_id) {
-        //make sure match doesn't exist already in db
-        //parse requests are allowed to repeat
+        //make sure match doesn't exist already in db before queueing for api
         db.matches.findOne({
             match_id: payload.match_id
         }, function(err, doc) {
-            if (!err && !doc) {
-                return cb(null);
-            }
-            cb(new Error("duplicate found"));
+            cb(err, doc);
         });
     }
     else {
@@ -204,7 +202,7 @@ function getData(url, cb) {
                 //generic valid response
                 return cb(null, body);
             });
-        }, 1000);
+        }, 800);
     }
     /*
         function getS3Url(match_id, cb) {

@@ -17,7 +17,7 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var app = require('../yasp').listen(process.env.PORT);
+var app = require('../yasp');
 var processors = require('../processors');
 var tasks = require('../tasks');
 var fs = require('fs');
@@ -77,7 +77,15 @@ nock('http://api.steampowered.com')
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .reply(200, testdata.heroes_api);
 
+//fake dota2 response
+nock('http://www.dota2.com')
+    .get('/jsfeed/itemdata?l=english')
+    .reply(200, testdata.item_api)
+    .get('/jsfeed/abilitydata')
+    .reply(200, testdata.ability_api);
+
 before(function(done) {
+    this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
@@ -143,11 +151,6 @@ before(function(done) {
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/truncate.dem').pipe(fs.createWriteStream(replay_dir + 'truncate.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
-                    },
-                    function(cb) {
                         fs.createReadStream(__dirname + '/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
@@ -155,6 +158,11 @@ before(function(done) {
                 ], function(err) {
                     cb(err);
                 });
+            },
+            function(cb) {
+                console.log("starting web");
+                app.listen(process.env.PORT);
+                cb();
             }
         ],
         function(err) {
@@ -162,7 +170,6 @@ before(function(done) {
         });
 });
 after(function(done) {
-    app.close();
     done();
 });
 
@@ -633,15 +640,15 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('generate constants', function(done) {
-        tasks.generateConstants(function(err) {
-            done(err);
-        });
-    });
     it('full history', function(done) {
         tasks.getFullMatchHistory(function(err) {
             done(err);
         }, ["1"]);
+    });
+    it('generate constants', function(done) {
+        tasks.generateConstants(function(err) {
+            done(err);
+        }, "./constants_test.json");
     });
 });
 
@@ -733,21 +740,6 @@ describe("parser", function() {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
-            });
-        });
-    });
-    it('parse truncated replay', function(done) {
-        var job = {
-            match_id: 1,
-            start_time: moment().format('X'),
-            fileName: process.env.REPLAY_DIR + "/truncate.dem"
-        };
-        utility.queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            processors.processParse(job, function(err) {
-                assert(err);
-                console.log(err);
-                done();
             });
         });
     });
