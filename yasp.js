@@ -502,7 +502,7 @@ app.route('/status').get(function(req, res, next) {
             uploaded_matches: function(cb) {
                 db.matches.count({
                     uploader: {
-                        $exists: 1
+                        $exists: true
                     }
                 }, function(err, res) {
                     cb(err, res);
