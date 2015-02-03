@@ -23,7 +23,8 @@ function processParse(job, cb) {
     ], function(err, job2) {
         if (err) {
             logger.info(err);
-            if (err === "replay expired" || (job2 && job2.attempts.remaining <= 0)) {
+            if (err === "replay expired" || (job2 && job2.attempts.remaining <= 1)) {
+                //don't retry
                 db.matches.update({
                     match_id: match_id
                 }, {
@@ -35,6 +36,7 @@ function processParse(job, cb) {
                 });
             }
             else {
+                //retry
                 return cb(err);
             }
         }
@@ -155,9 +157,9 @@ function streamReplay(job, cb) {
         var bz = spawn("bzcat");
         var d = domain.create();
         d.on('error', function(err) {
+            logger.info(err);
             bz.kill();
             parser.kill();
-            logger.info(err);
             return cb(err);
         });
         d.run(function() {
