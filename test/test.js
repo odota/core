@@ -76,6 +76,7 @@ nock('http://api.steampowered.com')
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
     .reply(200, testdata.history_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .times(2)
     .reply(200, testdata.history_api2)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .reply(200, testdata.heroes_api);
