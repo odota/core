@@ -11,7 +11,7 @@
     "unparsed": "node runner.js unparsed",
     "constants": "node runner.js constants ",
     "fullhistory": "node runner.js fullhistory",
-    "unnamed": "node runner.js unnamed",
+    "updatenames": "node runner.js updatenames",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
     "build": "mvn -q -f parser/pom.xml package && npm run browserify && npm run constants"

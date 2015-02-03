@@ -4,7 +4,7 @@ var tasks = require('./tasks');
 var args = process.argv.slice(2);
 var functionMap = {
     "fullhistory": tasks.getFullMatchHistory,
-    "unnamed": tasks.unnamed,
+    "updatenames": tasks.updateNames,
     "constants": tasks.generateConstants,
     "unparsed": tasks.unparsed
 };

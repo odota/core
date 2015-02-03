@@ -12,6 +12,7 @@ var insertMatch = utility.insertMatch;
 var queueReq = utility.queueReq;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
+var domain = require('domain');
 
 function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
@@ -120,7 +121,7 @@ function streamReplay(job, cb) {
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
-        logger.info("[PARSER] parse time: %s", (new Date() - t1)/1000);
+        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
         if (job.data.fileName) {
             fs.unlinkSync(job.data.fileName);
         }
@@ -151,13 +152,22 @@ function streamReplay(job, cb) {
         fs.createReadStream(job.data.fileName).pipe(parser.stdin);
     }
     else {
-        var downStream = request.get({
-            url: job.data.url,
-            encoding: null
-        });
         var bz = spawn("bzcat");
-        downStream.pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
+        var d = domain.create();
+        d.on('error', function(err) {
+            bz.kill();
+            parser.kill();
+            logger.info(err);
+            return cb(err);
+        });
+        d.run(function() {
+            var downStream = request.get({
+                url: job.data.url,
+                encoding: null
+            });
+            downStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        });
     }
 }
 

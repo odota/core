@@ -7,9 +7,9 @@ var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
 
-function getFullMatchHistory(done, opt) {
+function getFullMatchHistory(done, heroes) {
     var constants = require('./constants.json');
-    var heroArray = opt || Object.keys(constants.heroes);
+    var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
 
     //only get full history if the player is tracked and doesn't have it already, do in queue order
@@ -140,11 +140,11 @@ function unparsed(done) {
     });
 }
 
-function generateConstants(done, opt) {
+function generateConstants(done, fileName) {
     var constants = require('./sources.json');
+    constants.sources.heroes = utility.generateJob("api_heroes", {language: "en-us"}).url;
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
-        val = val.slice(-4) === "key=" ? val + process.env.STEAM_API_KEY : val;
         getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
@@ -187,7 +187,7 @@ function generateConstants(done, opt) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile(opt || './constants.json', JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(fileName || './constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }
@@ -196,44 +196,41 @@ function generateConstants(done, opt) {
     });
 }
 
-function unnamed(cb) {
-    db.players.find({
-        personaname: {
-            $exists: false
+function updateNames(cb) {
+    var buckets = 1;
+    var target = Math.floor(Math.random() * buckets);
+    db.matches.distinct('players.account_id', {
+        match_id: {
+            $mod: [buckets, target]
         }
-    }, function(err, docs) {
+    }, function(err, array) {
         if (err) {
             return cb(err);
         }
-        var arr = [];
-        var i = 0;
-        async.mapSeries(docs, function(player, cb) {
-            arr.push(player);
-            i += 1;
-            if (arr.length >= 100 || !docs[i + 1]) {
-                console.log(i);
-                var summaries = {
-                    summaries_id: new Date(),
-                    players: arr
-                };
-                queueReq("api_summaries", summaries, function(err) {
-                    console.log("added job to kue");
-                    arr = [];
-                    return cb(err);
-                });
-            }
-            else {
-                cb(null);
-            }
+        console.log(buckets, target);
+        console.log("found %s account_ids in this bucket", array.length);
+        var chunk = 100;
+        var chunks = [];
+        for (var i = 0; i < array.length; i += chunk) {
+            var temp = array.slice(i, i + chunk);
+            chunks.push(temp);
+        }
+        async.mapSeries(chunks, function(chunk, cb) {
+            var summaries = {
+                summaries_id: new Date(),
+                players: chunk
+            };
+            queueReq("api_summaries", summaries, function(err) {
+                cb(err);
+            });
         }, function(err) {
-            console.log("updated %s users", i);
-            cb(err, i);
+            cb(err, array.length);
         });
     });
 }
 
 module.exports = {
-    unnamed: unnamed,
+    updateNames: updateNames,
     unparsed: unparsed,
     getFullMatchHistory: getFullMatchHistory,
     generateConstants: generateConstants
