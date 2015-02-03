@@ -56,13 +56,6 @@ function logOnSteam() {
         "accountName": user,
         "password": pass
     };
-    /*
-    var codes = process.env.STEAM_GUARD_CODE.split(",");
-    var authcode = codes[loginNum];
-    if (authcode) {
-        logOnDetails.authCode = authcode;
-    }
-    */
     if (!fs.existsSync("sentry")) {
         fs.openSync("sentry", 'w');
     }
@@ -77,19 +70,11 @@ function logOnSteam() {
                 ready = true;
             });
         },
-        onSteamSentry = function onSteamSentry(newSentry) {
-            console.log("[STEAM] Received sentry.");
-            fs.writeFileSync("sentry", newSentry);
-        },
-        onSteamServers = function onSteamServers(servers) {
-            console.log("[STEAM] Received servers.");
-            fs.writeFile("servers", JSON.stringify(servers));
-        },
         onSteamError = function onSteamError(e) {
             console.log(e);
             reset();
         };
-    Steam.on("loggedOn", onSteamLogOn).on('sentry', onSteamSentry).on('servers', onSteamServers).on('error', onSteamError);
+    Steam.on("loggedOn", onSteamLogOn).on('error', onSteamError);
 }
 
 function getGCReplayUrl(match_id, cb) {

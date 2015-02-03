@@ -56,9 +56,6 @@ function processParse(job, cb) {
 
 function checkLocal(job, cb) {
     var match_id = job.data.payload.match_id;
-    if (!fs.existsSync(replay_dir)) {
-        fs.mkdir(replay_dir);
-    }
     var fileName = job.data.fileName || replay_dir + match_id + ".dem";
     if (fs.existsSync(fileName)) {
         logger.info("[PARSER] %s, found local replay", match_id);
@@ -123,7 +120,7 @@ function streamReplay(job, cb) {
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
-        logger.info("parse time: %s", (new Date() - t1)/1000)
+        logger.info("[PARSER] parse time: %s", (new Date() - t1)/1000);
         if (job.data.fileName) {
             fs.unlinkSync(job.data.fileName);
         }
@@ -134,7 +131,6 @@ function streamReplay(job, cb) {
             output = JSON.parse(output);
         }
         catch (err) {
-            logger.info(err);
             return cb(err);
         }
         match_id = match_id || output.match_id;
@@ -159,14 +155,15 @@ function streamReplay(job, cb) {
             url: job.data.url,
             encoding: null
         });
+        /*
         downStream.on('response', function(response) {
             console.log(response.statusCode);
             if (response.statusCode !== 200) {
                 return cb("status code not 200");
             }
         });
+        */
         downStream.on('error', function(err) {
-            logger.info(err);
             return cb(err);
         });
         var bz = spawn("bzcat");
