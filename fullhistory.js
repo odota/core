@@ -10,9 +10,8 @@ module.exports = function getFullMatchHistory(done, heroes) {
     var constants = require('./constants.json');
     var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
-
     db.players.find(utility.fullHistoryEligible(), {
-        limit: 2,
+        limit: 1,
         sort: {
             _id: 1
         }
