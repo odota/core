@@ -1,14 +1,9 @@
-var spawn = require('child_process').spawn,
-    BigNumber = require('big-number').n,
+var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),
-    fs = require('fs'),
-    util = require('util'),
-    stream = require('stream'),
     AWS = require('aws-sdk'),
     redis = require('redis'),
-    parseRedisUrl = require('parse-redis-url')(redis),
-    streamifier = require('streamifier');
+    parseRedisUrl = require('parse-redis-url')(redis);
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
@@ -62,6 +57,7 @@ function convert32to64(id) {
  * Makes search from a datatables call
  */
 function makeSearch(search, columns) {
+    //todo operate on passed data to filter
     var s = {};
     columns.forEach(function(c) {
         s[c.data] = "/.*" + search + ".*/";
@@ -177,42 +173,6 @@ function generateJob(type, payload) {
     }
 }
 
-function runParse(input, cb) {
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = "";
-    var cp = spawn("java", ["-jar",
-        parser_file
-    ]);
-    var inStream;
-    if (typeof input === "string") {
-        inStream = fs.createReadStream(input);
-    }
-    else {
-        inStream = streamifier.createReadStream(input);
-    }
-    inStream.on('error', function(err) {
-        logger.info(err);
-        cp.kill();
-        return cb(err);
-    });
-    inStream.pipe(cp.stdin);
-    cp.stdout.on('data', function(data) {
-        output += data;
-    });
-    cp.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
-        try {
-            output = JSON.parse(output);
-            return cb(code, output);
-        }
-        catch (err) {
-            //error parsing json output
-            logger.info(err);
-            return cb(err);
-        }
-    });
-}
-
 function getData(url, cb) {
         setTimeout(function() {
             var target = url;
@@ -313,14 +273,6 @@ function insertPlayer(player, cb) {
     });
 }
 
-function decompress(archiveName, cb) {
-    var cp = spawn("bunzip2", [archiveName]);
-    cp.on('exit', function(code) {
-        logger.info("[BZIP2] exit code: %s", code);
-        cb(code);
-    });
-}
-
 module.exports = {
     //utilities
     db: db,
@@ -339,9 +291,5 @@ module.exports = {
 
     //insertion
     insertPlayer: insertPlayer,
-    insertMatch: insertMatch,
-
-    //parse
-    runParse: runParse,
-    decompress: decompress,
+    insertMatch: insertMatch
 };
