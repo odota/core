@@ -398,18 +398,16 @@ app.route('/upload')
     })
     .post(function(req, res) {
         var files = req.files.replay;
-        var verified = req.session.captcha_verified;
-        if (verified && files) {
+        if (req.session.captcha_verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);
             utility.queueReq("parse", {
                 uploader: req.user.account_id,
                 fileName: files.path,
                 priority: 'high'
             }, function(err) {
-                verified = false; //Set back to false
+                req.session.captcha_verified = false; //Set back to false
                 res.render("upload", {
                     files: files,
-                    rc_pass: verified,
                     error: err,
                     recaptcha_form: recaptcha.toHTML(),
                 });
