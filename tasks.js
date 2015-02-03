@@ -7,19 +7,15 @@ var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
 var moment = require('moment');
+var jobs = utility.jobs;
+var kue = utility.kue;
 
-function getFullMatchHistory(done) {
+function getFullMatchHistory(done, heroesToUse) {
     var constants = require('./constants.json');
-    //var remote = process.env.REMOTE;
-    //var collectorFunc = remote ? getHistoryRemote : getHistoryByHero;
-    var heroArray = [];
-    for (var key in constants.heroes) {
-        heroArray.push(key);
-    }
+    var heroArray = heroesToUse || Object.keys(constants.heroes);
     var match_ids = {};
 
-    //only get full history if the player is tracked and doesn't have it already
-    //do in order they were requested
+    //only get full history if the player is tracked and doesn't have it already, do in queue order
     db.players.find({
         full_history: 0,
         track: 1
@@ -31,6 +27,7 @@ function getFullMatchHistory(done) {
         if (err) {
             return done(err);
         }
+        console.log(players);
         //only do one per pass
         players = players.slice(0, 1);
         //find all the matches to add to kue
@@ -46,7 +43,7 @@ function getFullMatchHistory(done) {
             //add the jobs to kue
             async.mapSeries(arr, function(match_id, cb) {
                 var match = {
-                    match_id: match_id
+                    match_id: Number(match_id)
                 };
                 queueReq("api_details", match, function(err) {
                     //added a single job to kue
@@ -107,22 +104,22 @@ function getFullMatchHistory(done) {
     }
 
     function getHistoryByHero(player, cb) {
-            //use steamapi via specific player history and specific hero id (up to 500 games per hero)
-            async.mapSeries(heroArray, function(hero_id, cb) {
-                //make a request for every possible hero
-                var container = generateJob("api_history", {
-                    account_id: player.account_id,
-                    hero_id: hero_id,
-                    matches_requested: 100
-                });
-                getApiMatchPage(container.url, function(err) {
-                    console.log("%s matches found", Object.keys(match_ids).length);
-                    cb(err);
-                });
-            }, function(err) {
-                //done with this player
+        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        async.mapSeries(heroArray, function(hero_id, cb) {
+            //make a request for every possible hero
+            var container = generateJob("api_history", {
+                account_id: player.account_id,
+                hero_id: hero_id,
+                matches_requested: 100
+            });
+            getApiMatchPage(container.url, function(err) {
+                console.log("%s matches found", Object.keys(match_ids).length);
                 cb(err);
             });
+        }, function(err) {
+            //done with this player
+            cb(err);
+        });
     }
 }
 
@@ -214,15 +211,17 @@ function unnamed(cb) {
         }
         var arr = [];
         var i = 0;
-        async.map(docs, function(player, cb) {
+        async.mapSeries(docs, function(player, cb) {
             arr.push(player);
             i += 1;
             if (arr.length >= 100 || !docs[i + 1]) {
+                console.log(i);
                 var summaries = {
                     summaries_id: new Date(),
                     players: arr
                 };
                 queueReq("api_summaries", summaries, function(err) {
+                    console.log("added job to kue");
                     arr = [];
                     return cb(err);
                 });
@@ -237,27 +236,9 @@ function unnamed(cb) {
     });
 }
 
-function untrackPlayers(cb) {
-    db.players.update({
-        last_visited: {
-            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 5, 'days').toDate()
-        }
-    }, {
-        $set: {
-            track: 0
-        }
-    }, {
-        multi: true
-    }, function(err, num) {
-        console.log("[UNTRACK] Untracked %s users", num);
-        cb(err, num);
-    });
-}
-
 module.exports = {
     unnamed: unnamed,
     unparsed: unparsed,
     getFullMatchHistory: getFullMatchHistory,
-    generateConstants: generateConstants,
-    untrackPlayers: untrackPlayers
+    generateConstants: generateConstants
 };

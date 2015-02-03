@@ -7,7 +7,6 @@ var steam = require("steam"),
     fs = require('fs');
 var users = process.env.STEAM_USER.split(",");
 var passes = process.env.STEAM_PASS.split(",");
-//var codes = process.env.STEAM_GUARD_CODE.split(",");
 var loginNum = Math.floor((Math.random() * users.length));
 var express = require('express');
 var app = express();
@@ -58,6 +57,7 @@ function logOnSteam() {
         "password": pass
     };
     /*
+    var codes = process.env.STEAM_GUARD_CODE.split(",");
     var authcode = codes[loginNum];
     if (authcode) {
         logOnDetails.authCode = authcode;
@@ -105,6 +105,7 @@ function getGCReplayUrl(match_id, cb) {
             cb("timeout");
         }, 10000);
         totalAttempts += 1;
+        console.log("attempts: %s", totalAttempts);
         if (totalAttempts >= 500) {
             selfDestruct();
         }
@@ -130,7 +131,7 @@ function selfDestruct() {
     process.exit(0);
 }
 
-setTimeout(selfDestruct, 1000 * 60 * 60 * 2);
+setTimeout(selfDestruct, 1000 * 60 * 60 * 6);
 
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;
