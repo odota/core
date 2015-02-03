@@ -5,20 +5,25 @@ var queueReq = utility.queueReq;
 var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
+var moment = require('moment');
 
 module.exports = function getFullMatchHistory(done, heroes) {
     var constants = require('./constants.json');
     var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
 
-    //only get full history if the player is tracked and doesn't have it already, do in queue order
     db.players.find({
-        full_history: 0,
-        track: 1
+        track: 1,
+        fullhistory: {
+            $ne: 2
+        },
+        join_date: {
+            $lt: moment().subtract(10, 'day').toDate()
+        }
     }, {
         limit: 2,
         sort: {
-            full_history_time: 1
+            _id: 1
         }
     }, function(err, players) {
         if (err) {

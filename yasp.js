@@ -66,6 +66,7 @@ passport.deserializeUser(function(id, done) {
         },
         update: {
             $set: {
+                track: 1,
                 last_visited: new Date()
             }
         }
@@ -81,18 +82,10 @@ passport.use(new SteamStrategy({
     var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
-    insert.track = 1;
-    insert.last_visited = new Date(); // $currentDate only exists in Mongo >= 2.6
-    db.players.findAndModify({
+    insert.join_date = new Date();
+    db.players.insert(insert);
+    return done(null, {
         account_id: steam32
-    }, {
-        $set: insert
-    }, {
-        upsert: true
-    }, function(err, user) {
-        return done(err, {
-            account_id: steam32,
-        });
     });
 }));
 var basic = auth.basic({
@@ -414,28 +407,6 @@ app.route('/upload')
             });
         }
     });
-app.route('/fullhistory').post(function(req, res) {
-    if (req.user) {
-        db.players.update({
-            account_id: req.user.account_id
-        }, {
-            $set: {
-                full_history: 0,
-                full_history_time: new Date()
-            }
-        }, function(err, num) {
-            var error = (err || !num);
-            res.json({
-                error: error
-            });
-        });
-    }
-    else {
-        return res.json({
-            error: "not signed in"
-        });
-    }
-});
 app.route('/status').get(function(req, res, next) {
     async.parallel({
             matches: function(cb) {
@@ -530,17 +501,15 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
-            queued_full_history: function(cb) {
-                db.players.count({
-                    full_history: 0
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
             eligible_full_history: function(cb) {
                 db.players.count({
-                    full_history: 0,
-                    track: 1
+                    track: 1,
+                    fullhistory: {
+                        $ne: 2
+                    },
+                    join_date: {
+                        $lt: moment().subtract(10, 'day').toDate()
+                    }
                 }, function(err, res) {
                     cb(err, res);
                 });

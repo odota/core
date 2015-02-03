@@ -1,8 +1,8 @@
 var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),
-    AWS = require('aws-sdk'),
     redis = require('redis'),
+    moment = require('moment'),
     parseRedisUrl = require('parse-redis-url')(redis);
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 //set keys for kue
@@ -292,7 +292,6 @@ module.exports = {
     queueReq: queueReq,
     makeSearch: makeSearch,
     makeSort: makeSort,
-
     //insertion
     insertPlayer: insertPlayer,
     insertMatch: insertMatch
