@@ -480,6 +480,16 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
+            unavailable_last_week: function(cb) {
+                db.matches.count({
+                    start_time: {
+                        $gt: Number(moment().subtract(7, 'day').format('X'))
+                    },
+                    parse_status: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             queued_matches: function(cb) {
                 db.matches.count({
                     parse_status: 0
