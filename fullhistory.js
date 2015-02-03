@@ -16,7 +16,7 @@ module.exports = function getFullMatchHistory(done, heroes) {
         full_history: 0,
         track: 1
     }, {
-        limit: 1,
+        limit: 2,
         sort: {
             full_history_time: 1
         }
