@@ -502,15 +502,7 @@ app.route('/status').get(function(req, res, next) {
                 });
             },
             eligible_full_history: function(cb) {
-                db.players.count({
-                    track: 1,
-                    fullhistory: {
-                        $ne: 2
-                    },
-                    join_date: {
-                        $lt: moment().subtract(10, 'day').toDate()
-                    }
-                }, function(err, res) {
+                db.players.count(utility.fullHistoryEligible(), function(err, res) {
                     cb(err, res);
                 });
             },
