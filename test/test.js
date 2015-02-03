@@ -115,6 +115,7 @@ before(function(done) {
                 testdata.players[0].last_visited = new Date();
                 testdata.players[0].join_date = new Date(0);
                 testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                testdata.players[1].join_date = new Date(0);
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
                         cb(err);
