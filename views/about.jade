@@ -29,7 +29,7 @@ block content
   p To keep the load reasonable, we stop tracking players' matches after a period of inactivity.  Each visit to the YASP site while signed in through Steam resets this period.
   
   h3 Why don't you have my old matches?
-  p YASP only starts tracking your matches from when you signed in.  We're working on a way to let users request their complete match history.
+  p YASP only starts tracking your matches from when you signed in.  You can request your full history from the home page.
   
   h3 Why don't you have (some particular match)?
   p YASP only adds the matches of tracked players to its database.  Your own games should be tracked if you sign in through Steam.
@@ -41,7 +41,8 @@ block content
   p Valve only stores replays for 7 days.  Matches older than that can't be automatically parsed by us, although if you have the replay you can upload it.
   
   h3 I uploaded a match, what happens now?
-  p When a match is uploaded, we add it to our processing queue.  Since this queue might be long and HTTP requests time out after a while, we don't take you to the parsed match page immediately after upload.  It should show up after a few minutes.
+  p When a match is uploaded, we add it to our processing queue.  Since this queue might be long and HTTP requests time out after a while, we don't take you to the parsed match page immediately after upload.
+  p Keep checking your player page or the match page to see when it appears.  If it doesn't, there was a probably a problem with the parse.
   
   h3 Why can't you parse uploaded private lobby replays?
   p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we don't support parsing private replays yet.

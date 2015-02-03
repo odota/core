@@ -174,7 +174,7 @@ app.route('/api/matches').get(function(req, res, next) {
     var sort = {};
     var limit = Number(req.query.length) || 10;
     if (req.query.draw) {
-        var ajaxData = req.query.search.value || {};
+        var ajaxData = req.query.search.value;
         options = utility.makeSearch(ajaxData, req.query.columns);
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
