@@ -359,12 +359,7 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-app.use(multer({
-    dest: './uploads',
-    limits: {
-        fileSize: 200000000
-    }
-}));
+
 app.route('/verify_recaptcha')
     .post(function(req, res) {
         var data = {
@@ -382,37 +377,58 @@ app.route('/verify_recaptcha')
     });
 app.route('/upload')
     .all(function(req, res, next) {
-        if (req.user) {
-            next();
-        }
-        else {
-            req.session.login_required = "upload";
-            res.redirect("/");
-        }
+        next();
     })
     .get(function(req, res) {
-        res.render("upload", {
-            recaptcha_form: recaptcha.toHTML(),
-            rc_pass: true
-        });
+        res.render("upload", {});
     })
     .post(function(req, res) {
-        var files = req.files.replay;
-        if (req.session.captcha_verified && files) {
-            logger.info(files.fieldname + ' uploaded to  ' + files.path);
-            utility.queueReq("parse", {
-                uploader: req.user.account_id,
-                fileName: files.path,
-                priority: 'high'
+        var multiparty = require('multiparty');
+        var spawn = require('child_process').spawn;
+        var form = new multiparty.Form();
+        var parser_file = "parser/target/stats-0.1.0.jar";
+        var output = "";
+        var parser = spawn("java", ["-jar",
+            parser_file
+        ]);
+        form.on('part', function(part) {
+            if (part.filename) {
+                part.pipe(parser.stdin);
+            }
+        });
+        parser.stdout.on('data', function(data) {
+            output += data;
+        });
+        parser.on('exit', function(code) {
+            logger.info("[PARSER] exit code: %s", code);
+            if (code) {
+                return console.log(code);
+            }
+            try {
+                output = JSON.parse(output);
+            }
+            catch (err) {
+                console.log(err);
+            }
+            var match_id = output.match_id;
+            console.log(output);
+            //todo implement limits
+            //check if in db, if yes, update
+            //if no, construct a new payload and queuereq
+            //what if already in db?  then nothing happens
+            /*
+            db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parsed_data: output,
+                    parse_status: 2
+                }
             }, function(err) {
-                req.session.captcha_verified = false; //Set back to false
-                res.render("upload", {
-                    files: files,
-                    error: err,
-                    recaptcha_form: recaptcha.toHTML(),
-                });
             });
-        }
+            */
+        });
+        form.parse(req);
     });
 app.route('/status').get(function(req, res, next) {
     async.parallel({
@@ -494,15 +510,6 @@ app.route('/status').get(function(req, res, next) {
                     parse_status: 2,
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            uploaded_matches: function(cb) {
-                db.matches.count({
-                    uploader: {
-                        $exists: true
                     }
                 }, function(err, res) {
                     cb(err, res);

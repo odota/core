@@ -105,6 +105,7 @@ function listeners() {
                 }
             });
     });
+    /*
     $("#button").click(function(event) {
         event.preventDefault();
         $.post(
@@ -124,4 +125,5 @@ function listeners() {
             }
         );
     });
+    */
 }
