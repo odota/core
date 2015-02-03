@@ -22,9 +22,8 @@ function processParse(job, cb) {
         streamReplay,
     ], function(err, job2) {
         if (err) {
-            logger.info(err);
             if (err === "replay expired" || (job2 && job2.attempts.remaining <= 1)) {
-                //don't retry
+                logger.info("error %s, not retrying", err);
                 db.matches.update({
                     match_id: match_id
                 }, {
@@ -36,7 +35,7 @@ function processParse(job, cb) {
                 });
             }
             else {
-                //retry
+                logger.info("error %s, retrying", err);
                 return cb(err);
             }
         }
