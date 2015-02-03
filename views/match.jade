@@ -36,11 +36,6 @@ block content
             each val, key in tabs
               li(class= (route == key ? 'active' : ''))
                   a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
-        else
-          .alert.alert-warning(role="alert") 
-            | <strong>Have this replay?</strong> 
-            a(href="/upload") Upload it 
-            | and we'll parse it for you.
       .col-md-2
         .addthis_sharing_toolbox.pull-right
 
