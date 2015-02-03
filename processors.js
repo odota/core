@@ -16,13 +16,14 @@ var domain = require('domain');
 
 function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
+    var noRetry = job.attempts.remaining <= 0;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
         if (err) {
-            if (err === "replay expired" || (job2 && job2.attempts.remaining <= 1)) {
+            if (err === "replay expired" || noRetry) {
                 logger.info("error %s, not retrying", err);
                 db.matches.update({
                     match_id: match_id
