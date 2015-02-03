@@ -155,17 +155,6 @@ function streamReplay(job, cb) {
             url: job.data.url,
             encoding: null
         });
-        /*
-        downStream.on('response', function(response) {
-            console.log(response.statusCode);
-            if (response.statusCode !== 200) {
-                return cb("status code not 200");
-            }
-        });
-        */
-        downStream.on('error', function(err) {
-            return cb(err);
-        });
         var bz = spawn("bzcat");
         downStream.pipe(bz.stdin);
         bz.stdout.pipe(parser.stdin);

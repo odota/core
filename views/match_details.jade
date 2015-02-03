@@ -136,7 +136,7 @@ append content
                   - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                     td
                       each entry in parsedPlayer.timeline
-                        if entry.type=="itembuys" && entry.time < i && entry.time >= i-bucket
+                        if entry.time < i && entry.time >= i-bucket
                           - var item = constants.items[entry.key]                 
                           if item
                             div.img-text
