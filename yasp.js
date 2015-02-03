@@ -450,6 +450,15 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
+            visited_last_day: function(cb) {
+                db.players.count({
+                    last_visited: {
+                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                    }
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             tracked_players: function(cb) {
                 db.players.count({
                     track: 1
@@ -457,7 +466,7 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
-            formerly_tracked_players: function(cb) {
+            untracked_players: function(cb) {
                 db.players.count({
                     track: 0
                 }, function(err, res) {
@@ -520,17 +529,25 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
+            eligible_full_history: function(cb) {
+                db.players.count({
+                    full_history: 0,
+                    track: 1
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             obtained_full_history: function(cb) {
                 db.players.count({
                     full_history: 2
                 }, function(err, res) {
                     cb(err, res);
                 });
-            }
+            },
         },
         function(err, results) {
             if (err) {
-                return next(new Error(err));
+                return next(err);
             }
             res.render("status", {
                 results: results

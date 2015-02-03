@@ -634,9 +634,8 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('unnamed players', function(done) {
-        tasks.unnamed(function(err, num) {
-            assert.equal(num, 2);
+    it('updateNames', function(done) {
+        tasks.updateNames(function(err, num) {
             done(err);
         });
     });
