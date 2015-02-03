@@ -448,16 +448,8 @@ app.route('/upload')
                 }
             });
             form.on('error', function(err) {
-                res.render("upload", {
-                    recaptcha_form: recaptcha.toHTML(),
-                    error: err
-                });
-            });
-            // Close emitted after form parsed
-            form.on('close', function() {
-                console.log('Upload completed!');
-                res.setHeader('text/plain');
-                res.end('Received files');
+                console.log(err);
+                parser.kill();
             });
             form.parse(req);
         }

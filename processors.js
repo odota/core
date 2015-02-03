@@ -103,40 +103,47 @@ function streamReplay(job, cb) {
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    var d = domain.create();
-    d.on('error', function(err) {
-        logger.info(err);
-        return cb(err);
-    });
-    d.run(function() {
-        var parser = utility.runParse(function(err, output) {
-            if (err) {
-                return cb(err);
-            }
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parsed_data: output,
-                    parse_status: 2
-                }
-            }, function(err) {
-                cb(err, job);
-            });
-        });
-        if (job.data.fileName) {
-            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+    var parser = utility.runParse(function(err, output) {
+        if (err) {
+            return cb(err);
         }
-        else {
-            var bz = spawn("bzcat");
+        db.matches.update({
+            match_id: match_id
+        }, {
+            $set: {
+                parsed_data: output,
+                parse_status: 2
+            }
+        }, function(err) {
+            cb(err, job);
+        });
+    });
+    var d = domain.create();
+    if (job.data.fileName) {
+        d.on('error', function(err) {
+            parser.kill();
+            return cb(err);
+        });
+        d.run(function() {
+            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+        });
+    }
+    else {
+        var bz = spawn("bzcat");
+        d.on('error', function(err) {
+            bz.kill();
+            parser.kill();
+            return cb(err);
+        });
+        d.run(function() {
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
-        }
-    });
+        });
+    }
 }
 
 function processApi(job, cb) {
