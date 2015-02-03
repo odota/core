@@ -553,21 +553,20 @@ app.route('/status').get(function(req, res, next) {
         });
 });
 
-var Poet = require('poet');
-var poet = Poet(app, {
-  posts: './_posts/',
-  postsPerPage: 5,
-  metaFormat: 'json'
-});
-poet.init().then(function () {
-  // ready to go!
-});
-app.get('/blog', function(req, res, next) {
-    res.render('blog');
-});
-
 app.route('/about').get(function(req, res, next) {
     res.render("about");
+});
+
+var Poet = require('poet');
+var poet = Poet(app, {
+    posts: './_posts/',
+    postsPerPage: 5,
+    metaFormat: 'json',
+    routes: {
+    }
+});
+poet.init().then(function() {
+    // ready to go!
 });
 
 app.use(function(req, res, next) {

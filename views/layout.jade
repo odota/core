@@ -66,12 +66,10 @@ html
       .container
        if banner_msg
          .alert.alert-success(role="alert") !{banner_msg}
-       if user && user.track===0
-           .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if login_req_msg
-           .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
+         .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
        if !error
-        include ads/leaderboard
+         include ads/leaderboard
        block content
      .sticky_footer_row
       footer.footer(style="color: #777;\
@@ -100,9 +98,4 @@ html
                <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
-<<<<<<< HEAD
-        script(src="/public/bundle.js")
         block footer_assets
-=======
-        block footer_assets
->>>>>>> refactor
