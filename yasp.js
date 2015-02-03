@@ -451,7 +451,7 @@ app.route('/status').get(function(req, res, next) {
             visited_last_day: function(cb) {
                 db.players.count({
                     last_visited: {
-                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                        $gt: moment().subtract(1, 'day').toDate()
                     }
                 }, function(err, res) {
                     cb(err, res);
