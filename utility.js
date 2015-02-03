@@ -5,7 +5,9 @@ var BigNumber = require('big-number').n,
     redis = require('redis'),
     parseRedisUrl = require('parse-redis-url')(redis);
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
-options.auth = options.password; //set 'auth' key for kue
+//set keys for kue
+options.auth = options.password;
+options.db = options.database;
 var kue = require('kue');
 var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
 db.get('matches').index('match_id', {
@@ -57,9 +59,6 @@ function convert32to64(id) {
 function makeSearch(search, columns) {
     //todo operate on passed data to filter
     var s = {};
-    columns.forEach(function(c) {
-        s[c.data] = "/.*" + search + ".*/";
-    });
     return s;
 }
 
