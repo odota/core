@@ -277,6 +277,18 @@ function insertPlayer(player, cb) {
     });
 }
 
+function fullHistoryEligible() {
+    return {
+        track: 1,
+        fullhistory: {
+            $lt: 2
+        },
+        join_date: {
+            $lt: moment().subtract(10, 'day').toDate()
+        }
+    };
+}
+
 module.exports = {
     //utilities
     db: db,
@@ -292,7 +304,7 @@ module.exports = {
     queueReq: queueReq,
     makeSearch: makeSearch,
     makeSort: makeSort,
-    //insertion
+    fullHistoryEligible: fullHistoryEligible,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch
 };
