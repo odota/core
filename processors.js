@@ -112,64 +112,62 @@ function streamReplay(job, cb) {
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = "";
-    var parser = spawn("java", ["-jar",
-        parser_file
-    ]);
-    parser.stdout.on('data', function(data) {
-        output += data;
+    var d = domain.create();
+    d.on('error', function(err) {
+        logger.info(err);
+        return cb(err);
     });
-    parser.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
-        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
-        if (job.data.fileName) {
-            fs.unlinkSync(job.data.fileName);
-        }
-        if (code) {
-            return cb(code);
-        }
-        try {
-            output = JSON.parse(output);
-        }
-        catch (err) {
-            return cb(err);
-        }
-        match_id = match_id || output.match_id;
-        job.data.payload.parsed_data = output;
-        //todo get api data out of replay in case of private
-        db.matches.update({
-            match_id: match_id
-        }, {
-            $set: {
-                parsed_data: output,
-                parse_status: 2
+    d.run(function() {
+        var parser_file = "parser/target/stats-0.1.0.jar";
+        var output = "";
+        var parser = spawn("java", ["-jar",
+            parser_file
+        ]);
+        parser.stdout.on('data', function(data) {
+            output += data;
+        });
+        parser.on('exit', function(code) {
+            logger.info("[PARSER] exit code: %s", code);
+            logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
+            if (job.data.fileName) {
+                fs.unlinkSync(job.data.fileName);
             }
-        }, function(err) {
-            cb(err, job);
+            if (code) {
+                return cb(code);
+            }
+            try {
+                output = JSON.parse(output);
+            }
+            catch (err) {
+                return cb(err);
+            }
+            match_id = match_id || output.match_id;
+            job.data.payload.parsed_data = output;
+            //todo get api data out of replay in case of private
+            db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parsed_data: output,
+                    parse_status: 2
+                }
+            }, function(err) {
+                cb(err, job);
+            });
         });
-    });
-    if (job.data.fileName) {
-        fs.createReadStream(job.data.fileName).pipe(parser.stdin);
-    }
-    else {
-        var bz = spawn("bzcat");
-        var d = domain.create();
-        d.on('error', function(err) {
-            logger.info(err);
-            bz.kill();
-            parser.kill();
-            return cb(err);
-        });
-        d.run(function() {
+        if (job.data.fileName) {
+            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+        }
+        else {
+            var bz = spawn("bzcat");
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
-        });
-    }
+        }
+    });
 }
 
 function processApi(job, cb) {
