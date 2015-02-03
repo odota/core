@@ -1,7 +1,7 @@
 {
   "sources": {
     "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
-    "heroes": "https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?language=en-us&key=",
+    "heroes": "http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v0001/?language=en-us&key=",
     "abilities": "http://www.dota2.com/jsfeed/abilitydata"
   },
   "gold_reasons": {
