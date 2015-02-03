@@ -41,6 +41,7 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
+            //todo get api data out of replay in case of private
             //todo do private/local lobbies have an id?  
             //todo data won't get inserted if uploaded replay where match id=0, or match not available in api
             if (job2 && job2.data.payload.match_id) {
@@ -138,12 +139,8 @@ function streamReplay(job, cb) {
             catch (err) {
                 return cb(err);
             }
-            if (job.data.fileName) {
-                fs.unlinkSync(job.data.fileName);
-            }
             match_id = match_id || output.match_id;
             job.data.payload.parsed_data = output;
-            //todo get api data out of replay in case of private
             db.matches.update({
                 match_id: match_id
             }, {
