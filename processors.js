@@ -15,6 +15,7 @@ var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
 
 function processParse(job, cb) {
+    var t1 = new Date();
     var match_id = job.data.payload.match_id;
     var noRetry = job.toJSON().attempts.remaining <= 0;
     async.waterfall([
@@ -22,6 +23,7 @@ function processParse(job, cb) {
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
+        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
         if (err === "replay expired" || noRetry) {
             logger.info("error %s, not retrying", err);
             return db.matches.update({
@@ -41,18 +43,7 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
-            //todo get api data out of replay in case of private
-            //todo do private/local lobbies have an id?  
-            //todo data won't get inserted if uploaded replay where match id=0, or match not available in api
-            if (job2 && job2.data.payload.match_id) {
-                //queue job for api to make sure it's in db
-                queueReq("api_details", job2.data.payload, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                return cb(err);
-            }
+            return cb(err);
         }
     });
 }
@@ -108,7 +99,6 @@ function getReplayUrl(job, cb) {
 }
 
 function streamReplay(job, cb) {
-    var t1 = new Date();
     //var fileName = replay_dir + match_id + ".dem";
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
@@ -119,28 +109,10 @@ function streamReplay(job, cb) {
         return cb(err);
     });
     d.run(function() {
-        var parser_file = "parser/target/stats-0.1.0.jar";
-        var output = "";
-        var parser = spawn("java", ["-jar",
-            parser_file
-        ]);
-        parser.stdout.on('data', function(data) {
-            output += data;
-        });
-        parser.on('exit', function(code) {
-            logger.info("[PARSER] exit code: %s", code);
-            logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
-            if (code) {
-                return cb(code);
-            }
-            try {
-                output = JSON.parse(output);
-            }
-            catch (err) {
+        var parser = utility.runParse(function(err, output) {
+            if (err) {
                 return cb(err);
             }
-            match_id = match_id || output.match_id;
-            job.data.payload.parsed_data = output;
             db.matches.update({
                 match_id: match_id
             }, {

@@ -1,24 +1,25 @@
 var express = require('express');
 var session = require('cookie-session');
-var multer = require('multer');
 var queries = require('./queries');
-var utility = require('./utility'),
-    db = utility.db,
+var multiparty = require('multiparty');
+var utility = require('./utility');
+var Recaptcha = require('recaptcha').Recaptcha;
+var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var recaptcha = new Recaptcha(rc_public, rc_secret);
+var db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
     passport = require('passport'),
     moment = require('moment'),
-    Recaptcha = require('recaptcha').Recaptcha,
     bodyParser = require('body-parser'),
     kue = utility.kue,
     redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express(),
-    host = process.env.ROOT_URL || "http://localhost:5000",
-    rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
-    rc_secret = process.env.RECAPTCHA_SECRET_KEY,
-    recaptcha = new Recaptcha(rc_public, rc_secret);
+    host = process.env.ROOT_URL || "http://localhost:5000";
+
 var logger = utility.logger;
 var matchPages = {
     index: {
@@ -380,55 +381,86 @@ app.route('/upload')
         next();
     })
     .get(function(req, res) {
-        res.render("upload", {});
+        res.render("upload", {
+            recaptcha_form: recaptcha.toHTML(),
+        });
     })
-    .post(function(req, res) {
-        var multiparty = require('multiparty');
-        var spawn = require('child_process').spawn;
-        var form = new multiparty.Form();
-        var parser_file = "parser/target/stats-0.1.0.jar";
-        var output = "";
-        var parser = spawn("java", ["-jar",
-            parser_file
-        ]);
-        form.on('part', function(part) {
-            if (part.filename) {
-                part.pipe(parser.stdin);
-            }
-        });
-        parser.stdout.on('data', function(data) {
-            output += data;
-        });
-        parser.on('exit', function(code) {
-            logger.info("[PARSER] exit code: %s", code);
-            if (code) {
-                return console.log(code);
-            }
-            try {
-                output = JSON.parse(output);
-            }
-            catch (err) {
-                console.log(err);
-            }
-            var match_id = output.match_id;
-            console.log(output);
-            //todo implement limits
-            //check if in db, if yes, update
-            //if no, construct a new payload and queuereq
-            //what if already in db?  then nothing happens
-            /*
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parsed_data: output,
-                    parse_status: 2
+    .post(function(req, res, next) {
+        if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
+            req.session.captcha_verified = false; //Set back to false
+            var form = new multiparty.Form();
+            var parser = utility.runParse(function(err, output) {
+                //todo get api data out of replay in case of private
+                //todo do private/local lobbies have an id?
+                if (err) {
+                    return next(err);
                 }
-            }, function(err) {
+                var match_id = output.match_id;
+                console.log(match_id);
+                db.matches.findOne({
+                    match_id: match_id
+                }, function(err, doc) {
+                    if (err) {
+                        return next(err);
+                    }
+                    else if (doc) {
+                        console.log("match found in db");
+                        db.matches.update({
+                            match_id: match_id
+                        }, {
+                            $set: {
+                                parsed_data: output,
+                                parse_status: 2
+                            }
+                        }, function(err) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            res.redirect("/matches/" + match_id);
+
+                        });
+                    }
+                    else if (match_id) {
+                        console.log("match not found in db");
+                        utility.queueReq("api_details", {
+                            match_id: match_id,
+                            parsed_data: output,
+                            priority: "high"
+                        }, function(err, job) {
+                            if (err) {
+                                return next(err);
+                            }
+                            job.on('complete', function() {
+                                res.redirect("/matches/" + match_id);
+                            });
+                        });
+                    }
+                    else {
+                        res.json({
+                            error: "couldn't detect match_id"
+                        });
+                    }
+                });
             });
-            */
-        });
-        form.parse(req);
+            form.on('part', function(part) {
+                if (part.filename) {
+                    part.pipe(parser.stdin);
+                }
+            });
+            form.on('error', function(err) {
+                res.render("upload", {
+                    recaptcha_form: recaptcha.toHTML(),
+                    error: err
+                });
+            });
+            // Close emitted after form parsed
+            form.on('close', function() {
+                console.log('Upload completed!');
+                res.setHeader('text/plain');
+                res.end('Received files');
+            });
+            form.parse(req);
+        }
     });
 app.route('/status').get(function(req, res, next) {
     async.parallel({
