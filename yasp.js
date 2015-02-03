@@ -398,25 +398,23 @@ app.route('/upload')
     })
     .post(function(req, res) {
         var files = req.files.replay;
-        if (req.session.captcha_verified && files) {
+        var verified = req.session.captcha_verified;
+        if (verified && files) {
             logger.info(files.fieldname + ' uploaded to  ' + files.path);
             utility.queueReq("parse", {
                 uploader: req.user.account_id,
                 fileName: files.path,
                 priority: 'high'
             }, function(err) {
-                if (err) {
-                    return logger.info(err);
-                }
+                verified = false; //Set back to false
+                res.render("upload", {
+                    files: files,
+                    rc_pass: verified,
+                    error: err,
+                    recaptcha_form: recaptcha.toHTML(),
+                });
             });
         }
-        var verified = req.session.captcha_verified;
-        req.session.captcha_verified = false; //Set back to false
-        res.render("upload", {
-            files: files,
-            rc_pass: verified,
-            recaptcha_form: recaptcha.toHTML(),
-        });
     });
 app.route('/fullhistory').post(function(req, res) {
     if (req.user) {
@@ -554,7 +552,7 @@ app.use(function(req, res, next) {
     }
 });
 app.use(function(err, req, res, next) {
-    logger.info(err);
+    //logger.info(err);
     if (err && process.env.NODE_ENV !== "development") {
         return res.status(500).render('500.jade', {
             error: true

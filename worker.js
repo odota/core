@@ -11,6 +11,7 @@ var jobs = utility.jobs;
 var kue = utility.kue;
 var moment = require('moment');
 
+console.log("[WORKER] starting worker");
 startScan();
 jobs.promote();
 jobs.process('api', processors.processApi);

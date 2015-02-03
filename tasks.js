@@ -6,13 +6,10 @@ var queueReq = utility.queueReq;
 var generateJob = utility.generateJob;
 var getData = utility.getData;
 var urllib = require('url');
-var moment = require('moment');
-var jobs = utility.jobs;
-var kue = utility.kue;
 
-function getFullMatchHistory(done, heroesToUse) {
+function getFullMatchHistory(done, opt) {
     var constants = require('./constants.json');
-    var heroArray = heroesToUse || Object.keys(constants.heroes);
+    var heroArray = opt || Object.keys(constants.heroes);
     var match_ids = {};
 
     //only get full history if the player is tracked and doesn't have it already, do in queue order
@@ -20,6 +17,7 @@ function getFullMatchHistory(done, heroesToUse) {
         full_history: 0,
         track: 1
     }, {
+        limit: 1,
         sort: {
             full_history_time: 1
         }
@@ -27,8 +25,6 @@ function getFullMatchHistory(done, heroesToUse) {
         if (err) {
             return done(err);
         }
-        //only do one per pass
-        players = players.slice(0, 1);
         //find all the matches to add to kue
         async.mapSeries(players, getHistoryByHero, function(err) {
             if (err) {
@@ -52,6 +48,7 @@ function getFullMatchHistory(done, heroesToUse) {
                 if (err) {
                     return done(err);
                 }
+                //added all the matches to kue
                 //update full_history field
                 async.mapSeries(players, function(player, cb) {
                     db.players.update({
@@ -143,7 +140,7 @@ function unparsed(done) {
     });
 }
 
-function generateConstants(done) {
+function generateConstants(done, opt) {
     var constants = require('./sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
@@ -190,9 +187,9 @@ function generateConstants(done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile("constants.json", JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(opt || './constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
-                console.log("[CONSTANTS] generated constants.json");
+                console.log("[CONSTANTS] generated constants file");
             }
             return done(err);
         });
