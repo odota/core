@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var utility = require('./utility');
 var processors = require('./processors');
 var tasks = require('./tasks');
@@ -11,13 +9,15 @@ var async = require('async');
 var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
 var kue = utility.kue;
+var moment = require('moment');
 
 startScan();
+jobs.promote();
 jobs.process('api', processors.processApi);
 setInterval(clearActiveJobs, 60 * 1000, function() {});
-setInterval(tasks.untrackPlayers, 60 * 60 * 1000, function() {});
-//setInterval(tasks.getFullMatchHistory, 3 * 60 * 60 * 1000, function() {});
-setInterval(tasks.unnamed, 60 * 60 * 1000, function() {});
+setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
+setInterval(tasks.getFullMatchHistory, 2 * 60 * 60 * 1000, function() {});
+setInterval(tasks.unnamed, 30 * 60 * 1000, function() {});
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -30,7 +30,7 @@ function clearActiveJobs(cb) {
                     return cb(err);
                 }
                 if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
-                    logger.info("unstuck job %s", id);
+                    console.log("unstuck job %s", id);
                     job.inactive();
                 }
                 cb(err);
@@ -38,6 +38,24 @@ function clearActiveJobs(cb) {
         }, function(err) {
             cb(err);
         });
+    });
+}
+
+function untrackPlayers(cb) {
+    db.players.update({
+        track: 1,
+        last_visited: {
+            $lt: moment().subtract(process.env.UNTRACK_INTERVAL_DAYS || 7, 'days').toDate()
+        }
+    }, {
+        $set: {
+            track: 0
+        }
+    }, {
+        multi: true
+    }, function(err, num) {
+        console.log("[UNTRACK] Untracked %s users", num);
+        cb(err, num);
     });
 }
 

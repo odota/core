@@ -90,8 +90,7 @@ passport.use(new SteamStrategy({
     }, {
         upsert: true
     }, function(err, user) {
-        if (err) return done(err, null);
-        return done(null, {
+        return done(err, {
             account_id: steam32,
         });
     });
@@ -175,8 +174,7 @@ app.route('/api/matches').get(function(req, res, next) {
     var sort = {};
     var limit = Number(req.query.length) || 10;
     if (req.query.draw) {
-        //var search = req.query.search.value
-        //options = utility.makeSearch(search, req.query.columns)
+        //options = utility.makeSearch(req.query.search.value, req.query.columns);
         sort = utility.makeSort(req.query.order, req.query.columns);
     }
     db.matches.count(options, function(err, count) {
@@ -266,10 +264,18 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.lose = 0;
                 player.games = 0;
                 player.heroes = {};
-                player.calheatmap = {};
+                player.histogramData = {};
+                var calheatmap = {};
+                //array to store match durations in minutes
+                var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+                var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
                 var heroes = player.heroes;
                 for (var i = 0; i < matches.length; i++) {
-                    player.calheatmap[matches[i].start_time] = 1;
+                    calheatmap[matches[i].start_time] = 1;
+                    var mins = Math.floor(matches[i].duration / 60) % 120;
+                    arr[mins] += 1;
+                    var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
+                    arr2[gpm] += 1;
                     var p = matches[i].players[0];
                     matches[i].playerRadiant = utility.isRadiant(p);
                     matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
@@ -285,6 +291,9 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     heroes[p.hero_id].games += 1;
                     matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
                 }
+                player.histogramData.durations = arr;
+                player.histogramData.gpms = arr2;
+                player.histogramData.calheatmap = calheatmap;
                 var renderOpts = {
                     route: info,
                     player: player,
@@ -320,7 +329,7 @@ app.route('/preferences').post(function(req, res) {
             res.json({
                 sync: success
             });
-        })
+        });
     }
     else {
         res.json({
@@ -331,16 +340,19 @@ app.route('/preferences').post(function(req, res) {
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
-app.route('/return').get(passport.authenticate('steam', {
-    failureRedirect: '/'
-}), function(req, res) {
-    if (req.user) {
-        res.redirect('/players/' + req.user.account_id);
+app.route('/return').get(
+    passport.authenticate('steam', {
+        failureRedirect: '/'
+    }),
+    function(req, res) {
+        if (req.user) {
+            res.redirect('/players/' + req.user.account_id);
+        }
+        else {
+            res.redirect('/');
+        }
     }
-    else {
-        res.redirect('/');
-    }
-});
+);
 app.route('/logout').get(function(req, res) {
     req.logout();
     req.session = null;
@@ -406,24 +418,26 @@ app.route('/upload')
         });
     });
 app.route('/fullhistory').post(function(req, res) {
-    if (!req.user) {
+    if (req.user) {
+        db.players.update({
+            account_id: req.user.account_id
+        }, {
+            $set: {
+                full_history: 0,
+                full_history_time: new Date()
+            }
+        }, function(err, num) {
+            var error = (err || !num);
+            res.json({
+                error: error
+            });
+        });
+    }
+    else {
         return res.json({
             error: "not signed in"
         });
     }
-    db.players.update({
-        account_id: req.user.account_id
-    }, {
-        $set: {
-            full_history: 0,
-            full_history_time: new Date()
-        }
-    }, function(err, num) {
-        var error = (err || !num);
-        res.json({
-            error: error
-        });
-    });
 });
 app.route('/status').get(function(req, res, next) {
     async.parallel({
@@ -535,7 +549,7 @@ app.use(function(req, res, next) {
         });
     }
     else {
-        return next();
+        next();
     }
 });
 app.use(function(err, req, res, next) {
@@ -546,7 +560,7 @@ app.use(function(err, req, res, next) {
         });
     }
     else {
-        return next(err);
+        next(err);
     }
 });
 

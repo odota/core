@@ -75,18 +75,14 @@ function getAssociatedHero(unit, heroes) {
         //split by _
         var split = unit.split("_");
         //get the third element
-        var identifier = split[2];
-        if (split[2] === "shadow" && split[3] === "shaman") {
-            identifier = "shadow_shaman";
-        }
-        if (split[2] === "witch" && split[3] === "doctor") {
-            identifier = "witch_doctor";
-        }
-        //append to npc_dota_hero_, see if matches
-        var attempt = "npc_dota_hero_" + identifier;
-        if (heroes[attempt]) {
-            unit = attempt;
-        }
+        var identifiers = [split[2], split[2] + "_" + split[3]];
+        identifiers.forEach(function(id) {
+            //append to npc_dota_hero_, see if matches
+            var attempt = "npc_dota_hero_" + id;
+            if (heroes[attempt]) {
+                unit = attempt;
+            }
+        });
     }
     return unit;
 }
@@ -191,14 +187,10 @@ function computeStatistics(player, cb) {
         if (err) {
             return cb(err);
         }
-        //array to store match durations in minutes
-        var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var counts = {};
         var against = {};
         var together = {};
         for (var i = 0; i < matches.length; i++) {
-            var mins = Math.floor(matches[i].duration / 60) % 120;
-            arr[mins] += 1;
             for (var j = 0; j < matches[i].players.length; j++) {
                 var tm = matches[i].players[j];
                 var tm_hero = tm.hero_id;
@@ -239,7 +231,6 @@ function computeStatistics(player, cb) {
                 }
             }
         }
-        player.durations = arr;
         player.together = together;
         player.against = against;
         player.teammates = [];

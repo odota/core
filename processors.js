@@ -22,7 +22,7 @@ function processParse(job, cb) {
         getReplayUrl,
         getReplayData,
     ], function(err, job2) {
-        if (err === "replay expired") {
+        if (err === "replay expired" || (err && job2 && job2.attempts.remaining <= 0)) {
             logger.info(err);
             db.matches.update({
                 match_id: match_id
@@ -42,10 +42,18 @@ function processParse(job, cb) {
             if (process.env.DELETE_REPLAYS && job2.data.fileName) {
                 fs.unlinkSync(job2.data.fileName);
             }
-            //queue job for api to make sure it's in db
-            queueReq("api_details", job2.data.payload, function(err, apijob) {
+            //todo what if the match was a private lobby?  does it have an id?
+            //todo what about local lobby?
+            //todo data won't get inserted if uploaded replay without match id, or private match without api data
+            if (job2.data.payload.match_id) {
+                //queue job for api to make sure it's in db
+                queueReq("api_details", job2.data.payload, function(err, apijob) {
+                    cb(err);
+                });
+            }
+            else {
                 cb(err);
-            });
+            }
         }
     });
 }
@@ -82,12 +90,11 @@ function getReplayUrl(job, cb) {
             urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
         }
         getData(urls, function(err, body) {
-            if (!err && body && body.match) {
-                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-                return cb(null, job, url);
+            if (err || !body || !body.match) {
+                return cb("invalid body or error");
             }
-            logger.info(err, body);
-            return cb("invalid body or error");
+            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+            return cb(null, job, url);
         });
     }
     /*
@@ -162,14 +169,15 @@ function downloadReplayData(job, url, cb) {
     var archiveName = fileName + ".bz2";
     logger.info("[PARSER] downloading from %s", url);
     var t1 = new Date().getTime();
-    var r = request({
+    var downStream = request.get({
         url: url,
         encoding: null
-    }).pipe(fs.createWriteStream(archiveName));
-    r.on('error', function(err) {
+    });
+    downStream.on('error', function(err) {
+        logger.info(err);
         return cb(err);
     });
-    r.on('finish', function() {
+    downStream.on('end', function() {
         var t2 = new Date().getTime();
         logger.info("[PARSER] %s, dl time: %s", match_id, (t2 - t1) / 1000);
         decompress(archiveName, function(err) {
@@ -183,6 +191,7 @@ function downloadReplayData(job, url, cb) {
             return parseReplay(job, fileName, cb);
         });
     });
+    downStream.pipe(fs.createWriteStream(archiveName));
 }
 
 function parseReplay(job, input, cb) {
@@ -194,10 +203,11 @@ function parseReplay(job, input, cb) {
         }
         var t4 = new Date().getTime();
         logger.info("[PARSER] %s, parse time: %s", match_id, (t4 - t3) / 1000);
-        job.data.payload.match_id = output.match_id;
+        match_id = match_id || output.match_id;
         job.data.payload.parsed_data = output;
+        //todo get api data out of replay in case of private
         db.matches.update({
-            match_id: output.match_id
+            match_id: match_id
         }, {
             $set: {
                 parsed_data: output,
@@ -227,7 +237,7 @@ function processApi(job, cb) {
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
-                match[prop] = payload[prop];
+                match[prop] = match[prop] ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
                 cb(err);

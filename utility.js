@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var spawn = require('child_process').spawn,
     BigNumber = require('big-number').n,
     request = require('request'),
@@ -13,7 +11,7 @@ var spawn = require('child_process').spawn,
     streamifier = require('streamifier');
 var api_url = "https://api.steampowered.com/IDOTA2Match_570";
 var summaries_url = "http://api.steampowered.com/ISteamUser";
-var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 options.auth = options.password; //set 'auth' key for kue
 var kue = require('kue');
 var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
@@ -32,7 +30,6 @@ var redisclient = redis.createClient(options.port, options.host, {
 var jobs = kue.createQueue({
     redis: options
 });
-jobs.promote();
 var transports = [];
 if (process.env.NODE_ENV !== "test") {
     transports.push(new(winston.transports.Console)({
@@ -49,7 +46,7 @@ var logger = new(winston.Logger)({
  * Returns a BigNumber
  */
 function convert64to32(id) {
-    return BigNumber(id).minus('76561197960265728');
+    return new BigNumber(id).minus('76561197960265728');
 }
 
 /*
@@ -58,7 +55,7 @@ function convert64to32(id) {
  * Returns a BigNumber
  */
 function convert32to64(id) {
-    return BigNumber('76561197960265728').plus(id);
+    return new BigNumber('76561197960265728').plus(id);
 }
 
 /*
@@ -99,7 +96,7 @@ function queueReq(type, payload, cb) {
         }
         var job = generateJob(type, payload);
         var kuejob = jobs.create(job.type, job).attempts(10).backoff({
-            delay: 60000,
+            delay: 60*1000,
             type: 'exponential'
         }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
             logger.info("[KUE] created jobid: %s", kuejob.id);
@@ -193,12 +190,12 @@ function runParse(input, cb) {
     else {
         inStream = streamifier.createReadStream(input);
     }
-    inStream.pipe(cp.stdin);
     inStream.on('error', function(err) {
         logger.info(err);
         cp.kill();
         return cb(err);
     });
+    inStream.pipe(cp.stdin);
     cp.stdout.on('data', function(data) {
         output += data;
     });
@@ -236,15 +233,13 @@ function getData(url, cb) {
                     //steam api response
                     if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
                         //user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                        //todo handle case where no match id, this means it's a uploaded match not available in the api
-                        //we'll have to reconstruct the api data from replay
                         logger.info(body);
                         return cb(body);
                     }
                     else if (body.result.error || body.result.status === 2) {
                         //valid response, but invalid data, retry
-                        logger.info("invalid data: %s, %s", target, body);
-                        return cb("invalid data");
+                        logger.info("invalid data: %s, %s", target, JSON.stringify(body));
+                        return getData(url, cb);
                     }
                 }
                 //generic valid response
@@ -284,29 +279,7 @@ function getData(url, cb) {
     }
     */
 function insertMatch(match, cb) {
-    var summaries = {
-        summaries_id: new Date(),
-        players: match.players
-    };
-    //queue for player names
-    /*
-    queueReq("api_summaries", summaries, function(err) {
-        if (err) {
-            return logger.info(err);
-        }
-    });
-    */
-    if (match.parsed_data) {
-        match.parse_status = 2;
-    }
-    else {
-        match.parse_status = 0;
-        queueReq("parse", match, function(err) {
-            if (err) {
-                return logger.info(err);
-            }
-        });
-    }
+    match.parse_status = match.parsed_data ? 2 : 0;
     db.matches.update({
             match_id: match.match_id
         }, {
@@ -315,7 +288,14 @@ function insertMatch(match, cb) {
             upsert: true
         },
         function(err) {
-            cb(err);
+            if (!match.parse_status) {
+                queueReq("parse", match, function(err) {
+                    cb(err);
+                });
+            }
+            else {
+                cb(err);
+            }
         });
 }
 
@@ -332,8 +312,6 @@ function insertPlayer(player, cb) {
         cb(err);
     });
 }
-
-
 
 function decompress(archiveName, cb) {
     var cp = spawn("bunzip2", [archiveName]);
