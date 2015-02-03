@@ -108,6 +108,7 @@ function getReplayUrl(job, cb) {
 }
 
 function streamReplay(job, cb) {
+    var t1 = new Date();
     //var fileName = replay_dir + match_id + ".dem";
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
@@ -122,6 +123,7 @@ function streamReplay(job, cb) {
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
+        logger.info("parse time: %s", (new Date() - t1)/1000)
         if (job.data.fileName) {
             fs.unlinkSync(job.data.fileName);
         }
