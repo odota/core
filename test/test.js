@@ -703,7 +703,6 @@ describe("parser", function() {
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
-
             processors.processParse(job, function(err) {
                 done(err);
             });
