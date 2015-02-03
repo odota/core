@@ -29,6 +29,10 @@ var matchPages = {
         template: "match_details",
         name: "Details"
     },
+    timelines: {
+        template: "match_timelines",
+        name: "Timelines"
+    },
     graphs: {
         template: "match_graphs",
         name: "Graphs"
