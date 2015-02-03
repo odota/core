@@ -83,9 +83,16 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.join_date = new Date();
-    db.players.insert(insert);
-    return done(null, {
-        account_id: steam32
+    insert.full_history = 0;
+    insert.track = 1;
+    db.players.insert(insert, function(err) {
+        if (err) {
+            //happens on relog, already inserted before
+            logger.info(err);
+        }
+        return done(null, {
+            account_id: steam32
+        });
     });
 }));
 var basic = auth.basic({

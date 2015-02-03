@@ -280,7 +280,7 @@ function insertPlayer(player, cb) {
 function fullHistoryEligible() {
     return {
         track: 1,
-        fullhistory: {
+        full_history: {
             $lt: 2
         },
         join_date: {
