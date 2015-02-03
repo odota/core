@@ -22,31 +22,30 @@ function processParse(job, cb) {
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
-        if (err) {
-            if (err === "replay expired" || noRetry) {
-                logger.info("error %s, not retrying", err);
-                db.matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parse_status: 1
-                    }
-                }, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                logger.info("error %s, retrying", err);
-                return cb(err);
-            }
+        if (err === "replay expired" || noRetry) {
+            logger.info("error %s, not retrying", err);
+            return db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parse_status: 1
+                }
+            }, function(err2) {
+                //nullify error if replay expired
+                err = err === "replay expired" ? null : err;
+                cb(err || err2);
+            });
+        }
+        else if (err) {
+            logger.info("error %s, retrying", err);
+            return cb(err);
         }
         else {
-            //todo what if the match was a private lobby?  does it have an id?  
-            //todo what about local lobby?
-            //todo data won't get inserted if uploaded replay without match id, or private match without api data
-            if (job2.data.payload.match_id) {
+            //todo do private/local lobbies have an id?  
+            //todo data won't get inserted if uploaded replay where match id=0, or match not available in api
+            if (job2 && job2.data.payload.match_id) {
                 //queue job for api to make sure it's in db
-                queueReq("api_details", job2.data.payload, function(err, apijob) {
+                queueReq("api_details", job2.data.payload, function(err) {
                     cb(err);
                 });
             }
