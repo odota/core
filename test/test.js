@@ -19,9 +19,12 @@ var assert = require('assert');
 var Zombie = require('zombie');
 var app = require('../yasp');
 var processors = require('../processors');
-var tasks = require('../tasks');
 var fs = require('fs');
 var request = require('request');
+var unparsed = require('../unparsed');
+var updatenames = require('../updatenames');
+var fullhistory = require('../fullhistory');
+var constants = require('../constants');
 var wait = 10000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
@@ -629,23 +632,23 @@ describe("web", function() {
 describe("tasks", function() {
     this.timeout(wait);
     it('unparsed matches', function(done) {
-        tasks.unparsed(function(err, num) {
+        unparsed(function(err, num) {
             assert.equal(num, 1);
             done(err);
         });
     });
     it('updateNames', function(done) {
-        tasks.updateNames(function(err, num) {
+        updatenames(function(err, num) {
             done(err);
         });
     });
     it('full history', function(done) {
-        tasks.getFullMatchHistory(function(err) {
+        fullhistory(function(err) {
             done(err);
         }, ["1"]);
     });
     it('generate constants', function(done) {
-        tasks.generateConstants(function(err) {
+        constants(function(err) {
             done(err);
         }, "./constants_test.json");
     });
