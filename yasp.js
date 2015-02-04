@@ -118,10 +118,10 @@ app.use(function(req, res, next) {
         if (err) {
             logger.info(err);
         }
-        app.locals.user = req.user;
+        res.locals.user = req.user;
         //app.locals.login_req_msg = req.session.login_required;
         //req.session.login_required = false;
-        app.locals.banner_msg = reply;
+        res.locals.banner_msg = reply;
         if (req.user) {
             db.players.update({
                 account_id: req.user.account_id
@@ -373,8 +373,9 @@ app.route('/return').get(
 );
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session = null;
-    res.redirect('/');
+    req.session.destroy(function(err) {
+        res.redirect('/');
+    })
 });
 
 app.route('/verify_recaptcha')
