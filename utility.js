@@ -4,6 +4,8 @@ var BigNumber = require('big-number').n,
     redis = require('redis'),
     moment = require('moment'),
     parseRedisUrl = require('parse-redis-url')(redis);
+var spawn = require("child_process").spawn;
+
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 //set keys for kue
 options.auth = options.password;
@@ -277,6 +279,43 @@ function insertPlayer(player, cb) {
     });
 }
 
+function fullHistoryEligible() {
+    return {
+        track: 1,
+        full_history: {
+            $lt: 2
+        },
+        join_date: {
+            $lt: moment().subtract(10, 'day').toDate()
+        }
+    };
+}
+
+function runParse(cb) {
+    var parser_file = "parser/target/stats-0.1.0.jar";
+    var output = "";
+    var parser = spawn("java", ["-jar",
+        parser_file
+    ]);
+    parser.stdout.on('data', function(data) {
+        output += data;
+    });
+    parser.on('exit', function(code) {
+        logger.info("[PARSER] exit code: %s", code);
+        if (code) {
+            return cb(code);
+        }
+        try {
+            output = JSON.parse(output);
+            cb(null, output);
+        }
+        catch (err) {
+            cb(err);
+        }
+    });
+    return parser;
+}
+
 module.exports = {
     //utilities
     db: db,
@@ -292,7 +331,8 @@ module.exports = {
     queueReq: queueReq,
     makeSearch: makeSearch,
     makeSort: makeSort,
-    //insertion
+    fullHistoryEligible: fullHistoryEligible,
     insertPlayer: insertPlayer,
-    insertMatch: insertMatch
+    insertMatch: insertMatch,
+    runParse: runParse
 };

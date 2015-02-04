@@ -8,6 +8,7 @@ process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
 process.env.DELETE_REPLAYS = true;
 process.env.ROOT_URL = "http://localhost:5000";
+process.env.NODE_ENV = "test";
 
 var async = require('async');
 var utility = require('../utility');
@@ -25,7 +26,7 @@ var unparsed = require('../unparsed');
 var updatenames = require('../updatenames');
 var fullhistory = require('../fullhistory');
 var constants = require('../constants');
-var wait = 10000;
+var wait = 30000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -113,7 +114,7 @@ before(function(done) {
                 console.log("loading players");
                 //set visited date on first player
                 testdata.players[0].last_visited = new Date();
-                testdata.players[0].join_date = new Date(0);
+                testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
                 testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
@@ -125,8 +126,8 @@ before(function(done) {
             },
             function(cb) {
                 console.log("loading matches");
-                async.mapSeries(testdata.matches, function(p, cb) {
-                    db.matches.insert(p, function(err) {
+                async.mapSeries(testdata.matches, function(m, cb) {
+                    db.matches.insert(m, function(err) {
                         cb(err);
                     });
                 }, function(err) {
@@ -224,18 +225,6 @@ describe("web", function() {
         });
         it('should 200', function(done) {
             browser.assert.status(200);
-            done();
-        });
-    });
-    describe("/upload (not logged in)", function() {
-        before(function(done) {
-            browser.visit('/upload');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should have a login message', function(done) {
-            browser.assert.text('.alert', /log in/);
             done();
         });
     });
@@ -517,8 +506,7 @@ describe("web", function() {
             done();
         });
     });
-    /*
-    describe("/upload (logged in)", function() {
+    describe("GET /upload", function() {
         before(function(done) {
             browser.visit('/upload');
             browser.wait(wait, function(err) {
@@ -543,9 +531,7 @@ describe("web", function() {
             });
         });
     });
-    */
     //todo test passport-steam login function
-    //todo test upload
     describe("/logout", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
@@ -656,7 +642,7 @@ describe("tasks", function() {
     });
 });
 
-describe("backend", function() {
+describe("worker", function() {
     this.timeout(wait);
     it('process details request', function(done) {
         utility.queueReq("api_details", {
@@ -665,7 +651,7 @@ describe("backend", function() {
             assert(job);
             processors.processApi(job, function(err) {
                 done(err);
-            })
+            });
         });
     });
     it('process summaries request', function(done) {
@@ -675,7 +661,6 @@ describe("backend", function() {
             }]
         }, function(err, job) {
             assert(job);
-            console.log(job.data.url);
             processors.processApi(job, function(err) {
                 done(err);
             });

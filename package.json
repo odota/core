@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.31",
+  "version": "1.2.33",
   "scripts": {
     "start": "npm install && npm run build && npm run dev",
     "dev": "nf -j Procfile.dev start",
@@ -38,6 +38,7 @@
     "moment": "~2.9.0",
     "monk": "0.9.1",
     "multer": "~0.1.7",
+    "multiparty": "^4.1.1",
     "parse-redis-url": "0.0.1",
     "passport": "0.2.1",
     "passport-steam": "0.1.4",

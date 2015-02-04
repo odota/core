@@ -9,12 +9,12 @@ var getData = utility.getData;
 var request = require('request');
 var insertPlayer = utility.insertPlayer;
 var insertMatch = utility.insertMatch;
-var queueReq = utility.queueReq;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
 
 function processParse(job, cb) {
+    var t1 = new Date();
     var match_id = job.data.payload.match_id;
     var noRetry = job.toJSON().attempts.remaining <= 1;
     async.waterfall([
@@ -22,6 +22,7 @@ function processParse(job, cb) {
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
+        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
         if (err === "replay expired" || noRetry) {
             logger.info("error %s, not retrying", err);
             return db.matches.update({
@@ -41,17 +42,7 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
-            //todo do private/local lobbies have an id?  
-            //todo data won't get inserted if uploaded replay where match id=0, or match not available in api
-            if (job2 && job2.data.payload.match_id) {
-                //queue job for api to make sure it's in db
-                queueReq("api_details", job2.data.payload, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                return cb(err);
-            }
+            return cb(err);
         }
     });
 }
@@ -107,64 +98,51 @@ function getReplayUrl(job, cb) {
 }
 
 function streamReplay(job, cb) {
-    var t1 = new Date();
     //var fileName = replay_dir + match_id + ".dem";
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    var d = domain.create();
-    d.on('error', function(err) {
-        logger.info(err);
-        return cb(err);
-    });
-    d.run(function() {
-        var parser_file = "parser/target/stats-0.1.0.jar";
-        var output = "";
-        var parser = spawn("java", ["-jar",
-            parser_file
-        ]);
-        parser.stdout.on('data', function(data) {
-            output += data;
-        });
-        parser.on('exit', function(code) {
-            logger.info("[PARSER] exit code: %s", code);
-            logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
-            if (code) {
-                return cb(code);
-            }
-            try {
-                output = JSON.parse(output);
-            }
-            catch (err) {
-                return cb(err);
-            }
-            match_id = match_id || output.match_id;
-            job.data.payload.parsed_data = output;
-            //todo get api data out of replay in case of private
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: {
-                    parsed_data: output,
-                    parse_status: 2
-                }
-            }, function(err) {
-                cb(err, job);
-            });
-        });
-        if (job.data.fileName) {
-            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+    var parser = utility.runParse(function(err, output) {
+        if (err) {
+            return cb(err);
         }
-        else {
-            var bz = spawn("bzcat");
+        db.matches.update({
+            match_id: match_id
+        }, {
+            $set: {
+                parsed_data: output,
+                parse_status: 2
+            }
+        }, function(err) {
+            cb(err, job);
+        });
+    });
+    var d = domain.create();
+    if (job.data.fileName) {
+        d.on('error', function(err) {
+            parser.kill();
+            return cb(err);
+        });
+        d.run(function() {
+            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+        });
+    }
+    else {
+        var bz = spawn("bzcat");
+        d.on('error', function(err) {
+            bz.kill();
+            parser.kill();
+            return cb(err);
+        });
+        d.run(function() {
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
-        }
-    });
+        });
+    }
 }
 
 function processApi(job, cb) {

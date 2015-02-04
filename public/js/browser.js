@@ -14,7 +14,7 @@ global.matchTable = require('./matchTables');
 global.playerTables = require('./playerTables');
 global.buildMap = require('./map');
 global.generateHistograms = require('./histograms');
-
+global.$ = $;
 //run on each page
 $(document).ready(function() {
     process();
@@ -31,22 +31,22 @@ function process() {
         };
         var tbody = $(table).find('tbody');
         tbody.children().each(function(i, row) {
-                row = $(row);
-                var target = (row.hasClass('success')) ? sums.Radiant : sums.Dire;
-                //iterate through cells
-                row.children().each(function(j, cell) {
-                    cell = $(cell);
-                    if (!target[j]) {
-                        target[j] = 0;
-                    }
-                    var content = cell.clone() //clone the element
-                        .children() //select all the children
-                        .remove() //remove all the children
-                        .end() //again go back to selected element
-                        .text();
-                    target[j] += Number(content) || 0;
-                });
+            row = $(row);
+            var target = (row.hasClass('success')) ? sums.Radiant : sums.Dire;
+            //iterate through cells
+            row.children().each(function(j, cell) {
+                cell = $(cell);
+                if (!target[j]) {
+                    target[j] = 0;
+                }
+                var content = cell.clone() //clone the element
+                    .children() //select all the children
+                    .remove() //remove all the children
+                    .end() //again go back to selected element
+                    .text();
+                target[j] += Number(content) || 0;
             });
+        });
         //add sums to table
         var tfoot = $("<tfoot>");
         for (var key in sums) {
@@ -93,35 +93,5 @@ function listeners() {
                 }
                 $(".sync").fadeOut(3000);
             });
-    });
-    var fh = $("#fullhistory");
-    fh.on('click', function() {
-        $.post(
-            "/fullhistory", {},
-            function(data) {
-                if (!data.error) {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-success'>Queued for full history!</div>");
-                    $(".sync").fadeOut(3000);
-                }
-            });
-    });
-    $("#button").click(function(event) {
-        event.preventDefault();
-        $.post(
-            "/verify_recaptcha", {
-                recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
-                recaptcha_response_field: $('#recaptcha_response_field').val()
-            },
-            function(data) {
-                if (data.verified) {
-                    $("#upload").submit();
-                }
-                else {
-                    $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please Try again.</div");
-                    $(".failure").fadeOut(3000);
-                    Recaptcha.reload();
-                }
-            }
-        );
     });
 }

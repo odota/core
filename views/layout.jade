@@ -52,10 +52,10 @@ html
               a(href="/status") Status
             li
               a(href="/about") FAQ/About
+            li
+              a(href="/upload") Upload
           if user
             ul.nav.navbar-nav.navbar-right
-              li
-                a(href="/upload") Upload
               li
                 a(href="/players/"+user.account_id)=user.personaname
               li
