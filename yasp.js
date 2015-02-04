@@ -1,8 +1,10 @@
 var express = require('express');
-var session = require('cookie-session');
+var utility = require('./utility');
+var redis = utility.redis;
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
 var multer = require('multer');
-var queries = require('./queries');
-var utility = require('./utility'),
+var queries = require('./queries'),
     db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
@@ -12,7 +14,6 @@ var utility = require('./utility'),
     Recaptcha = require('recaptcha').Recaptcha,
     bodyParser = require('body-parser'),
     kue = utility.kue,
-    redis = utility.redis,
     SteamStrategy = require('passport-steam').Strategy,
     app = express(),
     host = process.env.ROOT_URL || "http://localhost:5000",
@@ -100,7 +101,9 @@ app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
-    maxAge: 1000 * 60 * 60 * 24 * 14, //2 weeks in ms
+    store: new RedisStore({
+        client: redis
+    }),
     secret: process.env.SESSION_SECRET
 }));
 app.use(passport.initialize());
@@ -126,12 +129,12 @@ app.use(function(req, res, next) {
                     last_visited: new Date()
                 }
             }, function(err) {
-                console.log("%s visited", req.user.account_id);
+                console.log("%s visit", req.user.account_id);
                 next(err);
             });
         }
         else {
-            console.log("anonymous user visit");
+            console.log("anonymous visit");
             next();
         }
     });
