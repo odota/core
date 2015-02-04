@@ -420,8 +420,24 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should say Purchases', function(done) {
-            browser.assert.text('body', /Purchases/);
+        it('should say Roshan', function(done) {
+            browser.assert.text('body', /Roshan/);
+            done();
+        });
+    });
+    describe("/matches/:valid/timelines (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/timelines');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Hero Kills', function(done) {
+            browser.assert.text('body', /Hero Kills/);
             done();
         });
     });
