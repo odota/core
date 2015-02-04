@@ -5,25 +5,15 @@ var queueReq = utility.queueReq;
 var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
-var moment = require('moment');
 
 module.exports = function getFullMatchHistory(done, heroes) {
     var constants = require('./constants.json');
     var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
-
-    db.players.find({
-        track: 1,
-        fullhistory: {
-            $ne: 2
-        },
-        join_date: {
-            $lt: moment().subtract(10, 'day').toDate()
-        }
-    }, {
-        limit: 2,
+    db.players.find(utility.fullHistoryEligible(), {
+        limit: 1,
         sort: {
-            _id: 1
+            join_time: 1
         }
     }, function(err, players) {
         if (err) {
