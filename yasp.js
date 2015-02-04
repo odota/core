@@ -60,16 +60,8 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.findAndModify({
-        query: {
-            account_id: id
-        },
-        update: {
-            $set: {
-                track: 1,
-                last_visited: new Date()
-            }
-        }
+    db.players.findOne({
+        account_id: id
     }, function(err, user) {
         done(err, user);
     });
@@ -85,14 +77,18 @@ passport.use(new SteamStrategy({
     insert.join_date = new Date();
     insert.full_history = 0;
     insert.track = 1;
-    db.players.insert(insert, function(err) {
+    db.players.insert(insert, function(err, doc) {
+        //if already exists, just find and return the user
         if (err) {
-            //happens on relog, already inserted before
-            logger.info(err);
+            db.players.findOne({
+                account_id: steam32
+            }, function(err, doc) {
+                return done(err, doc);
+            });
         }
-        return done(null, {
-            account_id: steam32
-        });
+        else {
+            return done(err, doc);
+        }
     });
 }));
 var basic = auth.basic({
@@ -121,7 +117,21 @@ app.use(function(req, res, next) {
         app.locals.login_req_msg = req.session.login_required;
         req.session.login_required = false;
         app.locals.banner_msg = reply;
-        next();
+        if (req.user) {
+            db.players.update({
+                account_id: req.user.account_id
+            }, {
+                $set: {
+                    track: 1,
+                    last_visited: new Date()
+                }
+            }, function(err) {
+                next(err);
+            });
+        }
+        else {
+            next();
+        }
     });
 });
 app.param('match_id', function(req, res, next, id) {
