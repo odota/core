@@ -6,11 +6,11 @@ var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
+var db = utility.db;
+var logger = utility.logger;
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
-var multer = require('multer');
 var queries = require('./queries'),
-    db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
@@ -21,8 +21,6 @@ var queries = require('./queries'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express(),
     host = process.env.ROOT_URL || "http://localhost:5000";
-
-var logger = utility.logger;
 var matchPages = {
     index: {
         template: "match_index",
@@ -106,7 +104,9 @@ app.use(session({
     store: new RedisStore({
         client: redis
     }),
-    secret: process.env.SESSION_SECRET
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
