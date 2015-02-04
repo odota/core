@@ -287,6 +287,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.games = 0;
                 player.heroes = {};
                 player.histogramData = {};
+                player.radiantMap = {}
                 var calheatmap = {};
                 //array to store match durations in minutes
                 var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
@@ -299,8 +300,8 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
                     arr2[gpm] += 1;
                     var p = matches[i].players[0];
-                    matches[i].playerRadiant = utility.isRadiant(p);
-                    matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
+                    player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
+                    matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
                     player.games += 1;
                     matches[i].player_win ? player.win += 1 : player.lose += 1;
                     if (!heroes[p.hero_id]) {
