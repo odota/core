@@ -17,7 +17,7 @@ var domain = require('domain');
 function processParse(job, cb) {
     var t1 = new Date();
     var match_id = job.data.payload.match_id;
-    var noRetry = job.toJSON().attempts.remaining <= 0;
+    var noRetry = job.toJSON().attempts.remaining <= 1;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
