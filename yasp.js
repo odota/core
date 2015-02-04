@@ -70,7 +70,7 @@ passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
     apiKey: process.env.STEAM_API_KEY
-}, function(identifier, profile, done) { // start tracking the player
+}, function(identifier, profile, done) {
     var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
@@ -114,8 +114,8 @@ app.use(function(req, res, next) {
             logger.info(err);
         }
         app.locals.user = req.user;
-        app.locals.login_req_msg = req.session.login_required;
-        req.session.login_required = false;
+        //app.locals.login_req_msg = req.session.login_required;
+        //req.session.login_required = false;
         app.locals.banner_msg = reply;
         if (req.user) {
             db.players.update({
@@ -126,10 +126,12 @@ app.use(function(req, res, next) {
                     last_visited: new Date()
                 }
             }, function(err) {
+                console.log("%s visited", req.user.account_id);
                 next(err);
             });
         }
         else {
+            console.log("anonymous user visit");
             next();
         }
     });
