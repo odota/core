@@ -179,6 +179,10 @@ function computeStatistics(player, cb) {
     db.matches.find({
         'players.account_id': player.account_id
     }, {
+        fields: {
+            players: 1
+        }
+    }, {
         sort: {
             match_id: -1
         }
