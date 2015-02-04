@@ -94,15 +94,4 @@ function listeners() {
                 $(".sync").fadeOut(3000);
             });
     });
-    var fh = $("#fullhistory");
-    fh.on('click', function() {
-        $.post(
-            "/fullhistory", {},
-            function(data) {
-                if (!data.error) {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-success'>Queued for full history!</div>");
-                    $(".sync").fadeOut(3000);
-                }
-            });
-    });
 }
