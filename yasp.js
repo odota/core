@@ -60,7 +60,7 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.find({
+    db.players.findOne({
         account_id: id
     }, function(err, user) {
         done(err, user);
@@ -80,7 +80,7 @@ passport.use(new SteamStrategy({
     db.players.insert(insert, function(err, doc) {
         //if already exists, just find and return the user
         if (err) {
-            db.players.find({
+            db.players.findOne({
                 account_id: steam32
             }, function(err, doc) {
                 return done(err, doc);
