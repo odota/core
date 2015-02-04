@@ -188,7 +188,8 @@ function getData(url, cb) {
             }
             request({
                 url: target,
-                json: true
+                json: true,
+                timeout: 30000
             }, function(err, res, body) {
                 if (err || res.statusCode !== 200 || !body) {
                     logger.info("retrying: %s", target);
@@ -282,9 +283,6 @@ function insertPlayer(player, cb) {
 function fullHistoryEligible() {
     return {
         track: 1,
-        full_history: {
-            $lt: 2
-        },
         join_date: {
             $lt: moment().subtract(10, 'day').toDate()
         }
@@ -316,6 +314,27 @@ function runParse(cb) {
     return parser;
 }
 
+function initializeUser(identifier, profile, done) {
+    var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
+    var insert = profile._json;
+    insert.account_id = steam32;
+    insert.join_date = new Date();
+    insert.track = 1;
+    db.players.insert(insert, function(err, doc) {
+        //if already exists, just find and return the user
+        if (err) {
+            db.players.findOne({
+                account_id: steam32
+            }, function(err, doc) {
+                return done(err, doc);
+            });
+        }
+        else {
+            return done(err, doc);
+        }
+    });
+}
+
 module.exports = {
     //utilities
     db: db,
@@ -334,5 +353,6 @@ module.exports = {
     fullHistoryEligible: fullHistoryEligible,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
-    runParse: runParse
+    runParse: runParse,
+    initializeUser: initializeUser
 };
