@@ -1,11 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-<<<<<<< HEAD
   "version": "1.2.33",
-=======
-  "version": "1.2.32",
->>>>>>> origin/redis_session
   "scripts": {
     "start": "npm install && npm run build && npm run dev",
     "dev": "nf -j Procfile.dev start",
@@ -42,10 +38,7 @@
     "moment": "~2.9.0",
     "monk": "0.9.1",
     "multer": "~0.1.7",
-<<<<<<< HEAD
     "multiparty": "^4.1.1",
-=======
->>>>>>> origin/redis_session
     "parse-redis-url": "0.0.1",
     "passport": "0.2.1",
     "passport-steam": "0.1.4",
