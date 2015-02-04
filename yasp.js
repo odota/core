@@ -8,6 +8,7 @@ var utility = require('./utility');
 var redis = utility.redis;
 var db = utility.db;
 var logger = utility.logger;
+var compression = require('compression');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 var queries = require('./queries'),
@@ -81,6 +82,7 @@ var basic = auth.basic({
 }, function(username, password, callback) { // Custom authentication method.
     callback(username === (process.env.KUE_USER || "user") && password === (process.env.KUE_PASS || "pass"));
 });
+app.use(compression());
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
