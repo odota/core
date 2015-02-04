@@ -373,8 +373,9 @@ app.route('/return').get(
 );
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session = null;
-    res.redirect('/');
+    req.session.destroy(function(err) {
+        res.redirect('/');
+    })
 });
 
 app.route('/verify_recaptcha')
