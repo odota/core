@@ -115,8 +115,8 @@ app.use(function(req, res, next) {
             logger.info(err);
         }
         app.locals.user = req.user;
-        app.locals.login_req_msg = req.session.login_required;
-        req.session.login_required = false;
+        //app.locals.login_req_msg = req.session.login_required;
+        //req.session.login_required = false;
         app.locals.banner_msg = reply;
         if (req.user) {
             db.players.update({
@@ -127,10 +127,12 @@ app.use(function(req, res, next) {
                     last_visited: new Date()
                 }
             }, function(err) {
+                console.log("%s visited", req.user.account_id);
                 next(err);
             });
         }
         else {
+            console.log("anonymous user visit");
             next();
         }
     });

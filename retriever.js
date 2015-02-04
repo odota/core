@@ -14,6 +14,7 @@ var lock = false;
 var ready = false;
 var counts = {};
 var totalAttempts = 0;
+var launch = new Date();
 for (var i = 0; i < users.length; i++) {
     counts[i] = {
         attempts: 0,
@@ -25,6 +26,7 @@ app.get('/', function(req, res) {
         return res.json({
             loginNum: loginNum,
             totalAttempts: totalAttempts,
+            uptime: (new Date() - launch) / 1000,
             counts: counts
         });
     }
@@ -90,7 +92,6 @@ function getGCReplayUrl(match_id, cb) {
             cb("timeout");
         }, 10000);
         totalAttempts += 1;
-        console.log("attempts: %s", totalAttempts);
         if (totalAttempts >= 500) {
             selfDestruct();
         }
@@ -116,7 +117,7 @@ function selfDestruct() {
     process.exit(0);
 }
 
-setTimeout(selfDestruct, 1000 * 60 * 60 * 6);
+//setTimeout(selfDestruct, 1000 * 60 * 60 * 12);
 
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;
