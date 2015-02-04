@@ -75,27 +75,7 @@ passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
     apiKey: process.env.STEAM_API_KEY
-}, function(identifier, profile, done) {
-    var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
-    var insert = profile._json;
-    insert.account_id = steam32;
-    insert.join_date = new Date();
-    insert.full_history = 0;
-    insert.track = 1;
-    db.players.insert(insert, function(err, doc) {
-        //if already exists, just find and return the user
-        if (err) {
-            db.players.findOne({
-                account_id: steam32
-            }, function(err, doc) {
-                return done(err, doc);
-            });
-        }
-        else {
-            return done(err, doc);
-        }
-    });
-}));
+}, utility.initializeUser));
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
@@ -568,7 +548,9 @@ app.route('/status').get(function(req, res, next) {
             },
             obtained_full_history: function(cb) {
                 db.players.count({
-                    full_history: 2
+                    full_history_time: {
+                        $exists: true
+                    }
                 }, function(err, res) {
                     cb(err, res);
                 });
