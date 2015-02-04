@@ -84,12 +84,10 @@ passport.use(new SteamStrategy({
             db.players.findOne({
                 account_id: steam32
             }, function(err, doc) {
-                console.log("existing user %s", doc.account_id);
                 return done(err, doc);
             });
         }
         else {
-            console.log("new user %s", doc.account_id);
             return done(err, doc);
         }
     });
