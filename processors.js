@@ -129,9 +129,6 @@ function streamReplay(job, cb) {
         parser.on('exit', function(code) {
             logger.info("[PARSER] exit code: %s", code);
             logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
-            if (job.data.fileName) {
-                fs.unlinkSync(job.data.fileName);
-            }
             if (code) {
                 return cb(code);
             }
