@@ -48,10 +48,7 @@ block playercontent
             td=match.players[0].deaths
             td=match.players[0].assists
             td=constants.parse_status[match.parse_status]
-    .col-md-5(style="margin-top:3em")
-      include ads/skyscraper
-  .row
-    .col-md-12
+    .col-md-5
       h3 Heroes
       table.table#heroes
         thead
@@ -79,6 +76,8 @@ block playercontent
       #chart-duration
       h3 GPMs
       #chart-gpms
+  .row
+    include ads/leaderboard_3
   link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
     var data = !{JSON.stringify(player.histogramData)}

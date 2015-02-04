@@ -287,7 +287,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.games = 0;
                 player.heroes = {};
                 player.histogramData = {};
-                player.radiantMap = {}
+                player.radiantMap = {};
                 var calheatmap = {};
                 //array to store match durations in minutes
                 var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
