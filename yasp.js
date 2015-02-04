@@ -6,11 +6,11 @@ var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
+var db = utility.db;
+var logger = utility.logger;
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
-var multer = require('multer');
 var queries = require('./queries'),
-    db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
@@ -21,8 +21,6 @@ var queries = require('./queries'),
     SteamStrategy = require('passport-steam').Strategy,
     app = express(),
     host = process.env.ROOT_URL || "http://localhost:5000";
-
-var logger = utility.logger;
 var matchPages = {
     index: {
         template: "match_index",
@@ -31,6 +29,10 @@ var matchPages = {
     details: {
         template: "match_details",
         name: "Details"
+    },
+    timelines: {
+        template: "match_timelines",
+        name: "Timelines"
     },
     graphs: {
         template: "match_graphs",
@@ -106,7 +108,9 @@ app.use(session({
     store: new RedisStore({
         client: redis
     }),
-    secret: process.env.SESSION_SECRET
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -118,10 +122,10 @@ app.use(function(req, res, next) {
         if (err) {
             logger.info(err);
         }
-        app.locals.user = req.user;
+        res.locals.user = req.user;
         //app.locals.login_req_msg = req.session.login_required;
         //req.session.login_required = false;
-        app.locals.banner_msg = reply;
+        res.locals.banner_msg = reply;
         if (req.user) {
             db.players.update({
                 account_id: req.user.account_id
@@ -283,6 +287,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                 player.games = 0;
                 player.heroes = {};
                 player.histogramData = {};
+                player.radiantMap = {};
                 var calheatmap = {};
                 //array to store match durations in minutes
                 var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
@@ -295,8 +300,8 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                     var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
                     arr2[gpm] += 1;
                     var p = matches[i].players[0];
-                    matches[i].playerRadiant = utility.isRadiant(p);
-                    matches[i].player_win = (matches[i].playerRadiant === matches[i].radiant_win); //did the player win?
+                    player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
+                    matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
                     player.games += 1;
                     matches[i].player_win ? player.win += 1 : player.lose += 1;
                     if (!heroes[p.hero_id]) {
@@ -373,8 +378,9 @@ app.route('/return').get(
 );
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session = null;
-    res.redirect('/');
+    req.session.destroy(function(err) {
+        res.redirect('/');
+    })
 });
 
 app.route('/verify_recaptcha')

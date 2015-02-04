@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.33",
+  "version": "1.2.34",
   "scripts": {
     "start": "npm install && npm run build && npm run dev",
     "dev": "nf -j Procfile.dev start",
@@ -26,7 +26,6 @@
     "big-number": "0.3.1",
     "body-parser": "1.11.0",
     "connect-redis": "^2.2.0",
-    "cookie-session": "~1.1.0",
     "dota2": "~0.6.2",
     "dotenv": "~0.5.1",
     "express": "~4.11.2",
