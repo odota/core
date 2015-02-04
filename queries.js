@@ -1,6 +1,5 @@
 var utility = require('./utility');
 var db = utility.db;
-var isRadiant = utility.isRadiant;
 var async = require('async');
 
 function mergeObjects(merge, val) {

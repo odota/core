@@ -1,26 +1,26 @@
 var express = require('express');
+var multiparty = require('multiparty');
+var Recaptcha = require('recaptcha').Recaptcha;
+var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
+var db = utility.db;
+var logger = utility.logger;
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
-var multer = require('multer');
 var queries = require('./queries'),
-    db = utility.db,
     auth = require('http-auth'),
     async = require('async'),
     path = require('path'),
     passport = require('passport'),
     moment = require('moment'),
-    Recaptcha = require('recaptcha').Recaptcha,
     bodyParser = require('body-parser'),
     kue = utility.kue,
     SteamStrategy = require('passport-steam').Strategy,
     app = express(),
-    host = process.env.ROOT_URL || "http://localhost:5000",
-    rc_public = process.env.RECAPTCHA_PUBLIC_KEY,
-    rc_secret = process.env.RECAPTCHA_SECRET_KEY,
-    recaptcha = new Recaptcha(rc_public, rc_secret);
-var logger = utility.logger;
+    host = process.env.ROOT_URL || "http://localhost:5000";
 var matchPages = {
     index: {
         template: "match_index",
@@ -104,7 +104,9 @@ app.use(session({
     store: new RedisStore({
         client: redis
     }),
-    secret: process.env.SESSION_SECRET
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -374,12 +376,7 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-app.use(multer({
-    dest: './uploads',
-    limits: {
-        fileSize: 200000000
-    }
-}));
+
 app.route('/verify_recaptcha')
     .post(function(req, res) {
         var data = {
@@ -397,36 +394,80 @@ app.route('/verify_recaptcha')
     });
 app.route('/upload')
     .all(function(req, res, next) {
-        if (req.user) {
-            next();
-        }
-        else {
-            req.session.login_required = "upload";
-            res.redirect("/");
-        }
+        next();
     })
     .get(function(req, res) {
         res.render("upload", {
             recaptcha_form: recaptcha.toHTML(),
-            rc_pass: true
         });
     })
-    .post(function(req, res) {
-        var files = req.files.replay;
-        if (req.session.captcha_verified && files) {
-            logger.info(files.fieldname + ' uploaded to  ' + files.path);
-            utility.queueReq("parse", {
-                uploader: req.user.account_id,
-                fileName: files.path,
-                priority: 'high'
-            }, function(err) {
-                req.session.captcha_verified = false; //Set back to false
-                res.render("upload", {
-                    files: files,
-                    error: err,
-                    recaptcha_form: recaptcha.toHTML(),
+    .post(function(req, res, next) {
+        if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
+            req.session.captcha_verified = false; //Set back to false
+            var form = new multiparty.Form();
+            var parser = utility.runParse(function(err, output) {
+                //todo get api data out of replay in case of private
+                //todo do private/local lobbies have an id?
+                if (err) {
+                    return next(err);
+                }
+                var match_id = output.match_id;
+                console.log(match_id);
+                db.matches.findOne({
+                    match_id: match_id
+                }, function(err, doc) {
+                    if (err) {
+                        return next(err);
+                    }
+                    else if (doc) {
+                        console.log("match found in db");
+                        db.matches.update({
+                            match_id: match_id
+                        }, {
+                            $set: {
+                                parsed_data: output,
+                                parse_status: 2
+                            }
+                        }, function(err) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            res.redirect("/matches/" + match_id);
+
+                        });
+                    }
+                    else if (match_id) {
+                        console.log("match not found in db");
+                        utility.queueReq("api_details", {
+                            match_id: match_id,
+                            parsed_data: output,
+                            priority: "high"
+                        }, function(err, job) {
+                            if (err) {
+                                return next(err);
+                            }
+                            job.on('complete', function() {
+                                res.redirect("/matches/" + match_id);
+                            });
+                        });
+                    }
+                    else {
+                        res.json({
+                            error: "couldn't detect match_id"
+                        });
+                    }
                 });
             });
+            form.on('part', function(part) {
+                if (part.filename) {
+                    part.pipe(parser.stdin);
+                }
+            });
+            form.on('error', function(err) {
+                console.log(err);
+                parser.kill();
+            });
+            form.parse(req);
         }
     });
 app.route('/status').get(function(req, res, next) {
@@ -514,25 +555,8 @@ app.route('/status').get(function(req, res, next) {
                     cb(err, res);
                 });
             },
-            uploaded_matches: function(cb) {
-                db.matches.count({
-                    uploader: {
-                        $exists: 1
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
             eligible_full_history: function(cb) {
-                db.players.count({
-                    track: 1,
-                    fullhistory: {
-                        $ne: 2
-                    },
-                    join_date: {
-                        $lt: moment().subtract(10, 'day').toDate()
-                    }
-                }, function(err, res) {
+                db.players.count(utility.fullHistoryEligible(), function(err, res) {
                     cb(err, res);
                 });
             },
