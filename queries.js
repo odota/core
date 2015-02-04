@@ -183,17 +183,16 @@ function computeStatistics(player, cb) {
     db.matches.find({
         'players.account_id': player.account_id
     }, {
-        sort: {
-            match_id: -1
-        },
         fields: {
-            players: 1
+            players: 1,
+            match_id: 1
         }
     }).each(function(match) {
+        var playerRadiant = player.radiantMap[match.match_id];
         for (var j = 0; j < match.players.length; j++) {
             var tm = match.players[j];
             var tm_hero = tm.hero_id;
-            if (utility.isRadiant(tm) === playerMatches[i].playerRadiant) {
+            if (utility.isRadiant(tm) === playerRadiant) {
                 //count teammate players
                 if (!counts[tm.account_id]) {
                     counts[tm.account_id] = {
