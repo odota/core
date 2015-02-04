@@ -176,6 +176,10 @@ function fillPlayerNames(players, cb) {
 
 function computeStatistics(player, cb) {
     var playerMatches = player.matches;
+    var counts = {};
+    var against = {};
+    var together = {};
+    var i = 0;
     db.matches.find({
         'players.account_id': player.account_id
     }, {
@@ -185,54 +189,50 @@ function computeStatistics(player, cb) {
         fields: {
             players: 1
         }
-    }, function(err, matches) {
-        if (err) {
-            return cb(err);
-        }
-        var counts = {};
-        var against = {};
-        var together = {};
-        for (var i = 0; i < matches.length; i++) {
-            for (var j = 0; j < matches[i].players.length; j++) {
-                var tm = matches[i].players[j];
-                var tm_hero = tm.hero_id;
-                if (utility.isRadiant(tm) === playerMatches[i].playerRadiant) {
-                    //count teammate players
-                    if (!counts[tm.account_id]) {
-                        counts[tm.account_id] = {
-                            account_id: tm.account_id,
-                            win: 0,
-                            lose: 0,
-                            games: 0
-                        };
-                    }
-                    counts[tm.account_id].games += 1;
-                    playerMatches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
-                    //count teammate heroes
-                    if (!together[tm_hero]) {
-                        together[tm_hero] = {
-                            games: 0,
-                            win: 0,
-                            lose: 0
-                        };
-                    }
-                    together[tm_hero].games += 1;
-                    playerMatches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+    }).each(function(match) {
+        for (var j = 0; j < match.players.length; j++) {
+            var tm = match.players[j];
+            var tm_hero = tm.hero_id;
+            if (utility.isRadiant(tm) === playerMatches[i].playerRadiant) {
+                //count teammate players
+                if (!counts[tm.account_id]) {
+                    counts[tm.account_id] = {
+                        account_id: tm.account_id,
+                        win: 0,
+                        lose: 0,
+                        games: 0
+                    };
                 }
-                else {
-                    //count enemy heroes
-                    if (!against[tm_hero]) {
-                        against[tm_hero] = {
-                            games: 0,
-                            win: 0,
-                            lose: 0
-                        };
-                    }
-                    against[tm_hero].games += 1;
-                    playerMatches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
+                counts[tm.account_id].games += 1;
+                playerMatches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                //count teammate heroes
+                if (!together[tm_hero]) {
+                    together[tm_hero] = {
+                        games: 0,
+                        win: 0,
+                        lose: 0
+                    };
                 }
+                together[tm_hero].games += 1;
+                playerMatches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+            }
+            else {
+                //count enemy heroes
+                if (!against[tm_hero]) {
+                    against[tm_hero] = {
+                        games: 0,
+                        win: 0,
+                        lose: 0
+                    };
+                }
+                against[tm_hero].games += 1;
+                playerMatches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
             }
         }
+        i += 1;
+    }).error(function(err) {
+        return cb(err);
+    }).success(function() {
         player.together = together;
         player.against = against;
         player.teammates = [];
