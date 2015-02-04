@@ -60,16 +60,8 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.findAndModify({
-        query: {
-            account_id: id
-        },
-        update: {
-            $set: {
-                track: 1,
-                last_visited: new Date()
-            }
-        }
+    db.players.find({
+        account_id: id
     }, function(err, user) {
         done(err, user);
     });
@@ -114,7 +106,21 @@ app.use(function(req, res, next) {
         app.locals.login_req_msg = req.session.login_required;
         req.session.login_required = false;
         app.locals.banner_msg = reply;
-        next();
+        if (req.user) {
+            db.players.update({
+                account_id: req.user.account_id
+            }, {
+                $set: {
+                    track: 1,
+                    last_visited: new Date()
+                }
+            }, function(err) {
+                next(err);
+            });
+        }
+        else {
+            next();
+        }
     });
 });
 app.param('match_id', function(req, res, next, id) {
