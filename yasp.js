@@ -61,7 +61,7 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.find({
+    db.players.findOne({
         account_id: id
     }, function(err, user) {
         done(err, user);
@@ -71,7 +71,7 @@ passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
     apiKey: process.env.STEAM_API_KEY
-}, function(identifier, profile, done) { // start tracking the player
+}, function(identifier, profile, done) {
     var steam32 = Number(utility.convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
@@ -81,13 +81,15 @@ passport.use(new SteamStrategy({
     db.players.insert(insert, function(err, doc) {
         //if already exists, just find and return the user
         if (err) {
-            db.players.find({
+            db.players.findOne({
                 account_id: steam32
             }, function(err, doc) {
+                console.log("existing user %s", doc.account_id);
                 return done(err, doc);
             });
         }
         else {
+            console.log("new user %s", doc.account_id);
             return done(err, doc);
         }
     });
