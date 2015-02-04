@@ -26,7 +26,7 @@ var unparsed = require('../unparsed');
 var updatenames = require('../updatenames');
 var fullhistory = require('../fullhistory');
 var constants = require('../constants');
-var wait = 15000;
+var wait = 30000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,

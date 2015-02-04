@@ -9,7 +9,6 @@ var getData = utility.getData;
 var request = require('request');
 var insertPlayer = utility.insertPlayer;
 var insertMatch = utility.insertMatch;
-var queueReq = utility.queueReq;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
