@@ -45,6 +45,7 @@
     "recaptcha": "1.2.0",
     "redis": "0.12.1",
     "request": "~2.53.0",
+    "socket.io": "^1.3.3",
     "steam": "~0.6.7",
     "streamifier": "~0.1.0",
     "winston": "0.8.3"

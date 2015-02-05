@@ -137,7 +137,8 @@ function streamReplay(job, cb) {
         d.run(function() {
             var downStream = request.get({
                 url: job.data.url,
-                encoding: null
+                encoding: null,
+                timeout: 120000
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
