@@ -115,7 +115,6 @@ function streamReplay(job, cb) {
     var d = domain.create();
     if (job.data.fileName) {
         d.on('error', function(err) {
-            parser.kill();
             return cb(err);
         });
         d.run(function() {
@@ -125,9 +124,7 @@ function streamReplay(job, cb) {
     else {
         var bz = spawn("bzcat");
         d.on('error', function(err) {
-            bz.kill();
-            parser.kill();
-            return cb(err);
+            cb(err);
         });
         d.run(function() {
             var downStream = request.get({
