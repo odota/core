@@ -540,7 +540,7 @@ describe("web", function() {
                 replay: fs.createReadStream(__dirname + '/1193091757.dem')
             };
             request.post({
-                url: process.env.ROOT_URL+'/upload',
+                url: process.env.ROOT_URL + '/upload',
                 formData: formData
             }, function(err, resp, body) {
                 done(err);
@@ -681,6 +681,18 @@ describe("worker", function() {
                 done(err);
             });
         });
+    });
+});
+
+describe("unit test", function() {
+    it('initialize user', function(done) {
+        utility.initializeUser("/76561198048632981", {
+                _json: {}
+            },
+            function(err, user) {
+                assert(user);
+                done(err);
+            });
     });
 });
 
