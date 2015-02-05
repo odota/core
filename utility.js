@@ -56,15 +56,6 @@ function convert32to64(id) {
 }
 
 /*
- * Makes search from a datatables call
- */
-function makeSearch(search, columns) {
-    //todo operate on passed data to filter
-    var s = {};
-    return s;
-}
-
-/*
  * Makes sort from a datatables call
  */
 function makeSort(order, columns) {
@@ -154,7 +145,7 @@ function generateJob(type, payload) {
     }
     if (type === "api_sequence") {
         return {
-            url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + payload.seq_num,
+            url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + (process.env.STEAM_API_KEY2 || process.env.STEAM_API_KEY) + "&start_at_match_seq_num=" + payload.seq_num,
             title: [type, payload.seq_num].join(),
             type: "api",
             payload: payload
@@ -348,7 +339,6 @@ module.exports = {
     generateJob: generateJob,
     getData: getData,
     queueReq: queueReq,
-    makeSearch: makeSearch,
     makeSort: makeSort,
     fullHistoryEligible: fullHistoryEligible,
     insertPlayer: insertPlayer,

@@ -52,9 +52,13 @@ var playerPages = {
         template: "player_matches",
         name: "Matches"
     },
+    heroes: {
+        template: "player_heroes",
+        name: "Heroes"
+    },
     stats: {
-        template: "player_stats",
-        name: "Statistics"
+        template: "player_matchups",
+        name: "Matchups"
     }
 };
 app.set('views', path.join(__dirname, 'views'));
@@ -170,36 +174,35 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
 app.route('/api/matches').get(function(req, res, next) {
-    var options = {};
-    var sort = {};
+    console.log(req.query);
+    var draw = Number(req.query.draw) || 0;
     var limit = Number(req.query.length) || 10;
-    if (req.query.draw) {
-        var ajaxData = req.query.search.value;
-        options = utility.makeSearch(ajaxData, req.query.columns);
-        sort = utility.makeSort(req.query.order, req.query.columns);
+    var start = Number(req.query.start) || 0;
+    for (var prop in req.query.select) {
+        //cast strings back to numbers
+        req.query.select[prop] = Number(req.query.select[prop]);
     }
-    db.matches.count(options, function(err, count) {
+    var select = req.query.select || {};
+    var sort = utility.makeSort(req.query.order, req.query.columns) || {};
+    var project = req.query.project || null;
+    //todo make player pages use this
+    //todo filter insignificant games?
+    //todo support custom querying
+    db.matches.count(select, function(err, count) {
         if (err) {
-            return next(new Error(err));
+            return next(err);
         }
-        db.matches.find(options, {
+        db.matches.find(select, {
             limit: limit,
-            skip: Number(req.query.start),
+            skip: start,
             sort: sort,
-            fields: {
-                start_time: 1,
-                match_id: 1,
-                cluster: 1,
-                parse_status: 1,
-                game_mode: 1,
-                duration: 1
-            }
+            fields: project
         }, function(err, docs) {
             if (err) {
                 return next(err);
             }
             res.json({
-                draw: Number(req.query.draw),
+                draw: draw,
                 recordsTotal: count,
                 recordsFiltered: count,
                 data: docs
@@ -240,7 +243,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerMatches(player, function(err) {
+            queries.fillPlayerMatches(player, app.locals.constants, function(err) {
                 if (err) {
                     return next(err);
                 }
@@ -304,7 +307,7 @@ app.route('/return').get(
 );
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session.destroy(function(err) {
+    req.session.destroy(function() {
         res.redirect('/');
     });
 });
@@ -386,7 +389,6 @@ app.route('/upload')
             });
             form.on('part', function(part) {
                 if (part.filename) {
-                    console.log("received upload part")
                     part.pipe(parser.stdin);
                 }
             });
