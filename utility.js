@@ -88,7 +88,7 @@ function queueReq(type, payload, cb) {
             return cb(err);
         }
         if (doc) {
-            logger.info("match already in db");
+            console.log("match already in db");
             return cb(null);
         }
         var job = generateJob(type, payload);

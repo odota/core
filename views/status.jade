@@ -2,7 +2,63 @@ extend layout
 
 block content
   h1 Status
-  pre(style="margin-top:2em;") #{JSON.stringify(results, null, 2)}
-  p Graphs and more stats in the works!
+  table.table
+    th
+      td Total
+      td Last Day
+    tr
+      td Matches
+      td#matches
+      td#matches_last_day
+    tr
+      td Players
+      td#players
+      td
+    tr
+      td Visited
+      td#visited
+      td#visited_last_day
+    tr
+      td Tracked
+      td#tracked_players
+      td
+    tr
+      td Untracked
+      td#untracked_players
+      td
+    tr
+      td Unavailable Matches
+      td#unavailable_matches
+      td#unavailable_last_day
+    tr
+      td Queued Matches
+      td#queued_matches
+      td
+    tr
+      td Parsed Matches
+      td#parsed_matches
+      td#parsed_matches_last_day
+    tr
+      td Uploaded Matches
+      td#uploaded_matches
+      td
+    tr
+      td Full History Eligible
+      td#eligible_full_history
+      td
+    tr
+      td Full History Obtained
+      td#obtained_full_history
+      td
   .row
     include ads/leaderboard_2
+block footer_assets
+  script(src="/socket.io/socket.io.js")
+  script.
+    var socket = io.connect();
+    socket.on('stats', function (data) {
+    console.log(data);
+      for (var prop in data.stats){
+        $("#"+prop).html(data.stats[prop]);
+      }
+    });

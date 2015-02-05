@@ -137,7 +137,16 @@ function streamReplay(job, cb) {
         d.run(function() {
             var downStream = request.get({
                 url: job.data.url,
-                encoding: null
+                encoding: null,
+                timeout: 120000
+            });
+            downStream.on('response', function(resp) {
+                if (resp.statusCode !== 200) {
+                    throw "download error";
+                }
+            });
+            downStream.on('error', function(err) {
+                throw err;
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
