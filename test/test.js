@@ -380,9 +380,9 @@ describe("web", function() {
             done();
         });
     });
-    describe("/players/:valid/stats", function() {
+    describe("/players/:valid/matchups", function() {
         before(function(done) {
-            browser.visit('/players/88367253/stats');
+            browser.visit('/players/88367253/matchups');
             browser.wait(wait, function(err) {
                 done(err);
             });

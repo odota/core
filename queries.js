@@ -245,7 +245,7 @@ function computeStatistics(player, cb) {
     });
 }
 
-function fillPlayerMatches(player, cb) {
+function fillPlayerMatches(player, constants, cb) {
     var account_id = player.account_id;
     db.matches.find({
         'players.account_id': account_id
@@ -277,6 +277,15 @@ function fillPlayerMatches(player, cb) {
         var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var heroes = {};
+        for (var id in constants.heroes) {
+            heroes[id] = {
+                hero_id: id,
+                games: 0,
+                win: 0,
+                lose: 0
+            };
+        }
+        player.heroes = [];
         for (var i = 0; i < matches.length; i++) {
             calheatmap[matches[i].start_time] = 1;
             var mins = Math.floor(matches[i].duration / 60) % 120;
@@ -288,17 +297,17 @@ function fillPlayerMatches(player, cb) {
             matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
             player.games += 1;
             matches[i].player_win ? player.win += 1 : player.lose += 1;
-            if (!heroes[p.hero_id]) {
-                heroes[p.hero_id] = {
-                    games: 0,
-                    win: 0,
-                    lose: 0
-                };
+            if (heroes[p.hero_id]) {
+                heroes[p.hero_id].games += 1;
+                matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
             }
-            heroes[p.hero_id].games += 1;
-            matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
         }
-        player.heroes = heroes;
+        for (var id in heroes) {
+            player.heroes.push(heroes[id]);
+        }
+        player.heroes.sort(function(a,b){
+            return b.games-a.games;
+        });
         player.histogramData.durations = arr;
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = calheatmap;

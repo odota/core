@@ -10,25 +10,21 @@ block playercontent
     .col-md-12
       h3 Activity
       p
-        button.btn.btn-default#prev <
-        button.btn.btn-default#next >
+        button.btn.btn-default#prev &laquo;
+        button.btn.btn-default#next &raquo;
       div#cal-heatmap
   .row
-    .col-md-7
+    .col-md-8
       h3 Recent Matches
-      table.table#recent
+      table.table
         thead
           tr
            th Match ID
            th Hero
            th Result
-           th Region
            th Game Mode
            th Duration
            th Played
-           th K
-           th D
-           th A
            th: abbr(title=constants.tooltips.status) Status
         each match in player.matches.slice(0,10)
           tr(class= match.player_win ? "success" : "danger")
@@ -40,34 +36,25 @@ block playercontent
               else
                 =match.players[0].hero_id
             td= match.player_win ? "Won" : "Lost"
-            td= constants.regions[match.cluster] || match.cluster
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
-            td=match.players[0].kills
-            td=match.players[0].deaths
-            td=match.players[0].assists
             td=constants.parse_status[match.parse_status]
-    .col-md-5
-      h3 Heroes
-      table.table#heroes
+    .col-md-4
+      h3 Top Heroes
+      table.table
         thead
           tr
             th Hero
-            th Hero Name
             th Games
-            th Wins
             th Winrate
-        each hero in constants.heroes
+        each h in player.heroes.slice(0,10)
+          - var hero = constants.heroes[h.hero_id]
           tr
             td.hero
               img(src=hero.img, title=hero.localized_name)
-            td 
-              =hero.localized_name
-            - var entry = player.heroes[hero.id]
-            td #{entry ? entry.games : 0}
-            td #{entry ? entry.win : 0}
-            td #{entry ? (100*entry.win/entry.games).toFixed(2) : 0.00}%      
+            td= h.games
+            td #{(100*h.win/h.games).toFixed(2) || 0.00}%
   .row
     include ads/leaderboard_2
   .row
