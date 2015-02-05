@@ -46,6 +46,7 @@ nock(process.env.RETRIEVER_HOST)
             replaySalt: 1
         }
     });
+
 //fake replay response
 nock('http://replay1.valve.net')
     .filteringPath(function(path) {
@@ -65,6 +66,7 @@ nock('http://api.steampowered.com')
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
     .reply(500, {})
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .times(2)
     .reply(200, testdata.details_api)
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
     .reply(200, testdata.summaries_api)
@@ -167,7 +169,8 @@ before(function(done) {
             },
             function(cb) {
                 console.log("starting web");
-                app.listen(process.env.PORT);
+                var server = app.listen(process.env.PORT);
+                var io = require('socket.io')(server);
                 cb();
             }
         ],
@@ -195,6 +198,32 @@ describe("services", function() {
     it("kue jobs queue ready", function(done) {
         assert(utility.jobs);
         done();
+    });
+});
+
+describe("worker", function() {
+    this.timeout(wait);
+    it('process details request', function(done) {
+        utility.queueReq("api_details", {
+            match_id: 870061127
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('process summaries request', function(done) {
+        utility.queueReq("api_summaries", {
+            players: [{
+                account_id: 88367253
+            }]
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
     });
 });
 
@@ -315,7 +344,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.*1-1.*/);
+            browser.assert.text('h2', /.-./);
             done();
         });
     });
@@ -331,7 +360,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.*0-0.*/);
+            browser.assert.text('h2', /.-./);
             done();
         });
     });
@@ -543,6 +572,7 @@ describe("web", function() {
                 url: process.env.ROOT_URL + '/upload',
                 formData: formData
             }, function(err, resp, body) {
+                assert(body);
                 done(err);
             });
         });
@@ -637,7 +667,7 @@ describe("tasks", function() {
     this.timeout(wait);
     it('unparsed matches', function(done) {
         unparsed(function(err, num) {
-            assert.equal(num, 1);
+            assert.equal(num, 2);
             done(err);
         });
     });
@@ -655,32 +685,6 @@ describe("tasks", function() {
         constants(function(err) {
             done(err);
         }, "./constants_test.json");
-    });
-});
-
-describe("worker", function() {
-    this.timeout(wait);
-    it('process details request', function(done) {
-        utility.queueReq("api_details", {
-            match_id: 870061127
-        }, function(err, job) {
-            assert(job);
-            processors.processApi(job, function(err) {
-                done(err);
-            });
-        });
-    });
-    it('process summaries request', function(done) {
-        utility.queueReq("api_summaries", {
-            players: [{
-                account_id: 88367253
-            }]
-        }, function(err, job) {
-            assert(job);
-            processors.processApi(job, function(err) {
-                done(err);
-            });
-        });
     });
 });
 

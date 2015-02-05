@@ -245,9 +245,71 @@ function computeStatistics(player, cb) {
     });
 }
 
+function fillPlayerMatches(player, cb) {
+    var account_id = player.account_id;
+    db.matches.find({
+        'players.account_id': account_id
+    }, {
+        fields: {
+            start_time: 1,
+            match_id: 1,
+            game_mode: 1,
+            duration: 1,
+            cluster: 1,
+            radiant_win: 1,
+            parse_status: 1,
+            "players.$": 1
+        },
+        sort: {
+            match_id: -1
+        }
+    }, function(err, matches) {
+        if (err) {
+            cb(err);
+        }
+        player.matches = matches;
+        player.win = 0;
+        player.lose = 0;
+        player.games = 0;
+        player.histogramData = {};
+        player.radiantMap = {};
+        var calheatmap = {};
+        var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+        var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+        var heroes = {};
+        for (var i = 0; i < matches.length; i++) {
+            calheatmap[matches[i].start_time] = 1;
+            var mins = Math.floor(matches[i].duration / 60) % 120;
+            arr[mins] += 1;
+            var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
+            arr2[gpm] += 1;
+            var p = matches[i].players[0];
+            player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
+            matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
+            player.games += 1;
+            matches[i].player_win ? player.win += 1 : player.lose += 1;
+            if (!heroes[p.hero_id]) {
+                heroes[p.hero_id] = {
+                    games: 0,
+                    win: 0,
+                    lose: 0
+                };
+            }
+            heroes[p.hero_id].games += 1;
+            matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+        }
+        player.heroes = heroes;
+        player.histogramData.durations = arr;
+        player.histogramData.gpms = arr2;
+        player.histogramData.calheatmap = calheatmap;
+        cb(err);
+    });
+}
+
 module.exports = {
     fillPlayerNames: fillPlayerNames,
     mergeMatchData: mergeMatchData,
     generateGraphData: generateGraphData,
-    computeStatistics: computeStatistics
+    computeStatistics: computeStatistics,
+    fillPlayerMatches: fillPlayerMatches
 };
