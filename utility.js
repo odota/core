@@ -184,46 +184,52 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-        setTimeout(function() {
-            var parse = urllib.parse(url, true);
-            //inject a random retriever
-            if (parse.host === "retriever") {
-                //todo inject a retriever key
-                parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
+        var delay = 1000;
+        var parse = urllib.parse(url, true);
+        //inject a random retriever
+        if (parse.host === "retriever") {
+            //todo inject a retriever key
+            parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
+        }
+        //inject a random key if steam api request
+        if (parse.host === "api.steampowered.com") {
+            parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
+            parse.search = null;
+            delay = 1000 / api_keys.length;
+        }
+        var target = urllib.format(parse);
+        logger.info("getData: %s", target);
+        request({
+            url: target,
+            json: true,
+            timeout: 15000
+        }, function(err, res, body) {
+            if (err || res.statusCode !== 200 || !body) {
+                logger.info("retrying: %s", target);
+                return setTimeout(function() {
+                    getData(url, cb);
+                }, delay);
             }
-            //inject a random key if steam api request
-            if (parse.host === "api.steampowered.com") {
-                parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
-                parse.search = null;
+            if (body.result) {
+                //steam api response
+                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
+                    //user does not have stats enabled or attempting to get private match/invalid id, don't retry
+                    return setTimeout(function() {
+                        cb(body);
+                    }, delay);
+                }
+                else if (body.result.error || body.result.status === 2) {
+                    //valid response, but invalid data, retry
+                    logger.info("invalid data: %s, %s", target, JSON.stringify(body));
+                    return setTimeout(function() {
+                        getData(url, cb);
+                    }, delay);
+                }
             }
-            url = urllib.format(parse);
-            request({
-                url: url,
-                json: true,
-                timeout: 15000
-            }, function(err, res, body) {
-                if (err || res.statusCode !== 200 || !body) {
-                    logger.info("retrying: %s", url);
-                    return getData(url, cb);
-                }
-                logger.info("got data: %s", url);
-                if (body.result) {
-                    //steam api response
-                    if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
-                        //user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                        logger.info(body);
-                        return cb(body);
-                    }
-                    else if (body.result.error || body.result.status === 2) {
-                        //valid response, but invalid data, retry
-                        logger.info("invalid data: %s, %s", url, JSON.stringify(body));
-                        return getData(url, cb);
-                    }
-                }
-                //generic valid response
-                return cb(null, body);
-            });
-        }, 1000 / api_keys.length);
+            return setTimeout(function() {
+                cb(null, body);
+            }, delay);
+        });
     }
     /*
         function getS3Url(match_id, cb) {
@@ -243,7 +249,6 @@ function getData(url, cb) {
                 cb(new Error("S3 UNAVAILABLE"));
             }
         }
-
         function uploadToS3(data, archiveName, cb) {
             var s3 = new AWS.S3();
             var params = {
