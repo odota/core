@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.load();
 var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),
@@ -5,7 +7,10 @@ var BigNumber = require('big-number').n,
     moment = require('moment'),
     parseRedisUrl = require('parse-redis-url')(redis);
 var spawn = require("child_process").spawn;
+var api_url = "http://api.steampowered.com";
 var api_keys = process.env.STEAM_API_KEY.split(",");
+var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
+var urllib = require('url');
 
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 //set keys for kue
@@ -117,9 +122,7 @@ function checkDuplicate(type, payload, cb) {
 }
 
 function generateJob(type, payload) {
-    var api_url = "http://api.steampowered.com";
     var api_key = api_keys[Math.floor(Math.random() * api_keys.length)];
-
     if (type === "api_details") {
         return {
             url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
@@ -182,21 +185,28 @@ function generateJob(type, payload) {
 
 function getData(url, cb) {
         setTimeout(function() {
-            var target = url;
-            //array given, pick one randomly
-            if (typeof url === "object") {
-                target = url[Math.floor(Math.random() * url.length)];
+            var parse = urllib.parse(url, true);
+            //inject a random retriever
+            if (parse.host === "retriever") {
+                //todo inject a retriever key
+                parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
             }
+            //inject a random key if steam api request
+            if (parse.host === "api.steampowered.com") {
+                parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
+                parse.search = null;
+            }
+            url = urllib.format(parse);
             request({
-                url: target,
+                url: url,
                 json: true,
                 timeout: 15000
             }, function(err, res, body) {
                 if (err || res.statusCode !== 200 || !body) {
-                    logger.info("retrying: %s", target);
+                    logger.info("retrying: %s", url);
                     return getData(url, cb);
                 }
-                logger.info("got data: %s", target);
+                logger.info("got data: %s", url);
                 if (body.result) {
                     //steam api response
                     if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
@@ -206,7 +216,7 @@ function getData(url, cb) {
                     }
                     else if (body.result.error || body.result.status === 2) {
                         //valid response, but invalid data, retry
-                        logger.info("invalid data: %s, %s", target, JSON.stringify(body));
+                        logger.info("invalid data: %s, %s", url, JSON.stringify(body));
                         return getData(url, cb);
                     }
                 }
