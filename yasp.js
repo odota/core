@@ -3,6 +3,7 @@ var multiparty = require('multiparty');
 var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var api_key = process.env.STEAM_API_KEY.split(",")[0];
 var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
@@ -52,9 +53,13 @@ var playerPages = {
         template: "player_matches",
         name: "Matches"
     },
-    stats: {
-        template: "player_stats",
-        name: "Statistics"
+    heroes: {
+        template: "player_heroes",
+        name: "Heroes"
+    },
+    matchups: {
+        template: "player_matchups",
+        name: "Matchups"
     }
 };
 app.set('views', path.join(__dirname, 'views'));
@@ -74,7 +79,7 @@ passport.deserializeUser(function(id, done) {
 passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
-    apiKey: process.env.STEAM_API_KEY
+    apiKey: api_key
 }, utility.initializeUser));
 var basic = auth.basic({
     realm: "Kue"
@@ -170,36 +175,31 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
 app.route('/api/matches').get(function(req, res, next) {
-    var options = {};
-    var sort = {};
+    var draw = Number(req.query.draw) || 0;
     var limit = Number(req.query.length) || 10;
-    if (req.query.draw) {
-        var ajaxData = req.query.search.value;
-        options = utility.makeSearch(ajaxData, req.query.columns);
-        sort = utility.makeSort(req.query.order, req.query.columns);
+    var start = Number(req.query.start) || 0;
+    for (var prop in req.query.select) {
+        //cast strings back to numbers
+        req.query.select[prop] = Number(req.query.select[prop]);
     }
-    db.matches.count(options, function(err, count) {
+    var select = req.query.select || {};
+    var sort = utility.makeSort(req.query.order, req.query.columns) || {};
+    var project = req.query.project || {};
+    db.matches.count(select, function(err, count) {
         if (err) {
-            return next(new Error(err));
+            return next(err);
         }
-        db.matches.find(options, {
+        db.matches.find(select, {
             limit: limit,
-            skip: Number(req.query.start),
+            skip: start,
             sort: sort,
-            fields: {
-                start_time: 1,
-                match_id: 1,
-                cluster: 1,
-                parse_status: 1,
-                game_mode: 1,
-                duration: 1
-            }
+            fields: project
         }, function(err, docs) {
             if (err) {
                 return next(err);
             }
             res.json({
-                draw: Number(req.query.draw),
+                draw: draw,
                 recordsTotal: count,
                 recordsFiltered: count,
                 data: docs
@@ -240,27 +240,16 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerMatches(player, function(err) {
+            queries.fillPlayerMatches(player, app.locals.constants, info === "matchups", function(err) {
                 if (err) {
                     return next(err);
                 }
-                var renderOpts = {
+                res.render(playerPages[info].template, {
                     route: info,
                     player: player,
                     tabs: playerPages,
                     title: (player.personaname || player.account_id) + " - YASP"
-                };
-                if (info === "stats") {
-                    queries.computeStatistics(player, function(err) {
-                        if (err) {
-                            return next(err);
-                        }
-                        res.render(playerPages[info].template, renderOpts);
-                    });
-                }
-                else {
-                    res.render(playerPages[info].template, renderOpts);
-                }
+                });
             });
         }
     });
@@ -304,7 +293,7 @@ app.route('/return').get(
 );
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session.destroy(function(err) {
+    req.session.destroy(function() {
         res.redirect('/');
     });
 });
@@ -386,7 +375,6 @@ app.route('/upload')
             });
             form.on('part', function(part) {
                 if (part.filename) {
-                    console.log("received upload part")
                     part.pipe(parser.stdin);
                 }
             });
