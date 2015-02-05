@@ -13,7 +13,7 @@ module.exports = function getFullMatchHistory(done, heroes) {
     db.players.find(utility.fullHistoryEligible(), {
         limit: 1,
         sort: {
-            join_time: 1
+            full_history_time: 1
         }
     }, function(err, players) {
         if (err) {
@@ -43,13 +43,12 @@ module.exports = function getFullMatchHistory(done, heroes) {
                     return done(err);
                 }
                 //added all the matches to kue
-                //update full_history field
                 async.mapSeries(players, function(player, cb) {
                     db.players.update({
                         account_id: player.account_id
                     }, {
                         $set: {
-                            full_history: 2
+                            full_history_time: new Date()
                         }
                     }, function(err) {
                         console.log("got full match history for %s", player.account_id);
