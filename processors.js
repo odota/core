@@ -140,6 +140,11 @@ function streamReplay(job, cb) {
                 encoding: null,
                 timeout: 120000
             });
+            downStream.on('response', function(err, resp) {
+                if (err || resp.statusCode !== 200) {
+                    throw "download error";
+                }
+            });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         });
