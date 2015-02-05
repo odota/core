@@ -1,14 +1,12 @@
-var dotenv = require('dotenv');
-dotenv.load();
 process.env.MONGO_URL = "mongodb://localhost/test";
 process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.PORT = 5000;
-process.env.RETRIEVER_HOST = "http://localhost:5100";
+process.env.RETRIEVER_HOST = "localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
-process.env.DELETE_REPLAYS = true;
 process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
+process.env.STEAM_API_KEY="fakekey";
 
 var async = require('async');
 var utility = require('../utility');
@@ -34,7 +32,7 @@ var browser = new Zombie({
 });
 
 //fake retriever response
-nock(process.env.RETRIEVER_HOST)
+nock("http://"+process.env.RETRIEVER_HOST)
     .filteringPath(function(path) {
         return '/';
     })

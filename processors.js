@@ -1,5 +1,4 @@
 var utility = require('./utility');
-var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
 var async = require('async');
 var db = utility.db;
 var logger = utility.logger;
@@ -65,12 +64,7 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        logger.info("requesting match from dota2");
-        var urls = [];
-        for (var i = 0; i < retrievers.length; i++) {
-            urls[i] = retrievers[i] + "?match_id=" + job.data.payload.match_id;
-        }
-        getData(urls, function(err, body) {
+        getData("http://retriever?match_id="+ job.data.payload.match_id, function(err, body) {
             if (err || !body || !body.match) {
                 return cb("invalid body or error");
             }
