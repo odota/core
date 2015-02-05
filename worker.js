@@ -42,12 +42,7 @@ function clearActiveJobs(cb) {
 }
 
 function untrackPlayers(cb) {
-    db.players.update({
-        track: 1,
-        last_visited: {
-            $lt: moment().subtract(5, 'days').toDate()
-        }
-    }, {
+    db.players.update(utility.selector("untrack"), {
         $set: {
             track: 0
         }
@@ -74,9 +69,7 @@ function startScan() {
     }
     else {
         //start at highest id in db
-        db.matches.findOne({
-            uploader: null
-        }, {
+        db.matches.findOne({}, {
             sort: {
                 match_seq_num: -1
             }
@@ -123,12 +116,13 @@ function scanApi(seq_num) {
                     filtered.push(match);
                 }
             }
-            logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
-            async.mapSeries(filtered, insertMatch, function(err) {
-                if (err) {
-                    logger.info(err);
-                }
-                return scanApi(new_seq_num);
+            logger.info("[API] seq_num: %s, found %s matches, %s to add", seq_num, resp.length, filtered.length);
+            async.mapSeries(filtered, insertMatch, function() {
+                //wait 100ms for each match less than 100
+                var delay = (100-resp.length)*100;
+                setTimeout(function(){
+                   scanApi(new_seq_num); 
+                }, delay);
             });
         });
     });
