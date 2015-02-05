@@ -78,7 +78,6 @@ block playercontent
       #chart-gpms
   .row
     include ads/leaderboard_3
-  link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);

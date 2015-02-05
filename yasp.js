@@ -11,16 +11,15 @@ var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
+var app = express();
 var queries = require('./queries'),
     auth = require('http-auth'),
-    async = require('async'),
     path = require('path'),
     passport = require('passport'),
     moment = require('moment'),
     bodyParser = require('body-parser'),
     kue = utility.kue,
     SteamStrategy = require('passport-steam').Strategy,
-    app = express(),
     host = process.env.ROOT_URL || "http://localhost:5000";
 var matchPages = {
     index: {
@@ -105,8 +104,6 @@ app.use(function(req, res, next) {
             logger.info(err);
         }
         res.locals.user = req.user;
-        //app.locals.login_req_msg = req.session.login_required;
-        //req.session.login_required = false;
         res.locals.banner_msg = reply;
         if (req.user) {
             db.players.update({
@@ -117,12 +114,12 @@ app.use(function(req, res, next) {
                     last_visited: new Date()
                 }
             }, function(err) {
-                console.log("%s visit", req.user.account_id);
+                logger.info("%s visit", req.user.account_id);
                 next(err);
             });
         }
         else {
-            console.log("anonymous visit");
+            logger.info("anonymous visit");
             next();
         }
     });
@@ -243,62 +240,10 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            db.matches.find({
-                'players.account_id': account_id
-            }, {
-                fields: {
-                    start_time: 1,
-                    match_id: 1,
-                    game_mode: 1,
-                    duration: 1,
-                    cluster: 1,
-                    radiant_win: 1,
-                    parse_status: 1,
-                    "players.$": 1
-                },
-                sort: {
-                    match_id: -1
-                }
-            }, function(err, matches) {
+            queries.fillPlayerMatches(player, function(err) {
                 if (err) {
                     return next(err);
                 }
-                player.matches = matches;
-                player.win = 0;
-                player.lose = 0;
-                player.games = 0;
-                player.heroes = {};
-                player.histogramData = {};
-                player.radiantMap = {};
-                var calheatmap = {};
-                //array to store match durations in minutes
-                var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
-                var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
-                var heroes = player.heroes;
-                for (var i = 0; i < matches.length; i++) {
-                    calheatmap[matches[i].start_time] = 1;
-                    var mins = Math.floor(matches[i].duration / 60) % 120;
-                    arr[mins] += 1;
-                    var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
-                    arr2[gpm] += 1;
-                    var p = matches[i].players[0];
-                    player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
-                    matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
-                    player.games += 1;
-                    matches[i].player_win ? player.win += 1 : player.lose += 1;
-                    if (!heroes[p.hero_id]) {
-                        heroes[p.hero_id] = {
-                            games: 0,
-                            win: 0,
-                            lose: 0
-                        };
-                    }
-                    heroes[p.hero_id].games += 1;
-                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
-                }
-                player.histogramData.durations = arr;
-                player.histogramData.gpms = arr2;
-                player.histogramData.calheatmap = calheatmap;
                 var renderOpts = {
                     route: info,
                     player: player,
@@ -310,7 +255,6 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
                         if (err) {
                             return next(err);
                         }
-                        //render
                         res.render(playerPages[info].template, renderOpts);
                     });
                 }
@@ -362,7 +306,7 @@ app.route('/logout').get(function(req, res) {
     req.logout();
     req.session.destroy(function(err) {
         res.redirect('/');
-    })
+    });
 });
 
 app.route('/verify_recaptcha')
@@ -400,7 +344,6 @@ app.route('/upload')
                     return next(err);
                 }
                 var match_id = output.match_id;
-                console.log(match_id);
                 db.matches.findOne({
                     match_id: match_id
                 }, function(err, doc) {
@@ -408,46 +351,42 @@ app.route('/upload')
                         return next(err);
                     }
                     else if (doc) {
-                        console.log("match found in db");
-                        db.matches.update({
+                        console.log("getting upload data from api");
+                        var container = utility.generateJob("api_details", {
                             match_id: match_id
-                        }, {
-                            $set: {
-                                parsed_data: output,
-                                parse_status: 2
-                            }
-                        }, function(err) {
-                            if (err) {
-                                console.log(err);
-                            }
-                            res.redirect("/matches/" + match_id);
-
                         });
-                    }
-                    else if (match_id) {
-                        console.log("match not found in db");
-                        utility.queueReq("api_details", {
-                            match_id: match_id,
-                            parsed_data: output,
-                            priority: "high"
-                        }, function(err, job) {
+                        utility.getData(container.url, function(err, data) {
                             if (err) {
                                 return next(err);
                             }
-                            job.on('complete', function() {
+                            var match = data.result;
+                            match.parsed_data = output;
+                            match.parse_status = 2;
+                            match.upload = true;
+                            db.matches.update({
+                                match_id: match_id
+                            }, {
+                                $set: match
+                            }, {
+                                upsert: true
+                            }, function(err) {
+                                if (err) {
+                                    return next(err);
+                                }
                                 res.redirect("/matches/" + match_id);
                             });
                         });
                     }
                     else {
                         res.json({
-                            error: "couldn't detect match_id"
+                            error: "Couldn't parse this replay."
                         });
                     }
                 });
             });
             form.on('part', function(part) {
                 if (part.filename) {
+                    console.log("received upload part")
                     part.pipe(parser.stdin);
                 }
             });
@@ -458,114 +397,8 @@ app.route('/upload')
             form.parse(req);
         }
     });
-app.route('/status').get(function(req, res, next) {
-    async.parallel({
-            matches: function(cb) {
-                db.matches.count({}, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            players: function(cb) {
-                db.players.count({}, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            visited_last_day: function(cb) {
-                db.players.count({
-                    last_visited: {
-                        $gt: moment().subtract(1, 'day').toDate()
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            tracked_players: function(cb) {
-                db.players.count({
-                    track: 1
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            untracked_players: function(cb) {
-                db.players.count({
-                    track: 0
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            matches_last_day: function(cb) {
-                db.matches.count({
-                    start_time: {
-                        $gt: Number(moment().subtract(1, 'day').format('X'))
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            unavailable_last_week: function(cb) {
-                db.matches.count({
-                    start_time: {
-                        $gt: Number(moment().subtract(7, 'day').format('X'))
-                    },
-                    parse_status: 1
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            queued_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 0
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            unavailable_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 1
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            parsed_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 2
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            parsed_matches_last_day: function(cb) {
-                db.matches.count({
-                    parse_status: 2,
-                    start_time: {
-                        $gt: Number(moment().subtract(1, 'day').format('X'))
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            eligible_full_history: function(cb) {
-                db.players.count(utility.fullHistoryEligible(), function(err, res) {
-                    cb(err, res);
-                });
-            },
-            obtained_full_history: function(cb) {
-                db.players.count({
-                    full_history_time: {
-                        $exists: true
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-        },
-        function(err, results) {
-            if (err) {
-                return next(err);
-            }
-            res.render("status", {
-                results: results
-            });
-        });
+app.route('/status').get(function(req, res) {
+    res.render("status");
 });
 app.route('/about').get(function(req, res, next) {
     res.render("about");
@@ -582,7 +415,6 @@ app.use(function(req, res, next) {
     }
 });
 app.use(function(err, req, res, next) {
-    //logger.info(err);
     if (err && process.env.NODE_ENV !== "development") {
         return res.status(500).render('500.jade', {
             error: true

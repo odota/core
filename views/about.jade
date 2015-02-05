@@ -29,13 +29,13 @@ block content
   p To keep the load reasonable, we stop tracking players' matches after a period of inactivity.  Each visit to the YASP site while signed in through Steam resets this period.
   
   h3 Why don't you have my old matches?
-  p YASP only starts tracking your matches from when you signed in.  We will get full match histories for contributors and veteran active YASP users.
+  p YASP only starts tracking your matches from when you signed in.  We will get full match histories for contributors and veteran YASP users.
   
   h3 Why am I still missing some matches after getting my full history?
-  p The Valve API limits results to a maximum of 500.  We can get 500 games per hero per player, but if you have more than 500 games on a hero, we won't be able to get more than 500.  Sorry.
+  p The Valve API limits results to a maximum of 500.  We can get 500 games per hero per player, but if you have more than 500 games on a hero, we won't be able to get the rest.  Sorry.
   
-  h3 Why can't you parse my old matches?
-  p Valve only stores replays for 7 days, although if you have the replay you can upload it.
+  h3 Why do a lot of players in my matches only show up as numbers?
+  p To save API calls, we don't get player display names immediately after matches are added.  We'll occasionally go through and get player names.  The number displayed is their 32-bit Steam account ID.
   
   h3 Why can't you parse uploaded private lobby replays?
   p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we can't parse these replays.

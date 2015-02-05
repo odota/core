@@ -4,7 +4,6 @@ html
     title= title || "YASP"
     meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
     meta(charset='utf-8')
-    meta(name="viewport", content="initial-scale=1")
     //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='114x114', href='/public/images/apple-touch-icon-114x114.png')
@@ -24,12 +23,12 @@ html
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
-    
     //- Stylesheets
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
     link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.min.css')
+    link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
     style
       include ../public/css/yasp.css
     if (user && user.dark_theme)
