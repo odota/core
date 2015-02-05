@@ -61,7 +61,4 @@ block playercontent
             - var a = player.against[hero.id]
             td #{a ? a.games : 0}
             td #{a ? a.win : 0}
-            td #{a ? (100*a.win/a.games).toFixed(2) : 0.00}%  
-  .row
-    .col-md-12
-      include ads/leaderboard_3
+            td #{a ? (100*a.win/a.games).toFixed(2) : 0.00}%

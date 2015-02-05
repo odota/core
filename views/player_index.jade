@@ -63,8 +63,6 @@ block playercontent
       #chart-duration
       h3 GPMs
       #chart-gpms
-  .row
-    include ads/leaderboard_3
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);
