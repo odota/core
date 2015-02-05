@@ -8,7 +8,6 @@ var async = require('async');
 var insertMatch = utility.insertMatch;
 var jobs = utility.jobs;
 var kue = utility.kue;
-var moment = require('moment');
 var fullhistory = require('./fullhistory');
 
 console.log("[WORKER] starting worker");

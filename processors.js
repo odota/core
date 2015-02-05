@@ -65,7 +65,7 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        getData("http://retriever?match_id="+ job.data.payload.match_id, function(err, body) {
+        getData("http://retriever?match_id=" + job.data.payload.match_id, function(err, body) {
             if (err || !body || !body.match) {
                 return cb("invalid body or error");
             }
@@ -97,36 +97,32 @@ function streamReplay(job, cb) {
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    var parser = utility.runParse(function(err, output) {
-        if (err) {
-            return cb(err);
-        }
-        db.matches.update({
-            match_id: match_id
-        }, {
-            $set: {
-                parsed_data: output,
-                parse_status: 2
-            }
-        }, function(err) {
-            cb(err, job);
-        });
-    });
     var d = domain.create();
-    if (job.data.fileName) {
-        d.on('error', function(err) {
-            return cb(err);
+    d.on('error', function(err) {
+        logger.info(err);
+        cb(err);
+    });
+    d.run(function() {
+        var parser = utility.runParse(function(err, output) {
+            if (err) {
+                return cb(err);
+            }
+            db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parsed_data: output,
+                    parse_status: 2
+                }
+            }, function(err) {
+                cb(err, job);
+            });
         });
-        d.run(function() {
+        if (job.data.fileName) {
             fs.createReadStream(job.data.fileName).pipe(parser.stdin);
-        });
-    }
-    else {
-        var bz = spawn("bzcat");
-        d.on('error', function(err) {
-            cb(err);
-        });
-        d.run(function() {
+        }
+        else {
+            var bz = spawn("bzcat");
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null,
@@ -134,8 +130,8 @@ function streamReplay(job, cb) {
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
-        });
-    }
+        }
+    });
 }
 
 function processApi(job, cb) {
