@@ -111,7 +111,7 @@ setInterval(function() {
                 });
             },
             eligible_full_history: function(cb) {
-                db.players.count(utility.fullHistoryEligible(), function(err, res) {
+                db.players.count(utility.selector("fullhistory"), function(err, res) {
                     cb(err, res);
                 });
             },

@@ -175,17 +175,16 @@ function fillPlayerNames(players, cb) {
 }
 
 function computeStatistics(player, cb) {
-    var playerMatches = player.matches;
     var counts = {};
     var against = {};
     var together = {};
-    var i = 0;
     db.matches.find({
         'players.account_id': player.account_id
     }, {
         fields: {
             players: 1,
-            match_id: 1
+            match_id: 1,
+            radiant_win: 1
         }
     }).each(function(match) {
         var playerRadiant = player.radiantMap[match.match_id];
@@ -203,7 +202,7 @@ function computeStatistics(player, cb) {
                     };
                 }
                 counts[tm.account_id].games += 1;
-                playerMatches[i].player_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                playerRadiant === match.radiant_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
                 //count teammate heroes
                 if (!together[tm_hero]) {
                     together[tm_hero] = {
@@ -213,7 +212,7 @@ function computeStatistics(player, cb) {
                     };
                 }
                 together[tm_hero].games += 1;
-                playerMatches[i].player_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
+                playerRadiant === match.radiant_win ? together[tm_hero].win += 1 : together[tm_hero].lose += 1;
             }
             else {
                 //count enemy heroes
@@ -225,10 +224,9 @@ function computeStatistics(player, cb) {
                     };
                 }
                 against[tm_hero].games += 1;
-                playerMatches[i].player_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
+                playerRadiant === match.radiant_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
             }
         }
-        i += 1;
     }).error(function(err) {
         return cb(err);
     }).success(function() {
@@ -245,7 +243,9 @@ function computeStatistics(player, cb) {
     });
 }
 
-function fillPlayerMatches(player, constants, cb) {
+function fillPlayerMatches(player, constants, matchups, cb) {
+    //todo filter insignificant games by default
+
     var account_id = player.account_id;
     db.matches.find({
         'players.account_id': account_id
@@ -267,7 +267,6 @@ function fillPlayerMatches(player, constants, cb) {
         if (err) {
             cb(err);
         }
-        player.matches = matches;
         player.win = 0;
         player.lose = 0;
         player.games = 0;
@@ -294,7 +293,7 @@ function fillPlayerMatches(player, constants, cb) {
             arr2[gpm] += 1;
             var p = matches[i].players[0];
             player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
-            matches[i].player_win = (player.radiantMap[matches[i].match_id] === matches[i].radiant_win); //did the player win?
+            matches[i].player_win = (utility.isRadiant(p) === matches[i].radiant_win); //did the player win?
             player.games += 1;
             matches[i].player_win ? player.win += 1 : player.lose += 1;
             if (heroes[p.hero_id]) {
@@ -305,13 +304,21 @@ function fillPlayerMatches(player, constants, cb) {
         for (var id in heroes) {
             player.heroes.push(heroes[id]);
         }
-        player.heroes.sort(function(a,b){
-            return b.games-a.games;
+        player.heroes.sort(function(a, b) {
+            return b.games - a.games;
         });
+        player.matches = matches;
         player.histogramData.durations = arr;
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = calheatmap;
-        cb(err);
+        if (matchups) {
+            computeStatistics(player, function(err) {
+                cb(err);
+            });
+        }
+        else {
+            cb(err);
+        }
     });
 }
 

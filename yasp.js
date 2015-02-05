@@ -3,6 +3,7 @@ var multiparty = require('multiparty');
 var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var api_key = process.env.STEAM_API_KEY.split(",")[0];
 var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
@@ -56,7 +57,7 @@ var playerPages = {
         template: "player_heroes",
         name: "Heroes"
     },
-    stats: {
+    matchups: {
         template: "player_matchups",
         name: "Matchups"
     }
@@ -78,7 +79,7 @@ passport.deserializeUser(function(id, done) {
 passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
-    apiKey: process.env.STEAM_API_KEY
+    apiKey: api_key
 }, utility.initializeUser));
 var basic = auth.basic({
     realm: "Kue"
@@ -174,7 +175,6 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
 app.route('/api/matches').get(function(req, res, next) {
-    console.log(req.query);
     var draw = Number(req.query.draw) || 0;
     var limit = Number(req.query.length) || 10;
     var start = Number(req.query.start) || 0;
@@ -184,10 +184,7 @@ app.route('/api/matches').get(function(req, res, next) {
     }
     var select = req.query.select || {};
     var sort = utility.makeSort(req.query.order, req.query.columns) || {};
-    var project = req.query.project || null;
-    //todo make player pages use this
-    //todo filter insignificant games?
-    //todo support custom querying
+    var project = req.query.project || {};
     db.matches.count(select, function(err, count) {
         if (err) {
             return next(err);
@@ -243,27 +240,16 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerMatches(player, app.locals.constants, function(err) {
+            queries.fillPlayerMatches(player, app.locals.constants, info === "matchups", function(err) {
                 if (err) {
                     return next(err);
                 }
-                var renderOpts = {
+                res.render(playerPages[info].template, {
                     route: info,
                     player: player,
                     tabs: playerPages,
                     title: (player.personaname || player.account_id) + " - YASP"
-                };
-                if (info === "stats") {
-                    queries.computeStatistics(player, function(err) {
-                        if (err) {
-                            return next(err);
-                        }
-                        res.render(playerPages[info].template, renderOpts);
-                    });
-                }
-                else {
-                    res.render(playerPages[info].template, renderOpts);
-                }
+                });
             });
         }
     });
