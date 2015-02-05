@@ -9,48 +9,40 @@ var getData = utility.getData;
 var request = require('request');
 var insertPlayer = utility.insertPlayer;
 var insertMatch = utility.insertMatch;
-var queueReq = utility.queueReq;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
 
 function processParse(job, cb) {
+    var t1 = new Date();
     var match_id = job.data.payload.match_id;
+    var noRetry = job.toJSON().attempts.remaining <= 1;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
-        if (err) {
-            logger.info(err);
-            if (err === "replay expired" || (job2 && job2.attempts.remaining <= 0)) {
-                db.matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        parse_status: 1
-                    }
-                }, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                return cb(err);
-            }
+        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
+        if (err === "replay expired" || noRetry) {
+            logger.info("error %s, not retrying", err);
+            return db.matches.update({
+                match_id: match_id
+            }, {
+                $set: {
+                    parse_status: 1
+                }
+            }, function(err2) {
+                //nullify error if replay expired
+                err = err === "replay expired" ? null : err;
+                cb(err || err2);
+            });
+        }
+        else if (err) {
+            logger.info("error %s, retrying", err);
+            return cb(err);
         }
         else {
-            //todo what if the match was a private lobby?  does it have an id?  
-            //todo what about local lobby?
-            //todo data won't get inserted if uploaded replay without match id, or private match without api data
-            if (job2.data.payload.match_id) {
-                //queue job for api to make sure it's in db
-                queueReq("api_details", job2.data.payload, function(err, apijob) {
-                    cb(err);
-                });
-            }
-            else {
-                return cb(err);
-            }
+            return cb(err);
         }
     });
 }
@@ -106,37 +98,14 @@ function getReplayUrl(job, cb) {
 }
 
 function streamReplay(job, cb) {
-    var t1 = new Date();
     //var fileName = replay_dir + match_id + ".dem";
     //var archiveName = fileName + ".bz2";
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = "";
-    var parser = spawn("java", ["-jar",
-        parser_file
-    ]);
-    parser.stdout.on('data', function(data) {
-        output += data;
-    });
-    parser.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
-        logger.info("[PARSER] parse time: %s", (new Date() - t1) / 1000);
-        if (job.data.fileName) {
-            fs.unlinkSync(job.data.fileName);
-        }
-        if (code) {
-            return cb(code);
-        }
-        try {
-            output = JSON.parse(output);
-        }
-        catch (err) {
+    var parser = utility.runParse(function(err, output) {
+        if (err) {
             return cb(err);
         }
-        match_id = match_id || output.match_id;
-        job.data.payload.parsed_data = output;
-        //todo get api data out of replay in case of private
         db.matches.update({
             match_id: match_id
         }, {
@@ -148,22 +117,36 @@ function streamReplay(job, cb) {
             cb(err, job);
         });
     });
+    var d = domain.create();
     if (job.data.fileName) {
-        fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+        d.on('error', function(err) {
+            parser.kill();
+            return cb(err);
+        });
+        d.run(function() {
+            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+        });
     }
     else {
         var bz = spawn("bzcat");
-        var d = domain.create();
         d.on('error', function(err) {
             bz.kill();
             parser.kill();
-            logger.info(err);
             return cb(err);
         });
         d.run(function() {
             var downStream = request.get({
                 url: job.data.url,
-                encoding: null
+                encoding: null,
+                timeout: 120000
+            });
+            downStream.on('response', function(resp) {
+                if (resp.statusCode !== 200) {
+                    throw "download error";
+                }
+            });
+            downStream.on('error', function(err) {
+                throw err;
             });
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);

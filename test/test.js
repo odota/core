@@ -8,6 +8,7 @@ process.env.RETRIEVER_HOST = "http://localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
 process.env.DELETE_REPLAYS = true;
 process.env.ROOT_URL = "http://localhost:5000";
+process.env.NODE_ENV = "test";
 
 var async = require('async');
 var utility = require('../utility');
@@ -25,7 +26,7 @@ var unparsed = require('../unparsed');
 var updatenames = require('../updatenames');
 var fullhistory = require('../fullhistory');
 var constants = require('../constants');
-var wait = 10000;
+var wait = 30000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -45,6 +46,7 @@ nock(process.env.RETRIEVER_HOST)
             replaySalt: 1
         }
     });
+
 //fake replay response
 nock('http://replay1.valve.net')
     .filteringPath(function(path) {
@@ -64,6 +66,7 @@ nock('http://api.steampowered.com')
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
     .reply(500, {})
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .times(2)
     .reply(200, testdata.details_api)
     .get('/ISteamUser/GetPlayerSummaries/v0002/')
     .reply(200, testdata.summaries_api)
@@ -76,6 +79,7 @@ nock('http://api.steampowered.com')
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
     .reply(200, testdata.history_api)
     .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .times(2)
     .reply(200, testdata.history_api2)
     .get('/IEconDOTA2_570/GetHeroes/v0001/')
     .reply(200, testdata.heroes_api);
@@ -112,6 +116,7 @@ before(function(done) {
                 console.log("loading players");
                 //set visited date on first player
                 testdata.players[0].last_visited = new Date();
+                testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
                 testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
@@ -123,8 +128,8 @@ before(function(done) {
             },
             function(cb) {
                 console.log("loading matches");
-                async.mapSeries(testdata.matches, function(p, cb) {
-                    db.matches.insert(p, function(err) {
+                async.mapSeries(testdata.matches, function(m, cb) {
+                    db.matches.insert(m, function(err) {
                         cb(err);
                     });
                 }, function(err) {
@@ -164,7 +169,8 @@ before(function(done) {
             },
             function(cb) {
                 console.log("starting web");
-                app.listen(process.env.PORT);
+                var server = app.listen(process.env.PORT);
+                var io = require('socket.io')(server);
                 cb();
             }
         ],
@@ -195,6 +201,32 @@ describe("services", function() {
     });
 });
 
+describe("worker", function() {
+    this.timeout(wait);
+    it('process details request', function(done) {
+        utility.queueReq("api_details", {
+            match_id: 870061127
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('process summaries request', function(done) {
+        utility.queueReq("api_summaries", {
+            players: [{
+                account_id: 88367253
+            }]
+        }, function(err, job) {
+            assert(job);
+            processors.processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
+});
+
 describe("web", function() {
     this.timeout(wait);
     describe("/", function() {
@@ -222,18 +254,6 @@ describe("web", function() {
         });
         it('should 200', function(done) {
             browser.assert.status(200);
-            done();
-        });
-    });
-    describe("/upload (not logged in)", function() {
-        before(function(done) {
-            browser.visit('/upload');
-            browser.wait(wait, function(err) {
-                done(err);
-            });
-        });
-        it('should have a login message', function(done) {
-            browser.assert.text('.alert', /log in/);
             done();
         });
     });
@@ -324,7 +344,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.*1-1.*/);
+            browser.assert.text('h2', /.-./);
             done();
         });
     });
@@ -340,7 +360,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.*0-0.*/);
+            browser.assert.text('h2', /.-./);
             done();
         });
     });
@@ -360,9 +380,9 @@ describe("web", function() {
             done();
         });
     });
-    describe("/players/:valid/stats", function() {
+    describe("/players/:valid/matchups", function() {
         before(function(done) {
-            browser.visit('/players/88367253/stats');
+            browser.visit('/players/88367253/matchups');
             browser.wait(wait, function(err) {
                 done(err);
             });
@@ -429,8 +449,24 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should say Purchases', function(done) {
-            browser.assert.text('body', /Purchases/);
+        it('should say Roshan', function(done) {
+            browser.assert.text('body', /Roshan/);
+            done();
+        });
+    });
+    describe("/matches/:valid/timelines (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/timelines');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Hero Kills', function(done) {
+            browser.assert.text('body', /Hero Kills/);
             done();
         });
     });
@@ -515,8 +551,7 @@ describe("web", function() {
             done();
         });
     });
-    /*
-    describe("/upload (logged in)", function() {
+    describe("GET /upload", function() {
         before(function(done) {
             browser.visit('/upload');
             browser.wait(wait, function(err) {
@@ -534,16 +569,15 @@ describe("web", function() {
                 replay: fs.createReadStream(__dirname + '/1193091757.dem')
             };
             request.post({
-                url: process.env.ROOT_URL+'/upload',
+                url: process.env.ROOT_URL + '/upload',
                 formData: formData
             }, function(err, resp, body) {
+                assert(body);
                 done(err);
             });
         });
     });
-    */
     //todo test passport-steam login function
-    //todo test upload
     describe("/logout", function() {
         it('should 200', function(done) {
             request.get(process.env.ROOT_URL + '/logout', function(err, resp, body) {
@@ -567,12 +601,6 @@ describe("web", function() {
     });
     //todo use supertest for api endpoints
     describe("/api/matches", function() {
-        it('should 200', function(done) {
-            request.get(process.env.ROOT_URL + '/api/matches', function(err, resp, body) {
-                assert(resp.statusCode === 200);
-                done(err);
-            });
-        });
         it('should return JSON', function(done) {
             request.get(process.env.ROOT_URL + '/api/matches?draw=2&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
                 assert(resp.statusCode === 200);
@@ -633,7 +661,7 @@ describe("tasks", function() {
     this.timeout(wait);
     it('unparsed matches', function(done) {
         unparsed(function(err, num) {
-            assert.equal(num, 1);
+            assert.equal(num, 2);
             done(err);
         });
     });
@@ -654,30 +682,15 @@ describe("tasks", function() {
     });
 });
 
-describe("backend", function() {
-    this.timeout(wait);
-    it('process details request', function(done) {
-        utility.queueReq("api_details", {
-            match_id: 870061127
-        }, function(err, job) {
-            assert(job);
-            processors.processApi(job, function(err) {
-                done(err);
-            })
-        });
-    });
-    it('process summaries request', function(done) {
-        utility.queueReq("api_summaries", {
-            players: [{
-                account_id: 88367253
-            }]
-        }, function(err, job) {
-            assert(job);
-            console.log(job.data.url);
-            processors.processApi(job, function(err) {
+describe("unit test", function() {
+    it('initialize user', function(done) {
+        utility.initializeUser("/76561198048632981", {
+                _json: {}
+            },
+            function(err, user) {
+                assert(user);
                 done(err);
             });
-        });
     });
 });
 
@@ -703,7 +716,6 @@ describe("parser", function() {
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
-
             processors.processParse(job, function(err) {
                 done(err);
             });

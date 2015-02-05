@@ -3,13 +3,13 @@ block content
   h1 Replay Uploads
   .row
     .col-md-8
-      p Upload your replays here for faster results. <strong>We currently only support public lobbies.</strong>
-  if files
-    .alert.alert-success(role="alert") File #{files.originalname} received! Size: #{files.size} bytes
+      p Upload your replays here. <strong>We currently only support public lobbies.</strong>
+  if error
+    .alert.alert-danger(role="alert")=error
   form#upload(enctype="multipart/form-data", action="/upload", method="post")
     .form-group
-      label Recaptcha
-      != recaptcha_form
+      label Recaptcha		
+      != recaptcha_form		
     .form-group
       label Replay Upload
       input(type="file" name="replay")
@@ -17,3 +17,23 @@ block content
   include ads/leaderboard_2
   
 block footer_assets
+  script.
+    $("#button").click(function(event) {
+        event.preventDefault();
+        $.post(
+            "/verify_recaptcha", {
+                recaptcha_challenge_field: $('#recaptcha_challenge_field').val(),
+                recaptcha_response_field: $('#recaptcha_response_field').val()
+            },
+            function(data) {
+                if (data.verified) {
+                    $("#upload").submit();
+                }
+                else {
+                    $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please try again.</div");
+                    $(".failure").fadeOut(3000);
+                    Recaptcha.reload();
+                }
+            }
+        );
+    });

@@ -10,12 +10,7 @@ module.exports = function getFullMatchHistory(done, heroes) {
     var constants = require('./constants.json');
     var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
-
-    //only get full history if the player is tracked and doesn't have it already, do in queue order
-    db.players.find({
-        full_history: 0,
-        track: 1
-    }, {
+    db.players.find(utility.selector("fullhistory"), {
         limit: 1,
         sort: {
             full_history_time: 1
@@ -48,13 +43,12 @@ module.exports = function getFullMatchHistory(done, heroes) {
                     return done(err);
                 }
                 //added all the matches to kue
-                //update full_history field
                 async.mapSeries(players, function(player, cb) {
                     db.players.update({
                         account_id: player.account_id
                     }, {
                         $set: {
-                            full_history: 2
+                            full_history_time: new Date()
                         }
                     }, function(err) {
                         console.log("got full match history for %s", player.account_id);

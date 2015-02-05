@@ -1,0 +1,19 @@
+extend player  
+block playercontent  
+  h3 Heroes
+  table.table#heroes
+    thead
+      tr
+        th Hero
+        th Hero Name
+        th Games
+        th Winrate
+    each h in player.heroes
+      - var hero = constants.heroes[h.hero_id]
+      tr
+        td.hero
+          img(src=hero.img, title=hero.localized_name)
+        td 
+          =hero.localized_name
+        td= h.games
+        td #{(100*h.win/h.games).toFixed(2) || 0.00}%
