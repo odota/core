@@ -5,6 +5,7 @@ var BigNumber = require('big-number').n,
     moment = require('moment'),
     parseRedisUrl = require('parse-redis-url')(redis);
 var spawn = require("child_process").spawn;
+var api_keys = process.env.STEAM_API_KEY.split(",");
 
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
 //set keys for kue
@@ -12,7 +13,14 @@ options.auth = options.password;
 options.db = options.database;
 var kue = require('kue');
 var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
-db.get('matches').index('match_id', {
+db.get('matches').index({
+    'match_id': -1
+}, {
+    unique: true
+});
+db.get('matches').index({
+    'match_seq_num': -1
+}, {
     unique: true
 });
 db.get('matches').index('players.account_id');
@@ -53,15 +61,6 @@ function convert64to32(id) {
  */
 function convert32to64(id) {
     return new BigNumber('76561197960265728').plus(id);
-}
-
-/*
- * Makes search from a datatables call
- */
-function makeSearch(search, columns) {
-    //todo operate on passed data to filter
-    var s = {};
-    return s;
 }
 
 /*
@@ -119,16 +118,18 @@ function checkDuplicate(type, payload, cb) {
 
 function generateJob(type, payload) {
     var api_url = "http://api.steampowered.com";
+    var api_key = api_keys[Math.floor(Math.random() * api_keys.length)];
+
     if (type === "api_details") {
         return {
-            url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + process.env.STEAM_API_KEY + "&match_id=" + payload.match_id,
+            url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
             title: [type, payload.match_id].join(),
             type: "api",
             payload: payload
         };
     }
     if (type === "api_history") {
-        var url = api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + process.env.STEAM_API_KEY;
+        var url = api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key;
         url += payload.account_id ? "&account_id=" + payload.account_id : "";
         url += payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "";
         url += payload.hero_id ? "&hero_id=" + payload.hero_id : "";
@@ -146,7 +147,7 @@ function generateJob(type, payload) {
         });
         payload.query = steamids.join();
         return {
-            url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + process.env.STEAM_API_KEY + "&steamids=" + payload.query,
+            url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.query,
             title: [type, payload.summaries_id].join(),
             type: "api",
             payload: payload
@@ -154,7 +155,7 @@ function generateJob(type, payload) {
     }
     if (type === "api_sequence") {
         return {
-            url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + process.env.STEAM_API_KEY + "&start_at_match_seq_num=" + payload.seq_num,
+            url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.seq_num,
             title: [type, payload.seq_num].join(),
             type: "api",
             payload: payload
@@ -162,7 +163,7 @@ function generateJob(type, payload) {
     }
     if (type === "api_heroes") {
         return {
-            url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + process.env.STEAM_API_KEY + "&language=" + payload.language,
+            url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
             title: [type, payload.language].join(),
             type: "api",
             payload: payload
@@ -189,7 +190,7 @@ function getData(url, cb) {
             request({
                 url: target,
                 json: true,
-                timeout: 30000
+                timeout: 15000
             }, function(err, res, body) {
                 if (err || res.statusCode !== 200 || !body) {
                     logger.info("retrying: %s", target);
@@ -212,7 +213,7 @@ function getData(url, cb) {
                 //generic valid response
                 return cb(null, body);
             });
-        }, 800);
+        }, 1000 / api_keys.length);
     }
     /*
         function getS3Url(match_id, cb) {
@@ -280,13 +281,22 @@ function insertPlayer(player, cb) {
     });
 }
 
-function fullHistoryEligible() {
-    return {
-        track: 1,
-        join_date: {
-            $lt: moment().subtract(10, 'day').toDate()
+function selector(type) {
+    var types = {
+        "untrack": {
+            track: 1,
+            join_date: {
+                $lt: moment().subtract(10, 'day').toDate()
+            }
+        },
+        "fullhistory": {
+            track: 1,
+            last_visited: {
+                $lt: moment().subtract(5, 'days').toDate()
+            }
         }
     };
+    return types[type];
 }
 
 function runParse(cb) {
@@ -348,9 +358,8 @@ module.exports = {
     generateJob: generateJob,
     getData: getData,
     queueReq: queueReq,
-    makeSearch: makeSearch,
     makeSort: makeSort,
-    fullHistoryEligible: fullHistoryEligible,
+    selector: selector,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
     runParse: runParse,

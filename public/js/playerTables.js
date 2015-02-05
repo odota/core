@@ -1,4 +1,9 @@
 var $ = jQuery = require('jquery');
+var moment = require('moment');
+var constants = require('../../sources.json');
+var modes = constants.modes;
+var regions = constants.regions;
+var parse_status = constants.parse_status;
 module.exports = function playerTables() {
     $(document).on('ready', function() {
         $('#teammates').dataTable({
@@ -42,7 +47,6 @@ module.exports = function playerTables() {
                 visible: false
             }]
         });
-        //todo serverside filtering
         $('#matches').dataTable({
             "order": [
                 [0, "desc"]
@@ -56,4 +60,4 @@ module.exports = function playerTables() {
             }]
         });
     });
-}
+};
