@@ -11,12 +11,16 @@ var kue = utility.kue;
 var fullhistory = require('./fullhistory');
 
 console.log("[WORKER] starting worker");
-clearActiveJobs();
-startScan();
-jobs.promote();
-jobs.process('api', processors.processApi);
-setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
-setInterval(fullhistory, 60 * 60 * 1000, function() {});
+clearActiveJobs(function(err) {
+    if (err) {
+        logger.info(err);
+    }
+    startScan();
+    jobs.promote();
+    jobs.process('api', processors.processApi);
+    setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
+    setInterval(fullhistory, 60 * 60 * 1000, function() {});
+});
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -118,9 +122,9 @@ function scanApi(seq_num) {
             logger.info("[API] seq_num: %s, found %s matches, %s to add", seq_num, resp.length, filtered.length);
             async.mapSeries(filtered, insertMatch, function() {
                 //wait 100ms for each match less than 100
-                var delay = (100-resp.length)*100;
-                setTimeout(function(){
-                   scanApi(new_seq_num); 
+                var delay = (100 - resp.length) * 100;
+                setTimeout(function() {
+                    scanApi(new_seq_num);
                 }, delay);
             });
         });
