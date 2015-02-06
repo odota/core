@@ -73,12 +73,14 @@ function convert32to64(id) {
  */
 function makeSort(order, columns) {
     var sort = {};
-    order.forEach(function(s) {
-        var c = columns[Number(s.column)];
-        if (c) {
-            sort[c.data] = s.dir === 'desc' ? -1 : 1;
-        }
-    });
+    if (order && columns) {
+        order.forEach(function(s) {
+            var c = columns[Number(s.column)];
+            if (c) {
+                sort[c.data] = s.dir === 'desc' ? -1 : 1;
+            }
+        });
+    }
     return sort;
 }
 
@@ -301,7 +303,7 @@ function selector(type) {
         "untrack": {
             track: 1,
             last_visited: {
-                $lt: moment().subtract(5, 'day').toDate()
+                $lt: moment().subtract(3, 'day').toDate()
             }
         },
         "fullhistory": {

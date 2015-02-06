@@ -50,21 +50,11 @@ module.exports = function playerTables() {
             }],
             "paging": false
         });
-        $('#matches').dataTable({
-            "order": [
-                [0, "desc"]
-            ],
-            "columnDefs": [{
-                "targets": [1],
-                "orderData": [2]
-            }, {
-                "targets": [2],
-                visible: false
-            }]
-        });
-        /*
-        //todo support querying on server or client side?
-        //returns all matches by default, allow filtering
+        //todo support querying on server, paging/sorting on client side
+        //todo returns all matches of a player by default, allow filtering
+        //todo re-activate tooltips on draw
+        //todo limit the size of results api will return?
+        //todo allow sorting by hero name
         $('#matches').dataTable({
             "order": [
                 [0, "desc"]
@@ -84,6 +74,10 @@ module.exports = function playerTables() {
                     "select": {
                         "players.account_id": account_id
                     }
+                },
+                "dataSrc":function(json){
+                    console.log(json);
+                    return json.data;
                 }
             },
             "rowCallback": function(row, data) {
@@ -91,8 +85,6 @@ module.exports = function playerTables() {
                 $(row).addClass(cl);
             },
             serverSide: true,
-            processing: true,
-            searching: false,
             stateSave: true,
             columns: [{
                 data: 'match_id',
@@ -104,18 +96,16 @@ module.exports = function playerTables() {
                 data: 'players[0].hero_id',
                 title: 'Hero',
                 render: function(data, type, row, meta) {
-                    return heroes[data] ? "<img src='"+heroes[data].img+"' title='"+heroes[data].localized_name+"'/>" : data;
+                    return heroes[data] ? "<img src='" + heroes[data].img + "' title='" + heroes[data].localized_name + "'/>" : data;
                 }
-            }, 
-            {
+            }, {
                 data: 'radiant_win',
                 title: 'Result',
                 render: function(data, type, row, meta) {
-                    row.player_win = data === row.players[0].player_slot<64;
-                    return row.player_win ? "Won": "Lost";
+                    row.player_win = data === row.players[0].player_slot < 64;
+                    return row.player_win ? "Won" : "Lost";
                 }
-            },
-            {
+            }, {
                 data: 'game_mode',
                 title: 'Game Mode',
                 render: function(data, type, row, meta) {
@@ -201,6 +191,5 @@ module.exports = function playerTables() {
                 }
             }]
         });
-        */
     });
 };
