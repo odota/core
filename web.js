@@ -46,13 +46,6 @@ setInterval(function() {
                     cb(err, res);
                 });
             },
-            untracked_players: function(cb) {
-                db.players.count({
-                    track: 0
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
             matches_last_day: function(cb) {
                 db.matches.count({
                     start_time: {
@@ -67,20 +60,6 @@ setInterval(function() {
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     },
-                    parse_status: 1
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            queued_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 0
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            unavailable_matches: function(cb) {
-                db.matches.count({
                     parse_status: 1
                 }, function(err, res) {
                     cb(err, res);
