@@ -175,15 +175,17 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
 app.route('/api/matches').get(function(req, res, next) {
-    var draw = Number(req.query.draw) || 0;
-    var limit = Number(req.query.length) || 10;
-    var start = Number(req.query.start) || 0;
+    var draw = Number(req.query.draw);
+    var limit = Number(req.query.length);
+    //if limit is 0 or too big, reset it
+    limit = (!limit || limit>100) ? 100 : limit;
+    var start = Number(req.query.start);
     for (var prop in req.query.select) {
         //cast strings back to numbers
         req.query.select[prop] = Number(req.query.select[prop]);
     }
     var select = req.query.select || {};
-    var sort = utility.makeSort(req.query.order, req.query.columns) || {};
+    var sort = utility.makeSort(req.query.order, req.query.columns);
     var project = req.query.project || {};
     db.matches.count(select, function(err, count) {
         if (err) {

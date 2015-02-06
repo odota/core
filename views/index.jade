@@ -20,6 +20,8 @@ block content
         | Welcome back, #{user.personaname}!
    .row
     .col-md-4
+     p Last Full History:
+       span= user.full_history_time
      h3 Preferences
      .checkbox
        label
