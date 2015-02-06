@@ -1,4 +1,4 @@
-var ids = require("./ids.json");
+var ids = require("../test/ids.json");
 var utility = require("../utility");
 var db = utility.db;
 
