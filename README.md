@@ -12,16 +12,8 @@ About
 * Provides replay-parsed stats for free!  
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
 
-Dependencies
-====
-* Node.js
-* Java 1.7
-* Maven
-* Redis
-* MongoDB
-* bzip2
-
 Quickstart
 ====
+* Install dependencies: `sudo bash init.sh`
 * Create .env file, add required config values: `cp .env_example .env`
 * Launch in dev mode: `npm start`
