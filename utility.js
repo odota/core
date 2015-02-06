@@ -310,7 +310,7 @@ function selector(type) {
                 $lt: moment().subtract(10, 'day').toDate()
             },
             last_visited: {
-                $lt: moment().subtract(1, 'day').toDate()
+                $gt: moment().subtract(1, 'day').toDate()
             }
         }
     };

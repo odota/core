@@ -99,7 +99,6 @@ function streamReplay(job, cb) {
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
     var d = domain.create();
     d.on('error', function(err) {
-        logger.info(err);
         cb(err);
     });
     d.run(function() {
@@ -130,7 +129,8 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    cb("download error");
+                    parser = null;
+                    throw "download error";
                 }
             });
             downStream.pipe(bz.stdin);
