@@ -15,15 +15,15 @@ var domain = require('domain');
 function processParse(job, cb) {
     var t1 = new Date();
     var match_id = job.data.payload.match_id;
-    var retries = job.toJSON().attempts.remaining;
-    var noRetry = retries <= 1;
+    var attempts = job.toJSON().attempts.remaining;
+    var noRetry = attempts <= 1;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         streamReplay,
     ], function(err, job2) {
         logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
-        if (err === "replay expired" || noRetry) {
+        if (err === "replay expired" || (err && noRetry)) {
             logger.info("match_id %s, error %s, not retrying", match_id, err);
             return db.matches.update({
                 match_id: match_id
@@ -38,7 +38,7 @@ function processParse(job, cb) {
             });
         }
         else if (err) {
-            logger.info("match_id %s, error %s, retries %s", match_id, err, retries);
+            logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
             return cb(err);
         }
         else {
