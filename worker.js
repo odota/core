@@ -11,10 +11,10 @@ var kue = utility.kue;
 var fullhistory = require('./fullhistory');
 
 console.log("[WORKER] starting worker");
+clearActiveJobs();
 startScan();
 jobs.promote();
 jobs.process('api', processors.processApi);
-setInterval(clearActiveJobs, 60 * 1000, function() {});
 setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
 setInterval(fullhistory, 60 * 60 * 1000, function() {});
 
@@ -28,7 +28,7 @@ function clearActiveJobs(cb) {
                 if (err) {
                     return cb(err);
                 }
-                if ((new Date() - job.updated_at) > 60 * 3 * 1000) {
+                if ((new Date() - job.updated_at) > 5 * 1000) {
                     console.log("unstuck job %s", id);
                     job.inactive();
                 }
