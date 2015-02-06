@@ -11,7 +11,7 @@ var kue = utility.kue;
 var fullhistory = require('./fullhistory');
 
 console.log("[WORKER] starting worker");
-clearActiveJobs(function(err) {
+async.series([clearActiveJobs], function(err) {
     if (err) {
         logger.info(err);
     }
