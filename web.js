@@ -55,16 +55,6 @@ setInterval(function() {
                     cb(err, res);
                 });
             },
-            unavailable_last_day: function(cb) {
-                db.matches.count({
-                    start_time: {
-                        $gt: Number(moment().subtract(1, 'day').format('X'))
-                    },
-                    parse_status: 1
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
             uploaded_matches: function(cb) {
                 db.matches.count({
                     upload: true
@@ -75,6 +65,13 @@ setInterval(function() {
             parsed_matches: function(cb) {
                 db.matches.count({
                     parse_status: 2
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
+            queued_matches: function(cb) {
+                db.matches.count({
+                    parse_status: 0
                 }, function(err, res) {
                     cb(err, res);
                 });
