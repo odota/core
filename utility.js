@@ -300,14 +300,17 @@ function selector(type) {
     var types = {
         "untrack": {
             track: 1,
-            join_date: {
-                $lt: moment().subtract(10, 'day').toDate()
+            last_visited: {
+                $lt: moment().subtract(5, 'day').toDate()
             }
         },
         "fullhistory": {
             track: 1,
+            join_date: {
+                $lt: moment().subtract(10, 'day').toDate()
+            },
             last_visited: {
-                $lt: moment().subtract(5, 'days').toDate()
+                $lt: moment().subtract(1, 'day').toDate()
             }
         }
     };
