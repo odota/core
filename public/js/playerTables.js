@@ -50,10 +50,12 @@ module.exports = function playerTables() {
             }],
             "paging": false
         });
-        //todo support querying on server, paging/sorting on client side
-        //todo returns all matches of a player by default, allow filtering
+        //todo support advanced querying on server
+        //options
+        //figure out how to get mongo to sort after projection, serverside=true
+        //limit api,  set serverside=true, safer, but can't sort
+        //don't limit api, set serverside=false, datatables gets back full result array to sort/paginate, but risk ddos
         //todo re-activate tooltips on draw
-        //todo limit the size of results api will return?
         //todo allow sorting by hero name
         $('#matches').dataTable({
             "order": [
