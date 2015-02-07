@@ -53,8 +53,9 @@ module.exports = function playerTables() {
         //todo support advanced querying on server
         //options
         //figure out how to get mongo to sort after projection, serverside=true
-        //limit api,  set serverside=true, safer, but can't sort
+        //limit api to 100,  set serverside=true, safer, but can't sort (current implementation)
         //don't limit api, set serverside=false, datatables gets back full result array to sort/paginate, but risk ddos
+        //don't limit api, but restrict the projected fields
         //todo re-activate tooltips on draw
         //todo allow sorting by hero name
         $('#matches').dataTable({
