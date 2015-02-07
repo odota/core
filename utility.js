@@ -357,11 +357,8 @@ function initializeUser(identifier, profile, done) {
         }
     }, {
         upsert: true
-    }, function(err, doc) {
-        console.log(doc);
-        done(err, {
-            account_id: steam32
-        });
+    }, function(err) {
+        done(err, insert);
     });
 }
 

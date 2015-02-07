@@ -267,7 +267,7 @@ describe("web", function() {
             done();
         });
         it('should say Matches', function(done) {
-            browser.assert.text('h3', /Matches/);
+            browser.assert.text('h1', /Matches/);
             done();
         });
     });
