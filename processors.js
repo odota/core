@@ -129,8 +129,10 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    parser = null;
-                    throw "download error";
+                    //put error information into job
+                    //can't just cb(err) or else the parser crashing will consume another attempt
+                    job.data.error="download error";
+                    job.update();
                 }
             });
             downStream.pipe(bz.stdin);

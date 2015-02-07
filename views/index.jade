@@ -35,7 +35,6 @@ block content
       h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload a Replay &raquo;
-      p: a.btn.btn-warning(href="/about") Learn about YASP &raquo;
 
   else
     .text-center
@@ -43,7 +42,25 @@ block content
       p
         a(href='/login')
           img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
-      small Check out an 
-        a(href="/matches/1191329057/details") example.
+      hr
+      .row
+        .col-md-4
+          p.lead Go beyond the API.
+          span.glyphicon.glyphicon-stats
+          p.text-left YASP provides Dota 2 match statistics not available through the API or game client.
+        .col-md-4
+          p.lead Free of charge.
+          span.glyphicon.glyphicon-thumbs-up
+          p.text-left YASP is supported by volunteer developers and community contributions, and does not charge users.
+        .col-md-4
+          p.lead Open source.
+          span.glyphicon.glyphicon-wrench
+          p.text-left All of YASP's code is open source and available for contributors to improve and modify.
+      .row
+        .col-md-4
+           p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
+        .col-md-4
+           p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
+        .col-md-4
+           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
 
- 
