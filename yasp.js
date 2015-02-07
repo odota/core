@@ -70,8 +70,13 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.findOne({
+    db.players.findAndModify({
         account_id: id
+    }, {
+        $set: {
+            track: 1,
+            last_visited: new Date()
+        }
     }, function(err, user) {
         done(err, user);
     });
@@ -110,23 +115,8 @@ app.use(function(req, res, next) {
         }
         res.locals.user = req.user;
         res.locals.banner_msg = reply;
-        if (req.user) {
-            db.players.update({
-                account_id: req.user.account_id
-            }, {
-                $set: {
-                    track: 1,
-                    last_visited: new Date()
-                }
-            }, function(err) {
-                logger.info("%s visit", req.user.account_id);
-                next(err);
-            });
-        }
-        else {
-            logger.info("anonymous visit");
-            next();
-        }
+        logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+        next();
     });
 });
 app.param('match_id', function(req, res, next, id) {
@@ -178,7 +168,7 @@ app.route('/api/matches').get(function(req, res, next) {
     var draw = Number(req.query.draw);
     var limit = Number(req.query.length);
     //if limit is 0 or too big, reset it
-    limit = (!limit || limit>100) ? 100 : limit;
+    limit = (!limit || limit > 100) ? 100 : limit;
     var start = Number(req.query.start);
     for (var prop in req.query.select) {
         //cast strings back to numbers
@@ -286,7 +276,7 @@ app.route('/return').get(
     }),
     function(req, res) {
         if (req.user) {
-            res.redirect('/players/' + req.user.account_id);
+            res.redirect('/');
         }
         else {
             res.redirect('/');

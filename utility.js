@@ -348,20 +348,20 @@ function initializeUser(identifier, profile, done) {
     var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
-    insert.join_date = new Date();
-    insert.track = 1;
-    db.players.insert(insert, function(err, doc) {
-        //if already exists, just find and return the user
-        if (err) {
-            db.players.findOne({
-                account_id: steam32
-            }, function(err, doc) {
-                return done(err, doc);
-            });
+    db.players.update({
+        account_id: steam32
+    }, {
+        $set: insert,
+        $setOnInsert: {
+            join_date: new Date()
         }
-        else {
-            return done(err, doc);
-        }
+    }, {
+        upsert: true
+    }, function(err, doc) {
+        console.log(doc);
+        done(err, {
+            account_id: steam32
+        });
     });
 }
 
