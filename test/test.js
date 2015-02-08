@@ -663,14 +663,14 @@ describe("tasks", function() {
         });
     });
     it('full history', function(done) {
-        fullhistory(function(err) {
+        fullhistory(["1"], function(err) {
             done(err);
-        }, ["1"]);
+        });
     });
     it('constants', function(done) {
-        constants(function(err) {
+        constants("./constants_test.json", function(err) {
             done(err);
-        }, "./constants_test.json");
+        });
     });
     it('untrack', function(done) {
         untrack(function(err, num) {

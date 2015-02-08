@@ -34,13 +34,10 @@ block content
   p Currently, we untrack users who have not visited YASP for 3 days.  For full history, we select one user every hour whose account is at least 7 days old, is tracked, and has visited in the last day.
   
   h3 Why am I still missing some matches after getting my full history?
-  p The Valve API limits results to a maximum of 500.  We can get 500 games per hero per player, but if you have more than 500 games on a hero, we won't be able to get the rest.  Sorry.
-  
-  h3 Why do a lot of players in my matches only show up as numbers?
-  p To save API calls, we don't get player display names immediately after matches are added.  We'll occasionally go through all the matches and get names.  The number displayed is their 32-bit Steam account ID, so you could look them up through that if you wanted.
+  p The Valve API limits results to a maximum of 500, so we can get 500 games per hero per player.
   
   h3 Why can't you parse uploaded private lobby replays?
-  p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we can't parse these replays.
+  p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we don't support these replays.
 
   h3 Why is there a difference between my parsed stats and what actually happened in the game?
   p Replay parsing is not an exact art.  Often, assumptions have to be made, and sometimes data is just inconsistent/unavailable.  If you find an issue, please report it!
