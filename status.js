@@ -56,6 +56,13 @@ module.exports = function(io) {
                         cb(err, res);
                     });
                 },
+                requested_matches: function(cb) {
+                    db.matches.count({
+                        request: true
+                    }, function(err, res) {
+                        cb(err, res);
+                    });
+                },
                 parsed_matches: function(cb) {
                     db.matches.count({
                         parse_status: 2
