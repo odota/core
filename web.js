@@ -152,6 +152,7 @@ app.route('/api/abilities').get(function(req, res) {
 });
 app.route('/api/matches').get(function(req, res, next) {
     var draw = Number(req.query.draw);
+    var start = Number(req.query.start);
     var limit = Number(req.query.length);
     //if limit is 0 or too big, reset it
     limit = (!limit || limit > 100) ? 100 : limit;
@@ -165,14 +166,13 @@ app.route('/api/matches').get(function(req, res, next) {
         duration: 1,
         radiant_win: 1
     };
-    var start = Number(req.query.start);
     for (var prop in req.query.select) {
-        //cast strings back to numbers
-        req.query.select[prop] = Number(req.query.select[prop]);
-        if (prop === "account_id") {
+        if (prop === "players.account_id") {
+            req.query.select[prop] = Number(req.query.select[prop]);
             project["players.$"] = 1;
         }
     }
+    console.log(project);
     db.matches.count(select, function(err, count) {
         if (err) {
             return next(err);

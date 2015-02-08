@@ -65,15 +65,6 @@ module.exports = function playerTables() {
             ajax: {
                 'url': '/api/matches',
                 'data': {
-                    "project": {
-                        start_time: 1,
-                        match_id: 1,
-                        cluster: 1,
-                        game_mode: 1,
-                        duration: 1,
-                        radiant_win: 1,
-                        "players.$": 1
-                    },
                     "select": {
                         "players.account_id": account_id
                     }
