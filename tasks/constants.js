@@ -18,8 +18,8 @@ module.exports = function generateConstants(done, fileName) {
         var heroes = constants.heroes;
         //key heroes by name
         constants.hero_names = {};
-        for (var i = 0; i < heroes.length; i++) {
-            constants.hero_names[heroes[i].name] = heroes[i];
+        for (var key in heroes) {
+            constants.hero_names[heroes[key].name] = heroes[key];
         }
         var items = constants.items.itemdata;
         constants.item_ids = {};
