@@ -98,14 +98,18 @@ function streamReplay(job, cb) {
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
     var d = domain.create();
+    var error;
     d.on('error', function(err) {
-        logger.info(err);
-        cb(err);
+        if (!error) {
+            //only cb with first error
+            error = err;
+            cb(err);
+        }
     });
     d.run(function() {
         var parser = utility.runParse(function(err, output) {
             if (err) {
-                return cb(err);
+                throw err;
             }
             db.matches.update({
                 match_id: match_id
@@ -130,7 +134,7 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    cb("download error");
+                    throw "download error";
                 }
             });
             downStream.pipe(bz.stdin);

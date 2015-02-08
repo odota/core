@@ -73,12 +73,14 @@ function convert32to64(id) {
  */
 function makeSort(order, columns) {
     var sort = {};
-    order.forEach(function(s) {
-        var c = columns[Number(s.column)];
-        if (c) {
-            sort[c.data] = s.dir === 'desc' ? -1 : 1;
-        }
-    });
+    if (order && columns) {
+        order.forEach(function(s) {
+            var c = columns[Number(s.column)];
+            if (c) {
+                sort[c.data] = s.dir === 'desc' ? -1 : 1;
+            }
+        });
+    }
     return sort;
 }
 
@@ -301,7 +303,7 @@ function selector(type) {
         "untrack": {
             track: 1,
             last_visited: {
-                $lt: moment().subtract(5, 'day').toDate()
+                $lt: moment().subtract(3, 'day').toDate()
             }
         },
         "fullhistory": {
@@ -310,7 +312,7 @@ function selector(type) {
                 $lt: moment().subtract(10, 'day').toDate()
             },
             last_visited: {
-                $lt: moment().subtract(1, 'day').toDate()
+                $gt: moment().subtract(1, 'day').toDate()
             }
         }
     };
@@ -346,20 +348,17 @@ function initializeUser(identifier, profile, done) {
     var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
-    insert.join_date = new Date();
-    insert.track = 1;
-    db.players.insert(insert, function(err, doc) {
-        //if already exists, just find and return the user
-        if (err) {
-            db.players.findOne({
-                account_id: steam32
-            }, function(err, doc) {
-                return done(err, doc);
-            });
+    db.players.update({
+        account_id: steam32
+    }, {
+        $set: insert,
+        $setOnInsert: {
+            join_date: new Date()
         }
-        else {
-            return done(err, doc);
-        }
+    }, {
+        upsert: true
+    }, function(err) {
+        done(err, insert);
     });
 }
 

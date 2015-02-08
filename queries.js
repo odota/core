@@ -244,8 +244,6 @@ function computeStatistics(player, cb) {
 }
 
 function fillPlayerMatches(player, constants, matchups, cb) {
-    //todo filter insignificant games by default
-
     var account_id = player.account_id;
     db.matches.find({
         'players.account_id': account_id
@@ -286,19 +284,22 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         }
         player.heroes = [];
         for (var i = 0; i < matches.length; i++) {
-            calheatmap[matches[i].start_time] = 1;
-            var mins = Math.floor(matches[i].duration / 60) % 120;
-            arr[mins] += 1;
-            var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
-            arr2[gpm] += 1;
             var p = matches[i].players[0];
             player.radiantMap[matches[i].match_id] = utility.isRadiant(p);
             matches[i].player_win = (utility.isRadiant(p) === matches[i].radiant_win); //did the player win?
-            player.games += 1;
-            matches[i].player_win ? player.win += 1 : player.lose += 1;
-            if (heroes[p.hero_id]) {
-                heroes[p.hero_id].games += 1;
-                matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+            //aggregate only if valid match
+            if (constants.modes[matches[i].game_mode].balanced) {
+                calheatmap[matches[i].start_time] = 1;
+                var mins = Math.floor(matches[i].duration / 60) % 120;
+                arr[mins] += 1;
+                var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
+                arr2[gpm] += 1;
+                player.games += 1;
+                matches[i].player_win ? player.win += 1 : player.lose += 1;
+                if (heroes[p.hero_id]) {
+                    heroes[p.hero_id].games += 1;
+                    matches[i].player_win ? heroes[p.hero_id].win += 1 : heroes[p.hero_id].lose += 1;
+                }
             }
         }
         for (var id in heroes) {

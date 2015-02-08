@@ -5,9 +5,6 @@ var fs = require('fs');
 
 module.exports = function generateConstants(done, fileName) {
     var constants = require('./sources.json');
-    constants.sources.heroes = utility.generateJob("api_heroes", {
-        language: "en-us"
-    }).url;
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         getData(val, function(err, result) {
@@ -18,16 +15,7 @@ module.exports = function generateConstants(done, fileName) {
         if (err) {
             return done(err);
         }
-        var heroes = constants.heroes.result.heroes;
-        heroes.forEach(function(hero) {
-            hero.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + hero.name.replace("npc_dota_hero_", "") + "_sb.png";
-        });
-        //key heroes by id
-        var lookup = {};
-        for (var i = 0; i < heroes.length; i++) {
-            lookup[heroes[i].id] = heroes[i];
-        }
-        constants.heroes = lookup;
+        var heroes = constants.heroes;
         //key heroes by name
         constants.hero_names = {};
         for (var i = 0; i < heroes.length; i++) {
