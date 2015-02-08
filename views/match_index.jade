@@ -37,7 +37,7 @@ append content
              - var hero = constants.heroes[player.hero_id]
              td.hero
                if hero
-                 img(src=hero.img, alt=hero.localized_name)
+                 img(src=hero.img, title=hero.localized_name)
                else
                  =player.hero_id
              td= player.level

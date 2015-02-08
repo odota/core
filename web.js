@@ -155,14 +155,24 @@ app.route('/api/matches').get(function(req, res, next) {
     var limit = Number(req.query.length);
     //if limit is 0 or too big, reset it
     limit = (!limit || limit > 100) ? 100 : limit;
+    var select = req.query.select || {};
+    var sort = makeSort(req.query.order, req.query.columns);
+    var project = {
+        start_time: 1,
+        match_id: 1,
+        cluster: 1,
+        game_mode: 1,
+        duration: 1,
+        radiant_win: 1
+    };
     var start = Number(req.query.start);
     for (var prop in req.query.select) {
         //cast strings back to numbers
         req.query.select[prop] = Number(req.query.select[prop]);
+        if (prop === "account_id") {
+            project["players.$"] = 1;
+        }
     }
-    var select = req.query.select || {};
-    var sort = makeSort(req.query.order, req.query.columns);
-    var project = req.query.project || {};
     db.matches.count(select, function(err, count) {
         if (err) {
             return next(err);
@@ -300,7 +310,7 @@ app.route('/upload')
             recaptcha_form: recaptcha.toHTML(),
         });
     })
-    .post(function(req, res, next) {
+    .post(function(req, res) {
         if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
             req.session.captcha_verified = false; //Set back to false
             var d = domain.create();
@@ -317,36 +327,29 @@ app.route('/upload')
                         throw err;
                     }
                     var match_id = output.match_id;
-                    db.matches.findOne({
+                    console.log("getting upload data from api");
+                    var container = utility.generateJob("api_details", {
                         match_id: match_id
-                    }, function(err, doc) {
+                    });
+                    utility.getData(container.url, function(err, data) {
                         if (err) {
                             throw err;
                         }
-                        console.log("getting upload data from api");
-                        var container = utility.generateJob("api_details", {
+                        var match = data.result;
+                        match.parsed_data = output;
+                        match.parse_status = 2;
+                        match.upload = true;
+                        db.matches.update({
                             match_id: match_id
-                        });
-                        utility.getData(container.url, function(err, data) {
+                        }, {
+                            $set: match
+                        }, {
+                            upsert: true
+                        }, function(err) {
                             if (err) {
                                 throw err;
                             }
-                            var match = data.result;
-                            match.parsed_data = output;
-                            match.parse_status = 2;
-                            match.upload = true;
-                            db.matches.update({
-                                match_id: match_id
-                            }, {
-                                $set: match
-                            }, {
-                                upsert: true
-                            }, function(err) {
-                                if (err) {
-                                    throw err;
-                                }
-                                res.redirect("/matches/" + match_id);
-                            });
+                            res.redirect("/matches/" + match_id);
                         });
                     });
                 });

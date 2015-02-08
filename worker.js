@@ -88,7 +88,7 @@ function scanApi(seq_num) {
             trackedPlayers[player.account_id] = true;
         });
         var container = generateJob("api_sequence", {
-            seq_num: seq_num
+            start_at_match_seq_num: seq_num
         });
         getData(container.url, function(err, data) {
             if (err) {
