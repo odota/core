@@ -1,5 +1,5 @@
 var utility = require('./utility');
-var db = utility.db;
+var db = require('./db');
 var async = require('async');
 
 function mergeObjects(merge, val) {

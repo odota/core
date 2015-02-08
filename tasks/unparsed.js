@@ -1,5 +1,5 @@
-var utility = require('./utility');
-var db = utility.db;
+var utility = require('../utility');
+var db = require('../db');
 var async = require('async');
 var queueReq = utility.queueReq;
 
@@ -22,4 +22,4 @@ module.exports = function unparsed(done) {
             done(err, i);
         });
     });
-}
+};

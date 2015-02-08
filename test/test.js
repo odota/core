@@ -10,20 +10,24 @@ process.env.STEAM_API_KEY="fakekey";
 
 var async = require('async');
 var utility = require('../utility');
-var db = utility.db;
+var db = require('../db');
+var redis = utility.redis;
+var kue = utility.kue;
+var jobs = utility.jobs;
 var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var app = require('../yasp');
 var processors = require('../processors');
 var fs = require('fs');
 var request = require('request');
-var unparsed = require('../unparsed');
-var updatenames = require('../updatenames');
-var fullhistory = require('../fullhistory');
-var constants = require('../constants');
+var unparsed = require('../tasks/unparsed');
+var updatenames = require('../tasks/updatenames');
+var fullhistory = require('../tasks/fullhistory');
+var constants = require('../tasks/constants');
+var untrack = require('../tasks/untrack');
+
 var wait = 30000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
@@ -115,7 +119,7 @@ before(function(done) {
                 //set visited date on first player
                 testdata.players[0].last_visited = new Date();
                 testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
-                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
+                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100"); //should be untracked
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
                         cb(err);
@@ -167,8 +171,7 @@ before(function(done) {
             },
             function(cb) {
                 console.log("starting web");
-                var server = app.listen(process.env.PORT);
-                var io = require('socket.io')(server);
+                require('../web');
                 cb();
             }
         ],
@@ -182,19 +185,19 @@ after(function(done) {
 
 describe("services", function() {
     it("mongodb connected", function(done) {
-        assert(utility.db);
+        assert(db);
         done();
     });
     it("redis connected", function(done) {
-        assert(utility.redis);
+        assert(redis);
         done();
     });
     it("kue ready", function(done) {
-        assert(utility.kue);
+        assert(kue);
         done();
     });
     it("kue jobs queue ready", function(done) {
-        assert(utility.jobs);
+        assert(jobs);
         done();
     });
 });
@@ -597,12 +600,11 @@ describe("web", function() {
             done();
         });
     });
-    //todo use supertest for api endpoints
     describe("/api/matches", function() {
         it('should return JSON', function(done) {
             request.get(process.env.ROOT_URL + '/api/matches?draw=2&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
                 assert(resp.statusCode === 200);
-                assert(body);
+                JSON.parse(body);
                 done(err);
             });
         });
@@ -626,15 +628,7 @@ describe("web", function() {
     describe("/preferences", function() {
         it('should return JSON', function(done) {
             request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
-                assert(body)
-                done(err);
-            });
-        });
-    });
-    describe("/fullhistory", function() {
-        it('should return JSON', function(done) {
-            request.post(process.env.ROOT_URL + '/fullhistory', {}, function(err, resp, body) {
-                assert(body);
+                JSON.parse(body);
                 done(err);
             });
         });
@@ -648,7 +642,7 @@ describe("web", function() {
                 }
             }, function(err, resp, body) {
                 assert(resp.statusCode === 200);
-                assert(body);
+                JSON.parse(body);
                 done(err);
             });
         });
@@ -657,13 +651,13 @@ describe("web", function() {
 
 describe("tasks", function() {
     this.timeout(wait);
-    it('unparsed matches', function(done) {
+    it('unparsed', function(done) {
         unparsed(function(err, num) {
             assert.equal(num, 2);
             done(err);
         });
     });
-    it('updateNames', function(done) {
+    it('updatenames', function(done) {
         updatenames(function(err, num) {
             done(err);
         });
@@ -673,13 +667,19 @@ describe("tasks", function() {
             done(err);
         }, ["1"]);
     });
-    it('generate constants', function(done) {
+    it('constants', function(done) {
         constants(function(err) {
             done(err);
         }, "./constants_test.json");
     });
+    it('untrack', function(done) {
+        untrack(function(err, num) {
+            assert(num, 1);
+            done(err);
+        });
+    });
 });
-
+/*
 describe("unit test", function() {
     it('initialize user', function(done) {
         utility.initializeUser("/76561198048632981", {
@@ -691,7 +691,7 @@ describe("unit test", function() {
             });
     });
 });
-
+*/
 describe("parser", function() {
     this.timeout(60000);
     it('parse replay (download)', function(done) {
