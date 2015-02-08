@@ -51,15 +51,11 @@ html
             li
               a(href="/status") Status
             li
-              a(href="/upload") Upload
-            li
               a(href="/about") FAQ/About
           if user
             ul.nav.navbar-nav.navbar-right
               li
                 a(href="/players/"+user.account_id)=user.personaname
-              li
-                a(href="/logout") Logout
      .sticky_footer_row.expand
       .container
        if banner_msg

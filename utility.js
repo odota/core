@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),

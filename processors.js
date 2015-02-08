@@ -132,6 +132,7 @@ function streamReplay(job, cb) {
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
                     error = "download error";
+                    parser.kill();
                 }
             });
             downStream.pipe(bz.stdin);
