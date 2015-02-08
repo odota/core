@@ -21,7 +21,7 @@ async.series([clearActiveJobs], function(err) {
     jobs.process('api', processors.processApi);
     setInterval(untrack, 60 * 60 * 1000, function() {});
     setInterval(fullhistory, 30 * 60 * 1000, function() {});
-    //setInterval(updatenames, 1 * 60 * 1000, function() {});
+    setInterval(updatenames, 1 * 60 * 1000, function() {});
 });
 
 function clearActiveJobs(cb) {
