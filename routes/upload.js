@@ -37,6 +37,7 @@ upload.post("/", function(req, res) {
                 match_id = Number(value);
                 queueReq("api_details", {
                     match_id: match_id,
+                    request: true,
                     priority: "high"
                 }, close);
             });
