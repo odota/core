@@ -86,6 +86,16 @@ setInterval(function() {
                     cb(err, res);
                 });
             },
+            unavailable_last_day: function(cb) {
+                db.matches.count({
+                    parse_status: 1,
+                    start_time: {
+                        $gt: Number(moment().subtract(1, 'day').format('X'))
+                    }
+                }, function(err, res) {
+                    cb(err, res);
+                });
+            },
             eligible_full_history: function(cb) {
                 db.players.count(utility.selector("fullhistory"), function(err, res) {
                     cb(err, res);
@@ -100,6 +110,38 @@ setInterval(function() {
                     cb(err, res);
                 });
             },
+            last_added: function(cb) {
+                db.matches.findOne({}, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 1
+                }, function(err, match) {
+                    cb(err, match);
+                });
+            },
+            last_parsed: function(cb) {
+                db.matches.findOne({
+                    parse_status: 2
+                }, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 1
+                }, function(err, match) {
+                    cb(err, match);
+                });
+            }
         },
         function(err, results) {
             io.emit('stats', {
@@ -107,4 +149,4 @@ setInterval(function() {
                 error: err
             });
         });
-}, 1000);
+}, 2000);

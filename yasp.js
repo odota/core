@@ -8,6 +8,7 @@ var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
 var db = utility.db;
+var domain = require('domain');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -70,8 +71,13 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.players.findOne({
+    db.players.findAndModify({
         account_id: id
+    }, {
+        $set: {
+            track: 1,
+            last_visited: new Date()
+        }
     }, function(err, user) {
         done(err, user);
     });
@@ -110,23 +116,8 @@ app.use(function(req, res, next) {
         }
         res.locals.user = req.user;
         res.locals.banner_msg = reply;
-        if (req.user) {
-            db.players.update({
-                account_id: req.user.account_id
-            }, {
-                $set: {
-                    track: 1,
-                    last_visited: new Date()
-                }
-            }, function(err) {
-                logger.info("%s visit", req.user.account_id);
-                next(err);
-            });
-        }
-        else {
-            logger.info("anonymous visit");
-            next();
-        }
+        logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+        next();
     });
 });
 app.param('match_id', function(req, res, next, id) {
@@ -175,15 +166,17 @@ app.route('/api/abilities').get(function(req, res) {
     res.json(app.locals.constants.abilities[req.query.name]);
 });
 app.route('/api/matches').get(function(req, res, next) {
-    var draw = Number(req.query.draw) || 0;
-    var limit = Number(req.query.length) || 10;
-    var start = Number(req.query.start) || 0;
+    var draw = Number(req.query.draw);
+    var limit = Number(req.query.length);
+    //if limit is 0 or too big, reset it
+    limit = (!limit || limit > 100) ? 100 : limit;
+    var start = Number(req.query.start);
     for (var prop in req.query.select) {
         //cast strings back to numbers
         req.query.select[prop] = Number(req.query.select[prop]);
     }
     var select = req.query.select || {};
-    var sort = utility.makeSort(req.query.order, req.query.columns) || {};
+    var sort = utility.makeSort(req.query.order, req.query.columns);
     var project = req.query.project || {};
     db.matches.count(select, function(err, count) {
         if (err) {
@@ -284,7 +277,7 @@ app.route('/return').get(
     }),
     function(req, res) {
         if (req.user) {
-            res.redirect('/players/' + req.user.account_id);
+            res.redirect('/');
         }
         else {
             res.redirect('/');
@@ -306,7 +299,7 @@ app.route('/verify_recaptcha')
             response: req.body.recaptcha_response_field
         };
         var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-        recaptcha.verify(function(success, error_code) {
+        recaptcha.verify(function(success) {
             req.session.captcha_verified = success;
             res.json({
                 verified: success
@@ -325,28 +318,33 @@ app.route('/upload')
     .post(function(req, res, next) {
         if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
             req.session.captcha_verified = false; //Set back to false
-            var form = new multiparty.Form();
-            var parser = utility.runParse(function(err, output) {
-                //todo get api data out of replay in case of private
-                //todo do private/local lobbies have an id?
-                if (err) {
-                    return next(err);
+            var d = domain.create();
+            d.on('error', function() {
+                if (!res.headerSent) {
+                    res.render("upload", {
+                        error: "Couldn't parse replay"
+                    });
                 }
-                var match_id = output.match_id;
-                db.matches.findOne({
-                    match_id: match_id
-                }, function(err, doc) {
+            });
+            d.run(function() {
+                var parser = utility.runParse(function(err, output) {
                     if (err) {
-                        return next(err);
+                        throw err;
                     }
-                    else if (doc) {
+                    var match_id = output.match_id;
+                    db.matches.findOne({
+                        match_id: match_id
+                    }, function(err, doc) {
+                        if (err) {
+                            throw err;
+                        }
                         console.log("getting upload data from api");
                         var container = utility.generateJob("api_details", {
                             match_id: match_id
                         });
                         utility.getData(container.url, function(err, data) {
                             if (err) {
-                                return next(err);
+                                throw err;
                             }
                             var match = data.result;
                             match.parsed_data = output;
@@ -360,35 +358,31 @@ app.route('/upload')
                                 upsert: true
                             }, function(err) {
                                 if (err) {
-                                    return next(err);
+                                    throw err;
                                 }
                                 res.redirect("/matches/" + match_id);
                             });
                         });
-                    }
-                    else {
-                        res.json({
-                            error: "Couldn't parse this replay."
-                        });
+                    });
+                });
+                var form = new multiparty.Form();
+                form.on('part', function(part) {
+                    if (part.filename) {
+                        part.pipe(parser.stdin);
                     }
                 });
+                form.on('error', function(err) {
+                    parser.kill();
+                    throw err;
+                });
+                form.parse(req);
             });
-            form.on('part', function(part) {
-                if (part.filename) {
-                    part.pipe(parser.stdin);
-                }
-            });
-            form.on('error', function(err) {
-                console.log(err);
-                parser.kill();
-            });
-            form.parse(req);
         }
     });
 app.route('/status').get(function(req, res) {
     res.render("status");
 });
-app.route('/about').get(function(req, res, next) {
+app.route('/about').get(function(req, res) {
     res.render("about");
 });
 app.use(function(req, res, next) {

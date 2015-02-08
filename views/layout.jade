@@ -1,7 +1,8 @@
 doctype html
 html
   head
-    title= title || "YASP"
+    title= title || "YASP - Dota 2 Replay Parsing and Statistics"
+    meta(name="description", content="YASP: Another (Dota) Stats Page")
     meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
     meta(charset='utf-8')
     //- Favicons
@@ -90,6 +91,9 @@ html
                 Comments, suggestions? 
                 <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
                 Thanks! <br>
+              a.twitter-follow-button(href='https://twitter.com/yasp_dota', data-show-count='false', data-size='medium') Follow @yasp_dota
+              script.
+                !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
             .col-md-4.text-center
              p.
                <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>

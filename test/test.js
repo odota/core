@@ -266,8 +266,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should say Recent Matches', function(done) {
-            browser.assert.text('h3', /Recent\sMatches/);
+        it('should say Matches', function(done) {
+            browser.assert.text('h1', /Matches/);
             done();
         });
     });
@@ -373,8 +373,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should have a match', function(done) {
-            browser.assert.text('td', /1151783218/);
+        it('should say Matches', function(done) {
+            browser.assert.text('h3', /Matches/);
             done();
         });
     });

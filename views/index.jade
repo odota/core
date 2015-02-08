@@ -1,20 +1,22 @@
 extend layout
-
-block head
-  meta(name="description", content="YASP: Another (Dota) Stats Page")
   
 block content
   .page-header.text-center
     h1(style='font-weight: 700;') YASP 
       small YASP: Another Stats Page
-    a.twitter-follow-button(href='https://twitter.com/yasp_dota', data-show-count='false', data-size='medium') Follow @yasp_dota
+      
   if user
    .row(style="margin-bottom:2em;")
     .col-md-1
       img(src='#{user.avatarmedium}').img-thumbnail
     .col-md-4
       h2
-        | Welcome back, #{user.personaname}!
+        | Welcome, #{user.personaname}!
+    .col-md-7
+      .alert.alert-success 
+        | Now that you're signed in, we'll automatically parse the replays of matches you play.
+        br
+        | Visit YASP regularly while signed in to remain a tracked user.
    .row
     .col-md-4
      h3 Preferences
@@ -25,14 +27,40 @@ block content
         else
           input#dark(type="checkbox")
         | Use Dark Theme
+    .col-md-4
+      h3 Info
+      p Last Full History Scan: 
+        span= user.full_history_time || "Never"
+    .col-md-4
+      h3 Actions
+      p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
+      p: a.btn.btn-primary(href="/upload") Upload a Replay &raquo;
+
   else
     .text-center
-      p.lead Free replay parsing.
+      p.lead Free Dota 2 replay parsing.
       p
         a(href='/login')
           img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
-      small Check out an 
-        a(href="/matches/1191329057/details") example.
+      hr
+      .row
+        .col-md-4
+          p.lead Go beyond the API.
+          span.glyphicon.glyphicon-stats
+          p.text-left YASP provides Dota 2 match statistics not available through the API or game client.
+        .col-md-4
+          p.lead Free of charge.
+          span.glyphicon.glyphicon-thumbs-up
+          p.text-left YASP is supported by volunteer developers and community contributions, and does not charge users.
+        .col-md-4
+          p.lead Open source.
+          span.glyphicon.glyphicon-wrench
+          p.text-left All of YASP's code is open source and available for contributors to improve and modify.
+      .row
+        .col-md-4
+           p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
+        .col-md-4
+           p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
+        .col-md-4
+           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
 
-  script.
-    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
