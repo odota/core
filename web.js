@@ -163,7 +163,8 @@ app.route('/api/matches').get(function(req, res, next) {
         cluster: 1,
         game_mode: 1,
         duration: 1,
-        radiant_win: 1
+        radiant_win: 1,
+        parse_status: 1
     };
     var start = Number(req.query.start);
     for (var prop in req.query.select) {
