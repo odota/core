@@ -1,13 +1,14 @@
 var utility = require('./utility');
 var async = require('async');
-var db = utility.db;
+var db = require('./db');
 var logger = utility.logger;
 var fs = require('fs');
 var moment = require('moment');
 var getData = utility.getData;
 var request = require('request');
-var insertPlayer = utility.insertPlayer;
-var insertMatch = utility.insertMatch;
+var operations = require('./operations');
+var insertPlayer = operations.insertPlayer;
+var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');

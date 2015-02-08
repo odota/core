@@ -4,7 +4,6 @@ var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),
     redis = require('redis'),
-    moment = require('moment'),
     parseRedisUrl = require('parse-redis-url')(redis);
 var spawn = require("child_process").spawn;
 var api_url = "http://api.steampowered.com";
@@ -17,23 +16,7 @@ var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:63
 options.auth = options.password;
 options.db = options.database;
 var kue = require('kue');
-var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
-db.get('matches').index({
-    'match_id': -1
-}, {
-    unique: true
-});
-db.get('matches').index({
-    'match_seq_num': -1
-}, {
-    unique: true
-});
-db.get('matches').index('players.account_id');
-db.get('players').index('account_id', {
-    unique: true
-});
-db.matches = db.get('matches');
-db.players = db.get('players');
+var db = require('./db');
 var redisclient = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
@@ -66,22 +49,6 @@ function convert64to32(id) {
  */
 function convert32to64(id) {
     return new BigNumber('76561197960265728').plus(id);
-}
-
-/*
- * Makes sort from a datatables call
- */
-function makeSort(order, columns) {
-    var sort = {};
-    if (order && columns) {
-        order.forEach(function(s) {
-            var c = columns[Number(s.column)];
-            if (c) {
-                sort[c.data] = s.dir === 'desc' ? -1 : 1;
-            }
-        });
-    }
-    return sort;
 }
 
 function isRadiant(player) {
@@ -179,61 +146,117 @@ function generateJob(type, payload) {
             title: [type, payload.match_id].join(),
             type: type,
             fileName: payload.fileName,
-            uploader: payload.uploader,
             payload: payload
         };
     }
 }
 
 function getData(url, cb) {
-        var delay = 1000;
-        var parse = urllib.parse(url, true);
-        //inject a random retriever
-        if (parse.host === "retriever") {
-            //todo inject a retriever key
-            parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
+    var delay = 1000;
+    var parse = urllib.parse(url, true);
+    //inject a random retriever
+    if (parse.host === "retriever") {
+        //todo inject a retriever key
+        parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
+    }
+    //inject a random key if steam api request
+    if (parse.host === "api.steampowered.com") {
+        parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
+        parse.search = null;
+        delay = 1000 / api_keys.length;
+    }
+    var target = urllib.format(parse);
+    logger.info("getData: %s", target);
+    request({
+        url: target,
+        json: true,
+        timeout: 15000
+    }, function(err, res, body) {
+        if (err || res.statusCode !== 200 || !body) {
+            logger.info("retrying: %s", target);
+            return setTimeout(function() {
+                getData(url, cb);
+            }, delay);
         }
-        //inject a random key if steam api request
-        if (parse.host === "api.steampowered.com") {
-            parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
-            parse.search = null;
-            delay = 1000 / api_keys.length;
-        }
-        var target = urllib.format(parse);
-        logger.info("getData: %s", target);
-        request({
-            url: target,
-            json: true,
-            timeout: 15000
-        }, function(err, res, body) {
-            if (err || res.statusCode !== 200 || !body) {
-                logger.info("retrying: %s", target);
+        if (body.result) {
+            //steam api response
+            if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
+                //user does not have stats enabled or attempting to get private match/invalid id, don't retry
+                return setTimeout(function() {
+                    cb(body);
+                }, delay);
+            }
+            else if (body.result.error || body.result.status === 2) {
+                //valid response, but invalid data, retry
+                logger.info("invalid data: %s, %s", target, JSON.stringify(body));
                 return setTimeout(function() {
                     getData(url, cb);
                 }, delay);
             }
-            if (body.result) {
-                //steam api response
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
-                    //user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                    return setTimeout(function() {
-                        cb(body);
-                    }, delay);
-                }
-                else if (body.result.error || body.result.status === 2) {
-                    //valid response, but invalid data, retry
-                    logger.info("invalid data: %s, %s", target, JSON.stringify(body));
-                    return setTimeout(function() {
-                        getData(url, cb);
-                    }, delay);
-                }
+        }
+        return setTimeout(function() {
+            cb(null, body);
+        }, delay);
+    });
+}
+
+function runParse(cb) {
+    var parser_file = "parser/target/stats-0.1.0.jar";
+    var output = "";
+    var parser = spawn("java", ["-jar",
+        parser_file
+    ]);
+    parser.stdout.on('data', function(data) {
+        output += data;
+    });
+    parser.on('exit', function(code) {
+        logger.info("[PARSER] exit code: %s", code);
+        if (code) {
+            return cb(code);
+        }
+        try {
+            output = JSON.parse(output);
+            cb(code, output);
+        }
+        catch (err) {
+            cb(err);
+        }
+    });
+    return parser;
+}
+
+/*
+ * Makes sort from a datatables call
+ */
+function makeSort(order, columns) {
+    var sort = {};
+    if (order && columns) {
+        order.forEach(function(s) {
+            var c = columns[Number(s.column)];
+            if (c) {
+                sort[c.data] = s.dir === 'desc' ? -1 : 1;
             }
-            return setTimeout(function() {
-                cb(null, body);
-            }, delay);
         });
     }
-    /*
+    return sort;
+}
+
+module.exports = {
+    redis: redisclient,
+    logger: logger,
+    kue: kue,
+    jobs: jobs,
+    convert32to64: convert32to64,
+    convert64to32: convert64to32,
+    isRadiant: isRadiant,
+    generateJob: generateJob,
+    getData: getData,
+    queueReq: queueReq,
+    runParse: runParse,
+    makeSort: makeSort
+};
+
+/*
         function getS3Url(match_id, cb) {
             var archiveName = match_id + ".dem.bz2";
             var s3 = new AWS.S3();
@@ -263,122 +286,3 @@ function getData(url, cb) {
             });
         }
     */
-function insertMatch(match, cb) {
-    match.parse_status = match.parsed_data ? 2 : 0;
-    db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, {
-            upsert: true
-        },
-        function(err) {
-            if (!match.parse_status) {
-                queueReq("parse", match, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                cb(err);
-            }
-        });
-}
-
-function insertPlayer(player, cb) {
-    var account_id = Number(convert64to32(player.steamid));
-    player.last_summaries_update = new Date();
-    db.players.update({
-        account_id: account_id
-    }, {
-        $set: player
-    }, {
-        upsert: true
-    }, function(err) {
-        cb(err);
-    });
-}
-
-function selector(type) {
-    var types = {
-        "untrack": {
-            track: 1,
-            last_visited: {
-                $lt: moment().subtract(3, 'day').toDate()
-            }
-        },
-        "fullhistory": {
-            track: 1,
-            join_date: {
-                $lt: moment().subtract(10, 'day').toDate()
-            },
-            last_visited: {
-                $gt: moment().subtract(1, 'day').toDate()
-            }
-        }
-    };
-    return types[type];
-}
-
-function runParse(cb) {
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = "";
-    var parser = spawn("java", ["-jar",
-        parser_file
-    ]);
-    parser.stdout.on('data', function(data) {
-        output += data;
-    });
-    parser.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
-        if (code) {
-            return cb(code);
-        }
-        try {
-            output = JSON.parse(output);
-            cb(null, output);
-        }
-        catch (err) {
-            cb(err);
-        }
-    });
-    return parser;
-}
-
-function initializeUser(identifier, profile, done) {
-    var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
-    var insert = profile._json;
-    insert.account_id = steam32;
-    db.players.update({
-        account_id: steam32
-    }, {
-        $set: insert,
-        $setOnInsert: {
-            join_date: new Date()
-        }
-    }, {
-        upsert: true
-    }, function(err) {
-        done(err, insert);
-    });
-}
-
-module.exports = {
-    //utilities
-    db: db,
-    redis: redisclient,
-    logger: logger,
-    kue: kue,
-    jobs: jobs,
-    convert32to64: convert32to64,
-    convert64to32: convert64to32,
-    isRadiant: isRadiant,
-    generateJob: generateJob,
-    getData: getData,
-    queueReq: queueReq,
-    makeSort: makeSort,
-    selector: selector,
-    insertPlayer: insertPlayer,
-    insertMatch: insertMatch,
-    runParse: runParse,
-    initializeUser: initializeUser
-};
