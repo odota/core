@@ -15,11 +15,16 @@ module.exports = function updateNames(cb) {
             return cb(err);
         }
         //don't add anonymous
-        var index =array.indexOf(constants.anonymous_account_id);
+        var index = array.indexOf(constants.anonymous_account_id);
         if (index > -1) {
             array.splice(index, 1);
         }
         console.log("found %s account_ids in this bucket", array.length);
+        array = array.map(function(id) {
+            return {
+                account_id: id
+            };
+        });
         var chunk = 100;
         var chunks = [];
         for (var i = 0; i < array.length; i += chunk) {
