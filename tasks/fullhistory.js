@@ -8,8 +8,14 @@ var generateJob = utility.generateJob;
 var selector = require('../selector');
 var constants = require('../sources.json');
 
-module.exports = function getFullMatchHistory(done, heroes) {
-    var heroArray = heroes || Object.keys(constants.heroes);
+module.exports = function getFullMatchHistory(heroes, done) {
+    var heroArray =  Object.keys(constants.heroes);
+    if (typeof heroes === "object"){
+        heroArray = heroes;
+    }
+    else{
+        done = heroes;
+    }
     var match_ids = {};
     db.players.find(selector("fullhistory"), {
         limit: 1,

@@ -2,7 +2,6 @@ var utility = require('../utility');
 var db = require('../db');
 var async = require('async');
 var queueReq = utility.queueReq;
-var constants = require('../sources.json');
 module.exports = function updateNames(cb) {
     var buckets = 1; //do only some of the names at once
     var target = Math.floor(Math.random() * buckets);
@@ -13,11 +12,6 @@ module.exports = function updateNames(cb) {
     }, function(err, array) {
         if (err) {
             return cb(err);
-        }
-        //don't add anonymous
-        var index = array.indexOf(constants.anonymous_account_id);
-        if (index > -1) {
-            array.splice(index, 1);
         }
         console.log("found %s account_ids in this bucket", array.length);
         array = array.map(function(id) {

@@ -3,7 +3,14 @@ var utility = require('../utility');
 var getData = utility.getData;
 var fs = require('fs');
 
-module.exports = function generateConstants(done, fileName) {
+module.exports = function generateConstants(outputFile, done) {
+    var fileName = './constants.json';
+    if (typeof outputFile === "string") {
+        fileName = outputFile;
+    }
+    else {
+        done = outputFile;
+    }
     var constants = require('../sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
@@ -40,7 +47,7 @@ module.exports = function generateConstants(done, fileName) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile(fileName || './constants.json', JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(fileName, JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }

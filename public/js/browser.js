@@ -7,7 +7,7 @@ var utility = require('./utility');
 var format = utility.format;
 var formatSeconds = utility.formatSeconds;
 $(document).ready(function() {
-    process();
+    processHtml();
     listeners();
     tooltips();
 });
@@ -32,7 +32,7 @@ global.statusHandler = function() {
                     data.stats[prop].jq = $(
                         "<tr>" +
                         "<td><a href='/matches/" + data.stats[prop].match_id + "'>" + data.stats[prop].match_id + "</a></td>" +
-                        "<td>" + moment.unix(data.stats[prop].start_time + data.stats[prop].duration).fromNow() + "</td>" +
+                        "<td class='fromNowAttr' time='"+(data.stats[prop].start_time + data.stats[prop].duration)+"'></td>" +
                         "</tr>");
                     buffers[prop].unshift(data.stats[prop]);
                     data.stats[prop].jq.hide().prependTo($("#" + prop + " tbody")).show('slow');
@@ -43,6 +43,10 @@ global.statusHandler = function() {
                         pop.jq.remove();
                     });
                 }
+                //recompute times
+                $(".fromNowAttr").each(function(){
+                    $(this).text(moment.unix($(this).attr("time")).fromNow());
+                });
             }
             else {
                 $("#" + prop).html(data.stats[prop]);
@@ -51,7 +55,7 @@ global.statusHandler = function() {
     });
 };
 
-function process() {
+function processHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {

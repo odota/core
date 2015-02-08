@@ -1,18 +1,14 @@
 var express = require('express');
-var multiparty = require('multiparty');
 var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
-var recaptcha = new Recaptcha(rc_public, rc_secret);
 var utility = require('./utility');
 var redis = utility.redis;
 var db = require('./db');
-var domain = require('domain');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
-var makeSort = utility.makeSort;
 var app = express();
 var passport = require('./passport');
 var queries = require('./queries'),
@@ -144,57 +140,9 @@ app.param('match_id', function(req, res, next, id) {
 app.route('/').get(function(req, res) {
     res.render('index.jade', {});
 });
-app.route('/api/items').get(function(req, res) {
-    res.json(app.locals.constants.items[req.query.name]);
-});
-app.route('/api/abilities').get(function(req, res) {
-    res.json(app.locals.constants.abilities[req.query.name]);
-});
-app.route('/api/matches').get(function(req, res, next) {
-    var draw = Number(req.query.draw);
-    var start = Number(req.query.start);
-    var limit = Number(req.query.length);
-    //if limit is 0 or too big, reset it
-    limit = (!limit || limit > 100) ? 100 : limit;
-    var select = req.query.select || {};
-    var sort = makeSort(req.query.order, req.query.columns);
-    var project = {
-        start_time: 1,
-        match_id: 1,
-        cluster: 1,
-        game_mode: 1,
-        duration: 1,
-        radiant_win: 1,
-        parse_status: 1
-    };
-    for (var prop in req.query.select) {
-        if (prop === "players.account_id") {
-            req.query.select[prop] = Number(req.query.select[prop]);
-            project["players.$"] = 1;
-        }
-    }
-    db.matches.count(select, function(err, count) {
-        if (err) {
-            return next(err);
-        }
-        db.matches.find(select, {
-            limit: limit,
-            skip: start,
-            sort: sort,
-            fields: project
-        }, function(err, docs) {
-            if (err) {
-                return next(err);
-            }
-            res.json({
-                draw: draw,
-                recordsTotal: count,
-                recordsFiltered: count,
-                data: docs
-            });
-        });
-    });
-});
+app.use("/api", require('./routes/api'));
+app.use('/upload', require("./routes/upload"));
+
 app.route('/matches').get(function(req, res) {
     res.render('matches.jade', {
         title: "Matches - YASP"
@@ -224,7 +172,7 @@ app.route('/players/:account_id/:info?').get(function(req, res, next) {
     db.players.findOne({
         account_id: account_id
     }, function(err, player) {
-        if (err || !player) {
+        if (err || !player || account_id === app.locals.constants.anonymous_account_id) {
             return next(new Error("player not found"));
         }
         else {
@@ -300,72 +248,6 @@ app.route('/verify_recaptcha')
                 verified: success
             });
         });
-    });
-app.route('/upload')
-    .all(function(req, res, next) {
-        next();
-    })
-    .get(function(req, res) {
-        res.render("upload", {
-            recaptcha_form: recaptcha.toHTML(),
-        });
-    })
-    .post(function(req, res) {
-        if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
-            req.session.captcha_verified = false; //Set back to false
-            var d = domain.create();
-            d.on('error', function() {
-                if (!res.headerSent) {
-                    res.render("upload", {
-                        error: "Couldn't parse replay"
-                    });
-                }
-            });
-            d.run(function() {
-                var parser = utility.runParse(function(err, output) {
-                    if (err) {
-                        throw err;
-                    }
-                    var match_id = output.match_id;
-                    console.log("getting upload data from api");
-                    var container = utility.generateJob("api_details", {
-                        match_id: match_id
-                    });
-                    utility.getData(container.url, function(err, data) {
-                        if (err) {
-                            throw err;
-                        }
-                        var match = data.result;
-                        match.parsed_data = output;
-                        match.parse_status = 2;
-                        match.upload = true;
-                        db.matches.update({
-                            match_id: match_id
-                        }, {
-                            $set: match
-                        }, {
-                            upsert: true
-                        }, function(err) {
-                            if (err) {
-                                throw err;
-                            }
-                            res.redirect("/matches/" + match_id);
-                        });
-                    });
-                });
-                var form = new multiparty.Form();
-                form.on('part', function(part) {
-                    if (part.filename) {
-                        part.pipe(parser.stdin);
-                    }
-                });
-                form.on('error', function(err) {
-                    parser.kill();
-                    throw err;
-                });
-                form.parse(req);
-            });
-        }
     });
 app.route('/status').get(function(req, res) {
     res.render("status");
