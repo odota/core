@@ -1,10 +1,10 @@
 var async = require('async');
-var utility = require('./utility');
+var utility = require('../utility');
 var getData = utility.getData;
 var fs = require('fs');
 
 module.exports = function generateConstants(done, fileName) {
-    var constants = require('./sources.json');
+    var constants = require('../sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
         getData(val, function(err, result) {

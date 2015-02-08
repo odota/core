@@ -1,16 +1,17 @@
-var utility = require('./utility');
-var db = utility.db;
+var utility = require('../utility');
+var db = require('../db');
 var async = require('async');
 var queueReq = utility.queueReq;
 var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
+var selector = require('../selector');
+var constants = require('../sources.json');
 
 module.exports = function getFullMatchHistory(done, heroes) {
-    var constants = require('./constants.json');
     var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
-    db.players.find(utility.selector("fullhistory"), {
+    db.players.find(selector("fullhistory"), {
         limit: 1,
         sort: {
             full_history_time: 1
@@ -110,4 +111,4 @@ module.exports = function getFullMatchHistory(done, heroes) {
             cb(err);
         });
     }
-}
+};
