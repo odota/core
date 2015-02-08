@@ -6,9 +6,10 @@ var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
 var selector = require('../selector');
+var constants = require('../sources.json');
 
 module.exports = function getFullMatchHistory(done, heroes) {
-    var heroArray = heroes || Object.keys(require('./constants.json').heroes);
+    var heroArray = heroes || Object.keys(constants.heroes);
     var match_ids = {};
     db.players.find(selector("fullhistory"), {
         limit: 1,

@@ -14,14 +14,6 @@ module.exports = function matchTable() {
             ajax: {
                 'url': '/api/matches',
                 'data': {
-                    "project": {
-                        start_time: 1,
-                        match_id: 1,
-                        cluster: 1,
-                        parse_status: 1,
-                        game_mode: 1,
-                        duration: 1
-                    }
                 }
             },
             serverSide: true,
