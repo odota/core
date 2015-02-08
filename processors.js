@@ -101,11 +101,7 @@ function streamReplay(job, cb) {
     var d = domain.create();
     var error;
     d.on('error', function(err) {
-        if (!error) {
-            //only cb with first error
-            error = err;
-            cb(err);
-        }
+        cb(error || err);
     });
     d.run(function() {
         var parser = utility.runParse(function(err, output) {
@@ -135,7 +131,7 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    throw "download error";
+                    error = "download error";
                 }
             });
             downStream.pipe(bz.stdin);

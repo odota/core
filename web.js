@@ -173,7 +173,6 @@ app.route('/api/matches').get(function(req, res, next) {
             project["players.$"] = 1;
         }
     }
-    console.log(project);
     db.matches.count(select, function(err, count) {
         if (err) {
             return next(err);
