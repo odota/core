@@ -71,7 +71,7 @@ app.locals.constants = require('./constants.json');
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
-    callback(username === (process.env.KUE_USER || "user") && password === (process.env.KUE_PASS || "pass"));
+    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
 });
 app.use(compression());
 app.use("/kue", auth.connect(basic));
@@ -92,18 +92,20 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(function(req, res, next) {
     redis.get("banner", function(err, reply) {
-        if (err) {
-            logger.info(err);
-        }
         res.locals.user = req.user;
         res.locals.banner_msg = reply;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
-        next();
+        next(err);
     });
 });
 app.param('match_id', function(req, res, next, id) {
     redis.get(id, function(err, reply) {
-        if (err || !reply) {
+        if (!err && reply) {
+            logger.info("Cache hit for match " + id);
+            req.match = JSON.parse(reply);
+            return next();
+        }
+        else {
             logger.info("Cache miss for match " + id);
             db.matches.findOne({
                 match_id: Number(id)
@@ -130,19 +132,11 @@ app.param('match_id', function(req, res, next, id) {
                 }
             });
         }
-        else if (reply) {
-            logger.info("Cache hit for match " + id);
-            req.match = JSON.parse(reply);
-            return next();
-        }
     });
 });
 app.route('/').get(function(req, res) {
     res.render('index.jade', {});
 });
-app.use("/api", require('./routes/api'));
-app.use('/upload', require("./routes/upload"));
-
 app.route('/matches').get(function(req, res) {
     res.render('matches.jade', {
         title: "Matches - YASP"
@@ -219,12 +213,7 @@ app.route('/return').get(
         failureRedirect: '/'
     }),
     function(req, res) {
-        if (req.user) {
-            res.redirect('/');
-        }
-        else {
-            res.redirect('/');
-        }
+        res.redirect('/');
     }
 );
 app.route('/logout').get(function(req, res) {
@@ -255,24 +244,20 @@ app.route('/status').get(function(req, res) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
+app.use("/api", require('./routes/api'));
+app.use('/upload', require("./routes/upload"));
 app.use(function(req, res, next) {
-    res.status(404);
-    if (process.env.NODE_ENV !== "development") {
-        return res.render('404.jade', {
-            error: true
-        });
-    }
-    else {
-        next();
-    }
+    var err = new Error("Not Found");
+    err.status = 404;
+    next(err);
 });
 app.use(function(err, req, res, next) {
-    if (err && process.env.NODE_ENV !== "development") {
-        return res.status(500).render('500.jade', {
-            error: true
+    res.status(err.status || 500);
+    if (process.env.NODE_ENV !== "development") {
+        return res.render(err.status === 404 ? '404.jade' : '500.jade', {
+            error: err
         });
     }
-    else {
-        next(err);
-    }
+    //default express handler
+    next(err);
 });
