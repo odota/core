@@ -3,8 +3,7 @@ dotenv.load();
 var steam = require("steam"),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
-    Dota2 = new dota2.Dota2Client(Steam, false),
-    fs = require('fs');
+    Dota2 = new dota2.Dota2Client(Steam, false);
 var users = process.env.STEAM_USER.split(",");
 var passes = process.env.STEAM_PASS.split(",");
 //todo use own set of logins, determine number based on foreman worker number or 0
@@ -30,11 +29,6 @@ var logOnDetails = {
     "accountName": user,
     "password": pass
 };
-if (!fs.existsSync("sentry")) {
-    fs.openSync("sentry", 'w');
-}
-var sentry = fs.readFileSync("sentry");
-if (sentry.length) logOnDetails.shaSentryfile = sentry;
 Steam.logOn(logOnDetails);
 console.log("[STEAM] Trying to log on with %s,%s", user, pass);
 

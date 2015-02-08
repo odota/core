@@ -1,15 +1,16 @@
 var utility = require('./utility');
 var processors = require('./processors');
 var getData = utility.getData;
-var db = utility.db;
+var db = require('./db');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var insertMatch = utility.insertMatch;
+var insertMatch = require('./operations').insertMatch;
 var jobs = utility.jobs;
 var kue = utility.kue;
-var fullhistory = require('./fullhistory');
-
+var fullhistory = require('./tasks/fullhistory');
+var updatenames = require('./tasks/updatenames');
+var untrack = require('./tasks/untrack');
 console.log("[WORKER] starting worker");
 async.series([clearActiveJobs], function(err) {
     if (err) {
@@ -18,8 +19,9 @@ async.series([clearActiveJobs], function(err) {
     startScan();
     jobs.promote();
     jobs.process('api', processors.processApi);
-    setInterval(untrackPlayers, 60 * 60 * 1000, function() {});
-    setInterval(fullhistory, 60 * 60 * 1000, function() {});
+    setInterval(untrack, 60 * 60 * 1000, function() {});
+    setInterval(fullhistory, 30 * 60 * 1000, function() {});
+    //setInterval(updatenames, 1 * 60 * 1000, function() {});
 });
 
 function clearActiveJobs(cb) {
@@ -41,19 +43,6 @@ function clearActiveJobs(cb) {
         }, function(err) {
             cb(err);
         });
-    });
-}
-
-function untrackPlayers(cb) {
-    db.players.update(utility.selector("untrack"), {
-        $set: {
-            track: 0
-        }
-    }, {
-        multi: true
-    }, function(err, num) {
-        console.log("[UNTRACK] Untracked %s users", num);
-        cb(err, num);
     });
 }
 

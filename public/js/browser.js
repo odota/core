@@ -1,7 +1,6 @@
 var moment = require('moment');
 var $ = jQuery = require('jquery');
-var qtip = require('qtip2');
-$.qtip = qtip;
+$.qtip = require('qtip2');
 //var dataTable = require('datatables');
 var tooltips = require('./tooltips');
 var utility = require('./utility');
@@ -32,15 +31,17 @@ global.statusHandler = function() {
                 if (!buffers[prop].length || data.stats[prop].match_id !== buffers[prop][0].match_id) {
                     data.stats[prop].jq = $(
                         "<tr>" +
-                        "<td>" + data.stats[prop].match_id + "</td>" +
+                        "<td><a href='/matches/" + data.stats[prop].match_id + "'>" + data.stats[prop].match_id + "</a></td>" +
                         "<td>" + moment.unix(data.stats[prop].start_time + data.stats[prop].duration).fromNow() + "</td>" +
                         "</tr>");
                     buffers[prop].unshift(data.stats[prop]);
                     data.stats[prop].jq.hide().prependTo($("#" + prop + " tbody")).show('slow');
                 }
-                if (buffers[prop].length>10){
+                if (buffers[prop].length > 10) {
                     var pop = buffers[prop].pop();
-                    pop.jq.hide('slow', function(){ pop.jq.remove(); });
+                    pop.jq.hide('slow', function() {
+                        pop.jq.remove();
+                    });
                 }
             }
             else {
@@ -48,7 +49,7 @@ global.statusHandler = function() {
             }
         }
     });
-}
+};
 
 function process() {
     $('table.summable').each(function(i, table) {

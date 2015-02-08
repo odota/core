@@ -1,6 +1,5 @@
 var ids = require("../test/ids.json");
-var utility = require("../utility");
-var db = utility.db;
+var db = require('../db');
 
 ids.forEach(function(id) {
     db.players.insert({
