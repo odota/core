@@ -39,6 +39,8 @@ public class Main {
 		int heroIdx=0;
 		int stunIdx=0;
 		int handleIdx=0;
+		int nameIdx=0;
+		int steamIdx=0;
 		Match match = new Match();
 		float nextMinute = 0;
 		int gameZero = Integer.MIN_VALUE;
@@ -62,13 +64,6 @@ public class Main {
 				EntityCollection ec = match.getEntities();
 
 				if (!initialized) {
-					for (int i = 0; i < numPlayers; i++) {
-						String st = pr.getProperty("m_iszPlayerNames" + "." + PLAYER_IDS[i]);
-						byte[] b = st.getBytes();
-						String name = new String(b);
-						long steamid = pr.getProperty("m_iPlayerSteamIDs" + "." + PLAYER_IDS[i]);
-						doc.addPlayer(name, steamid);
-					}
 					combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog");
 					ctx = new CombatLogContext(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
 					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
@@ -77,6 +72,13 @@ public class Main {
 					heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
 					stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
+					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
+					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+					for (int i = 0; i < numPlayers; i++) {
+						String name = pr.getState()[nameIdx+i].toString();
+						Long steamid = (Long) pr.getState()[steamIdx+i];
+						doc.addPlayer(name, steamid);
+					}
 					initialized = true;
 				}
 
