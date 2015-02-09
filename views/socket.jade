@@ -1,0 +1,44 @@
+input#input-files(type='file', name='files[]', data-url='/upload', multiple)
+button#send-file(onclick='javascript:sendFile();') Send
+script(src="/socket.io/socket.io.js")
+script.
+  //variable declaration
+  var filesUpload = null;
+  var file = null;
+  var socket = io.connect();
+  var send = false;
+  
+  init();
+  
+  function init() {
+      filesUpload = document.getElementById('input-files');
+      filesUpload.addEventListener('change', fileHandler, false);
+  }
+  
+  function fileHandler(e) {
+      var files = e.target.files || e.dataTransfer.files;
+  
+      if (files) {
+          //send only the first one
+          file = files[0];
+      }
+  }
+  
+  function sendFile() {
+      if (file) {
+          //read the file content and prepare to send it
+          var reader = new FileReader();
+  
+          reader.onload = function(e) {
+              console.log('Sending file...');
+              //get all content
+              var buffer = e.target.result;
+              //send the content via socket
+              socket.emit('send-file', file.name, buffer);
+          };
+          reader.readAsBinaryString(file);
+      }
+  }
+  socket.on('recFile', function(){
+  console.log("server received file");
+  })

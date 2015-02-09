@@ -68,6 +68,14 @@ var server = app.listen(process.env.PORT || 5000, function() {
 });
 var io = require('socket.io')(server);
 require('./status')(io);
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+*/
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;

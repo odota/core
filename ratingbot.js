@@ -6,7 +6,21 @@ var steam = require("steam"),
     Dota2 = new dota2.Dota2Client(Steam, false);
 var users = process.env.STEAM_USER.split(",");
 var passes = process.env.STEAM_PASS.split(",");
-//todo use own set of logins, determine number based on foreman worker number or 0
+//todo integrate ratingbot with yasp
+//yasp main receives match, checks for yasp users.  For each yasp user, it requests mmr (passing user) to see if changed.
+//Can throw this task onto a queue.
+//result returns current user rating.   update ratings collection with this match id, user, rating delta, before/after
+
+//options for bot:
+//use own set of logins. Bot logs into all accounts.  maintain mapping of users to accounts.
+
+//run it on yasp remote (retriever):
+//using the same accounts as retriever (yasp remote):
+//in order to share accounts, retriever would need to log into all accounts simultaneously
+//it would take replay salt requests (status quo) from the current loginNum account
+//it would also take mmr requests and respond to those
+//how to look up which account has what friends?  build a lookup table on startup?
+//would need to be updated as friends were added
 
 Steam.EFriendRelationship = {
     None: 0,
