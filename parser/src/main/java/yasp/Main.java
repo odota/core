@@ -33,6 +33,12 @@ public class Main {
 		boolean initialized = false;
 		GameEventDescriptor combatLogDescriptor = null;
 		CombatLogContext ctx = null;
+		int lhIdx=0;
+		int xpIdx=0;
+		int goldIdx=0;
+		int heroIdx=0;
+		int stunIdx=0;
+		int handleIdx=0;
 		Match match = new Match();
 		float nextMinute = 0;
 		int gameZero = Integer.MIN_VALUE;
@@ -65,6 +71,12 @@ public class Main {
 					}
 					combatLogDescriptor = match.getGameEventDescriptors().forName("dota_combatlog");
 					ctx = new CombatLogContext(match.getStringTables().forName("CombatLogNames"), combatLogDescriptor);
+					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
+					xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
+					goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
+					heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
+					stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
+					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					initialized = true;
 				}
 
@@ -72,26 +84,28 @@ public class Main {
 					doc.times.add(trueTime);
 					for (int i = 0; i < numPlayers; i++) {
 						Player player = doc.players.get(i);
-						player.lh.add((Integer)pr.getProperty("m_iLastHitCount" + "." + PLAYER_IDS[i]));
-						player.xp.add((Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP" + "." + PLAYER_IDS[i]));
-						player.gold.add((Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold" + "." + PLAYER_IDS[i]));
-						/*
-				        int handle = pr.getProperty("m_hSelectedHero" + "." + PLAYER_IDS[i]);
+						player.lh.add((Integer)pr.getState()[lhIdx+i]);
+						player.xp.add((Integer)pr.getState()[xpIdx+i]);
+						player.gold.add((Integer)pr.getState()[goldIdx+i]);
+					}
+					nextMinute += MINUTE;
+				}
+				
+				for (int i = 0; i < numPlayers; i++) {
+					String hero = pr.getState()[heroIdx+i].toString();
+					doc.hero_to_slot.put(hero, i);
+					Float stuns = (Float)pr.getState()[stunIdx+i];
+					doc.players.get(i).stuns = stuns;
+					/*
+				        int handle = pr.getState()[handleIdx+i];
                         Entity e = ec.getByHandle(handle);
                         if (e!=null){
                         	//System.err.println(e);
                         	System.err.format("time: %s, hero: %s, x: %s, y: %s,\n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                         }
                         */
-					}
-					nextMinute += MINUTE;
 				}
-				for (int i = 0; i < numPlayers; i++) {
-					String hero = pr.getProperty("m_nSelectedHeroID" + "." + PLAYER_IDS[i]).toString();
-					doc.hero_to_slot.put(hero, i);
-					float stuns = pr.getProperty("m_fStuns" + "." + PLAYER_IDS[i]);
-					doc.players.get(i).stuns = stuns;
-				}
+				
 				/*
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
