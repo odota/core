@@ -34,7 +34,26 @@ block content
     .col-md-4
       h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
-      p: a.btn.btn-primary(href="/upload") Upload a Replay &raquo;
+      p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
+      p: a.btn.btn-danger(href="/logout") Logout &raquo;
+   script.
+    var $dark = $("#dark");
+    $dark.change(function() {
+        console.log($dark.is(":checked"));
+        $.post(
+            "/preferences", {
+                dark: $dark.is(":checked")
+            },
+            function(data) {
+                if (data.sync) {
+                    location.reload(true);
+                }
+                else {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                }
+                $(".sync").fadeOut(3000);
+            });
+    });
 
   else
     .text-center
