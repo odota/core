@@ -56,7 +56,6 @@ module.exports = function playerTables() {
         //limit api to 100,  set serverside=true, safer, but can't sort (current implementation)
         //don't limit api, set serverside=false, datatables gets back full result array to sort/paginate, but risk ddos
         //don't limit api, but restrict the projected fields
-        //todo re-activate tooltips on draw
         //todo allow sorting by hero name
         $('#matches').dataTable({
             "order": [
@@ -69,7 +68,7 @@ module.exports = function playerTables() {
                         "players.account_id": account_id
                     }
                 },
-                "dataSrc":function(json){
+                "dataSrc": function(json) {
                     console.log(json);
                     return json.data;
                 }
@@ -77,6 +76,9 @@ module.exports = function playerTables() {
             "rowCallback": function(row, data) {
                 var cl = data.players[0].player_slot < 64 === data.radiant_win ? "success" : "danger";
                 $(row).addClass(cl);
+            },
+            "drawCallback": function() {
+                require('./tooltips')();
             },
             serverSide: true,
             stateSave: true,
@@ -90,7 +92,7 @@ module.exports = function playerTables() {
                 data: 'players[0].hero_id',
                 title: 'Hero',
                 render: function(data, type) {
-                    return heroes[data] ? "<img src='" + heroes[data].img + "' title='" + heroes[data].localized_name + "'/>" : data;
+                    return heroes[data] ? "<img src='" + heroes[data].img + "' title=\"" + heroes[data].localized_name + "\"/>" : data;
                 }
             }, {
                 data: 'radiant_win',

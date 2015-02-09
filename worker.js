@@ -12,17 +12,13 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var untrack = require('./tasks/untrack');
 console.log("[WORKER] starting worker");
-async.series([clearActiveJobs], function(err) {
-    if (err) {
-        logger.info(err);
-    }
-    startScan();
-    jobs.promote();
-    jobs.process('api', processors.processApi);
-    setInterval(untrack, 60 * 60 * 1000, function() {});
-    setInterval(fullhistory, 30 * 60 * 1000, function() {});
-    setInterval(updatenames, 1 * 60 * 1000, function() {});
-});
+startScan();
+jobs.promote();
+jobs.process('api', processors.processApi);
+setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
+setInterval(untrack, 60 * 60 * 1000, function() {});
+setInterval(fullhistory, 30 * 60 * 1000, function() {});
+setInterval(updatenames, 1 * 60 * 1000, function() {});
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -34,7 +30,7 @@ function clearActiveJobs(cb) {
                 if (err) {
                     return cb(err);
                 }
-                if ((new Date() - job.updated_at) > 5 * 1000) {
+                if ((new Date() - job.updated_at) > 5 * 60 * 1000) {
                     console.log("unstuck job %s", id);
                     job.inactive();
                 }

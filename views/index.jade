@@ -31,10 +31,32 @@ block content
       h3 Info
       p Last Full History Scan: 
         span= user.full_history_time || "Never"
+      p Last Name Update: 
+        span= user.last_summaries_update || "Never"
     .col-md-4
       h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
-      p: a.btn.btn-primary(href="/upload") Upload a Replay &raquo;
+      p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
+      p: a.btn.btn-danger(href="/logout") Logout &raquo;
+      //todo socket powered uploads and requests?
+   script.
+    var $dark = $("#dark");
+    $dark.change(function() {
+        console.log($dark.is(":checked"));
+        $.post(
+            "/preferences", {
+                dark: $dark.is(":checked")
+            },
+            function(data) {
+                if (data.sync) {
+                    location.reload(true);
+                }
+                else {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                }
+                $(".sync").fadeOut(3000);
+            });
+    });
 
   else
     .text-center
@@ -48,19 +70,14 @@ block content
           p.lead Go beyond the API.
           span.glyphicon.glyphicon-stats
           p.text-left YASP parses replays to provide Dota 2 match statistics not available through the API or game client.
+          p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
         .col-md-4
           p.lead Free of charge.
           span.glyphicon.glyphicon-thumbs-up
           p.text-left YASP is supported by volunteer developers and community contributions, making it free for users.
+          p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
         .col-md-4
           p.lead Open source.
           span.glyphicon.glyphicon-wrench
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
-      .row
-        .col-md-4
-           p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
-        .col-md-4
-           p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
-        .col-md-4
-           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
-
+          p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
