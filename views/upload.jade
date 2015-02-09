@@ -1,23 +1,40 @@
 extend layout
 block content
-  h1 Replay Uploads
+  h1 Requests
   .row
     .col-md-8
-      p Upload your replays here. <strong>We currently only support public lobbies.</strong>
+      p Request a parse by uploading a replay file or entering a match ID.
+      p Only public games are supported.
   if error
     .alert.alert-danger(role="alert")=error
-  form#upload(enctype="multipart/form-data", action="/upload", method="post")
-    .form-group
-      label Recaptcha		
-      != recaptcha_form		
-    .form-group
-      label Replay Upload
-      input(type="file" name="replay")
-    button.btn.btn-success#button Upload
+  .row
+    .col-md-4
+      div.radio
+        label
+          input.type(type="radio" name="type" value="replay")
+          ="Replay"
+      div.radio
+        label
+          input.type(type="radio" name="type" value="match_id")
+          ="Match ID"
+      form#upload(enctype="multipart/form-data", action="/upload", method="post")
+        .form-group#input
+        .form-group
+          label Prove humanity:
+          != recaptcha_form		
+        button.btn.btn-success#button Submit
   include ads/leaderboard_2
   
 block footer_assets
   script.
+    $(".type").click(function(event){
+      var type = $(this).val();
+      var inputs = {
+        "replay":"<input type='file' name='replay'/>",
+        "match_id":"<input type='text' name='match_id' class='form-control'/>"
+        };
+      $("#input").empty().append(inputs[type]);       
+    })
     $("#button").click(function(event) {
         event.preventDefault();
         $.post(
@@ -31,7 +48,7 @@ block footer_assets
                 }
                 else {
                     $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please try again.</div");
-                    $(".failure").fadeOut(3000);
+                    $(".failure").fadeOut(2000);
                     Recaptcha.reload();
                 }
             }
