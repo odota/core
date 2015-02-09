@@ -1,5 +1,3 @@
-var dotenv = require('dotenv');
-dotenv.load();
 var BigNumber = require('big-number').n,
     request = require('request'),
     winston = require('winston'),
@@ -91,64 +89,59 @@ function checkDuplicate(type, payload, cb) {
 }
 
 function generateJob(type, payload) {
-    var api_key = api_keys[Math.floor(Math.random() * api_keys.length)];
-    if (type === "api_details") {
-        return {
-            url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
-            title: [type, payload.match_id].join(),
-            type: "api",
-            payload: payload
-        };
-    }
-    if (type === "api_history") {
-        var url = api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key;
-        url += payload.account_id ? "&account_id=" + payload.account_id : "";
-        url += payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "";
-        url += payload.hero_id ? "&hero_id=" + payload.hero_id : "";
-        return {
-            url: url,
-            title: [type, payload.account_id].join(),
-            type: "api",
-            payload: payload
-        };
-    }
-    if (type === "api_summaries") {
-        var steamids = [];
-        payload.players.forEach(function(player) {
-            steamids.push(convert32to64(player.account_id).toString());
-        });
-        payload.query = steamids.join();
-        return {
-            url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.query,
-            title: [type, payload.summaries_id].join(),
-            type: "api",
-            payload: payload
-        };
-    }
-    if (type === "api_sequence") {
-        return {
-            url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.seq_num,
-            title: [type, payload.seq_num].join(),
-            type: "api",
-            payload: payload
-        };
-    }
-    if (type === "api_heroes") {
-        return {
-            url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
-            title: [type, payload.language].join(),
-            type: "api",
-            payload: payload
-        };
-    }
-    if (type === "parse") {
-        return {
-            title: [type, payload.match_id].join(),
-            type: type,
-            fileName: payload.fileName,
-            payload: payload
-        };
-    }
+    var api_key;
+    var opts = {
+        "api_details": function() {
+            return {
+                url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
+                title: [type, payload.match_id].join(),
+                type: "api",
+                payload: payload
+            };
+        },
+        "api_history": function() {
+            return {
+                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : ""),
+                title: [type, payload.account_id].join(),
+                type: "api",
+                payload: payload
+            };
+        },
+        "api_summaries": function() {
+            return {
+                url: api_url + "/ISteamUser/GetPlayerSummaries/v0002/?key=" + api_key + "&steamids=" + payload.players.map(function(p) {
+                    return convert32to64(p.account_id).toString();
+                }).join(),
+                title: [type, payload.summaries_id].join(),
+                type: "api",
+                payload: payload
+            };
+        },
+        "api_sequence": function() {
+            return {
+                url: api_url + "/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=" + api_key + "&start_at_match_seq_num=" + payload.start_at_match_seq_num,
+                title: [type, payload.seq_num].join(),
+                type: "api"
+            };
+        },
+        "api_heroes": function() {
+            return {
+                url: api_url + "/IEconDOTA2_570/GetHeroes/v0001/?key=" + api_key + "&language=" + payload.language,
+                title: [type, payload.language].join(),
+                type: "api",
+                payload: payload
+            };
+        },
+        "parse": function() {
+            return {
+                title: [type, payload.match_id].join(),
+                type: type,
+                fileName: payload.fileName,
+                payload: payload
+            };
+        }
+    };
+    return opts[type]();
 }
 
 function getData(url, cb) {

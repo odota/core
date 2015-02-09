@@ -116,7 +116,7 @@ function streamReplay(job, cb) {
         }
     });
     d.run(function() {
-        var parser = utility.runParse(function(err, output) {
+        parser = utility.runParse(function(err, output) {
             if (err) {
                 throw err;
             }
@@ -135,7 +135,7 @@ function streamReplay(job, cb) {
             fs.createReadStream(job.data.fileName).pipe(parser.stdin);
         }
         else {
-            var bz = spawn("bzcat");
+            bz = spawn("bzcat");
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null,
@@ -143,7 +143,7 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    throw "download error";
+                    error = "download error";
                 }
             });
             downStream.pipe(bz.stdin);
