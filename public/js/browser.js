@@ -4,8 +4,8 @@ $.qtip = require('qtip2');
 //var dataTable = require('datatables');
 //do on every page
 $(document).ready(function() {
-    require('./tooltips');
-    require('./formatHtml');
+    require('./tooltips')();
+    require('./formatHtml')();
 });
 //functions to call on demand
 global.generateCharts = require('./charts');
