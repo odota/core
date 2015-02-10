@@ -14,6 +14,13 @@ var untrack = require('./tasks/untrack');
 console.log("[WORKER] starting worker");
 //todo build tracked players on interval
 //todo build ratingbot players on interval, map to retriever host, also retrieve bot status (store in redis/db)
+//workflow
+//page gives list of bot accounts, user adds a bot
+//yasp main scans match, checks for bot-enabled users.
+//For enabled users, queue a task to get mmr of this user
+//result returns current user mmr.  update ratings collection with this match id, user, rating.
+//index ratings collection on match_id, user
+//yasp worker task builds map of account ids to retriever host
 startScan();
 jobs.promote();
 jobs.process('api', processors.processApi);
@@ -21,7 +28,6 @@ setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
 setInterval(untrack, 60 * 60 * 1000, function() {});
 setInterval(fullhistory, 30 * 60 * 1000, function() {});
 setInterval(updatenames, 1 * 60 * 1000, function() {});
-
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
