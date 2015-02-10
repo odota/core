@@ -37,12 +37,14 @@ upload.post("/", function(req, res) {
             form.on('field', function(name, value) {
                 console.log('got field named ' + name);
                 //queue for api details, redirect
-                match_id = Number(value);
-                queueReq("api_details", {
-                    match_id: match_id,
-                    request: true,
-                    priority: "high"
-                }, close);
+                if (name === "match_id") {
+                    match_id = Number(value);
+                    queueReq("api_details", {
+                        match_id: match_id,
+                        request: true,
+                        priority: "high"
+                    }, close);
+                }
             });
             form.on('part', function(part) {
                 if (part.filename) {
@@ -70,12 +72,21 @@ upload.post("/", function(req, res) {
     function close(err, job) {
         if (err) {
             return res.render("upload", {
-                error: err
+                error: err,
+                recaptcha_form: recaptcha.toHTML(),
             });
         }
         else if (job) {
-            job.on('complete', function() {
-                res.redirect("/matches/" + match_id);
+            job.on('complete', function(result) {
+                if (result) {
+                    return res.render("upload", {
+                        error: JSON.stringify(result),
+                        recaptcha_form: recaptcha.toHTML(),
+                    });
+                }
+                else {
+                    return res.redirect("/matches/" + match_id);
+                }
             });
         }
         else {

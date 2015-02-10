@@ -157,7 +157,8 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, data) {
         if (err) {
-            return cb(err);
+            //encountered non-retryable error, pass back to kue as the result
+            return cb(null, err);
         }
         if (data.response) {
             logger.info("summaries response");
