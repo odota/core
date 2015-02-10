@@ -66,7 +66,7 @@ matches.param('match_id', function(req, res, next, id) {
 matches.get('/:match_id/:info?', function(req, res, next) {
     var match = req.match;
     var info = req.params.info || "index";
-    res.render("matches_" + info, {
+    res.render("match_" + info, {
         route: info,
         match: match,
         tabs: matchPages,
