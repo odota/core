@@ -19,12 +19,15 @@ upload.post("/", function(req, res) {
         var form = new multiparty.Form();
         var match_id;
         var parser;
+        var error;
         var d = domain.create();
         d.on('error', function(err) {
-            console.log(err.stack);
-            //user aborted upload
-            if (parser) {
-                parser.kill();
+            if (!error) {
+                error = err;
+                if (parser) {
+                    parser.kill();
+                }
+                close(error);
             }
         });
         d.run(function() {
@@ -47,7 +50,7 @@ upload.post("/", function(req, res) {
                     //parse to determine match_id, queue for api details, redirect
                     parser = utility.runParse(function(err, output) {
                         if (err) {
-                            return close(err);
+                            throw err;
                         }
                         match_id = output.match_id;
                         queueReq("api_details", {
