@@ -12,6 +12,14 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var untrack = require('./tasks/untrack');
 console.log("[WORKER] starting worker");
+//todo build tracked players on interval, map to true
+//todo build ratingbot players on interval, map to retriever host, also retrieve bot status (store in redis/db)
+//page sorts bots by id, returns first bot with slots available, user adds bot
+//yasp main scans match, checks for bot-enabled users.
+//For enabled users, queue a task to get mmr of this user
+//result returns current user mmr.  update ratings collection with this match id, user, rating.
+//index ratings collection on match_id, user
+//yasp worker task builds map of account ids to retriever host
 startScan();
 jobs.promote();
 jobs.process('api', processors.processApi);
@@ -98,6 +106,7 @@ function scanApi(seq_num) {
             var filtered = [];
             for (var i = 0; i < resp.length; i++) {
                 var match = resp[i];
+                //todo check for tracked players/ratingbot players
                 if (match.players.some(function(element) {
                         return (element.account_id in trackedPlayers);
                     })) {

@@ -3,76 +3,23 @@ dotenv.load();
 var steam = require("steam"),
     dota2 = require("dota2");
 var utility = require("./utility");
+var async = require('async');
 var convert64To32 = utility.convert64to32;
-var users = process.env.STEAM_USER.split(",");
-var passes = process.env.STEAM_PASS.split(",");
-var loginNum = 0;
-var steamArray = [];
-var accountToIdx = {};
-
 var express = require('express');
 var app = express();
-var counts = {};
+var users = process.env.STEAM_USER.split(",");
+var passes = process.env.STEAM_PASS.split(",");
+var steamObj = {};
+var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
+var ready = false;
 
-//workflow
-//page gives list of bot accounts, user adds a bot
-//yasp main receives match, checks for bot-enabled users.
-//For enabled users, queue a task to get mmr of this user
-//result returns current user mmr.  update ratings collection with this match id, user, rating.
-//index ratings collection on match_id, user compound
-//yasp main worker task asks retrievers what account_ids they can get mmrs for, update these player documents with the retriever host/bot id
-
-//todo handle
-//what if Dota 2/accountIdx not ready?
-//what if user unfriended the bot?
-
-app.get('/', function(req, res, next) {
-    //todo reject request if doesnt have key
-    if (req.query.match_id) {
-        getGCReplayUrl(loginNum, req.query.match_id, function(err, data) {
-            if (err) {
-                return res.json({
-                    error: err
-                });
-            }
-            res.json(data);
-        });
-    }
-    else if (req.query.account_id) {
-        var idx = accountToIdx[req.query.account_id];
-        getPlayerProfile(idx, req.query.account_id, function(err, data) {
-            if (err) {
-                return res.json({
-                    error: err
-                });
-            }
-            res.json(data);
-        });
-    }
-    else {
-        return res.json({
-            loginNum: loginNum,
-            replayRequests: replayRequests,
-            uptime: (new Date() - launch) / 1000,
-            counts: counts,
-            accountToIdx: accountToIdx
-        });
-    }
-});
-
-for (var i = 0; i < users.length; i++) {
-    counts[i] = {
-        attempts: 0,
-        success: 0,
-        friends: 0
-    };
+var a = [];
+while (a.length < users.length) a.push(a.length + 0);
+async.map(a, function(i, cb) {
     var Steam = new steam.SteamClient();
     Steam.Dota2 = new dota2.Dota2Client(Steam, false);
-    Steam.idx = i;
-    steamArray.push(Steam);
-
     Steam.EFriendRelationship = {
         None: 0,
         Blocked: 1,
@@ -108,59 +55,62 @@ for (var i = 0; i < users.length; i++) {
     Steam.on("loggedOn", function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", Steam.steamID);
         Steam.setPersonaName("[YASP] " + Steam.steamID);
-        Steam.Dota2.launch();
-        Steam.Dota2.on("ready", function() {
-            console.log("Dota 2 ready");
+        steamObj[Steam.steamID] = Steam;
+        Steam.attempts = 0;
+        Steam.success = 0;
+        Steam.on("relationships", function() {
+            //console.log(Steam.EFriendRelationship);
+            console.log("searching for pending friend requests...");
+            //friends is a object with key steam id and value relationship
+            console.log(Steam.friends);
+            for (var prop in Steam.friends) {
+                //iterate through friends and accept requests/populate hash
+                var steamID = prop;
+                var relationship = Steam.friends[prop];
+                if (relationship === Steam.EFriendRelationship.PendingInvitee) {
+                    Steam.addFriend(steamID);
+                    console.log(steamID + " was added as a friend");
+                }
+                accountToIdx[convert64To32(steamID)] = Steam.steamID;
+            }
+            console.log("finished searching");
+            Steam.Dota2.launch();
+            Steam.Dota2.on("ready", function() {
+                console.log("Dota 2 ready");
+                cb();
+            });
         });
     });
     Steam.on('error', function onSteamError(e) {
         console.log(e);
     });
-    Steam.on("relationships", function() {
-        //console.log(Steam.EFriendRelationship);
-        console.log("searching for pending friend requests...");
-        //friends is a object with key steam id and value relationship
-        console.log(Steam.friends);
-        for (var prop in Steam.friends) {
-            //iterate through friends and accept requests/populate hash
-            var steamID = prop;
-            var relationship = Steam.friends[prop];
-            if (relationship == Steam.EFriendRelationship.PendingInvitee) {
-                Steam.addFriend(steamID);
-                console.log(steamID + " was added as a friend");
-            }
-            accountToIdx[convert64To32(steamID)] = Steam.idx;
-            counts[Steam.idx].friends += 1;
-        }
-        console.log("finished searching");
-    });
-}
+}, function(err) {
+    ready = !err;
+});
 
-function getPlayerProfile(num, account_id, cb) {
-    var Dota2 = steamArray[num].Dota2;
+function getPlayerProfile(idx, account_id, cb) {
+    var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
-    Dota2.profileRequest(account_id, false);
-    Dota2.on('profileData', function(accountId, profileData) {
+    Dota2.profileRequest(account_id, false, function(accountId, profileData) {
         cb(null, profileData.gameAccountClient);
     });
 }
 
-function getGCReplayUrl(num, match_id, cb) {
-    var Dota2 = steamArray[num].Dota2;
-    console.log("[DOTA] requesting replay %s, loginNum: %s, numusers: %s", match_id, loginNum, users.length);
+function getGCReplayUrl(idx, match_id, cb) {
+    var Dota2 = steamObj[idx].Dota2;
+    console.log("[DOTA] requesting replay %s, numusers: %s", match_id, users.length);
     var dotaTimeOut = setTimeout(function() {
         console.log("[DOTA] request for replay timed out");
-        loginNum++;
         cb("timeout");
     }, 10000);
     replayRequests += 1;
     if (replayRequests >= 500) {
         selfDestruct();
     }
-    counts[loginNum].attempts += 1;
+    steamObj[idx].attempts += 1;
     Dota2.matchDetailsRequest(match_id, function(err, data) {
         clearTimeout(dotaTimeOut);
-        counts[loginNum].success += 1;
+        steamObj[idx].success += 1;
         cb(err, data);
     });
 }
@@ -168,6 +118,52 @@ function getGCReplayUrl(num, match_id, cb) {
 function selfDestruct() {
     process.exit(0);
 }
+
+app.get('/', function(req, res, next) {
+    if (!ready) {
+        return next("retriever not ready");
+    }
+    //todo reject request if doesnt have key
+    var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
+    if (req.query.match_id) {
+        getGCReplayUrl(r, req.query.match_id, function(err, data) {
+            if (err) {
+                return next(err);
+            }
+            res.json(data);
+        });
+    }
+    else if (req.query.account_id) {
+        var idx = accountToIdx[req.query.account_id] || r;
+        getPlayerProfile(idx, req.query.account_id, function(err, data) {
+            if (err) {
+                return next(err);
+            }
+            res.json(data);
+        });
+    }
+    else {
+        var stats = {};
+        for (var key in steamObj) {
+            stats[key] = {
+                attempts: steamObj[key].attempts,
+                success: steamObj[key].success,
+                friends: Object.keys(steamObj[key].friends).length
+            };
+        }
+        return res.json({
+            replayRequests: replayRequests,
+            uptime: (new Date() - launch) / 1000,
+            accounts: stats,
+            accountToIdx: accountToIdx
+        });
+    }
+});
+app.use(function(err, req, res, next) {
+    return res.status(500).json({
+        error: err
+    });
+});
 
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;
