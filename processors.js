@@ -100,18 +100,20 @@ function streamReplay(job, cb) {
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
     var d = domain.create();
     var error;
-    var parser;
     var bz;
+    var parser;
     d.on('error', function(err) {
-        if (bz) {
-            bz.kill();
-            bz = null;
+        if (!error) {
+            //only cb with first error
+            error = err;
+            if (bz) {
+                bz.kill();
+            }
+            if (parser) {
+                parser.kill();
+            }
+            cb(error);
         }
-        if (parser) {
-            parser.kill();
-            parser = null;
-        }
-        cb(error || err);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
