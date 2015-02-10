@@ -31,9 +31,6 @@ upload.post("/", function(req, res) {
             }
         });
         d.run(function() {
-            form.on('error', function(err) {
-                throw err;
-            });
             form.on('field', function(name, value) {
                 console.log('got field named ' + name);
                 //queue for api details, redirect
