@@ -9,8 +9,9 @@ var kue = r.kue;
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var insertMatch = require('./operations').insertMatch;
-
+var operations = require('./operations');
+var insertMatch = operations.insertMatch;
+var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var untrack = require('./tasks/untrack');
@@ -135,7 +136,7 @@ function scanApi(seq_num) {
                     tracked = true;
                 }
                 if (p.account_id in ratingPlayers) {
-                    utility.queueReq("mmr", {
+                    queueReq("mmr", {
                         match_id: match.match_id,
                         account_id: p.account_id,
                         url: ratingPlayers[p.account_id]
@@ -168,35 +169,5 @@ function scanApi(seq_num) {
                 scanApi(new_seq_num);
             }, delay);
         });
-        /*
-                var filtered = [];
-        for (var i = 0; i < resp.length; i++) {
-            var match = resp[i];
-            var tracked = false;
-            for (var j = 0; j < match.players.length; j++) {
-                if (match.players[j].account_id in trackedPlayers) {
-                    tracked = true;
-                }
-                if (match.players[j].account_id in ratingPlayers) {
-                    utility.queueReq("mmr", {
-                        match_id: match.match_id,
-                        account_id: match.players[j].account_id,
-                        url: ratingPlayers[match.players[j].account_id]
-                    }, function() {});
-                }
-            }
-            if (tracked) {
-                filtered.push(match);
-            }
-        }
-        logger.info("[API] seq_num: %s, found %s matches, %s to add", seq_num, resp.length, filtered.length);
-        async.mapSeries(filtered, insertMatch, function() {
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(new_seq_num);
-            }, delay);
-        });
-        */
     });
 }

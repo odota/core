@@ -1,6 +1,5 @@
-var utility = require('../utility');
 var db = require('../db');
-var queueReq = utility.queueReq;
+var queueReq = require('../operations').queueReq;
 module.exports = function(cb) {
     db.players.find({}, {
         sort: {
