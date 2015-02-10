@@ -1,7 +1,6 @@
-var utility = require('../utility');
 var db = require('../db');
 var async = require('async');
-var queueReq = utility.queueReq;
+var queueReq = require('../operations').queueReq;
 
 module.exports = function unparsed(done) {
     db.matches.find({

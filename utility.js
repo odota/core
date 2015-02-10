@@ -1,5 +1,6 @@
 var request = require('request'),
     winston = require('winston');
+var BigNumber = require('big-number').n;
 var spawn = require("child_process").spawn;
 var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
@@ -12,43 +13,6 @@ if (process.env.NODE_ENV !== "test") {
 var logger = new(winston.Logger)({
     transports: transports
 });
-
-function queueReq(type, payload, cb) {
-    var jobs = require("./redis").jobs;
-    checkDuplicate(type, payload, function(err, doc) {
-        if (err) {
-            return cb(err);
-        }
-        if (doc) {
-            console.log("duplicate found");
-            return cb(null);
-        }
-        var job = generateJob(type, payload);
-        var kuejob = jobs.create(job.type, job).attempts(10).backoff({
-            delay: 60 * 1000,
-            type: 'exponential'
-        }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
-            logger.info("[KUE] created jobid: %s", kuejob.id);
-            cb(err, kuejob);
-        });
-    });
-}
-
-function checkDuplicate(type, payload, cb) {
-    var db = require('./db');
-    if (type === "api_details" && payload.match_id) {
-        //make sure match doesn't exist already in db before queueing for api
-        db.matches.findOne({
-            match_id: payload.match_id
-        }, function(err, doc) {
-            cb(err, doc);
-        });
-    }
-    else {
-        //no duplicate check for anything else
-        cb(null);
-    }
-}
 
 function generateJob(type, payload) {
     var api_url = "http://api.steampowered.com";
@@ -196,7 +160,6 @@ function getRetrieverUrls() {
     });
 }
 
-var BigNumber = require('big-number').n;
 /*
  * Converts a steamid 64 to a steamid 32
  *
@@ -241,7 +204,6 @@ module.exports = {
     logger: logger,
     generateJob: generateJob,
     getData: getData,
-    queueReq: queueReq,
     runParse: runParse,
     getRetrieverUrls: getRetrieverUrls,
     convert32to64: convert32to64,
@@ -251,32 +213,32 @@ module.exports = {
 };
 
 /*
-        function getS3Url(match_id, cb) {
-            var archiveName = match_id + ".dem.bz2";
-            var s3 = new AWS.S3();
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
-            };
-            var url;
-            try {
-                url = s3.getSignedUrl('getObject', params);
-                cb(null, url);
-            }
-            catch (e) {
-                logger.info("[S3] %s not in S3", match_id);
-                cb(new Error("S3 UNAVAILABLE"));
-            }
-        }
-        function uploadToS3(data, archiveName, cb) {
-            var s3 = new AWS.S3();
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
-            };
-            params.Body = data;
-            s3.putObject(params, function(err, data) {
-                cb(err);
-            });
-        }
-    */
+function getS3Url(match_id, cb) {
+    var archiveName = match_id + ".dem.bz2";
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    var url;
+    try {
+        url = s3.getSignedUrl('getObject', params);
+        cb(null, url);
+    }
+    catch (e) {
+        logger.info("[S3] %s not in S3", match_id);
+        cb(new Error("S3 UNAVAILABLE"));
+    }
+}
+function uploadToS3(data, archiveName, cb) {
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    params.Body = data;
+    s3.putObject(params, function(err, data) {
+        cb(err);
+    });
+}
+*/

@@ -11,7 +11,6 @@ process.env.NODE_ENV = "test";
 process.env.STEAM_API_KEY = "fakekey";
 
 var async = require('async');
-var utility = require('../utility');
 var db = require('../db');
 var r = require('../redis');
 var redis = r.client;
@@ -30,6 +29,7 @@ var updatenames = require('../tasks/updatenames');
 var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var untrack = require('../tasks/untrack');
+var queueReq = require('../operations').queueReq;
 
 var wait = 30000;
 Zombie.localhost('localhost', process.env.PORT);
@@ -214,7 +214,7 @@ describe("services", function() {
 describe("worker", function() {
     this.timeout(wait);
     it('process details request', function(done) {
-        utility.queueReq("api_details", {
+        queueReq("api_details", {
             match_id: 870061127
         }, function(err, job) {
             assert(job);
@@ -224,7 +224,7 @@ describe("worker", function() {
         });
     });
     it('process summaries request', function(done) {
-        utility.queueReq("api_summaries", {
+        queueReq("api_summaries", {
             players: [{
                 account_id: 88367253
             }]
@@ -708,7 +708,7 @@ describe("parser", function() {
             match_id: 115178218,
             start_time: moment().format('X')
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
 
             processors.processParse(job, function(err) {
@@ -721,7 +721,7 @@ describe("parser", function() {
             match_id: 1,
             start_time: 1
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
@@ -733,7 +733,7 @@ describe("parser", function() {
             match_id: 1193091757,
             start_time: moment().format('X')
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
@@ -745,7 +745,7 @@ describe("parser", function() {
             match_id: 1181392470,
             start_time: moment().format('X')
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
@@ -757,7 +757,7 @@ describe("parser", function() {
             match_id: 1189263979,
             start_time: moment().format('X')
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 done(err);
@@ -770,7 +770,7 @@ describe("parser", function() {
             start_time: moment().format('X'),
             fileName: replay_dir + "/invalid.dem"
         };
-        utility.queueReq("parse", job, function(err, job) {
+        queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 assert(err);
