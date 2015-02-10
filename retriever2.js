@@ -16,31 +16,17 @@ var counts = {};
 var replayRequests = 0;
 var launch = new Date();
 
-//todo integrate ratingbot with yasp
+//workflow
 //page gives list of bot accounts, user adds a bot
 //yasp main receives match, checks for bot-enabled users.
-//Can throw this task onto a queue.
-//result returns current user rating.  update ratings collection with this match id, user, rating.
-//yasp main worker task asks retrievers what account_ids they can get mmrs for, update these player documents with the retriever host
+//For enabled users, queue a task to get mmr of this user
+//result returns current user mmr.  update ratings collection with this match id, user, rating.
+//index ratings collection on match_id, user compound
+//yasp main worker task asks retrievers what account_ids they can get mmrs for, update these player documents with the retriever host/bot id
 
-//upgrade retriever to v2 (supports replay salts and mmrs)
-//retriever would need to log into all accounts simultaneously
-//it would take replay salt requests (given a match id) from the current loginNum account
-//it would also take mmr requests (given a player id) and respond to those from the appropriate account
-//how to look up which account has what friends?  build a lookup table on startup?
-//would need to be updated as friends were added
-
-//todo
-//iterate through provided steam creds
-//construct a steam/dota instance with each and place in an array
-//on relationships, steam populates global hash with 32 bit friend steam ids to Steam.index, update the counts
-//on receiving a http request, determine if player request or match request
-//if match request, use the loginnum account
-//if player request, lookup the right account and use that.  if not in lookup table, respond with error
-//if receiving a friend request, accept it and update the lookup
-
-//handle
-//what if Dota 2 not ready?
+//todo handle
+//what if Dota 2/accountIdx not ready?
+//what if user unfriended the bot?
 
 app.get('/', function(req, res, next) {
     //todo reject request if doesnt have key
