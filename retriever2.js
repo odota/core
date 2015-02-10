@@ -18,17 +18,14 @@ var launch = new Date();
 
 //workflow
 //page gives list of bot accounts, user adds a bot
-//yasp main receives match, checks for bot-enabled users.
+//yasp main scans match, checks for bot-enabled users.
 //For enabled users, queue a task to get mmr of this user
 //result returns current user mmr.  update ratings collection with this match id, user, rating.
-//index ratings collection on match_id, user compound
-//yasp main worker task asks retrievers what account_ids they can get mmrs for, update these player documents with the retriever host/bot id
-
-//todo handle
-//what if Dota 2/accountIdx not ready?
-//what if user unfriended the bot?
+//index ratings collection on match_id, user
+//yasp worker task builds map of account ids to retriever host
 
 app.get('/', function(req, res, next) {
+    //todo reject request until ready (all accounts logged in, accountIdx built, Dota ready)
     //todo reject request if doesnt have key
     if (req.query.match_id) {
         getGCReplayUrl(loginNum, req.query.match_id, function(err, data) {
@@ -41,7 +38,8 @@ app.get('/', function(req, res, next) {
         });
     }
     else if (req.query.account_id) {
-        var idx = accountToIdx[req.query.account_id];
+        //use account 0 if not in list, won't be able to get MMR
+        var idx = accountToIdx[req.query.account_id] || 0;
         getPlayerProfile(idx, req.query.account_id, function(err, data) {
             if (err) {
                 return res.json({
