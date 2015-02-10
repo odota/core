@@ -5,7 +5,6 @@ var BigNumber = require('big-number').n,
     parseRedisUrl = require('parse-redis-url')(redis);
 var spawn = require("child_process").spawn;
 var api_url = "http://api.steampowered.com";
-var api_keys = process.env.STEAM_API_KEY.split(",");
 var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
 
@@ -153,6 +152,7 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
+    var api_keys = process.env.STEAM_API_KEY.split(",");
     var delay = 1000;
     var parse = urllib.parse(url, true);
     //inject a random retriever
