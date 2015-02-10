@@ -3,7 +3,9 @@ var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
-var redis = utility.redis;
+var r = require('./redis');
+var redis = r.client;
+var kue = r.kue;
 var db = require('./db');
 var async = require('async');
 var logger = utility.logger;
@@ -15,9 +17,8 @@ var passport = require('./passport');
 var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
-    bodyParser = require('body-parser'),
-    kue = utility.kue;
-
+    bodyParser = require('body-parser');
+    
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
