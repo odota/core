@@ -1,25 +1,8 @@
-var BigNumber = require('big-number').n,
-    request = require('request'),
-    winston = require('winston'),
-    redis = require('redis'),
-    parseRedisUrl = require('parse-redis-url')(redis);
+var request = require('request'),
+    winston = require('winston');
 var spawn = require("child_process").spawn;
-var api_url = "http://api.steampowered.com";
 var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
-
-var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
-//set keys for kue
-options.auth = options.password;
-options.db = options.database;
-var kue = require('kue');
-var db = require('./db');
-var redisclient = redis.createClient(options.port, options.host, {
-    auth_pass: options.password
-});
-var jobs = kue.createQueue({
-    redis: options
-});
 var transports = [];
 if (process.env.NODE_ENV !== "test") {
     transports.push(new(winston.transports.Console)({
@@ -30,29 +13,8 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
-function convert64to32(id) {
-    return new BigNumber(id).minus('76561197960265728');
-}
-
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
-function convert32to64(id) {
-    return new BigNumber('76561197960265728').plus(id);
-}
-
-function isRadiant(player) {
-    return player.player_slot < 64;
-}
-
 function queueReq(type, payload, cb) {
+    var jobs = require("./redis").jobs;
     checkDuplicate(type, payload, function(err, doc) {
         if (err) {
             return cb(err);
@@ -73,6 +35,7 @@ function queueReq(type, payload, cb) {
 }
 
 function checkDuplicate(type, payload, cb) {
+    var db = require('./db');
     if (type === "api_details" && payload.match_id) {
         //make sure match doesn't exist already in db before queueing for api
         db.matches.findOne({
@@ -88,6 +51,7 @@ function checkDuplicate(type, payload, cb) {
 }
 
 function generateJob(type, payload) {
+    var api_url = "http://api.steampowered.com";
     var api_key;
     var opts = {
         "api_details": function() {
@@ -226,6 +190,36 @@ function runParse(cb) {
     return parser;
 }
 
+function getRetrieverUrls() {
+    return retrievers.map(function(r) {
+        return "http://" + r;
+    });
+}
+
+var BigNumber = require('big-number').n;
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+function convert64to32(id) {
+    return new BigNumber(id).minus('76561197960265728');
+
+}
+
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+function convert32to64(id) {
+    return new BigNumber('76561197960265728').plus(id);
+}
+
+function isRadiant(player) {
+    return player.player_slot < 64;
+}
+
 /*
  * Makes sort from a datatables call
  */
@@ -242,26 +236,18 @@ function makeSort(order, columns) {
     return sort;
 }
 
-function getRetrieverUrls() {
-    return retrievers.map(function(r) {
-        return "http://" + r;
-    });
-}
 
 module.exports = {
-    redis: redisclient,
     logger: logger,
-    kue: kue,
-    jobs: jobs,
-    convert32to64: convert32to64,
-    convert64to32: convert64to32,
-    isRadiant: isRadiant,
     generateJob: generateJob,
     getData: getData,
     queueReq: queueReq,
     runParse: runParse,
-    makeSort: makeSort,
-    getRetrieverUrls: getRetrieverUrls
+    getRetrieverUrls: getRetrieverUrls,
+    convert32to64: convert32to64,
+    convert64to32: convert64to32,
+    isRadiant: isRadiant,
+    makeSort: makeSort
 };
 
 /*

@@ -3,8 +3,7 @@ var matches = express.Router();
 var db = require("../db");
 var queries = require("../queries");
 var constants = require("../constants.json");
-var utility = require('../utility');
-var redis = utility.redis;
+var redis = require('../redis').client;
 var matchPages = {
     index: {
         name: "Match"

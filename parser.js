@@ -1,5 +1,4 @@
-var utility = require('./utility');
 var processors = require('./processors');
-var jobs = utility.jobs;
+var jobs = require('./redis').jobs;
 console.log("[PARSER] starting parser");
 jobs.process('parse', processors.processParse);

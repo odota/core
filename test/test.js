@@ -1,21 +1,22 @@
 process.env.MONGO_URL = "mongodb://localhost/test";
 process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
-process.env.KUE_USER="user";
-process.env.KUE_PASS="pass";
+process.env.KUE_USER = "user";
+process.env.KUE_PASS = "pass";
 process.env.PORT = 5000;
 process.env.RETRIEVER_HOST = "localhost:5100";
 process.env.REPLAY_DIR = "./replays_test/";
 process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
-process.env.STEAM_API_KEY="fakekey";
+process.env.STEAM_API_KEY = "fakekey";
 
 var async = require('async');
 var utility = require('../utility');
 var db = require('../db');
-var redis = utility.redis;
-var kue = utility.kue;
-var jobs = utility.jobs;
+var r = require('../redis');
+var redis = r.client;
+var kue = r.kue;
+var jobs = r.jobs;
 var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
@@ -37,63 +38,10 @@ var browser = new Zombie({
     runScripts: false
 });
 
-//fake retriever response
-nock("http://"+process.env.RETRIEVER_HOST)
-    .filteringPath(function(path) {
-        return '/';
-    })
-    .get('/')
-    .times(2)
-    .reply(200, {
-        match: {
-            cluster: 1,
-            replaySalt: 1
-        }
-    });
-
-//fake replay response
-nock('http://replay1.valve.net')
-    .filteringPath(function(path) {
-        return '/';
-    })
-    .get('/')
-    .replyWithFile(200, __dirname + '/1151783218.dem.bz2');
-
-//fake api response
-nock('http://api.steampowered.com')
-    .filteringPath(function(path) {
-        var split = path.split("?");
-        var split2 = split[0].split(".com");
-        return split2[0];
-    })
-    //throw some errors to test handling
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-    .reply(500, {})
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-    .times(2)
-    .reply(200, testdata.details_api)
-    .get('/ISteamUser/GetPlayerSummaries/v0002/')
-    .reply(200, testdata.summaries_api)
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .reply(200, {
-        result: {
-            error: "error"
-        }
-    })
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .reply(200, testdata.history_api)
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-    .times(2)
-    .reply(200, testdata.history_api2)
-    .get('/IEconDOTA2_570/GetHeroes/v0001/')
-    .reply(200, testdata.heroes_api);
-
-//fake dota2 response
-nock('http://www.dota2.com')
-    .get('/jsfeed/itemdata?l=english')
-    .reply(200, testdata.item_api)
-    .get('/jsfeed/abilitydata')
-    .reply(200, testdata.ability_api);
+var replay_dir = process.env.REPLAY_DIR;
+if (!fs.existsSync(replay_dir)) {
+    fs.mkdir(replay_dir);
+}
 
 before(function(done) {
     this.timeout(wait);
@@ -112,7 +60,7 @@ before(function(done) {
             },
             function(cb) {
                 console.log("wiping redis");
-                utility.redis.flushall(function(err) {
+                redis.flushall(function(err) {
                     cb(err);
                 });
             },
@@ -142,28 +90,29 @@ before(function(done) {
             },
             function(cb) {
                 console.log("copying replays to test dir");
-                var replay_dir = process.env.REPLAY_DIR;
-                if (!fs.existsSync(replay_dir)) {
-                    fs.mkdir(replay_dir);
-                }
                 async.parallel([
                     function(cb) {
-                        fs.createReadStream(__dirname + '/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                        request('https://github.com/yasp-dota/testfiles/raw/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                        request('https://github.com/yasp-dota/testfiles/raw/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                        request('https://github.com/yasp-dota/testfiles/raw/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        fs.createReadStream(__dirname + '/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
+                        request('https://github.com/yasp-dota/testfiles/raw/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                            cb(err);
+                        });
+                    },
+                    function(cb) {
+                        request('https://github.com/yasp-dota/testfiles/raw/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     }
@@ -175,14 +124,72 @@ before(function(done) {
                 console.log("starting web");
                 require('../web');
                 cb();
+            },
+            function(cb) {
+                console.log("setting up nock");
+                //fake retriever response
+                nock("http://" + process.env.RETRIEVER_HOST)
+                    .filteringPath(function(path) {
+                        return '/';
+                    })
+                    .get('/')
+                    .times(2)
+                    .reply(200, {
+                        match: {
+                            cluster: 1,
+                            replaySalt: 1
+                        }
+                    });
+
+                //fake replay response
+                nock('http://replay1.valve.net')
+                    .filteringPath(function(path) {
+                        return '/';
+                    })
+                    .get('/')
+                    .replyWithFile(200, replay_dir + '1151783218.dem.bz2');
+
+                //fake api response
+                nock('http://api.steampowered.com')
+                    .filteringPath(function(path) {
+                        var split = path.split("?");
+                        var split2 = split[0].split(".com");
+                        return split2[0];
+                    })
+                    //throw some errors to test handling
+                    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+                    .reply(500, {})
+                    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+                    .times(2)
+                    .reply(200, testdata.details_api)
+                    .get('/ISteamUser/GetPlayerSummaries/v0002/')
+                    .reply(200, testdata.summaries_api)
+                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+                    .reply(200, {
+                        result: {
+                            error: "error"
+                        }
+                    })
+                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+                    .reply(200, testdata.history_api)
+                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+                    .times(2)
+                    .reply(200, testdata.history_api2)
+                    .get('/IEconDOTA2_570/GetHeroes/v0001/')
+                    .reply(200, testdata.heroes_api);
+
+                //fake dota2 response
+                nock('http://www.dota2.com')
+                    .get('/jsfeed/itemdata?l=english')
+                    .reply(200, testdata.item_api)
+                    .get('/jsfeed/abilitydata')
+                    .reply(200, testdata.ability_api);
+                cb();
             }
         ],
         function(err) {
             done(err);
         });
-});
-after(function(done) {
-    done();
 });
 
 describe("services", function() {
@@ -569,7 +576,7 @@ describe("web", function() {
     describe("POST /upload", function() {
         it('should upload', function(done) {
             var formData = {
-                replay: fs.createReadStream(__dirname + '/1193091757.dem')
+                replay: fs.createReadStream(replay_dir + '/1193091757.dem')
             };
             request.post({
                 url: process.env.ROOT_URL + '/upload',
@@ -761,7 +768,7 @@ describe("parser", function() {
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
-            fileName: process.env.REPLAY_DIR + "/invalid.dem"
+            fileName: replay_dir + "/invalid.dem"
         };
         utility.queueReq("parse", job, function(err, job) {
             assert(job && !err);
