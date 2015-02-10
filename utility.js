@@ -6,7 +6,7 @@ var BigNumber = require('big-number').n,
 var spawn = require("child_process").spawn;
 var api_url = "http://api.steampowered.com";
 var api_keys = process.env.STEAM_API_KEY.split(",");
-var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
+var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
 
 var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
@@ -59,7 +59,7 @@ function queueReq(type, payload, cb) {
             return cb(err);
         }
         if (doc) {
-            console.log("match already in db");
+            console.log("duplicate found");
             return cb(null);
         }
         var job = generateJob(type, payload);
@@ -137,6 +137,14 @@ function generateJob(type, payload) {
                 title: [type, payload.match_id].join(),
                 type: type,
                 fileName: payload.fileName,
+                payload: payload
+            };
+        },
+        "mmr": function() {
+            return {
+                title: [type, payload.match_id, payload.account_id].join(),
+                type: type,
+                url: payload.url,
                 payload: payload
             };
         }
@@ -234,6 +242,12 @@ function makeSort(order, columns) {
     return sort;
 }
 
+function getRetrieverUrls() {
+    return retrievers.map(function(r) {
+        return "http://" + r;
+    });
+}
+
 module.exports = {
     redis: redisclient,
     logger: logger,
@@ -246,7 +260,8 @@ module.exports = {
     getData: getData,
     queueReq: queueReq,
     runParse: runParse,
-    makeSort: makeSort
+    makeSort: makeSort,
+    getRetrieverUrls: getRetrieverUrls
 };
 
 /*

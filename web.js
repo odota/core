@@ -5,6 +5,7 @@ var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
 var redis = utility.redis;
 var db = require('./db');
+var async = require('async');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -55,8 +56,52 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/upload', require("./routes/upload"));
-app.route('/').get(function(req, res) {
-    res.render('index.jade', {});
+app.route('/').get(function(req, res, next) {
+    if (req.user) {
+        async.parallel({
+            "bots": function(cb) {
+                redis.get("bots", function(err, bots) {
+                    bots = JSON.parse(bots);
+                    //sort list of bots descending, but > 200 go to end
+                    bots.sort(function(a, b) {
+                        if (a.friends > 200) {
+                            return 1;
+                        }
+                        if (b.friends > 200) {
+                            return -1;
+                        }
+                        return (b.friends - a.friends);
+                    });
+                    cb(err, bots);
+                });
+            },
+            "ratingPlayers": function(cb) {
+                redis.get("ratingPlayers", function(err, rps) {
+                    cb(err, JSON.parse(rps));
+                });
+            },
+            "ratings": function(cb) {
+                db.ratings.find({
+                        account_id: req.user.account_id
+                    }, {
+                        sort: {
+                            match_id: 1
+                        }
+                    },
+                    function(err, docs) {
+                        cb(err, docs);
+                    });
+            }
+        }, function(err, results) {
+            if (err) {
+                return next(err);
+            }
+            res.render('index.jade', results);
+        });
+    }
+    else {
+        res.render('index.jade');
+    }
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {

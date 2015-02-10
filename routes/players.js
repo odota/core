@@ -5,29 +5,21 @@ var queries = require("../queries");
 var constants = require("../constants.json");
 var playerPages = {
     index: {
-        template: "player_index",
         name: "Player"
     },
     matches: {
-        template: "player_matches",
         name: "Matches"
     },
     heroes: {
-        template: "player_heroes",
         name: "Heroes"
     },
     matchups: {
-        template: "player_matchups",
         name: "Matchups"
     }
 };
 players.get('/:account_id/:info?', function(req, res, next) {
     var account_id = Number(req.params.account_id);
     var info = req.params.info || "index";
-    //handle bad info
-    if (!playerPages[info]) {
-        return next(new Error("page not found"));
-    }
     db.players.findOne({
         account_id: account_id
     }, function(err, player) {
@@ -39,7 +31,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                res.render(playerPages[info].template, {
+                res.render("player_"+info, {
                     route: info,
                     player: player,
                     tabs: playerPages,

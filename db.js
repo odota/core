@@ -10,10 +10,12 @@ db.get('matches').index({
     unique: true
 });
 db.get('matches').index('players.account_id');
+db.matches = db.get('matches');
 db.get('players').index('account_id', {
     unique: true
 });
-db.matches = db.get('matches');
 db.players = db.get('players');
+db.get('ratings').index({'match_id':-1, 'account_id': 1}, {unique:true});
+db.ratings = db.get('ratings');
 
 module.exports = db;
