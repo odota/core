@@ -12,6 +12,8 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var untrack = require('./tasks/untrack');
 console.log("[WORKER] starting worker");
+//todo build tracked players on interval
+//todo build ratingbot players on interval, map to retriever host, also retrieve bot status (store in redis/db)
 startScan();
 jobs.promote();
 jobs.process('api', processors.processApi);
@@ -19,6 +21,7 @@ setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
 setInterval(untrack, 60 * 60 * 1000, function() {});
 setInterval(fullhistory, 30 * 60 * 1000, function() {});
 setInterval(updatenames, 1 * 60 * 1000, function() {});
+
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -98,6 +101,7 @@ function scanApi(seq_num) {
             var filtered = [];
             for (var i = 0; i < resp.length; i++) {
                 var match = resp[i];
+                //todo check for tracked players/ratingbot players
                 if (match.players.some(function(element) {
                         return (element.account_id in trackedPlayers);
                     })) {
