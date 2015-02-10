@@ -173,7 +173,7 @@ function getData(url, cb) {
         }
         if (body.result) {
             //steam api response
-            if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified") {
+            if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
                 //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                 return setTimeout(function() {
                     cb(body);
