@@ -143,7 +143,7 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    error = "download error";
+                    throw "download error";
                 }
             });
             downStream.pipe(bz.stdin);
