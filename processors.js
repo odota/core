@@ -200,6 +200,9 @@ function processMmr(job, cb) {
                 cb(err);
             });
         }
+        else {
+            cb(null);
+        }
     });
 }
 

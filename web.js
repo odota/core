@@ -7,7 +7,7 @@ var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
 var db = require('./db');
-var async = require('async');
+var queries = require('./queries');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -18,7 +18,23 @@ var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
     bodyParser = require('body-parser');
-    
+
+var server = app.listen(process.env.PORT || 5000, function() {
+    var host = server.address().address;
+    var port = server.address().port;
+    console.log('[WEB] listening at http://%s:%s', host, port);
+});
+var io = require('socket.io')(server);
+require('./status')(io);
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+*/
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -58,51 +74,12 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/upload', require("./routes/upload"));
 app.route('/').get(function(req, res, next) {
-    if (req.user) {
-        async.parallel({
-            "bots": function(cb) {
-                redis.get("bots", function(err, bots) {
-                    bots = JSON.parse(bots);
-                    //sort list of bots descending, but > 200 go to end
-                    bots.sort(function(a, b) {
-                        if (a.friends > 200) {
-                            return 1;
-                        }
-                        if (b.friends > 200) {
-                            return -1;
-                        }
-                        return (b.friends - a.friends);
-                    });
-                    cb(err, bots);
-                });
-            },
-            "ratingPlayers": function(cb) {
-                redis.get("ratingPlayers", function(err, rps) {
-                    cb(err, JSON.parse(rps));
-                });
-            },
-            "ratings": function(cb) {
-                db.ratings.find({
-                        account_id: req.user.account_id
-                    }, {
-                        sort: {
-                            match_id: 1
-                        }
-                    },
-                    function(err, docs) {
-                        cb(err, docs);
-                    });
-            }
-        }, function(err, results) {
-            if (err) {
-                return next(err);
-            }
-            res.render('index.jade', results);
-        });
-    }
-    else {
-        res.render('index.jade');
-    }
+    queries.getRatingData(req, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        res.render('index.jade', results);
+    });
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -179,19 +156,3 @@ app.use(function(err, req, res, next) {
     //default express handler
     next(err);
 });
-
-var server = app.listen(process.env.PORT || 5000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
-});
-var io = require('socket.io')(server);
-require('./status')(io);
-/*
-io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
-    });
-});
-*/

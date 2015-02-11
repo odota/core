@@ -64,6 +64,12 @@ before(function(done) {
                     cb(err);
                 });
             },
+            function(cb){
+              console.log("loading bots/ratingPlayers into redis");
+              redis.set("bots", JSON.stringify([]));
+              redis.set("ratingPlayers", JSON.stringify({}));
+              cb();
+            },
             function(cb) {
                 console.log("loading players");
                 //set visited date on first player
@@ -130,10 +136,29 @@ before(function(done) {
                 //fake retriever response
                 nock("http://" + process.env.RETRIEVER_HOST)
                     .filteringPath(function(path) {
-                        return '/';
+                        var split = path.split("?");
+                        return split[1];
                     })
-                    .get('/')
-                    .times(2)
+                    .get('account_id=88367253')
+                    .reply(200, {
+                        "accountId": 88367253,
+                        "wins": 889,
+                        "xp": 52,
+                        "level": 153,
+                        "lowPriorityUntilDate": 0,
+                        "preventVoiceUntilDate": 0,
+                        "teaching": 6,
+                        "leadership": 4,
+                        "friendly": 10,
+                        "forgiving": 5,
+                        "lowPriorityGamesRemaining": 0,
+                        "competitiveRank": 3228,
+                        "calibrationGamesRemaining": 0,
+                        "soloCompetitiveRank": 3958,
+                        "soloCalibrationGamesRemaining": 0,
+                        "recruitmentLevel": 0
+                    })
+                    .get('match_id=115178218')
                     .reply(200, {
                         match: {
                             cluster: 1,
@@ -223,6 +248,19 @@ describe("worker", function() {
             });
         });
     });
+    it('process mmr request', function(done) {
+        queueReq("mmr", {
+            match_id: 870061127,
+            account_id: 88367253,
+            url: "http://localhost:5100?account_id=88367253"
+        }, function(err, job) {
+            assert(job);
+            processors.processMmr(job, function(err) {
+                done(err);
+            });
+        });
+    });
+
     it('process summaries request', function(done) {
         queueReq("api_summaries", {
             players: [{
@@ -688,8 +726,9 @@ describe("tasks", function() {
         });
     });
 });
-/*
+
 describe("unit test", function() {
+    /*
     it('initialize user', function(done) {
         utility.initializeUser("/76561198048632981", {
                 _json: {}
@@ -699,8 +738,21 @@ describe("unit test", function() {
                 done(err);
             });
     });
+    */
+    it('get rating data', function(done) {
+        var queries = require("../queries");
+        queries.getRatingData({
+                user: {
+                    account_id: 88367253
+                }
+            },
+            function(err, results) {
+                assert(results);
+                done(err);
+            });
+    });
 });
-*/
+
 describe("parser", function() {
     this.timeout(60000);
     it('parse replay (download)', function(done) {
@@ -774,7 +826,6 @@ describe("parser", function() {
             assert(job && !err);
             processors.processParse(job, function(err) {
                 assert(err);
-                console.log(err);
                 done();
             });
         });

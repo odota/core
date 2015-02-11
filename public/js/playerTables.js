@@ -50,17 +50,7 @@ module.exports = function playerTables() {
             }],
             "paging": false
         });
-        //todo support advanced querying on server
-        //options
-        //figure out how to get mongo to sort after projection, serverside=true
-        //limit api to 100,  set serverside=true, safer, but can't sort (current implementation)
-        //don't limit api, set serverside=false, datatables gets back full result array to sort/paginate, but risk ddos
-        //don't limit api, but restrict the projected fields
-        //todo allow sorting by hero name
         $('#matches').dataTable({
-            "order": [
-                [0, "desc"]
-            ],
             ajax: {
                 'url': '/api/matches',
                 'data': {
@@ -80,8 +70,10 @@ module.exports = function playerTables() {
             "drawCallback": function() {
                 require('./tooltips')();
             },
+            ordering: false,
             serverSide: true,
             stateSave: true,
+            searching: false,
             columns: [{
                 data: 'match_id',
                 title: 'Match ID',

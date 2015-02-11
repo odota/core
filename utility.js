@@ -187,8 +187,11 @@ function isRadiant(player) {
  * Makes sort from a datatables call
  */
 function makeSort(order, columns) {
-    var sort = {};
+    var sort = {
+        match_id: -1
+    };
     if (order && columns) {
+        sort = {};
         order.forEach(function(s) {
             var c = columns[Number(s.column)];
             if (c) {
