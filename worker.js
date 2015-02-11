@@ -135,7 +135,7 @@ function scanApi(seq_num) {
                 if (p.account_id in trackedPlayers) {
                     tracked = true;
                 }
-                if (p.account_id in ratingPlayers) {
+                if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                     queueReq("mmr", {
                         match_id: match.match_id,
                         account_id: p.account_id,
