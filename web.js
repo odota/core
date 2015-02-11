@@ -35,6 +35,13 @@ io.sockets.on('connection', function(socket) {
 });
 */
 
+var Poet = require('poet');
+var poet = Poet(app);
+poet.init().then(function() {
+    console.log('poet ready');
+    console.log(poet.helpers.getPosts());
+});
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -141,6 +148,7 @@ app.route('/status').get(function(req, res) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
+
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
