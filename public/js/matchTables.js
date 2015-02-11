@@ -7,14 +7,21 @@ var $ = jQuery = require('jquery');
 
 module.exports = function matchTable() {
     $(document).on('ready', function() {
+        //todo support advanced querying on serverside
+        //default all games
+        //filter: specific players
+        //filter: specific hero was played by me, was on my team, was against me, was in the game
+        //filter: specific game modes
+        //filter: specific patches
+        //filter: specific regions
+        //report w/l for each filter, relative to who?
         $('#table').dataTable({
             "order": [
                 [0, "desc"]
             ],
             ajax: {
                 'url': '/api/matches',
-                'data': {
-                }
+                'data': {}
             },
             serverSide: true,
             processing: true,

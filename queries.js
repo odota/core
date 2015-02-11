@@ -1,6 +1,7 @@
 var utility = require('./utility');
 var db = require('./db');
 var async = require('async');
+var redis = require('./redis').client;
 
 function mergeObjects(merge, val) {
     for (var attr in val) {
@@ -323,10 +324,55 @@ function fillPlayerMatches(player, constants, matchups, cb) {
     });
 }
 
+function getRatingData(req, cb) {
+    if (!req.user){
+        return cb(null);
+    }
+    var account_id = req.user.account_id;
+    async.parallel({
+        "bots": function(cb) {
+            redis.get("bots", function(err, bots) {
+                bots = JSON.parse(bots);
+                //sort list of bots descending, but > 200 go to end
+                bots.sort(function(a, b) {
+                    if (a.friends > 200) {
+                        return 1;
+                    }
+                    if (b.friends > 200) {
+                        return -1;
+                    }
+                    return (b.friends - a.friends);
+                });
+                cb(err, bots);
+            });
+        },
+        "ratingPlayers": function(cb) {
+            redis.get("ratingPlayers", function(err, rps) {
+                cb(err, JSON.parse(rps));
+            });
+        },
+        "ratings": function(cb) {
+            db.ratings.find({
+                    account_id: account_id
+                }, {
+                    sort: {
+                        match_id: 1
+                    }
+                },
+                function(err, docs) {
+                    cb(err, docs);
+                });
+        }
+    }, function(err, results) {
+        cb(err, results);
+    });
+}
+
 module.exports = {
     fillPlayerNames: fillPlayerNames,
     mergeMatchData: mergeMatchData,
     generateGraphData: generateGraphData,
     computeStatistics: computeStatistics,
-    fillPlayerMatches: fillPlayerMatches
+    fillPlayerMatches: fillPlayerMatches,
+    getRatingData: getRatingData
 };
