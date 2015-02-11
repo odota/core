@@ -183,7 +183,31 @@ function processApi(job, cb) {
     });
 }
 
+function processMmr(job, cb) {
+    var payload = job.data.payload;
+    getData(job.data.url, function(err, data) {
+        if (err) {
+            return cb(null, err);
+        }
+        logger.info("mmr response");
+        if (data.soloCompetitiveRank || data.competitiveRank) {
+            db.ratings.insert({
+                match_id: payload.match_id,
+                account_id: payload.account_id,
+                soloCompetitiveRank: data.soloCompetitiveRank,
+                competitiveRank: data.competitiveRank
+            }, function(err) {
+                cb(err);
+            });
+        }
+        else {
+            cb(null);
+        }
+    });
+}
+
 module.exports = {
     processParse: processParse,
-    processApi: processApi
+    processApi: processApi,
+    processMmr: processMmr
 };

@@ -3,27 +3,21 @@ var matches = express.Router();
 var db = require("../db");
 var queries = require("../queries");
 var constants = require("../constants.json");
-var utility = require('../utility');
-var redis = utility.redis;
+var redis = require('../redis').client;
 var matchPages = {
     index: {
-        template: "match_index",
         name: "Match"
     },
     details: {
-        template: "match_details",
         name: "Details"
     },
     timelines: {
-        template: "match_timelines",
         name: "Timelines"
     },
     graphs: {
-        template: "match_graphs",
         name: "Graphs"
     },
     chat: {
-        template: "match_chat",
         name: "Chat"
     }
 };
@@ -71,11 +65,7 @@ matches.param('match_id', function(req, res, next, id) {
 matches.get('/:match_id/:info?', function(req, res, next) {
     var match = req.match;
     var info = req.params.info || "index";
-    //handle bad info
-    if (!matchPages[info]) {
-        return next(new Error("page not found"));
-    }
-    res.render(matchPages[info].template, {
+    res.render("match_" + info, {
         route: info,
         match: match,
         tabs: matchPages,

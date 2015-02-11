@@ -3,8 +3,11 @@ var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
-var redis = utility.redis;
+var r = require('./redis');
+var redis = r.client;
+var kue = r.kue;
 var db = require('./db');
+var queries = require('./queries');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -14,8 +17,23 @@ var passport = require('./passport');
 var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
-    bodyParser = require('body-parser'),
-    kue = utility.kue;
+    bodyParser = require('body-parser');
+
+var server = app.listen(process.env.PORT || 5000, function() {
+    var host = server.address().address;
+    var port = server.address().port;
+    console.log('[WEB] listening at http://%s:%s', host, port);
+});
+var io = require('socket.io')(server);
+require('./status')(io);
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+*/
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -55,8 +73,13 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/upload', require("./routes/upload"));
-app.route('/').get(function(req, res) {
-    res.render('index.jade', {});
+app.route('/').get(function(req, res, next) {
+    queries.getRatingData(req, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        res.render('index.jade', results);
+    });
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -133,19 +156,3 @@ app.use(function(err, req, res, next) {
     //default express handler
     next(err);
 });
-
-var server = app.listen(process.env.PORT || 5000, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
-});
-var io = require('socket.io')(server);
-require('./status')(io);
-/*
-io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
-    });
-});
-*/

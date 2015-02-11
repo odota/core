@@ -1,26 +1,9 @@
-var BigNumber = require('big-number').n,
-    request = require('request'),
-    winston = require('winston'),
-    redis = require('redis'),
-    parseRedisUrl = require('parse-redis-url')(redis);
+var request = require('request'),
+    winston = require('winston');
+var BigNumber = require('big-number').n;
 var spawn = require("child_process").spawn;
-var api_url = "http://api.steampowered.com";
-var api_keys = process.env.STEAM_API_KEY.split(",");
-var retrievers = (process.env.RETRIEVER_HOST || "http://localhost:5100").split(",");
+var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
-
-var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
-//set keys for kue
-options.auth = options.password;
-options.db = options.database;
-var kue = require('kue');
-var db = require('./db');
-var redisclient = redis.createClient(options.port, options.host, {
-    auth_pass: options.password
-});
-var jobs = kue.createQueue({
-    redis: options
-});
 var transports = [];
 if (process.env.NODE_ENV !== "test") {
     transports.push(new(winston.transports.Console)({
@@ -31,64 +14,8 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
-function convert64to32(id) {
-    return new BigNumber(id).minus('76561197960265728');
-}
-
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
-function convert32to64(id) {
-    return new BigNumber('76561197960265728').plus(id);
-}
-
-function isRadiant(player) {
-    return player.player_slot < 64;
-}
-
-function queueReq(type, payload, cb) {
-    checkDuplicate(type, payload, function(err, doc) {
-        if (err) {
-            return cb(err);
-        }
-        if (doc) {
-            console.log("match already in db");
-            return cb(null);
-        }
-        var job = generateJob(type, payload);
-        var kuejob = jobs.create(job.type, job).attempts(10).backoff({
-            delay: 60 * 1000,
-            type: 'exponential'
-        }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
-            logger.info("[KUE] created jobid: %s", kuejob.id);
-            cb(err, kuejob);
-        });
-    });
-}
-
-function checkDuplicate(type, payload, cb) {
-    if (type === "api_details" && payload.match_id) {
-        //make sure match doesn't exist already in db before queueing for api
-        db.matches.findOne({
-            match_id: payload.match_id
-        }, function(err, doc) {
-            cb(err, doc);
-        });
-    }
-    else {
-        //no duplicate check for anything else
-        cb(null);
-    }
-}
-
 function generateJob(type, payload) {
+    var api_url = "http://api.steampowered.com";
     var api_key;
     var opts = {
         "api_details": function() {
@@ -139,12 +66,21 @@ function generateJob(type, payload) {
                 fileName: payload.fileName,
                 payload: payload
             };
+        },
+        "mmr": function() {
+            return {
+                title: [type, payload.match_id, payload.account_id].join(),
+                type: type,
+                url: payload.url,
+                payload: payload
+            };
         }
     };
     return opts[type]();
 }
 
 function getData(url, cb) {
+    var api_keys = process.env.STEAM_API_KEY.split(",");
     var delay = 1000;
     var parse = urllib.parse(url, true);
     //inject a random retriever
@@ -218,12 +154,44 @@ function runParse(cb) {
     return parser;
 }
 
+function getRetrieverUrls() {
+    return retrievers.map(function(r) {
+        return "http://" + r;
+    });
+}
+
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+function convert64to32(id) {
+    return new BigNumber(id).minus('76561197960265728');
+
+}
+
+/*
+ * Converts a steamid 64 to a steamid 32
+ *
+ * Returns a BigNumber
+ */
+function convert32to64(id) {
+    return new BigNumber('76561197960265728').plus(id);
+}
+
+function isRadiant(player) {
+    return player.player_slot < 64;
+}
+
 /*
  * Makes sort from a datatables call
  */
 function makeSort(order, columns) {
-    var sort = {};
+    var sort = {
+        match_id: -1
+    };
     if (order && columns) {
+        sort = {};
         order.forEach(function(s) {
             var c = columns[Number(s.column)];
             if (c) {
@@ -234,48 +202,46 @@ function makeSort(order, columns) {
     return sort;
 }
 
+
 module.exports = {
-    redis: redisclient,
     logger: logger,
-    kue: kue,
-    jobs: jobs,
+    generateJob: generateJob,
+    getData: getData,
+    runParse: runParse,
+    getRetrieverUrls: getRetrieverUrls,
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,
-    generateJob: generateJob,
-    getData: getData,
-    queueReq: queueReq,
-    runParse: runParse,
     makeSort: makeSort
 };
 
 /*
-        function getS3Url(match_id, cb) {
-            var archiveName = match_id + ".dem.bz2";
-            var s3 = new AWS.S3();
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
-            };
-            var url;
-            try {
-                url = s3.getSignedUrl('getObject', params);
-                cb(null, url);
-            }
-            catch (e) {
-                logger.info("[S3] %s not in S3", match_id);
-                cb(new Error("S3 UNAVAILABLE"));
-            }
-        }
-        function uploadToS3(data, archiveName, cb) {
-            var s3 = new AWS.S3();
-            var params = {
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: archiveName
-            };
-            params.Body = data;
-            s3.putObject(params, function(err, data) {
-                cb(err);
-            });
-        }
-    */
+function getS3Url(match_id, cb) {
+    var archiveName = match_id + ".dem.bz2";
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    var url;
+    try {
+        url = s3.getSignedUrl('getObject', params);
+        cb(null, url);
+    }
+    catch (e) {
+        logger.info("[S3] %s not in S3", match_id);
+        cb(new Error("S3 UNAVAILABLE"));
+    }
+}
+function uploadToS3(data, archiveName, cb) {
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: archiveName
+    };
+    params.Body = data;
+    s3.putObject(params, function(err, data) {
+        cb(err);
+    });
+}
+*/

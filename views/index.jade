@@ -19,25 +19,35 @@ block content
         | Visit YASP regularly while signed in to remain a tracked user.
    .row
     .col-md-4
-     h3 Preferences
-     .checkbox
-       label
-        if user.dark_theme
-          input#dark(type="checkbox", checked="true")
-        else
-          input#dark(type="checkbox")
-        | Use Dark Theme
+      h3 Preferences
+      .checkbox
+        label
+         if user.dark_theme
+           input#dark(type="checkbox", checked="true")
+         else
+           input#dark(type="checkbox")
+         | Use Dark Theme
     .col-md-4
-      h3 Info
-      p Last Full History Scan: 
-        span= user.full_history_time || "Never"
-      p Last Name Update: 
-        span= user.last_summaries_update || "Never"
+      h3 Status
+      div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
+        span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Full History: " + (user.full_history_time || "never")
+      div(class=user.last_summaries_update ? "alert alert-success" : "alert alert-danger")
+        span(class= user.last_summaries_update ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Name Update:  "+ (moment(user.last_summaries_update).fromNow() || "never")
+      div(class= (user.account_id in ratingPlayers) ? "alert alert-success" : "alert alert-danger")
+        span(class= (user.account_id in ratingPlayers) ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Rating Tracker "
     .col-md-4
       h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
+      p: a.btn.btn-warning(href="steam://friends/add/"+bots[0].steamID) Add Tracker (requires Steam) &raquo;
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
+   .row
+    .col-md-12
+      h3 Rating Tracker (alpha)
+      p=JSON.stringify(ratings)
    script.
     var $dark = $("#dark");
     $dark.change(function() {
@@ -67,16 +77,16 @@ block content
       .row
         .col-md-4
           p.lead Go beyond the API.
-          span.glyphicon.glyphicon-stats
+          span.glyphicon.glyphicon-stats.big
           p.text-left YASP parses replays to provide Dota 2 match statistics not available through the API or game client.
           p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
         .col-md-4
           p.lead Free of charge.
-          span.glyphicon.glyphicon-thumbs-up
+          span.glyphicon.glyphicon-thumbs-up.big
           p.text-left YASP is supported by volunteer developers and community contributions, making it free for users.
           p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
         .col-md-4
           p.lead Open source.
-          span.glyphicon.glyphicon-wrench
+          span.glyphicon.glyphicon-wrench.big
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;

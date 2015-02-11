@@ -11,5 +11,4 @@ coverage
 *bundle.js
 constants*.json
 parser/target
-!test/*
 /bin/

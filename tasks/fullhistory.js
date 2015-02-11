@@ -1,7 +1,7 @@
 var utility = require('../utility');
 var db = require('../db');
 var async = require('async');
-var queueReq = utility.queueReq;
+var queueReq = require('../operations').queueReq;
 var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
@@ -9,11 +9,11 @@ var selector = require('../selector');
 var constants = require('../sources.json');
 
 module.exports = function getFullMatchHistory(heroes, done) {
-    var heroArray =  Object.keys(constants.heroes);
-    if (typeof heroes === "object"){
+    var heroArray = Object.keys(constants.heroes);
+    if (typeof heroes === "object") {
         heroArray = heroes;
     }
-    else{
+    else {
         done = heroes;
     }
     var match_ids = {};

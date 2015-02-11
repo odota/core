@@ -2,31 +2,72 @@ var utility = require('./utility');
 var processors = require('./processors');
 var getData = utility.getData;
 var db = require('./db');
+var r = require('./redis');
+var redis = r.client;
+var jobs = r.jobs;
+var kue = r.kue;
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var insertMatch = require('./operations').insertMatch;
-var jobs = utility.jobs;
-var kue = utility.kue;
+var operations = require('./operations');
+var insertMatch = operations.insertMatch;
+var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var untrack = require('./tasks/untrack');
+var trackedPlayers = {};
+var ratingPlayers = {};
 console.log("[WORKER] starting worker");
-//todo build tracked players on interval, map to true
-//todo build ratingbot players on interval, map to retriever host, also retrieve bot status (store in redis/db)
-//page sorts bots by id, returns first bot with slots available, user adds bot
-//yasp main scans match, checks for bot-enabled users.
-//For enabled users, queue a task to get mmr of this user
-//result returns current user mmr.  update ratings collection with this match id, user, rating.
-//index ratings collection on match_id, user
-//yasp worker task builds map of account ids to retriever host
-startScan();
-jobs.promote();
-jobs.process('api', processors.processApi);
-setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
-setInterval(untrack, 60 * 60 * 1000, function() {});
-setInterval(fullhistory, 30 * 60 * 1000, function() {});
-setInterval(updatenames, 1 * 60 * 1000, function() {});
+
+build(function() {
+    startScan();
+    jobs.promote();
+    jobs.process('api', processors.processApi);
+    jobs.process('mmr', processors.processMmr);
+    setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
+    setInterval(untrack, 60 * 60 * 1000, function() {});
+    setInterval(fullhistory, 30 * 60 * 1000, function() {});
+    setInterval(updatenames, 5 * 60 * 1000, function() {});
+    setInterval(build, 5 * 60 * 1000, function() {});
+});
+
+function build(cb) {
+    db.players.find({
+        track: 1
+    }, function(err, docs) {
+        if (err) {
+            return build(cb);
+        }
+        var t = {};
+        var r = {};
+        var b = [];
+        docs.forEach(function(player) {
+            t[player.account_id] = true;
+        });
+        async.map(utility.getRetrieverUrls(), function(url, cb) {
+            getData(url, function(err, body) {
+                for (var key in body.accounts) {
+                    b.push(body.accounts[key]);
+                }
+                for (var key in body.accountToIdx) {
+                    r[key] = url + "?account_id=" + key;
+                }
+                cb(err);
+            });
+        }, function(err) {
+            if (err) {
+                build(cb);
+            }
+            trackedPlayers = t;
+            ratingPlayers = r;
+            redis.set("bots", JSON.stringify(b));
+            redis.set("ratingPlayers", JSON.stringify(r));
+            redis.set("trackedPlayers", JSON.stringify(t));
+            //console.log(t, r, b);
+            cb(err);
+        });
+    });
+}
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -79,48 +120,54 @@ function startScan() {
 }
 
 function scanApi(seq_num) {
-    var trackedPlayers = {};
-    db.players.find({
-        track: 1
-    }, function(err, docs) {
+    var container = generateJob("api_sequence", {
+        start_at_match_seq_num: seq_num
+    });
+    getData(container.url, function(err, data) {
         if (err) {
             return scanApi(seq_num);
         }
-        //rebuild set of tracked players before every check
-        trackedPlayers = {};
-        docs.forEach(function(player) {
-            trackedPlayers[player.account_id] = true;
-        });
-        var container = generateJob("api_sequence", {
-            start_at_match_seq_num: seq_num
-        });
-        getData(container.url, function(err, data) {
-            if (err) {
-                return scanApi(seq_num);
-            }
-            var resp = data.result.matches;
+        var resp = data.result.matches;
+        logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
+        async.map(resp, function(match, cb) {
+            var tracked = false;
+            async.map(match.players, function(p, cb) {
+                if (p.account_id in trackedPlayers) {
+                    tracked = true;
+                }
+                if (p.account_id in ratingPlayers) {
+                    queueReq("mmr", {
+                        match_id: match.match_id,
+                        account_id: p.account_id,
+                        url: ratingPlayers[p.account_id]
+                    }, function(err) {
+                        cb(err);
+                    });
+                }
+                else {
+                    cb();
+                }
+            }, function(err) {
+                //done looping players
+                if (tracked) {
+                    insertMatch(match, function(err) {
+                        cb(err);
+                    });
+                }
+                else {
+                    cb(err);
+                }
+            });
+        }, function(err) {
             var new_seq_num = seq_num;
-            if (resp.length > 0) {
+            if (!err && resp.length) {
                 new_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
-            var filtered = [];
-            for (var i = 0; i < resp.length; i++) {
-                var match = resp[i];
-                //todo check for tracked players/ratingbot players
-                if (match.players.some(function(element) {
-                        return (element.account_id in trackedPlayers);
-                    })) {
-                    filtered.push(match);
-                }
-            }
-            logger.info("[API] seq_num: %s, found %s matches, %s to add", seq_num, resp.length, filtered.length);
-            async.mapSeries(filtered, insertMatch, function() {
-                //wait 100ms for each match less than 100
-                var delay = (100 - resp.length) * 100;
-                setTimeout(function() {
-                    scanApi(new_seq_num);
-                }, delay);
-            });
+            //wait 100ms for each match less than 100
+            var delay = (100 - resp.length) * 100;
+            setTimeout(function() {
+                scanApi(new_seq_num);
+            }, delay);
         });
     });
 }
