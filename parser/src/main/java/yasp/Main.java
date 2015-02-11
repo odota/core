@@ -98,14 +98,13 @@ public class Main {
 					doc.hero_to_slot.put(hero, i);
 					Float stuns = (Float)pr.getState()[stunIdx+i];
 					doc.players.get(i).stuns = stuns;
-					/*
-				        int handle = pr.getState()[handleIdx+i];
-                        Entity e = ec.getByHandle(handle);
-                        if (e!=null){
-                        	//System.err.println(e);
-                        	System.err.format("time: %s, hero: %s, x: %s, y: %s,\n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
-                        }
-                        */
+					//todo sample each hero's x/y position every tick
+					//every interval (5 minutes?), find the median x and median y, and save this value
+					int handle = (Integer)pr.getState()[handleIdx+i];
+                    Entity e = ec.getByHandle(handle);
+                    if (e!=null && i == 0){
+                    	//System.err.format("time: %s, hero: %s, x: %s, y: %s,\n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                    }
 				}
 				
 				/*
@@ -233,6 +232,7 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.type = "kills";
+							//System.err.format("kill, x:%s, y%s\n", cle.getLocationX(), cle.getLocationY());
 							if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
 								entry.herokills = true;
 							}
