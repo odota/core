@@ -64,11 +64,41 @@ before(function(done) {
                     cb(err);
                 });
             },
-            function(cb){
-              console.log("loading bots/ratingPlayers into redis");
-              redis.set("bots", JSON.stringify([]));
-              redis.set("ratingPlayers", JSON.stringify({}));
-              cb();
+            function(cb) {
+                console.log("loading bots/ratingPlayers into redis");
+                redis.set("bots", JSON.stringify([{
+                    "steamID": "76561198174479859",
+                    "attempts": 1,
+                    "success": 1,
+                    "friends": 0
+                }, {
+                    "steamID": "76561198174456763",
+                    "attempts": 0,
+                    "success": 0,
+                    "friends": 201
+                }, {
+                    "steamID": "76561198174616549",
+                    "attempts": 1,
+                    "success": 1,
+                    "friends": 250
+                }, {
+                    "steamID": "76561198173905795",
+                    "attempts": 0,
+                    "success": 0,
+                    "friends": 199
+                }, {
+                    "steamID": "76561198152395299",
+                    "attempts": 0,
+                    "success": 0,
+                    "friends": 10
+                }, {
+                    "steamID": "76561198174715201",
+                    "attempts": 2,
+                    "success": 2,
+                    "friends": 1
+                }]));
+                redis.set("ratingPlayers", JSON.stringify({}));
+                cb();
             },
             function(cb) {
                 console.log("loading players");
