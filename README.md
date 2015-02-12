@@ -9,7 +9,8 @@ YASP - YASP: Another Stats Page
 
 About
 ====
-* Provides replay-parsed stats for free!  
+* Parses replays of Dota 2 matches to provide additional statistics.
+* Runs as a full Node.js application with a web interface.
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
 
 Quickstart

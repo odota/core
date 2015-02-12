@@ -150,5 +150,5 @@ module.exports = function(io) {
                     error: err
                 });
             });
-    }, 2000);
+    }, 5000);
 };

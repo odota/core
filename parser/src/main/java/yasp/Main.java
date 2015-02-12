@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 public class Main {
 	public static void finish(long tStart, Output doc){
@@ -49,6 +52,7 @@ public class Main {
 		int numPlayers = 10;
 		Output doc = new Output();
 		List<Entry> log = new ArrayList<Entry>();
+		Set<Integer> seenEntities = new HashSet<Integer>();
 
 		if (args.length>0 && args[0].equals("-epilogue")){
 			CDemoFileInfo info = Clarity.infoForStream(System.in);
@@ -107,14 +111,172 @@ public class Main {
                     	doc.players.get(i).yBuf.add((Integer)e.getProperty("m_cellY"));
                     }
 				}
+
+				for (GameEvent g : match.getGameEvents()) {
+					if (g.getEventId() == combatLogDescriptor.getEventId()) {
+						CombatLogEntry cle = new CombatLogEntry(ctx, g);
+						Entry entry = new Entry(time);
+						switch(cle.getType()) {
+						case 0:
+							//damage
+							entry.unit = cle.getAttackerNameCompiled();
+							entry.key = cle.getTargetNameCompiled();
+							entry.value = cle.getValue();
+							entry.type = "damage";
+							log.add(entry);
+							//break down damage instances on heroes by inflictor to get skillshot stats, only track hero hits
+							if (cle.isTargetHero() && !cle.isTargetIllusion()){
+								Entry entry2 = new Entry(time);
+								entry2.unit = cle.getAttackerNameCompiled();
+								entry2.key = cle.getInflictorName();
+								entry2.type = "hero_hits";
+								log.add(entry2);
+							}
+							break;
+						case 1:
+							//healing
+							/*
+                            unit = cle.getAttackerNameCompiled();
+                            key = cle.getTargetNameCompiled();
+                            val = cle.getValue();
+                            entry.put("unit", unit);
+                            entry.put("time", time);
+                            entry.put("key", key);
+                            entry.put("value", val);
+                            entry.put("type", "healing");
+                            log.put(entry);
+							 */
+							break;
+						case 2:
+							//gain buff/debuff
+							/*
+                            unit = cle.getAttackerNameCompiled(); //source of buff
+                            key = cle.getInflictorName(); //the buff
+                            String unit2 = cle.getTargetNameCompiled(); //target of buff
+                            entry.put("unit", unit);
+                            entry.put("unit2", unit2);
+                            entry.put("time", time);
+                            entry.put("key", key);
+                            entry.put("type", "modifier_applied");
+                            log.put(entry);
+							 */
+							break;
+						case 3:
+							//lose buff/debuff
+							// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
+							break;
+						case 4:
+							//kill
+							//System.err.format("itemuse, x:%s, y%s\n", cle.getLocationX(), cle.getLocationY());
+							entry.unit = cle.getAttackerNameCompiled();
+							entry.key = cle.getTargetNameCompiled();
+							entry.type = "kills";
+							if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
+								entry.herokills = true;
+							}
+							log.add(entry);
+							break;
+						case 5:
+							//ability use
+							entry.unit = cle.getAttackerNameCompiled();
+							entry.key = cle.getInflictorName();
+							entry.type = "abilityuses";
+							log.add(entry);
+							break;
+						case 6:
+							//item use
+							//System.err.format("itemuse, x:%s, y%s\n", cle.getLocationX(), cle.getLocationY());
+							entry.unit = cle.getAttackerNameCompiled();
+							entry.key = cle.getInflictorName();
+							entry.type = "itemuses";
+							log.add(entry);
+							break;
+						case 8:
+							//gold gain/loss
+							entry.key = String.valueOf(cle.getGoldReason());
+							entry.unit = cle.getTargetNameCompiled();
+							entry.value = cle.getValue();
+							entry.type = "gold_log";
+							log.add(entry);
+							break;
+						case 9:
+							//state
+							String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
+							if (state.equals("PLAYING")){
+								gameZero = time;
+							}
+							if (state.equals("POST_GAME")){
+								gameEnd = time;
+							}
+							break;
+						case 10:
+							//xp gain
+							entry.unit = cle.getTargetNameCompiled();
+							entry.value = cle.getValue();
+							entry.key = String.valueOf(cle.getXpReason());
+							entry.type = "xp_log";
+							log.add(entry);
+							break;
+						case 11:
+							//purchase
+							if (!cle.getValueName().contains("recipe")){
+								entry.unit = cle.getTargetNameCompiled();
+								entry.key = cle.getValueName();
+								entry.type = "itembuys";
+								log.add(entry);
+							}
+							break;
+						case 12:
+							//buyback
+							entry.slot = cle.getValue();
+							entry.key = "buyback";
+							entry.type = "buybacks";
+							log.add(entry);
+							break;
+						case 13:
+							//ability trigger
+							//System.err.format("%s %s proc %s %s%n", time, cle.getAttackerNameCompiled(), cle.getInflictorName(), cle.getTargetNameCompiled() != null ? "on " + cle.getTargetNameCompiled() : "");
+							break;
+						default:
+							DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
+							System.err.format("%s (%s): %s%n", type.name(), type.ordinal(), g);
+							break;
+						}
+					}
+				}
 				
-				/*
+				//todo figure out when runes get picked up and by who
+				//todo figure out when wards get killed and by who
+				//todo who placed the ward?
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                 Entity e = runes.next();
-                //System.err.format("rune: %s %s %s,%s %n", trueTime, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                Integer handle = e.getHandle();
+                if (!seenEntities.contains(handle)){
+                System.err.format("rune: time:%s type:%s x:%s,y:%s\n", time, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                seenEntities.add(handle);
                 }
-				*/
+                }
+                Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");
+                while (obs.hasNext()){
+                Entity e = obs.next();
+                Integer handle = e.getHandle();
+                if (!seenEntities.contains(handle)){
+                System.err.format("obs: time:%s x:%s,y:%s, team:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"), e.getProperty("m_iTeamNum"));
+                seenEntities.add(handle);
+                }
+                }
+                Iterator<Entity> sen = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward_TrueSight");
+                while (sen.hasNext()){
+                Entity e = sen.next();
+                Integer handle = e.getHandle();
+                if (!seenEntities.contains(handle)){
+                //System.err.println(e);
+                System.err.format("sen: time:%s x:%s,y:%s, team:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"),e.getProperty("m_iTeamNum"));
+                seenEntities.add(handle);
+                }
+                }
+
 				for (UserMessage u : match.getUserMessages()) {
 					String name = u.getName();
 					if (name.equals("CDOTAUserMsg_ChatEvent")){
@@ -175,139 +337,7 @@ public class Main {
 						//System.err.format("%s %s\n", time, u);
 					}
 				}
-				for (GameEvent g : match.getGameEvents()) {
-					if (g.getEventId() == combatLogDescriptor.getEventId()) {
-						CombatLogEntry cle = new CombatLogEntry(ctx, g);
-						Entry entry = new Entry(time);
-						switch(cle.getType()) {
-						case 0:
-							//damage
-							entry.unit = cle.getAttackerNameCompiled();
-							entry.key = cle.getTargetNameCompiled();
-							entry.value = cle.getValue();
-							entry.type = "damage";
-							log.add(entry);
-							//break down damage instances on heroes by inflictor to get skillshot stats, only track hero hits
-							if (cle.isTargetHero() && !cle.isTargetIllusion()){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getAttackerNameCompiled();
-								entry2.key = cle.getInflictorName();
-								entry2.type = "hero_hits";
-								log.add(entry2);
-							}
-							break;
-						case 1:
-							//healing
-							/*
-                            unit = cle.getAttackerNameCompiled();
-                            key = cle.getTargetNameCompiled();
-                            val = cle.getValue();
-                            entry.put("unit", unit);
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("value", val);
-                            entry.put("type", "healing");
-                            log.put(entry);
-							 */
-							break;
-						case 2:
-							//gain buff/debuff
-							/*
-                            unit = cle.getAttackerNameCompiled(); //source of buff
-                            key = cle.getInflictorName(); //the buff
-                            String unit2 = cle.getTargetNameCompiled(); //target of buff
-                            entry.put("unit", unit);
-                            entry.put("unit2", unit2);
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("type", "modifier_applied");
-                            log.put(entry);
-							 */
-							break;
-						case 3:
-							//lose buff/debuff
-							// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
-							break;
-						case 4:
-							//kill
-							entry.unit = cle.getAttackerNameCompiled();
-							entry.key = cle.getTargetNameCompiled();
-							entry.type = "kills";
-							//System.err.format("kill, x:%s, y%s\n", cle.getLocationX(), cle.getLocationY());
-							if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
-								entry.herokills = true;
-							}
-							log.add(entry);
-							break;
-						case 5:
-							//ability use
-							entry.unit = cle.getAttackerNameCompiled();
-							entry.key = cle.getInflictorName();
-							entry.type = "abilityuses";
-							log.add(entry);
-							break;
-						case 6:
-							//item use
-							entry.unit = cle.getAttackerNameCompiled();
-							entry.key = cle.getInflictorName();
-							entry.type = "itemuses";
-							log.add(entry);
-							break;
-						case 8:
-							//gold gain/loss
-							entry.key = String.valueOf(cle.getGoldReason());
-							entry.unit = cle.getTargetNameCompiled();
-							entry.value = cle.getValue();
-							entry.type = "gold_log";
-							log.add(entry);
-							break;
-						case 9:
-							//state
-							String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
-							if (state.equals("PLAYING")){
-								gameZero = time;
-							}
-							if (state.equals("POST_GAME")){
-								gameEnd = time;
-							}
-							break;
-						case 10:
-							//xp gain
-							entry.unit = cle.getTargetNameCompiled();
-							entry.value = cle.getValue();
-							entry.key = String.valueOf(cle.getXpReason());
-							entry.type = "xp_log";
-							log.add(entry);
-							break;
-						case 11:
-							//purchase
-							if (!cle.getValueName().contains("recipe")){
-								entry.unit = cle.getTargetNameCompiled();
-								entry.key = cle.getValueName();
-								entry.type = "itembuys";
-								log.add(entry);
-							}
-							break;
-						case 12:
-							//buyback
-							entry.slot = cle.getValue();
-							entry.key = "buyback";
-							entry.type = "buybacks";
-							log.add(entry);
-							break;
-						case 13:
-							//ability trigger
-							//System.err.format("%s %s proc %s %s%n", time, cle.getAttackerNameCompiled(), cle.getInflictorName(), cle.getTargetNameCompiled() != null ? "on " + cle.getTargetNameCompiled() : "");
-							break;
-						default:
-							DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
-							System.err.format("%s (%s): %s%n", type.name(), type.ordinal(), g);
-							break;
-						}
-					}
-				}
 			}
-			iter.close();
 
 			//load epilogue
 			CDemoFileInfo info = match.getFileInfo();

@@ -114,33 +114,34 @@ function streamReplay(job, cb) {
             }
             match_id = match_id || output.match_id;
             job.data.payload.match_id = match_id;
+            job.data.payload.parsed_data = output;
+            job.data.payload.parse_status = 2;
             job.update();
-            var res = {
-                match_id: match_id,
-                parsed_data: output,
-                parse_status: 2
-            };
             db.matches.find({
                 match_id: match_id
-            }, function(err, doc) {
+            }, function(err, docs) {
+                console.log(docs, match_id);
                 if (err) {
                     return cb(err);
                 }
-                else if (!doc) {
-                    queueReq("api_details", res, function(err, apijob) {
+                else if (docs.length) {
+                    db.matches.update({
+                        match_id: match_id
+                    }, {
+                        $set: job.data.payload,
+                    }, function(err) {
+                        cb(err);
+                    });
+                }
+                else {
+                    console.log("parsed match not in db");
+                    queueReq("api_details", job.data.payload, function(err, apijob) {
                         if (err) {
                             return cb(err);
                         }
                         apijob.on('complete', function() {
                             cb();
                         });
-                    });
-                }
-                else {
-                    db.matches.update(doc, {
-                        $set: res,
-                    }, function(err) {
-                        cb(err);
                     });
                 }
             });

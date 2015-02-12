@@ -188,7 +188,7 @@ before(function(done) {
                         "soloCalibrationGamesRemaining": 0,
                         "recruitmentLevel": 0
                     })
-                    .get('match_id=115178218')
+                    .get('match_id=1151783218')
                     .reply(200, {
                         match: {
                             cluster: 1,
@@ -787,7 +787,7 @@ describe("parser", function() {
     this.timeout(60000);
     it('parse replay (download)', function(done) {
         var job = {
-            match_id: 115178218,
+            match_id: 1151783218,
             start_time: moment().format('X')
         };
         queueReq("parse", job, function(err, job) {
