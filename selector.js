@@ -12,9 +12,6 @@ module.exports = function(type) {
             track: 1,
             join_date: {
                 $lt: moment().subtract(7, 'day').toDate()
-            },
-            last_visited: {
-                $gt: moment().subtract(1, 'day').toDate()
             }
         }
     };
