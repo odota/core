@@ -1,5 +1,3 @@
-var utility = require('../utility');
-var domain = require('domain');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var multiparty = require('multiparty');

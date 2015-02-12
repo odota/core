@@ -53,7 +53,7 @@ append footer_assets
         container: document.getElementById('map'),
           radius: 50
       });
-      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:(p[0]-60)*(600/128),y:(128-(p[1]-60))*(600/128)}})}))}
+      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:(p[0]-60)*(600/127),y:(127-(p[1]-60))*(600/127)}})}))}
       $(".mapHero").on("mouseover", function(){
         heatmap.setData({data: data[Number($(this).attr('id'))]});
         heatmap.repaint();

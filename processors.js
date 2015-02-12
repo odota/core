@@ -105,17 +105,7 @@ function streamReplay(job, cb) {
     var bz;
     var parser;
     d.on('error', function(err) {
-        if (!error) {
-            //only cb with first error
-            error = err;
-            if (bz) {
-                bz.kill();
-            }
-            if (parser) {
-                parser.kill();
-            }
-            cb(error);
-        }
+        cb(error || err);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
@@ -130,7 +120,7 @@ function streamReplay(job, cb) {
                 parsed_data: output,
                 parse_status: 2
             };
-            db.matches.findOne({
+            db.matches.find({
                 match_id: match_id
             }, function(err, doc) {
                 if (err) {
@@ -141,8 +131,8 @@ function streamReplay(job, cb) {
                         if (err) {
                             return cb(err);
                         }
-                        apijob.on('complete', function(err) {
-                            cb(err);
+                        apijob.on('complete', function() {
+                            cb();
                         });
                     });
                 }
@@ -166,7 +156,7 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    throw "download error";
+                    error = "download error";
                 }
             });
             bz = spawn("bzcat");

@@ -41,7 +41,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
                 var match = {
                     match_id: Number(match_id)
                 };
-                db.matches.findOne(match, function(err, doc) {
+                db.matches.find(match, function(err, doc) {
                     if (!err && !doc) {
                         queueReq("api_details", match, function(err) {
                             //added a single job to kue
