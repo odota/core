@@ -25,9 +25,6 @@ upload.post("/", function(req, res) {
         d.on('error', function(err) {
             if (!error) {
                 error = err;
-                if (parser) {
-                    parser.kill();
-                }
                 close(error);
             }
         });
@@ -66,8 +63,11 @@ upload.post("/", function(req, res) {
             form.parse(req);
         });
     }
-
+    
     function close(err, job) {
+        if (parser) {
+            parser.kill();
+        }
         if (err) {
             return res.render("upload", {
                 error: err,

@@ -17,6 +17,9 @@ var matchPages = {
     graphs: {
         name: "Graphs"
     },
+    positions: {
+        name: "Positions"
+    },
     chat: {
         name: "Chat"
     }

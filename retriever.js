@@ -86,8 +86,9 @@ async.map(a, function(i, cb) {
     Steam.on('error', function onSteamError(e) {
         console.log(e);
     });
-    //wait a bit for steam operations
-    setTimeout(cb, 1000);
+    Steam.once("relationships", function() {
+        cb();
+    });
 }, function() {
     ready = true;
 });

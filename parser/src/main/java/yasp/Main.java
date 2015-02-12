@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 
 public class Main {
 	public static void finish(long tStart, Output doc){
@@ -89,6 +90,7 @@ public class Main {
 						player.lh.add((Integer)pr.getState()[lhIdx+i]);
 						player.xp.add((Integer)pr.getState()[xpIdx+i]);
 						player.gold.add((Integer)pr.getState()[goldIdx+i]);
+						player.positions.add(player.getMedian());
 					}
 					nextMinute += MINUTE;
 				}
@@ -98,12 +100,11 @@ public class Main {
 					doc.hero_to_slot.put(hero, i);
 					Float stuns = (Float)pr.getState()[stunIdx+i];
 					doc.players.get(i).stuns = stuns;
-					//todo sample each hero's x/y position every tick
-					//every interval (5 minutes?), find the median x and median y, and save this value
 					int handle = (Integer)pr.getState()[handleIdx+i];
                     Entity e = ec.getByHandle(handle);
-                    if (e!=null && i == 0){
-                    	//System.err.format("time: %s, hero: %s, x: %s, y: %s,\n", trueTime, i, e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                    if (e!=null){
+                    	doc.players.get(i).xBuf.add((Integer)e.getProperty("m_cellX"));
+                    	doc.players.get(i).yBuf.add((Integer)e.getProperty("m_cellY"));
                     }
 				}
 				

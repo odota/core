@@ -135,7 +135,6 @@ function streamReplay(job, cb) {
             fs.createReadStream(job.data.fileName).pipe(parser.stdin);
         }
         else {
-            bz = spawn("bzcat");
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null,
@@ -146,6 +145,7 @@ function streamReplay(job, cb) {
                     throw "download error";
                 }
             });
+            bz = spawn("bzcat");
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
