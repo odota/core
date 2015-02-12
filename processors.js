@@ -12,22 +12,24 @@ var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
+var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
     var t1 = new Date();
-    var match_id = job.data.payload.match_id;
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         streamReplay,
-    ], function(err, job2) {
+    ], function(err) {
+        var match_id = job.data.payload.match_id;
         logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
         if (err === "replay expired" || (err && noRetry)) {
             logger.info("match_id %s, error %s, not retrying", match_id, err);
             return db.matches.update({
-                match_id: match_id
+                match_id: match_id,
+                parse_status: 0
             }, {
                 $set: {
                     parse_status: 1
@@ -43,7 +45,7 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
-            return cb(err);
+            return cb(err, job.data.payload);
         }
     });
 }
@@ -120,15 +122,37 @@ function streamReplay(job, cb) {
             if (err) {
                 throw err;
             }
-            db.matches.update({
+            match_id = match_id || output.match_id;
+            job.data.payload.match_id = match_id;
+            job.update();
+            var res = {
+                match_id: match_id,
+                parsed_data: output,
+                parse_status: 2
+            };
+            db.matches.findOne({
                 match_id: match_id
-            }, {
-                $set: {
-                    parsed_data: output,
-                    parse_status: 2
+            }, function(err, doc) {
+                if (err) {
+                    return cb(err);
                 }
-            }, function(err) {
-                cb(err, job);
+                else if (!doc) {
+                    queueReq("api_details", res, function(err, apijob) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        apijob.on('complete', function(err) {
+                            cb(err);
+                        });
+                    });
+                }
+                else {
+                    db.matches.update(doc, {
+                        $set: res,
+                    }, function(err) {
+                        cb(err);
+                    });
+                }
             });
         });
         if (job.data.fileName) {
@@ -158,12 +182,15 @@ function processApi(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             //encountered non-retryable error, pass back to kue as the result
-            return cb(null, err);
+            //cb with err causes kue to retry
+            return cb(null, {
+                error: err
+            });
         }
         if (data.response) {
             logger.info("summaries response");
             async.map(data.response.players, insertPlayer, function(err) {
-                cb(err);
+                cb(err, job.data.payload);
             });
         }
         else if (payload.match_id) {
@@ -174,7 +201,7 @@ function processApi(job, cb) {
                 match[prop] = match[prop] ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
-                cb(err);
+                cb(err, job.data.payload);
             });
         }
         else {

@@ -21,9 +21,13 @@ public class Player {
     }
     
     public Integer[] getMedian(){
+        if (xBuf.size() <= 0) {
+            Integer[] position = {0,0};
+		    return position;
+		}
         Collections.sort(xBuf);
 		Collections.sort(yBuf);
-		Integer[] position = { xBuf.get(xBuf.size()/2), yBuf.get(yBuf.size()/2)};
+		Integer[] position =  { xBuf.get(xBuf.size()/2), yBuf.get(yBuf.size()/2)};
 		xBuf.clear();
 		yBuf.clear();
 		return position;

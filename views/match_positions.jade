@@ -29,9 +29,17 @@ append content
                           if match.parsed_data.times[j] < i && match.parsed_data.times[j] >= i-bucket
                             =entry
             .row
-              .col-md-12
+              .col-md-6
+                h2 Heatmap
                 #map.mapContainer
                   img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+                each player, ind in match.players
+                  - var hero = constants.heroes[player.hero_id]
+                    span.hero.mapHero(id=ind)
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id              
             .row
               .col-md-12
                 include ads/leaderboard_3
@@ -45,6 +53,8 @@ append footer_assets
         container: document.getElementById('map'),
           radius: 50
       });
-      var data = !{JSON.stringify(match.parsed_data.players[0].positions.map(function(p){return {x:(p[0]-60)*(600/128),y:(128-(p[1]-60))*(600/128)}}))}
-      heatmap.setData({max: 198, min: 70, data: data})
-      heatmap.repaint();
+      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:(p[0]-60)*(600/128),y:(128-(p[1]-60))*(600/128)}})}))}
+      $(".mapHero").on("mouseover", function(){
+        heatmap.setData({data: data[Number($(this).attr('id'))]});
+        heatmap.repaint();
+      })
