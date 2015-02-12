@@ -1598,6 +1598,12 @@
       "id": 111,
       "localized_name": "Oracle",
       "img": "http://cdn.dota2.com/apps/dota2/images/heroes/oracle_sb.png"
+    },
+    "112": {
+      "name": "npc_dota_hero_winter_wyvern",
+      "id": 112,
+      "localized_name": "Winter Wyvern",
+      "img": "http://cdn.dota2.com/apps/dota2/images/heroes/winter_wyvern_sb.png"
     }
   }
 }
