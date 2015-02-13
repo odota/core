@@ -7,7 +7,7 @@ module.exports = function(cb) {
             return cb(err);
         }
         var filtered = [];
-        async.map(array, function(id, cb) {
+        async.mapSeries(array, function(id, cb) {
             var player = {
                 account_id: id
             };
