@@ -56,7 +56,7 @@ function build(cb) {
             });
         }, function(err) {
             if (err) {
-                build(cb);
+                return build(cb);
             }
             trackedPlayers = t;
             ratingPlayers = r;
