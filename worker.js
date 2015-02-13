@@ -132,7 +132,9 @@ function scanApi(seq_num) {
         async.mapSeries(resp, function(match, cb) {
             var tracked = false;
             async.map(match.players, function(p, cb) {
-                tracked = (p.account_id in trackedPlayers);
+                if (p.account_id in trackedPlayers) {
+                    tracked = true;
+                }
                 if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                     queueReq("mmr", {
                         match_id: match.match_id,
