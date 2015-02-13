@@ -898,6 +898,10 @@
     "5638": "oracle_fates_edict",
     "5639": "oracle_purifying_flames",
     "5640": "oracle_false_promise",
+    "5651": "winter_wyvern_arctic_burn",
+    "5652": "winter_wyvern_splinter_blast",
+    "5653": "winter_wyvern_cold_embrace",
+    "5654": "winter_wyvern_winters_curse",
     "wisp_spirits_out": "wisp_spirits_in"
   },
   "regions": {
