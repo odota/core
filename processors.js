@@ -174,13 +174,14 @@ function processApi(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             //encountered non-retryable error, pass back to kue as the result
+            //cb with err causes kue to retry
             return cb(null, {
                 error: err
             });
         }
         else if (data.response) {
             logger.info("summaries response");
-            async.map(data.response.players, insertPlayer, function(err) {
+            async.mapSeries(data.response.players, insertPlayer, function(err) {
                 cb(err, job.data.payload);
             });
         }

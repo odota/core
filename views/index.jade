@@ -29,7 +29,7 @@ block content
         =" Tracked: YASP will automatically parse your replays as long as you remain active."
       div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
         span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Full History: " + (user.full_history_time || "never")
+        =" Full History: " + (moment(user.last_summaries_update).fromNow() || "never")
       div(class=user.last_summaries_update ? "alert alert-success" : "alert alert-danger")
         span(class= user.last_summaries_update ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Name Update:  "+ (moment(user.last_summaries_update).fromNow() || "never")

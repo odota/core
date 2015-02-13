@@ -42,7 +42,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
                     match_id: Number(match_id)
                 };
                 db.matches.find(match, function(err, docs) {
-                    if (!err && docs.length<=0) {
+                    if (!err && docs.length) {
                         queueReq("api_details", match, function(err) {
                             //added a single job to kue
                             cb(err);
