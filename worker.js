@@ -14,27 +14,27 @@ var insertMatch = operations.insertMatch;
 var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
-var untrack = require('./tasks/untrack');
+var selector = require('./selector');
+var getmissing = require('./tasks/getmissing');
+
 var trackedPlayers = {};
 var ratingPlayers = {};
-console.log("[WORKER] starting worker");
 
+console.log("[WORKER] starting worker");
 build(function() {
     startScan();
     jobs.promote();
     jobs.process('api', processors.processApi);
     jobs.process('mmr', processors.processMmr);
     setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
-    setInterval(untrack, 60 * 60 * 1000, function() {});
     setInterval(fullhistory, 60 * 60 * 1000, function() {});
     setInterval(updatenames, 5 * 60 * 1000, function() {});
+    setInterval(getmissing, 5 * 60 * 1000, function() {});
     setInterval(build, 5 * 60 * 1000, function() {});
 });
 
 function build(cb) {
-    db.players.find({
-        track: 1
-    }, function(err, docs) {
+    db.players.find(selector("tracked"), function(err, docs) {
         if (err) {
             return build(cb);
         }

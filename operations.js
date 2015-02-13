@@ -15,32 +15,14 @@ function insertMatch(match, cb) {
             upsert: true
         },
         function(err) {
-            if (err) {
-                return cb(err);
-            }
-            //add players in match to db
-            async.mapSeries(match.players, function(player, cb) {
-                db.players.update({
-                    account_id: player.account_id
-                }, {
-                    $set: {
-                        account_id: player.account_id
-                    }
-                }, {
-                    upsert: true
-                }, function(err) {
+            if (!err && !match.parse_status) {
+                queueReq("parse", match, function(err) {
                     cb(err);
                 });
-            }, function(err) {
-                if (!match.parse_status) {
-                    queueReq("parse", match, function(err) {
-                        cb(err);
-                    });
-                }
-                else {
-                    cb(err);
-                }
-            });
+            }
+            else {
+                cb(err);
+            }
         });
 }
 
