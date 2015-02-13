@@ -165,7 +165,7 @@ function processApi(job, cb) {
         }
         else if (data.response) {
             logger.info("summaries response");
-            async.map(data.response.players, insertPlayer, function(err) {
+            async.mapSeries(data.response.players, insertPlayer, function(err) {
                 cb(err);
             });
         }
