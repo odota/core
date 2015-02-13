@@ -159,9 +159,11 @@ function processApi(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             //encountered non-retryable error, pass back to kue as the result
-            return cb(null, err);
+            return cb(null, {
+                error: err
+            });
         }
-        if (data.response) {
+        else if (data.response) {
             logger.info("summaries response");
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(err);
