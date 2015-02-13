@@ -51,6 +51,19 @@ module.exports = function playerTables() {
             "paging": false
         });
         $('#matches').dataTable({
+            "order": [
+                [0, "desc"]
+            ],
+            "columnDefs": [{
+                "targets": [1],
+                "orderData": [2]
+            }, {
+                "targets": [2],
+                visible: false
+            }]
+        });
+        /*
+        $('#matches').dataTable({
             ajax: {
                 'url': '/api/matches',
                 'data': {
@@ -179,5 +192,6 @@ module.exports = function playerTables() {
                 }
             }]
         });
+        */
     });
 };
