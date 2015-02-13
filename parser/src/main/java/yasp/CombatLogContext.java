@@ -2,6 +2,7 @@ package yasp;
 
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.StringTable;
+import java.util.Arrays;
 
 public class CombatLogContext {
 
@@ -27,7 +28,9 @@ public class CombatLogContext {
     Integer goldReasonIdx;
     Integer stunDurationIdx;
     Integer xpReasonIdx;
-    
+    Integer locationXIdx;
+    Integer locationYIdx;
+
     public CombatLogContext(StringTable combatLogNamesTable, GameEventDescriptor descriptor) {
         combatLogNames = combatLogNamesTable;
         
@@ -53,6 +56,8 @@ public class CombatLogContext {
         
         stunDurationIdx = descriptor.getIndexForKey("stun_duration");
         xpReasonIdx = descriptor.getIndexForKey("xp_reason");
+        locationXIdx = descriptor.getIndexForKey("location_x");
+        locationYIdx = descriptor.getIndexForKey("location_y");
         //System.err.println(Arrays.toString(descriptor.getKeys()));
 
     }

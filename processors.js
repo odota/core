@@ -12,22 +12,24 @@ var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
+var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
     var t1 = new Date();
-    var match_id = job.data.payload.match_id;
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
     async.waterfall([
         async.apply(checkLocal, job),
         getReplayUrl,
         streamReplay,
-    ], function(err, job2) {
+    ], function(err) {
+        var match_id = job.data.payload.match_id;
         logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
         if (err === "replay expired" || (err && noRetry)) {
             logger.info("match_id %s, error %s, not retrying", match_id, err);
             return db.matches.update({
-                match_id: match_id
+                match_id: match_id,
+                parse_status: 0
             }, {
                 $set: {
                     parse_status: 1
@@ -43,7 +45,7 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
-            return cb(err);
+            return cb(err, job.data.payload);
         }
     });
 }
@@ -72,6 +74,7 @@ function getReplayUrl(job, cb) {
             }
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
             job.data.url = url;
+            job.data.payload.url = url;
             job.update();
             return cb(null, job);
         });
@@ -103,39 +106,51 @@ function streamReplay(job, cb) {
     var bz;
     var parser;
     d.on('error', function(err) {
-        if (!error) {
-            //only cb with first error
-            error = err;
-            if (bz) {
-                bz.kill();
-            }
-            if (parser) {
-                parser.kill();
-            }
-            cb(error);
-        }
+        cb(error || err);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
             if (err) {
                 throw err;
             }
-            db.matches.update({
+            match_id = match_id || output.match_id;
+            job.data.payload.match_id = match_id;
+            job.data.payload.parsed_data = output;
+            job.data.payload.parse_status = 2;
+            job.update();
+            db.matches.find({
                 match_id: match_id
-            }, {
-                $set: {
-                    parsed_data: output,
-                    parse_status: 2
+            }, function(err, docs) {
+                console.log(docs, match_id);
+                if (err) {
+                    return cb(err);
                 }
-            }, function(err) {
-                cb(err, job);
+                else if (docs.length) {
+                    db.matches.update({
+                        match_id: match_id
+                    }, {
+                        $set: job.data.payload,
+                    }, function(err) {
+                        cb(err);
+                    });
+                }
+                else {
+                    console.log("parsed match not in db");
+                    queueReq("api_details", job.data.payload, function(err, apijob) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        apijob.on('complete', function() {
+                            cb();
+                        });
+                    });
+                }
             });
         });
         if (job.data.fileName) {
             fs.createReadStream(job.data.fileName).pipe(parser.stdin);
         }
         else {
-            bz = spawn("bzcat");
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null,
@@ -143,9 +158,10 @@ function streamReplay(job, cb) {
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    throw "download error";
+                    error = "download error";
                 }
             });
+            bz = spawn("bzcat");
             downStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
@@ -158,12 +174,15 @@ function processApi(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             //encountered non-retryable error, pass back to kue as the result
-            return cb(null, err);
+            //cb with err causes kue to retry
+            return cb(null, {
+                error: err
+            });
         }
         if (data.response) {
             logger.info("summaries response");
             async.map(data.response.players, insertPlayer, function(err) {
-                cb(err);
+                cb(err, job.data.payload);
             });
         }
         else if (payload.match_id) {
@@ -174,7 +193,7 @@ function processApi(job, cb) {
                 match[prop] = match[prop] ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
-                cb(err);
+                cb(err, job.data.payload);
             });
         }
         else {

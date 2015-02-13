@@ -204,6 +204,9 @@
     }
   },
   "patches": [{
+    "name": "6.83c",
+    "date": "2015-02-13T00:00:00Z"
+  }, {
     "name": "6.83b",
     "date": "2015-01-13T00:00:00Z"
   }, {
@@ -895,6 +898,10 @@
     "5638": "oracle_fates_edict",
     "5639": "oracle_purifying_flames",
     "5640": "oracle_false_promise",
+    "5651": "winter_wyvern_arctic_burn",
+    "5652": "winter_wyvern_splinter_blast",
+    "5653": "winter_wyvern_cold_embrace",
+    "5654": "winter_wyvern_winters_curse",
     "wisp_spirits_out": "wisp_spirits_in"
   },
   "regions": {
@@ -1598,6 +1605,12 @@
       "id": 111,
       "localized_name": "Oracle",
       "img": "http://cdn.dota2.com/apps/dota2/images/heroes/oracle_sb.png"
+    },
+    "112": {
+      "name": "npc_dota_hero_winter_wyvern",
+      "id": 112,
+      "localized_name": "Winter Wyvern",
+      "img": "http://cdn.dota2.com/apps/dota2/images/heroes/winter_wyvern_sb.png"
     }
   }
 }

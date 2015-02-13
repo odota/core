@@ -6,7 +6,7 @@ block content
       p Request a parse by uploading a replay file or entering a match ID.
       p Only public games are supported.
   if error
-    .alert.alert-danger(role="alert")=error
+    .alert.alert-danger(role="alert")=JSON.stringify(error)
   .row
     .col-md-4
       div.radio
@@ -47,8 +47,6 @@ block footer_assets
                     $("#upload").submit();
                 }
                 else {
-                    $("h1").after("<div role='alert' class='failure alert alert-warning'> Recaptcha failed. Please try again.</div");
-                    $(".failure").fadeOut(2000);
                     Recaptcha.reload();
                 }
             }

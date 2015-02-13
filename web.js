@@ -33,6 +33,9 @@ io.sockets.on('connection', function(socket) {
         socket.emit('recFile');
     });
 });
+app.use("/socket", function(req, res){
+    res.render("socket");
+});
 */
 
 var Poet = require('poet');

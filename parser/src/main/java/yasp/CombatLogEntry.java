@@ -20,7 +20,7 @@ private final GameEvent event;
         return in;
     }
     
-        private String readCombatLogName(int idx) {
+    private String readCombatLogName(int idx) {
         return idx == 0 ? null : ctx.combatLogNames.getNameByIndex(idx);
     }
     
@@ -105,14 +105,19 @@ private final GameEvent event;
     }
     
     //new functions
-        public int getXpReason() {
+    public int getXpReason() {
         return event.getProperty(ctx.xpReasonIdx);
     }
-        public int getStunDuration() {
+    public int getStunDuration() {
         return event.getProperty(ctx.stunDurationIdx);
     }
-    
-   public String getValueName(){
+    public int getLocationX() {
+        return event.getProperty(ctx.locationXIdx);
+    }
+    public int getLocationY() {
+        return event.getProperty(ctx.locationYIdx);
+    }
+    public String getValueName(){
         return translate(readCombatLogName(getValue()));
     }
 }

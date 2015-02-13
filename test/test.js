@@ -28,7 +28,6 @@ var unparsed = require('../tasks/unparsed');
 var updatenames = require('../tasks/updatenames');
 var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
-var untrack = require('../tasks/untrack');
 var queueReq = require('../operations').queueReq;
 
 var wait = 30000;
@@ -105,7 +104,7 @@ before(function(done) {
                 //set visited date on first player
                 testdata.players[0].last_visited = new Date();
                 testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
-                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100"); //should be untracked
+                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
                         cb(err);
@@ -188,7 +187,7 @@ before(function(done) {
                         "soloCalibrationGamesRemaining": 0,
                         "recruitmentLevel": 0
                     })
-                    .get('match_id=115178218')
+                    .get('match_id=1151783218')
                     .reply(200, {
                         match: {
                             cluster: 1,
@@ -730,7 +729,7 @@ describe("tasks", function() {
     this.timeout(wait);
     it('unparsed', function(done) {
         unparsed(function(err, num) {
-            assert.equal(num, 2);
+            assert(num);
             done(err);
         });
     });
@@ -746,12 +745,6 @@ describe("tasks", function() {
     });
     it('constants', function(done) {
         constants("./constants_test.json", function(err) {
-            done(err);
-        });
-    });
-    it('untrack', function(done) {
-        untrack(function(err, num) {
-            assert(num, 1);
             done(err);
         });
     });
@@ -787,12 +780,11 @@ describe("parser", function() {
     this.timeout(60000);
     it('parse replay (download)', function(done) {
         var job = {
-            match_id: 115178218,
+            match_id: 1151783218,
             start_time: moment().format('X')
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-
             processors.processParse(job, function(err) {
                 done(err);
             });

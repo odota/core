@@ -34,9 +34,7 @@ module.exports = function(io) {
                     });
                 },
                 tracked_players: function(cb) {
-                    db.players.count({
-                        track: 1
-                    }, function(err, res) {
+                    db.players.count(selector("tracked"), function(err, res) {
                         cb(err, res);
                     });
                 },
@@ -112,7 +110,7 @@ module.exports = function(io) {
                     });
                 },
                 last_added: function(cb) {
-                    db.matches.findOne({}, {
+                    db.matches.find({}, {
                         sort: {
                             match_seq_num: -1
                         },
@@ -121,13 +119,13 @@ module.exports = function(io) {
                             start_time: 1,
                             duration: 1
                         },
-                        limit: 1
-                    }, function(err, match) {
-                        cb(err, match);
+                        limit: 5
+                    }, function(err, matches) {
+                        cb(err, matches);
                     });
                 },
                 last_parsed: function(cb) {
-                    db.matches.findOne({
+                    db.matches.find({
                         parse_status: 2
                     }, {
                         sort: {
@@ -138,9 +136,9 @@ module.exports = function(io) {
                             start_time: 1,
                             duration: 1
                         },
-                        limit: 1
-                    }, function(err, match) {
-                        cb(err, match);
+                        limit: 5
+                    }, function(err, matches) {
+                        cb(err, matches);
                     });
                 }
             },
@@ -150,5 +148,5 @@ module.exports = function(io) {
                     error: err
                 });
             });
-    }, 2000);
+    }, 5000);
 };

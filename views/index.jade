@@ -12,13 +12,8 @@ block content
     .col-md-4
       h2
         | Welcome, #{user.personaname}!
-    .col-md-7
-      .alert.alert-success 
-        | Now that you're signed in, we'll automatically parse the replays of matches you play.
-        br
-        | Visit YASP regularly while signed in to remain a tracked user.
    .row
-    .col-md-4
+    .col-md-2
       h3 Preferences
       .checkbox
         label
@@ -27,8 +22,11 @@ block content
          else
            input#dark(type="checkbox")
          | Use Dark Theme
-    .col-md-4
+    .col-md-6
       h3 Status
+      div(class="alert alert-success")
+        span(class="glyphicon glyphicon-ok")
+        =" Tracked: YASP will automatically parse your replays as long as you remain active."
       div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
         span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Full History: " + (user.full_history_time || "never")
@@ -37,7 +35,7 @@ block content
         =" Name Update:  "+ (moment(user.last_summaries_update).fromNow() || "never")
       div(class= (user.account_id in ratingPlayers) ? "alert alert-success" : "alert alert-danger")
         span(class= (user.account_id in ratingPlayers) ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Rating Tracker "
+        =" Rating Tracker: Add a tracker to your friends list to have YASP follow your MMR.  May take several minutes to update."
     .col-md-4
       h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;

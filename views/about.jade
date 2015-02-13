@@ -2,8 +2,11 @@ extend layout
 
 block content
   h3 What is YASP?
-  p YASP is a free, open-source stats site that provides replay parsing for Dota 2 matches.  This allows us to present additional statistics that aren't available in the API or game client.
-  p Our goal is to provide in-depth analysis of personal matches.
+  p YASP is a free, open-source Dota 2 stats site.  We currently offer the following features:
+  ul
+    li Replay parsing.  This allows us to present additional statistics that aren't available in the API or game client.
+    li Rating tracking.  This allows us to show you your rating history.
+    li Visualizations.  We generate histograms and heatmaps of your Dota 2 match data.
   
   h3 What does YASP stand for?
   p YASP stands for YASP: Another Stats Page, which makes it a recursive acronym along the lines of GNU and YAML.
@@ -12,29 +15,27 @@ block content
   p YASP is a side project of a group of college students.  As such, we're not looking to make money off the site, although we do run ads to help pay for server costs.
   
   h3 How do I use YASP?
-  p Simply sign in through Steam, and we'll start tracking your matches and automatically parse the replays.  You can also upload specific replays, or request a specific match by match ID.
+  p Sign in through Steam, and we'll start tracking your matches and automatically parse the replays.
 
   h3 What do I do if I have a bug or feature request?
-  p The best way to let us know is by making an issue on GitHub.  This way the developers can discuss the issue/request with you.
-  
-  h3 Why does it take some time after my match to get it parsed?
-  p We can't parse a match until Valve makes it available for download.  After that, we have to download the replay and run it through the parser.  Most matches should be parsed within 15 minutes of completion.
+  p The best way to let us know is by making an issue on GitHub.  This way we can discuss the issue/request with you.
   
   h3 Why are my matches showing up, but don't get parsed?
-  p This can be due to Valve simply not making the replay available, which happens occasionally (particularly in the SEA region).  If so, there's nothing we can do about it.  
+  p There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable.
+  p After that, the replay might not be available, which happens occasionally (particularly in the SEA region).
   p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.  Usually, we're able to parse over 95% of games.
-  
-  h3 I signed in a while ago and just came back, why haven't my matches been tracked?
-  p To keep the load reasonable, we stop tracking players' matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
   
   h3 Why don't you have my old matches?
   p YASP only starts tracking your matches from when you signed in.  We get full match histories for contributors and active YASP users.
   
+  h3 I signed in a while ago and just came back, why haven't my matches been tracked?
+  p To keep the load reasonable, we stop parsing players' matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
+  
   h3 How do untracking and full history eligibility work?
-  p Currently, we untrack users who have not visited YASP for 3 days.  For full history, we select one user every hour whose account is at least 7 days old, is tracked, and has visited in the last day.
+  p Currently, we untrack users who have not visited YASP for 3 days.  For full history, we select one tracked user every hour whose account is at least 7 days old.
   
   h3 Why am I still missing some matches after getting my full history?
-  p The Valve API limits results to a maximum of 500, so we can get 500 games per hero per player.
+  p The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
   
   h3 Why can't you parse uploaded private lobby replays?
   p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we don't support these replays.

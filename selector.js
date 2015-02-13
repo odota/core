@@ -1,20 +1,17 @@
 var moment = require('moment');
 
 module.exports = function(type) {
+    var active = {
+        $gt: moment().subtract(3, 'day').toDate()
+    };
     var opts = {
-        "untrack": {
-            track: 1,
-            last_visited: {
-                $lt: moment().subtract(3, 'day').toDate()
-            }
+        "tracked": {
+            last_visited: active
         },
         "fullhistory": {
-            track: 1,
+            last_visited: active,
             join_date: {
                 $lt: moment().subtract(7, 'day').toDate()
-            },
-            last_visited: {
-                $gt: moment().subtract(1, 'day').toDate()
             }
         }
     };
