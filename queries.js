@@ -160,9 +160,11 @@ function generateGraphData(match, constants) {
 
 function fillPlayerNames(players, cb) {
     async.mapSeries(players, function(player, cb) {
+        console.log("querying for player %s", player.account_id);
         db.players.findOne({
             account_id: player.account_id
         }, function(err, dbPlayer) {
+            console.log("got result for player %s", player.account_id);
             if (dbPlayer) {
                 for (var prop in dbPlayer) {
                     player[prop] = dbPlayer[prop];
