@@ -51,7 +51,7 @@ async.map(a, function(i, cb) {
             console.log("friend request accepted");
             accountToIdx[convert64To32(steamID)] = Steam.steamID;
         }
-        if (relationship === Steam.EFriendRelationship.None){
+        if (relationship === Steam.EFriendRelationship.None) {
             delete accountToIdx[convert64To32(steamID)];
         }
     });
@@ -61,34 +61,36 @@ async.map(a, function(i, cb) {
         steamObj[Steam.steamID] = Steam;
         Steam.attempts = 0;
         Steam.success = 0;
-        Steam.on("relationships", function() {
-            //console.log(Steam.EFriendRelationship);
-            console.log("searching for pending friend requests...");
-            //friends is a object with key steam id and value relationship
-            console.log(Steam.friends);
-            for (var prop in Steam.friends) {
-                //iterate through friends and accept requests/populate hash
-                var steamID = prop;
-                var relationship = Steam.friends[prop];
-                if (relationship === Steam.EFriendRelationship.PendingInvitee) {
-                    Steam.addFriend(steamID);
-                    console.log(steamID + " was added as a friend");
-                }
-                accountToIdx[convert64To32(steamID)] = Steam.steamID;
+        Steam.Dota2.launch();
+    });
+    Steam.Dota2.on("ready", function() {
+        console.log("Dota 2 ready");
+    });
+    Steam.on("relationships", function() {
+        //console.log(Steam.EFriendRelationship);
+        console.log("searching for pending friend requests...");
+        //friends is a object with key steam id and value relationship
+        console.log(Steam.friends);
+        for (var prop in Steam.friends) {
+            //iterate through friends and accept requests/populate hash
+            var steamID = prop;
+            var relationship = Steam.friends[prop];
+            if (relationship === Steam.EFriendRelationship.PendingInvitee) {
+                Steam.addFriend(steamID);
+                console.log(steamID + " was added as a friend");
             }
-            console.log("finished searching");
-            Steam.Dota2.launch();
-            Steam.Dota2.on("ready", function() {
-                console.log("Dota 2 ready");
-                cb();
-            });
-        });
+            accountToIdx[convert64To32(steamID)] = Steam.steamID;
+        }
+        console.log("finished searching");
     });
     Steam.on('error', function onSteamError(e) {
         console.log(e);
     });
-}, function(err) {
-    ready = !err;
+    Steam.once("relationships", function() {
+        cb();
+    });
+}, function() {
+    ready = true;
 });
 
 function getPlayerProfile(idx, account_id, cb) {

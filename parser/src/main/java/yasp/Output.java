@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 
 public class Output {
     //increment version when adding breaking changes
-    public int version = 3;
+    public int version = 4;
     public int match_id;
     public int game_zero;
     public int game_end;

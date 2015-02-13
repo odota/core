@@ -1,5 +1,3 @@
-var utility = require('../utility');
-var domain = require('domain');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var multiparty = require('multiparty');
@@ -18,77 +16,49 @@ upload.post("/", function(req, res) {
     if (req.session.captcha_verified || process.env.NODE_ENV === "test") {
         req.session.captcha_verified = false; //Set back to false
         var form = new multiparty.Form();
-        var match_id;
-        var parser;
-        var error;
-        var d = domain.create();
-        d.on('error', function(err) {
-            if (!error) {
-                error = err;
-                if (parser) {
-                    parser.kill();
-                }
-                close(error);
+        form.parse(req, function(err, fields, files) {
+            if (err) {
+                return close(err);
             }
-        });
-        d.run(function() {
-            form.on('field', function(name, value) {
-                console.log('got field named ' + name);
-                //queue for api details, redirect
-                if (name === "match_id") {
-                    match_id = Number(value);
-                    queueReq("api_details", {
-                        match_id: match_id,
-                        request: true,
-                        priority: "high"
-                    }, close);
-                }
-            });
-            form.on('part', function(part) {
-                if (part.filename) {
-                    console.log('got file named ' + part.name);
-                    //parse to determine match_id, queue for api details, redirect
-                    parser = utility.runParse(function(err, output) {
-                        if (err) {
-                            throw err;
-                        }
-                        match_id = output.match_id;
-                        queueReq("api_details", {
-                            match_id: match_id,
-                            upload: true,
-                            parsed_data: output,
-                            priority: "high"
-                        }, close);
-                    });
-                    part.pipe(parser.stdin);
-                }
-            });
-            form.parse(req);
+            if (fields.match_id) {
+                var match_id = Number(fields.match_id[0]);
+                console.log(match_id);
+                queueReq("api_details", {
+                    match_id: match_id,
+                    request: true,
+                    priority: "high"
+                }, close);
+            }
+            if (files.replay) {
+                var fileName = files.replay[0].path;
+                console.log(fileName);
+                queueReq("parse", {
+                    fileName: fileName
+                }, close);
+            }
         });
     }
 
     function close(err, job) {
-        if (err) {
-            return res.render("upload", {
-                error: err,
-                recaptcha_form: recaptcha.toHTML(),
-            });
-        }
-        else if (job) {
-            job.on('complete', function(result) {
-                if (result) {
+        if (job && process.env.NODE_ENV !== "test") {
+            console.log(job.data.payload);
+            job.on("complete", function(result) {
+                if (result.error) {
                     return res.render("upload", {
-                        error: JSON.stringify(result),
-                        recaptcha_form: recaptcha.toHTML(),
+                        error:  result.error,
+                        recaptcha_form: recaptcha.toHTML()
                     });
                 }
                 else {
-                    return res.redirect("/matches/" + match_id);
+                    return res.redirect("matches/" + result.match_id);
                 }
             });
         }
         else {
-            res.redirect("/matches/" + match_id);
+            return res.render("upload", {
+                error: err,
+                recaptcha_form: recaptcha.toHTML()
+            });
         }
     }
 });

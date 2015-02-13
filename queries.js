@@ -32,12 +32,10 @@ function mergeMatchData(match, constants) {
     //merge into player's primary unit
     //if not hero attempt to associate with a hero
     for (var key in heroes) {
-        var val = heroes[key];
         var primary = key;
         if (constants.hero_names[key]) {
             //is a hero
             //merging multiple heroes together, only occurs in ARDM
-            //doesn't work for 1v1, but ARDM is only played with 10 players
             var hero_id = constants.hero_names[key].id;
             var slot = match.parsed_data.hero_to_slot[hero_id];
             if (match.players[slot]) {
@@ -59,7 +57,7 @@ function mergeMatchData(match, constants) {
         }
         if (key !== primary) {
             //merge the objects into primary, but not with itself
-            mergeObjects(heroes[primary], val);
+            mergeObjects(heroes[primary], heroes[key]);
         }
     }
     return match;
@@ -325,7 +323,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
 }
 
 function getRatingData(req, cb) {
-    if (!req.user){
+    if (!req.user) {
         return cb(null);
     }
     var account_id = req.user.account_id;

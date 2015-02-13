@@ -41,9 +41,16 @@ module.exports = function getFullMatchHistory(heroes, done) {
                 var match = {
                     match_id: Number(match_id)
                 };
-                queueReq("api_details", match, function(err) {
-                    //added a single job to kue
-                    cb(err);
+                db.matches.find(match, function(err, docs) {
+                    if (!err && docs.length) {
+                        queueReq("api_details", match, function(err) {
+                            //added a single job to kue
+                            cb(err);
+                        });
+                    }
+                    else {
+                        cb(err);
+                    }
                 });
             }, function(err) {
                 if (err) {
