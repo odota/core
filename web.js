@@ -25,7 +25,7 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
-require('./status')(io);
+//require('./status')(io);
 /*
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
@@ -149,7 +149,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     if (process.env.NODE_ENV !== "development") {
-        return res.render(err.status === 404 ? '404.jade' : '500.jade', {
+        return res.render(err.status === 404 ? '404' : '500', {
             error: err
         });
     }
