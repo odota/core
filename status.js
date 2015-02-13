@@ -3,7 +3,7 @@ var db = require('./db');
 var moment = require('moment');
 var selector = require('./selector');
 module.exports = function(io) {
-    setInterval(function() {
+    function getStatus() {
         async.series({
                 matches: function(cb) {
                     db.matches.count({}, function(err, res) {
@@ -110,7 +110,7 @@ module.exports = function(io) {
                     });
                 },
                 last_added: function(cb) {
-                    db.matches.findOne({}, {
+                    db.matches.find({}, {
                         sort: {
                             match_seq_num: -1
                         },
@@ -119,13 +119,13 @@ module.exports = function(io) {
                             start_time: 1,
                             duration: 1
                         },
-                        limit: 1
-                    }, function(err, match) {
-                        cb(err, match);
+                        limit: 5
+                    }, function(err, matches) {
+                        cb(err, matches);
                     });
                 },
                 last_parsed: function(cb) {
-                    db.matches.findOne({
+                    db.matches.find({
                         parse_status: 2
                     }, {
                         sort: {
@@ -136,9 +136,9 @@ module.exports = function(io) {
                             start_time: 1,
                             duration: 1
                         },
-                        limit: 1
-                    }, function(err, match) {
-                        cb(err, match);
+                        limit: 5
+                    }, function(err, matches) {
+                        cb(err, matches);
                     });
                 }
             },
@@ -147,6 +147,8 @@ module.exports = function(io) {
                     stats: results,
                     error: err
                 });
+                return setTimeout(getStatus, 10000);
             });
-    }, 5000);
+    }
+    getStatus();
 };

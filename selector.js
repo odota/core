@@ -12,9 +12,6 @@ module.exports = function(type) {
             last_visited: active,
             join_date: {
                 $lt: moment().subtract(7, 'day').toDate()
-            },
-            last_visited: {
-                $gt: moment().subtract(1, 'day').toDate()
             }
         }
     };
