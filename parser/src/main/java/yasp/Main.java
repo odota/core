@@ -60,7 +60,7 @@ public class Main {
 			finish(tStart, doc);
 		}
 		else{
-			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ALL);
+			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO);
 			while(iter.hasNext()) {
 				iter.next().apply(match);
 				int time = (int) match.getGameTime();
