@@ -47,7 +47,7 @@ matches.param('match_id', function(req, res, next, id) {
                 else {
                     queries.fillPlayerNames(match.players, function(err) {
                         if (err) {
-                            return next(new Error(err));
+                            return next(err);
                         }
                         req.match = match;
                         if (match.parsed_data) {

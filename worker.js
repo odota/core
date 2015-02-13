@@ -132,9 +132,7 @@ function scanApi(seq_num) {
         async.map(resp, function(match, cb) {
             var tracked = false;
             async.map(match.players, function(p, cb) {
-                if (p.account_id in trackedPlayers) {
-                    tracked = true;
-                }
+                tracked = (p.account_id in trackedPlayers);
                 if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                     queueReq("mmr", {
                         match_id: match.match_id,
@@ -159,15 +157,17 @@ function scanApi(seq_num) {
                 }
             });
         }, function(err) {
-            var new_seq_num = seq_num;
             if (!err && resp.length) {
-                new_seq_num = resp[resp.length - 1].match_seq_num + 1;
+                seq_num = resp[resp.length - 1].match_seq_num + 1;
+                //wait 100ms for each match less than 100
+                var delay = (100 - resp.length) * 100;
+                return setTimeout(function() {
+                    scanApi(seq_num);
+                }, delay);
             }
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(new_seq_num);
-            }, delay);
+            else {
+                return scanApi(seq_num);
+            }
         });
     });
 }
