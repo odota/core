@@ -12,11 +12,6 @@ block content
     .col-md-4
       h2
         | Welcome, #{user.personaname}!
-    .col-md-7
-      .alert.alert-success 
-        | Now that you're signed in, we'll automatically parse the replays of matches you play.
-        br
-        | Visit YASP regularly while signed in to remain a tracked user.
    .row
     .col-md-4
       h3 Preferences
@@ -29,6 +24,9 @@ block content
          | Use Dark Theme
     .col-md-4
       h3 Status
+      div(class="alert alert-success")
+        span(class="glyphicon glyphicon-ok")
+        =" Tracked: YASP will automatically parse your replays as long as you remain active on YASP."
       div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
         span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Full History: " + (user.full_history_time || "never")

@@ -3,7 +3,15 @@
 		<encoder>
 			<pattern>%msg%n</pattern>
 		</encoder>
-            <target>System.err</target>
+		<target>System.err</target>
+	</appender>
+
+	<appender name="devnull" class="ch.qos.logback.core.FileAppender">
+		<file>/dev/null</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%msg%n</pattern>
+		</encoder>
 	</appender>
 
 	<logger name="org.reflections" level="warn" />
@@ -14,7 +22,7 @@
 	<logger name="skadistats.clarity.decoder.StringTableApplier" level="info" />
 	<logger name="skadistats.clarity.decoder.PacketEntitiesDecoder" level="info" />
 	<logger name="skadistats.clarity.decoder.TempEntitiesDecoder" level="info" />
-	
+
 	<logger name="skadistats.clarity.parser.handler.DemClassInfoHandler" level="info" />
 	<logger name="skadistats.clarity.parser.handler.DemFileHeaderHandler" level="info" />
 	<logger name="skadistats.clarity.parser.handler.DemStringTablesHandler" level="info" />
@@ -37,11 +45,9 @@
 	<logger name="skadistats.clarity.parser.handler.UserMsgDodgeTrackingProjectilesHandler" level="info" />
 	<logger name="skadistats.clarity.parser.handler.UserMsgParticleManagerHandler" level="info" />
 	<logger name="skadistats.clarity.parser.handler.UserMsgGamerulesStateChangedHandler" level="info" />
-		
+
 	<root level="info">
-		<appender-ref ref="stderr" />
+		<appender-ref ref="devnull" />
 	</root>
-	
+
 </configuration>
-
-
