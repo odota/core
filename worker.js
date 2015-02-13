@@ -129,7 +129,7 @@ function scanApi(seq_num) {
         }
         var resp = data.result.matches;
         logger.info("[API] seq_num: %s, found %s matches", seq_num, resp.length);
-        async.map(resp, function(match, cb) {
+        async.mapSeries(resp, function(match, cb) {
             var tracked = false;
             async.map(match.players, function(p, cb) {
                 tracked = (p.account_id in trackedPlayers);
