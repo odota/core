@@ -16,21 +16,29 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var getmissing = require('./tasks/getmissing');
+var domain = require('domain');
 
 var trackedPlayers = {};
 var ratingPlayers = {};
 
-console.log("[WORKER] starting worker");
-build(function() {
-    startScan();
-    jobs.promote();
-    jobs.process('api', processors.processApi);
-    jobs.process('mmr', processors.processMmr);
-    setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
-    setInterval(fullhistory, 60 * 60 * 1000, function() {});
-    setInterval(updatenames, 5 * 60 * 1000, function() {});
-    setInterval(getmissing, 5 * 60 * 1000, function() {});
-    setInterval(build, 5 * 60 * 1000, function() {});
+var d = domain.create();
+d.on('error', function() {
+    clearActiveJobs(function(err) {
+        process.exit(err);
+    });
+});
+d.run(function() {
+    console.log("[WORKER] starting worker");
+    build(function() {
+        startScan();
+        jobs.promote();
+        jobs.process('api', processors.processApi);
+        jobs.process('mmr', processors.processMmr);
+        setInterval(fullhistory, 60 * 60 * 1000, function() {});
+        setInterval(updatenames, 5 * 60 * 1000, function() {});
+        setInterval(getmissing, 10 * 60 * 1000, function() {});
+        setInterval(build, 5 * 60 * 1000, function() {});
+    });
 });
 
 function build(cb) {
@@ -69,6 +77,31 @@ function build(cb) {
     });
 }
 
+function startScan() {
+    if (process.env.START_SEQ_NUM === "AUTO") {
+        var container = generateJob("api_history", {});
+        getData(container.url, function(err, data) {
+            if (err) {
+                return startScan();
+            }
+            scanApi(data.result.matches[0].match_seq_num);
+        });
+    }
+    else if (process.env.START_SEQ_NUM) {
+        scanApi(process.env.START_SEQ_NUM);
+    }
+    else {
+        redis.get("match_seq_num", function(err, result) {
+            if (!err && result) {
+                scanApi(result);
+            }
+            else {
+                return startScan();
+            }
+        });
+    }
+}
+
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
         if (err) {
@@ -91,34 +124,6 @@ function clearActiveJobs(cb) {
     });
 }
 
-function startScan() {
-    if (process.env.START_SEQ_NUM === "AUTO") {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
-            if (err) {
-                return startScan();
-            }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
-    else if (process.env.START_SEQ_NUM) {
-        scanApi(process.env.START_SEQ_NUM);
-    }
-    else {
-        //start at highest id in db
-        db.matches.findOne({}, {
-            sort: {
-                match_seq_num: -1
-            }
-        }, function(err, doc) {
-            if (err) {
-                return startScan();
-            }
-            scanApi(doc ? doc.match_seq_num + 1 : 0);
-        });
-    }
-}
-
 function scanApi(seq_num) {
     var container = generateJob("api_sequence", {
         start_at_match_seq_num: seq_num
@@ -132,7 +137,9 @@ function scanApi(seq_num) {
         async.mapSeries(resp, function(match, cb) {
             var tracked = false;
             async.map(match.players, function(p, cb) {
-                tracked = (p.account_id in trackedPlayers);
+                if (p.account_id in trackedPlayers) {
+                    tracked = true;
+                }
                 if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                     queueReq("mmr", {
                         match_id: match.match_id,
@@ -159,6 +166,7 @@ function scanApi(seq_num) {
         }, function(err) {
             if (!err && resp.length) {
                 seq_num = resp[resp.length - 1].match_seq_num + 1;
+                redis.set("match_seq_num", seq_num);
                 //wait 100ms for each match less than 100
                 var delay = (100 - resp.length) * 100;
                 return setTimeout(function() {

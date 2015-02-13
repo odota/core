@@ -25,7 +25,6 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
-require('./status')(io);
 /*
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
@@ -147,6 +146,11 @@ app.route('/verify_recaptcha')
     });
 app.route('/status').get(function(req, res) {
     res.render("status");
+    io.sockets.on('connection', function(socket) {
+        require('./status')(function(result) {
+            socket.emit('stats', result);
+        });
+    });
 });
 app.route('/about').get(function(req, res) {
     res.render("about");

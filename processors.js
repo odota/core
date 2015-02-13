@@ -121,7 +121,6 @@ function streamReplay(job, cb) {
             db.matches.find({
                 match_id: match_id
             }, function(err, docs) {
-                console.log(docs, match_id);
                 if (err) {
                     return cb(err);
                 }

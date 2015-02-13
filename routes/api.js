@@ -33,25 +33,18 @@ api.get('/matches', function(req, res, next) {
             project["players.$"] = 1;
         }
     }
-    db.matches.count(select, function(err, count) {
+    db.matches.find(select, {
+        limit: limit,
+        skip: start,
+        sort: sort,
+        fields: project
+    }, function(err, docs) {
         if (err) {
             return next(err);
         }
-        db.matches.find(select, {
-            limit: limit,
-            skip: start,
-            sort: sort,
-            fields: project
-        }, function(err, docs) {
-            if (err) {
-                return next(err);
-            }
-            res.json({
-                draw: draw,
-                recordsTotal: count,
-                recordsFiltered: count,
-                data: docs
-            });
+        res.json({
+            draw: draw,
+            data: docs
         });
     });
 });
