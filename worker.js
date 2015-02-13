@@ -16,21 +16,29 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var getmissing = require('./tasks/getmissing');
+var domain = require('domain');
 
 var trackedPlayers = {};
 var ratingPlayers = {};
 
-console.log("[WORKER] starting worker");
-build(function() {
-    startScan();
-    jobs.promote();
-    jobs.process('api', processors.processApi);
-    jobs.process('mmr', processors.processMmr);
-    setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
-    setInterval(fullhistory, 60 * 60 * 1000, function() {});
-    setInterval(updatenames, 5 * 60 * 1000, function() {});
-    //setInterval(getmissing, 5 * 60 * 1000, function() {});
-    setInterval(build, 5 * 60 * 1000, function() {});
+var d = domain.create();
+d.on('error', function() {
+    clearActiveJobs(function(err) {
+        process.exit(err);
+    });
+});
+d.run(function() {
+    console.log("[WORKER] starting worker");
+    build(function() {
+        startScan();
+        jobs.promote();
+        jobs.process('api', processors.processApi);
+        jobs.process('mmr', processors.processMmr);
+        setInterval(fullhistory, 60 * 60 * 1000, function() {});
+        setInterval(updatenames, 5 * 60 * 1000, function() {});
+        //setInterval(getmissing, 10 * 60 * 1000, function() {});
+        setInterval(build, 5 * 60 * 1000, function() {});
+    });
 });
 
 function build(cb) {
@@ -132,7 +140,9 @@ function scanApi(seq_num) {
         async.mapSeries(resp, function(match, cb) {
             var tracked = false;
             async.map(match.players, function(p, cb) {
-                tracked = (p.account_id in trackedPlayers);
+                if (p.account_id in trackedPlayers) {
+                    tracked = true;
+                }
                 if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                     queueReq("mmr", {
                         match_id: match.match_id,

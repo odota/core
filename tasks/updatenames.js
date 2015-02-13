@@ -5,6 +5,9 @@ module.exports = function(cb) {
         sort: {
             last_summaries_update: 1
         },
+        fields: {
+            account_id: 1
+        },
         limit: 100
     }, function(err, docs) {
         if (err) {
