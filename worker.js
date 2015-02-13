@@ -26,11 +26,12 @@ build(function() {
     jobs.promote();
     jobs.process('api', processors.processApi);
     jobs.process('mmr', processors.processMmr);
-    setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
-    setInterval(fullhistory, 60 * 60 * 1000, function() {});
-    setInterval(updatenames, 5 * 60 * 1000, function() {});
-    setInterval(getmissing, 5 * 60 * 1000, function() {});
-    setInterval(build, 5 * 60 * 1000, function() {});
+    setInterval(clearActiveJobs, 1 * 60 * 1000);
+    setInterval(fullhistory, 60 * 60 * 1000);
+    setInterval(updatenames, 5 * 60 * 1000);
+    setInterval(getmissing, 5 * 60 * 1000);
+    setInterval(build, 5 * 60 * 1000);
+    setInterval(apiStatus, 5 * 60 * 1000);
 });
 
 function build(cb) {
@@ -171,3 +172,24 @@ function scanApi(seq_num) {
         });
     });
 }
+
+function apiStatus() {
+    db.matches.findOne({}, {
+        fields: {
+            start_time: 1,
+            duration: 1
+        },
+        sort: {
+            match_id : -1
+        }
+    }, function(err, matches) {
+        var date = new Date();
+        if (date.getTime() - matches.start_time - matches.duration > 5 * 60) {
+            redis.set("apiDown", 1);
+        } else {
+            redis.set("apiDown", 0);
+        }
+    })
+}
+
+apiStatus();

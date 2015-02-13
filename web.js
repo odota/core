@@ -17,7 +17,8 @@ var passport = require('./passport');
 var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    async = require('async');
 
 var server = app.listen(process.env.PORT || 5000, function() {
     var host = server.address().address;
@@ -65,12 +66,23 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(function(req, res, next) {
-    redis.get("banner", function(err, reply) {
-        res.locals.user = req.user;
-        res.locals.banner_msg = reply;
-        logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+    async.parallel({
+        banner: function(cb) {
+                redis.get("banner", cb)
+            },
+        apiDown: function(cb) {
+            redis.get("apiDown", cb)
+        }
+    }, function(err, results) {
+        if (!err) {
+            res.locals.user = req.user;
+            res.locals.banner_msg = results.banner;
+            res.locals.api_down = results.apiDown;
+            logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+        }
+        
         next(err);
-    });
+    })
 });
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
