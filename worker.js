@@ -34,6 +34,7 @@ build(function() {
 });
 
 function build(cb) {
+    console.log("rebuilding sets");
     db.players.find(selector("tracked"), function(err, docs) {
         if (err) {
             return build(cb);
@@ -56,15 +57,14 @@ function build(cb) {
             });
         }, function(err) {
             if (err) {
-                build(cb);
+                return build(cb);
             }
             trackedPlayers = t;
             ratingPlayers = r;
             redis.set("bots", JSON.stringify(b));
             redis.set("ratingPlayers", JSON.stringify(r));
             redis.set("trackedPlayers", JSON.stringify(t));
-            //console.log(t, r, b);
-            cb(err);
+            return cb(err);
         });
     });
 }
