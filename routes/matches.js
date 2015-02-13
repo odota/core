@@ -41,19 +41,14 @@ matches.param('match_id', function(req, res, next, id) {
             db.matches.findOne({
                 match_id: Number(id)
             }, function(err, match) {
-                console.log("Find One for " + id + " has returned");
                 if (err || !match) {
-                    console.log("Find One for " + id + " has returned err or !match");
                     return next(new Error("match not found"));
                 }
                 else {
-                    console.log("Requesting fillPlayerNames for " + id);
                     queries.fillPlayerNames(match.players, function(err) {
                         if (err) {
-			    console.log("fillPlayerNames for " + id + " returned err");
                             return next(err);
                         }
-		        console.log("fillPlayerNames for " + id + " has returned successfully");
                         req.match = match;
                         if (match.parsed_data) {
                             queries.mergeMatchData(match, constants);

@@ -4,7 +4,7 @@ var moment = require('moment');
 var selector = require('./selector');
 module.exports = function(io) {
     setInterval(function() {
-        async.parallel({
+        async.series({
                 matches: function(cb) {
                     db.matches.count({}, function(err, res) {
                         cb(err, res);
