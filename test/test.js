@@ -28,7 +28,6 @@ var unparsed = require('../tasks/unparsed');
 var updatenames = require('../tasks/updatenames');
 var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
-var untrack = require('../tasks/untrack');
 var queueReq = require('../operations').queueReq;
 
 var wait = 30000;
@@ -105,7 +104,7 @@ before(function(done) {
                 //set visited date on first player
                 testdata.players[0].last_visited = new Date();
                 testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
-                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100"); //should be untracked
+                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
                 async.mapSeries(testdata.players, function(p, cb) {
                     db.players.insert(p, function(err) {
                         cb(err);
@@ -746,12 +745,6 @@ describe("tasks", function() {
     });
     it('constants', function(done) {
         constants("./constants_test.json", function(err) {
-            done(err);
-        });
-    });
-    it('untrack', function(done) {
-        untrack(function(err, num) {
-            assert(num, 1);
             done(err);
         });
     });

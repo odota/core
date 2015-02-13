@@ -3,7 +3,6 @@ var db = require('../db');
 
 ids.forEach(function(id) {
     db.players.insert({
-        account_id: id,
-        track: 1
+        account_id: id
     });
 });

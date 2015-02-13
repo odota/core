@@ -34,9 +34,7 @@ module.exports = function(io) {
                     });
                 },
                 tracked_players: function(cb) {
-                    db.players.count({
-                        track: 1
-                    }, function(err, res) {
+                    db.players.count(selector("tracked"), function(err, res) {
                         cb(err, res);
                     });
                 },
