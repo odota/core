@@ -179,7 +179,7 @@ function processApi(job, cb) {
                 error: err
             });
         }
-        if (data.response) {
+        else if (data.response) {
             logger.info("summaries response");
             async.map(data.response.players, insertPlayer, function(err) {
                 cb(err, job.data.payload);

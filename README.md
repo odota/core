@@ -18,3 +18,7 @@ Quickstart
 * Install dependencies: `sudo bash init.sh`
 * Create .env file, add required config values: `cp .env_example .env`
 * Launch in dev mode: `npm start`
+
+Lessons and Rules
+====
+* Never async.parallel database calls.
