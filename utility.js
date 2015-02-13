@@ -104,28 +104,30 @@ function getData(url, cb) {
         if (err || res.statusCode !== 200 || !body) {
             logger.info("retrying: %s", target);
             return setTimeout(function() {
-                getData(url, cb);
+                return getData(url, cb);
             }, delay);
         }
-        if (body.result) {
+        else if (body.result) {
             //steam api response
             if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
                 //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                 return setTimeout(function() {
-                    cb(body);
+                    return cb(body);
                 }, delay);
             }
             else if (body.result.error || body.result.status === 2) {
                 //valid response, but invalid data, retry
                 logger.info("invalid data: %s, %s", target, JSON.stringify(body));
                 return setTimeout(function() {
-                    getData(url, cb);
+                    return getData(url, cb);
                 }, delay);
             }
         }
-        return setTimeout(function() {
-            cb(null, body);
-        }, delay);
+        else {
+            return setTimeout(function() {
+                return cb(null, body);
+            }, delay);
+        }
     });
 }
 
