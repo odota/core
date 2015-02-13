@@ -29,7 +29,7 @@ build(function() {
     setInterval(clearActiveJobs, 1 * 60 * 1000, function() {});
     setInterval(fullhistory, 60 * 60 * 1000, function() {});
     setInterval(updatenames, 5 * 60 * 1000, function() {});
-    setInterval(getmissing, 5 * 60 * 1000, function() {});
+    //setInterval(getmissing, 5 * 60 * 1000, function() {});
     setInterval(build, 5 * 60 * 1000, function() {});
 });
 
