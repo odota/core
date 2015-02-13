@@ -74,6 +74,7 @@ function getReplayUrl(job, cb) {
             }
             var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
             job.data.url = url;
+            job.data.payload.url = url;
             job.update();
             return cb(null, job);
         });
