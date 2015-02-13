@@ -14,7 +14,6 @@ passport.deserializeUser(function(id, done) {
         account_id: id
     }, {
         $set: {
-            track: 1,
             last_visited: new Date()
         }
     }, function(err, user) {
