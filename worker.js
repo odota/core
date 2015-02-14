@@ -37,6 +37,9 @@ d.run(function() {
         setInterval(updatenames, 5 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
     });
+    process.on('exit', function() {
+        throw "worker shutting down";
+    });
 });
 
 function build(cb) {
@@ -106,17 +109,17 @@ function clearActiveJobs(cb) {
             return cb(err);
         }
         async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (err) {
-                    return cb(err);
-                }
-                console.log("requeued job %s", id);
-                job.inactive();
+                kue.Job.get(id, function(err, job) {
+                    if (job) {
+                        console.log("requeued job %s", id);
+                        job.inactive();
+                    }
+                    cb(err);
+                });
+            },
+            function(err) {
                 cb(err);
             });
-        }, function(err) {
-            cb(err);
-        });
     });
 }
 
