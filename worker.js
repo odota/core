@@ -37,7 +37,7 @@ d.run(function() {
         setInterval(updatenames, 5 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
     });
-    process.on('exit', function() {
+    process.on('SIGINT', function() {
         throw "worker shutting down";
     });
 });
