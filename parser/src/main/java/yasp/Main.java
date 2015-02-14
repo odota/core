@@ -98,7 +98,7 @@ public class Main {
 						player.gold.add((Integer)pr.getState()[goldIdx+i]);
 						player.positions.add(player.getMedian());
 					}
-					nextMinute += MINUTE;]
+					nextMinute += MINUTE;
 				}
 				
 				for (int i = 0; i < numPlayers; i++) {

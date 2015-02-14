@@ -71,8 +71,6 @@ module.exports = function getStatus(cb) {
                     cb(err, res);
                 });
             },
-            //todo ratingbot
-            //todo kue state
             last_added: function(cb) {
                 db.matches.find({}, {
                     sort: {
