@@ -13,16 +13,7 @@ block content
       h2
         | Welcome, #{user.personaname}!
    .row
-    .col-md-2
-      h3 Preferences
-      .checkbox
-        label
-         if user.dark_theme
-           input#dark(type="checkbox", checked="true")
-         else
-           input#dark(type="checkbox")
-         | Use Dark Theme
-    .col-md-6
+    .col-md-8
       h3 Status
       div(class="alert alert-success")
         span(class="glyphicon glyphicon-ok")
@@ -38,6 +29,13 @@ block content
         =" Rating Tracker: Add a rating tracker to your friends list.  May take several minutes to update."
     .col-md-4
       h3 Actions
+      .checkbox
+        label
+         if user.dark_theme
+           input#dark(type="checkbox", checked="true")
+         else
+           input#dark(type="checkbox")
+         | Use Dark Theme
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
       p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+bots[0].steamID) Add Tracker &raquo;
@@ -45,26 +43,7 @@ block content
    .row
     .col-md-12
       h3 Rating Tracker (alpha)
-      p=JSON.stringify(ratings)
-   script.
-    var $dark = $("#dark");
-    $dark.change(function() {
-        console.log($dark.is(":checked"));
-        $.post(
-            "/preferences", {
-                dark: $dark.is(":checked")
-            },
-            function(data) {
-                if (data.sync) {
-                    location.reload(true);
-                }
-                else {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                }
-                $(".sync").fadeOut(3000);
-            });
-    });
-
+      #ratings
   else
     .text-center
       p.lead Free Dota 2 replay parsing.
@@ -88,3 +67,48 @@ block content
           span.glyphicon.glyphicon-wrench.big
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
+
+block footer_assets
+   script.
+    var ratings = !{JSON.stringify(ratings)}
+    c3.generate({
+    bindto: "#ratings",
+    data: {
+        x: 'x',
+        columns: [
+        ['x'].concat(ratings.map(function(r){return new Date(r.time);})),
+        ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
+        ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
+        ],
+        type: 'spline'
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            label: 'Date',
+            tick: {
+                format: '%Y-%m-%d'
+            }
+        },
+        y: {
+            label: 'Rating'
+        }
+    }
+    });
+    var $dark = $("#dark");
+    $dark.change(function() {
+        console.log($dark.is(":checked"));
+        $.post(
+            "/preferences", {
+                dark: $dark.is(":checked")
+            },
+            function(data) {
+                if (data.sync) {
+                    location.reload(true);
+                }
+                else {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                }
+                $(".sync").fadeOut(3000);
+            });
+    });
