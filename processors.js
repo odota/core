@@ -213,7 +213,8 @@ function processMmr(job, cb) {
                 match_id: payload.match_id,
                 account_id: payload.account_id,
                 soloCompetitiveRank: data.soloCompetitiveRank,
-                competitiveRank: data.competitiveRank
+                competitiveRank: data.competitiveRank,
+                time: new Date()
             }, function(err) {
                 cb(err);
             });

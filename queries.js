@@ -256,14 +256,14 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             radiant_win: 1,
             parse_status: 1,
             "players.$": 1
-        },
-        sort: {
-            match_id: -1
         }
     }, function(err, matches) {
         if (err) {
             cb(err);
         }
+        matches.sort(function(a, b) {
+            return b.match_id - a.match_id;
+        });
         player.win = 0;
         player.lose = 0;
         player.games = 0;
@@ -327,7 +327,7 @@ function getRatingData(req, cb) {
         return cb(null);
     }
     var account_id = req.user.account_id;
-    async.parallel({
+    async.series({
         "bots": function(cb) {
             redis.get("bots", function(err, bots) {
                 bots = JSON.parse(bots);
@@ -352,10 +352,6 @@ function getRatingData(req, cb) {
         "ratings": function(cb) {
             db.ratings.find({
                     account_id: account_id
-                }, {
-                    sort: {
-                        match_id: 1
-                    }
                 },
                 function(err, docs) {
                     cb(err, docs);
