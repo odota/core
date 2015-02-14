@@ -15,28 +15,24 @@ var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
-var domain = require('domain');
 
 var trackedPlayers = {};
 var ratingPlayers = {};
 
-var d = domain.create();
-d.on('error', function() {
+process.on('SIGINT', function() {
     clearActiveJobs(function(err) {
         process.exit(err);
     });
 });
-d.run(function() {
-    console.log("[WORKER] starting worker");
-    build(function() {
-        startScan();
-        jobs.promote();
-        jobs.process('api', processors.processApi);
-        jobs.process('mmr', processors.processMmr);
-        setInterval(fullhistory, 60 * 60 * 1000, function() {});
-        setInterval(updatenames, 5 * 60 * 1000, function() {});
-        setInterval(build, 5 * 60 * 1000, function() {});
-    });
+console.log("[WORKER] starting worker");
+build(function() {
+    startScan();
+    jobs.promote();
+    jobs.process('api', processors.processApi);
+    jobs.process('mmr', processors.processMmr);
+    setInterval(fullhistory, 60 * 60 * 1000, function() {});
+    setInterval(updatenames, 5 * 60 * 1000, function() {});
+    setInterval(build, 5 * 60 * 1000, function() {});
 });
 
 function build(cb) {
