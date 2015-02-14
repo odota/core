@@ -16,10 +16,10 @@ db.matches.index('players.account_id');
 db.players.index('account_id', {
     unique: true
 });
-db.plaers.index({
+db.players.index({
     'last_visited': -1
 });
-db.plaers.index({
+db.players.index({
     'full_history_time': 1
 });
 db.ratings.index({
