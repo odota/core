@@ -28,17 +28,27 @@ passport.use(new SteamStrategy({
     var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
-    db.players.update({
-        account_id: steam32
-    }, {
-        $set: insert,
-        $min: {
-            join_date: new Date()
+    insert.join_date = new Date();
+    db.players.findOne({
+        account_id: steam32,
+        join_date: {
+            $exists: true
         }
-    }, {
-        upsert: true
-    }, function(err) {
-        done(err, insert);
+    }, function(err, doc) {
+        if (doc) {
+            done(err, doc);
+        }
+        else {
+            db.players.update({
+                account_id: steam32
+            }, {
+                $set: insert
+            }, {
+                upsert: true
+            }, function(err) {
+                done(err, insert);
+            });
+        }
     });
 }));
 
