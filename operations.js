@@ -15,14 +15,31 @@ function insertMatch(match, cb) {
             upsert: true
         },
         function(err) {
-            if (!err && !match.parse_status) {
-                queueReq("parse", match, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            async.mapSeries(match.players, function(p, cb) {
+                db.players.update({
+                    account_id: p.account_id
+                }, {
+                    $set: {
+                        account_id: p.account_id
+                    }
+                }, {
+                    upsert: true
+                }, function(err) {
                     cb(err);
                 });
-            }
-            else {
-                cb(err);
-            }
+            }, function(err) {
+                if (!err && !match.parse_status) {
+                    queueReq("parse", match, function(err) {
+                        cb(err);
+                    });
+                }
+                else {
+                    cb(err);
+                }
+            });
         });
 }
 

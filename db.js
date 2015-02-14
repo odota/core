@@ -13,6 +13,9 @@ db.matches.index({
     unique: true
 });
 db.matches.index('players.account_id');
+db.matches.index({
+    'start_time': -1
+});
 db.players.index('account_id', {
     unique: true
 });
@@ -21,6 +24,9 @@ db.players.index({
 });
 db.players.index({
     'full_history_time': 1
+});
+db.players.index({
+    'last_summaries_update': -1
 });
 db.ratings.index({
     'match_id': -1,
