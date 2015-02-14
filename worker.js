@@ -19,6 +19,12 @@ var selector = require('./selector');
 var trackedPlayers = {};
 var ratingPlayers = {};
 
+process.on('SIGTERM', function() {
+    clearActiveJobs(function(err) {
+        process.exit(err);
+    });
+});
+
 process.on('SIGINT', function() {
     clearActiveJobs(function(err) {
         process.exit(err);

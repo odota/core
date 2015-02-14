@@ -33,7 +33,9 @@ upload.post("/", function(req, res) {
                 var fileName = files.replay[0].path;
                 console.log(fileName);
                 queueReq("parse", {
-                    fileName: fileName
+                    fileName: fileName,
+                    upload: true,
+                    priority: "high"
                 }, close);
             }
         });
