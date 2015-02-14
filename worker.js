@@ -36,7 +36,7 @@ d.run(function() {
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 60 * 60 * 1000, function() {});
         setInterval(updatenames, 5 * 60 * 1000, function() {});
-        //setInterval(getmissing, 10 * 60 * 1000, function() {});
+        setInterval(getmissing, 10 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
     });
 });
@@ -77,6 +77,31 @@ function build(cb) {
     });
 }
 
+function startScan() {
+    if (process.env.START_SEQ_NUM === "AUTO") {
+        var container = generateJob("api_history", {});
+        getData(container.url, function(err, data) {
+            if (err) {
+                return startScan();
+            }
+            scanApi(data.result.matches[0].match_seq_num);
+        });
+    }
+    else if (process.env.START_SEQ_NUM) {
+        scanApi(process.env.START_SEQ_NUM);
+    }
+    else {
+        redis.get("match_seq_num", function(err, result) {
+            if (!err && result) {
+                scanApi(result);
+            }
+            else {
+                return startScan();
+            }
+        });
+    }
+}
+
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
         if (err) {
@@ -97,34 +122,6 @@ function clearActiveJobs(cb) {
             cb(err);
         });
     });
-}
-
-function startScan() {
-    if (process.env.START_SEQ_NUM === "AUTO") {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
-            if (err) {
-                return startScan();
-            }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
-    else if (process.env.START_SEQ_NUM) {
-        scanApi(process.env.START_SEQ_NUM);
-    }
-    else {
-        //start at highest id in db
-        db.matches.findOne({}, {
-            sort: {
-                match_seq_num: -1
-            }
-        }, function(err, doc) {
-            if (err) {
-                return startScan();
-            }
-            scanApi(doc ? doc.match_seq_num + 1 : 0);
-        });
-    }
 }
 
 function scanApi(seq_num) {
@@ -169,6 +166,7 @@ function scanApi(seq_num) {
         }, function(err) {
             if (!err && resp.length) {
                 seq_num = resp[resp.length - 1].match_seq_num + 1;
+                redis.set("match_seq_num", seq_num);
                 //wait 100ms for each match less than 100
                 var delay = (100 - resp.length) * 100;
                 return setTimeout(function() {

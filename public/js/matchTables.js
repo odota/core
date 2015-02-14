@@ -26,6 +26,7 @@ module.exports = function matchTable() {
             serverSide: true,
             processing: true,
             searching: false,
+            info: false,
             stateSave: true,
             columns: [{
                 data: 'match_id',
