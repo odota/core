@@ -110,10 +110,8 @@ function clearActiveJobs(cb) {
                 if (err) {
                     return cb(err);
                 }
-                if ((new Date() - job.updated_at) > 5 * 60 * 1000) {
-                    console.log("unstuck job %s", id);
-                    job.inactive();
-                }
+                console.log("requeued job %s", id);
+                job.inactive();
                 cb(err);
             });
         }, function(err) {
