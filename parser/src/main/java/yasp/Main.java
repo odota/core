@@ -362,7 +362,9 @@ public class Main {
 				String type = entry.type;
 				if (type.equals("buybacks")){
 					Integer slot = entry.slot;
-					doc.players.get(slot).buybacks.add(entry);
+					if (slot>=0){
+						doc.players.get(slot).buybacks.add(entry);
+					}
 					continue;
 				}
 				if (type.equals("chat")){
