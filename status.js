@@ -5,37 +5,27 @@ var selector = require('./selector');
 module.exports = function getStatus(cb) {
     async.series({
             matches: function(cb) {
-                db.matches.count({}, function(err, res) {
-                    cb(err, res);
-                });
+                db.matches.count({}, cb);
             },
             players: function(cb) {
-                db.players.count({}, function(err, res) {
-                    cb(err, res);
-                });
+                db.players.count({}, cb);
             },
             visited: function(cb) {
                 db.players.count({
                     last_visited: {
                         $exists: true
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
+                }, cb);
             },
             tracked_players: function(cb) {
-                db.players.count(selector("tracked"), function(err, res) {
-                    cb(err, res);
-                });
+                db.players.count(selector("tracked"), cb);
             },
             matches_last_day: function(cb) {
                 db.matches.count({
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
+                }, cb);
             },
             parsed_matches_last_day: function(cb) {
                 db.matches.count({
@@ -43,9 +33,7 @@ module.exports = function getStatus(cb) {
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
+                }, cb);
             },
             unavailable_last_day: function(cb) {
                 db.matches.count({
@@ -53,23 +41,17 @@ module.exports = function getStatus(cb) {
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
+                }, cb);
             },
             eligible_full_history: function(cb) {
-                db.players.count(selector("fullhistory"), function(err, res) {
-                    cb(err, res);
-                });
+                db.players.count(selector("fullhistory"), cb);
             },
             obtained_full_history: function(cb) {
                 db.players.count({
                     full_history_time: {
                         $exists: true
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
+                }, cb);
             },
             last_added: function(cb) {
                 db.matches.find({}, {
@@ -82,9 +64,7 @@ module.exports = function getStatus(cb) {
                         duration: 1
                     },
                     limit: 5
-                }, function(err, matches) {
-                    cb(err, matches);
-                });
+                }, cb);
             },
             last_parsed: function(cb) {
                 db.matches.find({
@@ -99,9 +79,7 @@ module.exports = function getStatus(cb) {
                         duration: 1
                     },
                     limit: 5
-                }, function(err, matches) {
-                    cb(err, matches);
-                });
+                }, cb);
             }
         },
         function(err, result) {

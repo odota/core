@@ -153,16 +153,19 @@ function streamReplay(job, cb) {
             var downStream = request.get({
                 url: job.data.url,
                 encoding: null,
-                timeout: 180000
+                timeout: 120000
             });
             downStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    error = "download error";
+                    parser.kill();
+                    return cb("download error");
+                }
+                else {
+                    bz = spawn("bzcat");
+                    downStream.pipe(bz.stdin);
+                    bz.stdout.pipe(parser.stdin);
                 }
             });
-            bz = spawn("bzcat");
-            downStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
         }
     });
 }
