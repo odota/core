@@ -28,13 +28,13 @@ passport.use(new SteamStrategy({
     var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
     insert.account_id = steam32;
+    insert.$min = {
+        join_date: new Date()
+    };
     db.players.update({
         account_id: steam32
     }, {
-        $set: insert,
-        $setOnInsert: {
-            join_date: new Date()
-        }
+        $set: insert
     }, {
         upsert: true
     }, function(err) {

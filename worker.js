@@ -15,24 +15,31 @@ var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
+var domain = require('domain');
 
 var trackedPlayers = {};
 var ratingPlayers = {};
 
-process.on('SIGINT', function() {
+var d = domain.create();
+d.on('error', function() {
     clearActiveJobs(function(err) {
         process.exit(err);
     });
 });
-console.log("[WORKER] starting worker");
-build(function() {
-    startScan();
-    jobs.promote();
-    jobs.process('api', processors.processApi);
-    jobs.process('mmr', processors.processMmr);
-    setInterval(fullhistory, 60 * 60 * 1000, function() {});
-    setInterval(updatenames, 5 * 60 * 1000, function() {});
-    setInterval(build, 5 * 60 * 1000, function() {});
+d.run(function() {
+    console.log("[WORKER] starting worker");
+    build(function() {
+        startScan();
+        jobs.promote();
+        jobs.process('api', processors.processApi);
+        jobs.process('mmr', processors.processMmr);
+        setInterval(fullhistory, 30 * 60 * 1000, function() {});
+        setInterval(updatenames, 5 * 60 * 1000, function() {});
+        setInterval(build, 5 * 60 * 1000, function() {});
+    });
+    process.on('exit', function() {
+        throw "worker shutting down";
+    });
 });
 
 function build(cb) {
@@ -102,17 +109,17 @@ function clearActiveJobs(cb) {
             return cb(err);
         }
         async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (err) {
-                    return cb(err);
-                }
-                console.log("requeued job %s", id);
-                job.inactive();
+                kue.Job.get(id, function(err, job) {
+                    if (job) {
+                        console.log("requeued job %s", id);
+                        job.inactive();
+                    }
+                    cb(err);
+                });
+            },
+            function(err) {
                 cb(err);
             });
-        }, function(err) {
-            cb(err);
-        });
     });
 }
 

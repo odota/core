@@ -104,10 +104,7 @@ module.exports = function getStatus(cb) {
                 });
             }
         },
-        function(err, results) {
-            cb({
-                stats: results,
-                error: err
-            });
+        function(err, result) {
+            cb(err, result);
         });
 };

@@ -3,7 +3,7 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-4
+    .col-md-6
       table.table
         tr
           th Players
@@ -19,7 +19,7 @@ block content
           td#tracked_players
           td#eligible_full_history
           td#obtained_full_history
-    .col-md-4
+    .col-md-6
       table.table
         tr
           th Matches Today
@@ -51,4 +51,5 @@ block content
 block footer_assets
   script(src="/socket.io/socket.io.js")
   script.
+    var data = !{JSON.stringify(result)}
     statusHandler();
