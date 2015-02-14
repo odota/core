@@ -14,3 +14,4 @@ global.buildMap = require('./map');
 global.generateHistograms = require('./histograms');
 global.$ = $;
 global.statusHandler = require('./statusHandler');
+global.c3 = require('c3');
