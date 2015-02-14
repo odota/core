@@ -2,6 +2,7 @@ var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
 db.players = db.get('players');
 db.matches = db.get('matches');
 db.ratings = db.get('ratings');
+db.matches.index('players.account_id');
 db.matches.index({
     'match_id': -1
 }, {
@@ -12,7 +13,6 @@ db.matches.index({
 }, {
     unique: true
 });
-db.matches.index('players.account_id');
 db.matches.index({
     'start_time': -1
 });
