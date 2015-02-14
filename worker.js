@@ -15,7 +15,6 @@ var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
-var getmissing = require('./tasks/getmissing');
 var domain = require('domain');
 
 var trackedPlayers = {};
@@ -36,7 +35,6 @@ d.run(function() {
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 60 * 60 * 1000, function() {});
         setInterval(updatenames, 5 * 60 * 1000, function() {});
-        setInterval(getmissing, 10 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
     });
 });
