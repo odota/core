@@ -32,7 +32,7 @@ passport.use(new SteamStrategy({
         account_id: steam32
     }, {
         $set: insert,
-        $setOnInsert: {
+        $min: {
             join_date: new Date()
         }
     }, {

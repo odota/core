@@ -23,15 +23,6 @@ module.exports = function getStatus(cb) {
                     cb(err, res);
                 });
             },
-            visited_last_day: function(cb) {
-                db.players.count({
-                    last_visited: {
-                        $gt: moment().subtract(1, 'day').toDate()
-                    }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
             tracked_players: function(cb) {
                 db.players.count(selector("tracked"), function(err, res) {
                     cb(err, res);
@@ -42,34 +33,6 @@ module.exports = function getStatus(cb) {
                     start_time: {
                         $gt: Number(moment().subtract(1, 'day').format('X'))
                     }
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            uploaded_matches: function(cb) {
-                db.matches.count({
-                    upload: true
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            requested_matches: function(cb) {
-                db.matches.count({
-                    request: true
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            parsed_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 2
-                }, function(err, res) {
-                    cb(err, res);
-                });
-            },
-            queued_matches: function(cb) {
-                db.matches.count({
-                    parse_status: 0
                 }, function(err, res) {
                     cb(err, res);
                 });
@@ -141,10 +104,7 @@ module.exports = function getStatus(cb) {
                 });
             }
         },
-        function(err, results) {
-            cb({
-                stats: results,
-                error: err
-            });
+        function(err, result) {
+            cb(err, result);
         });
 };

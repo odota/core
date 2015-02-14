@@ -34,6 +34,7 @@ public class Main {
 		float MINUTE = 60;
 		String[] PLAYER_IDS = {"0000","0001","0002","0003","0004","0005","0006","0007","0008","0009"};
 		HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
+		HashMap<Integer, Integer> ehandle_to_slot = new HashMap<Integer, Integer>();
 		boolean initialized = false;
 		GameEventDescriptor combatLogDescriptor = null;
 		CombatLogContext ctx = null;
@@ -53,6 +54,7 @@ public class Main {
 		Output doc = new Output();
 		List<Entry> log = new ArrayList<Entry>();
 		Set<Integer> seenEntities = new HashSet<Integer>();
+		Set<Integer> effectEntities = new HashSet<Integer>();
 
 		if (args.length>0 && args[0].equals("-epilogue")){
 			CDemoFileInfo info = Clarity.infoForStream(System.in);
@@ -60,7 +62,7 @@ public class Main {
 			finish(tStart, doc);
 		}
 		else{
-			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO);
+			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO, CustomProfile.CHAT_MESSAGES);
 			while(iter.hasNext()) {
 				iter.next().apply(match);
 				int time = (int) match.getGameTime();
@@ -105,6 +107,7 @@ public class Main {
 					Float stuns = (Float)pr.getState()[stunIdx+i];
 					doc.players.get(i).stuns = stuns;
 					int handle = (Integer)pr.getState()[handleIdx+i];
+					ehandle_to_slot.put(handle, i);
                     Entity e = ec.getByHandle(handle);
                     if (e!=null){
                     	doc.players.get(i).xBuf.add((Integer)e.getProperty("m_cellX"));
@@ -248,12 +251,13 @@ public class Main {
 				//todo figure out when runes get picked up and by who
 				//todo figure out when wards get killed and by who
 				//todo who placed the ward?
+				//can detect entity disappearance, but how to figure out cause?
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                 Entity e = runes.next();
                 Integer handle = e.getHandle();
                 if (!seenEntities.contains(handle)){
-                System.err.format("rune: time:%s type:%s x:%s,y:%s\n", time, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                System.err.format("rune: time:%s,x:%s,y:%s,type:%s\n", time, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
                 seenEntities.add(handle);
                 }
                 }
@@ -262,7 +266,7 @@ public class Main {
                 Entity e = obs.next();
                 Integer handle = e.getHandle();
                 if (!seenEntities.contains(handle)){
-                System.err.format("obs: time:%s x:%s,y:%s, team:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"), e.getProperty("m_iTeamNum"));
+                System.err.format("obs: time:%s,x:%s,y:%s,team:%s,owner:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"), e.getProperty("m_iTeamNum"), e.getProperty("m_hOwnerEntity"));
                 seenEntities.add(handle);
                 }
                 }
@@ -272,7 +276,7 @@ public class Main {
                 Integer handle = e.getHandle();
                 if (!seenEntities.contains(handle)){
                 //System.err.println(e);
-                System.err.format("sen: time:%s x:%s,y:%s, team:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"),e.getProperty("m_iTeamNum"));
+                System.err.format("sen: time:%s,x:%s,y:%s,team:%s,owner:%s\n", time, e.getProperty("m_cellX"), e.getProperty("m_cellY"),e.getProperty("m_iTeamNum"), e.getProperty("m_hOwnerEntity"));
                 seenEntities.add(handle);
                 }
                 }
@@ -280,24 +284,26 @@ public class Main {
 				for (UserMessage u : match.getUserMessages()) {
 					String name = u.getName();
 					if (name.equals("CDOTAUserMsg_ChatEvent")){
-						/*
                         String player1=u.getProperty("playerid_1").toString();
                         String player2=u.getProperty("playerid_2").toString();
-                        String type = u.getProperty("type").toString();
-                        String value = u.getProperty("value").toString();
+                        String type = u.getProperty("type");
+                        type = type!=null ? type.toString() : "";
+                        //String value = u.getProperty("value").toString();
                         if (type.equals("CHAT_MESSAGE_HERO_KILL")){
                         //System.err.format("%s,%s%n", time, u);
                         }
                         else if (type.equals("CHAT_MESSAGE_BUYBACK")){
                         //System.err.format("%s,%s%n", time, u);
                         }
+                        else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP")){
+                          System.err.format("%s,%s%n", time, u);
+                        }
+                        else if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
+                          System.err.format("%s,%s%n", time, u);
+                        }
                         else if (type.equals("CHAT_MESSAGE_RANDOM")){
                         }
-                        else if (type.equals("CHAT_MESSAGE_ITEM_PURCHASE")){
-                        }
                         else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
-                        }
-                        else if (type.equals("CHAT_MESSAGE_REPORT_REMINDER")){
                         }
                         else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
                         }
@@ -315,12 +321,9 @@ public class Main {
                         }
                         else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
                         }
-                        else if (type.equals("CHAT_MESSAGE_INTHEBAG")){
-                        }
                         else{
-                        System.err.format("%s %s%n", time, u);
+                        //System.err.format("%s %s%n", time, u);
                         }
-						 */
 					}
 					else if (name.equals("CUserMsg_SayText2")){
 						String prefix = u.getProperty("prefix").toString();

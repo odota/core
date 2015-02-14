@@ -15,30 +15,31 @@ var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
-var getmissing = require('./tasks/getmissing');
-var domain = require('domain');
 
 var trackedPlayers = {};
 var ratingPlayers = {};
 
-var d = domain.create();
-d.on('error', function() {
+process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err);
     });
 });
-d.run(function() {
-    console.log("[WORKER] starting worker");
-    build(function() {
-        startScan();
-        jobs.promote();
-        jobs.process('api', processors.processApi);
-        jobs.process('mmr', processors.processMmr);
-        setInterval(fullhistory, 60 * 60 * 1000, function() {});
-        setInterval(updatenames, 5 * 60 * 1000, function() {});
-        setInterval(getmissing, 10 * 60 * 1000, function() {});
-        setInterval(build, 5 * 60 * 1000, function() {});
+
+process.on('SIGINT', function() {
+    clearActiveJobs(function(err) {
+        process.exit(err);
     });
+});
+
+console.log("[WORKER] starting worker");
+build(function() {
+    startScan();
+    jobs.promote();
+    jobs.process('api', processors.processApi);
+    jobs.process('mmr', processors.processMmr);
+    setInterval(fullhistory, 30 * 60 * 1000, function() {});
+    setInterval(updatenames, 5 * 60 * 1000, function() {});
+    setInterval(build, 5 * 60 * 1000, function() {});
 });
 
 function build(cb) {
@@ -108,19 +109,18 @@ function clearActiveJobs(cb) {
             return cb(err);
         }
         async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (err) {
-                    return cb(err);
-                }
-                if ((new Date() - job.updated_at) > 5 * 60 * 1000) {
-                    console.log("unstuck job %s", id);
-                    job.inactive();
-                }
+                kue.Job.get(id, function(err, job) {
+                    if (job) {
+                        console.log("requeued job %s", id);
+                        job.inactive();
+                    }
+                    cb(err);
+                });
+            },
+            function(err) {
+                console.log("cleared active jobs");
                 cb(err);
             });
-        }, function(err) {
-            cb(err);
-        });
     });
 }
 
