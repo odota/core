@@ -36,7 +36,7 @@ matches.param('match_id', function(req, res, next, id) {
         if (!err && reply) {
             console.log("Cache hit for match " + id);
             req.match = JSON.parse(reply);
-            return next();
+            return next(err);
         }
         else {
             console.log("Cache miss for match " + id);

@@ -69,7 +69,7 @@ app.use(function(req, res, next) {
         res.locals.user = req.user;
         res.locals.banner_msg = reply;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
-        next(err);
+        return next(err);
     });
 });
 app.use('/matches', require('./routes/matches'));
@@ -152,7 +152,7 @@ app.route('/about').get(function(req, res) {
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
-    next(err);
+    return next(err);
 });
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
