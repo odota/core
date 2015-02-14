@@ -104,8 +104,9 @@ function streamReplay(job, cb) {
     var d = domain.create();
     var bz;
     var parser;
+    var error;
     d.on('error', function(err) {
-        cb(err);
+        cb(error || err);
         process.exit(1);
     });
     d.run(function() {
@@ -150,22 +151,19 @@ function streamReplay(job, cb) {
             fs.createReadStream(job.data.fileName).pipe(parser.stdin);
         }
         else {
-            var downStream = request.get({
+            bz = spawn("bzcat");
+            bz.stdout.pipe(parser.stdin);
+            request.get({
                 url: job.data.url,
                 encoding: null,
                 timeout: 120000
-            });
-            downStream.on('response', function(resp) {
+            }).on('response', function(resp) {
                 if (resp.statusCode !== 200) {
+                    error = "download error";
+                    bz.kill();
                     parser.kill();
-                    return cb("download error");
                 }
-                else {
-                    bz = spawn("bzcat");
-                    downStream.pipe(bz.stdin);
-                    bz.stdout.pipe(parser.stdin);
-                }
-            });
+            }).pipe(bz.stdin);
         }
     });
 }
