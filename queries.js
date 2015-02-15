@@ -349,6 +349,11 @@ function getRatingData(req, cb) {
                 cb(err, JSON.parse(rps));
             });
         },
+        "trackedPlayers": function(cb) {
+            redis.get("trackedPlayers", function(err, tps) {
+                cb(err, JSON.parse(tps));
+            });
+        },
         "ratings": function(cb) {
             db.ratings.find({
                     account_id: account_id
