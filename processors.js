@@ -107,17 +107,19 @@ function streamReplay(job, cb) {
     var error;
     var to;
     d.on('error', function(err) {
-        if (bz) {
-            bz.kill();
+        if (!error) {
+            error = err;
+            if (bz) {
+                bz.kill();
+            }
+            parser.kill();
+            clearTimeout(to);
+            cb(error);
         }
-        parser.kill();
-        clearTimeout(to);
-        cb(error || err);
     });
     d.run(function() {
         to = setTimeout(function() {
-            error = "timeout";
-            throw error;
+            throw "timeout";
         }, 120000);
         parser = utility.runParse(function(err, output) {
             clearTimeout(to);
@@ -168,7 +170,7 @@ function streamReplay(job, cb) {
                 encoding: null
             }).on('response', function(resp) {
                 if (resp.statusCode !== 200) {
-                    error = "download error";
+                    throw "download error";
                 }
             }).pipe(bz.stdin);
         }
