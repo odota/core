@@ -105,6 +105,10 @@ function streamReplay(job, cb) {
     var bz;
     var parser;
     var error;
+    var to = setTimeout(function() {
+        job.failed().error("timeout");
+        process.exit(1);
+    }, 180000);
     d.on('error', function(err) {
         cb(error || err);
         process.exit(1);

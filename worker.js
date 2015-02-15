@@ -37,8 +37,8 @@ build(function() {
     jobs.promote();
     jobs.process('api', processors.processApi);
     jobs.process('mmr', processors.processMmr);
-    setInterval(fullhistory, 30 * 60 * 1000, function() {});
-    setInterval(updatenames, 5 * 60 * 1000, function() {});
+    setInterval(fullhistory, 17 * 60 * 1000, function() {});
+    setInterval(updatenames, 7 * 60 * 1000, function() {});
     setInterval(build, 5 * 60 * 1000, function() {});
 });
 

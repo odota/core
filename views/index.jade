@@ -13,11 +13,11 @@ block content
       h2
         | Welcome, #{user.personaname}!
    .row
-    .col-md-8
+    .col-md-7
       h3 Status
       div(class="alert alert-success")
         span(class="glyphicon glyphicon-ok")
-        =" Tracked: YASP will automatically parse your replays as long as you remain active."
+        =" Tracked: YASP is automatically parsing your replays."
       div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
         span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Full History: " + (user.full_history_time ? moment(user.full_history_time).fromNow() : "never")
@@ -26,8 +26,8 @@ block content
         =" Name Update:  "+ (user.last_summaries_update ? moment(user.last_summaries_update).fromNow() : "never")
       div(class= (user.account_id in ratingPlayers) ? "alert alert-success" : "alert alert-danger")
         span(class= (user.account_id in ratingPlayers) ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Rating Tracker: Add a rating tracker to your friends list.  May take several minutes to update."
-    .col-md-4
+        =" Rating Tracker: Add a tracker to your friends list.  May take a few minutes to update."
+    .col-md-5
       h3 Actions
       .checkbox
         label
@@ -42,7 +42,7 @@ block content
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
    .row
     .col-md-12
-      h3 Rating Tracker (alpha)
+      h3 Rating Tracker
       #ratings
   else
     .text-center

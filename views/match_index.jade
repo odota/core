@@ -26,7 +26,7 @@ append content
           each player, i in match.players
            tr(class = player.player_slot<64 ? "success" : "danger")
              td
-               if (player["track"])
+               if (player.last_visited)
                  img.user(src='/public/images/favicon-16x16.png', title="YASP User")
                if (player.account_id == constants.anonymous_account_id)
                  ="Anonymous"
