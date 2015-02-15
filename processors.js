@@ -106,19 +106,11 @@ function streamReplay(job, cb) {
     var parser;
     var error;
     var inStream;
-    var to = setTimeout(function() {
-        error = "timeout";
-        inStream.end();
-        //job.failed().error("timeout");
-        //process.exit(1);
-    }, 180000);
     d.on('error', function(err) {
-        clearTimeout(to);
         cb(error || err);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
-            clearTimeout(to);
             if (err) {
                 return cb(err);
             }
@@ -160,14 +152,19 @@ function streamReplay(job, cb) {
             inStream.pipe(parser.stdin);
         }
         else {
-            bz = spawn("bzcat");
+            bz = spawn("bunzip2");
             bz.stdout.pipe(parser.stdin);
+            //request.debug = true;
             inStream = request.get({
                 url: job.data.url,
-                encoding: null
+                encoding: null,
+                timeout: 60000,
+                headers: {
+                    'User-Agent': 'request'
+                }
             });
-            inStream.on('response', function(resp) {
-                if (resp.statusCode !== 200) {
+            inStream.on('response', function(response) {
+                if (response.statusCode !== 200) {
                     error = "download error";
                 }
             }).pipe(bz.stdin);

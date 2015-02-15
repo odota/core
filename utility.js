@@ -129,7 +129,11 @@ function runParse(cb) {
         parser_file
     ]);
     parser.stdout.on('data', function(data) {
+        //console.log(data);
         output += data;
+    });
+    parser.stderr.on('data', function(data){
+        //console.log(data);
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
