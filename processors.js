@@ -105,9 +105,12 @@ function streamReplay(job, cb) {
     var bz;
     var parser;
     var error;
+    var inStream;
     var to = setTimeout(function() {
-        job.failed().error("timeout");
-        process.exit(1);
+        error = "timeout";
+        inStream.end();
+        //job.failed().error("timeout");
+        //process.exit(1);
     }, 180000);
     d.on('error', function(err) {
         clearTimeout(to);
@@ -153,15 +156,17 @@ function streamReplay(job, cb) {
             });
         });
         if (job.data.fileName) {
-            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+            inStream = fs.createReadStream(job.data.fileName);
+            inStream.pipe(parser.stdin);
         }
         else {
             bz = spawn("bzcat");
             bz.stdout.pipe(parser.stdin);
-            request.get({
+            inStream = request.get({
                 url: job.data.url,
                 encoding: null
-            }).on('response', function(resp) {
+            });
+            inStream.on('response', function(resp) {
                 if (resp.statusCode !== 200) {
                     error = "download error";
                 }
