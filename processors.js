@@ -110,11 +110,12 @@ function streamReplay(job, cb) {
         process.exit(1);
     }, 180000);
     d.on('error', function(err) {
+        clearTimeout(to);
         cb(error || err);
-        process.exit(1);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
+            clearTimeout(to);
             if (err) {
                 return cb(err);
             }
@@ -159,14 +160,10 @@ function streamReplay(job, cb) {
             bz.stdout.pipe(parser.stdin);
             request.get({
                 url: job.data.url,
-                encoding: null,
-                timeout: 120000
+                encoding: null
             }).on('response', function(resp) {
                 if (resp.statusCode !== 200) {
                     error = "download error";
-                    bz.kill();
-                    parser.kill();
-                    throw resp.statusCode;
                 }
             }).pipe(bz.stdin);
         }
