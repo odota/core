@@ -249,9 +249,10 @@ public class Main {
 				}
 				
 				//todo figure out when runes get picked up and by who
+				//use chat events for runes?
 				//todo figure out when wards get killed and by who
-				//todo who placed the ward?
 				//can detect entity disappearance, but how to figure out cause?
+				/*
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                 Entity e = runes.next();
@@ -261,6 +262,7 @@ public class Main {
                 seenEntities.add(handle);
                 }
                 }
+                */
                 Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");
                 while (obs.hasNext()){
                 Entity e = obs.next();
