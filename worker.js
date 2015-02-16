@@ -40,6 +40,7 @@ build(function() {
     setInterval(fullhistory, 17 * 60 * 1000, function() {});
     setInterval(updatenames, 7 * 60 * 1000, function() {});
     setInterval(build, 5 * 60 * 1000, function() {});
+    setInterval(apiStatus, 5 * 60 * 1000);
 });
 
 function build(cb) {
@@ -177,5 +178,24 @@ function scanApi(seq_num) {
         }
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
         q.push(resp);
+    });
+}
+
+function apiStatus() {
+    db.matches.findOne({}, {
+        fields: {
+            start_time: 1,
+            duration: 1
+        },
+        sort: {
+            match_seq_num : -1
+        }
+    }, function(err, matches) {
+        var date = new Date();
+        if (date.getTime() - matches.start_time - matches.duration > 10 * 60 * 1000) {
+            redis.set("apiDown", 1);
+        } else {
+            redis.set("apiDown", 0);
+        }
     });
 }
