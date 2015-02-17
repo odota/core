@@ -125,29 +125,29 @@ before(function(done) {
             },
             function(cb) {
                 console.log("copying replays to test dir");
-                async.parallel([
+                async.series([
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     }
