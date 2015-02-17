@@ -15,32 +15,37 @@ var queueReq = operations.queueReq;
 var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
-
+var domain = require('domain');
 var trackedPlayers = {};
 var ratingPlayers = {};
-
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err);
     });
 });
-
 process.on('SIGINT', function() {
     clearActiveJobs(function(err) {
         process.exit(err);
     });
 });
-
-console.log("[WORKER] starting worker");
-build(function() {
-    startScan();
-    jobs.promote();
-    jobs.process('api', processors.processApi);
-    jobs.process('mmr', processors.processMmr);
-    setInterval(fullhistory, 17 * 60 * 1000, function() {});
-    setInterval(updatenames, 7 * 60 * 1000, function() {});
-    setInterval(build, 5 * 60 * 1000, function() {});
-    setInterval(apiStatus, 5 * 60 * 1000);
+var d = domain.create();
+d.on('error', function(err) {
+    clearActiveJobs(function(err2) {
+        process.exit(err2 || err);
+    });
+});
+d.run(function() {
+    console.log("[WORKER] starting worker");
+    build(function() {
+        startScan();
+        jobs.promote();
+        jobs.process('api', processors.processApi);
+        jobs.process('mmr', processors.processMmr);
+        setInterval(fullhistory, 17 * 60 * 1000, function() {});
+        setInterval(updatenames, 7 * 60 * 1000, function() {});
+        setInterval(build, 5 * 60 * 1000, function() {});
+        setInterval(apiStatus, 5 * 60 * 1000);
+    });
 });
 
 function build(cb) {
@@ -110,21 +115,19 @@ function clearActiveJobs(cb) {
             return cb(err);
         }
         async.mapSeries(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            },
-            function(err) {
-                console.log("cleared active jobs");
+            kue.Job.get(id, function(err, job) {
+                if (job) {
+                    console.log("requeued job %s", id);
+                    job.inactive();
+                }
                 cb(err);
             });
+        }, function(err) {
+            console.log("cleared active jobs");
+            cb(err);
+        });
     });
 }
-
 var q = async.queue(function(match, cb) {
     var tracked = false;
     async.each(match.players, function(p, cb) {
@@ -188,13 +191,14 @@ function apiStatus() {
             duration: 1
         },
         sort: {
-            match_seq_num : -1
+            match_seq_num: -1
         }
     }, function(err, matches) {
         var date = new Date();
         if (date.getTime() - matches.start_time - matches.duration > 10 * 60 * 1000) {
             redis.set("apiDown", 1);
-        } else {
+        }
+        else {
             redis.set("apiDown", 0);
         }
     });

@@ -61,7 +61,7 @@ html
        if banner_msg
          .alert.alert-success(role="alert") !{banner_msg}
        if api_down
-         .alert.alert-warning.text-center(role="alert") Valve's WebAPI is currently down. Your matches will be processed when the service continues. Sorry for the wait!
+         .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
        if user && user.track===0
            .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if login_req_msg

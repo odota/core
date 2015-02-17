@@ -14,7 +14,7 @@ block content
         | Welcome, #{user.personaname}!
    .row
     .col-md-7
-      h3 Status
+      h3 Status (may take several minutes to update)
       - var tracked = (user.account_id in trackedPlayers)
       - var rating = (user.account_id in ratingPlayers)
       div(class= tracked ? "alert alert-success" : "alert alert-danger")
@@ -58,7 +58,7 @@ block content
           p.lead Go beyond the API.
           span.glyphicon.glyphicon-stats.big
           p.text-left YASP parses replays to provide Dota 2 match statistics not available through the API or game client.
-          p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
+          p: a.btn.btn-success(href="/matches/1239396507/details") Check out an example &raquo;
         .col-md-4
           p.lead Free of charge.
           span.glyphicon.glyphicon-thumbs-up.big
