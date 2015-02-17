@@ -48,6 +48,7 @@ public class Main {
 		int steamIdx=0;
 		Match match = new Match();
 		float nextMinute = 0;
+		float nextShort = 0;
 		int gameZero = Integer.MIN_VALUE;
 		int gameEnd = 0;
 		int numPlayers = 10;
@@ -100,7 +101,15 @@ public class Main {
 					}
 					nextMinute += MINUTE;
 				}
-				
+				/*
+				if (trueTime > nextShort) {
+					for (int i = 0; i < numPlayers; i++) {
+						Player player = doc.players.get(i);
+						player.positions.add(player.getMedian());
+					}
+					nextShort += MINUTE/60;
+				}
+				*/
 				for (int i = 0; i < numPlayers; i++) {
 					String hero = pr.getState()[heroIdx+i].toString();
 					doc.hero_to_slot.put(hero, i);

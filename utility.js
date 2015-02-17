@@ -142,6 +142,7 @@ function runParse(cb) {
         }
         try {
             output = JSON.parse(output);
+            console.log(output.chat);
             cb(code, output);
         }
         catch (err) {

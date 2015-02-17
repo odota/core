@@ -53,6 +53,7 @@ matches.param('match_id', function(req, res, next, id) {
                         if (match.parsed_data) {
                             queries.mergeMatchData(match, constants);
                             queries.generateGraphData(match, constants);
+                            queries.generatePositionData(match, constants);
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {

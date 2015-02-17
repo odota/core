@@ -6,54 +6,40 @@ append content
       if match.parsed_data
         if match.parsed_data.version >=4
           .row
-            .col-md-12
+            .col-md-7
+              h2 Heatmap
+              #map.mapContainer
+                img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+            .col-md-5
               h2 Positions
               table.table.table-hover.table-responsive
                 tr
                   th Hero
-                  - var bucket = 60
-                  - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                    th= i/60+"'"
+                  th Lane
                 each player, ind in match.players
                   - var hero = constants.heroes[player.hero_id]
                   - var parsedPlayer = match.parsed_data.players[ind]
-                  tr(class = player.player_slot<64 ? "success" : "danger")
+                  tr.mapHero(id=ind, class = player.player_slot<64 ? "success" : "danger")
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id              
-                    - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                      td
-                        each entry, j in parsedPlayer.positions
-                          if match.parsed_data.times[j] < i && match.parsed_data.times[j] >= i-bucket
-                            =entry
-            .row
-              .col-md-6
-                h2 Heatmap
-                #map.mapContainer
-                  img.map(src='https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-                each player, ind in match.players
-                  - var hero = constants.heroes[player.hero_id]
-                    span.hero.mapHero(id=ind)
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id              
-            .row
-              .col-md-12
-                include ads/leaderboard_3
+                    td=constants.lane_ids[parsedPlayer.lane]
       else
         h1 This match has no parsed data!
+      .row
+        .col-md-12
+          include ads/leaderboard_3
 
 append footer_assets
   script(src="https://rawgit.com/pa7/heatmap.js/develop/build/heatmap.min.js")
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),
-          radius: 50
+          radius: 40
       });
-      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:(p[0]-60)*(600/127),y:(127-(p[1]-60))*(600/127)}})}))}
+      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:p[0]*(600/127),y:p[1]*(600/127)}})}))}
       $(".mapHero").on("mouseover", function(){
         heatmap.setData({data: data[Number($(this).attr('id'))]});
         heatmap.repaint();

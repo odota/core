@@ -53,7 +53,8 @@ app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     store: new RedisStore({
-        client: redis
+        client: redis,
+        disableTTL: true
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,

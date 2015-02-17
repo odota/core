@@ -21,6 +21,13 @@
     "2": "Creeps",
     "3": "Roshan"
   },
+  "lane_ids": {
+    "0": "Bottom",
+    "1": "Middle",
+    "2": "Top",
+    "3": "Radiant Jungle",
+    "4": "Dire Jungle"
+  },
   "runes": {
     "0": {
       "name": "Double Damage",
@@ -907,6 +914,7 @@
   "regions": {
     "111": "US West",
     "112": "US West",
+    "113": "US West",
     "114": "US West",
     "121": "US East",
     "122": "US East",
