@@ -82,8 +82,12 @@ block footer_assets
         ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
         ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
         ],
-        type: 'spline'
+        types:{
+        "solo":"spline",
+        "party":"spline"
+        }
     },
+    type:"timeseries",
     axis: {
         x: {
             type: 'timeseries',
