@@ -42,15 +42,19 @@ block content
 
   h3 Why is there a difference between my parsed stats and what actually happened in the game?
   p Replay parsing is not an exact art.  Often, assumptions have to be made, and sometimes data is just inconsistent/unavailable.  If you find an issue, please report it!
+  p Known Issues:
+  ul
+    li Hero Kills: doesn't always show all kills.  This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
+    li Hero Kills: Meepo appears to kill himself a lot.  This is because the game has Meepo kill all of his clones on one clone's death.
   
   h3 Can I use YASP in my own project?
-  p YASP is licensed under the GNU GPLv3.  This means you are free to use YASP in your project, if your project is also licensed the same way (free and open source).  We also ask that you give us attribution in your project if you use our code.
+  p YASP is licensed under the GNU GPLv3.  This means you can use YASP in your project if your project is also free and open source.  We also ask that you give us attribution in your project if you use our code.
   
   h3 How do I contribute to YASP?
-  p YASP is open source!  Pull requests are always welcome if you want to work on/improve a feature.  If you'd rather contribute in other ways, feel free to click on an ad that interests you.
+  p YASP is open source!  Start a thread on GitHub if you'd like to work on a feature.
   
   h3 What is YASP built with?
   p YASP's main site and replay retriever are built with Node.js.  We use MongoDB to store our data and Redis/Kue to manage our job queue.
-  p On the client side we use libraries including c3, cal-heatmap, and DataTables.  
+  p On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables.  
   p The parser is written in Java, using the clarity replay parsing library.
   p The original project code was based on matchurls.

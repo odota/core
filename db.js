@@ -26,7 +26,7 @@ db.players.index({
     'full_history_time': 1
 });
 db.players.index({
-    'last_summaries_update': -1
+    'last_summaries_update': 1
 });
 db.ratings.index({
     'match_id': -1,

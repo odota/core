@@ -17,11 +17,9 @@ var matchPages = {
     graphs: {
         name: "Graphs"
     },
-    /*
     positions: {
         name: "Positions"
     },
-    */
     chat: {
         name: "Chat"
     }
@@ -55,6 +53,7 @@ matches.param('match_id', function(req, res, next, id) {
                         if (match.parsed_data) {
                             queries.mergeMatchData(match, constants);
                             queries.generateGraphData(match, constants);
+                            queries.generatePositionData(match, constants);
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {
@@ -69,7 +68,7 @@ matches.param('match_id', function(req, res, next, id) {
 });
 matches.get('/:match_id/:info?', function(req, res, next) {
     var match = req.match;
-    var info = req.params.info || "index";
+    var info = matchPages[req.params.info] ? req.params.info : "index";
     res.render("match_" + info, {
         route: info,
         match: match,

@@ -30,7 +30,7 @@ var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var queueReq = require('../operations').queueReq;
 
-var wait = 30000;
+var wait = 60000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -125,33 +125,35 @@ before(function(done) {
             },
             function(cb) {
                 console.log("copying replays to test dir");
-                async.parallel([
+                request.debug = true;
+                async.series([
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     },
                     function(cb) {
-                        request('https://github.com/yasp-dota/testfiles/raw/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
+                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
                             cb(err);
                         });
                     }
                 ], function(err) {
+                    request.debug=false;
                     cb(err);
                 });
             },
@@ -477,12 +479,11 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/players/88367253/asdf');
             browser.wait(wait, function(err) {
-                assert(err);
                 done();
             });
         });
-        it('should 500', function(done) {
-            browser.assert.status(500);
+        it('should 200', function(done) {
+            browser.assert.status(200);
             done();
         });
     });
@@ -583,12 +584,11 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1191329057/asdf');
             browser.wait(wait, function(err) {
-                assert(err);
                 done();
             });
         });
-        it('should 500', function(done) {
-            browser.assert.status(500);
+        it('should 200', function(done) {
+            browser.assert.status(200);
             done();
         });
     });
@@ -777,7 +777,7 @@ describe("unit test", function() {
 });
 
 describe("parser", function() {
-    this.timeout(60000);
+    this.timeout(wait);
     it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,

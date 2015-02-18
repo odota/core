@@ -74,7 +74,7 @@ function getAssociatedHero(unit, heroes) {
         var split = unit.split("_");
         //get the third element
         var identifiers = [split[2], split[2] + "_" + split[3]];
-        identifiers.forEach(function(id) {
+        identifiers.forEach(function (id) {
             //append to npc_dota_hero_, see if matches
             var attempt = "npc_dota_hero_" + id;
             if (heroes[attempt]) {
@@ -97,7 +97,7 @@ function generateGraphData(match, constants) {
     for (var i = 0; i < match.parsed_data.times.length; i++) {
         var goldtotal = 0;
         var xptotal = 0;
-        match.parsed_data.players.forEach(function(elem, j) {
+        match.parsed_data.players.forEach(function (elem, j) {
             if (match.players[j].player_slot < 64) {
                 goldtotal += elem.gold[i];
                 xptotal += elem.xp[i];
@@ -117,7 +117,7 @@ function generateGraphData(match, constants) {
         xp: [time],
         lh: [time]
     };
-    match.parsed_data.players.forEach(function(elem, i) {
+    match.parsed_data.players.forEach(function (elem, i) {
         var hero = constants.heroes[match.players[i].hero_id].localized_name + (oneVone ? " - " + match.players[i].personaname : "");
         data.gold.push([hero].concat(elem.gold));
         data.xp.push([hero].concat(elem.xp));
@@ -129,11 +129,11 @@ function generateGraphData(match, constants) {
     var columns = [];
     var categories = [];
     var orderedPlayers = match.players.slice(0);
-    orderedPlayers.sort(function(a, b) {
+    orderedPlayers.sort(function (a, b) {
         return b.gold_per_min - a.gold_per_min;
     });
     //console.log(orderedPlayers);
-    orderedPlayers.forEach(function(player) {
+    orderedPlayers.forEach(function (player) {
         var hero = constants.heroes[player.hero_id];
         categories.push(hero.localized_name);
     });
@@ -141,7 +141,7 @@ function generateGraphData(match, constants) {
         var reason = constants.gold_reasons[key];
         gold_reasons.push(reason);
         var col = [reason];
-        orderedPlayers.forEach(function(player) {
+        orderedPlayers.forEach(function (player) {
             var hero = constants.heroes[player.hero_id];
             var parsedHero = match.parsed_data.heroes[hero.name];
             col.push(parsedHero.gold_log[key] || 0);
@@ -156,11 +156,50 @@ function generateGraphData(match, constants) {
     return match;
 }
 
+function generatePositionData(match, constants) {
+    match.parsed_data.players.forEach(function (elem, j) {
+        //data might not exist
+        elem.positions = elem.positions || [];
+        //transform to 0-127 range, y=0 at top left
+        elem.positions=elem.positions.map(function(p){return[p[0]-64, 127-(p[1]-64)]});
+        var start = elem.positions.slice(0, 10);
+        //median, alternate calculation
+        //elem.lane = constants.lanes[start.sort(function(a,b){return a[1]-b[1]})[4][1]][start.sort(function(a,b){return a[0]-b[0]})[4][0]];
+        
+        var lanes = start.map(function (e) {
+            //y first, then x due to array of arrays structure
+            return constants.lanes[e[1]][e[0]];
+        });
+        function mode(array) {
+                if (array.length == 0)
+                    return null;
+                var modeMap = {};
+                var maxEl = array[0],
+                    maxCount = 1;
+                for (var i = 0; i < array.length; i++) {
+                    var el = array[i];
+                    if (modeMap[el] == null)
+                        modeMap[el] = 1;
+                    else
+                        modeMap[el] ++;
+                    if (modeMap[el] > maxCount) {
+                        maxEl = el;
+                        maxCount = modeMap[el];
+                    }
+                }
+                return maxEl;
+            }
+            //determine lane
+            //console.log(lanes);
+        elem.lane = mode(lanes);
+    });
+}
+
 function fillPlayerNames(players, cb) {
-    async.mapSeries(players, function(player, cb) {
+    async.mapSeries(players, function (player, cb) {
         db.players.findOne({
             account_id: player.account_id
-        }, function(err, dbPlayer) {
+        }, function (err, dbPlayer) {
             if (dbPlayer) {
                 for (var prop in dbPlayer) {
                     player[prop] = dbPlayer[prop];
@@ -168,7 +207,7 @@ function fillPlayerNames(players, cb) {
             }
             cb(err);
         });
-    }, function(err) {
+    }, function (err) {
         cb(err);
     });
 }
@@ -185,7 +224,7 @@ function computeStatistics(player, cb) {
             match_id: 1,
             radiant_win: 1
         }
-    }).each(function(match) {
+    }).each(function (match) {
         var playerRadiant = player.radiantMap[match.match_id];
         for (var j = 0; j < match.players.length; j++) {
             var tm = match.players[j];
@@ -226,9 +265,9 @@ function computeStatistics(player, cb) {
                 playerRadiant === match.radiant_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
             }
         }
-    }).error(function(err) {
+    }).error(function (err) {
         return cb(err);
-    }).success(function() {
+    }).success(function () {
         player.together = together;
         player.against = against;
         player.teammates = [];
@@ -236,7 +275,7 @@ function computeStatistics(player, cb) {
             var count = counts[id];
             player.teammates.push(count);
         }
-        fillPlayerNames(player.teammates, function(err) {
+        fillPlayerNames(player.teammates, function (err) {
             cb(err);
         });
     });
@@ -257,11 +296,11 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             parse_status: 1,
             "players.$": 1
         }
-    }, function(err, matches) {
+    }, function (err, matches) {
         if (err) {
             cb(err);
         }
-        matches.sort(function(a, b) {
+        matches.sort(function (a, b) {
             return b.match_id - a.match_id;
         });
         player.win = 0;
@@ -304,7 +343,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         for (var id in heroes) {
             player.heroes.push(heroes[id]);
         }
-        player.heroes.sort(function(a, b) {
+        player.heroes.sort(function (a, b) {
             return b.games - a.games;
         });
         player.matches = matches;
@@ -312,7 +351,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = calheatmap;
         if (matchups) {
-            computeStatistics(player, function(err) {
+            computeStatistics(player, function (err) {
                 cb(err);
             });
         }
@@ -328,11 +367,11 @@ function getRatingData(req, cb) {
     }
     var account_id = req.user.account_id;
     async.series({
-        "bots": function(cb) {
-            redis.get("bots", function(err, bots) {
+        "bots": function (cb) {
+            redis.get("bots", function (err, bots) {
                 bots = JSON.parse(bots);
                 //sort list of bots descending, but > 200 go to end
-                bots.sort(function(a, b) {
+                bots.sort(function (a, b) {
                     if (a.friends > 200) {
                         return 1;
                     }
@@ -344,20 +383,25 @@ function getRatingData(req, cb) {
                 cb(err, bots);
             });
         },
-        "ratingPlayers": function(cb) {
-            redis.get("ratingPlayers", function(err, rps) {
+        "ratingPlayers": function (cb) {
+            redis.get("ratingPlayers", function (err, rps) {
                 cb(err, JSON.parse(rps));
             });
         },
-        "ratings": function(cb) {
+        "trackedPlayers": function (cb) {
+            redis.get("trackedPlayers", function (err, tps) {
+                cb(err, JSON.parse(tps));
+            });
+        },
+        "ratings": function (cb) {
             db.ratings.find({
                     account_id: account_id
                 },
-                function(err, docs) {
+                function (err, docs) {
                     cb(err, docs);
                 });
         }
-    }, function(err, results) {
+    }, function (err, results) {
         cb(err, results);
     });
 }
@@ -368,5 +412,6 @@ module.exports = {
     generateGraphData: generateGraphData,
     computeStatistics: computeStatistics,
     fillPlayerMatches: fillPlayerMatches,
+    generatePositionData: generatePositionData,
     getRatingData: getRatingData
 };

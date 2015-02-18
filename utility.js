@@ -106,9 +106,15 @@ function getData(url, cb) {
                 logger.info("retrying: %s", target);
                 return getData(url, cb);
             }
+            else if (body.error) {
+                //body contained an error (probably from retriever)
+                //non-retryable
+                return cb(body);
+            }
             else if (body.result) {
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
                     //user does not have stats enabled or attempting to get private match/invalid id, don't retry
+                    //non-retryable
                     return cb(body);
                 }
                 else if (body.result.error || body.result.status === 2) {
@@ -129,7 +135,11 @@ function runParse(cb) {
         parser_file
     ]);
     parser.stdout.on('data', function(data) {
+        //console.log(data);
         output += data;
+    });
+    parser.stderr.on('data', function(data) {
+        //console.log(data);
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
@@ -138,6 +148,7 @@ function runParse(cb) {
         }
         try {
             output = JSON.parse(output);
+            console.log(output.chat);
             cb(code, output);
         }
         catch (err) {
@@ -148,37 +159,33 @@ function runParse(cb) {
 }
 
 function getRetrieverUrls() {
-    return retrievers.map(function(r) {
-        return "http://" + r;
-    });
-}
-
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
+        return retrievers.map(function(r) {
+            return "http://" + r;
+        });
+    }
+    /*
+     * Converts a steamid 64 to a steamid 32
+     *
+     * Returns a BigNumber
+     */
 function convert64to32(id) {
-    return new BigNumber(id).minus('76561197960265728');
-
-}
-
-/*
- * Converts a steamid 64 to a steamid 32
- *
- * Returns a BigNumber
- */
+        return new BigNumber(id).minus('76561197960265728');
+    }
+    /*
+     * Converts a steamid 64 to a steamid 32
+     *
+     * Returns a BigNumber
+     */
 function convert32to64(id) {
     return new BigNumber('76561197960265728').plus(id);
 }
 
 function isRadiant(player) {
-    return player.player_slot < 64;
-}
-
-/*
- * Makes sort from a datatables call
- */
+        return player.player_slot < 64;
+    }
+    /*
+     * Makes sort from a datatables call
+     */
 function makeSort(order, columns) {
     var sort = {
         match_id: -1
@@ -194,8 +201,6 @@ function makeSort(order, columns) {
     }
     return sort;
 }
-
-
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -207,7 +212,6 @@ module.exports = {
     isRadiant: isRadiant,
     makeSort: makeSort
 };
-
 /*
 function getS3Url(match_id, cb) {
     var archiveName = match_id + ".dem.bz2";

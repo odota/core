@@ -63,7 +63,7 @@ module.exports = function getStatus(cb) {
                         start_time: 1,
                         duration: 1
                     },
-                    limit: 5
+                    limit: 10
                 }, cb);
             },
             last_parsed: function(cb) {
@@ -78,7 +78,7 @@ module.exports = function getStatus(cb) {
                         start_time: 1,
                         duration: 1
                     },
-                    limit: 5
+                    limit: 10
                 }, cb);
             }
         },

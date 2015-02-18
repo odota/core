@@ -18,7 +18,8 @@ var status = require('./status');
 var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    async = require('async');
 
 var server = app.listen(process.env.PORT || 5000, function() {
     var host = server.address().address;
@@ -53,7 +54,8 @@ app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     store: new RedisStore({
-        client: redis
+        client: redis,
+        disableTTL: true
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -65,9 +67,17 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(function(req, res, next) {
-    redis.get("banner", function(err, reply) {
+    async.parallel({
+        banner: function(cb) {
+            redis.get("banner", cb);
+        },
+        apiDown: function(cb) {
+            redis.get("apiDown", cb);
+        }
+    }, function(err, results) {
         res.locals.user = req.user;
-        res.locals.banner_msg = reply;
+        res.locals.banner_msg = results.banner;
+        res.locals.api_down = results.apiDown;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });
@@ -143,7 +153,9 @@ app.route('/status').get(function(req, res, next) {
         if (err) {
             return next(err);
         }
-        res.render("status", {result: result});
+        res.render("status", {
+            result: result
+        });
     });
 });
 app.route('/about').get(function(req, res) {

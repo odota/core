@@ -48,6 +48,7 @@ public class Main {
 		int steamIdx=0;
 		Match match = new Match();
 		float nextMinute = 0;
+		float nextShort = 0;
 		int gameZero = Integer.MIN_VALUE;
 		int gameEnd = 0;
 		int numPlayers = 10;
@@ -100,7 +101,15 @@ public class Main {
 					}
 					nextMinute += MINUTE;
 				}
-				
+				/*
+				if (trueTime > nextShort) {
+					for (int i = 0; i < numPlayers; i++) {
+						Player player = doc.players.get(i);
+						player.positions.add(player.getMedian());
+					}
+					nextShort += MINUTE/60;
+				}
+				*/
 				for (int i = 0; i < numPlayers; i++) {
 					String hero = pr.getState()[heroIdx+i].toString();
 					doc.hero_to_slot.put(hero, i);
@@ -249,9 +258,10 @@ public class Main {
 				}
 				
 				//todo figure out when runes get picked up and by who
+				//use chat events for runes?
 				//todo figure out when wards get killed and by who
-				//todo who placed the ward?
 				//can detect entity disappearance, but how to figure out cause?
+				/*
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                 Entity e = runes.next();
@@ -261,6 +271,7 @@ public class Main {
                 seenEntities.add(handle);
                 }
                 }
+                */
                 Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");
                 while (obs.hasNext()){
                 Entity e = obs.next();

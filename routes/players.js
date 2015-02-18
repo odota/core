@@ -19,7 +19,7 @@ var playerPages = {
 };
 players.get('/:account_id/:info?', function(req, res, next) {
     var account_id = Number(req.params.account_id);
-    var info = req.params.info || "index";
+    var info = playerPages[req.params.info] ? req.params.info : "index";
     db.players.findOne({
         account_id: account_id
     }, function(err, player) {
@@ -31,7 +31,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                res.render("player_"+info, {
+                res.render("player_" + info, {
                     route: info,
                     player: player,
                     tabs: playerPages,
@@ -41,5 +41,4 @@ players.get('/:account_id/:info?', function(req, res, next) {
         }
     });
 });
-
 module.exports = players;

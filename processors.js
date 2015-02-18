@@ -105,17 +105,12 @@ function streamReplay(job, cb) {
     var bz;
     var parser;
     var error;
-    var to = setTimeout(function() {
-        cb("timeout");
-        process.exit(1);
-    }, 120000);
+    var inStream;
     d.on('error', function(err) {
-        clearTimeout(to);
         cb(error || err);
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
-            clearTimeout(to);
             if (err) {
                 return cb(err);
             }
@@ -153,16 +148,23 @@ function streamReplay(job, cb) {
             });
         });
         if (job.data.fileName) {
-            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+            inStream = fs.createReadStream(job.data.fileName);
+            inStream.pipe(parser.stdin);
         }
         else {
-            bz = spawn("bzcat");
+            bz = spawn("bunzip2");
             bz.stdout.pipe(parser.stdin);
-            request.get({
+            //request.debug = true;
+            inStream = request.get({
                 url: job.data.url,
-                encoding: null
-            }).on('response', function(resp) {
-                if (resp.statusCode !== 200) {
+                encoding: null,
+                timeout: 60000,
+                headers: {
+                    'User-Agent': 'request'
+                }
+            });
+            inStream.on('response', function(response) {
+                if (response.statusCode !== 200) {
                     error = "download error";
                 }
             }).pipe(bz.stdin);
