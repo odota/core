@@ -148,7 +148,7 @@ function runParse(cb) {
         }
         try {
             var output = Buffer.concat(bufArray);
-            output = JSON.parse(output.toString());
+            output = JSON.parse(output.toString("utf8"));
             console.log(output.chat);
             cb(code, output);
         }

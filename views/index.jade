@@ -44,7 +44,7 @@ block content
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
    .row
     .col-md-12
-      h3 Rating Tracker
+      h3 Rating Tracker (beta)
       #ratings
   else
     .text-center
@@ -82,12 +82,8 @@ block footer_assets
         ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
         ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
         ],
-        types:{
-        "solo":"spline",
-        "party":"spline"
-        }
+        type::"line"
     },
-    type:"timeseries",
     axis: {
         x: {
             type: 'timeseries',

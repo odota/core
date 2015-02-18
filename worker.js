@@ -41,10 +41,10 @@ d.run(function() {
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
-        setInterval(fullhistory, 17 * 60 * 1000, function() {});
-        setInterval(updatenames, 7 * 60 * 1000, function() {});
+        setInterval(fullhistory, 31 * 60 * 1000, function() {});
+        setInterval(updatenames, 9 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 5 * 60 * 1000);
+        setInterval(apiStatus, 7 * 60 * 1000);
     });
 });
 
@@ -194,7 +194,9 @@ function apiStatus() {
             match_seq_num: -1
         }
     }, function(err, matches) {
-        if ((new Date().getTime()/1000 - matches.start_time - matches.duration) > 10 * 60) {
+        var elapsed = (new Date().getTime()/1000 - matches.start_time - matches.duration);
+        console.log(elapsed);
+        if (elapsed > 15 * 60) {
             redis.set("apiDown", 1);
         }
         else {
