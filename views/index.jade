@@ -13,8 +13,24 @@ block content
       h2
         | Welcome, #{user.personaname}!
    .row
-    .col-md-2
-      h3 Preferences
+    .col-md-7
+      h3 Status (may take several minutes to update)
+      - var tracked = (user.account_id in trackedPlayers)
+      - var rating = (user.account_id in ratingPlayers)
+      div(class= tracked ? "alert alert-success" : "alert alert-danger")
+        span(class= tracked ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Tracked: " + (tracked ? "YASP is automatically parsing your replays." : "Visit YASP regularly to avoid being untracked.")
+      div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
+        span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Full History: " + (user.full_history_time ? moment(user.full_history_time).fromNow() : "Veteran YASP users get full history scans.")
+      div(class=user.last_summaries_update ? "alert alert-success" : "alert alert-danger")
+        span(class= user.last_summaries_update ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Name Update:  "+ (user.last_summaries_update ? moment(user.last_summaries_update).fromNow() : "not updated yet")
+      div(class= rating ? "alert alert-success" : "alert alert-danger")
+        span(class= rating ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
+        =" Rating Tracker: " + (rating ? "YASP is following your MMR." : "Add a tracker to have YASP follow your MMR.")
+    .col-md-5
+      h3 Actions
       .checkbox
         label
          if user.dark_theme
@@ -22,31 +38,65 @@ block content
          else
            input#dark(type="checkbox")
          | Use Dark Theme
-    .col-md-6
-      h3 Status
-      div(class="alert alert-success")
-        span(class="glyphicon glyphicon-ok")
-        =" Tracked: YASP will automatically parse your replays as long as you remain active."
-      div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
-        span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Full History: " + (moment(user.last_summaries_update).fromNow() || "never")
-      div(class=user.last_summaries_update ? "alert alert-success" : "alert alert-danger")
-        span(class= user.last_summaries_update ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Name Update:  "+ (moment(user.last_summaries_update).fromNow() || "never")
-      div(class= (user.account_id in ratingPlayers) ? "alert alert-success" : "alert alert-danger")
-        span(class= (user.account_id in ratingPlayers) ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Rating Tracker: Add a rating tracker to your friends list.  May take several minutes to update."
-    .col-md-4
-      h3 Actions
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
       p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+bots[0].steamID) Add Tracker &raquo;
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
    .row
     .col-md-12
-      h3 Rating Tracker (alpha)
-      p=JSON.stringify(ratings)
+      h3 Rating Tracker (beta)
+      #ratings
+  else
+    .text-center
+      p.lead Free Dota 2 replay parsing.
+      p
+        a(href='/login')
+          img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
+      hr
+      .row
+        .col-md-4
+          p.lead Go beyond the API.
+          span.glyphicon.glyphicon-stats.big
+          p.text-left YASP parses replays to provide Dota 2 match statistics not available through the API or game client.
+          p: a.btn.btn-success(href="/matches/1239396507/details") Check out an example &raquo;
+        .col-md-4
+          p.lead Free of charge.
+          span.glyphicon.glyphicon-thumbs-up.big
+          p.text-left YASP is supported by volunteer developers and community contributions, making it free for users.
+          p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
+        .col-md-4
+          p.lead Open source.
+          span.glyphicon.glyphicon-wrench.big
+          p.text-left All of YASP's code is open source and available for contributors to improve and modify.
+          p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
+
+block footer_assets
    script.
+    var ratings = !{JSON.stringify(ratings)}
+    c3.generate({
+    bindto: "#ratings",
+    data: {
+        x: 'x',
+        columns: [
+        ['x'].concat(ratings.map(function(r){return new Date(r.time);})),
+        ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
+        ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
+        ],
+        type:"line"
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            label: 'Date',
+            tick: {
+                format: '%Y-%m-%d'
+            }
+        },
+        y: {
+            label: 'Rating'
+        }
+    }
+    });
     var $dark = $("#dark");
     $dark.change(function() {
         console.log($dark.is(":checked"));
@@ -64,27 +114,3 @@ block content
                 $(".sync").fadeOut(3000);
             });
     });
-
-  else
-    .text-center
-      p.lead Free Dota 2 replay parsing.
-      p
-        a(href='/login')
-          img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
-      hr
-      .row
-        .col-md-4
-          p.lead Go beyond the API.
-          span.glyphicon.glyphicon-stats.big
-          p.text-left YASP parses replays to provide Dota 2 match statistics not available through the API or game client.
-          p: a.btn.btn-success(href="/matches/1191329057/details") Check out an example &raquo;
-        .col-md-4
-          p.lead Free of charge.
-          span.glyphicon.glyphicon-thumbs-up.big
-          p.text-left YASP is supported by volunteer developers and community contributions, making it free for users.
-          p: a.btn.btn-primary(href="/about") Learn about YASP &raquo;
-        .col-md-4
-          p.lead Open source.
-          span.glyphicon.glyphicon-wrench.big
-          p.text-left All of YASP's code is open source and available for contributors to improve and modify.
-          p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;

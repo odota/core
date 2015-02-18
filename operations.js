@@ -18,7 +18,7 @@ function insertMatch(match, cb) {
             if (err) {
                 return cb(err);
             }
-            async.mapSeries(match.players, function(p, cb) {
+            async.eachSeries(match.players, function(p, cb) {
                 db.players.update({
                     account_id: p.account_id
                 }, {

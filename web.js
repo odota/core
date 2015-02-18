@@ -18,8 +18,8 @@ var status = require('./status');
 var auth = require('http-auth'),
     path = require('path'),
     moment = require('moment'),
-    bodyParser = require('body-parser');
-
+    bodyParser = require('body-parser'),
+    async = require('async');
 var server = app.listen(process.env.PORT || 5000, function() {
     var host = server.address().address;
     var port = server.address().port;
@@ -60,7 +60,8 @@ app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     store: new RedisStore({
-        client: redis
+        client: redis,
+        disableTTL: true
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -72,9 +73,17 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(function(req, res, next) {
-    redis.get("banner", function(err, reply) {
+    async.parallel({
+        banner: function(cb) {
+            redis.get("banner", cb);
+        },
+        apiDown: function(cb) {
+            redis.get("apiDown", cb);
+        }
+    }, function(err, results) {
         res.locals.user = req.user;
-        res.locals.banner_msg = reply;
+        res.locals.banner_msg = results.banner;
+        res.locals.api_down = results.apiDown;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });
@@ -115,42 +124,39 @@ app.route('/preferences').post(function(req, res) {
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
-app.route('/return').get(
-    passport.authenticate('steam', {
-        failureRedirect: '/'
-    }),
-    function(req, res) {
-        res.redirect('/');
-    }
-);
+app.route('/return').get(passport.authenticate('steam', {
+    failureRedirect: '/'
+}), function(req, res) {
+    res.redirect('/');
+});
 app.route('/logout').get(function(req, res) {
     req.logout();
     req.session.destroy(function() {
         res.redirect('/');
     });
 });
-
-app.route('/verify_recaptcha')
-    .post(function(req, res) {
-        var data = {
-            remoteip: req.connection.remoteAddress,
-            challenge: req.body.recaptcha_challenge_field,
-            response: req.body.recaptcha_response_field
-        };
-        var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-        recaptcha.verify(function(success) {
-            req.session.captcha_verified = success;
-            res.json({
-                verified: success
-            });
+app.route('/verify_recaptcha').post(function(req, res) {
+    var data = {
+        remoteip: req.connection.remoteAddress,
+        challenge: req.body.recaptcha_challenge_field,
+        response: req.body.recaptcha_response_field
+    };
+    var recaptcha = new Recaptcha(rc_public, rc_secret, data);
+    recaptcha.verify(function(success) {
+        req.session.captcha_verified = success;
+        res.json({
+            verified: success
         });
     });
+});
 app.route('/status').get(function(req, res, next) {
     status(function(err, result) {
         if (err) {
             return next(err);
         }
-        res.render("status", {result: result});
+        res.render("status", {
+            result: result
+        });
     });
 });
 app.route('/about').get(function(req, res) {
@@ -164,6 +170,7 @@ app.use(function(req, res, next) {
 });
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
+    console.log(err);
     if (process.env.NODE_ENV !== "development") {
         return res.render(err.status === 404 ? '404' : '500', {
             error: err

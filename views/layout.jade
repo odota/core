@@ -28,8 +28,8 @@ html
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/master/c3.min.css')
-    link(rel="stylesheet", href='//cdn.rawgit.com/kamisama/cal-heatmap/master/cal-heatmap.css')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
     style
       include ../public/css/yasp.css
     if (user && user.dark_theme)
@@ -62,6 +62,10 @@ html
       .container
        if banner_msg
          .alert.alert-success(role="alert") !{banner_msg}
+       if api_down
+         .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
+       if user && user.track===0
+           .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if login_req_msg
          .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
        if !error

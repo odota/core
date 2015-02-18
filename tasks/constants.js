@@ -12,13 +12,13 @@ module.exports = function generateConstants(outputFile, done) {
         done = outputFile;
     }
     var constants = require('../sources.json');
-    async.map(Object.keys(constants.sources), function(key, cb) {
+    async.map(Object.keys(constants.sources), function (key, cb) {
         var val = constants.sources[key];
-        getData(val, function(err, result) {
+        getData(val, function (err, result) {
             constants[key] = result;
             cb(err);
         });
-    }, function(err) {
+    }, function (err) {
         if (err) {
             return done(err);
         }
@@ -47,11 +47,37 @@ module.exports = function generateConstants(outputFile, done) {
             attrib: "+2 All Attributes"
         };
         constants.abilities = abilities;
-        fs.writeFile(fileName, JSON.stringify(constants, null, 2), function(err) {
+        constants.lanes = [];
+        for (var i = 0; i < 128; i++) {
+            constants.lanes.push([]);
+            for (var j = 0; j < 128; j++) {
+                var lane;
+                if (Math.abs(i - (127 - j)) < 10) {
+                    lane = 1;
+                }
+                else if (j < 27 || i < 27) {
+                    lane = 2;
+                }
+                else if (j >= 100 || i >= 100) {
+                    lane = 0;
+                }
+                else if (i < 45) {
+                    lane = 4;
+                }
+                else if (i >= 82) {
+                    lane = 3;
+                }
+                else {
+                    lane = 1;
+                }
+                constants.lanes[i].push(lane);
+            }
+        }
+        fs.writeFile(fileName, JSON.stringify(constants, null, 2), function (err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }
             return done(err);
         });
     });
-}
+};

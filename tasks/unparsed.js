@@ -11,7 +11,7 @@ module.exports = function unparsed(done) {
         }
         var i = 0;
         async.mapSeries(docs, function(match, cb) {
-            queueReq("parse", match, function(err, job) {
+            queueReq("parse", {match_id: match.match_id, start_time:match.start_time}, function(err, job) {
                 i += 1;
                 console.log("[UNPARSED] match %s, jobid %s", match.match_id, job.id);
                 cb(err);

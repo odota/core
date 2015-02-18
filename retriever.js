@@ -97,24 +97,21 @@ function getPlayerProfile(idx, account_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
     Dota2.profileRequest(account_id, false, function(accountId, profileData) {
-        cb(null, profileData.gameAccountClient);
+        var error = profileData.result === 1 ? null : profileData.result;
+        console.log(profileData);
+        cb(error, profileData.gameAccountClient);
     });
 }
 
 function getGCReplayUrl(idx, match_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("[DOTA] requesting replay %s, numusers: %s", match_id, users.length);
-    var dotaTimeOut = setTimeout(function() {
-        console.log("[DOTA] request for replay timed out");
-        cb("timeout");
-    }, 10000);
     replayRequests += 1;
     if (replayRequests >= 500) {
         selfDestruct();
     }
     steamObj[idx].attempts += 1;
     Dota2.matchDetailsRequest(match_id, function(err, data) {
-        clearTimeout(dotaTimeOut);
         steamObj[idx].success += 1;
         cb(err, data);
     });
@@ -125,6 +122,7 @@ function selfDestruct() {
 }
 
 app.get('/', function(req, res, next) {
+    console.log(process.memoryUsage());
     if (!ready) {
         return next("retriever not ready");
     }

@@ -102,16 +102,21 @@ function streamReplay(job, cb) {
     var match_id = job.data.payload.match_id;
     logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
     var d = domain.create();
-    var error;
     var bz;
     var parser;
+    var error;
+    var inStream;
+    var exit;
     d.on('error', function(err) {
-        cb(error || err);
+        if (!exit) {
+            exit = true;
+            cb(error || err);
+        }
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
             if (err) {
-                throw err;
+                return cb(err);
             }
             match_id = match_id || output.match_id;
             job.data.payload.match_id = match_id;
@@ -130,7 +135,7 @@ function streamReplay(job, cb) {
                     }, {
                         $set: job.data.payload,
                     }, function(err) {
-                        cb(err);
+                        return cb(err);
                     });
                 }
                 else {
@@ -140,29 +145,33 @@ function streamReplay(job, cb) {
                             return cb(err);
                         }
                         apijob.on('complete', function() {
-                            cb();
+                            return cb();
                         });
                     });
                 }
             });
         });
         if (job.data.fileName) {
-            fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+            inStream = fs.createReadStream(job.data.fileName);
+            inStream.pipe(parser.stdin);
         }
         else {
-            var downStream = request.get({
+            bz = spawn("bunzip2");
+            bz.stdout.pipe(parser.stdin);
+            //request.debug = true;
+            inStream = request.get({
                 url: job.data.url,
                 encoding: null,
-                timeout: 180000
-            });
-            downStream.on('response', function(resp) {
-                if (resp.statusCode !== 200) {
-                    error = "download error";
+                timeout: 60000,
+                headers: {
+                    'User-Agent': 'request'
                 }
             });
-            bz = spawn("bzcat");
-            downStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
+            inStream.on('response', function(response) {
+                if (response.statusCode !== 200) {
+                    error = "download error";
+                }
+            }).pipe(bz.stdin);
         }
     });
 }
@@ -224,7 +233,6 @@ function processMmr(job, cb) {
         }
     });
 }
-
 module.exports = {
     processParse: processParse,
     processApi: processApi,

@@ -14,6 +14,7 @@ module.exports = function matchTable() {
         //filter: specific game modes
         //filter: specific patches
         //filter: specific regions
+        //gold advantage/disadvantage
         //report w/l for each filter, relative to who?
         $('#table').dataTable({
             "order": [
