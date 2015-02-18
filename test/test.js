@@ -30,7 +30,7 @@ var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var queueReq = require('../operations').queueReq;
 
-var wait = 30000;
+var wait = 60000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
@@ -125,6 +125,7 @@ before(function(done) {
             },
             function(cb) {
                 console.log("copying replays to test dir");
+                request.debug = true;
                 async.series([
                     function(cb) {
                         request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
@@ -152,6 +153,7 @@ before(function(done) {
                         });
                     }
                 ], function(err) {
+                    request.debug=false;
                     cb(err);
                 });
             },
@@ -775,7 +777,7 @@ describe("unit test", function() {
 });
 
 describe("parser", function() {
-    this.timeout(60000);
+    this.timeout(wait);
     it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,
