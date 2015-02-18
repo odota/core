@@ -370,12 +370,13 @@ function getRatingData(req, cb) {
         "bots": function (cb) {
             redis.get("bots", function (err, bots) {
                 bots = JSON.parse(bots);
-                //sort list of bots descending, but > 200 go to end
+                //sort list of bots descending, but full bots go to end
                 bots.sort(function (a, b) {
-                    if (a.friends > 150) {
+                    var threshold = 100;
+                    if (a.friends > threshold) {
                         return 1;
                     }
-                    if (b.friends > 150) {
+                    if (b.friends > threshold) {
                         return -1;
                     }
                     return (b.friends - a.friends);
