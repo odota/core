@@ -130,18 +130,16 @@ function getData(url, cb) {
 
 function runParse(cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = "";
+    var output = new Buffer();
     var parser = spawn("java", ["-jar",
         parser_file
-    ]);
-    parser.stdout.on('data', function(data) {
-        //console.log(data);
-        output += data.toString();
+    ], {
+        stdio: ['pipe', 'pipe', 'ignore']
     });
-    parser.stderr.on('data', function(data) {
-        //if this exceeds buffer size, process is killed
-        //do something with it (dev/null?)
-        console.log(data);
+    //stderr is sent to /dev/null
+    //modify stdio array if we want to log it here
+    parser.stdout.on('data', function(data) {
+        output = Buffer.concat(output, data);
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
@@ -149,7 +147,7 @@ function runParse(cb) {
             return cb(code);
         }
         try {
-            output = JSON.parse(output);
+            output = JSON.parse(output.toJSON());
             console.log(output.chat);
             cb(code, output);
         }

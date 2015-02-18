@@ -106,8 +106,12 @@ function streamReplay(job, cb) {
     var parser;
     var error;
     var inStream;
+    var exit;
     d.on('error', function(err) {
-        cb(error || err);
+        if (!exit) {
+            exit = true;
+            cb(error || err);
+        }
     });
     d.run(function() {
         parser = utility.runParse(function(err, output) {
@@ -229,7 +233,6 @@ function processMmr(job, cb) {
         }
     });
 }
-
 module.exports = {
     processParse: processParse,
     processApi: processApi,
