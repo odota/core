@@ -38,8 +38,8 @@ append footer_assets
         container: document.getElementById('map'),
           radius: 40
       });
-      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions.map(function(p){return {x:p[0]*(600/127),y:p[1]*(600/127)}})}))}
+      var data = !{JSON.stringify(match.parsed_data.players.map(function(pl){return pl.positions || []}))}
       $(".mapHero").on("mouseover", function(){
-        heatmap.setData({data: data[Number($(this).attr('id'))]});
+        heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(600/127),y:p[1]*(600/127)}})});
         heatmap.repaint();
       })

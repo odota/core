@@ -130,16 +130,17 @@ function getData(url, cb) {
 
 function runParse(cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
-    var bufArray = [];
+    var output = '';
     var parser = spawn("java", ["-jar",
         parser_file
     ], {
-        stdio: ['pipe', 'pipe', 'ignore']
+        stdio: ['pipe', 'pipe', 'ignore'],
+        encoding: "utf8"
     });
     //stderr is sent to /dev/null
     //modify stdio array if we want to log it here
     parser.stdout.on('data', function(data) {
-        bufArray.push(data);
+        output+=data;
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
@@ -147,8 +148,7 @@ function runParse(cb) {
             return cb(code);
         }
         try {
-            var output = Buffer.concat(bufArray);
-            output = JSON.parse(output.toString("utf8"));
+            output = JSON.parse(output);
             console.log(output.chat);
             cb(code, output);
         }
