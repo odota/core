@@ -6,7 +6,7 @@ append content
       if match.parsed_data
           .row
             .col-md-7
-              h2 Heatmap
+              h2: abbr(title="Player movement during the game") Heatmap
               #map.mapContainer
                 img.map(src='/public/images/map.jpg', alt="map")
             .col-md-5
@@ -14,7 +14,7 @@ append content
               table.table.table-hover.table-responsive
                 tr
                   th Hero
-                  th Lane
+                  th: abbr(title="Lane based on early game location") Lane
                 each player, ind in match.players
                   - var hero = constants.heroes[player.hero_id]
                   - var parsedPlayer = match.parsed_data.players[ind]
