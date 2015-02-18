@@ -139,7 +139,7 @@ function runParse(cb) {
         output += data;
     });
     parser.stderr.on('data', function(data) {
-        //console.log(data);
+        console.log(data);
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
