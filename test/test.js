@@ -477,12 +477,11 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/players/88367253/asdf');
             browser.wait(wait, function(err) {
-                assert(err);
                 done();
             });
         });
-        it('should 500', function(done) {
-            browser.assert.status(500);
+        it('should 200', function(done) {
+            browser.assert.status(200);
             done();
         });
     });
@@ -583,12 +582,11 @@ describe("web", function() {
         before(function(done) {
             browser.visit('/matches/1191329057/asdf');
             browser.wait(wait, function(err) {
-                assert(err);
                 done();
             });
         });
-        it('should 500', function(done) {
-            browser.assert.status(500);
+        it('should 200', function(done) {
+            browser.assert.status(200);
             done();
         });
     });
