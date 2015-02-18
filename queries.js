@@ -372,10 +372,10 @@ function getRatingData(req, cb) {
                 bots = JSON.parse(bots);
                 //sort list of bots descending, but > 200 go to end
                 bots.sort(function (a, b) {
-                    if (a.friends > 200) {
+                    if (a.friends > 150) {
                         return 1;
                     }
-                    if (b.friends > 200) {
+                    if (b.friends > 150) {
                         return -1;
                     }
                     return (b.friends - a.friends);
