@@ -281,6 +281,7 @@ public class Main {
                 seenEntities.add(handle);
                 }
                 }
+                /*
                 Iterator<Entity> sen = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward_TrueSight");
                 while (sen.hasNext()){
                 Entity e = sen.next();
@@ -291,6 +292,7 @@ public class Main {
                 seenEntities.add(handle);
                 }
                 }
+                */
 
 				for (UserMessage u : match.getUserMessages()) {
 					String name = u.getName();
@@ -307,10 +309,10 @@ public class Main {
                         //System.err.format("%s,%s%n", time, u);
                         }
                         else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP")){
-                          System.err.format("%s,%s%n", time, u);
+                          //System.err.format("%s,%s%n", time, u);
                         }
                         else if (type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
-                          System.err.format("%s,%s%n", time, u);
+                          //System.err.format("%s,%s%n", time, u);
                         }
                         else if (type.equals("CHAT_MESSAGE_RANDOM")){
                         }

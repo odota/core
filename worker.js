@@ -195,7 +195,7 @@ function apiStatus() {
         }
     }, function(err, matches) {
         var date = new Date();
-        if (date.getTime() - matches.start_time - matches.duration > 10 * 60 * 1000) {
+        if (date.getTime()/1000 - matches.start_time - matches.duration > 10 * 60) {
             redis.set("apiDown", 1);
         }
         else {

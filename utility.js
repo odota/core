@@ -136,9 +136,11 @@ function runParse(cb) {
     ]);
     parser.stdout.on('data', function(data) {
         //console.log(data);
-        output += data;
+        output += data.toString();
     });
     parser.stderr.on('data', function(data) {
+        //if this exceeds buffer size, process is killed
+        //do something with it (dev/null?)
         console.log(data);
     });
     parser.on('exit', function(code) {
