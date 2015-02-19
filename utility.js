@@ -100,7 +100,7 @@ function getData(url, cb) {
         request({
             url: target,
             json: true,
-            timeout: 15000
+            timeout: 30000
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
                 logger.info("retrying: %s", target);

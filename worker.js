@@ -187,16 +187,15 @@ function scanApi(seq_num) {
 function apiStatus() {
     db.matches.findOne({}, {
         fields: {
-            start_time: 1,
-            duration: 1
+            _id: 1
         },
         sort: {
             match_seq_num: -1
         }
-    }, function(err, matches) {
-        var elapsed = (new Date().getTime() / 1000 - matches.start_time - matches.duration);
+    }, function(err, match) {
+        var elapsed = (new Date().getTime() - db.matches.id(match).getTimestamp());
         console.log(elapsed);
-        if (elapsed > 15 * 60) {
+        if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);
         }
         else {
