@@ -30,6 +30,7 @@ process.on('SIGINT', function() {
 });
 var d = domain.create();
 d.on('error', function(err) {
+    console.log(err.stack);
     clearActiveJobs(function(err2) {
         process.exit(err2 || err);
     });
@@ -44,7 +45,7 @@ d.run(function() {
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
         setInterval(updatenames, 7 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 3 * 60 * 1000);
+        setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
 
@@ -193,7 +194,7 @@ function apiStatus() {
             match_seq_num: -1
         }
     }, function(err, match) {
-        var elapsed = (new Date().getTime() - db.matches.id(match).getTimestamp());
+        var elapsed = (new Date().getTime() - db.matches.id(match._id).getTimestamp());
         console.log(elapsed);
         if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);

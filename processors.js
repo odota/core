@@ -110,7 +110,7 @@ function streamReplay(job, cb) {
     d.on('error', function(err) {
         if (!exit) {
             exit = true;
-            cb(error || err);
+            cb(error || err.message);
         }
     });
     d.run(function() {
