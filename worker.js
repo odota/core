@@ -42,9 +42,9 @@ d.run(function() {
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
-        setInterval(updatenames, 9 * 60 * 1000, function() {});
+        setInterval(updatenames, 7 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 7 * 60 * 1000);
+        setInterval(apiStatus, 3 * 60 * 1000);
     });
 });
 
@@ -173,14 +173,14 @@ function scanApi(seq_num) {
         var next_seq_num = seq_num;
         if (resp.length) {
             next_seq_num = resp[resp.length - 1].match_seq_num + 1;
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(next_seq_num);
-            }, delay);
         }
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
         q.push(resp);
+        //wait 100ms for each match less than 100
+        var delay = (100 - resp.length) * 100;
+        setTimeout(function() {
+            scanApi(next_seq_num);
+        }, delay);
     });
 }
 
@@ -194,7 +194,7 @@ function apiStatus() {
             match_seq_num: -1
         }
     }, function(err, matches) {
-        var elapsed = (new Date().getTime()/1000 - matches.start_time - matches.duration);
+        var elapsed = (new Date().getTime() / 1000 - matches.start_time - matches.duration);
         console.log(elapsed);
         if (elapsed > 15 * 60) {
             redis.set("apiDown", 1);
