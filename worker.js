@@ -30,6 +30,7 @@ process.on('SIGINT', function() {
 });
 var d = domain.create();
 d.on('error', function(err) {
+    console.log(err.stack);
     clearActiveJobs(function(err2) {
         process.exit(err2 || err);
     });
@@ -44,7 +45,7 @@ d.run(function() {
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
         setInterval(updatenames, 7 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 3 * 60 * 1000);
+        setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
 
@@ -187,16 +188,15 @@ function scanApi(seq_num) {
 function apiStatus() {
     db.matches.findOne({}, {
         fields: {
-            start_time: 1,
-            duration: 1
+            _id: 1
         },
         sort: {
             match_seq_num: -1
         }
-    }, function(err, matches) {
-        var elapsed = (new Date().getTime() / 1000 - matches.start_time - matches.duration);
+    }, function(err, match) {
+        var elapsed = (new Date().getTime() - db.matches.id(match._id).getTimestamp());
         console.log(elapsed);
-        if (elapsed > 15 * 60) {
+        if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);
         }
         else {
