@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Yet Another (Dota) Stats Page",
-  "version": "1.2.45",
+  "version": "1.2.46",
   "scripts": {
     "start": "npm install && npm run build && npm run dev",
     "dev": "nf -j Procfile.dev start",
