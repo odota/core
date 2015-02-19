@@ -58,7 +58,7 @@ append content
                    - var item = constants.items[constants.item_ids[val]]
                    if item
                      img.item(src=item.img, alt=constants.item_ids[val])
-               if (player.hero_id === 80)
+               if (player.hero_id === 80 && player.additional_units)
                  br
                  each val, index in player.additional_units[0]
                    if (index.slice(0, 5)==="item_")
