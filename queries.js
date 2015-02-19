@@ -161,7 +161,7 @@ function generatePositionData(match, constants) {
         //data might not exist
         elem.positions = elem.positions || [];
         //transform to 0-127 range, y=0 at top left
-        elem.positions=elem.positions.map(function(p){return[p[0]-64, 127-(p[1]-64)]});
+        elem.positions=elem.positions.map(function(p){return[p[0]-64, 127-(p[1]-64)]}).filter(function(p){return p[0]>=0 && p[1]>=0});
         var start = elem.positions.slice(0, 10);
         //median, alternate calculation
         //elem.lane = constants.lanes[start.sort(function(a,b){return a[1]-b[1]})[4][1]][start.sort(function(a,b){return a[0]-b[0]})[4][0]];
