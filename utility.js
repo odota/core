@@ -103,13 +103,13 @@ function getData(url, cb) {
             timeout: 30000
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
+                if (body && body.error) {
+                    //body contained an error (probably from retriever)
+                    //non-retryable
+                    return cb(body);
+                }
                 logger.info("retrying: %s", target);
                 return getData(url, cb);
-            }
-            else if (body.error) {
-                //body contained an error (probably from retriever)
-                //non-retryable
-                return cb(body);
             }
             else if (body.result) {
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
@@ -140,7 +140,7 @@ function runParse(cb) {
     //stderr is sent to /dev/null
     //modify stdio array if we want to log it here
     parser.stdout.on('data', function(data) {
-        output+=data;
+        output += data;
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);

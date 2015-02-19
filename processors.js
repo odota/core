@@ -214,6 +214,8 @@ function processMmr(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, data) {
         if (err) {
+            logger.info(err);
+            //don't retry processmmr attempts, data will likely be out of date anyway
             return cb(null, err);
         }
         logger.info("mmr response");
