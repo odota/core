@@ -72,13 +72,21 @@ block content
 
 block footer_assets
    script.
-    var ratings = !{JSON.stringify(ratings)}
+    var ratings = !{JSON.stringify(ratings)};
+    var times = ratings.map(function(r){return new Date(r.time);})
+    var min = Math.min.apply(null, times)
+    var max = Math.max.apply(null, times)
+    var ticks = [];
+    for (var i = min;i<=max;i+=((max-min)/10)){
+      ticks.push(i);
+    }
+    console.log(min, max, ticks)
     c3.generate({
     bindto: "#ratings",
     data: {
         x: 'x',
         columns: [
-        ['x'].concat(ratings.map(function(r){return new Date(r.time);})),
+        ['x'].concat(times),
         ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
         ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
         ],
@@ -89,7 +97,8 @@ block footer_assets
             type: 'timeseries',
             label: 'Date',
             tick: {
-                format: '%Y-%m-%d'
+                format: '%Y-%m-%d',
+                values: ticks
             }
         },
         y: {

@@ -75,7 +75,7 @@ app.use(function(req, res, next) {
     }, function(err, results) {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
-        res.locals.api_down = results.apiDown;
+        res.locals.api_down = Number(results.apiDown);
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });

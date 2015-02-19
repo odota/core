@@ -9,7 +9,6 @@ process.env.REPLAY_DIR = "./replays_test/";
 process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
 process.env.STEAM_API_KEY = "fakekey";
-
 var async = require('async');
 var db = require('../db');
 var r = require('../redis');
@@ -29,19 +28,16 @@ var updatenames = require('../tasks/updatenames');
 var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var queueReq = require('../operations').queueReq;
-
 var wait = 60000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
     runScripts: false
 });
-
 var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
 }
-
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -49,205 +45,172 @@ before(function(done) {
     var connect = require('mongodb').connect;
     async.series([
             function(cb) {
-                console.log("wiping mongodb");
-                connect(process.env.MONGO_URL, function(err, db) {
-                    assert(!err);
-                    databaseCleaner.clean(db, function(err) {
-                        cb(err);
-                    });
-                });
-            },
-            function(cb) {
-                console.log("wiping redis");
-                redis.flushall(function(err) {
+            console.log("wiping mongodb");
+            connect(process.env.MONGO_URL, function(err, db) {
+                assert(!err);
+                databaseCleaner.clean(db, function(err) {
                     cb(err);
                 });
+            });
             },
             function(cb) {
-                console.log("loading bots/ratingPlayers into redis");
-                redis.set("bots", JSON.stringify([{
-                    "steamID": "76561198174479859",
-                    "attempts": 1,
-                    "success": 1,
-                    "friends": 0
+            console.log("wiping redis");
+            redis.flushall(function(err) {
+                cb(err);
+            });
+            },
+            function(cb) {
+            console.log("loading bots/ratingPlayers into redis");
+            redis.set("bots", JSON.stringify([{
+                "steamID": "76561198174479859",
+                "attempts": 1,
+                "success": 1,
+                "friends": 0
                 }, {
-                    "steamID": "76561198174456763",
-                    "attempts": 0,
-                    "success": 0,
-                    "friends": 201
+                "steamID": "76561198174456763",
+                "attempts": 0,
+                "success": 0,
+                "friends": 201
                 }, {
-                    "steamID": "76561198174616549",
-                    "attempts": 1,
-                    "success": 1,
-                    "friends": 250
+                "steamID": "76561198174616549",
+                "attempts": 1,
+                "success": 1,
+                "friends": 250
                 }, {
-                    "steamID": "76561198173905795",
-                    "attempts": 0,
-                    "success": 0,
-                    "friends": 199
+                "steamID": "76561198173905795",
+                "attempts": 0,
+                "success": 0,
+                "friends": 199
                 }, {
-                    "steamID": "76561198152395299",
-                    "attempts": 0,
-                    "success": 0,
-                    "friends": 10
+                "steamID": "76561198152395299",
+                "attempts": 0,
+                "success": 0,
+                "friends": 10
                 }, {
-                    "steamID": "76561198174715201",
-                    "attempts": 2,
-                    "success": 2,
-                    "friends": 1
+                "steamID": "76561198174715201",
+                "attempts": 2,
+                "success": 2,
+                "friends": 1
                 }]));
-                redis.set("ratingPlayers", JSON.stringify({}));
-                cb();
+            redis.set("ratingPlayers", JSON.stringify({}));
+            cb();
             },
             function(cb) {
-                console.log("loading players");
-                //set visited date on first player
-                testdata.players[0].last_visited = new Date();
-                testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
-                testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
-                async.mapSeries(testdata.players, function(p, cb) {
-                    db.players.insert(p, function(err) {
-                        cb(err);
-                    });
-                }, function(err) {
+            console.log("loading players");
+            //set visited date on first player
+            testdata.players[0].last_visited = new Date();
+            testdata.players[0].join_date = new Date("2012-08-31T15:59:02.161+0100");
+            testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
+            async.mapSeries(testdata.players, function(p, cb) {
+                db.players.insert(p, function(err) {
                     cb(err);
                 });
+            }, function(err) {
+                cb(err);
+            });
             },
             function(cb) {
-                console.log("loading matches");
-                async.mapSeries(testdata.matches, function(m, cb) {
-                    db.matches.insert(m, function(err) {
-                        cb(err);
-                    });
-                }, function(err) {
+            console.log("loading matches");
+            async.mapSeries(testdata.matches, function(m, cb) {
+                db.matches.insert(m, function(err) {
                     cb(err);
                 });
+            }, function(err) {
+                cb(err);
+            });
             },
             function(cb) {
-                console.log("copying replays to test dir");
-                request.debug = true;
-                async.series([
+            console.log("copying replays to test dir");
+            request.debug = true;
+            async.series([
                     function(cb) {
-                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
-                            cb(err);
-                        });
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
+                        cb(err);
+                    });
                     },
                     function(cb) {
-                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1193091757.dem').pipe(fs.createWriteStream(replay_dir + '1193091757.dem')).on('finish', function(err) {
+                        cb(err);
+                    });
                     },
                     function(cb) {
-                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1181392470_1v1.dem').pipe(fs.createWriteStream(replay_dir + '1181392470.dem')).on('finish', function(err) {
+                        cb(err);
+                    });
                     },
                     function(cb) {
-                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1189263979_ardm.dem').pipe(fs.createWriteStream(replay_dir + '1189263979.dem')).on('finish', function(err) {
+                        cb(err);
+                    });
                     },
                     function(cb) {
-                        request('http://cdn.rawgit.com/yasp-dota/testfiles/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
-                            cb(err);
-                        });
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/invalid.dem').pipe(fs.createWriteStream(replay_dir + 'invalid.dem')).on('finish', function(err) {
+                        cb(err);
+                    });
                     }
                 ], function(err) {
-                    request.debug=false;
-                    cb(err);
-                });
+                request.debug = false;
+                cb(err);
+            });
             },
             function(cb) {
-                console.log("starting web");
-                require('../web');
-                cb();
+            console.log("starting web");
+            require('../web');
+            cb();
             },
             function(cb) {
-                console.log("setting up nock");
-                //fake retriever response
-                nock("http://" + process.env.RETRIEVER_HOST)
-                    .filteringPath(function(path) {
-                        var split = path.split("?");
-                        return split[1];
-                    })
-                    .get('account_id=88367253')
-                    .reply(200, {
-                        "accountId": 88367253,
-                        "wins": 889,
-                        "xp": 52,
-                        "level": 153,
-                        "lowPriorityUntilDate": 0,
-                        "preventVoiceUntilDate": 0,
-                        "teaching": 6,
-                        "leadership": 4,
-                        "friendly": 10,
-                        "forgiving": 5,
-                        "lowPriorityGamesRemaining": 0,
-                        "competitiveRank": 3228,
-                        "calibrationGamesRemaining": 0,
-                        "soloCompetitiveRank": 3958,
-                        "soloCalibrationGamesRemaining": 0,
-                        "recruitmentLevel": 0
-                    })
-                    .get('match_id=1151783218')
-                    .reply(200, {
-                        match: {
-                            cluster: 1,
-                            replaySalt: 1
-                        }
-                    });
-
-                //fake replay response
-                nock('http://replay1.valve.net')
-                    .filteringPath(function(path) {
-                        return '/';
-                    })
-                    .get('/')
-                    .replyWithFile(200, replay_dir + '1151783218.dem.bz2');
-
-                //fake api response
-                nock('http://api.steampowered.com')
-                    .filteringPath(function(path) {
-                        var split = path.split("?");
-                        var split2 = split[0].split(".com");
-                        return split2[0];
-                    })
-                    //throw some errors to test handling
-                    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-                    .reply(500, {})
-                    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-                    .times(2)
-                    .reply(200, testdata.details_api)
-                    .get('/ISteamUser/GetPlayerSummaries/v0002/')
-                    .reply(200, testdata.summaries_api)
-                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-                    .reply(200, {
-                        result: {
-                            error: "error"
-                        }
-                    })
-                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-                    .reply(200, testdata.history_api)
-                    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-                    .times(2)
-                    .reply(200, testdata.history_api2)
-                    .get('/IEconDOTA2_570/GetHeroes/v0001/')
-                    .reply(200, testdata.heroes_api);
-
-                //fake dota2 response
-                nock('http://www.dota2.com')
-                    .get('/jsfeed/itemdata?l=english')
-                    .reply(200, testdata.item_api)
-                    .get('/jsfeed/abilitydata')
-                    .reply(200, testdata.ability_api);
-                cb();
+            console.log("setting up nock");
+            //fake retriever response
+            nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+                var split = path.split("?");
+                return split[1];
+            }).get('account_id=88367253').reply(200, {
+                "accountId": 88367253,
+                "wins": 889,
+                "xp": 52,
+                "level": 153,
+                "lowPriorityUntilDate": 0,
+                "preventVoiceUntilDate": 0,
+                "teaching": 6,
+                "leadership": 4,
+                "friendly": 10,
+                "forgiving": 5,
+                "lowPriorityGamesRemaining": 0,
+                "competitiveRank": 3228,
+                "calibrationGamesRemaining": 0,
+                "soloCompetitiveRank": 3958,
+                "soloCalibrationGamesRemaining": 0,
+                "recruitmentLevel": 0
+            }).get('match_id=1151783218').reply(200, {
+                match: {
+                    cluster: 1,
+                    replaySalt: 1
+                }
+            });
+            //fake replay response
+            nock('http://replay1.valve.net').filteringPath(function(path) {
+                return '/';
+            }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
+            //fake api response
+            nock('http://api.steampowered.com').filteringPath(function(path) {
+                    var split = path.split("?");
+                    var split2 = split[0].split(".com");
+                    return split2[0];
+                })
+                //throw some errors to test handling
+                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(2).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+                    result: {
+                        error: "error"
+                    }
+                }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
+            //fake dota2 response
+            nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api);
+            cb();
             }
-        ],
-        function(err) {
-            done(err);
-        });
+        ], function(err) {
+        done(err);
+    });
 });
-
 describe("services", function() {
     it("mongodb connected", function(done) {
         assert(db);
@@ -266,7 +229,6 @@ describe("services", function() {
         done();
     });
 });
-
 describe("worker", function() {
     this.timeout(wait);
     it('process details request', function(done) {
@@ -291,7 +253,6 @@ describe("worker", function() {
             });
         });
     });
-
     it('process summaries request', function(done) {
         queueReq("api_summaries", {
             players: [{
@@ -305,7 +266,6 @@ describe("worker", function() {
         });
     });
 });
-
 describe("web", function() {
     this.timeout(wait);
     describe("/", function() {
@@ -352,7 +312,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/matches/:valid", function() {
         before(function(done) {
             browser.visit('/matches/1151783218');
@@ -369,7 +328,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/matches/:invalid", function() {
         before(function(done) {
             browser.visit('/matches/1');
@@ -383,7 +341,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/matches/:invalid/details", function() {
         before(function(done) {
             browser.visit('/matches/1/details');
@@ -397,7 +354,6 @@ describe("web", function() {
             done();
         });
     });
-
     describe("/players/:invalid", function() {
         before(function(done) {
             browser.visit('/players/1');
@@ -564,6 +520,22 @@ describe("web", function() {
             done();
         });
     });
+    describe("/matches/:valid/positions (parsed)", function() {
+        before(function(done) {
+            browser.visit('/matches/1191329057/positions');
+            browser.wait(wait, function(err) {
+                done(err);
+            });
+        });
+        it('should 200', function(done) {
+            browser.assert.status(200);
+            done();
+        });
+        it('should say Positions', function(done) {
+            browser.assert.text('body', /Positions/);
+            done();
+        });
+    });
     describe("/matches/:valid/chat (parsed)", function() {
         before(function(done) {
             browser.visit('/matches/1191329057/chat');
@@ -724,7 +696,6 @@ describe("web", function() {
         });
     });
 });
-
 describe("tasks", function() {
     this.timeout(wait);
     it('unparsed', function(done) {
@@ -749,7 +720,6 @@ describe("tasks", function() {
         });
     });
 });
-
 describe("unit test", function() {
     /*
     it('initialize user', function(done) {
@@ -765,17 +735,15 @@ describe("unit test", function() {
     it('get rating data', function(done) {
         var queries = require("../queries");
         queries.getRatingData({
-                user: {
-                    account_id: 88367253
-                }
-            },
-            function(err, results) {
-                assert(results);
-                done(err);
-            });
+            user: {
+                account_id: 88367253
+            }
+        }, function(err, results) {
+            assert(results);
+            done(err);
+        });
     });
 });
-
 describe("parser", function() {
     this.timeout(wait);
     it('parse replay (download)', function(done) {
