@@ -154,6 +154,9 @@ app.route('/status').get(function(req, res, next) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
+app.route('/carry').get(function(req, res) {
+    res.render("carry");
+});
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
