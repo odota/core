@@ -202,6 +202,27 @@ function makeSort(order, columns) {
     }
     return sort;
 }
+
+function mergeObjects(merge, val) {
+    for (var attr in val) {
+        if (val[attr].constructor === Array) {
+            merge[attr] = merge[attr].concat(val[attr]);
+        }
+        else if (typeof val[attr] === "object") {
+            mergeObjects(merge[attr], val[attr]);
+        }
+        else {
+            //does property exist?
+            if (!merge[attr]) {
+                merge[attr] = val[attr];
+            }
+            else {
+                merge[attr] += val[attr];
+            }
+        }
+    }
+}
+
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -211,7 +232,8 @@ module.exports = {
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,
-    makeSort: makeSort
+    makeSort: makeSort,
+    mergeObjects: mergeObjects
 };
 /*
 function getS3Url(match_id, cb) {

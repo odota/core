@@ -40,7 +40,7 @@ block content
          | Use Dark Theme
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
-      p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+bots[0].steamID) Add Tracker &raquo;
+      p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ bots[0] ? bots[0].steamID : "") Add Tracker &raquo;
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
    .row
     .col-md-12

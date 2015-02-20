@@ -6,5 +6,5 @@ block playercontent
   
 append footer_assets
   script.
-    var matches = !{JSON.stringify(player.matches)}
+    var matches = !{JSON.stringify(player.matches.map(function(m){delete m.players[0].ability_upgrades;return m}))}
     playerMatches(matches);

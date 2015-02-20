@@ -37,10 +37,10 @@ module.exports = function playerTables() {
                 [2, "desc"]
             ],
             "columnDefs": [{
-                "targets": [0],
-                "orderData": [1]
-            }, {
                 "targets": [1],
+                "orderData": [2]
+            }, {
+                "targets": [3],
                 visible: false
             }],
             "paging": false

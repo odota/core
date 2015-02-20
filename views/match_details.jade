@@ -7,7 +7,7 @@ append content
         h2 Details
         table.table.table-hover.table-responsive.summable
           each player, i in match.players
-            if !(i)
+            if !(i%5)
               tr
                 th Hero
                 th 
@@ -31,52 +31,40 @@ append content
                 th
                   abbr(title="Items used") Items
                 th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
-             tr(class = player.player_slot<64 ? "success" : "danger")
-               - var hero = constants.heroes[player.hero_id]
-               - var parsedHero = match.parsed_data.heroes[hero.name]
-               - var parsedPlayer = match.parsed_data.players[i]
-               td.hero
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
-               td #{parsedHero.itembuys.tpscroll || "-"}
-               td #{parsedHero.itembuys.ward_observer*2 || "-"}
-               td #{parsedHero.itembuys.ward_sentry*2 || "-"}
-               td #{parsedHero.itembuys.smoke_of_deceit || "-"}
-               td #{parsedHero.itembuys.dust*2 || "-"}
-               td #{parsedHero.itembuys.gem || "-"}
-               td #{parsedPlayer.buybacks.length || "-"}
-               td #{parsedPlayer.stuns.toFixed(2)}
-               td
-                 each val, key in parsedHero.abilityuses
-                   - var ability = constants.abilities[key]
-                   if ability
-                     div.img-text
-                       img.ability(src=ability.img, alt=key)
-                       div #{val}
-                       div (#{parsedHero.hero_hits[key] || 0})
-                   else
-                     =key
-               td.table-img
-                 each val, key in parsedHero.itemuses
-                   - var item = constants.items[key]
-                   if item
-                     div.img-text
-                       img.item(src=item.img, alt=key)
-                       div #{val}
-                   else
-                     =key
-               td.table-img
-                 each val, key in parsedHero.damage
-                   - var hero = constants.hero_names[key]
-                   if hero
-                     div.img-text
-                       img.dmg(src=hero.img, title=hero.localized_name)
-                       div.format #{val}
-                       div (#{parsedHero.kills[key] || 0})
-                   else
-                     //=key                     
+            tr(class = player.player_slot<64 ? "success" : "danger")
+              - var hero = constants.heroes[player.hero_id]
+              - var parsedHero = match.parsed_data.heroes[hero.name]
+              - var parsedPlayer = match.parsed_data.players[i]
+              td.hero
+               if hero
+                 img(src=hero.img, title=hero.localized_name)
+               else
+                 =player.hero_id
+              td #{parsedHero.itembuys.tpscroll || "-"}
+              td #{parsedHero.itembuys.ward_observer*2 || "-"}
+              td #{parsedHero.itembuys.ward_sentry*2 || "-"}
+              td #{parsedHero.itembuys.smoke_of_deceit || "-"}
+              td #{parsedHero.itembuys.dust*2 || "-"}
+              td #{parsedHero.itembuys.gem || "-"}
+              td #{parsedPlayer.buybacks.length || "-"}
+              td #{parsedPlayer.stuns.toFixed(2)}
+              td.table-img
+                each ability in player.abilityuses
+                  div.img-text
+                    img.ability(src=ability.img, alt=ability.name)
+                    div #{ability.val}
+                    div (#{ability.hero_hits || 0})
+              td.table-img
+                each item in player.itemuses
+                  div.img-text
+                    img.item(src=item.img, alt=item.name)
+                    div #{item.val}
+              td.table-img
+                each dmg in player.damage
+                  div.img-text
+                    img.dmg(src=dmg.img, title=dmg.localized_name)
+                    div.format #{dmg.val}
+                    div (#{dmg.kills || 0})
         include ads/leaderboard_2
         .row
           .col-md-8

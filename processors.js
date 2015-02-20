@@ -198,7 +198,7 @@ function processApi(job, cb) {
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
-                match[prop] = match[prop] ? match[prop] : payload[prop];
+                match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
                 cb(err, job.data.payload);
