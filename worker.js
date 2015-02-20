@@ -28,6 +28,7 @@ process.on('SIGINT', function() {
         process.exit(err || 1);
     });
 });
+<<<<<<< Updated upstream
 var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
@@ -47,6 +48,18 @@ d.run(function() {
         setInterval(build, 5 * 60 * 1000, function() {});
         setInterval(apiStatus, 2 * 60 * 1000);
     });
+=======
+
+console.log("[WORKER] starting worker");
+build(function() {
+    startScan();
+    jobs.promote();
+    jobs.process('api', processors.processApi);
+    jobs.process('mmr', processors.processMmr);
+    setInterval(fullhistory, 17 * 60 * 1000, function() {});
+    setInterval(updatenames, 7 * 60 * 1000, function() {});
+    setInterval(build, 5 * 60 * 1000, function() {});
+>>>>>>> Stashed changes
 });
 
 function build(cb) {
