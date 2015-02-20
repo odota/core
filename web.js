@@ -2,6 +2,10 @@ var express = require('express');
 var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var paypal_id = process.env.PAYPAL_ID;
+var paypal_secret = process.env.PAYPAL_SECRET;
+var root_url = process.env.ROOT_URL
+var paypal = require('paypal-rest-sdk')
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;
@@ -27,6 +31,7 @@ var server = app.listen(process.env.PORT || 5000, function() {
 });
 var io = require('socket.io')(server);
 /*
+
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
         console.log(buffer.length);
@@ -37,6 +42,14 @@ app.use("/socket", function(req, res){
     res.render("socket");
 });
 */
+
+paypal.configure({
+  'mode': 'sandbox', //sandbox or live
+  'client_id': paypal_id,
+  'client_secret': paypal_secret
+});
+
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -154,6 +167,79 @@ app.route('/status').get(function(req, res, next) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
+app.route('/carry').get(function(req, res) {
+    res.render("carry");
+}).post(function(req, res) {
+    var num = req.body.num
+    
+    if (!isNaN(num)) {
+        var payment = {
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "redirect_urls": {
+                "return_url": root_url + "/thanks",
+                "cancel_url": root_url + "/cancel"
+            },
+            "transactions": [{
+                "amount": {
+                  "total": num,
+                  "currency": "USD"
+                },
+                "description": "Buying CHEESE"
+            }]
+        };
+        
+        paypal.payment.create(payment, function (error, payment) {
+            if (error) {
+                console.log(error);
+            } else {
+                req.session.paymentId = payment.id;
+                var redirectUrl;
+                for(var i=0; i < payment.links.length; i++) {
+                    var link = payment.links[i];
+                    if (link.method === 'REDIRECT') {
+                        redirectUrl = link.href;
+                    }
+                }
+                res.redirect(redirectUrl);
+            }
+        });    
+    }
+});
+app.route('/thanks').get(function(req, res, next) {
+    var paymentId = req.session.paymentId;
+    var payerId = req.param('PayerID');
+    
+    var details = { "payer_id": payerId };
+    paypal.payment.execute(paymentId, details, function (error, payment) {
+        if (error) {
+            next(error)
+        } else {
+            if (user && payment.transactions[0]) {
+                var cheeseCount = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
+                db.players.update({
+                    account_id: req.user.account_id
+                }, {
+                    $set: {
+                        "cheese": cheeseCount
+                    }
+                }, function(err, num) {
+                    res.render("thanks", {
+                        cheese: cheeseCount
+                    })        
+                });
+            } else {
+                res.render("thanks")
+            }
+            
+        }
+    });
+});
+app.route('/cancel').get(function(req, res){
+    res.render("cancel")
+})
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
