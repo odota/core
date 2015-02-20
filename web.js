@@ -179,7 +179,7 @@ app.route('/carry').get(function(req, res) {
                 "payment_method": "paypal"
             },
             "redirect_urls": {
-                "return_url": root_url + "/execute",
+                "return_url": root_url + "/thanks",
                 "cancel_url": root_url + "/cancel"
             },
             "transactions": [{
@@ -213,11 +213,27 @@ app.route('/thanks').get(function(req, res, next) {
     var payerId = req.param('PayerID');
     
     var details = { "payer_id": payerId };
-        paypal.payment.execute(paymentId, details, function (error, payment) {
+    paypal.payment.execute(paymentId, details, function (error, payment) {
         if (error) {
             next(error)
         } else {
-            res.render("thanks")
+            if (user && payment.transactions[0]) {
+                var cheeseCount = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
+                db.players.update({
+                    account_id: req.user.account_id
+                }, {
+                    $set: {
+                        "cheese": cheeseCount
+                    }
+                }, function(err, num) {
+                    res.render("thanks", {
+                        cheese: cheeseCount
+                    })        
+                });
+            } else {
+                res.render("thanks")
+            }
+            
         }
     });
 });
