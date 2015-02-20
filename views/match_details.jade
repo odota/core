@@ -6,30 +6,31 @@ append content
       if match.parsed_data
         h2 Details
         table.table.table-hover.table-responsive.summable
-          tr
-            th Hero
-            th 
-              abbr(title="Town Portal Scrolls bought") TP
-            th 
-              abbr(title="Observer Wards bought") OBS
-            th
-              abbr(title="Sentry Wards bought") SEN
-            th
-              abbr(title="Smokes of Deceit bought") SMK
-            th
-              abbr(title="Dusts of Appearance bought") DST
-            th
-              abbr(title="Gems of True Sight bought") GEM
-            th
-              abbr(title="Number of Buybacks") BB
-            th
-              abbr(title="Seconds of disable on enemy heroes") STUN
-            th 
-              abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
-            th
-              abbr(title="Items used") Items
-            th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
           each player, i in match.players
+            if !(i)
+              tr
+                th Hero
+                th 
+                  abbr(title="Town Portal Scrolls bought") TP
+                th 
+                  abbr(title="Observer Wards bought") OBS
+                th
+                  abbr(title="Sentry Wards bought") SEN
+                th
+                  abbr(title="Smokes of Deceit bought") SMK
+                th
+                  abbr(title="Dusts of Appearance bought") DST
+                th
+                  abbr(title="Gems of True Sight bought") GEM
+                th
+                  abbr(title="Number of Buybacks") BB
+                th
+                  abbr(title="Seconds of disable on enemy heroes") STUN
+                th 
+                  abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
+                th
+                  abbr(title="Items used") Items
+                th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
              tr(class = player.player_slot<64 ? "success" : "danger")
                - var hero = constants.heroes[player.hero_id]
                - var parsedHero = match.parsed_data.heroes[hero.name]

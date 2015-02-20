@@ -20,24 +20,24 @@ var trackedPlayers = {};
 var ratingPlayers = {};
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
-        process.exit(err);
+        process.exit(err || 1);
     });
 });
 process.on('SIGINT', function() {
     clearActiveJobs(function(err) {
-        process.exit(err);
+        process.exit(err || 1);
     });
 });
 var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
     clearActiveJobs(function(err2) {
-        process.exit(err2 || err);
+        process.exit(err2 || err || 1);
     });
 });
 d.run(function() {
-    console.log("[WORKER] starting worker");
     build(function() {
+        console.log("[WORKER] starting worker");
         startScan();
         jobs.promote();
         jobs.process('api', processors.processApi);
@@ -63,6 +63,9 @@ function build(cb) {
         });
         async.map(utility.getRetrieverUrls(), function(url, cb) {
             getData(url, function(err, body) {
+                if (err) {
+                    return build(cb);
+                }
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);
                 }
