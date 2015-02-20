@@ -1,7 +1,5 @@
-//var ids = require("../test/ids.json");
-var ids = [
-    {
-        "account_id": 88367253,
-        "contributor": 1
-    }];
-db.players.insert(ids);
+var testdata = require("../test/test.json");
+var matches = testdata.matches;
+var players = testdata.players;
+db.players.insert(players);
+db.matches.insert(matches);

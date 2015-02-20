@@ -19,9 +19,9 @@ Quickstart
 * Create .env file, add required config values: `cp .env_example .env`
 * Launch in dev mode: `npm start`
 
-Custom Use
+Sample Data
 ====
-* Add custom players: edit `migrations/loader.js` to include the account_ids you want to track, then `mongo dota migrations/loader.js`
+* Load the test players and matches: `mongo dota migrations/loader.js`
 
 Lessons and Rules
 ====
