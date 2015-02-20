@@ -48,7 +48,8 @@
     "socket.io": "^1.3.3",
     "steam": "~0.6.7",
     "streamifier": "~0.1.0",
-    "winston": "0.8.3"
+    "winston": "0.8.3",
+    "paypal-rest-sdk": "~1.5"
   },
   "devDependencies": {
     "mocha": "~2.1.0",

@@ -1,0 +1,45 @@
+extend layout
+  
+block content
+  .page-header.text-center
+    h1(style='font-weight: 700;') We Need Your Help
+    p.lead Buy some Cheese. Help pay for servers.
+    hr
+    .row
+      .col-md-4-offset-4
+        form.form-inline(method="post")
+          .form-group
+            .input-group
+              p GIVE ME
+              select.form-control.inline(name="num")
+                option 1
+                option 2
+                option 3
+                option 4
+                option 5
+                option 10
+                option 20
+                option 50
+                option 100
+              p CHEESE
+          div
+            button.btn.btn-primary(type="submit") CHEESE IT
+        div(style="margin-top:1em;")
+          em $1/Cheese. It's worth it. Clicking the button will take you to Paypal.
+    hr
+    .row
+      .col-md-4
+        p.lead Be At the Top
+        span.fa.fa-line-chart.fa-5x
+        p.text Get listed as a top contributor. People will be all, "Wow!"
+      .col-md-4
+        p.lead(style="margin-bottom:-.25em;") Cheese Your Matches
+        span.flaticon-1(style="font-size:5em;")
+        p.text Cause cheese is awesome.
+      .col-md-4
+        p.lead Feel Good About Yourself
+        span.fa.fa-heart-o.fa-5x
+        p.text You're awesome.
+
+block footer_assets
+   link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")

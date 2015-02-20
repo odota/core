@@ -121,8 +121,7 @@ before(function(done) {
             },
             function(cb) {
             console.log("copying replays to test dir");
-            request.debug = true;
-            async.series([
+            async.parallel([
                     function(cb) {
                     request('http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2').pipe(fs.createWriteStream(replay_dir + '1151783218.dem.bz2')).on('finish', function(err) {
                         cb(err);
@@ -149,7 +148,6 @@ before(function(done) {
                     });
                     }
                 ], function(err) {
-                request.debug = false;
                 cb(err);
             });
             },
