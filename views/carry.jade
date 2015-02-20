@@ -7,11 +7,11 @@ block content
     hr
     .row
       .col-md-4-offset-4
-        form.form-inline
+        form.form-inline(method="post")
           .form-group
             .input-group
               p GIVE ME
-              select.form-control.inline
+              select.form-control.inline(name="num")
                 option 1
                 option 2
                 option 3
@@ -24,6 +24,8 @@ block content
               p CHEESE
           div
             button.btn.btn-primary(type="submit") CHEESE IT
+        div(style="margin-top:1em;")
+          em $1/Cheese. It's worth it. Clicking the button will take you to Paypal.
     hr
     .row
       .col-md-4
