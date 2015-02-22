@@ -144,8 +144,8 @@ app.get('/', function(req, res, next) {
         for (var key in steamObj) {
             stats[key] = {
                 steamID: key,
-                attempts: steamObj[key].attempts,
-                success: steamObj[key].success,
+                replays: steamObj[key].replays,
+                profiles: steamObj[key].profiles,
                 friends: Object.keys(steamObj[key].friends).length
             };
         }

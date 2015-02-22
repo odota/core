@@ -33,11 +33,14 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                res.render("player_" + info, {
-                    route: info,
-                    player: player,
-                    tabs: playerPages,
-                    title: (player.personaname || player.account_id) + " - YASP"
+                queries.getRatingData(player.account_id, function(err, ratings) {
+                    res.render("player_" + info, {
+                        route: info,
+                        player: player,
+                        ratings: ratings,
+                        tabs: playerPages,
+                        title: (player.personaname || player.account_id) + " - YASP"
+                    });
                 });
             });
         }
@@ -57,7 +60,7 @@ function computeStatistics(player, cb) {
             match_id: 1,
             radiant_win: 1
         }
-    }).each(function (match) {
+    }).each(function(match) {
         var playerRadiant = player.radiantMap[match.match_id];
         for (var j = 0; j < match.players.length; j++) {
             var tm = match.players[j];
@@ -98,9 +101,9 @@ function computeStatistics(player, cb) {
                 playerRadiant === match.radiant_win ? against[tm_hero].win += 1 : against[tm_hero].lose += 1;
             }
         }
-    }).error(function (err) {
+    }).error(function(err) {
         return cb(err);
-    }).success(function () {
+    }).success(function() {
         player.together = together;
         player.against = against;
         player.teammates = [];
@@ -108,7 +111,7 @@ function computeStatistics(player, cb) {
             var count = counts[id];
             player.teammates.push(count);
         }
-        fillPlayerNames(player.teammates, function (err) {
+        fillPlayerNames(player.teammates, function(err) {
             cb(err);
         });
     });
@@ -129,11 +132,11 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             parse_status: 1,
             "players.$": 1
         }
-    }, function (err, matches) {
+    }, function(err, matches) {
         if (err) {
             cb(err);
         }
-        matches.sort(function (a, b) {
+        matches.sort(function(a, b) {
             return b.match_id - a.match_id;
         });
         player.win = 0;
@@ -176,7 +179,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         for (var id in heroes) {
             player.heroes.push(heroes[id]);
         }
-        player.heroes.sort(function (a, b) {
+        player.heroes.sort(function(a, b) {
             return b.games - a.games;
         });
         player.matches = matches;
@@ -184,7 +187,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = calheatmap;
         if (matchups) {
-            computeStatistics(player, function (err) {
+            computeStatistics(player, function(err) {
                 cb(err);
             });
         }

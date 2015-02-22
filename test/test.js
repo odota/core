@@ -732,11 +732,7 @@ describe("unit test", function() {
     */
     it('get rating data', function(done) {
         var queries = require("../queries");
-        queries.getRatingData({
-            user: {
-                account_id: 88367253
-            }
-        }, function(err, results) {
+        queries.getRatingData(88367253, function(err, results) {
             assert(results);
             done(err);
         });

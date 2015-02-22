@@ -6,24 +6,24 @@ block content
     p.lead Buy some Cheese. Help pay for servers.
     hr
     .row
-      .col-md-4-offset-4
-        form.form-inline(method="post")
+      .col-md-4.col-md-offset-4
+        form.form-inline(method="post", style="margin:0 auto;")
           .form-group
-            .input-group
+            .input-group(style="display:inline-block;")
               p GIVE ME
               select.form-control.inline(name="num")
                 option 1
                 option 2
                 option 3
                 option 4
-                option 5
+                option(selected) 5
                 option 10
                 option 20
                 option 50
                 option 100
               p CHEESE
           div
-            button.btn.btn-primary(type="submit") CHEESE IT
+            button.btn.btn-warning(type="submit") CHEESE IT
         div(style="margin-top:1em;")
           em $1/Cheese. It's worth it. Clicking the button will take you to Paypal.
     hr
@@ -33,9 +33,9 @@ block content
         span.fa.fa-line-chart.fa-5x
         p.text Get listed as a top contributor. People will be all, "Wow!"
       .col-md-4
-        p.lead(style="margin-bottom:-.25em;") Cheese Your Matches
-        span.flaticon-1(style="font-size:5em;")
-        p.text Cause cheese is awesome.
+        p.lead Cheese Your Matches
+        span.flaticon-1.large-cheese
+        p.text(style="margin-top:1em;") Cause cheese is awesome.
       .col-md-4
         p.lead Feel Good About Yourself
         span.fa.fa-heart-o.fa-5x

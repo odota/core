@@ -61,10 +61,10 @@ function build(cb) {
         docs.forEach(function(player) {
             t[player.account_id] = true;
         });
-        async.map(utility.getRetrieverUrls(), function(url, cb) {
+        async.each(utility.getRetrieverUrls(), function(url, cb) {
             getData(url, function(err, body) {
                 if (err) {
-                    return build(cb);
+                    cb(err);
                 }
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);
@@ -197,7 +197,7 @@ function apiStatus() {
             match_seq_num: -1
         }
     }, function(err, match) {
-        var elapsed = (new Date().getTime() - db.matches.id(match._id).getTimestamp());
+        var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
         console.log(elapsed);
         if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);

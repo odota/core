@@ -100,7 +100,7 @@ td {
 
 
 td>img.user {
-    margin-right: .5em;
+    margin-right: .5em;  
 }
 
 .attribVal{
@@ -110,4 +110,20 @@ td>img.user {
 
 .big{
     font-size: 80px;
+}
+
+.large-cheese {
+    font-size: 70px;
+    border: 5px solid rgb(189, 155, 20);
+    border-radius: 50%;
+    background-color: yellow;
+    padding: 6px 15px 8px;
+}
+
+.medium-cheese {
+    font-size: 40px;
+    border: 3px solid rgb(189, 155, 20);
+    border-radius: 50%;
+    background-color: yellow;
+    padding: 3px 11px;
 }
