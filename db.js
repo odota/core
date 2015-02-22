@@ -26,11 +26,15 @@ db.players.index({
     'full_history_time': 1
 });
 db.players.index({
+    'contributor': 1
+});
+db.players.index({
     'last_summaries_update': 1
 });
 db.ratings.index({
     'match_id': -1,
-    'account_id': 1
+    'account_id': 1,
+    'time':-1
 }, {
     unique: true
 });
