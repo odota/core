@@ -193,7 +193,7 @@ app.route('/carry').get(function(req, res) {
         };
         
         paypal.payment.create(payment, function (err, payment) {
-            if (error) {
+            if (err) {
                 next(err)
             } else {
                 req.session.paymentId = payment.id;
@@ -212,8 +212,7 @@ app.route('/carry').get(function(req, res) {
 });
 app.route('/confirm').get(function(req, res, next) {
     var cheeseAmount = req.session.cheeseAmount;
-    req.session.payerId = req.param('PayerID');
-    
+    req.session.payerId = req.query.PayerID;
     if (cheeseAmount) {
         res.render("confirm", {
             cheeseAmount: cheeseAmount
@@ -233,7 +232,7 @@ app.route('/confirm').get(function(req, res, next) {
             clearPaymentSessions(req)
             next(err);
         } else {
-            if (user && payment.transactions[0]) {
+            if (req.user && payment.transactions[0]) {
                 var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
                 db.players.update({
                     account_id: req.user.account_id

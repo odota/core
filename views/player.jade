@@ -7,6 +7,9 @@ block content
         img(src='#{player.avatarmedium}').img-thumbnail
     .col-md-5
       h1(style='font-weight: 700;')=player.personaname || player.account_id
+    if player.cheese
+      .col-md-2
+        span.flaticon-1(style="font-size:3em;")
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs
