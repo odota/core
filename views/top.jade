@@ -1,0 +1,26 @@
+extend layout
+
+block content
+  h1 Top Carries
+    small  These people keep the site running.
+  table.table
+    tr
+      th Number
+      th User
+    each player, i in users
+      tr
+        td= i + 1
+        td
+          if player.avatarmedium
+            .col-xs-3.col-sm-2.col-md-1
+              img(src='#{player.avatarmedium}').img-thumbnail
+          .col-md-5
+            | #{player.personaname || player.account_id}
+      
+  include ads/leaderboard_2
+  
+block footer_assets
+  include assets/datatables
+  script.
+    matchTable();
+  style .leaderboard { margin-top: 1.5em;}

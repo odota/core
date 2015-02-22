@@ -39,12 +39,6 @@ html
         include ../public/css/dark.css
     script(src="/public/js/bundle.js")
     script(src="/public/js/ga.js")
-    script.
-      $('.meter_wrapper').qtip({
-        content: {
-          text: $(this).next('div')
-        }
-      });
     block head
     
   body
@@ -63,7 +57,7 @@ html
             li
               a(href="/carry") Help Carry
             li
-              a(ref="/top") The Top
+              a(href="/top") The Top
           if user
             ul.nav.navbar-nav.navbar-right
               li
@@ -83,18 +77,22 @@ html
        block content
      .sticky_footer_row
       footer.footer(style="color: #777;\
-                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;\
-                      font-size: .8em;")
+                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
         .container
           .row
-            .col-md-4.col-md-offset-4.text-center
+            .col-md-4.text-center
+              p Buy Cheese. Help Pay for Our Servers.
+              p Reaching the goal each day allows us to keep YASP running.
+            .col-md-4.text-center
               .meter_wrapper
-                p Daily Cheese Goal
+                p(style="font-weight:700;") Daily Cheese Goal
                 .meter
                   span(style="width: #{cheese_goal}%;")
-              div(style="display:none;")
-                p Buy some Cheese. Help pay for our servers.
-          .row
+            .col-md-4.text-center
+                span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+                a(href="/carry")
+                  button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
+          .row(style="font-size: .8em;")
             .col-md-4.text-center
              p.
               Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>

@@ -95,7 +95,7 @@ app.use(function(req, res, next) {
         res.locals.banner_msg = results.banner;
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
-        res.locals.cheese_goal = (goal - 100) > 0 ? 100 : theGoal;
+        res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });
@@ -248,10 +248,10 @@ app.route('/confirm').get(function(req, res, next) {
                     }
                 }, function(err, num) {
                     redis.get("cheese_goal", function(err, val) {
-                        if(! err && match) {
-                            redis.set("cheese_goal", parseInt(val) + cheeseAmount);
+                        if(!err && val) {
+                            redis.set("cheese_goal", parseInt(val) + parseInt(cheeseAmount));
                         } else {
-                            redis.setex("cheese_goal", 86400 - m().unix() % 86400, cheeseAmount);
+                            redis.setex("cheese_goal", 86400 - moment().unix() % 86400, cheeseAmount);
                         }
                     })
                     req.session.cheeseTotal = cheeseTotal;
@@ -277,21 +277,20 @@ app.route('/cancel').get(function(req, res) {
     res.render("cancel");
 });
 app.route('/top').get(function(req, res, next) {
-    async.parallel({
-        top: function(cb) {
-            db.players.find({},
-            {
-                sort: {
-                    cheese: -1
-                }
-            }, cb);
-        },
-        month: function(cb) {
-            cb
+    db.players.find({
+        cheese: {
+            $exists: true
         }
-    }, function(err, results){
+    }, {
+        sort: {
+            cheese: -1
+        },
+        limit: 50
+    }, function(err, results) {
         if (err) next(err);
-        res.render("top", results)
+        res.render("top", {
+            users: results
+        })
     });
 });
 app.use(function(req, res, next) {
