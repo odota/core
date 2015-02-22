@@ -15,8 +15,8 @@ block content
    .row
     .col-md-7
       h3 Status (may take several minutes to update)
-      - var tracked = (user.account_id in trackedPlayers)
-      - var rating = (user.account_id in ratingPlayers)
+      - var tracked = (tackedPlayers? user.account_id in trackedPlayers : false)
+      - var rating = (ratingPlayers? user.account_id in ratingPlayers : false)
       div(class= tracked ? "alert alert-success" : "alert alert-danger")
         span(class= tracked ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Tracked: " + (tracked ? "YASP is automatically parsing your replays." : "Visit YASP regularly to avoid being untracked.")
@@ -40,7 +40,7 @@ block content
          | Use Dark Theme
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
-      p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ bots[0] ? bots[0].steamID : "") Add Tracker &raquo;
+      p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots && bots[0] ? bots[0].steamID : "")) Add Tracker &raquo;
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
    .row
     .col-md-12

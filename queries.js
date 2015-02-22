@@ -29,16 +29,18 @@ function getRatingData(req, cb) {
             redis.get("bots", function (err, bots) {
                 bots = JSON.parse(bots);
                 //sort list of bots descending, but full bots go to end
-                bots.sort(function (a, b) {
-                    var threshold = 100;
-                    if (a.friends > threshold) {
-                        return 1;
-                    }
-                    if (b.friends > threshold) {
-                        return -1;
-                    }
-                    return (b.friends - a.friends);
-                });
+                if (bots.constructor === Array) {
+                    bots.sort(function (a, b) {
+                        var threshold = 100;
+                        if (a.friends > threshold) {
+                            return 1;
+                        }
+                        if (b.friends > threshold) {
+                            return -1;
+                        }
+                        return (b.friends - a.friends);
+                    });
+                }
                 cb(err, bots);
             });
         },
