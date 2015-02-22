@@ -175,7 +175,21 @@ app.route('/about').get(function(req, res) {
     res.render("about");
 });
 app.route('/carry').get(function(req, res) {
-    res.render("carry");
+    db.players.find({
+        cheese: {
+            $exists: true
+        }
+    }, {
+        sort: {
+            cheese: -1
+        },
+        limit: 50
+    }, function(err, results) {
+        if (err) next(err);
+        res.render("carry", {
+            users: results
+        })
+    });
 }).post(function(req, res) {
     var num = req.body.num
     
@@ -275,23 +289,6 @@ app.route('/thanks').get(function(req, res) {
 app.route('/cancel').get(function(req, res) {
     clearPaymentSessions(req);
     res.render("cancel");
-});
-app.route('/top').get(function(req, res, next) {
-    db.players.find({
-        cheese: {
-            $exists: true
-        }
-    }, {
-        sort: {
-            cheese: -1
-        },
-        limit: 50
-    }, function(err, results) {
-        if (err) next(err);
-        res.render("top", {
-            users: results
-        })
-    });
 });
 app.use(function(req, res, next) {
     var err = new Error("Not Found");

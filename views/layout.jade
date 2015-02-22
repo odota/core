@@ -56,8 +56,6 @@ html
               a(href="/about") FAQ/About
             li
               a(href="/carry") Help Carry
-            li
-              a(href="/top") The Top
           if user
             ul.nav.navbar-nav.navbar-right
               li
@@ -88,6 +86,10 @@ html
                 p(style="font-weight:700;") Daily Cheese Goal
                 .meter
                   span(style="width: #{cheese_goal}%;")
+                if cheese_goal >= 50 && cheese_goal < 100
+                  small Getting there...
+                else if cheese_goal === 100
+                  small Woo!!! We did it! Thanks guys!
             .col-md-4.text-center
                 span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
                 a(href="/carry")

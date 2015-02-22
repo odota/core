@@ -35,7 +35,7 @@ block content
       .col-md-4
         p.lead Be At the Top
         span.fa.fa-line-chart.fa-5x
-        p.text Get listed as a <a href="/top">top contributor</a>. People will be all, "Wow!"
+        p.text Get listed as a <a href="#top">top contributor</a>. People will be all, "Wow!"
       .col-md-4
         p.lead Cheese Your Profile
         span.flaticon-1.large-cheese
@@ -46,6 +46,25 @@ block content
         p.text You're awesome.
     .row
       p.lead More Cheese features to come. Or not. Who knows.
+  .row
+    .text-center
+      h1(name="top") Top Carries
+      p.lead  These people keep the site running. Thank you. Thank you. Thank you.
+    table.table
+      tr
+        th Number
+        th User
+        th Cheese Count
+      each player, i in users
+        tr
+          td= i + 1
+          td
+            if player.avatarmedium
+              .col-md-1
+                img(src='#{player.avatarmedium}').img-thumbnail
+            .col-md-5
+              | #{player.personaname || player.account_id}
+          td #{player.cheese}
 
 block footer_assets
    link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
