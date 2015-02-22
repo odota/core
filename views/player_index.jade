@@ -63,6 +63,9 @@ block playercontent
       #chart-duration
       h3 GPMs
       #chart-gpms
+  if user.publicmmr
+    include mmr
+      
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);

@@ -61,10 +61,10 @@ function build(cb) {
         docs.forEach(function(player) {
             t[player.account_id] = true;
         });
-        async.map(utility.getRetrieverUrls(), function(url, cb) {
+        async.each(utility.getRetrieverUrls(), function(url, cb) {
             getData(url, function(err, body) {
                 if (err) {
-                    return build(cb);
+                    cb(err);
                 }
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);

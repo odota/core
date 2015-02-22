@@ -33,19 +33,17 @@ block content
       h3 Actions
       .checkbox
         label
-         if user.dark_theme
-           input#dark(type="checkbox", checked="true")
-         else
-           input#dark(type="checkbox")
-         | Use Dark Theme
+          input.pref#dark(type="checkbox", checked=user.dark_theme)
+          | Use Dark Theme
+      .checkbox
+        label
+          input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
+          | Display MMR on Profile
       p: a.btn.btn-success(href="/players/"+user.account_id) My Profile &raquo;
       p: a.btn.btn-primary(href="/upload") Upload/Request &raquo;
       p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add Tracker &raquo;
       p: a.btn.btn-danger(href="/logout") Logout &raquo;
-   .row
-    .col-md-12
-      h3 Rating Tracker (beta)
-      #ratings
+    include mmr
   else
     .text-center
       p.lead Free Dota 2 replay parsing.
@@ -72,46 +70,11 @@ block content
 
 block footer_assets
    script.
-    var ratings = !{JSON.stringify(ratings)};
-    var times = ratings.map(function(r){return new Date(r.time);})
-    var min = Math.min.apply(null, times)
-    var max = Math.max.apply(null, times)
-    var ticks = [];
-    for (var i = min;i<=max;i+=((max-min)/10)){
-      ticks.push(i);
-    }
-    console.log(min, max, ticks)
-    c3.generate({
-    bindto: "#ratings",
-    data: {
-        x: 'x',
-        columns: [
-        ['x'].concat(times),
-        ['solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
-        ['party'].concat(ratings.map(function(r){return r.competitiveRank;}))
-        ],
-        type:"line"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            label: 'Date',
-            tick: {
-                format: '%Y-%m-%d',
-                values: ticks
-            }
-        },
-        y: {
-            label: 'Rating'
-        }
-    }
-    });
-    var $dark = $("#dark");
-    $dark.change(function() {
-        console.log($dark.is(":checked"));
+    $(".pref").change(function() {
         $.post(
             "/preferences", {
-                dark: $dark.is(":checked")
+                dark_theme: $("#dark").is(":checked"),
+                publicmmr: $("#publicmmr").is(":checked")
             },
             function(data) {
                 if (data.sync) {
