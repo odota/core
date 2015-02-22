@@ -8,5 +8,10 @@ block content
       button.btn.btn-primary Nevermind...
     form.form-inline(method="post", style="display:inline-block;")
       button.btn.btn-warning(type="submit") You bet!
+    p.text(style="margin-top:1em;")
+      if user
+        strong You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
+      else
+        strong You aren't logged in! This contribution will be anonymous, and the Cheese will not be attached to an account.
 block footer_assets
    link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")

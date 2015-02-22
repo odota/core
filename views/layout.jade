@@ -39,6 +39,12 @@ html
         include ../public/css/dark.css
     script(src="/public/js/bundle.js")
     script(src="/public/js/ga.js")
+    script.
+      $('.meter_wrapper').qtip({
+        content: {
+          text: $(this).next('div')
+        }
+      });
     block head
     
   body
@@ -80,6 +86,14 @@ html
                       width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;\
                       font-size: .8em;")
         .container
+          .row
+            .col-md-4.col-md-offset-4.text-center
+              .meter_wrapper
+                p Daily Cheese Goal
+                .meter
+                  span(style="width: #{cheese_goal}%;")
+              div(style="display:none;")
+                p Buy some Cheese. Help pay for our servers.
           .row
             .col-md-4.text-center
              p.

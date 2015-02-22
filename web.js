@@ -5,6 +5,7 @@ var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var paypal_id = process.env.PAYPAL_ID;
 var paypal_secret = process.env.PAYPAL_SECRET;
 var root_url = process.env.ROOT_URL
+var goal = Number(process.env.GOAL);
 var PAYMENT_SESSIONS  = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"]
 var paypal = require('paypal-rest-sdk')
 var utility = require('./utility');
@@ -85,11 +86,16 @@ app.use(function(req, res, next) {
         },
         apiDown: function(cb) {
             redis.get("apiDown", cb);
+        },
+        cheese: function(cb) {
+            redis.get("cheese_goal", cb);
         }
     }, function(err, results) {
         res.locals.user = req.user;
         res.locals.banner_msg = results.banner;
         res.locals.api_down = Number(results.apiDown);
+        var theGoal = Number(results.cheese || 0.1) / goal * 100;
+        res.locals.cheese_goal = (goal - 100) > 0 ? 100 : theGoal;
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });
@@ -216,10 +222,10 @@ app.route('/confirm').get(function(req, res, next) {
     if (cheeseAmount) {
         res.render("confirm", {
             cheeseAmount: cheeseAmount
-        })
+        });
     } else {
         clearPaymentSessions(req);
-        res.render("cancel")
+        res.render("cancel");
     }
 }).post(function(req, res, next) {
     var paymentId = req.session.paymentId;
@@ -229,7 +235,7 @@ app.route('/confirm').get(function(req, res, next) {
     
     paypal.payment.execute(paymentId, details, function (err, payment) {
         if (err) {
-            clearPaymentSessions(req)
+            clearPaymentSessions(req);
             next(err);
         } else {
             if (req.user && payment.transactions[0]) {
@@ -241,6 +247,13 @@ app.route('/confirm').get(function(req, res, next) {
                         "cheese": cheeseTotal
                     }
                 }, function(err, num) {
+                    redis.get("cheese_goal", function(err, val) {
+                        if(! err && match) {
+                            redis.set("cheese_goal", parseInt(val) + cheeseAmount);
+                        } else {
+                            redis.setex("cheese_goal", 86400 - m().unix() % 86400, cheeseAmount);
+                        }
+                    })
                     req.session.cheeseTotal = cheeseTotal;
                     res.redirect("/thanks");
                 });
@@ -249,7 +262,7 @@ app.route('/confirm').get(function(req, res, next) {
             }
         }
     });
-})
+});
 app.route('/thanks').get(function(req, res) {
     var cheeseCount = req.session.cheeseAmount;
     var cheeseTotal = req.session.cheeseTotal;
@@ -262,7 +275,25 @@ app.route('/thanks').get(function(req, res) {
 app.route('/cancel').get(function(req, res) {
     clearPaymentSessions(req);
     res.render("cancel");
-})
+});
+app.route('/top').get(function(req, res, next) {
+    async.parallel({
+        top: function(cb) {
+            db.players.find({},
+            {
+                sort: {
+                    cheese: -1
+                }
+            }, cb);
+        },
+        month: function(cb) {
+            cb
+        }
+    }, function(err, results){
+        if (err) next(err);
+        res.render("top", results)
+    });
+});
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
