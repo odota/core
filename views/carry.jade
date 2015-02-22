@@ -60,11 +60,14 @@ block content
           td= i + 1
           td
             if player.avatarmedium
-              .col-md-1
+              .col-md-2
                 img(src='#{player.avatarmedium}').img-thumbnail
             .col-md-5
-              | #{player.personaname || player.account_id}
+              h4 #{player.personaname || player.account_id}
           td #{player.cheese}
 
 block footer_assets
    link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
+   style.
+     .img-thumbnail { width: 40px;}
+  
