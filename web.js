@@ -44,14 +44,11 @@ app.use("/socket", function(req, res){
     res.render("socket");
 });
 */
-
 paypal.configure({
-  'mode': 'sandbox', //sandbox or live
-  'client_id': paypal_id,
-  'client_secret': paypal_secret
+    'mode': 'sandbox', //sandbox or live
+    'client_id': paypal_id,
+    'client_secret': paypal_secret
 });
-
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -77,7 +74,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({
-    extended: false
+    extended: true
 }));
 app.use(function(req, res, next) {
     async.parallel({
@@ -105,24 +102,32 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/upload', require("./routes/upload"));
 app.route('/').get(function(req, res, next) {
-    queries.getRatingData(req, function(err, results) {
-        if (err) {
-            return next(err);
-        }
-        res.render('index.jade', results);
-    });
+    if (req.user) {
+        queries.getSets(function(err, results) {
+            queries.getRatingData(req.user.account_id, function(err, ratings) {
+                results.ratings = ratings;
+                console.log(results);
+                res.render('index.jade', results);
+            });
+        });
+    }
+    else {
+        res.render('index.jade');
+    }
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
+        for (var key in req.body) {
+            req.body[key] = req.body[key] === "true";
+        }
         db.players.update({
             account_id: req.user.account_id
         }, {
-            $set: {
-                "dark_theme": req.body.dark === 'true' ? 1 : 0
-            }
+            $set: req.body
         }, function(err, num) {
             var success = !(err || !num);
             res.json({
+                prefs: req.body,
                 sync: success
             });
         });
@@ -192,7 +197,6 @@ app.route('/carry').get(function(req, res) {
     });
 }).post(function(req, res) {
     var num = req.body.num
-    
     if (!isNaN(num)) {
         var payment = {
             "intent": "sale",
@@ -205,21 +209,21 @@ app.route('/carry').get(function(req, res) {
             },
             "transactions": [{
                 "amount": {
-                  "total": num,
-                  "currency": "USD"
+                    "total": num,
+                    "currency": "USD"
                 },
                 "description": "Buying CHEESE x" + num
             }]
         };
-        
-        paypal.payment.create(payment, function (err, payment) {
+        paypal.payment.create(payment, function(err, payment) {
             if (err) {
                 next(err)
-            } else {
+            }
+            else {
                 req.session.paymentId = payment.id;
                 req.session.cheeseAmount = num;
                 var redirectUrl;
-                for(var i=0; i < payment.links.length; i++) {
+                for (var i = 0; i < payment.links.length; i++) {
                     var link = payment.links[i];
                     if (link.method === 'REDIRECT') {
                         redirectUrl = link.href;
@@ -227,7 +231,7 @@ app.route('/carry').get(function(req, res) {
                 }
                 res.redirect(redirectUrl);
             }
-        });    
+        });
     }
 });
 app.route('/confirm').get(function(req, res, next) {
@@ -245,13 +249,15 @@ app.route('/confirm').get(function(req, res, next) {
     var paymentId = req.session.paymentId;
     var cheeseAmount = req.session.cheeseAmount;
     var payerId = req.session.payerId;
-    var details = { "payer_id": payerId };
-    
-    paypal.payment.execute(paymentId, details, function (err, payment) {
+    var details = {
+        "payer_id": payerId
+    };
+    paypal.payment.execute(paymentId, details, function(err, payment) {
         if (err) {
             clearPaymentSessions(req);
             next(err);
-        } else {
+        }
+        else {
             if (req.user && payment.transactions[0]) {
                 var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
                 db.players.update({
@@ -271,7 +277,8 @@ app.route('/confirm').get(function(req, res, next) {
                     req.session.cheeseTotal = cheeseTotal;
                     res.redirect("/thanks");
                 });
-            } else {
+            }
+            else {
                 res.redirect("/thanks");
             }
         }
@@ -308,7 +315,7 @@ app.use(function(err, req, res, next) {
 });
 
 function clearPaymentSessions(req) {
-    PAYMENT_SESSIONS.forEach(function(s){
+    PAYMENT_SESSIONS.forEach(function(s) {
         req.session[s] = null;
     })
 }

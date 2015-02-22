@@ -27,11 +27,9 @@ api.get('/matches', function(req, res, next) {
         radiant_win: 1,
         parse_status: 1
     };
-    for (var prop in req.query.select) {
-        if (prop === "players.account_id") {
-            req.query.select[prop] = Number(req.query.select[prop]);
-            project["players.$"] = 1;
-        }
+    if (req.query.select["players.account_id"]) {
+        req.query.select["players.account_id"]=Number(req.query.select["players.account_id"]);
+        project["players.$"] = 1;
     }
     db.matches.find(select, {
         limit: limit,
@@ -48,5 +46,4 @@ api.get('/matches', function(req, res, next) {
         });
     });
 });
-
 module.exports = api;
