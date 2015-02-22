@@ -6,7 +6,7 @@ var paypal_id = process.env.PAYPAL_ID;
 var paypal_secret = process.env.PAYPAL_SECRET;
 var root_url = process.env.ROOT_URL
 var goal = Number(process.env.GOAL);
-var PAYMENT_SESSIONS  = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"]
+var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"]
 var paypal = require('paypal-rest-sdk')
 var utility = require('./utility');
 var r = require('./redis');
@@ -65,8 +65,9 @@ app.use("/public", express.static(path.join(__dirname, '/public')));
 app.use(session({
     store: new RedisStore({
         client: redis,
-        disableTTL: true
+        ttl: 2 * 7 * 24 * 60 * 60
     }),
+    maxAge: 2 * 7 * 24 * 60 * 60 * 1000,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
@@ -241,7 +242,8 @@ app.route('/confirm').get(function(req, res, next) {
         res.render("confirm", {
             cheeseAmount: cheeseAmount
         });
-    } else {
+    }
+    else {
         clearPaymentSessions(req);
         res.render("cancel");
     }
@@ -268,9 +270,10 @@ app.route('/confirm').get(function(req, res, next) {
                     }
                 }, function(err, num) {
                     redis.get("cheese_goal", function(err, val) {
-                        if(!err && val) {
+                        if (!err && val) {
                             redis.set("cheese_goal", parseInt(val) + parseInt(cheeseAmount));
-                        } else {
+                        }
+                        else {
                             redis.setex("cheese_goal", 86400 - moment().unix() % 86400, cheeseAmount);
                         }
                     })
