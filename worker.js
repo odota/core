@@ -197,7 +197,7 @@ function apiStatus() {
             match_seq_num: -1
         }
     }, function(err, match) {
-        var elapsed = (new Date().getTime() - db.matches.id(match._id).getTimestamp());
+        var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
         console.log(elapsed);
         if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);

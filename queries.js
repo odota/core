@@ -27,7 +27,7 @@ function getRatingData(req, cb) {
     async.series({
         "bots": function (cb) {
             redis.get("bots", function (err, bots) {
-                bots = JSON.parse(bots);
+                bots = JSON.parse(bots || "[]");
                 //sort list of bots descending, but full bots go to end
                 if (bots.constructor === Array) {
                     bots.sort(function (a, b) {
@@ -46,12 +46,12 @@ function getRatingData(req, cb) {
         },
         "ratingPlayers": function (cb) {
             redis.get("ratingPlayers", function (err, rps) {
-                cb(err, JSON.parse(rps));
+                cb(err, JSON.parse(rps || "{}"));
             });
         },
         "trackedPlayers": function (cb) {
             redis.get("trackedPlayers", function (err, tps) {
-                cb(err, JSON.parse(tps));
+                cb(err, JSON.parse(tps || "{}"));
             });
         },
         "ratings": function (cb) {
