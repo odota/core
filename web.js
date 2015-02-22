@@ -256,7 +256,7 @@ app.route('/thanks').get(function(req, res) {
     clearPaymentSessions(req);
     res.render("thanks", {
         cheese: cheeseCount,
-        total: req.session.cheeseTotal
+        total: cheeseTotal
     });
 });
 app.route('/cancel').get(function(req, res) {

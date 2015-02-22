@@ -15,7 +15,7 @@ block content
    .row
     .col-md-7
       h3 Status (may take several minutes to update)
-      - var tracked = (tackedPlayers? user.account_id in trackedPlayers : false)
+      - var tracked = (trackedPlayers? user.account_id in trackedPlayers : false)
       - var rating = (ratingPlayers? user.account_id in ratingPlayers : false)
       div(class= tracked ? "alert alert-success" : "alert alert-danger")
         span(class= tracked ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
