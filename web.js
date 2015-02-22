@@ -45,7 +45,7 @@ app.use("/socket", function(req, res){
 });
 */
 paypal.configure({
-    'mode': 'sandbox', //sandbox or live
+    'mode': process.env.NODE_ENV !== "development" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
     'client_secret': paypal_secret
 });
