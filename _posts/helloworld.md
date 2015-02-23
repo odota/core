@@ -1,8 +1,8 @@
 {{{
   "title": "Hello World!",
-  "tags": ["beta"],
-  "category": "release",
-  "date": "7-29-2013"
+  "tags": ["yasp"],
+  "author": "albertcui",
+  "date": "2-01-2015"
 }}}
 
-So here we are.
+So here we are.  This is our first blog post.

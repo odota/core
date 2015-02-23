@@ -32,31 +32,11 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
-/*
-io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
-    });
-});
-app.use("/socket", function(req, res){
-    res.render("socket");
-});
-*/
-
-var Poet = require('poet');
-var poet = Poet(app);
-poet.init().then(function() {
-    console.log('poet ready');
-    console.log(poet.helpers.getPosts());
-});
-
 paypal.configure({
     'mode': process.env.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
     'client_secret': paypal_secret
 });
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -105,6 +85,24 @@ app.use(function(req, res, next) {
         logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
         return next(err);
     });
+});
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+app.use("/socket", function(req, res){
+    res.render("socket");
+});
+*/
+var Poet = require('poet');
+var poet = Poet(app);
+poet.watch(function() {
+    // watcher reloaded
+}).init().then(function() {
+    // Ready to go!
 });
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
@@ -187,7 +185,6 @@ app.route('/status').get(function(req, res, next) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
-
 app.route('/carry').get(function(req, res) {
     db.players.find({
         cheese: {

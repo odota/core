@@ -1,40 +1,24 @@
-extend layout
+extend blog
 
-block content
-  .row
-    .col-md-8
-      each post in posts
-        div.post
-          h1
-            a(href=post.url)
-              = post.title
-          span.date #{post.date.getMonth()+1}.#{post.date.getDate()}.#{post.date.getFullYear()}
-          div.post.content
-            != post.preview
-          div.tags
-            - each tag in post.tags
-              a(href=tagUrl(tag))
-                span.label.label-info #{tag}
-      - var pageCount = getPageCount();
-      if pageCount > 1
-        ul.pagination
-          - var i = 1;
-          - while ( i <= pageCount )
-            if page == i
-              li(class='active')
-                a(href=pageURL(i)) #{i}
-            else
-              li
-                a(href=pageURL(i)) #{i}
-            - i++;
-    .col-md-4
-      .well.sidebar-nav
-        ul.nav.nav-list
-          li.nav-header categories
-          - each cat in getCategories()
-            li
-              a(href=categoryURL(cat)) #{cat}
-          li.nav-header tags
-          - each tag in getTags()
-            li
-              a(href=tagURL(tag)) #{tag}
+block blogcontent
+  each post in posts
+    div.post
+      h3: a(href=post.url)= post.title
+      div.post.content
+        != post.preview
+      div.tags
+        each tag in post.tags
+          a(href=tagUrl(tag))
+            span.label.label-info #{tag}
+  - var pageCount = getPageCount();
+  if pageCount > 1
+    ul.pagination
+      - var i = 1;
+      - while ( i <= pageCount )
+        if page == i
+          li(class='active')
+            a(href=pageURL(i)) #{i}
+        else
+          li
+            a(href=pageURL(i)) #{i}
+        - i++;
