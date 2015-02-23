@@ -115,7 +115,6 @@ app.route('/').get(function(req, res, next) {
         queries.getSets(function(err, results) {
             queries.getRatingData(req.user.account_id, function(err, ratings) {
                 results.ratings = ratings;
-                console.log(results);
                 res.render('index.jade', results);
             });
         });
