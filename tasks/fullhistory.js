@@ -7,7 +7,6 @@ var urllib = require('url');
 var generateJob = utility.generateJob;
 var selector = require('../selector');
 var constants = require('../sources.json');
-
 module.exports = function getFullMatchHistory(heroes, done) {
     var heroArray = Object.keys(constants.heroes);
     if (typeof heroes === "object") {
@@ -42,7 +41,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
                     match_id: Number(match_id)
                 };
                 db.matches.find(match, function(err, docs) {
-                    if (!err && docs.length) {
+                    if (!err && !docs.length) {
                         queueReq("api_details", match, function(err) {
                             //added a single job to kue
                             cb(err);
@@ -54,7 +53,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
                 });
             }, function(err) {
                 if (err) {
-                    return done(err);
+                    console.log(err);
                 }
                 //added all the matches to kue
                 async.mapSeries(players, function(player, cb) {
@@ -78,8 +77,8 @@ module.exports = function getFullMatchHistory(heroes, done) {
     function getApiMatchPage(url, cb) {
         getData(url, function(err, body) {
             if (err) {
-                //retry
-                return getApiMatchPage(url, cb);
+                //non-retryable error
+                return cb(err);
             }
             //response for match history for single player
             var resp = body.result.matches;

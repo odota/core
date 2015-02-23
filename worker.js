@@ -20,31 +20,32 @@ var trackedPlayers = {};
 var ratingPlayers = {};
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
-        process.exit(err);
+        process.exit(err || 1);
     });
 });
 process.on('SIGINT', function() {
     clearActiveJobs(function(err) {
-        process.exit(err);
+        process.exit(err || 1);
     });
 });
 var d = domain.create();
 d.on('error', function(err) {
+    console.log(err.stack);
     clearActiveJobs(function(err2) {
-        process.exit(err2 || err);
+        process.exit(err2 || err || 1);
     });
 });
 d.run(function() {
-    console.log("[WORKER] starting worker");
     build(function() {
+        console.log("[WORKER] starting worker");
         startScan();
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
-        setInterval(updatenames, 9 * 60 * 1000, function() {});
+        setInterval(updatenames, 7 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 7 * 60 * 1000);
+        setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
 
@@ -60,8 +61,11 @@ function build(cb) {
         docs.forEach(function(player) {
             t[player.account_id] = true;
         });
-        async.map(utility.getRetrieverUrls(), function(url, cb) {
+        async.each(utility.getRetrieverUrls(), function(url, cb) {
             getData(url, function(err, body) {
+                if (err) {
+                    cb(err);
+                }
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);
                 }
@@ -173,30 +177,29 @@ function scanApi(seq_num) {
         var next_seq_num = seq_num;
         if (resp.length) {
             next_seq_num = resp[resp.length - 1].match_seq_num + 1;
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(next_seq_num);
-            }, delay);
         }
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
         q.push(resp);
+        //wait 100ms for each match less than 100
+        var delay = (100 - resp.length) * 100;
+        setTimeout(function() {
+            scanApi(next_seq_num);
+        }, delay);
     });
 }
 
 function apiStatus() {
     db.matches.findOne({}, {
         fields: {
-            start_time: 1,
-            duration: 1
+            _id: 1
         },
         sort: {
             match_seq_num: -1
         }
-    }, function(err, matches) {
-        var elapsed = (new Date().getTime()/1000 - matches.start_time - matches.duration);
+    }, function(err, match) {
+        var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
         console.log(elapsed);
-        if (elapsed > 15 * 60) {
+        if (elapsed > 15 * 60 * 1000) {
             redis.set("apiDown", 1);
         }
         else {

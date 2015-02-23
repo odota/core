@@ -100,16 +100,16 @@ function getData(url, cb) {
         request({
             url: target,
             json: true,
-            timeout: 15000
+            timeout: 30000
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
+                if (body && body.error) {
+                    //body contained an error (probably from retriever)
+                    //non-retryable
+                    return cb(body);
+                }
                 logger.info("retrying: %s", target);
                 return getData(url, cb);
-            }
-            else if (body.error) {
-                //body contained an error (probably from retriever)
-                //non-retryable
-                return cb(body);
             }
             else if (body.result) {
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
@@ -140,7 +140,7 @@ function runParse(cb) {
     //stderr is sent to /dev/null
     //modify stdio array if we want to log it here
     parser.stdout.on('data', function(data) {
-        output+=data;
+        output += data;
     });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
@@ -149,7 +149,6 @@ function runParse(cb) {
         }
         try {
             output = JSON.parse(output);
-            console.log(output.chat);
             cb(code, output);
         }
         catch (err) {
@@ -202,6 +201,27 @@ function makeSort(order, columns) {
     }
     return sort;
 }
+
+function mergeObjects(merge, val) {
+    for (var attr in val) {
+        if (val[attr].constructor === Array) {
+            merge[attr] = merge[attr].concat(val[attr]);
+        }
+        else if (typeof val[attr] === "object") {
+            mergeObjects(merge[attr], val[attr]);
+        }
+        else {
+            //does property exist?
+            if (!merge[attr]) {
+                merge[attr] = val[attr];
+            }
+            else {
+                merge[attr] += val[attr];
+            }
+        }
+    }
+}
+
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -211,7 +231,8 @@ module.exports = {
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,
-    makeSort: makeSort
+    makeSort: makeSort,
+    mergeObjects: mergeObjects
 };
 /*
 function getS3Url(match_id, cb) {

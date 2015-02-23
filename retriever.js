@@ -14,7 +14,6 @@ var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
 var ready = false;
-
 var a = [];
 while (a.length < users.length) a.push(a.length + 0);
 async.map(a, function(i, cb) {
@@ -33,7 +32,6 @@ async.map(a, function(i, cb) {
         SuggestedFriend: 7,
         Max: 8,
     };
-
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -42,7 +40,6 @@ async.map(a, function(i, cb) {
     };
     Steam.logOn(logOnDetails);
     console.log("[STEAM] Trying to log on with %s,%s", user, pass);
-
     Steam.on("friend", function(steamID, relationship) {
         //immediately accept incoming friend requests
         if (relationship === Steam.EFriendRelationship.PendingInvitee) {
@@ -59,8 +56,8 @@ async.map(a, function(i, cb) {
         console.log("[STEAM] Logged on %s", Steam.steamID);
         Steam.setPersonaName("[YASP] " + Steam.steamID);
         steamObj[Steam.steamID] = Steam;
-        Steam.attempts = 0;
-        Steam.success = 0;
+        Steam.replays = 0;
+        Steam.profiles = 0;
         Steam.Dota2.launch();
     });
     Steam.Dota2.on("ready", function() {
@@ -96,9 +93,9 @@ async.map(a, function(i, cb) {
 function getPlayerProfile(idx, account_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
+    steamObj[idx].profiles += 1;
     Dota2.profileRequest(account_id, false, function(accountId, profileData) {
         var error = profileData.result === 1 ? null : profileData.result;
-        console.log(profileData);
         cb(error, profileData.gameAccountClient);
     });
 }
@@ -110,9 +107,8 @@ function getGCReplayUrl(idx, match_id, cb) {
     if (replayRequests >= 500) {
         selfDestruct();
     }
-    steamObj[idx].attempts += 1;
+    steamObj[idx].replays += 1;
     Dota2.matchDetailsRequest(match_id, function(err, data) {
-        steamObj[idx].success += 1;
         cb(err, data);
     });
 }
@@ -120,29 +116,27 @@ function getGCReplayUrl(idx, match_id, cb) {
 function selfDestruct() {
     process.exit(0);
 }
-
 app.get('/', function(req, res, next) {
     console.log(process.memoryUsage());
     if (!ready) {
         return next("retriever not ready");
     }
+    res.locals.to = setTimeout(function() {
+        next("retriever timeout");
+    }, 25000);
     //todo reject request if doesnt have key
     var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
     if (req.query.match_id) {
         getGCReplayUrl(r, req.query.match_id, function(err, data) {
-            if (err) {
-                return next(err);
-            }
-            res.json(data);
+            res.locals.data = data;
+            return next(err);
         });
     }
     else if (req.query.account_id) {
         var idx = accountToIdx[req.query.account_id] || r;
         getPlayerProfile(idx, req.query.account_id, function(err, data) {
-            if (err) {
-                return next(err);
-            }
-            res.json(data);
+            res.locals.data = data;
+            return next(err);
         });
     }
     else {
@@ -150,25 +144,30 @@ app.get('/', function(req, res, next) {
         for (var key in steamObj) {
             stats[key] = {
                 steamID: key,
-                attempts: steamObj[key].attempts,
-                success: steamObj[key].success,
+                replays: steamObj[key].replays,
+                profiles: steamObj[key].profiles,
                 friends: Object.keys(steamObj[key].friends).length
             };
         }
-        return res.json({
+        var data = {
             replayRequests: replayRequests,
             uptime: (new Date() - launch) / 1000,
             accounts: stats,
             accountToIdx: accountToIdx
-        });
+        };
+        res.locals.data = data;
+        return next();
     }
+});
+app.use(function(req, res) {
+    clearTimeout(res.locals.to);
+    res.json(res.locals.data);
 });
 app.use(function(err, req, res, next) {
     return res.status(500).json({
         error: err
     });
 });
-
 var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
     var host = server.address().address;
     var port = server.address().port;

@@ -110,7 +110,7 @@ function streamReplay(job, cb) {
     d.on('error', function(err) {
         if (!exit) {
             exit = true;
-            cb(error || err);
+            cb(error || err.message);
         }
     });
     d.run(function() {
@@ -198,7 +198,7 @@ function processApi(job, cb) {
             var match = data.result;
             //join payload with match
             for (var prop in payload) {
-                match[prop] = match[prop] ? match[prop] : payload[prop];
+                match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
                 cb(err, job.data.payload);
@@ -214,6 +214,8 @@ function processMmr(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, data) {
         if (err) {
+            logger.info(err);
+            //don't retry processmmr attempts, data will likely be out of date anyway
             return cb(null, err);
         }
         logger.info("mmr response");
