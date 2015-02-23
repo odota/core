@@ -13,7 +13,7 @@ append content
             th Time
             th Message
           each message in match.parsed_data.chat
-            - var p = match.players[message.slot]
+            - var p = match.players[message.slot] || {}
             - var hero = constants.heroes[p.hero_id]
             tr
               if hero

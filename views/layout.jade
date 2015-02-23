@@ -32,6 +32,8 @@ html
     link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
     style
       include ../public/css/yasp.css
+    style
+      include ../public/css/flaticon.css
     if (user && user.dark_theme)
       style
         include ../public/css/dark.css
@@ -52,6 +54,8 @@ html
               a(href="/status") Status
             li
               a(href="/about") FAQ/About
+            li
+              a(href="/carry") Help Carry
           if user
             ul.nav.navbar-nav.navbar-right
               li
@@ -71,10 +75,26 @@ html
        block content
      .sticky_footer_row
       footer.footer(style="color: #777;\
-                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;\
-                      font-size: .8em;")
+                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
         .container
           .row
+            .col-md-4.text-center
+              p Buy Cheese. Help Pay for Our Servers.
+              p Reaching the goal each day allows us to keep YASP running.
+            .col-md-4.text-center
+              .meter_wrapper
+                p(style="font-weight:700;") Daily Cheese Goal
+                .meter
+                  span(style="width: #{cheese_goal}%;")
+                if cheese_goal >= 50 && cheese_goal < 100
+                  small Getting there...
+                else if cheese_goal === 100
+                  small Woo!!! We did it! Thanks guys!
+            .col-md-4.text-center
+                span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+                a(href="/carry")
+                  button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
+          .row(style="font-size: .8em;")
             .col-md-4.text-center
              p.
               Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
@@ -82,6 +102,7 @@ html
               <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
               cookies</a>.
               We also use cookies for sessions.
+              Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
             .col-md-4.text-center(style="font-size: 1.2em;")
               p.
                 &copy; YASP #{moment().get('year')}. If that means anything. <br>

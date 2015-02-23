@@ -23,7 +23,8 @@ block content
   h3 Why are my matches showing up, but don't get parsed?
   p There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable.
   p After that, the replay might not be available, which happens occasionally (particularly in the SEA region).
-  p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.  Usually, we're able to parse over 95% of games.
+  p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.
+  p Usually, we're able to parse over 95% of games.
   
   h3 Why don't you have my old matches?
   p YASP only starts tracking your matches from when you signed in.  We get full match histories for contributors and active YASP users.
@@ -32,7 +33,7 @@ block content
   p To keep the load reasonable, we stop parsing players' matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
   
   h3 How do untracking and full history eligibility work?
-  p Currently, we untrack users who have not visited YASP for 3 days.  For full history, we select one tracked user every hour whose account is at least 7 days old.
+  p Currently, we untrack users who have not visited YASP for 3 days.  Users who have used YASP for 7 days and remain tracked are eligible for full history.
   
   h3 Why am I still missing some matches after getting my full history?
   p The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
@@ -45,7 +46,7 @@ block content
   p Known Issues:
   ul
     li Hero Kills: doesn't always show all kills.  This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
-    li Hero Kills: Meepo appears to kill himself a lot.  This is because the game has Meepo kill all of his clones on one clone's death.
+    li Hero Kills: Lots of Meepo kills in the log.  This is because the game has Meepo kill all remaining clones when one is killed.
   
   h3 Can I use YASP in my own project?
   p YASP is licensed under the GNU GPLv3.  This means you can use YASP in your project if your project is also free and open source.  We also ask that you give us attribution in your project if you use our code.

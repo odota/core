@@ -19,6 +19,10 @@ Quickstart
 * Create .env file, add required config values: `cp .env_example .env`
 * Launch in dev mode: `npm start`
 
+Sample Data
+====
+* Load the test players and matches: `mongo dota migrations/loader.js`
+
 Lessons and Rules
 ====
 * Never async.parallel database calls.

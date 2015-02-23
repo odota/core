@@ -1,0 +1,73 @@
+extend layout
+  
+block content
+  .page-header.text-center
+    h1(style='font-weight: 700;') We Need Your Help
+    p.lead Buy some Cheese. Help pay for servers.
+    hr
+    .row
+      .col-md-4.col-md-offset-4
+        form.form-inline(method="post", style="margin:0 auto;")
+          .form-group
+            .input-group(style="display:inline-block;")
+              p GIVE ME
+              select.form-control.inline(name="num")
+                option 1
+                option 2
+                option 3
+                option 4
+                option(selected) 5
+                option 10
+                option 20
+                option 50
+                option 100
+              p CHEESE
+          div
+            button.btn.btn-warning(type="submit") CHEESE IT
+        div(style="margin-top:1em;")
+          em $1/Cheese. It's worth it. Clicking the button will take you to Paypal.
+        if user
+          strong You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
+        else  
+          strong You aren't logged in! This contribution will be anonymous, and the Cheese will not be attached to an account.
+    hr
+    .row
+      .col-md-4
+        p.lead Be At the Top
+        span.fa.fa-line-chart.fa-5x
+        p.text Get listed as a <a href="#top">top contributor</a>. People will be all, "Wow!"
+      .col-md-4
+        p.lead Cheese Your Profile
+        span.flaticon-1.large-cheese
+        p.text(style="margin-top:1em;") Cause cheese is awesome.
+      .col-md-4
+        p.lead Feel Good About Yourself
+        span.fa.fa-heart-o.fa-5x
+        p.text You're awesome.
+    .row
+      p.lead More Cheese features to come. Or not. Who knows.
+  .row
+    .text-center
+      h1(name="top") Top Carries
+      p.lead  These people keep the site running. Thank you. Thank you. Thank you.
+    table.table
+      tr
+        th Number
+        th User
+        th Cheese Count
+      each player, i in users
+        tr
+          td= i + 1
+          td
+            if player.avatarmedium
+              .col-md-2
+                img(src='#{player.avatarmedium}').img-thumbnail
+            .col-md-5
+              h4 <a href="/players/#{player.account_id}"> #{player.personaname || player.account_id}</a>
+          td #{player.cheese}
+
+block footer_assets
+   link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
+   style.
+     .img-thumbnail { width: 40px;}
+  

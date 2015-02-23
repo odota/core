@@ -3,10 +3,10 @@ module.exports = function generateTimeline(match) {
         for (var player in match.parsed_data.heroes) {
             var items = []
             var heroes = 0
-            var player = match.parsed_data.heroes[player]
-            if (player.timeline.length < 1) continue
-            for (var i = 0; i < player.timeline.length; i++) {
-                var event = player.timeline[i]
+            var p = match.parsed_data.heroes[player]
+            if (p.timeline.length < 1) continue
+            for (var i = 0; i < p.timeline.length; i++) {
+                var event = p.timeline[i]
                 var bar = {}
                 var time = formatSeconds(event.time)
                 time = "<div style='font-size:10px;'>" + time + "<div>"
