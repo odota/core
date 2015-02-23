@@ -188,9 +188,7 @@ app.route('/status').get(function(req, res, next) {
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
-<<<<<<< HEAD
 
-=======
 app.route('/carry').get(function(req, res) {
     db.players.find({
         cheese: {
@@ -311,7 +309,6 @@ app.route('/cancel').get(function(req, res) {
     clearPaymentSessions(req);
     res.render("cancel");
 });
->>>>>>> 06c12b85e3846e6f6d0dc79b3eec3ca344c18657
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
