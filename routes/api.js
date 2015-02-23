@@ -27,8 +27,8 @@ api.get('/matches', function(req, res, next) {
         radiant_win: 1,
         parse_status: 1
     };
-    if (req.query.select["players.account_id"]) {
-        req.query.select["players.account_id"]=Number(req.query.select["players.account_id"]);
+    if (select["players.account_id"]) {
+        select["players.account_id"] = Number(select["players.account_id"]);
         project["players.$"] = 1;
     }
     db.matches.find(select, {
