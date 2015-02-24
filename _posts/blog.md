@@ -1,7 +1,6 @@
 {{{
   "title": "A blog for YASP",
-  "tags": ["feature", "tech"],
-  "author": "howardc93",
+  "tags": ["yasp", "tech"],
   "date": "2-23-2015"
 }}}
 

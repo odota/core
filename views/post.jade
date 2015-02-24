@@ -1,9 +1,8 @@
 extend blog
 block blogcontent
   div.post
-    h1: a(href=post.url)= post.title
-    div.date #{post.date.getMonth()+1}.#{post.date.getDate()}.#{post.date.getFullYear()}
-    div.author by #{post.author}
+    h1: a(href=post.url)=post.title
+      small.date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
     div.post.content
       != post.content
     div.tags

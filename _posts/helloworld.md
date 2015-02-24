@@ -1,7 +1,6 @@
 {{{
   "title": "Hello World!",
   "tags": ["yasp"],
-  "author": "albertcui",
   "date": "2-01-2015"
 }}}
 
