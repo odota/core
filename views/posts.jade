@@ -1,0 +1,9 @@
+each post in posts
+  div.post
+    h3: a(href=post.url)= post.title
+    div.post.content
+      != post.preview
+    div.tags
+      each tag in post.tags
+        a(href=tagUrl(tag))
+          span.label.label-info #{tag}
