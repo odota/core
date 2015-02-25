@@ -11,6 +11,7 @@ About
 ====
 * Parses replays of Dota 2 matches to provide additional statistics.
 * Runs as a full Node.js application with a web interface.
+* Designed to scale to thousands of users
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
 
 Quickstart
