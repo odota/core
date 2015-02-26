@@ -13,6 +13,7 @@ var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
 var queueReq = operations.queueReq;
+var JSONStream = require('JSONStream');
 
 function processParse(job, cb) {
     var t1 = new Date();
@@ -116,7 +117,7 @@ function streamReplay(job, cb) {
     }
     d.on('error', exit);
     d.run(function() {
-        parser = runParse(function(err, output) {
+        parser = runParser(function(err, output) {
             if (err) {
                 return exit(err);
             }
@@ -175,20 +176,19 @@ function streamReplay(job, cb) {
     });
 }
 
-function runParse(cb) {
+function runParser(cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
     var output = '';
     var parser = spawn("java", ["-jar",
         parser_file
     ], {
+        //stderr is sent to /dev/null
         stdio: ['pipe', 'pipe', 'ignore'],
-        encoding: "utf8"
+        encoding: 'utf8'
     });
-    //stderr is sent to /dev/null
-    //modify stdio array if we want to log it here
     parser.stdout.on('data', function(data) {
         output += data;
-    });
+    })
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
         if (code) {
@@ -196,7 +196,57 @@ function runParse(cb) {
         }
         try {
             output = JSON.parse(output);
-            cb(code, output);
+            /*
+			//process events in log
+			//js aggregates log and adjusts time	
+			//getassociatedhero/hero_to_slot to figure out what slot a log entry should go into
+			//use name_to_slot for chat entries
+			//some fields should not getassociatedhero, just try to look up a slot immediately
+			//populate an array of player objects with log entries	
+			for (int i =0;i<log.size();i++){
+				Entry entry = log.get(i);
+				entry.adjust(gameZero);
+				String type = entry.type;
+				if (type.equals("buybacks")){
+					Integer slot = entry.slot;
+					if (slot>=0){
+						doc.players.get(slot).buybacks.add(entry);
+					}
+					continue;
+				}
+				if (type.equals("chat")){
+					String prefix = entry.prefix;
+					if(name_to_slot.containsKey(prefix)){
+						Integer slot = name_to_slot.get(prefix);
+						entry.slot = slot;
+						doc.chat.add(entry);
+					}
+					else{
+						System.err.format("[CHAT]: %s not found in names\n", prefix);
+					}
+					continue;
+				}
+				HashMap<String, Unit> heroes = doc.heroes;
+				String unit = entry.unit;
+				if (!heroes.containsKey(unit)){
+					doc.addUnit(unit);
+				}
+				Unit hero = heroes.get(unit);
+				HashMap<String, Integer> counts = hero.getCount(type);
+				String key = entry.key;
+				Integer count = counts.containsKey(key) ? counts.get(key) : 0;
+				counts.put(key, count+entry.value);
+				//put the item into this hero's purchases
+				if (type.equals("itembuys")){
+					hero.timeline.add(entry);
+				}
+				//put the kill into this hero's hero kills
+				if (entry.herokills){
+					hero.herokills.add(entry);
+				}
+			}
+			*/
+            cb(code, parsed_data);
         }
         catch (err) {
             cb(err);

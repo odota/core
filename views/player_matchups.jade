@@ -3,7 +3,7 @@ extend player
 block playercontent
   .row        
     .col-md-12        
-      h3 Teammates (Players)
+      h3 Teammates
       table.table#teammates
         thead
           tr
@@ -25,7 +25,7 @@ block playercontent
       include ads/leaderboard_2
   .row
     .col-md-6
-      h3 Teammates (Heroes)
+      h3 Played With
       table.table#together
         thead
           tr
@@ -42,7 +42,7 @@ block playercontent
             td #{t ? t.games : 0}
             td #{t ? (100*t.win/t.games).toFixed(2) : 0.00}%
     .col-md-6
-      h3 Enemies (Heroes)
+      h3 Played Against
       table.table#against
         thead
           tr

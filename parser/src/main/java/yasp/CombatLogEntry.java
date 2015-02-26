@@ -64,6 +64,10 @@ private final GameEvent event;
         return event.getProperty(ctx.valueIdx);
     }
     
+    public String getValueString(){
+        return String.valueOf(getValue());
+    }
+    
     public int getHealth() {
         return event.getProperty(ctx.healthIdx);
     }
