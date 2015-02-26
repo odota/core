@@ -188,7 +188,7 @@ function runParser(cb) {
     });
     parser.stdout.on('data', function(data) {
         output += data;
-    })
+    });
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
         if (code) {
@@ -196,9 +196,12 @@ function runParser(cb) {
         }
         try {
             output = JSON.parse(output);
+            var parsed_data={};
+            for (var i =0;i<output.ength;i++){
+                
+            }
             /*
 			//process events in log
-			//js aggregates log and adjusts time	
 			//getassociatedhero/hero_to_slot to figure out what slot a log entry should go into
 			//use name_to_slot for chat entries
 			//some fields should not getassociatedhero, just try to look up a slot immediately

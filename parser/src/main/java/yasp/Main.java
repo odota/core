@@ -387,15 +387,9 @@ public class Main {
 				name_to_slot.put(replayName, i);
 			}
 			int match_id = info.getGameInfo().getDota().getMatchId();
-			//buffer logs, adjust time, jsonize
+			
 			Gson g = new Gson();
-			for (int i=0;i<log.size();i++){
-				Entry l = log.get(i);
-				l.time-=gameZero;
-				System.out.println(g.toJson(l));
-			}
-
-			Entry entry = new Entry(time);
+			Entry entry = new Entry(0);
 			entry.type="metadata";
 			HashMap<String, String> m = new HashMap<String, String>();
 			m.put("version","5");
@@ -403,7 +397,14 @@ public class Main {
 			m.put("hero_to_slot", g.toJson(hero_to_slot));
 			m.put("name_to_slot", g.toJson(name_to_slot));
 			entry.value = g.toJson(m);
-			System.out.println(g.toJson(entry));
+			log.add(0, entry);
+			
+			for (int i=0;i<log.size();i++){
+				Entry l = log.get(i);
+				l.time-=gameZero;
+			}
+			System.out.println(g.toJson(log));
+
 			finish(tStart);
 			return;
 	}
