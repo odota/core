@@ -265,30 +265,30 @@ app.route('/confirm').get(function(req, res, next) {
             next(err);
         }
         else {
-            if (req.user && payment.transactions[0]) {
-                var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
-                db.players.update({
-                    account_id: req.user.account_id
-                }, {
-                    $set: {
-                        "cheese": cheeseTotal
-                    }
-                }, function(err, num) {
-                    redis.get("cheese_goal", function(err, val) {
-                        if (!err && val) {
-                            redis.set("cheese_goal", parseInt(val) + parseInt(cheeseAmount));
+            redis.incrby("cheese_goal", cheeseAmount, function(err, val) {
+                if (!err && val == cheeseAmount) {
+                    // cheeseAmount is string, val is number, just let JS cast
+                    // this condition indicates the key is new
+                    redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
+                }
+                
+                if (req.user && payment.transactions[0]) {
+                    var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
+                    db.players.update({
+                        account_id: req.user.account_id
+                    }, {
+                        $set: {
+                            "cheese": cheeseTotal
                         }
-                        else {
-                            redis.setex("cheese_goal", 86400 - moment().unix() % 86400, cheeseAmount);
-                        }
-                    })
-                    req.session.cheeseTotal = cheeseTotal;
+                    }, function(err, num) {
+                        req.session.cheeseTotal = cheeseTotal;
+                        res.redirect("/thanks");
+                    });
+                }
+                else {
                     res.redirect("/thanks");
-                });
-            }
-            else {
-                res.redirect("/thanks");
-            }
+                }
+            })
         }
     });
 });
