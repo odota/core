@@ -90,7 +90,7 @@ public class Main {
 						Entry entry = new Entry(time);
 						entry.type="hero";
 						entry.slot=i;
-						entry.value=String.valueOf(hero);
+						entry.unit=String.valueOf(hero);
 						log.add(entry);
 					}
 				}
@@ -193,7 +193,7 @@ public class Main {
                         	Entry entry = new Entry(time);
                         	entry.type=type;
                         	entry.slot=player1;
-                        	entry.value=value;
+                        	entry.key=value;
                         	log.add(entry);
                         }                   
                         else if (type.equals("CHAT_MESSAGE_RANDOM")){
@@ -296,10 +296,10 @@ public class Main {
 							log.add(entry);
 							if ((cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion())){
 								Entry entry2 = new Entry(time);
-								entry.unit = cle.getAttackerNameCompiled();
-								entry.key = cle.getTargetNameCompiled();
-								entry.type="herokills";
-								log.add(entry);
+								entry2.unit = cle.getAttackerNameCompiled();
+								entry2.key = cle.getTargetNameCompiled();
+								entry2.type="herokills";
+								log.add(entry2);
 							}
 							break;
 						case 5:
@@ -352,7 +352,6 @@ public class Main {
 						case 12:
 							//buyback
 							entry.slot = cle.getValue();
-							entry.key = "buyback";
 							entry.type = "buybacks";
 							log.add(entry);
 							break;
@@ -392,17 +391,13 @@ public class Main {
 			Entry entry = new Entry(0);
 			entry.type="metadata";
 			HashMap<String, String> m = new HashMap<String, String>();
-			m.put("version","5");
+			m.put("game_zero", String.valueOf(gameZero));
+			m.put("game_end", String.valueOf(gameEnd));
 			m.put("match_id", String.valueOf(match_id));
 			m.put("hero_to_slot", g.toJson(hero_to_slot));
 			m.put("name_to_slot", g.toJson(name_to_slot));
 			entry.value = g.toJson(m);
 			log.add(0, entry);
-			
-			for (int i=0;i<log.size();i++){
-				Entry l = log.get(i);
-				l.time-=gameZero;
-			}
 			System.out.println(g.toJson(log));
 
 			finish(tStart);

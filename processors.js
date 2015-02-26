@@ -196,59 +196,143 @@ function runParser(cb) {
         }
         try {
             output = JSON.parse(output);
-            var parsed_data={};
-            for (var i =0;i<output.ength;i++){
-                
+            var parsed_data = {
+                "version": 5,
+                "times": [],
+                "chat": [],
+                "wards": []
+            };
+            var handlers = {
+                "metadata": function(e) {
+                    for (var key in e) {
+                        parsed_data[key] = e[key];
+                    }
+                    parsed_data.players = Object.keys(e.name_to_slot).map(function(p) {
+                        return {
+                            "gold": [],
+                            "lh": [],
+                            "xp": [],
+                            "hero": [], //give id, start time
+                            "itembuys": [],
+                            "herokills": [],
+                            "buybacks": [],
+                            "pos": [],
+                            "gold_log": {},
+                            "xp_log": {},
+                            "itemuses": {},
+                            "abilityuses": {},
+                            "stun": 0,
+                            "hero_hits": {},
+                            "damage": {},
+                            "CHAT_MESSAGE_RUNE_PICKUP": {}, //counts of each type
+                            "CHAT_MESSAGE_RUNE_BOTTLE": {}
+                        };
+                    });
+                },
+                //combat log
+                //hero_to_slot/getassociatedhero lookup
+                "gold_log": function(e) {
+                    //unit contains player lookup
+                    //key contains cause
+                    //value contains amount
+                },
+                "xp_log": function(e) {
+                    //unit contains player lookup
+                    //key contains cause
+                    //value contains amount 
+                },
+                "itembuys": function(e) {
+                    //unit contains player lookup
+                    //key contains item
+                },
+                "itemuses": function(e) {
+                    //unit contains player lookup
+                    //key contains item   
+                },
+                "abilityuses": function(e) {
+                    //unit contains player lookup
+                    //key contains ability
+                },
+                "herokills": function(e) {
+                    //unit contains player lookup
+                    //key contains target
+                },
+                "kills": function(e) {
+                    //unit contains player lookup
+                    //key contains target
+                },
+                "hero_hits": function(e) {
+                    //unit contains player lookup
+                    //key contains target
+                },
+                "damage": function(e) {
+                    //unit contains player lookup
+                    //key contains target
+                    //value contains damage
+                },
+                //already have slot
+                "stun": function(e) {
+                    //slot contains slot
+                    //value contains value
+                },
+                "buybacks": function(e) {
+                    //slot contains slot
+                },
+                "CHAT_MESSAGE_RUNE_PICKUP": function(e) {
+                    //slot contains slot
+                    //key contains rune type
+                },
+                "CHAT_MESSAGE_RUNE_BOTTLE": function(e) {
+                    //slot contains slot
+                    //key contains rune type
+                },
+                "interval": function(e) {
+                    //slot contains slot
+                    //value contains hash of lh,gold,xp values
+                },
+                "pos": function(e) {
+                    //slot contains slot
+                    //value contains pos
+                },
+                "hero": function(e) {
+                    //slot contains slot
+                    //unit contains hero id
+                },
+                //wards, team-based
+                "obs": function(e) {
+                    //unit contains team (2 or 3)
+                    //slot contains slot
+                    //value contains pos
+                },
+                "sen": function(e) {
+                    //unit contains team
+                    //slot contains slot
+                    //value contains pos
+                },
+                //name_to_slot lookup
+                "chat": function(e) {
+                    //unit contains player name
+                    //value contains text
+                },
+                //time, no team
+                "time": function(e) {
+                    //value contains true time
+                }
+            };
+            for (var i = 0; i < output.length; i++) {
+                var e = output[i];
+                e.time -= Number(parsed_data.game_zero);
+                //todo compute slot
+                if (!e.slot) {
+                    //types, combat log, chat, already have slot, wards (have slot but don't use), time (no slot)
+                    //getassociatedhero/hero_to_slot to figure out what slot a combatlog entry should go into
+                    //use name_to_slot for chat entries
+                    //some combatlog fields should not getassociatedhero, just try to look up a slot immediately
+                }
+                //adjust slot for 1v1
+                e.slot = parsed_data.players.length === 2 ? Number(e.slot) % 5 : Number(e.slot);
+                handlers[e.type] ? handlers[e.type](e) : console.log(e);
             }
-            /*
-			//process events in log
-			//getassociatedhero/hero_to_slot to figure out what slot a log entry should go into
-			//use name_to_slot for chat entries
-			//some fields should not getassociatedhero, just try to look up a slot immediately
-			//populate an array of player objects with log entries	
-			for (int i =0;i<log.size();i++){
-				Entry entry = log.get(i);
-				entry.adjust(gameZero);
-				String type = entry.type;
-				if (type.equals("buybacks")){
-					Integer slot = entry.slot;
-					if (slot>=0){
-						doc.players.get(slot).buybacks.add(entry);
-					}
-					continue;
-				}
-				if (type.equals("chat")){
-					String prefix = entry.prefix;
-					if(name_to_slot.containsKey(prefix)){
-						Integer slot = name_to_slot.get(prefix);
-						entry.slot = slot;
-						doc.chat.add(entry);
-					}
-					else{
-						System.err.format("[CHAT]: %s not found in names\n", prefix);
-					}
-					continue;
-				}
-				HashMap<String, Unit> heroes = doc.heroes;
-				String unit = entry.unit;
-				if (!heroes.containsKey(unit)){
-					doc.addUnit(unit);
-				}
-				Unit hero = heroes.get(unit);
-				HashMap<String, Integer> counts = hero.getCount(type);
-				String key = entry.key;
-				Integer count = counts.containsKey(key) ? counts.get(key) : 0;
-				counts.put(key, count+entry.value);
-				//put the item into this hero's purchases
-				if (type.equals("itembuys")){
-					hero.timeline.add(entry);
-				}
-				//put the kill into this hero's hero kills
-				if (entry.herokills){
-					hero.herokills.add(entry);
-				}
-			}
-			*/
             cb(code, parsed_data);
         }
         catch (err) {
