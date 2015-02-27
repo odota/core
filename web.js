@@ -100,6 +100,24 @@ app.use(function(req, res, next) {
         return next(err);
     });
 });
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+app.use("/socket", function(req, res){
+    res.render("socket");
+});
+*/
+var Poet = require('poet');
+var poet = Poet(app);
+poet.watch(function() {
+    // watcher reloaded
+}).init().then(function() {
+    // Ready to go!
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));

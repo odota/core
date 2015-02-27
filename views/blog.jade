@@ -1,0 +1,14 @@
+extend layout
+
+block content
+  h1 The YASP Blog
+  .row
+    .col-md-8
+      block blogcontent
+    .col-md-4
+      .well.sidebar-nav
+        ul.nav.nav-list
+          li.nav-header tags
+          - each tag in getTags()
+            li
+              a(href=tagURL(tag)) #{tag}

@@ -106,17 +106,19 @@ function streamReplay(job, cb) {
     var parser;
     var error;
     var inStream;
-    var exit;
-    d.on('error', function(err) {
-        if (!exit) {
-            exit = true;
-            cb(error || err.message);
+    var exited;
+
+    function exit(err) {
+        if (!exited) {
+            exited = true;
+            cb(error || err.message || err);
         }
-    });
+    }
+    d.on('error', exit);
     d.run(function() {
-        parser = utility.runParse(function(err, output) {
+        parser = runParse(function(err, output) {
             if (err) {
-                return cb(err);
+                return exit(err);
             }
             match_id = match_id || output.match_id;
             job.data.payload.match_id = match_id;
@@ -162,10 +164,7 @@ function streamReplay(job, cb) {
             inStream = request.get({
                 url: job.data.url,
                 encoding: null,
-                timeout: 60000,
-                headers: {
-                    'User-Agent': 'request'
-                }
+                timeout: 60000
             });
             inStream.on('response', function(response) {
                 if (response.statusCode !== 200) {
@@ -174,6 +173,36 @@ function streamReplay(job, cb) {
             }).pipe(bz.stdin);
         }
     });
+}
+
+function runParse(cb) {
+    var parser_file = "parser/target/stats-0.1.0.jar";
+    var output = '';
+    var parser = spawn("java", ["-jar",
+        parser_file
+    ], {
+        stdio: ['pipe', 'pipe', 'ignore'],
+        encoding: "utf8"
+    });
+    //stderr is sent to /dev/null
+    //modify stdio array if we want to log it here
+    parser.stdout.on('data', function(data) {
+        output += data;
+    });
+    parser.on('exit', function(code) {
+        logger.info("[PARSER] exit code: %s", code);
+        if (code) {
+            return cb(code);
+        }
+        try {
+            output = JSON.parse(output);
+            cb(code, output);
+        }
+        catch (err) {
+            cb(err);
+        }
+    });
+    return parser;
 }
 
 function processApi(job, cb) {

@@ -1,0 +1,11 @@
+extend blog
+block blogcontent
+  div.post
+    h1: a(href=post.url)=post.title
+      small.date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
+    div.post.content
+      != post.content
+    div.tags
+      each tag in post.tags
+        a(href=tagUrl(tag))
+          span.label.label-info #{tag}

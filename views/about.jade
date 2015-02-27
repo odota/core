@@ -2,11 +2,11 @@ extend layout
 
 block content
   h3 What is YASP?
-  p YASP is a free, open-source Dota 2 stats site.  We currently offer the following features:
+  p YASP is a free, open-source Dota 2 stats site focused on personal data analysis.  We currently offer the following features:
   ul
     li Replay parsing.  This allows us to present additional statistics that aren't available in the API or game client.
     li Rating tracking.  This allows us to show you your rating history.
-    li Visualizations.  We generate histograms and heatmaps of your Dota 2 match data.
+    li Player statistics.  We generate histograms and heatmaps of match history, and break down statistics such as hero matchups.
   
   h3 What does YASP stand for?
   p YASP stands for YASP: Another Stats Page, which makes it a recursive acronym along the lines of GNU and YAML.
@@ -22,19 +22,19 @@ block content
   p The best way to let us know is by making an issue on GitHub.  This way we can discuss the issue/request with you.
   
   h3 Why are my matches showing up, but don't get parsed?
-  p There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable.
-  p After that, the replay might not be available, which happens occasionally (particularly in the SEA region).
+  p There is usually a delay after the match (~15 minutes) while we wait for Valve to make the replay downloadable.
+  p If it's still not parsed, the replay might not be available, which happens occasionally (particularly in the SEA region).  If you can't download it through the client, we can't get it either.
   p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.
-  p Usually, we're able to parse over 95% of games.
-  
-  h3 Why don't you have my old matches?
-  p YASP only starts tracking your matches from when you signed in.  We get full match histories for contributors and active YASP users.
+
+  h3 Why don't you have my old matches/Why do you have a few of my old matches?
+  p YASP only starts tracking your matches from when you signed in.  If we have a few of your games, these are games you were in with a tracked user.
+  p We get full match histories for contributors and active YASP users.
   
   h3 I signed in a while ago and just came back, why haven't my matches been tracked?
-  p To keep the load reasonable, we stop parsing players' matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
+  p To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
   
   h3 How do untracking and full history eligibility work?
-  p Currently, we untrack users who have not visited YASP for 3 days.  Users who have used YASP for 7 days and remain tracked are eligible for full history.
+  p Currently, we untrack users who have not visited YASP for 3 days.  Users whose accounts are 7 days old and remain tracked are eligible for full history.
   
   h3 Why am I still missing some matches after getting my full history?
   p The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.

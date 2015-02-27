@@ -40,6 +40,8 @@ html
             li
               a(href="/about") FAQ/About
             li
+              a(href="/page/1") Blog
+            li
               a(href="/carry") Help Carry
           if user
             ul.nav.navbar-nav.navbar-right
@@ -54,9 +56,9 @@ html
        if user && user.track===0
            .alert.alert-warning(role="alert") !{constants.untracked_msg}
        if login_req_msg
-           .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
+         .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
        if !error
-        include ads/leaderboard
+         include ads/leaderboard
        block content
      .sticky_footer_row
       footer.footer(style="color: #777;\
