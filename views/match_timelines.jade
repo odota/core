@@ -41,32 +41,35 @@ append content
         .row
           .col-md-12
             h2 Hero Kills
-            table.table.table-hover.table-responsive
-              tr
-                th Hero
-                - var bucket = 300
-                - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                  th= i/60+"'"
-              each player, ind in match.players
-                - var hero = constants.heroes[player.hero_id]
-                - var parsedPlayer = match.parsed_data.heroes[hero.name]
-                tr(class = player.player_slot<64 ? "success" : "danger")
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id              
-                  - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                    td
-                      each entry in parsedPlayer.herokills || []
-                        if entry.time < i && entry.time >= i-bucket
-                          - var hero = constants.hero_names[entry.key]
-                          if hero
-                            div.img-text
-                              img.dmg(src=hero.img, title=hero.localized_name)
-                              div.format-seconds=entry.time
-                          else
-                            =key
+            .table-responsive
+              table.table.table-hover
+                thead
+                  tr
+                    th Hero
+                    - var bucket = 300
+                    - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                      th= i/60+"'"
+                tbody  
+                  each player, ind in match.players
+                    - var hero = constants.heroes[player.hero_id]
+                    - var parsedPlayer = match.parsed_data.heroes[hero.name]
+                    tr(class = player.player_slot<64 ? "success" : "danger")
+                      td.hero
+                        if hero
+                          img(src=hero.img, title=hero.localized_name)
+                        else
+                          =player.hero_id              
+                      - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                        td
+                          each entry in parsedPlayer.herokills || []
+                            if entry.time < i && entry.time >= i-bucket
+                              - var hero = constants.hero_names[entry.key]
+                              if hero
+                                div.img-text
+                                  img.dmg(src=hero.img, title=hero.localized_name)
+                                  div.format-seconds=entry.time
+                              else
+                                =key
         .row
             .col-md-12
               include ads/leaderboard_3
