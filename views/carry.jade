@@ -17,9 +17,16 @@ block content
                 option 3
                 option 4
                 option(selected) 5
+                option 6
+                option 7
+                option 8
+                option 9
                 option 10
                 option 20
+                option 30
+                option 40
                 option 50
+                option 75
                 option 100
               p CHEESE
           div
@@ -66,7 +73,7 @@ block content
               h4 <a href="/players/#{player.account_id}"> #{player.personaname || player.account_id}</a>
           td #{player.cheese}
 
-block footer_assets
+append footer_assets
    link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
    style.
      .img-thumbnail { width: 40px;}
