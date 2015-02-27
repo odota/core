@@ -1,28 +1,32 @@
 extend match
     
-append content 
+block match_content 
     .row
         if match.parsed_data
           .row
             .col-md-12
               h3 Radiant Advantage
               #chart-diff
+          hr
           .row
             include ads/leaderboard_2
+          hr
           .row
             .col-md-12
               h3 Gold
               #chart-gold
+          hr
           .row
             include ads/leaderboard_3
+          hr
           .row
             .col-md-12
               h3 XP
               #chart-xp
-            .col-md-12
+              hr
               h3 LH
               #chart-lh
-            .col-md-12
+              hr
               h3 Income Sources
               #chart-gold-breakdown
         else

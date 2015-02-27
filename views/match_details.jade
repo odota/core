@@ -1,6 +1,6 @@
 extend match
 
-append content
+block match_content
   .row
     .col-md-12
       if match.parsed_data
@@ -58,7 +58,9 @@ append content
                         img.dmg(src=dmg.img, title=dmg.localized_name)
                         div.format #{dmg.val}
                         div (#{dmg.kills || 0})
+        hr
         include ads/leaderboard_2
+        hr
         .row
           .col-md-8.table-responsive
             h2 Gold
@@ -100,6 +102,5 @@ append content
                       - var parsedHero = match.parsed_data.heroes[hero.name]
                       each val, key in constants.xp_reasons
                         td #{parsedHero.xp_log[key] || "-"}
-        include ads/leaderboard_3
       else
         h1 This match has no parsed data!

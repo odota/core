@@ -1,6 +1,6 @@
 extend match
 
-append content
+block match_content
   .row
     .col-md-12
       h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
@@ -66,7 +66,9 @@ append content
                          - var item = constants.items[constants.item_ids[val]]                             
                          if item
                            img.item(src=item.img, alt=constants.item_ids[val])
+      hr
       include ads/leaderboard_2
+      hr
       h2 Skill Builds
       .table-responsive
           table.table.table-hover
@@ -92,6 +94,7 @@ append content
                             img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
+  hr
   .row      
     h2 Buildings
     .col-md-6
@@ -99,7 +102,7 @@ append content
         img.map(src='/public/images/map.jpg', alt="map")
     .col-md-6
       include ads/skyscraper
-      
+block 
 append footer_assets
   script.
     buildMap();
