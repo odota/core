@@ -5,104 +5,105 @@ append content
     .col-md-12
       if match.parsed_data
         h2 Details
-        table.table.table-hover.table-responsive.summable
-          each player, i in match.players
-            if !(i%5)
-              tr
-                th Hero
-                th 
-                  abbr(title="Town Portal Scrolls bought") TP
-                th 
-                  abbr(title="Observer Wards bought") OBS
-                th
-                  abbr(title="Sentry Wards bought") SEN
-                th
-                  abbr(title="Smokes of Deceit bought") SMK
-                th
-                  abbr(title="Dusts of Appearance bought") DST
-                th
-                  abbr(title="Gems of True Sight bought") GEM
-                th
-                  abbr(title="Number of Buybacks") BB
-                th
-                  abbr(title="Seconds of disable on enemy heroes") STUN
-                th 
-                  abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
-                th
-                  abbr(title="Items used") Items
-                th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
-            tr(class = player.player_slot<64 ? "success" : "danger")
-              - var hero = constants.heroes[player.hero_id]
-              - var parsedHero = match.parsed_data.heroes[hero.name]
-              - var parsedPlayer = match.parsed_data.players[i]
-              td.hero
-               if hero
-                 img(src=hero.img, title=hero.localized_name)
-               else
-                 =player.hero_id
-              td #{parsedHero.itembuys.tpscroll || "-"}
-              td #{parsedHero.itembuys.ward_observer*2 || "-"}
-              td #{parsedHero.itembuys.ward_sentry*2 || "-"}
-              td #{parsedHero.itembuys.smoke_of_deceit || "-"}
-              td #{parsedHero.itembuys.dust*2 || "-"}
-              td #{parsedHero.itembuys.gem || "-"}
-              td #{parsedPlayer.buybacks.length || "-"}
-              td #{parsedPlayer.stuns.toFixed(2)}
-              td.table-img
-                each ability in player.abilityuses
-                  div.img-text
-                    img.ability(src=ability.img, alt=ability.name)
-                    div #{ability.val}
-                    div (#{ability.hero_hits || 0})
-              td.table-img
-                each item in player.itemuses
-                  div.img-text
-                    img.item(src=item.img, alt=item.name)
-                    div #{item.val}
-              td.table-img
-                each dmg in player.damage
-                  div.img-text
-                    img.dmg(src=dmg.img, title=dmg.localized_name)
-                    div.format #{dmg.val}
-                    div (#{dmg.kills || 0})
+        .table-responsive
+          table.table.table-hover.summable
+            each player, i in match.players
+              if !(i%5)
+                thead
+                  tr
+                    th Hero
+                    th 
+                      abbr(title="Town Portal Scrolls bought") TP
+                    th 
+                      abbr(title="Observer Wards bought") OBS
+                    th
+                      abbr(title="Sentry Wards bought") SEN
+                    th
+                      abbr(title="Smokes of Deceit bought") SMK
+                    th
+                      abbr(title="Dusts of Appearance bought") DST
+                    th
+                      abbr(title="Gems of True Sight bought") GEM
+                    th
+                      abbr(title="Number of Buybacks") BB
+                    th: abbr(title="Seconds of disable on enemy heroes") STUN
+                    th: abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
+                    th: abbr(title="Items used") Items
+                    th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
+              tr(class = player.player_slot<64 ? "success" : "danger")
+                - var hero = constants.heroes[player.hero_id]
+                - var parsedHero = match.parsed_data.heroes[hero.name]
+                - var parsedPlayer = match.parsed_data.players[i]
+                td.hero
+                 if hero
+                   img(src=hero.img, title=hero.localized_name)
+                 else
+                   =player.hero_id
+                td #{parsedHero.itembuys.tpscroll || "-"}
+                td #{parsedHero.itembuys.ward_observer*2 || "-"}
+                td #{parsedHero.itembuys.ward_sentry*2 || "-"}
+                td #{parsedHero.itembuys.smoke_of_deceit || "-"}
+                td #{parsedHero.itembuys.dust*2 || "-"}
+                td #{parsedHero.itembuys.gem || "-"}
+                td #{parsedPlayer.buybacks.length || "-"}
+                td #{parsedPlayer.stuns.toFixed(2)}
+                td.table-img
+                  each ability in player.abilityuses
+                    div.img-text
+                      img.ability(src=ability.img, alt=ability.name)
+                      div #{ability.val}
+                      div (#{ability.hero_hits || 0})
+                td.table-img
+                  each item in player.itemuses
+                    div.img-text
+                      img.item(src=item.img, alt=item.name)
+                      div #{item.val}
+                td.table-img
+                  each dmg in player.damage
+                    div.img-text
+                      img.dmg(src=dmg.img, title=dmg.localized_name)
+                      div.format #{dmg.val}
+                      div (#{dmg.kills || 0})
         include ads/leaderboard_2
         .row
           .col-md-8
             h2 Gold
-            table.table.table-hover.table-responsive.summable
-              tr
-                th Hero
-                each val, key in constants.gold_reasons
-                  th=val
-              each player, i in match.players
-                tr(class = player.player_slot<64 ? "success" : "danger")
-                  - var hero = constants.heroes[player.hero_id]
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id
-                    - var parsedHero = match.parsed_data.heroes[hero.name]
-                    each val, key in constants.gold_reasons
-                      td #{parsedHero.gold_log[key] || "-"}
+            .table-responsive
+              table.table.table-hover.summable
+                tr
+                  th Hero
+                  each val, key in constants.gold_reasons
+                    th=val
+                each player, i in match.players
+                  tr(class = player.player_slot<64 ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      - var parsedHero = match.parsed_data.heroes[hero.name]
+                      each val, key in constants.gold_reasons
+                        td #{parsedHero.gold_log[key] || "-"}
           .col-md-4
             h2 XP
-            table.table.table-hover.table-responsive.summable
-              tr
-                th Hero
-                each val, key in constants.xp_reasons
-                  th=val
-              each player, i in match.players
-                tr(class = player.player_slot<64 ? "success" : "danger")
-                  - var hero = constants.heroes[player.hero_id]
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id
-                    - var parsedHero = match.parsed_data.heroes[hero.name]
-                    each val, key in constants.xp_reasons
-                      td #{parsedHero.xp_log[key] || "-"}
+            .table-responsive
+              table.table.table-hover.summable
+                tr
+                  th Hero
+                  each val, key in constants.xp_reasons
+                    th=val
+                each player, i in match.players
+                  tr(class = player.player_slot<64 ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      - var parsedHero = match.parsed_data.heroes[hero.name]
+                      each val, key in constants.xp_reasons
+                        td #{parsedHero.xp_log[key] || "-"}
         include ads/leaderboard_3
       else
         h1 This match has no parsed data!
