@@ -14,23 +14,20 @@ import com.dota2.proto.Demo.CDemoFileInfo;
 import com.dota2.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
-import com.google.gson.Gson;
 
 public class Main {
 	public static void main(String[] args) throws Exception{
 		long tStart = System.currentTimeMillis();
 		float MINUTE = 60;
 		HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
-		HashMap<Integer, Integer> hero_to_slot = new HashMap<Integer,Integer>();
-		HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
-		HashMap<Integer, Integer> ehandle_to_slot = new HashMap<Integer, Integer>();
+		//HashMap<Integer, Integer> hero_to_slot = new HashMap<Integer,Integer>();
+		//HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
+		//HashMap<Integer, Integer> ehandle_to_slot = new HashMap<Integer, Integer>();
 		boolean initialized = false;
 		GameEventDescriptor combatLogDescriptor = null;
 		CombatLogContext ctx = null;
@@ -51,7 +48,7 @@ public class Main {
 		int gameZero = Integer.MAX_VALUE;
 		int gameEnd = 0;
 		int numPlayers = 10;
-		List<Entry> log = new ArrayList<Entry>();
+		Log log = new Log();
 		Set<Integer> seenEntities = new HashSet<Integer>();
 		Set<Integer> effectEntities = new HashSet<Integer>();
 
@@ -85,32 +82,38 @@ public class Main {
 				for (int i = 0; i < numPlayers; i++) {
 					Integer hero = (Integer)pr.getState()[heroIdx+i];
 					if (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero)){
-						hero_to_slot.put(hero, i);
+						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
 						Entry entry = new Entry(time);
 						entry.type="hero";
 						entry.slot=i;
-						entry.unit=String.valueOf(hero);
-						log.add(entry);
+						entry.key=String.valueOf(hero);
+						log.output(entry);
 					}
 				}
 				
 				if (trueTime > nextMinute) {
 					Entry entry = new Entry(time);
-					entry.type="time";
-					entry.value = String.valueOf(trueTime);
-					log.add(entry);
-					
+					entry.type="times";
+					entry.value = trueTime;
+					log.output(entry);
 				    for (int i = 0; i < numPlayers; i++) {
+				    	//todo could use hash/loop to reduce duplication
 				    	Entry entry2 = new Entry(time);
-				    	entry2.type="interval";
+				    	entry2.type="lh";
 					    entry2.slot = i;
-					    HashMap<String, String> m = new HashMap<String,String>();
-					    m.put("lh", String.valueOf(pr.getState()[lhIdx+i]));
-					    m.put("xp",  String.valueOf(pr.getState()[xpIdx+i]));
-					    m.put("gold", String.valueOf(pr.getState()[goldIdx+i]));
-					    entry2.value = new Gson().toJson(m);
-					    log.add(entry2);
+					    entry2.value = (Integer)pr.getState()[lhIdx+i];
+					    Entry entry3=new Entry(time);
+					    entry3.type="gold";
+					    entry3.slot = i;
+					    entry3.value = (Integer)pr.getState()[goldIdx+i];
+					    Entry entry4 = new Entry(time);
+					    entry4.type="xp";
+					    entry4.slot = i;
+					    entry4.value = (Integer)pr.getState()[xpIdx+i];
+					    log.output(entry2);
+					    log.output(entry3);
+					    log.output(entry4);
 					}
 					nextMinute += MINUTE;
 					}
@@ -118,15 +121,14 @@ public class Main {
 				if (trueTime > nextShort){
 					for (int i = 0; i < numPlayers; i++) {
 					int handle = (Integer)pr.getState()[handleIdx+i];
-					ehandle_to_slot.put(handle, i);
                     Entity e = ec.getByHandle(handle);
                     if (e!=null){
                     	Entry entry = new Entry(time);
                     	entry.slot = i;
                     	entry.type="pos";
                     	Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-                    	entry.value = Arrays.toString(pos);
-						log.add(entry);
+                    	entry.key = Arrays.toString(pos);
+						log.output(entry);
                     }
 					}
                     nextShort += MINUTE/60;
@@ -145,6 +147,7 @@ public class Main {
                 }
                 }
                 */
+                //todo fix duplicated code
                 Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");
                 while (obs.hasNext()){
                 Entity e = obs.next();
@@ -153,10 +156,12 @@ public class Main {
                 	Entry entry = new Entry(time);
 					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
 					entry.type = "obs";
-                    entry.value = Arrays.toString(pos);
-                    entry.slot = ehandle_to_slot.get(e.getProperty("m_hOwnerEntity"));
-                    entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
-                    log.add(entry);
+                    entry.key = Arrays.toString(pos);
+                    Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
+                    Entity ownerEntity = ec.getByHandle(owner);
+                    entry.slot = ownerEntity.getProperty("m_iPlayerID");
+                    //entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
+                    log.output(entry);
                 	seenEntities.add(handle);
                 }
                 }
@@ -168,10 +173,12 @@ public class Main {
                 	Entry entry = new Entry(time);
 					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
 					entry.type="sen";
-                    entry.value = Arrays.toString(pos);
-                    entry.slot = ehandle_to_slot.get(e.getProperty("m_hOwnerEntity"));
-                    entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
-                    log.add(entry);
+                    entry.key = Arrays.toString(pos);
+                    Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
+                    Entity ownerEntity = ec.getByHandle(owner);
+                    entry.slot = ownerEntity.getProperty("m_iPlayerID");
+                    //entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
+                    log.output(entry);
                     seenEntities.add(handle);
                 }
                 }
@@ -191,10 +198,10 @@ public class Main {
                         }
                         else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP") || type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
                         	Entry entry = new Entry(time);
-                        	entry.type=type;
+                        	entry.type=type.equals("CHAT_MESSAGE_RUNE_PICKUP") ? "runes" : "runes_bottled";
                         	entry.slot=player1;
                         	entry.key=value;
-                        	log.add(entry);
+                        	log.output(entry);
                         }                   
                         else if (type.equals("CHAT_MESSAGE_RANDOM")){
                         }
@@ -223,12 +230,12 @@ public class Main {
 					else if (name.equals("CUserMsg_SayText2")){
 						Entry entry = new Entry(time);
 						entry.unit =  String.valueOf(u.getProperty("prefix"));
-						entry.value =  String.valueOf(u.getProperty("text"));
+						entry.key =  String.valueOf(u.getProperty("text"));
 						entry.type = "chat";
-						log.add(entry);
+						log.output(entry);
 					}
 					else if (name.equals("CDOTAUserMsg_SpectatorPlayerClick")){
-						//System.err.format("%s %s\n", time, u);
+						System.err.format("%s %s\n", time, u);
 					}
 					else{
 						//System.err.format("%s %s\n", time, u);
@@ -244,16 +251,16 @@ public class Main {
 							//damage
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
-							entry.value = cle.getValueString();
+							entry.value = cle.getValue();
 							entry.type = "damage";
-							log.add(entry);
+							log.output(entry);
 							//break down damage instances on heroes by inflictor to get skillshot stats, only track hero hits
 							if (cle.isTargetHero() && !cle.isTargetIllusion()){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getAttackerNameCompiled();
 								entry2.key = cle.getInflictorName();
 								entry2.type = "hero_hits";
-								log.add(entry2);
+								log.output(entry2);
 							}
 							break;
 						case 1:
@@ -293,13 +300,13 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.type = "kills";
-							log.add(entry);
+							log.output(entry);
 							if ((cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion())){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getAttackerNameCompiled();
 								entry2.key = cle.getTargetNameCompiled();
 								entry2.type="herokills";
-								log.add(entry2);
+								log.output(entry2);
 							}
 							break;
 						case 5:
@@ -307,53 +314,62 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "abilityuses";
-							log.add(entry);
+							log.output(entry);
 							break;
 						case 6:
 							//item use
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "itemuses";
-							log.add(entry);
+							log.output(entry);
 							break;
 						case 8:
 							//gold gain/loss
 							entry.key = String.valueOf(cle.getGoldReason());
 							entry.unit = cle.getTargetNameCompiled();
-							entry.value = cle.getValueString();
+							entry.value = cle.getValue();
 							entry.type = "gold_log";
-							log.add(entry);
+							log.output(entry);
 							break;
 						case 9:
 							//state
 							String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
 							if (state.equals("PLAYING")){
+								entry.value = Integer.valueOf(time);
+								entry.type = "game_zero";
+								log.output(entry);
 								gameZero = time;
 							}
-							if (state.equals("POST_GAME")){
+							else if (state.equals("POST_GAME")){
+								entry.value = Integer.valueOf(time);
+								entry.type = "game_end";
+								log.output(entry);
 								gameEnd = time;
+							}
+							else{
 							}
 							break;
 						case 10:
 							//xp gain
 							entry.unit = cle.getTargetNameCompiled();
-							entry.value = cle.getValueString();
+							entry.value = cle.getValue();
 							entry.key = String.valueOf(cle.getXpReason());
 							entry.type = "xp_log";
-							log.add(entry);
+							log.output(entry);
 							break;
 						case 11:
 							//purchase
 							entry.unit = cle.getTargetNameCompiled();
 							entry.key = cle.getValueName();
 							entry.type = "itembuys";
-							log.add(entry);
+							log.output(entry);
 							break;
 						case 12:
 							//buyback
 							entry.slot = cle.getValue();
 							entry.type = "buybacks";
-							log.add(entry);
+							entry.key = "bb";
+							log.output(entry);
 							break;
 						case 13:
 							//ability trigger
@@ -372,9 +388,9 @@ public class Main {
 				String stuns = String.valueOf(pr.getState()[stunIdx+i]);
 				Entry entry = new Entry(time);
 				entry.slot=i;
-				entry.type="stun";
-				entry.value=stuns;
-				log.add(entry);
+				entry.type="stuns";
+				entry.key=stuns;
+				log.output(entry);
 			}
 
 			//load epilogue
@@ -382,24 +398,18 @@ public class Main {
 			//System.err.println(info);
 			List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
 			for (int i = 0;i<players.size();i++) {
-				String replayName = players.get(i).getPlayerName();
-				name_to_slot.put(replayName, i);
+				Entry entry = new Entry(time);
+				entry.type="name";
+				entry.slot = i;
+				entry.key = players.get(i).getPlayerName();
+				log.output(entry);
 			}
-			int match_id = info.getGameInfo().getDota().getMatchId();
-			
-			Gson g = new Gson();
-			Entry entry = new Entry(0);
-			entry.type="metadata";
-			HashMap<String, String> m = new HashMap<String, String>();
-			m.put("game_zero", String.valueOf(gameZero));
-			m.put("game_end", String.valueOf(gameEnd));
-			m.put("match_id", String.valueOf(match_id));
-			m.put("hero_to_slot", g.toJson(hero_to_slot));
-			m.put("name_to_slot", g.toJson(name_to_slot));
-			entry.value = g.toJson(m);
-			log.add(0, entry);
-			System.out.println(g.toJson(log));
-
+			Integer match_id = info.getGameInfo().getDota().getMatchId();
+			Entry entry = new Entry(time);
+			entry.type="match_id";
+			entry.value = match_id;
+			log.output(entry);
+			log.flush();
 			finish(tStart);
 			return;
 	}

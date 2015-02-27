@@ -43,7 +43,7 @@ d.run(function() {
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
-        setInterval(updatenames, 7 * 60 * 1000, function() {});
+        setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
         setInterval(apiStatus, 2 * 60 * 1000);
     });

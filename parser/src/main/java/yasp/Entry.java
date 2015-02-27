@@ -6,7 +6,7 @@ public class Entry {
     public String type;
     public String unit;
     public String key;
-    public String value;
+    public Integer value;
     public Integer slot;
     public Entry(Integer time){
         this.time = time;

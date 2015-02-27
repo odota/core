@@ -14,6 +14,8 @@ var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
 var queueReq = operations.queueReq;
 var JSONStream = require('JSONStream');
+var constants = require('./constants.json');
+var mode = utility.mode;
 
 function processParse(job, cb) {
     var t1 = new Date();
@@ -178,166 +180,230 @@ function streamReplay(job, cb) {
 
 function runParser(cb) {
     var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = '';
+    var entries = [];
+    var mapSize = 128;
+    var parsed_data = {
+        "version": 5,
+        "game_zero": 0,
+        "game_end": 0,
+        "match_id": 0,
+        "players": [],
+        "times": []
+    };
+    var name_to_slot = {};
+    var hero_to_slot = {};
+    var entryTypes = {
+        "times": setData,
+        "match_id": setData,
+        "game_zero": setData,
+        "game_end": setData,
+        "hero": function(e) {
+            //get hero by id
+            var h = constants.heroes[e.key];
+            hero_to_slot[h ? h.name : e.key] = e.slot;
+            if (!parsed_data.players[e.slot]) {
+                parsed_data.players.push({
+                    "stuns": -1,
+                    "lane": [],
+                    "pos": [],
+                    "obs": [],
+                    "sen": [],
+                    "gold": [],
+                    "lh": [],
+                    "xp": [],
+                    "hero": [],
+                    "itembuys": [],
+                    "herokills": [],
+                    "buybacks": [],
+                    "gold_log": {},
+                    "xp_log": {},
+                    "kills": {},
+                    "itemuses": {},
+                    "abilityuses": {},
+                    "hero_hits": {},
+                    "damage": {},
+                    "runes": {},
+                    "runes_bottled": {}
+                });
+            }
+            getSlot(e);
+        },
+        "name": function(e) {
+            name_to_slot[e.key] = e.slot;
+        },
+        "gold_log": getSlot,
+        "xp_log": getSlot,
+        "itembuys": getSlot,
+        "itemuses": getSlot,
+        "abilityuses": getSlot,
+        "herokills": getSlot,
+        "kills": getSlot,
+        "hero_hits": getSlot,
+        "damage": getSlot,
+        "runes": getSlot,
+        "runes_bottled": getSlot,
+        "stuns": getSlot,
+        "chat": getSlot,
+        "buybacks": getSlot,
+        "lh": interval,
+        "gold": interval,
+        "xp": interval,
+        "pos": translate,
+        "obs": translate,
+        "sen": translate
+    };
+
+    function preprocess(e) {
+        (entryTypes[e.type]) ? entryTypes[e.type](e): console.log(e);
+    }
+
+    function setData(e) {
+        var t = parsed_data[e.type];
+        if (t.constructor === Array) {
+            t.push(e.value);
+        }
+        else {
+            parsed_data[e.type] = e.value;
+        }
+    }
+
+    function translate(e) {
+        //transform to 0-127 range from 64-191, y=0 at top left from bottom left
+        e.key = JSON.parse(e.key);
+        e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
+        e.position = true;
+        getSlot(e);
+    }
+
+    function interval(e) {
+        e.interval = true;
+        getSlot(e);
+    }
+
+    function getSlotDirect(e) {
+        e.skip = true;
+        getSlot(e);
+    }
+
+    function getSlot(e) {
+        var map = e.type === "chat" ? name_to_slot : hero_to_slot;
+        if (e.unit) {
+            if (e.unit in map) {
+                e.slot = map[e.unit];
+            }
+            else if (!e.skip) {
+                if (e.unit.indexOf("illusion_") === 0) {
+                    var s = e.unit.slice("illusion_".length);
+                    e.slot = map[s];
+                }
+                else if (e.unit.indexOf("npc_dota_") === 0) {
+                    //split by _
+                    var split = e.unit.split("_");
+                    //get the third element
+                    var identifiers = [split[2], split[2] + "_" + split[3]];
+                    identifiers.forEach(function(id) {
+                        //append to npc_dota_hero_, see if matches
+                        var attempt = "npc_dota_hero_" + id;
+                        if (attempt in map) {
+                            e.slot = map[attempt];
+                        }
+                    });
+                }
+            }
+        }
+        e.slot = ("slot" in e) ? e.slot : -1;
+        entries.push(e);
+    }
+
+    function processEntry(e) {
+        e.slot = parsed_data.players.length === 2 ? e.slot - 4 : e.slot;
+        e.time -= parsed_data.game_zero;
+        if (e.slot < 0) {
+            //console.log(e);
+            return;
+        }
+        var t = parsed_data.players[e.slot][e.type];
+        if (t.constructor === Array) {
+            e = (e.interval) ? e.value : {
+                time: e.time,
+                key: e.key
+            };
+            t.push(e);
+        }
+        else if (typeof t === "object") {
+            e.value = e.value || 1;
+            t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+        }
+        else {
+            parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+        }
+    }
     var parser = spawn("java", ["-jar",
         parser_file
     ], {
-        //stderr is sent to /dev/null
-        stdio: ['pipe', 'pipe', 'ignore'],
+        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
         encoding: 'utf8'
     });
+    /*
+    var output = '';
     parser.stdout.on('data', function(data) {
         output += data;
     });
+    */
+    var stream = JSONStream.parse();
+    parser.stdout.pipe(stream);
+    stream.on('root', preprocess);
     parser.on('exit', function(code) {
         logger.info("[PARSER] exit code: %s", code);
         if (code) {
             return cb(code);
         }
-        try {
-            output = JSON.parse(output);
-            var parsed_data = {
-                "version": 5,
-                "times": [],
-                "chat": [],
-                "wards": []
-            };
-            var handlers = {
-                "metadata": function(e) {
-                    for (var key in e) {
-                        parsed_data[key] = e[key];
+        /*
+        output = JSON.parse(output);
+        output.forEach(preprocess);
+        */
+        entries.forEach(processEntry);
+        var keys = Object.keys(entryTypes).filter(function(k) {
+            return entryTypes[k] === translate;
+        });
+        parsed_data.players.forEach(function(p) {
+            keys.forEach(function(key) {
+                //initialize zero map
+                var points = [];
+                var map = [];
+                for (var i = 0; i < mapSize; i++) {
+                    map.push(Array.apply(null, new Array(mapSize)).map(Number.prototype.valueOf, 0));
+                }
+                p[key].forEach(function(e) {
+                    map[e.key[1]][e.key[0]] += 1;
+                    if (e.time <= 600) {
+                        p.lane.push(constants.lanes[e.key[1]][e.key[0]]);
                     }
-                    parsed_data.players = Object.keys(e.name_to_slot).map(function(p) {
-                        return {
-                            "gold": [],
-                            "lh": [],
-                            "xp": [],
-                            "hero": [], //give id, start time
-                            "itembuys": [],
-                            "herokills": [],
-                            "buybacks": [],
-                            "pos": [],
-                            "gold_log": {},
-                            "xp_log": {},
-                            "itemuses": {},
-                            "abilityuses": {},
-                            "stun": 0,
-                            "hero_hits": {},
-                            "damage": {},
-                            "CHAT_MESSAGE_RUNE_PICKUP": {}, //counts of each type
-                            "CHAT_MESSAGE_RUNE_BOTTLE": {}
-                        };
-                    });
-                },
-                //combat log
-                //hero_to_slot/getassociatedhero lookup
-                "gold_log": function(e) {
-                    //unit contains player lookup
-                    //key contains cause
-                    //value contains amount
-                },
-                "xp_log": function(e) {
-                    //unit contains player lookup
-                    //key contains cause
-                    //value contains amount 
-                },
-                "itembuys": function(e) {
-                    //unit contains player lookup
-                    //key contains item
-                },
-                "itemuses": function(e) {
-                    //unit contains player lookup
-                    //key contains item   
-                },
-                "abilityuses": function(e) {
-                    //unit contains player lookup
-                    //key contains ability
-                },
-                "herokills": function(e) {
-                    //unit contains player lookup
-                    //key contains target
-                },
-                "kills": function(e) {
-                    //unit contains player lookup
-                    //key contains target
-                },
-                "hero_hits": function(e) {
-                    //unit contains player lookup
-                    //key contains target
-                },
-                "damage": function(e) {
-                    //unit contains player lookup
-                    //key contains target
-                    //value contains damage
-                },
-                //already have slot
-                "stun": function(e) {
-                    //slot contains slot
-                    //value contains value
-                },
-                "buybacks": function(e) {
-                    //slot contains slot
-                },
-                "CHAT_MESSAGE_RUNE_PICKUP": function(e) {
-                    //slot contains slot
-                    //key contains rune type
-                },
-                "CHAT_MESSAGE_RUNE_BOTTLE": function(e) {
-                    //slot contains slot
-                    //key contains rune type
-                },
-                "interval": function(e) {
-                    //slot contains slot
-                    //value contains hash of lh,gold,xp values
-                },
-                "pos": function(e) {
-                    //slot contains slot
-                    //value contains pos
-                },
-                "hero": function(e) {
-                    //slot contains slot
-                    //unit contains hero id
-                },
-                //wards, team-based
-                "obs": function(e) {
-                    //unit contains team (2 or 3)
-                    //slot contains slot
-                    //value contains pos
-                },
-                "sen": function(e) {
-                    //unit contains team
-                    //slot contains slot
-                    //value contains pos
-                },
-                //name_to_slot lookup
-                "chat": function(e) {
-                    //unit contains player name
-                    //value contains text
-                },
-                //time, no team
-                "time": function(e) {
-                    //value contains true time
+                });
+                for (var y = 0; y < mapSize; y++) {
+                    for (var x = 0; x < mapSize; x++) {
+                        if (map[y][x]) {
+                            /*
+                            points.push({
+                                x: x,
+                                y: y,
+                                value: map[y][x]
+                            });
+                            */
+                            //points.push([x,y,map[y][x]]);
+                            //super hacker bit packing!
+                            points.push(((x << 7) + y << 7) + map[y][x]);
+                            //Object.bsonsize(db.matches.findOne({match_id:1151783218}))
+                        }
+                    }
                 }
-            };
-            for (var i = 0; i < output.length; i++) {
-                var e = output[i];
-                e.time -= Number(parsed_data.game_zero);
-                //todo compute slot
-                if (!e.slot) {
-                    //types, combat log, chat, already have slot, wards (have slot but don't use), time (no slot)
-                    //getassociatedhero/hero_to_slot to figure out what slot a combatlog entry should go into
-                    //use name_to_slot for chat entries
-                    //some combatlog fields should not getassociatedhero, just try to look up a slot immediately
-                }
-                //adjust slot for 1v1
-                e.slot = parsed_data.players.length === 2 ? Number(e.slot) % 5 : Number(e.slot);
-                handlers[e.type] ? handlers[e.type](e) : console.log(e);
-            }
-            cb(code, parsed_data);
-        }
-        catch (err) {
-            cb(err);
-        }
+                p[key] = points;
+            });
+            p.explore = p.pos.length / (mapSize * mapSize);
+            p.lane = mode(p.lane);
+        });
+        fs.writeFile("output2.json", JSON.stringify(parsed_data), function() {});
+        cb(code, parsed_data);
     });
     return parser;
 }

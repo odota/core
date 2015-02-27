@@ -24,11 +24,11 @@ block content
   h3 Why are my matches showing up, but don't get parsed?
   p There is usually a delay after the match (~15 minutes) while we wait for Valve to make the replay downloadable.
   p If it's still not parsed, the replay might not be available, which happens occasionally (particularly in the SEA region).  If you can't download it through the client, we can't get it either.
-  p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.
+  p Alternatively, our parser couldn't process the match.  We re-parse matches when we can after fixing bugs.
 
   h3 Why don't you have my old matches/Why do you have a few of my old matches?
   p YASP only starts tracking your matches from when you signed in.  If we have a few of your games, these are games you were in with a tracked user.
-  p We get full match histories for contributors and active YASP users.
+  p We get full match histories for contributors and active YASP users.  Note that we can get API data but cannot parse matches older than 7 days, as the replay has expired.
   
   h3 I signed in a while ago and just came back, why haven't my matches been tracked?
   p To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
@@ -46,7 +46,7 @@ block content
   p Replay parsing is not an exact art.  Often, assumptions have to be made, and sometimes data is just inconsistent/unavailable.  If you find an issue, please report it!
   p Known Issues:
   ul
-    li Hero Kills: doesn't always show all kills.  This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
+    li Hero Kills: doesn't always show all kills.  This is because the combat log credits kills to the unit who got the last hit, so kills by creeps/towers do not count.
     li Hero Kills: Lots of Meepo kills in the log.  This is because the game has Meepo kill all remaining clones when one is killed.
   
   h3 Can I use YASP in my own project?

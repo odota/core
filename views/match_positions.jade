@@ -6,7 +6,7 @@ append content
       if match.parsed_data
           .row
             .col-md-7
-              h2: abbr(title="Player movement during the game") Heatmap
+              h2: abbr(title="Player movement during the game") Position Map
               #map.mapContainer
                 img.map(src='/public/images/map.jpg', alt="map")
             .col-md-5
@@ -32,7 +32,6 @@ append content
           include ads/leaderboard_3
 
 append footer_assets
-  script(src="//cdn.rawgit.com/pa7/heatmap.js/v2.0/build/heatmap.min.js")
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),

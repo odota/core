@@ -201,11 +201,6 @@ function getAssociatedHero(unit, heroes) {
 }
 
 function generateGraphData(match, constants) {
-    var oneVone = (match.players.length === 2);
-    if (oneVone) {
-        //rebuild parsed data players array if 1v1 match
-        match.parsed_data.players = [match.parsed_data.players[0], match.parsed_data.players[5]];
-    }
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -234,7 +229,7 @@ function generateGraphData(match, constants) {
     };
     match.parsed_data.players.forEach(function(elem, i) {
         var hero = constants.heroes[match.players[i].hero_id] || {};
-        hero = hero.localized_name + (oneVone ? " - " + match.players[i].personaname : "");
+        hero = hero.localized_name;
         data.gold.push([hero].concat(elem.gold));
         data.xp.push([hero].concat(elem.xp));
         data.lh.push([hero].concat(elem.lh));
