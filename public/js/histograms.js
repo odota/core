@@ -13,6 +13,11 @@ module.exports = function generateHistograms(data) {
                 domain: "month",
                 subDomain: "day",
                 data: data.calheatmap,
+                verticalOrientation: true,
+                label: {
+                  position: "left"  
+                },
+                colLimit: 31,
                 tooltip: true,
                 legend: [1, 2, 3, 4],
                 highlight: new Date(),
@@ -21,8 +26,10 @@ module.exports = function generateHistograms(data) {
                     return value;
                 },
                 cellSize: 15,
+                domainGutter: 10,
                 previousSelector: "#prev",
-                nextSelector: "#next"
+                nextSelector: "#next",
+                legendHorizontalPosition: "right"
             });
             setTimeout(cb, 50);
             },

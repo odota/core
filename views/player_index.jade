@@ -5,16 +5,33 @@ block playercontent
     .col-md-6
       h2 Record: #{player.win}-#{player.lose}
     .col-md-6
-      h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%   
+      h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%
+  hr
   .row
-    .col-md-12
+    .col-md-4
+        h3 Top Heroes
+        table.table
+          thead
+            tr
+              th Hero
+              th Games
+              th Winrate
+          each h in player.heroes.slice(0,10)
+            - var hero = constants.heroes[h.hero_id]
+            tr
+              td.hero
+                img(src=hero.img, title=hero.localized_name)
+              td= h.games
+              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+    .col-md-8.table-responsive
       h3 Activity
       p
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       div#cal-heatmap
+  hr
   .row
-    .col-md-8
+    .col-md-12
       h3 Recent Matches
       table.table
         thead
@@ -40,30 +57,19 @@ block playercontent
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
-    .col-md-4
-      h3 Top Heroes
-      table.table
-        thead
-          tr
-            th Hero
-            th Games
-            th Winrate
-        each h in player.heroes.slice(0,10)
-          - var hero = constants.heroes[h.hero_id]
-          tr
-            td.hero
-              img(src=hero.img, title=hero.localized_name)
-            td= h.games
-            td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+  hr
   .row
     include ads/leaderboard_2
+  hr
   .row
     .col-md-12
       h3 Match Durations
       #chart-duration
+      hr
       h3 GPMs
       #chart-gpms
   if player.publicmmr
+    hr
     include mmr
       
 append footer_assets

@@ -18,6 +18,7 @@ block content
           li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key == 'index' ? "" : key))= val.name
   block playercontent
+  hr
   .row
     .col-md-12
       include ads/leaderboard_3
