@@ -183,7 +183,7 @@ function runParser(cb) {
     var entries = [];
     var mapSize = 128;
     var parsed_data = {
-        "version": 5,
+        "version": constants.parser_version,
         "game_zero": 0,
         "game_end": 0,
         "match_id": 0,
@@ -192,7 +192,7 @@ function runParser(cb) {
     };
     var name_to_slot = {};
     var hero_to_slot = {};
-    var entryTypes = {
+    var types = {
         "times": setData,
         "match_id": setData,
         "game_zero": setData,
@@ -236,25 +236,39 @@ function runParser(cb) {
         "itembuys": getSlot,
         "itemuses": getSlot,
         "abilityuses": getSlot,
-        "herokills": getSlot,
         "kills": getSlot,
-        "hero_hits": getSlot,
         "damage": getSlot,
         "runes": getSlot,
         "runes_bottled": getSlot,
         "stuns": getSlot,
-        "chat": getSlot,
         "buybacks": getSlot,
+        "chat": getSlotDirect,
         "lh": interval,
         "gold": interval,
         "xp": interval,
         "pos": translate,
         "obs": translate,
-        "sen": translate
+        "sen": translate,
+        "hero_hits": function(e) {
+            getSlot({
+                type: e.subtype,
+                time: e.time,
+                unit: e.unit,
+                key: e.inflictor
+            });
+        },
+        "herokills": function(e) {
+            getSlot({
+                type: e.subtype,
+                time: e.time,
+                unit: e.unit,
+                key: e.key
+            });
+        }
     };
 
     function preprocess(e) {
-        (entryTypes[e.type]) ? entryTypes[e.type](e): console.log(e);
+        (types[e.type]) ? types[e.type](e): console.log(e);
     }
 
     function setData(e) {
@@ -312,6 +326,9 @@ function runParser(cb) {
             }
         }
         e.slot = ("slot" in e) ? e.slot : -1;
+        if (e.subtype in types) {
+            types[e.subtype]();
+        }
         entries.push(e);
     }
 
@@ -363,8 +380,8 @@ function runParser(cb) {
         output.forEach(preprocess);
         */
         entries.forEach(processEntry);
-        var keys = Object.keys(entryTypes).filter(function(k) {
-            return entryTypes[k] === translate;
+        var keys = Object.keys(types).filter(function(k) {
+            return types[k] === translate;
         });
         parsed_data.players.forEach(function(p) {
             keys.forEach(function(key) {
@@ -390,10 +407,8 @@ function runParser(cb) {
                                 value: map[y][x]
                             });
                             */
-                            //points.push([x,y,map[y][x]]);
                             //super hacker bit packing!
-                            points.push(((x << 7) + y << 7) + map[y][x]);
-                            //Object.bsonsize(db.matches.findOne({match_id:1151783218}))
+                            points.push((x << 24) + (y << 16) + map[y][x]);
                         }
                     }
                 }

@@ -38,6 +38,7 @@
     "express-session": "~1.10.3",
     "foreman": "~1.3.0",
     "http-auth": "~2.2.5",
+    "heatmap.js":"howardc93/heatmap.js#patch-1",
     "jade": "~1.9.2",
     "jquery": "~2.1.3",
     "kue": "~0.8.11",

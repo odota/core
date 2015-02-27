@@ -97,26 +97,23 @@ public class Main {
 					entry.type="times";
 					entry.value = trueTime;
 					log.output(entry);
+				}
+				if (trueTime > nextMinute){
+					HashMap<String, Integer> m = new HashMap<String, Integer>();
+					m.put("lh", lhIdx);
+					m.put("gold", goldIdx);
+					m.put("xp", xpIdx);
 				    for (int i = 0; i < numPlayers; i++) {
-				    	//todo could use hash/loop to reduce duplication
-				    	Entry entry2 = new Entry(time);
-				    	entry2.type="lh";
-					    entry2.slot = i;
-					    entry2.value = (Integer)pr.getState()[lhIdx+i];
-					    Entry entry3=new Entry(time);
-					    entry3.type="gold";
-					    entry3.slot = i;
-					    entry3.value = (Integer)pr.getState()[goldIdx+i];
-					    Entry entry4 = new Entry(time);
-					    entry4.type="xp";
-					    entry4.slot = i;
-					    entry4.value = (Integer)pr.getState()[xpIdx+i];
-					    log.output(entry2);
-					    log.output(entry3);
-					    log.output(entry4);
+				    	for (String key : m.keySet()){
+				    		Entry entry = new Entry(time);
+				    		entry.type = key;
+				    		entry.slot = i;
+				    		entry.value = (Integer)pr.getState()[m.get(key)+i];
+				    		log.output(entry);
+				    	}
 					}
 					nextMinute += MINUTE;
-					}
+				}
 
 				if (trueTime > nextShort){
 					for (int i = 0; i < numPlayers; i++) {
@@ -147,7 +144,7 @@ public class Main {
                 }
                 }
                 */
-                //todo fix duplicated code
+                //todo deduplicate code
                 Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");
                 while (obs.hasNext()){
                 Entity e = obs.next();
@@ -252,16 +249,10 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
+							entry.inflictor = cle.getInflictorName();
+							entry.subtype = (cle.isTargetHero() && !cle.isTargetIllusion()) ? "hero_hit" : null;
 							entry.type = "damage";
 							log.output(entry);
-							//break down damage instances on heroes by inflictor to get skillshot stats, only track hero hits
-							if (cle.isTargetHero() && !cle.isTargetIllusion()){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getAttackerNameCompiled();
-								entry2.key = cle.getInflictorName();
-								entry2.type = "hero_hits";
-								log.output(entry2);
-							}
 							break;
 						case 1:
 							//healing
@@ -275,7 +266,7 @@ public class Main {
                             entry.put("value", val);
                             entry.put("type", "healing");
                             log.put(entry);
-							 */
+							*/
 							break;
 						case 2:
 							//gain buff/debuff
@@ -299,15 +290,9 @@ public class Main {
 							//kill
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
+							entry.subtype = (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()) ? "herokills" : null;
 							entry.type = "kills";
 							log.output(entry);
-							if ((cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion())){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getAttackerNameCompiled();
-								entry2.key = cle.getTargetNameCompiled();
-								entry2.type="herokills";
-								log.output(entry2);
-							}
 							break;
 						case 5:
 							//ability use
@@ -368,7 +353,6 @@ public class Main {
 							//buyback
 							entry.slot = cle.getValue();
 							entry.type = "buybacks";
-							entry.key = "bb";
 							log.output(entry);
 							break;
 						case 13:

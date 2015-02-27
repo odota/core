@@ -1,9 +1,11 @@
 var express = require('express');
 var matches = express.Router();
 var db = require("../db");
-var mergeObjects = require('../utility').mergeObjects;
+var utility = require('../utility');
+var mode = utility.mode;
+var mergeObjects = utility.mergeObjects;
 var queries = require('../queries');
-var constants = require("../constants.json");
+var constants = require('../constants.json');
 var redis = require('../redis').client;
 var matchPages = {
     index: {
@@ -52,10 +54,18 @@ matches.param('match_id', function(req, res, next, id) {
                         }
                         req.match = match;
                         if (match.parsed_data) {
-                            mergeMatchData(match, constants);
-                            generateGraphData(match, constants);
-                            generatePositionData(match, constants);
-                            sortDetails(match, constants);
+                            if (match.parsed_data.version >= 5) {
+                                //todo implement new function to process new format
+                                //output in way to allowing using the same templates
+                                //update old functions to output data properly
+                                preprocess(match);
+                            }
+                            else {
+                                mergeMatchData(match, constants);
+                                generateGraphData(match, constants);
+                                generatePositionData(match, constants);
+                                sortDetails(match, constants);
+                            }
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {
@@ -282,25 +292,8 @@ function generatePositionData(match, constants) {
             //y first, then x due to array of arrays structure
             return constants.lanes[e[1]][e[0]];
         });
-
-        function mode(array) {
-                if (array.length == 0) return null;
-                var modeMap = {};
-                var maxEl = array[0],
-                    maxCount = 1;
-                for (var i = 0; i < array.length; i++) {
-                    var el = array[i];
-                    if (modeMap[el] == null) modeMap[el] = 1;
-                    else modeMap[el] ++;
-                    if (modeMap[el] > maxCount) {
-                        maxEl = el;
-                        maxCount = modeMap[el];
-                    }
-                }
-                return maxEl;
-            }
-            //determine lane
-            //console.log(lanes);
+        //determine lane
+        //console.log(lanes);
         elem.lane = mode(lanes);
     });
 }
