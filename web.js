@@ -32,6 +32,20 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
+setInterval(function() {
+    status(io);
+}, 1000);
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+app.use("/socket", function(req, res){
+    res.render("socket");
+});
+*/
 paypal.configure({
     'mode': process.env.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
@@ -173,14 +187,7 @@ app.route('/verify_recaptcha').post(function(req, res) {
     });
 });
 app.route('/status').get(function(req, res, next) {
-    status(function(err, result) {
-        if (err) {
-            return next(err);
-        }
-        res.render("status", {
-            result: result
-        });
-    });
+    res.render("status");
 });
 app.route('/about').get(function(req, res) {
     res.render("about");
