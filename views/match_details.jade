@@ -60,48 +60,46 @@ append content
                         div (#{dmg.kills || 0})
         include ads/leaderboard_2
         .row
-          .col-md-8
+          .col-md-8.table-responsive
             h2 Gold
-            .table-responsive
-              table.table.table-hover.summable
-                thead
-                  tr
-                    th Hero
-                    each val, key in constants.gold_reasons
-                      th=val
-                tbody
-                  each player, i in match.players
-                    tr(class = player.player_slot<64 ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      td.hero
-                        if hero
-                          img(src=hero.img, title=hero.localized_name)
-                        else
-                          =player.hero_id
-                        - var parsedHero = match.parsed_data.heroes[hero.name]
-                        each val, key in constants.gold_reasons
-                          td #{parsedHero.gold_log[key] || "-"}
-          .col-md-4
+            table.table.table-hover.summable
+              thead
+                tr
+                  th Hero
+                  each val, key in constants.gold_reasons
+                    th=val
+              tbody
+                each player, i in match.players
+                  tr(class = player.player_slot<64 ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      - var parsedHero = match.parsed_data.heroes[hero.name]
+                      each val, key in constants.gold_reasons
+                        td #{parsedHero.gold_log[key] || "-"}
+          .col-md-4.table-responsive
             h2 XP
-            .table-responsive
-              table.table.table-hover.summable
-                thead
-                  tr
-                    th Hero
-                    each val, key in constants.xp_reasons
-                      th=val
-                tbody
-                  each player, i in match.players
-                    tr(class = player.player_slot<64 ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      td.hero
-                        if hero
-                          img(src=hero.img, title=hero.localized_name)
-                        else
-                          =player.hero_id
-                        - var parsedHero = match.parsed_data.heroes[hero.name]
-                        each val, key in constants.xp_reasons
-                          td #{parsedHero.xp_log[key] || "-"}
+            table.table.table-hover.summable
+              thead
+                tr
+                  th Hero
+                  each val, key in constants.xp_reasons
+                    th=val
+              tbody
+                each player, i in match.players
+                  tr(class = player.player_slot<64 ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      - var parsedHero = match.parsed_data.heroes[hero.name]
+                      each val, key in constants.xp_reasons
+                        td #{parsedHero.xp_log[key] || "-"}
         include ads/leaderboard_3
       else
         h1 This match has no parsed data!
