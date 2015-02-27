@@ -28,7 +28,7 @@ append content
         else
           h1 This match has no parsed data
           
-block footer_assets
+append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
     generateCharts(graphData);

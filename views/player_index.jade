@@ -66,6 +66,7 @@ block playercontent
   if player.publicmmr
     include mmr
       
+append footer_assets
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);
