@@ -5,6 +5,7 @@ var mergeObjects = require('../utility').mergeObjects;
 var queries = require('../queries');
 var constants = require("../constants.json");
 var redis = require('../redis').client;
+var MATCHES_KEY_PREFIX = "match:";
 var matchPages = {
     index: {
         name: "Match"
@@ -31,7 +32,7 @@ matches.get('/', function(req, res) {
     });
 });
 matches.param('match_id', function(req, res, next, id) {
-    redis.get("match:" + id, function(err, reply) {
+    redis.get(MATCHES_KEY_PREFIX + id, function(err, reply) {
         if (!err && reply) {
             console.log("Cache hit for match " + id);
             try {
@@ -63,7 +64,7 @@ matches.param('match_id', function(req, res, next, id) {
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {
-                            redis.setex("match:" + id, 86400, JSON.stringify(match));
+                            redis.setex(MATCHES_KEY_PREFIX + id, 86400, JSON.stringify(match));
                         }
                         return next();
                     });
