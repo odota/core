@@ -8,29 +8,6 @@ block playercontent
       h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%
   hr
   .row
-    .col-md-4
-        h3 Top Heroes
-        table.table
-          thead
-            tr
-              th Hero
-              th Games
-              th Winrate
-          each h in player.heroes.slice(0,10)
-            - var hero = constants.heroes[h.hero_id]
-            tr
-              td.hero
-                img(src=hero.img, title=hero.localized_name)
-              td= h.games
-              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
-    .col-md-8.table-responsive
-      h3 Activity
-      p
-        button.btn.btn-default#prev &laquo;
-        button.btn.btn-default#next &raquo;
-      div#cal-heatmap
-  hr
-  .row
     .col-md-12
       h3 Recent Matches
       table.table
@@ -59,6 +36,29 @@ block playercontent
             td=constants.parse_status[match.parse_status]
   hr
   .row
+    .col-md-4
+        h3 Top Heroes
+        table.table
+          thead
+            tr
+              th Hero
+              th Games
+              th Winrate
+          each h in player.heroes.slice(0,10)
+            - var hero = constants.heroes[h.hero_id]
+            tr
+              td.hero
+                img(src=hero.img, title=hero.localized_name)
+              td= h.games
+              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+    .col-md-8.table-responsive
+      h3 Activity
+      p
+        button.btn.btn-default#prev &laquo;
+        button.btn.btn-default#next &raquo;
+      div#cal-heatmap
+  hr
+  .row
     include ads/leaderboard_2
   hr
   .row
@@ -76,3 +76,5 @@ append footer_assets
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);
+  if player.publicmmr
+    include mmr_script.jade

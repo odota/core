@@ -3,7 +3,6 @@ var CalHeatMap = require('cal-heatmap');
 var moment = require('moment');
 var async = require('async');
 module.exports = function generateHistograms(data) {
-    console.log(data);
     async.series([
             function(cb) {
             var cal = new CalHeatMap();

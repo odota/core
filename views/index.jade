@@ -68,7 +68,7 @@ block content
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
 
-block footer_assets
+append footer_assets
    script.
     $(".pref").change(function() {
         $.post(
@@ -86,3 +86,4 @@ block footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
+   include mmr_script.jade
