@@ -31,11 +31,15 @@ matches.get('/', function(req, res) {
     });
 });
 matches.param('match_id', function(req, res, next, id) {
-    redis.get(id, function(err, reply) {
-        if (!err && reply && false) {
+    redis.get("match:" + id, function(err, reply) {
+        if (!err && reply) {
             console.log("Cache hit for match " + id);
-            req.match = JSON.parse(reply);
-            return next(err);
+            try {
+                req.match = JSON.parse(reply);
+                return next(err);
+            } catch(e) {
+                return next(e);
+            }
         }
         else {
             console.log("Cache miss for match " + id);
@@ -59,7 +63,7 @@ matches.param('match_id', function(req, res, next, id) {
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {
-                            redis.setex(id, 86400, JSON.stringify(match));
+                            redis.setex("match:" + id, 86400, JSON.stringify(match));
                         }
                         return next();
                     });
