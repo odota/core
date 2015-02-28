@@ -32,6 +32,17 @@ h1 {
   bottom: 1em;
   right: 2em;
   position: fixed;
+  z-index:10;
+}
+
+.fab-button {
+  background-color: #BBF0FD;
+}
+
+.fab-buttons {
+  position: relative;
+  padding-left: 7px;
+  margin-bottom: 1em;
 }
 
 /* make images gray */

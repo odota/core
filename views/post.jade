@@ -1,11 +1,22 @@
 extend blog
 block blogcontent
-  div.post
-    h1: a(href=post.url)=post.title
-      small.date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
-    div.post.content
-      != post.content
-    div.tags
-      each tag in post.tags
-        a(href=tagUrl(tag))
-          span.label.label-info #{tag}
+	.panel.panel-default.blog-panel
+		.panel-heading
+			h1.panel-title.blog-heading: a(href=post.url)=post.title
+			h6.blog-date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
+
+		.panel-body.blog-preview
+			!= post.content
+
+			.tags
+				each tag in post.tags
+					a(href=tagUrl(tag))
+						span.label.label-info #{tag}
+block taglegend
+	.well.sidebar-nav
+		ul.nav.nav-list
+			li.nav-header.tag-header tags
+			- each tag in getTags()
+				li
+					a(href=tagURL(tag)) 
+						span.panel.tag-list #{tag}
