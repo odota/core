@@ -29,7 +29,6 @@ html
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
-    include fake_data
     
   body
     .navbar.navbar-fixed-top(data-spy='affix', data-offset-top='1000')
@@ -122,12 +121,58 @@ html
 
     .blurb.bright
       .row
-        .col-md-6.col-md-offset-3.text-center
-          h3 Smashing Heading
-          |         
-          br
-      |   
-      |   
+        .col-md-7
+            h2: abbr(title="Player movement during the game") Heatmap
+            #map.mapContainer
+              img.map(src='/public/images/map.jpg', alt="map")
+          .col-md-5
+            table.table.table-hover.table-responsive
+              tbody
+                tr
+                  th Hero
+                  th
+                    abbr(data-hasqtip='2', oldtitle='Lane based on early game location', title='') Lane
+                tr#0.mapHero.success
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='3', oldtitle='Pugna', title='', aria-describedby='qtip-3')
+                  td Bottom
+                tr#1.mapHero.success
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png', data-hasqtip='4', oldtitle='Mirana', title='', aria-describedby='qtip-4')
+                  td Top
+                tr#2.mapHero.success
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png', data-hasqtip='5', oldtitle='Viper', title='', aria-describedby='qtip-5')
+                  td Middle
+                tr#3.mapHero.success
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png', data-hasqtip='6', oldtitle='Phantom Assassin', title='', aria-describedby='qtip-6')
+                  td Bottom
+                tr#4.mapHero.success
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png', data-hasqtip='7', oldtitle='Disruptor', title='', aria-describedby='qtip-7')
+                  td Top
+                tr#5.mapHero.danger
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png', data-hasqtip='8', oldtitle='Windranger', title='', aria-describedby='qtip-8')
+                  td Top
+                tr#6.mapHero.danger
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png', data-hasqtip='9', oldtitle='Lina', title='')
+                  td Top
+                tr#7.mapHero.danger
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png', data-hasqtip='10', oldtitle='Bristleback', title='')
+                  td Bottom
+                tr#8.mapHero.danger
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png', data-hasqtip='11', oldtitle='Shadow Fiend', title='')
+                  td Middle
+                tr#9.mapHero.danger
+                  td.hero
+                    img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='12', oldtitle='Queen of Pain', title='')
+                  td Top
+
       .row
         .col-sm-4.col-sm-offset-2
           .panel.panel-default
@@ -228,6 +273,7 @@ html
       script(src="/public/js/scroll.js")
       script(src="/public/js/animatedNavbar.js")
       script(src="/bower_components/webcomponentsjs/webcomponents.js")
+      include fake_data
       script.
         c3.generate({
               bindto: "#chart-gold",
@@ -251,7 +297,16 @@ html
                   }
               }
           });
-
+      script(src="//cdn.rawgit.com/pa7/heatmap.js/v2.0/build/heatmap.min.js")
+      script.
+        var heatmap = h337.create({
+            container: document.getElementById('map'),
+              radius: 40
+          });
+          $(".mapHero").on("mouseover", function(){
+            heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(600/127),y:p[1]*(600/127)}})});
+            heatmap.repaint();
+          })
 
 block content
 
