@@ -178,10 +178,6 @@ function streamReplay(job, cb) {
 }
 
 function runParser(cb) {
-    //todo choose a parser to stream from
-    //todo set version based on parser?
-    //todo handle parser errors
-    var parser_file = "parser/target/stats-0.1.0.jar";
     var entries = [];
     var parsed_data = {
         "version": constants.parser_version,
@@ -332,27 +328,30 @@ function runParser(cb) {
     }
 
     function processEntry(e) {
-        e.time -= parsed_data.game_zero;
-        if (typeof e.slot === "undefined") {
-            //console.log(e);
-            return;
+            e.time -= parsed_data.game_zero;
+            if (typeof e.slot === "undefined") {
+                //console.log(e);
+                return;
+            }
+            var t = parsed_data.players[e.slot][e.type];
+            if (t.constructor === Array) {
+                e = (e.interval) ? e.value : {
+                    time: e.time,
+                    key: e.key
+                };
+                t.push(e);
+            }
+            else if (typeof t === "object") {
+                e.value = e.value || 1;
+                t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+            }
+            else {
+                parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+            }
         }
-        var t = parsed_data.players[e.slot][e.type];
-        if (t.constructor === Array) {
-            e = (e.interval) ? e.value : {
-                time: e.time,
-                key: e.key
-            };
-            t.push(e);
-        }
-        else if (typeof t === "object") {
-            e.value = e.value || 1;
-            t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
-        }
-        else {
-            parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
-        }
-    }
+        //todo choose a parser to stream from
+        //parse locally if upload
+    var parser_file = "parser/target/stats-0.1.0.jar";
     var parser = spawn("java", ["-jar",
         parser_file
     ], {
@@ -388,23 +387,10 @@ function runParser(cb) {
                         lanes.push(constants.lanes[e.key[1]][e.key[0]]);
                     }
                 });
-                /*
-                for (var x in h) {
-                    for (var y in h[x]) {
-                        if (h[x][y]) {
-                            //points.push({x: x,y: y,value: map[y][x]});
-                            //super hacker bit packing!
-                            points.push((Number(x) << 24) + (Number(y) << 16) + h[x][y]);
-                        }
-                    }
-                }
-                p[key] = points;
-                */
                 p[key] = h;
             });
             p.lane = mode(lanes);
         });
-        fs.writeFile("output2.json", JSON.stringify(parsed_data), function() {});
         cb(code, parsed_data);
     });
     return parser;
