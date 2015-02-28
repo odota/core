@@ -1,93 +1,100 @@
 extend match
 
-append content
+block match_content
   .row
     .col-md-12
       h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-      table.table.table-hover.table-responsive.summable
-        thead
-          tr
-            th Player
-            th Hero
-            th LV
-            th K
-            th D
-            th A
-            th LH
-            th DN
-            th GOLD
-            th GPM
-            th XPM
-            th HD
-            th TD
-            th HH
-            th Items
-        tbody
-          each player, i in match.players
-           tr(class = player.player_slot<64 ? "success" : "danger")
-             td
-               if (player.last_visited)
-                 img.user(src='/public/images/favicon-16x16.png', title="YASP User")
-               if (player.account_id == constants.anonymous_account_id)
-                 ="Anonymous"
-               else if (!player.account_id)
-                 ="Bot"
-               else
-                 a(href='/players/#{player.account_id}')= player.personaname || player.account_id
-             - var hero = constants.heroes[player.hero_id]
-             td.hero
-               if hero
-                 img(src=hero.img, title=hero.localized_name)
-               else
-                 =player.hero_id
-             td= player.level
-             td= player.kills
-             td= player.deaths
-             td= player.assists
-             td= player.last_hits
-             td= player.denies
-             td.format= ~~(player.gold_per_min*match.duration/60)
-             td= player.gold_per_min
-             td= player.xp_per_min
-             td.format= player.hero_damage
-             td.format= player.tower_damage
-             td.format= player.hero_healing
-             td.table-img
-               each val, index in player
-                 if (index.slice(0, 5)==="item_")
-                   - var item = constants.items[constants.item_ids[val]]
-                   if item
-                     img.item(src=item.img, alt=constants.item_ids[val])
-               if (player.hero_id === 80 && player.additional_units)
-                 br
-                 each val, index in player.additional_units[0]
-                   if (index.slice(0, 5)==="item_")
-                     - var item = constants.items[constants.item_ids[val]]                             
-                     if item
-                       img.item(src=item.img, alt=constants.item_ids[val])
+      .table-responsive
+          table.table.table-hover.summable
+            thead
+              tr
+                th Player
+                th Hero
+                th LV
+                th K
+                th D
+                th A
+                th LH
+                th DN
+                th GOLD
+                th GPM
+                th XPM
+                th HD
+                th TD
+                th HH
+                th Items
+            tbody
+              each player, i in match.players
+               tr(class = player.player_slot<64 ? "success" : "danger")
+                 td
+                   if (player.last_visited)
+                     img.user(src='/public/images/favicon-16x16.png', title="YASP User")
+                   if (player.account_id == constants.anonymous_account_id)
+                     ="Anonymous"
+                   else if (!player.account_id)
+                     ="Bot"
+                   else
+                     a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+                 - var hero = constants.heroes[player.hero_id]
+                 td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                 td= player.level
+                 td= player.kills
+                 td= player.deaths
+                 td= player.assists
+                 td= player.last_hits
+                 td= player.denies
+                 td.format= ~~(player.gold_per_min*match.duration/60)
+                 td= player.gold_per_min
+                 td= player.xp_per_min
+                 td.format= player.hero_damage
+                 td.format= player.tower_damage
+                 td.format= player.hero_healing
+                 td.table-img
+                   each val, index in player
+                     if (index.slice(0, 5)==="item_")
+                       - var item = constants.items[constants.item_ids[val]]
+                       if item
+                         img.item(src=item.img, alt=constants.item_ids[val])
+                   if (player.hero_id === 80 && player.additional_units)
+                     br
+                     each val, index in player.additional_units[0]
+                       if (index.slice(0, 5)==="item_")
+                         - var item = constants.items[constants.item_ids[val]]                             
+                         if item
+                           img.item(src=item.img, alt=constants.item_ids[val])
+      hr
       include ads/leaderboard_2
+      hr
       h2 Skill Builds
-      table.table.table-hover.table-responsive
-        tr
-          th Hero
-          - for (var i = 1; i < 26; i++)
-            th= i
-        - each player, i in match.players
-           tr(class = player.player_slot<64 ? "success" : "danger")
-             - var hero = constants.heroes[player.hero_id]
-             td.hero
-               if hero
-                 img(src=hero.img, title=hero.localized_name)
-               else
-                 =player.hero_id
-               if player.ability_upgrades
-                 each ability in player.ability_upgrades
-                   - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                   td.abilities
-                     if abilityData
-                       img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
-                     else
-                       =ability.ability
+      .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th Hero
+                - for (var i = 1; i < 26; i++)
+                  th= i
+            tbody
+              - each player, i in match.players
+                tr(class = player.player_slot<64 ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    if player.ability_upgrades
+                      each ability in player.ability_upgrades
+                        - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                        td.abilities
+                          if abilityData
+                            img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
+                          else
+                            =ability.ability
+  hr
   .row      
     h2 Buildings
     .col-md-6
@@ -95,7 +102,7 @@ append content
         img.map(src='/public/images/map.jpg', alt="map")
     .col-md-6
       include ads/skyscraper
-      
+block 
 append footer_assets
   script.
     buildMap();

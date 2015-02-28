@@ -48,7 +48,7 @@ block content
         tbody
   .row
     include ads/leaderboard_2
-block footer_assets
+append footer_assets
   script(src="/socket.io/socket.io.js")
   script.
     var data = !{JSON.stringify(result)}

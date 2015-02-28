@@ -24,21 +24,6 @@ html
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
-    //- Stylesheets
-    link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-    link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-    style
-      include ../public/css/yasp.css
-    style
-      include ../public/css/flaticon.css
-    if (user && user.dark_theme)
-      style
-        include ../public/css/dark.css
-    script(src="/public/js/bundle.js")
-    script(src="/public/js/ga.js")
     block head
     
   body
@@ -123,3 +108,18 @@ html
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
         block footer_assets
+          //- Stylesheets
+          link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
+          link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
+          link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+          link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+          link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+          style
+            include ../public/css/yasp.css
+          style
+            include ../public/css/flaticon.css
+          if (user && user.dark_theme)
+            style
+              include ../public/css/dark.css
+          script(src="/public/js/bundle.js")
+          script(src="/public/js/ga.js")
