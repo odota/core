@@ -16,4 +16,4 @@ block playercontent
         td 
           =hero.localized_name
         td= h.games
-        td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+        td #{h.games ? (100*h.win/h.games).toFixed(2) : (0).toFixed(2)}%

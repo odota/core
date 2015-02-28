@@ -32,10 +32,12 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
-setInterval(function() {
-    status(io);
-}, 5000);
 /*
+setInterval(function() {
+    status(function(err, res) {
+        if (!err) io.emit(res);
+    });
+}, 5000);
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
         console.log(buffer.length);
@@ -64,6 +66,7 @@ app.use(compression());
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
+app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
@@ -100,6 +103,24 @@ app.use(function(req, res, next) {
         return next(err);
     });
 });
+/*
+io.sockets.on('connection', function(socket) {
+    socket.on('send-file', function(name, buffer) {
+        console.log(buffer.length);
+        socket.emit('recFile');
+    });
+});
+app.use("/socket", function(req, res){
+    res.render("socket");
+});
+*/
+var Poet = require('poet');
+var poet = Poet(app);
+poet.watch(function() {
+    // watcher reloaded
+}).init().then(function() {
+    // Ready to go!
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
@@ -114,7 +135,7 @@ app.route('/').get(function(req, res, next) {
         });
     }
     else {
-        res.render('index.jade');
+        res.render('home');
     }
 });
 app.route('/preferences').post(function(req, res) {
@@ -169,12 +190,19 @@ app.route('/verify_recaptcha').post(function(req, res) {
     });
 });
 app.route('/status').get(function(req, res, next) {
-    res.render("status");
+    status(function(err, result) {
+        if (err) {
+            return next(err);
+        }
+        res.render("status", {
+            result: result
+        });
+    });
 });
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
-app.route('/carry').get(function(req, res) {
+app.route('/carry').get(function(req, res, next) {
     db.players.find({
         cheese: {
             $exists: true
@@ -185,7 +213,7 @@ app.route('/carry').get(function(req, res) {
         },
         limit: 50
     }, function(err, results) {
-        if (err) next(err);
+        if (err) return next(err);
         res.render("carry", {
             users: results
         })
@@ -260,7 +288,6 @@ app.route('/confirm').get(function(req, res, next) {
                     // this condition indicates the key is new
                     redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
                 }
-                
                 if (req.user && payment.transactions[0]) {
                     var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
                     db.players.update({

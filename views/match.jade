@@ -42,6 +42,12 @@ block content
                   a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
         .addthis_sharing_toolbox.pull-right
-
-block footer_assets
+  block match_content
+  if route !== "index"
+    hr
+    .row
+      .col-md-12
+        include ads/leaderboard_3
+      
+append footer_assets
   script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")

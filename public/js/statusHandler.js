@@ -1,8 +1,11 @@
 var moment = require('moment');
 module.exports = function() {
+    /*
     var socket = io.connect();
-    socket.on('stats', function(data) {
-        console.log(data);
+    socket.on('stats', redraw);
+*/
+    redraw(data);
+    function redraw(data) {
         for (var prop in data) {
             if (typeof data[prop] === "object") {
                 $("#" + prop + " tbody").empty();
@@ -18,5 +21,5 @@ module.exports = function() {
                 $("#" + prop).html(data[prop]);
             }
         }
-    });
+    }
 };

@@ -2,10 +2,12 @@ var operations = require('../operations');
 var queueReq = operations.queueReq;
 var multiparty = require('multiparty');
 var express = require('express');
+var redis = require('../redis').client;
 var upload = express.Router();
 var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
+var MATCHES_KEY_PREFIX = "match:";
 var recaptcha = new Recaptcha(rc_public, rc_secret);
 upload.get("/", function(req, res) {
     res.render("upload", {
@@ -52,7 +54,10 @@ upload.post("/", function(req, res) {
                     });
                 }
                 else {
-                    return res.redirect("matches/" + result.match_id);
+                    // clear the cache
+                    redis.del(MATCHES_KEY_PREFIX + result.match_id, function(err, resp) {
+                        return res.redirect("matches/" + result.match_id);    
+                    });
                 }
             });
         }

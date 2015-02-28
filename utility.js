@@ -128,36 +128,6 @@ function getData(url, cb) {
     }, delay);
 }
 
-function runParse(cb) {
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var output = '';
-    var parser = spawn("java", ["-jar",
-        parser_file
-    ], {
-        stdio: ['pipe', 'pipe', 'ignore'],
-        encoding: "utf8"
-    });
-    //stderr is sent to /dev/null
-    //modify stdio array if we want to log it here
-    parser.stdout.on('data', function(data) {
-        output += data;
-    });
-    parser.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
-        if (code) {
-            return cb(code);
-        }
-        try {
-            output = JSON.parse(output);
-            cb(code, output);
-        }
-        catch (err) {
-            cb(err);
-        }
-    });
-    return parser;
-}
-
 function getRetrieverUrls() {
         return retrievers.map(function(r) {
             return "http://" + r;
@@ -226,7 +196,6 @@ module.exports = {
     logger: logger,
     generateJob: generateJob,
     getData: getData,
-    runParse: runParse,
     getRetrieverUrls: getRetrieverUrls,
     convert32to64: convert32to64,
     convert64to32: convert64to32,

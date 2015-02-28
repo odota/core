@@ -22,10 +22,10 @@ block content
         =" Tracked: " + (tracked ? "YASP is automatically parsing your replays." : "Visit YASP regularly to avoid being untracked.")
       div(class=user.full_history_time ? "alert alert-success" : "alert alert-danger")
         span(class= user.full_history_time ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Full History: " + (user.full_history_time ? moment(user.full_history_time).fromNow() : "Veteran YASP users get full history scans.")
+        =" Full History: " + (user.full_history_time ? moment(user.full_history_time).fromNow() : "never")
       div(class=user.last_summaries_update ? "alert alert-success" : "alert alert-danger")
         span(class= user.last_summaries_update ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
-        =" Name Update:  "+ (user.last_summaries_update ? moment(user.last_summaries_update).fromNow() : "not updated yet")
+        =" Name Update:  "+ (user.last_summaries_update ? moment(user.last_summaries_update).fromNow() : "never")
       div(class= rating ? "alert alert-success" : "alert alert-danger")
         span(class= rating ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove")
         =" Rating Tracker: " + (rating ? "YASP is following your MMR." : "Add a tracker to have YASP follow your MMR.")
@@ -68,7 +68,7 @@ block content
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
 
-block footer_assets
+append footer_assets
    script.
     $(".pref").change(function() {
         $.post(
@@ -86,3 +86,4 @@ block footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
+   include mmr_script.jade

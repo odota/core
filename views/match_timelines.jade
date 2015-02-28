@@ -1,21 +1,23 @@
 extend match
 
-append content
+block match_content
   .row
     .col-md-12
       if match.parsed_data
         .row
-          .col-md-12
+          .col-md-12.table-responsive
             h2 Purchases
-            table.table.table-hover.table-responsive
-              tr
-                th Hero
-                - var bucket = 300
-                - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                  th= i/60+"'"
+            table.table.table-hover
               each player, ind in match.players
                 - var hero = constants.heroes[player.hero_id]
                 - var parsedPlayer = match.parsed_data.heroes[hero.name]
+                if !(ind%5)
+                  thead
+                    tr
+                      th Hero
+                      - var bucket = 300
+                      - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                        th= i/60+"'"
                 tr(class = player.player_slot<64 ? "success" : "danger")
                   td.hero
                     if hero
@@ -33,42 +35,41 @@ append content
                               div.format-seconds=entry.time
                           else
                             =key
+        hr
         .row
          .col-md-12
            include ads/leaderboard_2
+        hr
         .row
-          .col-md-12
+          .col-md-12.table-responsive
             h2 Hero Kills
-            table.table.table-hover.table-responsive
-              tr
-                th Hero
-                - var bucket = 300
-                - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                  th= i/60+"'"
-              each player, ind in match.players
-                - var hero = constants.heroes[player.hero_id]
-                - var parsedPlayer = match.parsed_data.heroes[hero.name]
-                tr(class = player.player_slot<64 ? "success" : "danger")
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id              
+            table.table.table-hover
+              thead
+                tr
+                  th Hero
+                  - var bucket = 300
                   - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                    td
-                      each entry in parsedPlayer.herokills || []
-                        if entry.time < i && entry.time >= i-bucket
-                          - var hero = constants.hero_names[entry.key]
-                          if hero
-                            div.img-text
-                              img.dmg(src=hero.img, title=hero.localized_name)
-                              div.format-seconds=entry.time
-                          else
-                            =key
-        .row
-            .col-md-12
-              include ads/leaderboard_3
+                    th= i/60+"'"
+              tbody  
+                each player, ind in match.players
+                  - var hero = constants.heroes[player.hero_id]
+                  - var parsedPlayer = match.parsed_data.heroes[hero.name]
+                  tr(class = player.player_slot<64 ? "success" : "danger")
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id              
+                    - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                      td
+                        each entry in parsedPlayer.herokills || []
+                          if entry.time < i && entry.time >= i-bucket
+                            - var hero = constants.hero_names[entry.key]
+                            if hero
+                              div.img-text
+                                img.dmg(src=hero.img, title=hero.localized_name)
+                                div.format-seconds=entry.time
+                            else
+                              =key
       else
         h1 This match has no parsed data!
-
-append footer_assets

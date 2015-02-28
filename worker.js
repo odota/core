@@ -64,7 +64,7 @@ function build(cb) {
         async.each(utility.getRetrieverUrls(), function(url, cb) {
             getData(url, function(err, body) {
                 if (err) {
-                    cb(err);
+                    return cb(err);
                 }
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);

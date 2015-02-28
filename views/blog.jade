@@ -1,0 +1,25 @@
+extend layout
+
+block content
+  #about-top.gallery.faq
+    .row
+      .col-md-6.col-md-offset-3.text-center.bottom-padding
+        br
+        br
+        h2 The YASP Blog            
+        h4 All the cool stuff we've been doing.
+        img(src='../public/images/curlycue.png')
+        br
+        br
+  .row
+    .col-md-10
+      block blogcontent
+    .col-md-2
+      block taglegend
+        .well.sidebar-nav.tag-key
+          p.lead Tags
+          ul.nav.nav-list
+            - each tag in getTags()
+              li
+                  a(href=tagURL(tag)) 
+                    span.panel.tag-list #{tag}

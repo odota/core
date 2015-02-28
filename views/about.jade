@@ -1,62 +1,173 @@
-extend layout
+extend base_layout
 
 block content
-  h3 What is YASP?
-  p YASP is a free, open-source Dota 2 stats site.  We currently offer the following features:
-  ul
-    li Replay parsing.  This allows us to present additional statistics that aren't available in the API or game client.
-    li Rating tracking.  This allows us to show you your rating history.
-    li Visualizations.  We generate histograms and heatmaps of your Dota 2 match data.
-  
-  h3 What does YASP stand for?
-  p YASP stands for YASP: Another Stats Page, which makes it a recursive acronym along the lines of GNU and YAML.
-  
-  h3 How do you make money/keep the site running?
-  p YASP is a side project of a group of college students.  As such, we're not looking to make money off the site, although we do run ads to help pay for server costs.
-  p We also <a href="/carry", target="_blank">sell Cheese</a> to help support our rising hosting costs. Please consider a purchase if you've found the site helpful!
-  
-  h3 How do I use YASP?
-  p Sign in through Steam, and we'll start tracking your matches and automatically parse the replays.
+  #about-top.gallery.faq
+    .row
+      .col-md-6.col-md-offset-3.text-center
+        h2 FAQ             
+        h4 Where all your questions are answered.
+        img(src='../public/images/curlycue.png')
+        br
+        br
 
-  h3 What do I do if I have a bug or feature request?
-  p The best way to let us know is by making an issue on GitHub.  This way we can discuss the issue/request with you.
-  
-  h3 Why are my matches showing up, but don't get parsed?
-  p There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable.
-  p After that, the replay might not be available, which happens occasionally (particularly in the SEA region).
-  p Alternatively, our parser couldn't process the match.  We're always looking for bugs and re-parsing matches when we can.
-  p Usually, we're able to parse over 95% of games.
-  
-  h3 Why don't you have my old matches?
-  p YASP only starts tracking your matches from when you signed in.  We get full match histories for contributors and active YASP users.
-  
-  h3 I signed in a while ago and just came back, why haven't my matches been tracked?
-  p To keep the load reasonable, we stop parsing players' matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
-  
-  h3 How do untracking and full history eligibility work?
-  p Currently, we untrack users who have not visited YASP for 3 days.  Users who have used YASP for 7 days and remain tracked are eligible for full history.
-  
-  h3 Why am I still missing some matches after getting my full history?
-  p The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
-  
-  h3 Why can't you parse uploaded private lobby replays?
-  p To generate the information for a match page, we combine the parsed data with data from the Valve API.  Since private matches can't be accessed through the API, we don't support these replays.
+    .container.well.well-lg
+      #accordion.panel-group(role='tablist', aria-multiselectable='true')
+          .panel-left.col-sm-6
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseOne', aria-expanded='false', aria-controls='collapseOne')
+                  | What is YASP?                   
+              #collapseOne.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
+                .panel-body
+                  | YASP is a free, open-source Dota 2 stats site. We currently offer the following features:
+                  li
+                    | Replay parsing. This allows us to present additional statistics that aren&apos;t available in the API or game client.
+                  |                                 
+                  li Rating tracking. This allows us to show you your rating history.
+                  |                                 
+                  li Visualizations. We generate histograms and heatmaps of your Dota 2 match data.                   
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTwo', aria-expanded='false', aria-controls='collapseTwo')
+                  | What does YASP stand for?
+              |                         
+              #collapseTwo.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
+                .panel-body
+                  | YASP stands for YASP: Another Stats Page, which makes it a recursive acronym along the lines of GNU and YAML.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseThree', aria-expanded='false', aria-controls='collapseThree')
+                  | How do you make money/keep the site running?
+              |                         
+              #collapseThree.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
+                .panel-body
+                  | YASP is a side project of a group of college students. As such, we&apos;re not looking to make money off the site, although we do run ads to help pay for server costs. We also sell Cheese to help support our rising hosting costs. Please consider a purchase if you&apos;ve found the site helpful!
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFour', aria-expanded='false', aria-controls='collapseFour')
+                  | How do I use YASP?
+              |                         
+              #collapseFour.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
+                .panel-body
+                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFive', aria-expanded='false', aria-controls='collapseFive')
+                  | Why are my matches showing up, but don&apos;t get parsed?
+              |                         
+              #collapseFive.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFive')
+                .panel-body
+                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can. Usually, we&apos;re able to parse over 95% of games.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSix', aria-expanded='false', aria-controls='collapseSix')
+                  | Why don&apos;t you have my old matches?
+              |                         
+              #collapseSix.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSix')
+                .panel-body
+                  | YASP only starts tracking your matches from when you signed in. We get full match histories for contributors and active YASP users.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeven', aria-expanded='false', aria-controls='collapseSeven')
+                  | I signed in a while ago and just came back, why haven&apos;t my matches been tracked?
+              |                         
+              #collapseSeven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeven')
+                .panel-body
+                  | To keep the load reasonable, we stop parsing players&apos; matches after a period of inactivity. Each visit to the YASP site while signed in resets this period.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEight', aria-expanded='false', aria-controls='collapseEight')
+                  | How do untracking and full history eligibility work?
+              |                         
+              #collapseEight.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEight')
+                .panel-body
+                  | Currently, we untrack users who have not visited YASP for 3 days. Users who have used YASP for 7 days and remain tracked are eligible for full history.
+          |                     
+          .panel-left.col-sm-6
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseNine', aria-expanded='false', aria-controls='collapseNine')
+                  | Why am I still missing some matches after getting my full history?
+              |                         
+              #collapseNine.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingNine')
+                .panel-body
+                  | The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTen', aria-expanded='false', aria-controls='collapseTen')
+                  | Why can&apos;t you parse uploaded private lobby replays?
+              |                         
+              #collapseTen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTen')
+                .panel-body
+                  | To generate the information for a match page, we combine the parsed data with data from the Valve API. Since private matches can&apos;t be accessed through the API, we don&apos;t support these replays.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEleven', aria-expanded='false', aria-controls='collapseEleven')
+                  | Why is there a difference between my parsed stats and what actually happened in the game?
+              |                         
+              #collapseEleven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEleven')
+                .panel-body
+                  | Known issues:
+                  li
+                    | Hero Kills: doesn&apos;t always show all kills. This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
+                  |                                 
+                  li
+                    | Hero Kills: Lots of Meepo kills in the log. This is because the game has Meepo kill all remaining clones when one is killed.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTwelve', aria-expanded='false', aria-controls='collapseTwelve')
+                  | What do I do if I have a bug or feature request?
+              |                         
+              #collapseTwelve.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwelve')
+                .panel-body
+                  | The best way to let us know is by making an issue on GitHub. This way we can discuss the issue/request with you.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseThirteen', aria-expanded='false', aria-controls='collapseThirteen')
+                  | Can I use YASP in my own project?
+              |                         
+              #collapseThirteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThirteen')
+                .panel-body
+                  | YASP is licensed under the GNU GPLv3. This means you can use YASP in your project if your project is also free and open source. We also ask that you give us attribution in your project if you use our code.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFourteen', aria-expanded='false', aria-controls='collapseFourteen')
+                  | How do I contribute to YASP?
+              |                         
+              #collapseFourteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFourteen')
+                .panel-body
+                  | YASP is open source! Start a thread on GitHub if you&apos;d like to work on a feature. If you&apos;re not a developer, you can buy some Cheese.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFifteen', aria-expanded='false', aria-controls='collapseFifteen')
+                  | What is YASP built with?
+              |                         
+              #collapseFifteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFifteen')
+                .panel-body
+                  | YASP's main site and replay retriever are built with Node.js. We use MongoDB to store our data and Redis/Kue to manage our job queue. On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables. The parser is written in Java, using the clarity replay parsing library.The original project code was based on matchurls.
+            |                     
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSixteen', aria-expanded='false', aria-controls='collapseSixteen')
+                  | Are we awesome?
+              |                         
+              #collapseSixteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSixteen')
+                .panel-body
+                  | Why, of course! Need you even ask?
 
-  h3 Why is there a difference between my parsed stats and what actually happened in the game?
-  p Replay parsing is not an exact art.  Often, assumptions have to be made, and sometimes data is just inconsistent/unavailable.  If you find an issue, please report it!
-  p Known Issues:
-  ul
-    li Hero Kills: doesn't always show all kills.  This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
-    li Hero Kills: Lots of Meepo kills in the log.  This is because the game has Meepo kill all remaining clones when one is killed.
-  
-  h3 Can I use YASP in my own project?
-  p YASP is licensed under the GNU GPLv3.  This means you can use YASP in your project if your project is also free and open source.  We also ask that you give us attribution in your project if you use our code.
-  
-  h3 How do I contribute to YASP?
-  p YASP is open source!  Start a thread on GitHub if you'd like to work on a feature. If you're not a developer, you can <a href="/carry", target="_blank">buy some Cheese</a>.
-  
-  h3 What is YASP built with?
-  p YASP's main site and replay retriever are built with Node.js.  We use MongoDB to store our data and Redis/Kue to manage our job queue.
-  p On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables.  
-  p The parser is written in Java, using the clarity replay parsing library.
-  p The original project code was based on matchurls.
+
+
+
+

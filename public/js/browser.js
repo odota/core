@@ -9,6 +9,7 @@ global.generateHistograms = require('./histograms');
 global.statusHandler = require('./statusHandler');
 global.c3 = require('c3');
 global.$ = require('jquery');
+global.moment = require('moment');
 document.addEventListener('DOMContentLoaded', function() {
     global.tooltips();
     global.formatHtml();

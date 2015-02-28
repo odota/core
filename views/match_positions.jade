@@ -1,6 +1,6 @@
 extend match
 
-append content
+block match_content
   .row
     .col-md-12
       if match.parsed_data
@@ -27,9 +27,6 @@ append content
                     td=constants.lane_ids[parsedPlayer.lane]
       else
         h1 This match has no parsed data!
-      .row
-        .col-md-12
-          include ads/leaderboard_3
 
 append footer_assets
   script(src="//cdn.rawgit.com/pa7/heatmap.js/v2.0/build/heatmap.min.js")

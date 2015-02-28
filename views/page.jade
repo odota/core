@@ -1,0 +1,16 @@
+extend blog
+
+block blogcontent
+  include posts
+  - var pageCount = getPageCount();
+  if pageCount > 1
+    ul.pagination
+      - var i = 1;
+      - while ( i <= pageCount )
+        if page == i
+          li(class='active')
+            a(href=pageURL(i)) #{i}
+        else
+          li
+            a(href=pageURL(i)) #{i}
+        - i++;
