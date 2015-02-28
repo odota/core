@@ -20,5 +20,5 @@ This saves us the effort of parsing matches that nobody will end up looking at.
 
 With this optimization, we are able to make use of our resources for the users who actually use them, and reduce our load accordingly.
 
-We use a query to determine who our tracked users are:
+We use the following query to determine who our tracked users are:
 <script src="https://gist.github.com/howardc93/7a2a67dc350a5758ad10.js"></script>

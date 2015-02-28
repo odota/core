@@ -18,7 +18,8 @@ Quickstart
 ====
 * Install dependencies: `sudo bash init.sh`
 * Create .env file, add required config values: `cp .env_example .env`
-* Launch in dev mode: `npm start`
+* Build `npm install && npm run build`
+* Launch in dev mode: `npm run dev`
 
 Sample Data
 ====

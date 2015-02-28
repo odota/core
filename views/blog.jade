@@ -15,12 +15,14 @@ block content
     .col-md-10
       block blogcontent
     .col-md-2
-      .well.sidebar-nav.tag-key
-        ul.nav.nav-list
-          li.nav-header tags
-          - each tag in getTags()
-            li.tag-key
-              a(href=tagURL(tag)) #{tag}
+      block taglegend
+        .well.sidebar-nav.tag-key
+          ul.nav.nav-list
+            li.nav-header.tag-header tags
+            - each tag in getTags()
+              li
+                  a(href=tagURL(tag)) 
+                    span.panel.tag-list #{tag}
 
 append footer_assets
   script.

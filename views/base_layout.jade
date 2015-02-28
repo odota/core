@@ -49,6 +49,10 @@ html
               a(href='/page/1') Blog      
             li
               a(href='/carry') Help Carry!
+          if user
+            ul.nav.navbar-nav.navbar-right
+              li
+                a(href="/players/"+user.account_id)=user.personaname
 
     .sticky_footer_row
     .sticky_footer_row.expand
@@ -105,7 +109,6 @@ html
     block footer_assets
       //- Stylesheets
       link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-      //- link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
       link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
       link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
       link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
@@ -121,4 +124,6 @@ html
           include ../public/css/dark.css
       script(src="/public/js/bundle.js")
       script(src="/public/js/ga.js")
+      script(src="/bower_components/bootstrap/js/transition.js")
+      script(src="/bower_components/bootstrap/js/collapse.js")
       

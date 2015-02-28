@@ -2,7 +2,7 @@ var async = require('async');
 var db = require('./db');
 var moment = require('moment');
 var selector = require('./selector');
-module.exports = function getStatus(io) {
+module.exports = function getStatus(cb) {
     async.series({
             matches: function(cb) {
                 db.matches.count({}, cb);
@@ -81,11 +81,5 @@ module.exports = function getStatus(io) {
                     limit: 10
                 }, cb);
             }
-        },
-        function(err, result) {
-            if (err){
-                return console.log(err);
-            }
-            io.emit('stats', result);
-        });
-};
+        },cb);
+        };

@@ -70,3 +70,24 @@ body {
 div.dataTables_processing {
     background: inherit !important;
 }
+
+thead {
+    background-color: #424242;
+}
+
+div.container.well.well-lg {
+    background-color: rgb(63, 63, 63);
+}
+
+/*#accordion h4.panel-title > a,*/
+/*#accordion .panel-collapse {*/
+/*    background-color: black;*/
+/*}*/
+
+#accordion a, #accordion .panel-body, #accordion .panel-body li{
+    color: black;
+}
+
+.blog-preview p {
+    color: black;
+}

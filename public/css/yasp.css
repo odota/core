@@ -1,3 +1,8 @@
+@media (min-width: 1200px) {
+    .container {
+      width: 1230px;
+    }
+}
 /* ads */
 .skyscraper, .leaderboard {
     margin: 0 auto;

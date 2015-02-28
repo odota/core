@@ -55,20 +55,24 @@ html
 
     #top.header.alt.vert
       .container
-        h1 YASP     
-        p.lead Yet Another Stats Page 
+        br
+        br
+        h1 YASP
+        p.lead YASP: Another Stats Page 
         div &nbsp;
-        a.btn.btn-default.btn-lg(href='http://www.bootply.com/JU51oUMIye') Sign in <br> with Steam!
+        a.btn.btn-default.btn-lg(href='/login')
+          img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
+          h4 to start!
 
     section.main
       a.arrow-wrap(href='#philosophy')
         span.arrow
 
-    paper-fab-menu.fab(icon='dashboard', closeicon='close', color='#BBF0FD;', duration='0.3')
-      paper-fab-menu-item(icon='expand-less', color='#BBF0FD;', tooltip='Scroll to the top!', href='#top')
-      paper-fab-menu-item(icon='filter-list', color='purple;', tooltip='TL;DR')
-      paper-fab-menu-item(icon='star-outline', color='green;', tooltip='Features')
-      paper-fab-menu-item(icon='redeem', color='orange;', tooltip='Help carry and cheese us!')
+    .fab
+      .fab-buttons
+        core-tooltip(noarrow='', label='Tap to scroll to the top!', position='left')
+          a(href='#top')
+            paper-fab.fab-button(icon='dashboard', touch-action='none')
 
     #philosophy.blurb
       .right-img
@@ -76,9 +80,7 @@ html
             .row
               .col-md-7
                 h1 Our Mission
-                |         
                 p.lead Free Replay Parsing for All
-              |       
               .col-md-5
 
     #content.featurette
@@ -91,37 +93,29 @@ html
             .featurette-item
               .icon-circle
                 img.circle-margin(src='../public/images/tools2.png')
-              |           
               h4 Open source.
-              |           
-              p
-                | All of YASP's code is open source and available on Github for contributors to improve and modify.     
+              p All of YASP's code is open source and available on Github for contributors to improve and modify.     
           .col-md-4.text-center.team-text
             .featurette-item
               .icon-circle
                 img.circle-margin(src='../public/images/barchart.png')
-              |           
               h4 Go beyond the API.
-              |           
-              p
-                | Free replay parsing that provides Dota 2 match stats unavailable through the API or game client.     
+              p Free replay parsing that provides Dota 2 match stats unavailable through the API or game client.     
           .col-md-4.text-center.team-text
             .featurette-item
               .icon-circle
                 img.circle-margin(src='../public/images/present.png')
-              |           
               h4 Free of charge.
-              |           
-              p
-                | YASP is supported by volunteer developers and community contributions, making it free for users.
-          // SOURCE: http://www.elegantthemes.com/blog/freebie-of-the-week/beautiful-flat-icons-for-free
+              p YASP is supported by volunteer developers and community contributions, making it free for users.
 
     #match_statistics.callout
-        .container
-          .col-md-12.text-center.bottom-padding
-            h1 Features
-            h2 Gold Distribution
-          .col-md-12.text-center.bottom-padding.table-responsive
+        .container.bottom-padding
+          .col-md-12.text-center
+            h1 Featuring
+            h2 Detailed Game Play Breakdowns
+          .col-md-8.col-md-offset-2.bottom-padding
+              hr
+          .col-md-12.text-center.table-responsive.bottom-padding
             table.table.table-hover.table-responsive#stats-table
                       thead
                         tr
@@ -292,23 +286,29 @@ html
                           td.format 25.9k
                           td.format 1.2k
                           td.format -
-            p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
+          .col-md-8.col-md-offset-2.text-center
+            h3 View gold and xp breakdowns from the game. Also see <a href="http://yasp.co/matches/1239495484/details">skill usage</a>, 
+              | <a href="http://yasp.co/matches/1239495484/timelines">timelines of item purchases and of kills</a>, and more.
 
     .featurette.dark
       .container
         .vert
-            .col-md-12.text-center.bottom-padding
+            .col-md-12.text-center
               h2 Graphs
+            .col-md-8.col-md-offset-2.bottom-padding
+              hr
             .col-md-12.text-center.bottom-padding
               .div.well.text-center
                 #chart-gold
-            .col-md-12.text-center
-              p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
+            .col-md-8.col-md-offset-2.text-center.bottom-padding
+              h3 See <a href="/matches/1239495484/graphs">charts</a> of how gold, XP, last hits, and income changed over the game.
 
     .blurb.bright
       .container
-        .col-md-12.text-center.bottom-padding
-          h2: abbr(title="Player movement during the game") Positions
+        .col-md-12.text-center
+          h2 Positions
+        .col-md-8.col-md-offset-2.bottom-padding
+          hr(style="border-top: 1px solid #777;")
         .row
           .col-md-7.bottom-padding
             #map.mapContainer.table-responsive
@@ -362,32 +362,46 @@ html
                   td.hero
                     img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='12', oldtitle='Queen of Pain', title='')
                   td Top
-        .col-md-12.text-center
-          p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
+        .col-md-8.col-md-offset-2.text-center
+          br
+          h3 See how players moved throughout the course of the game.
 
-    
+    #cheeses.featurette.dark
+      .container
+        .vert
+          .col-md-12.text-center.bottom-padding
+            h2 And more to come!
+            h3 We are constantly developing and improving YASP. <br>
+               | <a href="https://github.com/yasp-dota/yasp/issues"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls">build it yourself!</a>
+            br
+            hr
+            br
+            h1 The generous Dota 2 <br> community keeps us running
+            br
+            hr
+            br
+            h2 Found us helpful?
+            .col-md-4.text-center.bottom-padding
+              p Buy Cheese. Help Pay for Our Servers.
+              p Reaching the goal each day allows us to keep YASP running.
+            .col-md-4.text-center
+              .meter_wrapper
+                h3(style="font-weight:700;") Daily Cheese Goal
+                .meter
+                  span(style="width: #{cheese_goal}%;")
+                if cheese_goal >= 50 && cheese_goal < 100
+                  small Getting there...
+                else if cheese_goal === 100
+                  small Woo!!! We did it! Thanks guys!
+            .col-md-4.text-center
+                span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+                a(href="/carry", target="_blank")
+                  button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
 
     footer.footer(style="color: #777;\
                   width: 100%; padding: 1.3em 0 0 1em;")
       .container
-        .row
-          .col-md-4.text-center
-            p Buy Cheese. Help Pay for Our Servers.
-            p Reaching the goal each day allows us to keep YASP running.
-          .col-md-4.text-center
-            .meter_wrapper
-              p(style="font-weight:700;") Daily Cheese Goal
-              .meter
-                span(style="width: #{cheese_goal}%;")
-              if cheese_goal >= 50 && cheese_goal < 100
-                small Getting there...
-              else if cheese_goal === 100
-                small Woo!!! We did it! Thanks guys!
-          .col-md-4.text-center
-              span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
-              a(href="/carry", target="_blank")
-                button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
-        .row(style="font-size: .8em;")
+        .row(style="font-size: .8em; margin-bottom:10px;")
           .col-md-4.text-center
            p.
             Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
@@ -412,7 +426,9 @@ html
              Match parsing powered by
              <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
              Source code can be found on 
-             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>. <br>
+             Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a>
+             and <a href="http://css101.deviantart.com/">css101</a>.
     block footer_assets
       //- Stylesheets
       link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
@@ -430,6 +446,9 @@ html
       script(src="/public/js/scroll.js")
       script(src="/public/js/animatedNavbar.js")
       script(src="/bower_components/webcomponentsjs/webcomponents.js")
+      script(src="/public/js/scripts.js")
+      script(src="/bower_components/bootstrap/js/transition.js")
+      script(src="/bower_components/bootstrap/js/collapse.js")
       include fake_data
       script.
         c3.generate({
@@ -464,7 +483,5 @@ html
             heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(500/127),y:p[1]*(500/127)}})});
             heatmap.repaint();
           })
-block content
-
 
 
