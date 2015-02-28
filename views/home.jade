@@ -29,7 +29,7 @@ html
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
-    block head
+    include fake_data
     
   body
     .navbar.navbar-fixed-top(data-spy='affix', data-offset-top='1000')
@@ -118,9 +118,7 @@ html
     #match_statistics.callout
       .vert
           .col-md-12.text-center
-            h2 Match Statistics
-          |     
-          .col-md-12.text-center &nbsp;
+            #chart-gold
 
     .blurb.bright
       .row
@@ -217,11 +215,11 @@ html
       //- Stylesheets
       link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
       link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
       link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
       link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
       link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
       link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
 
       style
         include ../public/css/flaticon.css
@@ -230,6 +228,29 @@ html
       script(src="/public/js/scroll.js")
       script(src="/public/js/animatedNavbar.js")
       script(src="/bower_components/webcomponentsjs/webcomponents.js")
+      script.
+        c3.generate({
+              bindto: "#chart-gold",
+              data: {
+                  x: 'time',
+                  columns: graphData.gold,
+                  type: "spline"
+              },
+              axis: {
+                  x: {
+                      type: 'timeseries',
+                      tick: {
+                          format: function(x) {
+                              return moment().startOf('day').seconds(x).format("H:mm");
+                          }
+                      },
+                      label: "Game Time (minutes)"
+                  },
+                  y: {
+                      label: "Gold"
+                  }
+              }
+          });
 
 
 block content
