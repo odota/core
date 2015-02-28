@@ -1,47 +1,44 @@
 .row
  .col-md-12
    h3 Rating
-<<<<<<< HEAD
    h4 Solo: #{ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A"}
    h4 Party: #{ratings[0]? ratings[0].competitiveRank : "N/A"}
    #ratings
-script.
-    var ratings = !{JSON.stringify(ratings)};
-    var times = ratings.map(function(r){return new Date(r.time);})
-    var min = Math.min.apply(null, times)
-    var max = Math.max.apply(null, times)
-    var ticks = [];
-    for (var i = min;i<=max;i+=((max-min)/10)){
-      ticks.push(i);
-    }
-    console.log(min, max, ticks)
-    c3.generate({
-    bindto: "#ratings",
-    data: {
-        x: 'x',
-        columns: [
-        ['x'].concat(times),
-        ['Solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
-        ['Party'].concat(ratings.map(function(r){return r.competitiveRank;}))
-        ],
-        type:"line"
-    },
-    axis: {
-        x: {
-            type: 'timeseries',
-            label: 'Date',
-            tick: {
-                format: '%Y-%m-%d',
-                values: ticks
-            }
-        },
-        y: {
-            label: 'Rating'
-        }
-    }
-    });
-=======
-   h4 Solo: #{ratings[0] ?  ratings[0].soloCompetitiveRank : "Not in System"}
-   h4 Party: #{ratings[0]? ratings[0].competitiveRank : "Not in System"}
-   #ratings
->>>>>>> 3d00445d9b4a46452c7da0b2e4a93100485f99ac
+
+append footer_assets
+  script.
+      var ratings = !{JSON.stringify(ratings)};
+      var times = ratings.map(function(r){return new Date(r.time);})
+      var min = Math.min.apply(null, times)
+      var max = Math.max.apply(null, times)
+      var ticks = [];
+      for (var i = min;i<=max;i+=((max-min)/10)){
+        ticks.push(i);
+      }
+      console.log(min, max, ticks)
+      c3.generate({
+      bindto: "#ratings",
+      data: {
+          x: 'x',
+          columns: [
+          ['x'].concat(times),
+          ['Solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
+          ['Party'].concat(ratings.map(function(r){return r.competitiveRank;}))
+          ],
+          type:"line"
+      },
+      axis: {
+          x: {
+              type: 'timeseries',
+              label: 'Date',
+              tick: {
+                  format: '%Y-%m-%d',
+                  values: ticks
+              }
+          },
+          y: {
+              label: 'Rating'
+          }
+      }
+      });
+

@@ -1,7 +1,6 @@
 var request = require('request'),
     winston = require('winston');
 var BigNumber = require('big-number').n;
-var spawn = require("child_process").spawn;
 var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
 var transports = [];
