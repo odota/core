@@ -355,4 +355,8 @@ footer {
     border-bottom-left-radius: 20px;
     overflow: hidden;
 }
+
+@media(max-width: 768px){
+    .navbar > .container { background-color: black; }
+}
 /* -- end custom css for Bootstrap 3.x --*/
