@@ -3,7 +3,7 @@ block blogcontent
 	.panel.panel-default.blog-panel
 		.panel-heading
 			h1.panel-title.blog-heading: a(href=post.url)=post.title
-			h6.blog-date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
+			h6.blog-date By #{post.author} | #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
 
 		.panel-body.blog-preview
 			!= post.content
@@ -14,8 +14,8 @@ block blogcontent
 						span.label.label-info #{tag}
 block taglegend
 	.well.sidebar-nav
+		p.lead Tags
 		ul.nav.nav-list
-			li.nav-header.tag-header tags
 			- each tag in getTags()
 				li
 					a(href=tagURL(tag)) 

@@ -1,7 +1,8 @@
 {{{
   "title": "Rating Tracker is in beta!",
   "tags": ["feature","tech"],
-  "date": "2-15-2015"
+  "date": "2-15-2015",
+  "author": "Howard"
 }}}
 
 Some people have asked for a tool that keeps track of MMR.

@@ -2,7 +2,7 @@ each post in posts
 	.panel.panel-default.blog-panel
 		.panel-heading
 			h2.panel-title.blog-heading: a(href=post.url)= post.title 
-			h6.blog-date #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
+			h6.blog-date By #{post.author} | #{post.date.getFullYear()}-#{post.date.getMonth()+1}-#{post.date.getDate()}
 		.panel-body.blog-preview
 			!= post.preview
 			.tags
