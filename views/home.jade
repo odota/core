@@ -27,6 +27,17 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
     
+    link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+    link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
+    link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+    link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+    style
+      include ../public/css/flaticon.css
+        
+    script(src="/bower_components/webcomponentsjs/webcomponents.js")
     link(rel="import" href="bower_components/core-icons/core-icons.html")
     link(rel="import" href="bower_components/paper-fab/paper-fab.html")
     link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
@@ -432,22 +443,10 @@ html
              Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a>
              and <a href="http://css101.deviantart.com/">css101</a>.
     block footer_assets
-      //- Stylesheets
-      link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-      link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-      link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-      link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
-      link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
-      link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
-      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-
-      style
-        include ../public/css/flaticon.css
       script(src="/public/js/bundle.js")
       script(src="/public/js/ga.js")
       script(src="/public/js/scroll.js")
       script(src="/public/js/animatedNavbar.js")
-      script(src="/bower_components/webcomponentsjs/webcomponents.js")
       script(src="/public/js/scripts.js")
       script(src="/bower_components/bootstrap/js/transition.js")
       script(src="/bower_components/bootstrap/js/collapse.js")
