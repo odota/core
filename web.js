@@ -33,7 +33,9 @@ var server = app.listen(process.env.PORT || 5000, function() {
 });
 var io = require('socket.io')(server);
 setInterval(function() {
-    status(io);
+    status(function(err, res) {
+        if (!err) io.emit(res);
+    });
 }, 5000);
 /*
 io.sockets.on('connection', function(socket) {
@@ -279,7 +281,6 @@ app.route('/confirm').get(function(req, res, next) {
                     // this condition indicates the key is new
                     redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
                 }
-                
                 if (req.user && payment.transactions[0]) {
                     var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
                     db.players.update({
