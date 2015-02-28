@@ -291,6 +291,16 @@ footer {
   padding: 30px 0px;
 }
 
+.map {
+  height:500px;
+}
+
+@media all {
+  .table-responsive {
+    border: inherit;  
+  }
+}
+
 .medium-cheese {
     font-size: 40px;
     border: 3px solid rgb(189, 155, 20);

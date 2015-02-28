@@ -445,6 +445,8 @@ html
       script(src="/public/js/animatedNavbar.js")
       script(src="/bower_components/webcomponentsjs/webcomponents.js")
       script(src="/public/js/scripts.js")
+      script(src="/bower_components/bootstrap/js/transition.js")
+      script(src="/bower_components/bootstrap/js/collapse.js")
       include fake_data
       script.
         c3.generate({
@@ -479,7 +481,5 @@ html
             heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(500/127),y:p[1]*(500/127)}})});
             heatmap.repaint();
           })
-block content
-
 
 
