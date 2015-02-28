@@ -17,6 +17,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#~0.5.5",
     "paper-fab-menu": "*",
-    "core-elements": "Polymer/core-elements#~0.5.5"
+    "core-elements": "Polymer/core-elements#~0.5.5",
+    "bootstrap": "3.3.2"
   }
 }

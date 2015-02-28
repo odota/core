@@ -21,6 +21,7 @@ html
     link(rel='icon', type='image/png', href='/public/images/favicon-96x96.png', sizes='96x96')
     link(rel='icon', type='image/png', href='/public/images/favicon-16x16.png', sizes='16x16')
     link(rel='icon', type='image/png', href='/public/images/favicon-32x32.png', sizes='32x32')
+
     meta(name='msapplication-TileColor', content='#00aba9')
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
@@ -110,10 +111,12 @@ html
         block footer_assets
           //- Stylesheets
           link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-          link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
+          //- link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
           link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
           link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
           link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+          link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
+
           style
             include ../public/css/yasp.css
           style
