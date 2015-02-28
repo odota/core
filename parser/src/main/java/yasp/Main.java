@@ -85,7 +85,7 @@ public class Main {
 						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
 						Entry entry = new Entry(time);
-						entry.type="hero";
+						entry.type="hero_log";
 						entry.slot=i;
 						entry.key=String.valueOf(hero);
 						log.output(entry);
@@ -249,10 +249,23 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
-							entry.inflictor = cle.getInflictorName();
-							entry.subtype = (cle.isTargetHero() && !cle.isTargetIllusion()) ? "hero_hit" : null;
 							entry.type = "damage";
 							log.output(entry);
+							if (true){
+								Entry entry2 = new Entry(time);
+								entry2.unit = cle.getTargetNameCompiled();
+								entry2.key = cle.getAttackerNameCompiled();
+								entry2.value = cle.getValue();
+								entry2.type = "damage_taken";
+								log.output(entry2);	
+							}
+							if (cle.isTargetHero() && !cle.isTargetIllusion()){
+								Entry entry2 = new Entry(time);
+								entry2.unit = cle.getAttackerNameCompiled();
+								entry2.key = cle.getInflictorName();
+								entry2.type = "hero_hits";
+								log.output(entry2);
+							}
 							break;
 						case 1:
 							//healing
@@ -290,22 +303,35 @@ public class Main {
 							//kill
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
-							entry.subtype = (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()) ? "herokills" : null;
 							entry.type = "kills";
 							log.output(entry);
+							if (true){
+								Entry entry2 = new Entry(time);
+								entry2.unit = cle.getTargetNameCompiled();
+								entry2.key = cle.getAttackerNameCompiled();
+								entry2.type = "killed_by";
+								log.output(entry2);
+							}
+							if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
+								Entry entry2 = new Entry(time);
+								entry2.unit = cle.getAttackerNameCompiled();
+								entry2.key = cle.getTargetNameCompiled();
+								entry2.type = "kill_log";
+								log.output(entry2);
+							}
 							break;
 						case 5:
 							//ability use
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
-							entry.type = "abilityuses";
+							entry.type = "ability_uses";
 							log.output(entry);
 							break;
 						case 6:
 							//item use
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
-							entry.type = "itemuses";
+							entry.type = "item_uses";
 							log.output(entry);
 							break;
 						case 8:
@@ -313,7 +339,7 @@ public class Main {
 							entry.key = String.valueOf(cle.getGoldReason());
 							entry.unit = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
-							entry.type = "gold_log";
+							entry.type = "gold_reasons";
 							log.output(entry);
 							break;
 						case 9:
@@ -339,20 +365,20 @@ public class Main {
 							entry.unit = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
 							entry.key = String.valueOf(cle.getXpReason());
-							entry.type = "xp_log";
+							entry.type = "xp_reasons";
 							log.output(entry);
 							break;
 						case 11:
 							//purchase
 							entry.unit = cle.getTargetNameCompiled();
 							entry.key = cle.getValueName();
-							entry.type = "itembuys";
+							entry.type = "item_log";
 							log.output(entry);
 							break;
 						case 12:
 							//buyback
 							entry.slot = cle.getValue();
-							entry.type = "buybacks";
+							entry.type = "buyback_log";
 							log.output(entry);
 							break;
 						case 13:

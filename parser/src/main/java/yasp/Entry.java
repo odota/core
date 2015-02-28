@@ -8,8 +8,6 @@ public class Entry {
     public String key;
     public Integer value;
     public Integer slot;
-    public String inflictor;
-    public String subtype;
     public Entry(Integer time){
         this.time = time;
     }

@@ -27,7 +27,7 @@ function processParse(job, cb) {
         streamReplay,
     ], function(err) {
         var match_id = job.data.payload.match_id;
-        logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
+        logger.info("[PARSER] match_id %s, parse time: %s, error: %s", match_id, (new Date() - t1) / 1000, err);
         if (err === "replay expired" || (err && noRetry)) {
             logger.info("match_id %s, error %s, not retrying", match_id, err);
             return db.matches.update({
@@ -163,11 +163,10 @@ function streamReplay(job, cb) {
         else {
             bz = spawn("bunzip2");
             bz.stdout.pipe(parser.stdin);
-            //request.debug = true;
             inStream = request.get({
                 url: job.data.url,
                 encoding: null,
-                timeout: 60000
+                timeout: 30000
             });
             inStream.on('response', function(response) {
                 if (response.statusCode !== 200) {
@@ -179,15 +178,43 @@ function streamReplay(job, cb) {
 }
 
 function runParser(cb) {
+    //todo choose a parser to stream from
+    //todo set version based on parser?
+    //todo handle parser errors
     var parser_file = "parser/target/stats-0.1.0.jar";
     var entries = [];
-    var mapSize = 128;
     var parsed_data = {
         "version": constants.parser_version,
         "game_zero": 0,
         "game_end": 0,
         "match_id": 0,
-        "players": [],
+        "players": Array.apply(null, new Array(10)).map(function() {
+            return {
+                "stuns": -1,
+                "lane": -1,
+                "pos": [],
+                "obs": [],
+                "sen": [],
+                "gold": [],
+                "lh": [],
+                "xp": [],
+                "hero_log": [],
+                "item_log": [],
+                "kill_log": [],
+                "buyback_log": [],
+                "gold_reasons": {},
+                "xp_reasons": {},
+                "kills": {},
+                "item_uses": {},
+                "ability_uses": {},
+                "hero_hits": {},
+                "damage": {},
+                "damage_taken": {},
+                "runes": {},
+                "runes_bottled": {},
+                "killed_by": {}
+            };
+        }),
         "times": []
     };
     var name_to_slot = {};
@@ -197,74 +224,38 @@ function runParser(cb) {
         "match_id": setData,
         "game_zero": setData,
         "game_end": setData,
-        "hero": function(e) {
+        "hero_log": function(e) {
             //get hero by id
             var h = constants.heroes[e.key];
             hero_to_slot[h ? h.name : e.key] = e.slot;
-            if (!parsed_data.players[e.slot]) {
-                parsed_data.players.push({
-                    "stuns": -1,
-                    "lane": [],
-                    "pos": [],
-                    "obs": [],
-                    "sen": [],
-                    "gold": [],
-                    "lh": [],
-                    "xp": [],
-                    "hero": [],
-                    "itembuys": [],
-                    "herokills": [],
-                    "buybacks": [],
-                    "gold_log": {},
-                    "xp_log": {},
-                    "kills": {},
-                    "itemuses": {},
-                    "abilityuses": {},
-                    "hero_hits": {},
-                    "damage": {},
-                    "runes": {},
-                    "runes_bottled": {}
-                });
-            }
+            //add to player's hero list
             getSlot(e);
         },
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
         },
-        "gold_log": getSlot,
-        "xp_log": getSlot,
-        "itembuys": getSlot,
-        "itemuses": getSlot,
-        "abilityuses": getSlot,
+        "gold_reasons": getSlot,
+        "xp_reasons": getSlot,
+        "item_log": getSlot,
+        "item_uses": getSlot,
+        "ability_uses": getSlot,
         "kills": getSlot,
         "damage": getSlot,
         "runes": getSlot,
         "runes_bottled": getSlot,
         "stuns": getSlot,
-        "buybacks": getSlot,
-        "chat": getSlotDirect,
+        "buyback_log": getSlot,
+        "chat": getChatSlot,
         "lh": interval,
         "gold": interval,
         "xp": interval,
         "pos": translate,
         "obs": translate,
         "sen": translate,
-        "hero_hits": function(e) {
-            getSlot({
-                type: e.subtype,
-                time: e.time,
-                unit: e.unit,
-                key: e.inflictor
-            });
-        },
-        "herokills": function(e) {
-            getSlot({
-                type: e.subtype,
-                time: e.time,
-                unit: e.unit,
-                key: e.key
-            });
-        }
+        "hero_hits": getSlot,
+        "kill_log": getSlot,
+        "damage_taken": getSlotReverse,
+        "killed_by": getSlotReverse
     };
 
     function preprocess(e) {
@@ -286,56 +277,63 @@ function runParser(cb) {
         e.key = JSON.parse(e.key);
         e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
         e.position = true;
-        getSlot(e);
+        entries.push(e);
     }
 
     function interval(e) {
         e.interval = true;
-        getSlot(e);
+        entries.push(e);
     }
 
-    function getSlotDirect(e) {
-        e.skip = true;
-        getSlot(e);
+    function assocName(name) {
+        //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
+        if (!name) {
+            return;
+        }
+        else if (name in hero_to_slot) {
+            return name;
+        }
+        else if (name.indexOf("illusion_") === 0) {
+            var s = name.slice("illusion_".length);
+            return s;
+        }
+        else if (name.indexOf("npc_dota_") === 0) {
+            //split by _
+            var split = name.split("_");
+            //get the third element
+            var identifiers = [split[2], split[2] + "_" + split[3]];
+            identifiers.forEach(function(id) {
+                //append to npc_dota_hero_, see if matches
+                var attempt = "npc_dota_hero_" + id;
+                if (attempt in hero_to_slot) {
+                    return attempt;
+                }
+            });
+        }
     }
 
     function getSlot(e) {
-        var map = e.type === "chat" ? name_to_slot : hero_to_slot;
-        if (e.unit) {
-            if (e.unit in map) {
-                e.slot = map[e.unit];
-            }
-            else if (!e.skip) {
-                if (e.unit.indexOf("illusion_") === 0) {
-                    var s = e.unit.slice("illusion_".length);
-                    e.slot = map[s];
-                }
-                else if (e.unit.indexOf("npc_dota_") === 0) {
-                    //split by _
-                    var split = e.unit.split("_");
-                    //get the third element
-                    var identifiers = [split[2], split[2] + "_" + split[3]];
-                    identifiers.forEach(function(id) {
-                        //append to npc_dota_hero_, see if matches
-                        var attempt = "npc_dota_hero_" + id;
-                        if (attempt in map) {
-                            e.slot = map[attempt];
-                        }
-                    });
-                }
-            }
-        }
-        e.slot = ("slot" in e) ? e.slot : -1;
-        if (e.subtype in types) {
-            types[e.subtype]();
-        }
+        //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
+        //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
+        e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
+        //use slot, then map value (could be undefined)
+        e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
+        entries.push(e);
+    }
+
+    function getSlotReverse(e) {
+        e.reverse = true;
+        getSlot(e);
+    }
+
+    function getChatSlot(e) {
+        e.slot = name_to_slot[e.unit];
         entries.push(e);
     }
 
     function processEntry(e) {
-        e.slot = parsed_data.players.length === 2 ? e.slot - 4 : e.slot;
         e.time -= parsed_data.game_zero;
-        if (e.slot < 0) {
+        if (typeof e.slot === "undefined") {
             //console.log(e);
             return;
         }
@@ -361,61 +359,50 @@ function runParser(cb) {
         stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
         encoding: 'utf8'
     });
-    /*
-    var output = '';
-    parser.stdout.on('data', function(data) {
-        output += data;
-    });
-    */
     var stream = JSONStream.parse();
     parser.stdout.pipe(stream);
     stream.on('root', preprocess);
     parser.on('exit', function(code) {
-        logger.info("[PARSER] exit code: %s", code);
         if (code) {
             return cb(code);
         }
-        /*
-        output = JSON.parse(output);
-        output.forEach(preprocess);
-        */
         entries.forEach(processEntry);
         var keys = Object.keys(types).filter(function(k) {
             return types[k] === translate;
         });
         parsed_data.players.forEach(function(p) {
+            var lanes = [];
             keys.forEach(function(key) {
-                //initialize zero map
-                var points = [];
-                var map = [];
-                for (var i = 0; i < mapSize; i++) {
-                    map.push(Array.apply(null, new Array(mapSize)).map(Number.prototype.valueOf, 0));
-                }
+                var h = {};
                 p[key].forEach(function(e) {
-                    map[e.key[1]][e.key[0]] += 1;
-                    if (e.time <= 600) {
-                        p.lane.push(constants.lanes[e.key[1]][e.key[0]]);
+                    var x = e.key[0];
+                    var y = e.key[1];
+                    if (!h[x]) {
+                        h[x] = {};
+                    }
+                    if (!h[x][y]) {
+                        h[x][y] = 0;
+                    }
+                    h[x][y] += 1;
+                    if (e.time <= 600 && key === "pos") {
+                        lanes.push(constants.lanes[e.key[1]][e.key[0]]);
                     }
                 });
-                for (var y = 0; y < mapSize; y++) {
-                    for (var x = 0; x < mapSize; x++) {
-                        if (map[y][x]) {
-                            /*
-                            points.push({
-                                x: x,
-                                y: y,
-                                value: map[y][x]
-                            });
-                            */
+                /*
+                for (var x in h) {
+                    for (var y in h[x]) {
+                        if (h[x][y]) {
+                            //points.push({x: x,y: y,value: map[y][x]});
                             //super hacker bit packing!
-                            points.push((x << 24) + (y << 16) + map[y][x]);
+                            points.push((Number(x) << 24) + (Number(y) << 16) + h[x][y]);
                         }
                     }
                 }
                 p[key] = points;
+                */
+                p[key] = h;
             });
-            p.explore = p.pos.length / (mapSize * mapSize);
-            p.lane = mode(p.lane);
+            p.lane = mode(lanes);
         });
         fs.writeFile("output2.json", JSON.stringify(parsed_data), function() {});
         cb(code, parsed_data);

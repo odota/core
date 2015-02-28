@@ -42,12 +42,14 @@ d.run(function() {
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
+        jobs.process('parse', processors.processParse);
         setInterval(fullhistory, 31 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 5 * 60 * 1000, function() {});
         setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
+
 
 function build(cb) {
     console.log("rebuilding sets");

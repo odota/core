@@ -151,7 +151,7 @@ function convert32to64(id) {
 }
 
 function isRadiant(player) {
-        return player.player_slot < 64;
+        return player.player_slot < 127;
     }
     /*
      * Makes sort from a datatables call
