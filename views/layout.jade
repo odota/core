@@ -1,125 +1,13 @@
-doctype html
-html
-  head
-    title= title || "YASP - Dota 2 Replay Parsing and Statistics"
-    meta(name="description", content="YASP: Another (Dota) Stats Page")
-    meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
-    meta(charset='utf-8')
-    //- Favicons
-    link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
-    link(rel='apple-touch-icon', sizes='114x114', href='/public/images/apple-touch-icon-114x114.png')
-    link(rel='apple-touch-icon', sizes='72x72', href='/public/images/apple-touch-icon-72x72.png')
-    link(rel='apple-touch-icon', sizes='144x144', href='/public/images/apple-touch-icon-144x144.png')
-    link(rel='apple-touch-icon', sizes='60x60', href='/public/images/apple-touch-icon-60x60.png')
-    link(rel='apple-touch-icon', sizes='120x120', href='/public/images/apple-touch-icon-120x120.png')
-    link(rel='apple-touch-icon', sizes='76x76', href='/public/images/apple-touch-icon-76x76.png')
-    link(rel='apple-touch-icon', sizes='152x152', href='/public/images/apple-touch-icon-152x152.png')
-    link(rel='apple-touch-icon', sizes='180x180', href='/public/images/apple-touch-icon-180x180.png')
-    link(rel='shortcut icon', href='/public/images/favicon.ico')
-    link(rel='icon', type='image/png', href='/public/images/favicon-192x192.png', sizes='192x192')
-    link(rel='icon', type='image/png', href='/public/images/favicon-160x160.png', sizes='160x160')
-    link(rel='icon', type='image/png', href='/public/images/favicon-96x96.png', sizes='96x96')
-    link(rel='icon', type='image/png', href='/public/images/favicon-16x16.png', sizes='16x16')
-    link(rel='icon', type='image/png', href='/public/images/favicon-32x32.png', sizes='32x32')
-    meta(name='msapplication-TileColor', content='#00aba9')
-    meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
-    meta(name='msapplication-config', content='/public/images/browserconfig.xml')
-    block head
-    
-  body
-     .sticky_footer_row
-       nav.navbar.navbar-default
-        .container
-          .navbar-header
-            a(href='/', class = 'navbar-brand') <strong>YASP</strong>
-          ul.nav.navbar-nav
-            li
-              a(href="/matches") Matches
-            li
-              a(href="/status") Status
-            li
-              a(href="/about") FAQ/About
-            li
-              a(href="/page/1") Blog
-            li
-              a(href="/carry") Help Carry
-          if user
-            ul.nav.navbar-nav.navbar-right
-              li
-                a(href="/players/"+user.account_id)=user.personaname
-     .sticky_footer_row.expand
-      .container
-       if banner_msg
-         .alert.alert-success(role="alert") !{banner_msg}
-       if api_down
-         .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
-       if user && user.track===0
-           .alert.alert-warning(role="alert") !{constants.untracked_msg}
-       if login_req_msg
-         .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
-       if !error
-         include ads/leaderboard
-       block content
-     .sticky_footer_row
-      footer.footer(style="color: #777;\
-                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
-        .container
-          .row
-            .col-md-4.text-center
-              p Buy Cheese. Help Pay for Our Servers.
-              p Reaching the goal each day allows us to keep YASP running.
-            .col-md-4.text-center
-              .meter_wrapper
-                p(style="font-weight:700;") Daily Cheese Goal
-                .meter
-                  span(style="width: #{cheese_goal}%;")
-                if cheese_goal >= 50 && cheese_goal < 100
-                  small Getting there...
-                else if cheese_goal === 100
-                  small Woo!!! We did it! Thanks guys!
-            .col-md-4.text-center
-                span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
-                a(href="/carry", target="_blank")
-                  button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
-          .row(style="font-size: .8em;")
-            .col-md-4.text-center
-             p.
-              Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
-              We use Google AdSense and Analytics. They might be using some 
-              <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
-              cookies</a>.
-              We also use cookies for sessions.
-              Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
-            .col-md-4.text-center(style="font-size: 1.2em;")
-              p.
-                &copy; YASP #{moment().get('year')}. If that means anything. <br>
-                Built from apathy, boredom, and procrastination. <br>
-                Comments, suggestions? 
-                <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
-                Thanks! <br>
-              a.twitter-follow-button(href='https://twitter.com/yasp_dota', data-show-count='false', data-size='medium') Follow @yasp_dota
-              script.
-                !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-            .col-md-4.text-center
-             p.
-               <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
-               Match parsing powered by
-               <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
-               Source code can be found on 
-               <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
-        block footer_assets
-          //- Stylesheets
-          link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-          link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
-          link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-          link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-          link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-          style
-            include ../public/css/yasp.css
-          style
-            include ../public/css/flaticon.css
-          if (user && user.dark_theme)
-            style
-              include ../public/css/dark.css
-          script(src="/public/js/bundle.js")
-          script(src="/public/js/ga.js")
+extend base_layout
+
+block banners
+  if banner_msg
+   .alert.alert-success(role="alert") !{banner_msg}
+  if api_down
+   .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
+  if user && user.track===0
+     .alert.alert-warning(role="alert") !{constants.untracked_msg}
+  if login_req_msg
+   .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
+  if !error
+   include ads/leaderboard

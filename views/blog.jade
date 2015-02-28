@@ -1,14 +1,33 @@
 extend layout
 
 block content
-  h1 The YASP Blog
+  #about-top.gallery.faq
+    .row
+      .col-md-6.col-md-offset-3.text-center.bottom-padding
+        br
+        br
+        h2 The YASP Blog            
+        h4 All the cool stuff we've been doing.
+        img(src='../public/images/curlycue.png')
+        br
+        br
   .row
-    .col-md-8
+    .col-md-10
       block blogcontent
-    .col-md-4
-      .well.sidebar-nav
+    .col-md-2
+      .well.sidebar-nav.tag-key
         ul.nav.nav-list
           li.nav-header tags
           - each tag in getTags()
-            li
+            li.tag-key
               a(href=tagURL(tag)) #{tag}
+
+append footer_assets
+  script.
+    $(window).scroll(function(){
+      if ($(this).scrollTop() > ($(window).height()-($(window).height())*.05)) {
+          $('.tag-key').fadeOut('slow');
+      } else {
+          $('.tag-key').fadeIn('slow');
+      }
+    });

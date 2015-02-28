@@ -64,6 +64,7 @@ app.use(compression());
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
+app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
@@ -132,7 +133,7 @@ app.route('/').get(function(req, res, next) {
         });
     }
     else {
-        res.render('index.jade');
+        res.render('home');
     }
 });
 app.route('/preferences').post(function(req, res) {
