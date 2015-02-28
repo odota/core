@@ -112,6 +112,10 @@ a.list-group-item:hover, a.list-group-item:focus{
   background-color: #FFF;
 }
 
+.icon-bar {
+  background-color: #fff;
+}
+
 .navbar a {
   color:#fff;
   font-size:14px;
@@ -141,6 +145,7 @@ a.list-group-item:hover, a.list-group-item:focus{
 .navbar-fixed-top { 
   transition: background 1s ease 0s;
 }
+
 .navbar-fixed-top.opaque{ 
   background-color: rgb(37, 41, 42);
   transition: background-color 1s ease 0s;

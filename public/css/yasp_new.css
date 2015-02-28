@@ -52,10 +52,6 @@ img.grayscale {
     -webkit-filter: grayscale(100%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
 
-.icon-bar {
-   background-color:#fff;
-}
-
 .scroll-down a, .scroll-top a {
    color:#ffffff;
 }
