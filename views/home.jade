@@ -44,13 +44,13 @@ html
         #navbar.navbar-collapse.collapse
           ul.nav.navbar-nav
             li
-              a(href='#sec1') Matches       
+              a(href='/matches') Matches       
             li
-              a(href='#sec2') Status      
+              a(href='/status') Status      
             li
-              a(href='#sec3') FAQ       
+              a(href='/about') FAQ       
             li
-              a(href='#sec4') Help Carry!
+              a(href='/carry') Help Carry!
 
     #top.header.alt.vert
       .container
@@ -122,6 +122,50 @@ html
           |     
           .col-md-12.text-center &nbsp;
 
+    .blurb.bright
+      .row
+        .col-md-6.col-md-offset-3.text-center
+          h3 Smashing Heading
+          |         
+          br
+      |   
+      |   
+      .row
+        .col-sm-4.col-sm-offset-2
+          .panel.panel-default
+            .panel-heading.text-center
+              h2
+                i.icon-chevron-left
+                |  Left
+            |          
+            .panel-body.text-center
+              | Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pharetra varius quam sit amet vulputate. 
+              | Quisque mauris augue, molestie tincidunt condimentum vitae, gravida a libero. Aenean sit amet felis 
+              | dolor, in sagittis nisi. Sed ac orci quis tortor imperdiet venenatis. Duis elementum auctor accumsan. 
+              | Aliquam in felis si.
+              .row &nbsp;
+              |           
+              button.btn.btn-lg.btn-primary.btn-block Login
+        |     
+        .col-sm-4
+          .panel.panel-default
+            .panel-heading.text-center
+              h2
+                | Right 
+                i.icon-chevron-right
+            |          
+            .panel-body.text-center
+              | Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pharetra varius quam sit amet vulputate. 
+              | Quisque mauris augue, molestie tincidunt condimentum vitae, gravida a libero. Aenean sit amet felis 
+              | dolor, in sagittis nisi. Sed ac orci quis tortor imperdiet venenatis. Duis elementum auctor accumsan. 
+              | Aliquam in felis sit.
+              .row &nbsp;
+              |           
+              button.btn.btn-lg.btn-primary.btn-block Sign Up
+
+    .blurb
+      .container
+          .row
 
     footer.footer(style="color: #777;\
                   width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
