@@ -1,35 +1,6 @@
-html,
-body {
-  height: 100%;
-  width: 100%;
-  font-family:"Roboto Slab", Arial,sans-serif;
-}
-
-/* fix bs3 horizontal scrollbar bug */
-.row { margin: 0; padding: 0 }
-
-
-/* use special fonts in certain elements */
-h1,h2,h3,h4,.lead,.btn,.navbar a {
-  text-transform:uppercase;
-  font-family: "Roboto Slab", Arial,sans-serif;
-  letter-spacing:2px;
-}
 
 h1 {
   font-size:50px;
-}
-
-.panel-body {
-  background-color: #f5f5f5;
-}
-
-#top {
-  padding-top: 15%;
-}
-
-#about-top {
-  padding-top: 10%;
 }
 
 .icon-circle {
@@ -43,25 +14,6 @@ h1 {
 
 .circle-margin {
   margin-top: 6px;
-}
-
-.faq {
-  padding-top:5%;
-  /*height:80%;*/
-}
-
-.theme-blue {
-  color:#BBF0FD;
-}
-
-.bottom-padding {
-  padding-bottom: 20px;
-}
-
-.panel-title {
-  text-transform: none;
-  font-size: 15px;
-  letter-spacing: 0px;
 }
 
 #philosophy {
@@ -80,11 +32,6 @@ h1 {
   bottom: 1em;
   right: 2em;
   position: fixed;
-}
-
-.faq {
-  padding-top:5%;
-  /*height:80%;*/
 }
 
 /* make images gray */
@@ -133,46 +80,6 @@ img.grayscale {
   border-color: #BBF0FD;
   color:#FFF;
 }
-
-a.list-group-item:hover, a.list-group-item:focus{
-  color: #BBF0FD;
-  background-color: #FFF;
-}
-
-/*.navbar a {
-  color:#fff;
-  font-size:14px;
-}
-
-.navbar-bold.affix {
-  background-color:#d46054;
-}
-
-.navbar-bold {
-  background-color:#f68076;
-  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
-}
-
-.navbar-bold li a:hover, .navbar-bold li.active {
-  background-color:#d46054;
-}
-
-.navbar-brand:hover, .navbar-brand:focus {
-  background-color: #FFF;
-}
-
-.nav>li>a:hover, .nav>li>a:focus {
-  background-color: #BBF0FD; 
-}
-
-.navbar-fixed-top { 
-  transition: background 1s ease 0s;
-}
-.navbar-fixed-top.opaque{ 
-  background-color: rgb(37, 41, 42);
-  transition: background-color 1s ease 0s;
-}*/
-
     
 .header h1 {
   font-size:80px;
@@ -338,10 +245,19 @@ a.list-group-item:hover, a.list-group-item:focus{
   font-size: 68px;
 }
 
+#stats-table {
+  color:black;
+}
+
+#stats-table tfoot, #stats-table thead{
+  color:white;
+  background-color: transparent;
+}
+
 .callout {
   color: #ffffff;
   padding-top:7%;
-  height: 100%;
+  /*height: 100%;*/
   width: 100%;
   background: url('../images/header.jpg') no-repeat center center fixed; 
   -webkit-background-size: cover;

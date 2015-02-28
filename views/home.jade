@@ -47,7 +47,9 @@ html
             li
               a(href='/status') Status      
             li
-              a(href='/about') FAQ       
+              a(href='/about') FAQ 
+            li
+              a(href='/page/1') Blog      
             li
               a(href='/carry') Help Carry!
 
@@ -62,7 +64,7 @@ html
       a.arrow-wrap(href='#philosophy')
         span.arrow
 
-    paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
+    paper-fab-menu.fab(icon='dashboard', closeicon='close', color='#BBF0FD;', duration='0.3')
       paper-fab-menu-item(icon='expand-less', color='#BBF0FD;', tooltip='Scroll to the top!', href='#top')
       paper-fab-menu-item(icon='filter-list', color='purple;', tooltip='TL;DR')
       paper-fab-menu-item(icon='star-outline', color='green;', tooltip='Features')
@@ -73,7 +75,7 @@ html
           .container
             .row
               .col-md-7
-                h1.fancy Our Mission
+                h1 Our Mission
                 |         
                 p.lead Free Replay Parsing for All
               |       
@@ -82,7 +84,7 @@ html
     #content.featurette
       .container
         .row
-          .col-md-12.text-center
+          .col-md-12.text-center.bottom-padding
             h1 Why We're Awesome  
         .row
           .col-md-4.text-center.team-text
@@ -93,7 +95,7 @@ html
               h4 Open source.
               |           
               p
-                | All of YASP&apos;s code is open source and available on Github for contributors to improve and modify.     
+                | All of YASP's code is open source and available on Github for contributors to improve and modify.     
           .col-md-4.text-center.team-text
             .featurette-item
               .icon-circle
@@ -115,23 +117,211 @@ html
           // SOURCE: http://www.elegantthemes.com/blog/freebie-of-the-week/beautiful-flat-icons-for-free
 
     #match_statistics.callout
-      .vert
-          .col-md-12.text-center
-            #chart-gold
+        .container
+          .col-md-12.text-center.bottom-padding
+            h1 Features
+            h2 Gold Distribution
+          .col-md-12.text-center.bottom-padding.table-responsive
+            table.table.table-hover.table-responsive#stats-table
+                      thead
+                        tr
+                          th Hero
+                          th Other
+                          th Deaths
+                          th Buybacks
+                          th Abandons
+                          th Sells
+                          th Structures
+                          th Heroes
+                          th Creeps
+                          th Roshan
+                          th Couriers
+                      tbody
+                        tr.success
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='133', oldtitle='Pugna', title='')
+                          td 625
+                          td -1404
+                          td -89
+                          td -
+                          td -
+                          td 160
+                          td 1007
+                          td 1021
+                          td -
+                          td -
+                        tr.success
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png', data-hasqtip='134', oldtitle='Mirana', title='')
+                          td 699
+                          td -895
+                          td -
+                          td -
+                          td 246
+                          td 160
+                          td 1364
+                          td 1589
+                          td -
+                          td -
+                        tr.success
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png', data-hasqtip='135', oldtitle='Viper', title='')
+                          td 1012
+                          td -2541
+                          td -822
+                          td -
+                          td 25
+                          td 160
+                          td 2713
+                          td 3757
+                          td -
+                          td -
+                        tr.success
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png', data-hasqtip='136', oldtitle='Phantom Assassin', title='')
+                          td 1011
+                          td -2482
+                          td -
+                          td -
+                          td 137
+                          td 160
+                          td 1648
+                          td 7637
+                          td -
+                          td -
+                        tr.success
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png', data-hasqtip='137', oldtitle='Disruptor', title='')
+                          td 898
+                          td -1344
+                          td -
+                          td -
+                          td 15
+                          td 160
+                          td 2732
+                          td 1162
+                          td -
+                          td -
+                        tr.danger
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png', data-hasqtip='138', oldtitle='Windranger', title='')
+                          td 665
+                          td -
+                          td -
+                          td -
+                          td -
+                          td 4262
+                          td 1375
+                          td 3108
+                          td 386
+                          td -
+                        tr.danger
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png', data-hasqtip='139', oldtitle='Lina', title='')
+                          td 1024
+                          td -1135
+                          td -
+                          td -
+                          td -
+                          td 3528
+                          td 1391
+                          td 3912
+                          td 200
+                          td -
+                        tr.danger
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png', data-hasqtip='140', oldtitle='Bristleback', title='')
+                          td 946
+                          td -419
+                          td -
+                          td -
+                          td 262
+                          td 4088
+                          td 2347
+                          td 4362
+                          td 200
+                          td -
+                        tr.danger
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png', data-hasqtip='141', oldtitle='Shadow Fiend', title='')
+                          td 1490
+                          td -509
+                          td -
+                          td -
+                          td 605
+                          td 4191
+                          td 5256
+                          td 8785
+                          td 200
+                          td -
+                        tr.danger
+                          td.hero
+                            img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='142', oldtitle='Queen of Pain', title='')
+                          td 1393
+                          td -896
+                          td -
+                          td -
+                          td -
+                          td 3968
+                          td 4205
+                          td 5694
+                          td 200
+                          td -
+                      tfoot
+                        tr
+                          td Radiant
+                          td.format 4.2k
+                          td.format -8.7k
+                          td.format -911
+                          td.format -
+                          td.format 423
+                          td.format 800
+                          td.format 9.5k
+                          td.format 15.2k
+                          td.format -
+                          td.format -
+                        tr
+                          td Dire
+                          td.format 5.5k
+                          td.format -3.0k
+                          td.format -
+                          td.format -
+                          td.format 867
+                          td.format 20.0k
+                          td.format 14.6k
+                          td.format 25.9k
+                          td.format 1.2k
+                          td.format -
+            p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
+
+    .featurette.dark
+      .container
+        .vert
+            .col-md-12.text-center.bottom-padding
+              h2 Graphs
+            .col-md-12.text-center.bottom-padding
+              .div.well.text-center
+                #chart-gold
+            .col-md-12.text-center
+              p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
 
     .blurb.bright
-      .row
-        .col-md-7
-            h2: abbr(title="Player movement during the game") Heatmap
-            #map.mapContainer
+      .container
+        .col-md-12.text-center.bottom-padding
+          h2: abbr(title="Player movement during the game") Positions
+        .row
+          .col-md-7.bottom-padding
+            #map.mapContainer.table-responsive
               img.map(src='/public/images/map.jpg', alt="map")
+          
           .col-md-5
-            table.table.table-hover.table-responsive
-              tbody
+            table.table.table-hover.table-responsive#heatmap-table
+              thead
                 tr
                   th Hero
                   th
-                    abbr(data-hasqtip='2', oldtitle='Lane based on early game location', title='') Lane
+                    abbr(data-hasqtip='2', title='Lane based on early game location') Lane
+              tbody
                 tr#0.mapHero.success
                   td.hero
                     img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='3', oldtitle='Pugna', title='', aria-describedby='qtip-3')
@@ -172,183 +362,13 @@ html
                   td.hero
                     img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='12', oldtitle='Queen of Pain', title='')
                   td Top
-    .blurb
-      .container
-        .row
-          .col-md-8
-            h2 Gold
-              table.table.table-hover.table-responsive
-                tbody
-                  tr
-                    th Hero
-                    th Other
-                    th Deaths
-                    th Buybacks
-                    th Abandons
-                    th Sells
-                    th Structures
-                    th Heroes
-                    th Creeps
-                    th Roshan
-                    th Couriers
-                  tr.success
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='133', oldtitle='Pugna', title='')
-                    td 625
-                    td -1404
-                    td -89
-                    td -
-                    td -
-                    td 160
-                    td 1007
-                    td 1021
-                    td -
-                    td -
-                  tr.success
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png', data-hasqtip='134', oldtitle='Mirana', title='')
-                    td 699
-                    td -895
-                    td -
-                    td -
-                    td 246
-                    td 160
-                    td 1364
-                    td 1589
-                    td -
-                    td -
-                  tr.success
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png', data-hasqtip='135', oldtitle='Viper', title='')
-                    td 1012
-                    td -2541
-                    td -822
-                    td -
-                    td 25
-                    td 160
-                    td 2713
-                    td 3757
-                    td -
-                    td -
-                  tr.success
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png', data-hasqtip='136', oldtitle='Phantom Assassin', title='')
-                    td 1011
-                    td -2482
-                    td -
-                    td -
-                    td 137
-                    td 160
-                    td 1648
-                    td 7637
-                    td -
-                    td -
-                  tr.success
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png', data-hasqtip='137', oldtitle='Disruptor', title='')
-                    td 898
-                    td -1344
-                    td -
-                    td -
-                    td 15
-                    td 160
-                    td 2732
-                    td 1162
-                    td -
-                    td -
-                  tr.danger
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png', data-hasqtip='138', oldtitle='Windranger', title='')
-                    td 665
-                    td -
-                    td -
-                    td -
-                    td -
-                    td 4262
-                    td 1375
-                    td 3108
-                    td 386
-                    td -
-                  tr.danger
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png', data-hasqtip='139', oldtitle='Lina', title='')
-                    td 1024
-                    td -1135
-                    td -
-                    td -
-                    td -
-                    td 3528
-                    td 1391
-                    td 3912
-                    td 200
-                    td -
-                  tr.danger
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png', data-hasqtip='140', oldtitle='Bristleback', title='')
-                    td 946
-                    td -419
-                    td -
-                    td -
-                    td 262
-                    td 4088
-                    td 2347
-                    td 4362
-                    td 200
-                    td -
-                  tr.danger
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png', data-hasqtip='141', oldtitle='Shadow Fiend', title='')
-                    td 1490
-                    td -509
-                    td -
-                    td -
-                    td 605
-                    td 4191
-                    td 5256
-                    td 8785
-                    td 200
-                    td -
-                  tr.danger
-                    td.hero
-                      img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='142', oldtitle='Queen of Pain', title='')
-                    td 1393
-                    td -896
-                    td -
-                    td -
-                    td -
-                    td 3968
-                    td 4205
-                    td 5694
-                    td 200
-                    td -
-                tfoot
-                  tr
-                    td Radiant
-                    td.format 4.2k
-                    td.format -8.7k
-                    td.format -911
-                    td.format -
-                    td.format 423
-                    td.format 800
-                    td.format 9.5k
-                    td.format 15.2k
-                    td.format -
-                    td.format -
-                  tr
-                    td Dire
-                    td.format 5.5k
-                    td.format -3.0k
-                    td.format -
-                    td.format -
-                    td.format 867
-                    td.format 20.0k
-                    td.format 14.6k
-                    td.format 25.9k
-                    td.format 1.2k
-                    td.format -
+        .col-md-12.text-center
+          p alskdfjlasjdfklasjdkfklalsdjflajksdfkl
+
+    
 
     footer.footer(style="color: #777;\
-                  width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
+                  width: 100%; padding: 1.3em 0 0 1em;")
       .container
         .row
           .col-md-4.text-center
@@ -441,10 +461,9 @@ html
               radius: 40
           });
           $(".mapHero").on("mouseover", function(){
-            heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(600/127),y:p[1]*(600/127)}})});
+            heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(500/127),y:p[1]*(500/127)}})});
             heatmap.repaint();
           })
-
 block content
 
 
