@@ -57,8 +57,8 @@ html
       .container
         br
         br
-        h1 YASP     
-        p.lead Yet Another Stats Page 
+        h1 YASP
+        p.lead YASP: Another Stats Page 
         div &nbsp;
         a.btn.btn-default.btn-lg(href='/login')
           img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
@@ -426,7 +426,9 @@ html
              Match parsing powered by
              <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
              Source code can be found on 
-             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>. <br>
+             Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a>
+             and <a href="http://css101.deviantart.com/">css101</a>.
     block footer_assets
       //- Stylesheets
       link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
@@ -445,6 +447,8 @@ html
       script(src="/public/js/animatedNavbar.js")
       script(src="/bower_components/webcomponentsjs/webcomponents.js")
       script(src="/public/js/scripts.js")
+      script(src="/bower_components/bootstrap/js/transition.js")
+      script(src="/bower_components/bootstrap/js/collapse.js")
       include fake_data
       script.
         c3.generate({
@@ -479,7 +483,5 @@ html
             heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(500/127),y:p[1]*(500/127)}})});
             heatmap.repaint();
           })
-block content
-
 
 

@@ -291,6 +291,20 @@ footer {
   padding: 30px 0px;
 }
 
+footer a:hover {
+  color: black;
+}
+
+.map {
+  height:500px;
+}
+
+@media all {
+  .table-responsive {
+    border: inherit;  
+  }
+}
+
 .medium-cheese {
     font-size: 40px;
     border: 3px solid rgb(189, 155, 20);
@@ -354,5 +368,9 @@ footer {
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
     overflow: hidden;
+}
+
+@media(max-width: 768px){
+    .navbar > .container { background-color: black; }
 }
 /* -- end custom css for Bootstrap 3.x --*/

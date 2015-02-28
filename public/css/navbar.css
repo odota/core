@@ -99,10 +99,6 @@ thead {
   color:blue;
 }
 
-.map {
-  height:500px;
-}
-
 .bottom-padding {
   padding-bottom: 5%;
 }
@@ -138,7 +134,7 @@ a.list-group-item:hover, a.list-group-item:focus{
   background-color: #FFF;
 }
 
-.nav>li>a:hover, .nav>li>a:focus {
+#navbar .nav>li>a:hover, #navbar .nav>li>a:focus {
   background-color: #BBF0FD; 
 }
 
