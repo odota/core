@@ -88,6 +88,6 @@ div.container.well.well-lg {
     color: black;
 }
 
-.blog-preview p {
+.blog-preview p, .blog-preview li {
     color: black;
 }
