@@ -134,7 +134,7 @@ a.list-group-item:hover, a.list-group-item:focus{
   background-color: #FFF;
 }
 
-#navbar.nav>li>a:hover, #navbar.nav>li>a:focus {
+#navbar .nav>li>a:hover, #navbar .nav>li>a:focus {
   background-color: #BBF0FD; 
 }
 
