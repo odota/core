@@ -1,9 +1,194 @@
-extend layout
+doctype html
+html
+  head
+    title= title || "YASP - Dota 2 Replay Parsing and Statistics"
+    meta(name="description", content="YASP: Another (Dota) Stats Page")
+    meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
+    meta(charset='utf-8')
+    //- Favicons
+    link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
+    link(rel='apple-touch-icon', sizes='114x114', href='/public/images/apple-touch-icon-114x114.png')
+    link(rel='apple-touch-icon', sizes='72x72', href='/public/images/apple-touch-icon-72x72.png')
+    link(rel='apple-touch-icon', sizes='144x144', href='/public/images/apple-touch-icon-144x144.png')
+    link(rel='apple-touch-icon', sizes='60x60', href='/public/images/apple-touch-icon-60x60.png')
+    link(rel='apple-touch-icon', sizes='120x120', href='/public/images/apple-touch-icon-120x120.png')
+    link(rel='apple-touch-icon', sizes='76x76', href='/public/images/apple-touch-icon-76x76.png')
+    link(rel='apple-touch-icon', sizes='152x152', href='/public/images/apple-touch-icon-152x152.png')
+    link(rel='apple-touch-icon', sizes='180x180', href='/public/images/apple-touch-icon-180x180.png')
+    link(rel='shortcut icon', href='/public/images/favicon.ico')
+    link(rel='icon', type='image/png', href='/public/images/favicon-192x192.png', sizes='192x192')
+    link(rel='icon', type='image/png', href='/public/images/favicon-160x160.png', sizes='160x160')
+    link(rel='icon', type='image/png', href='/public/images/favicon-96x96.png', sizes='96x96')
+    link(rel='icon', type='image/png', href='/public/images/favicon-16x16.png', sizes='16x16')
+    link(rel='icon', type='image/png', href='/public/images/favicon-32x32.png', sizes='32x32')
+    link(rel="import" href="bower_components/core-icons/core-icons.html")
+    link(rel="import" href="bower_components/paper-fab/paper-fab.html")
+    link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
+    link(rel="import" href="bower_components/paper-fab-menu/paper-fab-menu.html")
+
+    meta(name='msapplication-TileColor', content='#00aba9')
+    meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
+    meta(name='msapplication-config', content='/public/images/browserconfig.xml')
+    block head
+    
+  body
+    .navbar.navbar-fixed-top(data-spy='affix', data-offset-top='1000')
+      .container
+        .navbar-header
+          a.navbar-brand(href='#top')
+            strong.theme-blue YASP  
+            a.navbar-toggle(data-toggle='collapse', data-target='.navbar-collapse')
+              span.icon-bar        
+              span.icon-bar        
+              span.icon-bar 
+        #navbar.navbar-collapse.collapse
+          ul.nav.navbar-nav
+            li
+              a(href='#sec1') Matches       
+            li
+              a(href='#sec2') Status      
+            li
+              a(href='#sec3') FAQ       
+            li
+              a(href='#sec4') Help Carry!
+
+    #top.header.alt.vert
+      .container
+        h1 YASP     
+        p.lead Yet Another Stats Page 
+        div &nbsp;
+        a.btn.btn-default.btn-lg(href='http://www.bootply.com/JU51oUMIye') Sign in <br> with Steam!
+
+    section.main
+      a.arrow-wrap(href='#philosophy')
+        span.arrow
+
+    paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
+      paper-fab-menu-item(icon='expand-less', color='#BBF0FD;', tooltip='Scroll to the top!', href='#top')
+      paper-fab-menu-item(icon='filter-list', color='purple;', tooltip='TL;DR')
+      paper-fab-menu-item(icon='star-outline', color='green;', tooltip='Features')
+      paper-fab-menu-item(icon='redeem', color='orange;', tooltip='Help carry and cheese us!')
+
+    #philosophy.blurb
+      .right-img
+          .container
+            .row
+              .col-md-7
+                h1.fancy Our Mission
+                |         
+                p.lead Free Replay Parsing for All
+              |       
+              .col-md-5
+
+    #content.featurette
+      .container
+        .row
+          .col-md-12.text-center
+            h1 Why We're Awesome  
+        .row
+          .col-md-4.text-center.team-text
+            .featurette-item
+              .icon-circle
+                img.circle-margin(src='../public/images/tools2.png')
+              |           
+              h4 Open source.
+              |           
+              p
+                | All of YASP&apos;s code is open source and available on Github for contributors to improve and modify.     
+          .col-md-4.text-center.team-text
+            .featurette-item
+              .icon-circle
+                img.circle-margin(src='../public/images/barchart.png')
+              |           
+              h4 Go beyond the API.
+              |           
+              p
+                | Free replay parsing that provides Dota 2 match stats unavailable through the API or game client.     
+          .col-md-4.text-center.team-text
+            .featurette-item
+              .icon-circle
+                img.circle-margin(src='../public/images/present.png')
+              |           
+              h4 Free of charge.
+              |           
+              p
+                | YASP is supported by volunteer developers and community contributions, making it free for users.
+          // SOURCE: http://www.elegantthemes.com/blog/freebie-of-the-week/beautiful-flat-icons-for-free
+
+    #match_statistics.callout
+      .vert
+          .col-md-12.text-center
+            h2 Match Statistics
+          |     
+          .col-md-12.text-center &nbsp;
+
+
+    footer.footer(style="color: #777;\
+                  width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
+      .container
+        .row
+          .col-md-4.text-center
+            p Buy Cheese. Help Pay for Our Servers.
+            p Reaching the goal each day allows us to keep YASP running.
+          .col-md-4.text-center
+            .meter_wrapper
+              p(style="font-weight:700;") Daily Cheese Goal
+              .meter
+                span(style="width: #{cheese_goal}%;")
+              if cheese_goal >= 50 && cheese_goal < 100
+                small Getting there...
+              else if cheese_goal === 100
+                small Woo!!! We did it! Thanks guys!
+          .col-md-4.text-center
+              span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+              a(href="/carry", target="_blank")
+                button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
+        .row(style="font-size: .8em;")
+          .col-md-4.text-center
+           p.
+            Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
+            We use Google AdSense and Analytics. They might be using some 
+            <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
+            cookies</a>.
+            We also use cookies for sessions.
+            Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
+          .col-md-4.text-center(style="font-size: 1.2em;")
+            p.
+              &copy; YASP #{moment().get('year')}. If that means anything. <br>
+              Built from apathy, boredom, and procrastination. <br>
+              Comments, suggestions? 
+              <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
+              Thanks! <br>
+            a.twitter-follow-button(href='https://twitter.com/yasp_dota', data-show-count='false', data-size='medium') Follow @yasp_dota
+            script.
+              !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+          .col-md-4.text-center
+           p.
+             <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
+             Match parsing powered by
+             <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
+             Source code can be found on 
+             <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
+    block footer_assets
+      //- Stylesheets
+      link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+      link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
+      link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+      link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+
+      style
+        include ../public/css/flaticon.css
+      script(src="/public/js/bundle.js")
+      script(src="/public/js/ga.js")
+      script(src="/public/js/scroll.js")
+      script(src="/public/js/animatedNavbar.js")
+      script(src="/bower_components/webcomponentsjs/webcomponents.js")
+
 
 block content
 
-append footer_assets
-  link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
 
-  script(src="/public/js/animatedNabar.js")
-  script(src="/bower_components/webcomponentsjs/webcomponents.js")
+
