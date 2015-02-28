@@ -34,7 +34,7 @@ var server = app.listen(process.env.PORT || 5000, function() {
 var io = require('socket.io')(server);
 setInterval(function() {
     status(io);
-}, 1000);
+}, 3000);
 /*
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
