@@ -64,7 +64,6 @@ html
           img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
           h4 to start!
 
-
     section.main
       a.arrow-wrap(href='#philosophy')
         span.arrow
@@ -110,11 +109,13 @@ html
               p YASP is supported by volunteer developers and community contributions, making it free for users.
 
     #match_statistics.callout
-        .container
-          .col-md-12.text-center.bottom-padding
-            h1 Features
+        .container.bottom-padding
+          .col-md-12.text-center
+            h1 Featuring
             h2 Detailed Game Play Breakdowns
-          .col-md-12.text-center.bottom-padding.table-responsive
+          .col-md-8.col-md-offset-2.bottom-padding
+              hr
+          .col-md-12.text-center.table-responsive.bottom-padding
             table.table.table-hover.table-responsive#stats-table
                       thead
                         tr
@@ -285,24 +286,29 @@ html
                           td.format 25.9k
                           td.format 1.2k
                           td.format -
+          .col-md-8.col-md-offset-2.text-center
             h3 View gold and xp breakdowns from the game. Also see <a href="http://yasp.co/matches/1239495484/details">skill usage</a>, 
               | <a href="http://yasp.co/matches/1239495484/timelines">timelines of item purchases and of kills</a>, and more.
 
     .featurette.dark
       .container
         .vert
-            .col-md-12.text-center.bottom-padding
+            .col-md-12.text-center
               h2 Graphs
+            .col-md-8.col-md-offset-2.bottom-padding
+              hr
             .col-md-12.text-center.bottom-padding
               .div.well.text-center
                 #chart-gold
-            .col-md-12.text-center
+            .col-md-8.col-md-offset-2.text-center.bottom-padding
               h3 See <a href="/matches/1239495484/graphs">charts</a> of how gold, XP, last hits, and income changed over the game.
 
     .blurb.bright
       .container
-        .col-md-12.text-center.bottom-padding
+        .col-md-12.text-center
           h2 Positions
+        .col-md-8.col-md-offset-2.bottom-padding
+          hr(style="border-top: 1px solid #777;")
         .row
           .col-md-7.bottom-padding
             #map.mapContainer.table-responsive
@@ -356,21 +362,26 @@ html
                   td.hero
                     img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='12', oldtitle='Queen of Pain', title='')
                   td Top
-        .col-md-12.text-center
+        .col-md-8.col-md-offset-2.text-center
+          br
           h3 See how players moved throughout the course of the game.
 
-    #cheese.featurette.dark
+    #cheeses.featurette.dark
       .container
         .vert
           .col-md-12.text-center.bottom-padding
-            h2 And more to come
+            h2 And more to come!
             h3 We are constantly developing and improving YASP. <br>
-               | <a href="https://github.com/yasp-dota/yasp/issues"> Request a feature</a>, or <a href="https://github.com/yasp-dota/yasp/pulls">build it yourself!</a>
+               | <a href="https://github.com/yasp-dota/yasp/issues"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls">build it yourself!</a>
+            br
             hr
-            h1 The generous Dota 2 community keeps us running
+            br
+            h1 The generous Dota 2 <br> community keeps us running
+            br
             hr
+            br
             h2 Found us helpful?
-            .col-md-4.text-center
+            .col-md-4.text-center.bottom-padding
               p Buy Cheese. Help Pay for Our Servers.
               p Reaching the goal each day allows us to keep YASP running.
             .col-md-4.text-center
@@ -390,7 +401,7 @@ html
     footer.footer(style="color: #777;\
                   width: 100%; padding: 1.3em 0 0 1em;")
       .container
-        .row(style="font-size: .8em;")
+        .row(style="font-size: .8em; margin-bottom:10px;")
           .col-md-4.text-center
            p.
             Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
