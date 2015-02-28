@@ -27,14 +27,14 @@ $(document).ready(function(){
 		$(tldr).find( "paper-fab" ).attr("id","tldr").attr("icon","filter-list").attr("style", "background-color:red;");
 		$(features).find( "paper-fab" ).attr("id","features").attr("icon","star").attr("style", "background-color:green;");
 		$(features).find("a").attr("href","#match_statistics");
-		$(features).find("core-tooltip").attr("label","Go to match statistics");
+		$(features).find("core-tooltip").attr("label","Features");
 		$(cheese).find( "paper-fab" ).attr("id","cheese").attr("icon","redeem");
 		$(cheese).find("a").attr("href","#cheese");
-		$(cheese).find("core-tooltip").attr("label","Help us out and buy cheese!");
+		$(cheese).find("core-tooltip").attr("label","We need your help!");
 		
 		main.append($(tldr));
 		main.append($(features));
-		// main.append($(cheese));
+		main.append($(cheese));
 
 		$(this).prepend($(main));
   	}, 

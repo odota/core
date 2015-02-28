@@ -291,4 +291,68 @@ footer {
   padding: 30px 0px;
 }
 
+.medium-cheese {
+    font-size: 40px;
+    border: 3px solid rgb(189, 155, 20);
+    border-radius: 50%;
+    background-color: yellow;
+    padding: 3px 11px;
+    color: rgb(124, 124, 124);;
+}
+
+.meter_wrapper {
+    margin-bottom: 1em;
+}
+
+.meter_wrapper > p {
+    font-size: 1.3em;
+}
+.meter {
+    height: 20px;
+    width: 80%;
+    margin: 0 auto;
+    position: relative;
+    background: #777;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 4px;
+    box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+}
+
+.meter > span {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background-color: rgb(248, 253, 24);
+    box-shadow: 
+    inset 0 2px 9px  rgba(255,255,255,0.3),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.meter > span:after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background-image: linear-gradient(
+    -45deg, 
+    rgba(255, 255, 255, .2) 25%, 
+    transparent 25%, 
+    transparent 50%, 
+    rgba(255, 255, 255, .2) 50%, 
+    rgba(255, 255, 255, .2) 75%, 
+    transparent 75%, 
+    transparent
+    );
+    z-index: 1;
+    background-size: 50px 50px;
+    animation: move 2s linear infinite;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    overflow: hidden;
+}
 /* -- end custom css for Bootstrap 3.x --*/
