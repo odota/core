@@ -2,7 +2,8 @@
   "title": "Donations are good",
   "tags": ["feature", "yasp"],
   "category": "release",
-  "date": "2-23-2015"
+  "date": "2-23-2015",
+  "author": "Howard"
 }}}
 
 You should donate!  It will make us happy.

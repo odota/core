@@ -32,12 +32,12 @@ var server = app.listen(process.env.PORT || 5000, function() {
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
 var io = require('socket.io')(server);
+/*
 setInterval(function() {
     status(function(err, res) {
         if (!err) io.emit(res);
     });
 }, 5000);
-/*
 io.sockets.on('connection', function(socket) {
     socket.on('send-file', function(name, buffer) {
         console.log(buffer.length);
@@ -190,12 +190,19 @@ app.route('/verify_recaptcha').post(function(req, res) {
     });
 });
 app.route('/status').get(function(req, res, next) {
-    res.render("status");
+    status(function(err, result) {
+        if (err) {
+            return next(err);
+        }
+        res.render("status", {
+            result: result
+        });
+    });
 });
 app.route('/about').get(function(req, res) {
     res.render("about");
 });
-app.route('/carry').get(function(req, res) {
+app.route('/carry').get(function(req, res, next) {
     db.players.find({
         cheese: {
             $exists: true
@@ -206,7 +213,7 @@ app.route('/carry').get(function(req, res) {
         },
         limit: 50
     }, function(err, results) {
-        if (err) next(err);
+        if (err) return next(err);
         res.render("carry", {
             users: results
         })

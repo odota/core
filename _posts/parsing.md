@@ -2,7 +2,8 @@
   "title": "Replay parsing",
   "tags": ["tech"],
   "category": "release",
-  "date": "2-8-2015"
+  "date": "2-8-2015",
+  "author": "Howard"
 }}}
 
 Replay parsing is a tricky problem.  Thanks go to the author of clarity for helping us out.

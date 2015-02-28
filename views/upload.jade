@@ -17,7 +17,7 @@ block content
         label
           input.type(type="radio" name="type" value="match_id")
           ="Match ID"
-      form#upload(enctype="multipart/form-data", action="/upload", method="post")
+      form#upload(enctype="multipart/form-data", action="/upload", method="post", style="margin-bottom:2em;")
         .form-group#input
         .form-group
           label Prove humanity:
@@ -25,7 +25,7 @@ block content
         button.btn.btn-success#button Submit
   include ads/leaderboard_2
   
-block footer_assets
+append footer_assets
   script.
     $(".type").click(function(event){
       var type = $(this).val();

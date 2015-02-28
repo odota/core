@@ -17,19 +17,9 @@ block content
     .col-md-2
       block taglegend
         .well.sidebar-nav.tag-key
+          p.lead Tags
           ul.nav.nav-list
-            li.nav-header.tag-header tags
             - each tag in getTags()
               li
                   a(href=tagURL(tag)) 
                     span.panel.tag-list #{tag}
-
-append footer_assets
-  script.
-    $(window).scroll(function(){
-      if ($(this).scrollTop() > ($(window).height()-($(window).height())*.05)) {
-          $('.tag-key').fadeOut('slow');
-      } else {
-          $('.tag-key').fadeIn('slow');
-      }
-    });

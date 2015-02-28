@@ -1,7 +1,8 @@
 {{{
   "title": "A blog for YASP",
   "tags": ["yasp", "tech"],
-  "date": "2-23-2015"
+  "date": "2-23-2015",
+  "author": "Howard"
 }}}
 
 One of the features that Albert's wanted for a while and has been kicking around for months is a blog.

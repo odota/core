@@ -10,14 +10,15 @@
     "test": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "prod": "npm install && npm run build && nf export -j Procfile.prod -o /etc/init/ && redis-cli KEYS 'match:*' | xargs -n 100 redis-cli DEL && restart foreman",
     "mocha": "mocha",
-    "bower": "bower install",
+    "bower": "bower install --allow-root",
     "unparsed": "node runner.js unparsed",
     "constants": "node runner.js constants",
     "fullhistory": "node runner.js fullhistory",
     "updatenames": "node runner.js updatenames",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
-    "build": "mvn -q -f parser/pom.xml package && npm run browserify && npm run bower && npm run constants"
+    "build": "mvn -q -f parser/pom.xml package && npm run browserify && npm run constants",
+    "postinstall": "npm run bower"
   },
   "repository": {
     "type": "git",

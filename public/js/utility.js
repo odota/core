@@ -2,7 +2,7 @@ var numeral = require('numeral');
 
 function format(input) {
     input = Number(input);
-    if (input === 0) {
+    if (input === 0 || isNaN(input)) {
         return "-";
     }
     return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));

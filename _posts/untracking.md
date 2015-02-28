@@ -1,7 +1,8 @@
 {{{
   "title": "How I Learned to Stop Tracking Everyone and Love Our Users",
   "tags": ["tech"],
-  "date": "2-24-2015"
+  "date": "2-24-2015",
+  "author": "Howard"
 }}}
 
 It's a sad fact of life that resources are finite.
