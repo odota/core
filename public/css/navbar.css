@@ -1,0 +1,33 @@
+.navbar a {
+  color:#fff;
+  font-size:14px;
+}
+
+.navbar-bold.affix {
+  background-color:#d46054;
+}
+
+.navbar-bold {
+  background-color:#f68076;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+
+.navbar-bold li a:hover, .navbar-bold li.active {
+  background-color:#d46054;
+}
+
+.navbar-brand:hover, .navbar-brand:focus {
+  background-color: #FFF;
+}
+
+.nav>li>a:hover, .nav>li>a:focus {
+  background-color: #BBF0FD; 
+}
+
+.navbar-fixed-top { 
+  transition: background 1s ease 0s;
+}
+.navbar-fixed-top.opaque{ 
+  background-color: rgb(37, 41, 42);
+  transition: background-color 1s ease 0s;
+}

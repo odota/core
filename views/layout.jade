@@ -28,42 +28,43 @@ html
     block head
     
   body
-     .sticky_footer_row
-       nav.navbar.navbar-default
-        .container
-          .navbar-header
-            a(href='/', class = 'navbar-brand') <strong>YASP</strong>
+    .navbar.navbar-fixed-top(data-spy='affix', data-offset-top='1000')
+      .container
+        .navbar-header
+          a.navbar-brand(href='#top')
+            strong.theme-blue YASP  
+            a.navbar-toggle(data-toggle='collapse', data-target='.navbar-collapse')
+              span.icon-bar        
+              span.icon-bar        
+              span.icon-bar 
+        #navbar.navbar-collapse.collapse
           ul.nav.navbar-nav
             li
-              a(href="/matches") Matches
+              a(href='#sec1') Matches       
             li
-              a(href="/status") Status
+              a(href='#sec2') Status      
             li
-              a(href="/about") FAQ/About
+              a(href='#sec3') FAQ       
             li
-              a(href="/page/1") Blog
-            li
-              a(href="/carry") Help Carry
-          if user
-            ul.nav.navbar-nav.navbar-right
-              li
-                a(href="/players/"+user.account_id)=user.personaname
-     .sticky_footer_row.expand
-      .container
-       if banner_msg
-         .alert.alert-success(role="alert") !{banner_msg}
-       if api_down
-         .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
-       if user && user.track===0
-           .alert.alert-warning(role="alert") !{constants.untracked_msg}
-       if login_req_msg
-         .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
-       if !error
-         include ads/leaderboard
-       block content
-     .sticky_footer_row
+              a(href='#sec4') Help Carry!
+
+    .sticky_footer_row
+    .sticky_footer_row.expand
+    .container
+    if banner_msg
+     .alert.alert-success(role="alert") !{banner_msg}
+    if api_down
+     .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
+    if user && user.track===0
+       .alert.alert-warning(role="alert") !{constants.untracked_msg}
+    if login_req_msg
+     .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
+    if !error
+     include ads/leaderboard
+    block content
+    .sticky_footer_row
       footer.footer(style="color: #777;\
-                      width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
+                    width: 100%; padding: 1.3em 0 0 1em; margin-top: 2em;")
         .container
           .row
             .col-md-4.text-center
@@ -108,21 +109,23 @@ html
                <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
                Source code can be found on 
                <a href='https://github.com/albertcui/YASP', target="_blank"> GitHub</a>.
-        block footer_assets
-          //- Stylesheets
-          link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
-          //- link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
-          link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-          link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-          link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-          link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
+    block footer_assets
+      //- Stylesheets
+      link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')  
+      //- link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lato:400,700,400italic')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+      link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
+      link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
 
-          style
-            include ../public/css/yasp.css
-          style
-            include ../public/css/flaticon.css
-          if (user && user.dark_theme)
-            style
-              include ../public/css/dark.css
-          script(src="/public/js/bundle.js")
-          script(src="/public/js/ga.js")
+      style
+        include ../public/css/yasp.css
+      style
+        include ../public/css/flaticon.css
+      if (user && user.dark_theme)
+        style
+          include ../public/css/dark.css
+      script(src="/public/js/bundle.js")
+      script(src="/public/js/ga.js")
+      script(src="/public/js/scrolls.js")
