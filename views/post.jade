@@ -14,8 +14,8 @@ block blogcontent
 						span.label.label-info #{tag}
 block taglegend
 	.well.sidebar-nav
+		p.lead Tags
 		ul.nav.nav-list
-			li.nav-header.tag-header tags
 			- each tag in getTags()
 				li
 					a(href=tagURL(tag)) 

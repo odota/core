@@ -17,8 +17,8 @@ block content
     .col-md-2
       block taglegend
         .well.sidebar-nav.tag-key
+          p.lead Tags
           ul.nav.nav-list
-            li.nav-header.tag-header tags
             - each tag in getTags()
               li
                   a(href=tagURL(tag)) 
