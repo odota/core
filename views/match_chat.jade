@@ -2,30 +2,25 @@ extend match
   
 block match_content
   .row
-    .col-md-12  
-  if match.parsed_data          
-    .row
-      .col-md-7
-        h3 Chat
-        table.table.table-hover.table-responsive
+    .col-md-7
+      h3 Chat
+      table.table.table-hover.table-responsive
+        tr
+          th Hero
+          th Time
+          th Message
+        each message in match.parsed_data.chat || []
+          - var p = match.players[message.slot] || {}
+          - var hero = constants.heroes[p.hero_id]
           tr
-            th Hero
-            th Time
-            th Message
-          each message in match.parsed_data.chat
-            - var p = match.players[message.slot] || {}
-            - var hero = constants.heroes[p.hero_id]
-            tr
-              if hero
-                td: img(src=hero.img,title=hero.localized_name)
-              else
-                td= message.slot
-              td.format-seconds= message.time
-              td= message.text
-      .col-md-5
-        style .skyscraper {margin-top: 2em;}
-        include ads/skyscraper
-  else
-    h1 This match has no parsed data!
+            if hero
+              td: img(src=hero.img,title=hero.localized_name)
+            else
+              td= message.slot
+            td.format-seconds= message.time
+            td= message.key
+    .col-md-5
+      style .skyscraper {margin-top: 2em;}
+      include ads/skyscraper
     
 append footer_assets

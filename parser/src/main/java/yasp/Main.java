@@ -243,7 +243,6 @@ public class Main {
 				for (GameEvent g : match.getGameEvents()) {
 					if (g.getEventId() == combatLogDescriptor.getEventId()) {
 						CombatLogEntry cle = new CombatLogEntry(ctx, g);
-						//Entry entry = new Entry(cle);
 						Entry entry = new Entry(time);
 						switch(cle.getType()) {
 						case 0:
@@ -252,6 +251,7 @@ public class Main {
 							entry.key = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
 							entry.type = "damage";
+							log.output(entry);
 							if (true){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getTargetNameCompiled();
@@ -274,6 +274,7 @@ public class Main {
                             entry.key = cle.getTargetNameCompiled();
                             entry.value = cle.getValue();
                             entry.type = "healing";
+                            log.output(entry);
 							break;
 						case 2:
 							//gain buff/debuff
@@ -282,6 +283,7 @@ public class Main {
                             entry.key = cle.getInflictorName(); //the buff
                             //todo do something with buff target
                             //String unit2 = cle.getTargetNameCompiled(); //target of buff
+                            //log.output(entry);
 							break;
 						case 3:
 							//lose buff/debuff
@@ -294,6 +296,7 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.type = "kills";
+							log.output(entry);
 							if (true){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getTargetNameCompiled();
@@ -314,12 +317,14 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "ability_uses";
+							log.output(entry);
 							break;
 						case 6:
 							//item use
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "item_uses";
+							log.output(entry);
 							break;
 						case 8:
 							//gold gain/loss
@@ -327,6 +332,7 @@ public class Main {
 							entry.unit = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
 							entry.type = "gold_reasons";
+							log.output(entry);
 							break;
 						case 9:
 							//state
@@ -337,6 +343,7 @@ public class Main {
 							if (state.equals("PLAYING")){
 								gameZero = time;
 							}
+							log.output(entry);
 							break;
 						case 10:
 							//xp gain
@@ -344,17 +351,20 @@ public class Main {
 							entry.value = cle.getValue();
 							entry.key = String.valueOf(cle.getXpReason());
 							entry.type = "xp_reasons";
+							log.output(entry);
 							break;
 						case 11:
 							//purchase
 							entry.unit = cle.getTargetNameCompiled();
 							entry.key = cle.getValueName();
-							entry.type = "item_log";
+							entry.type = "purchase";
+							log.output(entry);
 							break;
 						case 12:
 							//buyback
 							entry.slot = cle.getValue();
 							entry.type = "buyback_log";
+							log.output(entry);
 							break;
 						case 13:
 							entry.type = "ability_trigger";
@@ -362,14 +372,15 @@ public class Main {
 							entry.key = cle.getInflictorName();
 							//entry.unit = cle.getTargetNameCompiled(); //triggerer?
 							//triggered and triggering hashes?
+							log.output(entry);
 							break;
 						default:
 							DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 							entry.type = type.name();
 							System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), g);
+							log.output(entry);
 							break;
-    }
-						log.output(entry);
+    					}
 						}
 					}
 			}

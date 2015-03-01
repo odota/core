@@ -60,6 +60,7 @@
     "2": "Parsed"
   },
   "parser_version": 5,
+  "retriever_version": 2,
   "untracked_msg": "<h3><strong>Missing matches?</strong></h1><br> Welcome back!! We stopped tracking your matches because we haven't seen you in a while. :( This is necessary for us to handle the ever increasing load. Your matches from now on will be tracked as long as you remain active.<br><small>This message will disappear upon relogging in.</small>",
   "api_msg": "Valve's WebAPI is currently delayed.  Your matches will be processed when the service resumes.",
   "tooltips": {

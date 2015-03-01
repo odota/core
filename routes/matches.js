@@ -7,7 +7,6 @@ var mergeObjects = utility.mergeObjects;
 var queries = require('../queries');
 var constants = require('../constants.json');
 var redis = require('../redis').client;
-var MATCHES_KEY_PREFIX = "match:";
 var matchPages = {
     index: {
         name: "Match"
@@ -34,13 +33,15 @@ matches.get('/', function(req, res) {
     });
 });
 matches.param('match_id', function(req, res, next, id) {
-    redis.get(MATCHES_KEY_PREFIX + id, function(err, reply) {
+    var key = "match:" + id;
+    redis.get(key, function(err, reply) {
         if (!err && reply) {
             console.log("Cache hit for match " + id);
             try {
                 req.match = JSON.parse(reply);
                 return next(err);
-            } catch(e) {
+            }
+            catch (e) {
                 return next(e);
             }
         }
@@ -60,21 +61,75 @@ matches.param('match_id', function(req, res, next, id) {
                         req.match = match;
                         if (match.parsed_data) {
                             if (match.parsed_data.version >= 5) {
-                                //todo implement new function to process new format
-                                //output in way to allowing using the same templates
-                                //update old functions to output data properly
-                                preprocess(match);
+                                match.players.forEach(function(p) {
+                                    //enrich the player with parse data
+                                    //mapping 0 to 0, 128 to 5, etc.
+                                    var parseSlot = p.player_slot % (128 - 5);
+                                    var parsedPlayer = match.parsed_data.players[parseSlot];
+                                    for (var key in parsedPlayer) {
+                                        p[key] = (key in p) ? p[key] : parsedPlayer[key];
+                                    }
+                                    //generate position data from hashes
+                                    var keys = ["obs", "sen", "pos"];
+                                    keys.forEach(function(key) {
+                                        var t = [];
+                                        for (var x in p[key]) {
+                                            for (var y in p[key][x]) {
+                                                t.push({
+                                                    x: Number(x),
+                                                    y: Number(y),
+                                                    value: p[key][x][y]
+                                                });
+                                            }
+                                        }
+                                        p[key] = t;
+                                    });
+                                });
                             }
                             else {
-                                mergeMatchData(match, constants);
-                                generateGraphData(match, constants);
-                                generatePositionData(match, constants);
-                                sortDetails(match, constants);
+                                mergeMatchData(match);
+                                //patch old data to fit new format
+                                match.players.forEach(function(player, i) {
+                                    var hero = constants.heroes[player.hero_id];
+                                    var parsedHero = match.parsed_data.heroes[hero.name];
+                                    var parsedPlayer = match.parsed_data.players[i];
+                                    player.purchase = parsedHero.itembuys;
+                                    player.buyback_log = parsedPlayer.buybacks;
+                                    player.stuns = parsedPlayer.stuns;
+                                    player.ability_uses = parsedHero.abilityuses;
+                                    player.item_uses = parsedHero.itemuses;
+                                    player.gold_reasons = parsedHero.gold_log;
+                                    player.xp_reasons = parsedHero.xp_log;
+                                    player.damage = parsedHero.damage;
+                                    player.hero_hits = parsedHero.hero_hits;
+                                    player.purchase_log = parsedHero.timeline;
+                                    player.kill_log = parsedHero.herokills;
+                                    player.pos = match.parsed_data.players[i].positions || [];
+                                    player.lane = match.parsed_data.players[i].lane;
+                                    player.pos = player.pos.map(function(p) {
+                                        return {x:p[0] - 64, y:127 - (p[1] - 64),value:1};
+                                    });
+                                    var start = player.pos.slice(0, 10);
+                                    var lanes = start.map(function(p) {
+                                        //y first, then x due to array of arrays structure
+                                        return constants.lanes[p.y][p.x];
+                                    });
+                                    //determine lane
+                                    player.lane = mode(lanes);
+                                });
+                                match.parsed_data.chat.forEach(function(c) {
+                                    c.key = c.text;
+                                });
                             }
+                            match.players.forEach(function(p) {
+                                p.isRadiant = utility.isRadiant(p);
+                            });
+                            sortDetails(match);
+                            generateGraphData(match);
                         }
                         //Add to cache if we have parsed data
                         if (match.parsed_data && process.env.NODE_ENV !== "development") {
-                            redis.setex(MATCHES_KEY_PREFIX + id, 86400, JSON.stringify(match));
+                            redis.setex(key, 86400, JSON.stringify(match));
                         }
                         return next();
                     });
@@ -85,66 +140,71 @@ matches.param('match_id', function(req, res, next, id) {
 });
 matches.get('/:match_id/:info?', function(req, res, next) {
     var match = req.match;
-    var info = matchPages[req.params.info] ? req.params.info : "index";
+    var tabs = match.parsed_data ? matchPages : {
+        index: matchPages.index
+    };
+    var info = tabs[req.params.info] ? req.params.info : "index";
     res.render("match_" + info, {
         route: info,
         match: match,
-        tabs: matchPages,
+        tabs: tabs,
         title: "Match " + match.match_id + " - YASP"
     });
 });
 
-function sortDetails(match, constants) {
+function sortDetails(match) {
+    //converts hashes to arrays and sorts them
     match.players.forEach(function(player, i) {
-        var hero = constants.heroes[player.hero_id];
-        var parsedHero = match.parsed_data.heroes[hero.name];
-        player.abilityuses = [];
-        for (var key in parsedHero.abilityuses) {
+        var t = [];
+        for (var key in player.ability_uses) {
             var a = constants.abilities[key];
             if (a) {
                 var ability = {};
                 ability.img = a.img;
                 ability.name = key;
-                ability.val = parsedHero.abilityuses[key];
-                ability.hero_hits = parsedHero.hero_hits[key];
-                player.abilityuses.push(ability);
+                ability.val = player.ability_uses[key];
+                ability.hero_hits = player.hero_hits[key];
+                t.push(ability);
             }
             else {
                 console.log(key);
             }
         }
-        player.itemuses = [];
-        for (var key in parsedHero.itemuses) {
+        player.ability_uses = t;
+        var u = [];
+        for (var key in player.item_uses) {
             var b = constants.items[key];
             if (b) {
                 var item = {};
                 item.img = b.img;
                 item.name = key;
-                item.val = parsedHero.itemuses[key];
-                player.itemuses.push(item);
+                item.val = player.item_uses[key];
+                u.push(item);
             }
             else {
                 console.log(key);
             }
         }
-        player.damage = [];
-        for (var key in parsedHero.damage) {
+        player.item_uses = u;
+        var v = [];
+        for (var key in player.damage) {
             var c = constants.hero_names[key];
             if (c) {
                 var dmg = {};
                 dmg.img = c.img;
-                dmg.val = parsedHero.damage[key];
-                dmg.kills = parsedHero.kills[key];
-                player.damage.push(dmg);
+                dmg.val = player.damage[key];
+                dmg.kills = player.kills[key];
+                v.push(dmg);
             }
             else {
                 //console.log(key);
             }
         }
-        player.abilityuses.sort(function(a, b) {
+        player.damage = v;
+        player.ability_uses.sort(function(a, b) {
             return b.val - a.val;
         });
-        player.itemuses.sort(function(a, b) {
+        player.item_uses.sort(function(a, b) {
             return b.val - a.val;
         });
         player.damage.sort(function(a, b) {
@@ -153,7 +213,7 @@ function sortDetails(match, constants) {
     });
 }
 
-function mergeMatchData(match, constants) {
+function mergeMatchData(match) {
     var heroes = match.parsed_data.heroes;
     //loop through all units
     //look up corresponding hero_id
@@ -215,7 +275,7 @@ function getAssociatedHero(unit, heroes) {
     return unit;
 }
 
-function generateGraphData(match, constants) {
+function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -223,7 +283,7 @@ function generateGraphData(match, constants) {
         var goldtotal = 0;
         var xptotal = 0;
         match.parsed_data.players.forEach(function(elem, j) {
-            if (match.players[j].player_slot < 64) {
+            if (match.players[j].isRadiant) {
                 goldtotal += elem.gold[i];
                 xptotal += elem.xp[i];
             }
@@ -257,7 +317,6 @@ function generateGraphData(match, constants) {
     orderedPlayers.sort(function(a, b) {
         return b.gold_per_min - a.gold_per_min;
     });
-    //console.log(orderedPlayers);
     orderedPlayers.forEach(function(player) {
         var hero = constants.heroes[player.hero_id];
         categories.push(hero.localized_name);
@@ -267,9 +326,7 @@ function generateGraphData(match, constants) {
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {
-            var hero = constants.heroes[player.hero_id];
-            var parsedHero = match.parsed_data.heroes[hero.name];
-            col.push(parsedHero.gold_log[key] || 0);
+            col.push(player.gold_reasons[key] || 0);
         });
         columns.push(col);
     }
@@ -278,28 +335,5 @@ function generateGraphData(match, constants) {
     data.gold_reasons = gold_reasons;
     match.graphData = data;
     return match;
-}
-
-function generatePositionData(match, constants) {
-    match.parsed_data.players.forEach(function(elem, j) {
-        //data might not exist
-        elem.positions = elem.positions || [];
-        //transform to 0-127 range, y=0 at top left
-        elem.positions = elem.positions.map(function(p) {
-            return [p[0] - 64, 127 - (p[1] - 64)];
-        }).filter(function(p) {
-            return p[0] >= 0 && p[1] >= 0;
-        });
-        var start = elem.positions.slice(0, 10);
-        //median, alternate calculation
-        //elem.lane = constants.lanes[start.sort(function(a,b){return a[1]-b[1]})[4][1]][start.sort(function(a,b){return a[0]-b[0]})[4][0]];
-        var lanes = start.map(function(e) {
-            //y first, then x due to array of arrays structure
-            return constants.lanes[e[1]][e[0]];
-        });
-        //determine lane
-        //console.log(lanes);
-        elem.lane = mode(lanes);
-    });
 }
 module.exports = matches;
