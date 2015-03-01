@@ -1,3 +1,4 @@
+db.ratings.drop();
 db.ratings.insert([{
     "match_id": 1238535235,
     "account_id": 88367253,
@@ -22,4 +23,11 @@ db.ratings.insert([{
     "match_id": 1233353317,
     "soloCompetitiveRank": 3440,
     "time": ISODate("2015-02-13T08:07:18Z")
+},
+{
+    "account_id": 88367253,
+    "competitiveRank": 3690,
+    "match_id": 1233353318,
+    "soloCompetitiveRank": 3940,
+    "time": ISODate("2015-02-28T08:07:18Z")
 }]);

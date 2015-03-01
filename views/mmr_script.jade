@@ -1,20 +1,17 @@
 script.
     var ratings = !{JSON.stringify(ratings)};
     var times = ratings.map(function(r){return new Date(r.time);})
-    var min = Math.min.apply(null, times)
-    var max = Math.max.apply(null, times)
-    var ticks = [];
-    for (var i = min;i<=max;i+=((max-min)/10)){
-      ticks.push(i);
-    }
+    var solo = ratings.map(function(r){return r.soloCompetitiveRank;});
+    var party = ratings.map(function(r){return r.competitiveRank;});
+
     c3.generate({
     bindto: "#ratings",
     data: {
         x: 'x',
         columns: [
         ['x'].concat(times),
-        ['Solo'].concat(ratings.map(function(r){return r.soloCompetitiveRank;})),
-        ['Party'].concat(ratings.map(function(r){return r.competitiveRank;}))
+        ['Solo'].concat(solo),
+        ['Party'].concat(party)
         ],
         type:"line"
     },
@@ -24,7 +21,7 @@ script.
             label: 'Date',
             tick: {
                 format: '%Y-%m-%d',
-                values: ticks
+                count: 10
             }
         },
         y: {
