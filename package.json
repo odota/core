@@ -8,7 +8,7 @@
     "parser": "nf -j Procfile.parser start",
     "dev": "nf -j Procfile.dev start",
     "test": "npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
-    "prod": "npm install && npm run build && nf export -j Procfile.prod -o /etc/init/ && redis-cli KEYS 'match:*' | xargs -n 100 redis-cli DEL && restart foreman",
+    "prod": "npm install && npm run build && nf export web=1,worker=1,parser=2 -j Procfile.prod -o /etc/init/ && redis-cli KEYS 'match:*' | xargs -n 100 redis-cli DEL && restart foreman",
     "mocha": "mocha",
     "bower": "bower install --allow-root",
     "unparsed": "node runner.js unparsed",
