@@ -394,22 +394,24 @@ html
             hr
             br
             h2 Found us helpful?
-            .col-md-4.text-center.bottom-padding
-              p Buy Cheese. Help Pay for Our Servers.
-              p Reaching the goal each day allows us to keep YASP running.
-            .col-md-4.text-center
-              .meter_wrapper
-                h3(style="font-weight:700;") Daily Cheese Goal
-                .meter
-                  span(style="width: #{cheese_goal}%;")
-                if cheese_goal >= 50 && cheese_goal < 100
-                  small Getting there...
-                else if cheese_goal === 100
-                  small Woo!!! We did it! Thanks guys!
-            .col-md-4.text-center
-                span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
-                a(href="/carry", target="_blank")
-                  button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
+            .row
+              .col-md-4.text-center.bottom-padding
+                p(style="margin-top:25px;") Buy Cheese. Help Pay for Our Servers.
+                p Reaching the goal each day keeps YASP running.
+              .col-md-4.text-center
+                .meter_wrapper
+                  h3(style="font-weight:700;") Daily Cheese Goal
+                  .meter(style="margin-bottom: .5em;")
+                    span(style="width: #{cheese_goal}%;")
+                  if cheese_goal >= 50 && cheese_goal < 100
+                    small Getting there...
+                  else if cheese_goal === 100
+                    small Woo!!! We did it! Thanks guys!
+              .col-md-4.text-center
+                p(style="margin-top:25px;")
+                  span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+                  a(href="/carry", target="_blank")
+                    button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
 
     footer.footer(style="color: #777;\
                   width: 100%; padding: 1.3em 0 0 1em;")
@@ -417,7 +419,7 @@ html
         .row(style="font-size: .8em; margin-bottom:10px;")
           .col-md-4.text-center
            p.
-            Dota 2, Dota 2 related images, and all that other stuff belongs to Valve. <br>
+            Dota 2, Dota 2 related images, and all that stuff belongs to Valve. <br>
             We use Google AdSense and Analytics. They might be using some 
             <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
             cookies</a>.
