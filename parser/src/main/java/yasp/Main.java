@@ -19,12 +19,14 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
+import com.google.gson.Gson;
 
 public class Main {
 	public static void main(String[] args) throws Exception{
 		long tStart = System.currentTimeMillis();
 		float MINUTE = 60;
 		HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
+		HashMap<Long, Integer> steamid_to_slot = new HashMap<Long, Integer>();
 		//HashMap<Integer, Integer> hero_to_slot = new HashMap<Integer,Integer>();
 		//HashMap<String, Integer> name_to_slot = new HashMap<String, Integer>();
 		//HashMap<Integer, Integer> ehandle_to_slot = new HashMap<Integer, Integer>();
@@ -46,7 +48,6 @@ public class Main {
 		float nextShort = 0;
 		int time = 0;
 		int gameZero = Integer.MAX_VALUE;
-		int gameEnd = 0;
 		int numPlayers = 10;
 		Log log = new Log();
 		Set<Integer> seenEntities = new HashSet<Integer>();
@@ -54,7 +55,7 @@ public class Main {
 
 		if (args.length>0 && args[0].equals("-epilogue")){
 			CDemoFileInfo info = Clarity.infoForStream(System.in);
-			//todo function to generate epilogue entries
+			finish(tStart, log, info);
 			return;
 		}
 			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO, CustomProfile.CHAT_MESSAGES);
@@ -81,7 +82,7 @@ public class Main {
 								
 				for (int i = 0; i < numPlayers; i++) {
 					Integer hero = (Integer)pr.getState()[heroIdx+i];
-					if (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero)){
+					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
 						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
 						Entry entry = new Entry(time);
@@ -242,6 +243,7 @@ public class Main {
 				for (GameEvent g : match.getGameEvents()) {
 					if (g.getEventId() == combatLogDescriptor.getEventId()) {
 						CombatLogEntry cle = new CombatLogEntry(ctx, g);
+						//Entry entry = new Entry(cle);
 						Entry entry = new Entry(time);
 						switch(cle.getType()) {
 						case 0:
@@ -250,7 +252,6 @@ public class Main {
 							entry.key = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
 							entry.type = "damage";
-							log.output(entry);
 							if (true){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getTargetNameCompiled();
@@ -269,34 +270,23 @@ public class Main {
 							break;
 						case 1:
 							//healing
-							/*
-                            unit = cle.getAttackerNameCompiled();
-                            key = cle.getTargetNameCompiled();
-                            val = cle.getValue();
-                            entry.put("unit", unit);
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("value", val);
-                            entry.put("type", "healing");
-                            log.put(entry);
-							*/
+                            entry.unit = cle.getAttackerNameCompiled();
+                            entry.key = cle.getTargetNameCompiled();
+                            entry.value = cle.getValue();
+                            entry.type = "healing";
 							break;
 						case 2:
 							//gain buff/debuff
-							/*
-                            unit = cle.getAttackerNameCompiled(); //source of buff
-                            key = cle.getInflictorName(); //the buff
-                            String unit2 = cle.getTargetNameCompiled(); //target of buff
-                            entry.put("unit", unit);
-                            entry.put("unit2", unit2);
-                            entry.put("time", time);
-                            entry.put("key", key);
-                            entry.put("type", "modifier_applied");
-                            log.put(entry);
-							 */
+							entry.type = "modifier_applied";
+                            entry.unit = cle.getAttackerNameCompiled(); //source of buff
+                            entry.key = cle.getInflictorName(); //the buff
+                            //todo do something with buff target
+                            //String unit2 = cle.getTargetNameCompiled(); //target of buff
 							break;
 						case 3:
 							//lose buff/debuff
+							entry.type = "modifier_lost";
+							//todo do something with modifier lost events
 							// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
 							break;
 						case 4:
@@ -304,7 +294,6 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
 							entry.type = "kills";
-							log.output(entry);
 							if (true){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getTargetNameCompiled();
@@ -325,14 +314,12 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "ability_uses";
-							log.output(entry);
 							break;
 						case 6:
 							//item use
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getInflictorName();
 							entry.type = "item_uses";
-							log.output(entry);
 							break;
 						case 8:
 							//gold gain/loss
@@ -340,24 +327,15 @@ public class Main {
 							entry.unit = cle.getTargetNameCompiled();
 							entry.value = cle.getValue();
 							entry.type = "gold_reasons";
-							log.output(entry);
 							break;
 						case 9:
 							//state
 							String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
+							entry.type = "state";
+							entry.key = state;
+							entry.value = Integer.valueOf(time);
 							if (state.equals("PLAYING")){
-								entry.value = Integer.valueOf(time);
-								entry.type = "game_zero";
-								log.output(entry);
 								gameZero = time;
-							}
-							else if (state.equals("POST_GAME")){
-								entry.value = Integer.valueOf(time);
-								entry.type = "game_end";
-								log.output(entry);
-								gameEnd = time;
-							}
-							else{
 							}
 							break;
 						case 10:
@@ -366,37 +344,42 @@ public class Main {
 							entry.value = cle.getValue();
 							entry.key = String.valueOf(cle.getXpReason());
 							entry.type = "xp_reasons";
-							log.output(entry);
 							break;
 						case 11:
 							//purchase
 							entry.unit = cle.getTargetNameCompiled();
 							entry.key = cle.getValueName();
 							entry.type = "item_log";
-							log.output(entry);
 							break;
 						case 12:
 							//buyback
 							entry.slot = cle.getValue();
 							entry.type = "buyback_log";
-							log.output(entry);
 							break;
 						case 13:
-							//ability trigger
-							//System.err.format("%s %s proc %s %s%n", time, cle.getAttackerNameCompiled(), cle.getInflictorName(), cle.getTargetNameCompiled() != null ? "on " + cle.getTargetNameCompiled() : "");
+							entry.type = "ability_trigger";
+							entry.unit = cle.getAttackerNameCompiled(); //triggered?
+							entry.key = cle.getInflictorName();
+							//entry.unit = cle.getTargetNameCompiled(); //triggerer?
+							//triggered and triggering hashes?
 							break;
 						default:
 							DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
-							System.err.format("%s (%s): %s%n", type.name(), type.ordinal(), g);
+							entry.type = type.name();
+							System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), g);
 							break;
+    }
+						log.output(entry);
 						}
 					}
-				}
 			}
 			
+			//load endgame stats
 			for (int i = 0; i < numPlayers; i++) {
 				String stuns = String.valueOf(pr.getState()[stunIdx+i]);
-				Entry entry = new Entry(time);
+				Long steamid = (Long)pr.getState()[steamIdx+i];
+				steamid_to_slot.put(steamid, i);
+				Entry entry = new Entry();
 				entry.slot=i;
 				entry.type="stuns";
 				entry.key=stuns;
@@ -405,25 +388,28 @@ public class Main {
 
 			//load epilogue
 			CDemoFileInfo info = match.getFileInfo();
-			//System.err.println(info);
 			List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
 			for (int i = 0;i<players.size();i++) {
-				Entry entry = new Entry(time);
+				Entry entry = new Entry();
 				entry.type="name";
-				entry.slot = i;
 				entry.key = players.get(i).getPlayerName();
+				entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
 				log.output(entry);
 			}
-			Integer match_id = info.getGameInfo().getDota().getMatchId();
-			Entry entry = new Entry(time);
+			Entry entry = new Entry();
 			entry.type="match_id";
-			entry.value = match_id;
+			entry.value = info.getGameInfo().getDota().getMatchId();
 			log.output(entry);
-			log.flush();
-			finish(tStart);
+			finish(tStart, log, info);
 			return;
 	}
-		public static void finish(long tStart){
+		public static void finish(long tStart, Log log, CDemoFileInfo info){
+			Entry entry = new Entry();
+			entry.type="epilogue";
+			entry.key = new Gson().toJson(info.getGameInfo().getDota());
+			log.output(entry);
+			
+			log.flush();
 			long tMatch = System.currentTimeMillis() - tStart;
 			System.err.format("%s sec\n", tMatch / 1000.0);
 	}

@@ -179,10 +179,10 @@ function streamReplay(job, cb) {
 
 function runParser(cb) {
     var entries = [];
+    var error = true;
     var parsed_data = {
         "version": constants.parser_version,
         "game_zero": 0,
-        "game_end": 0,
         "match_id": 0,
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
@@ -208,7 +208,10 @@ function runParser(cb) {
                 "damage_taken": {},
                 "runes": {},
                 "runes_bottled": {},
-                "killed_by": {}
+                "killed_by": {},
+                "modifier_applied":{},
+                "modifier_lost":{},
+                "healing":{}
             };
         }),
         "times": []
@@ -216,32 +219,46 @@ function runParser(cb) {
     var name_to_slot = {};
     var hero_to_slot = {};
     var types = {
-        "times": setData,
-        "match_id": setData,
-        "game_zero": setData,
-        "game_end": setData,
+        "epilogue": function() {
+            error = false;
+        },
+        "times": setParsedData,
+        "match_id": setParsedData,
+        "state": function(e) {
+            var states = {
+                "PLAYING": "game_zero"
+            };
+            e.type = states[e.key];
+            setParsedData(e);
+        },
         "hero_log": function(e) {
             //get hero by id
             var h = constants.heroes[e.key];
             hero_to_slot[h ? h.name : e.key] = e.slot;
-            //add to player's hero list
-            getSlot(e);
+            pushLog(e);
         },
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
         },
         "gold_reasons": getSlot,
         "xp_reasons": getSlot,
-        "item_log": getSlot,
+        "item_log": function(e) {
+            //todo filter out recipes
+            getSlot(e);
+        },
+        "modifier_applied": getSlot,
+        "modifier_lost": getSlot,
+        "healing": getSlot,
+        "ability_trigger": getSlot,
         "item_uses": getSlot,
         "ability_uses": getSlot,
         "kills": getSlot,
         "damage": getSlot,
-        "runes": getSlot,
-        "runes_bottled": getSlot,
-        "stuns": getSlot,
         "buyback_log": getSlot,
         "chat": getChatSlot,
+        "stuns": pushLog,
+        "runes": pushLog,
+        "runes_bottled": pushLog,
         "lh": interval,
         "gold": interval,
         "xp": interval,
@@ -254,13 +271,12 @@ function runParser(cb) {
         "killed_by": getSlotReverse
     };
 
-    function preprocess(e) {
-        (types[e.type]) ? types[e.type](e): console.log(e);
-    }
-
-    function setData(e) {
+    function setParsedData(e) {
         var t = parsed_data[e.type];
-        if (t.constructor === Array) {
+        if (typeof t === "undefined"){
+            //console.log(e);
+        }
+        else if (t.constructor === Array) {
             t.push(e.value);
         }
         else {
@@ -273,12 +289,12 @@ function runParser(cb) {
         e.key = JSON.parse(e.key);
         e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
         e.position = true;
-        entries.push(e);
+        pushLog(e);
     }
 
     function interval(e) {
         e.interval = true;
-        entries.push(e);
+        pushLog(e);
     }
 
     function assocName(name) {
@@ -314,7 +330,7 @@ function runParser(cb) {
         e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
         //use slot, then map value (could be undefined)
         e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
-        entries.push(e);
+        pushLog(e);
     }
 
     function getSlotReverse(e) {
@@ -324,17 +340,39 @@ function runParser(cb) {
 
     function getChatSlot(e) {
         e.slot = name_to_slot[e.unit];
-        entries.push(e);
+        pushLog(e);
     }
 
-    function processEntry(e) {
+    function pushLog(e) {
+            entries.push(e);
+        }
+        //todo choose a parser to stream from
+        //parse locally if upload
+    var parser_file = "parser/target/stats-0.1.0.jar";
+    var parser = spawn("java", ["-jar",
+        parser_file
+    ], {
+        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
+        encoding: 'utf8'
+    });
+    var stream = JSONStream.parse();
+    parser.stdout.pipe(stream);
+    stream.on('root', function preprocess(e) {
+        (types[e.type]) ? types[e.type](e): console.log(e);
+    });
+    stream.on('end', function() {
+        entries.forEach(function processEntry(e) {
             e.time -= parsed_data.game_zero;
             if (typeof e.slot === "undefined") {
                 //console.log(e);
                 return;
             }
             var t = parsed_data.players[e.slot][e.type];
-            if (t.constructor === Array) {
+            if (typeof t === "undefined"){
+                console.log(e);
+            }
+            else if (t.constructor === Array) {
+                //intervash the value only, otherwise object with time and key
                 e = (e.interval) ? e.value : {
                     time: e.time,
                     key: e.key
@@ -348,24 +386,7 @@ function runParser(cb) {
             else {
                 parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
             }
-        }
-        //todo choose a parser to stream from
-        //parse locally if upload
-    var parser_file = "parser/target/stats-0.1.0.jar";
-    var parser = spawn("java", ["-jar",
-        parser_file
-    ], {
-        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
-        encoding: 'utf8'
-    });
-    var stream = JSONStream.parse();
-    parser.stdout.pipe(stream);
-    stream.on('root', preprocess);
-    parser.on('exit', function(code) {
-        if (code) {
-            return cb(code);
-        }
-        entries.forEach(processEntry);
+        });
         var keys = Object.keys(types).filter(function(k) {
             return types[k] === translate;
         });
@@ -391,7 +412,7 @@ function runParser(cb) {
             });
             p.lane = mode(lanes);
         });
-        cb(code, parsed_data);
+        cb(error, parsed_data);
     });
     return parser;
 }
