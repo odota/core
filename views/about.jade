@@ -79,7 +79,8 @@ block content
               #collapseSeven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeven')
                 .panel-body
                   | To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
-            |                     
+            |  
+          .panel-left.col-sm-6
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEight', aria-expanded='false', aria-controls='collapseEight')
@@ -88,8 +89,6 @@ block content
               #collapseEight.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEight')
                 .panel-body
                   | Currently, we untrack users who have not visited YASP for 3 days.  We get full histories for ~100 tracked users per day, so please be patient.
-          |                     
-          .panel-left.col-sm-6
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseNine', aria-expanded='false', aria-controls='collapseNine')
@@ -107,7 +106,7 @@ block content
               #collapseTen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTen')
                 .panel-body
                   | To generate the information for a match page, we combine the parsed data with data from the Valve API. Since private matches can&apos;t be accessed through the API, we don&apos;t support these replays.
-            |
+
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseThirteen', aria-expanded='false', aria-controls='collapseThirteen')

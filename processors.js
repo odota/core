@@ -198,8 +198,8 @@ function runParser(job, cb) {
 
     function setParsedData(e) {
         var t = parsed_data[e.type];
-        if (typeof t === "undefined") {
-            //console.log(e);
+        if (typeof t === "undefined"){
+            console.log(e);
         }
         else if (t.constructor === Array) {
             t.push(e.value);

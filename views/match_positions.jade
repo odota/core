@@ -27,7 +27,8 @@ block match_content
 append footer_assets
   script.
     var heatmap = h337.create({
-        container: document.getElementById('map')
+        container: document.getElementById('map'),
+        radius: 15
       });
       var pos_data = !{JSON.stringify(match.players.map(function(p){return p.pos || []}))}
       var pos_data = pos_data.map(function(d){
@@ -36,7 +37,7 @@ append footer_assets
         var max = Math.max.apply(null, vals);
       return {
       min: min,
-      max:max,
+      max:max/10,
       points: d,
       }
       });

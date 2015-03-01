@@ -123,7 +123,9 @@ before(function(done) {
             console.log("copying replays to test dir");
 
             function dl(filename, cb) {
-                var path = replay_dir + filename;
+                var arr = filename.split(".");
+                arr[0] = arr[0].split("_")[0];
+                var path = replay_dir + arr.join(".");
                 if (fs.existsSync(path)) {
                     cb();
                 }
@@ -452,8 +454,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should say no parsed data', function(done) {
-            browser.assert.text('body', /no\sparsed\sdata/);
+        it('should go to index', function(done) {
+            browser.assert.text('body', /Victory/);
             done();
         });
     });

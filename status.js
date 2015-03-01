@@ -53,7 +53,7 @@ module.exports = function getStatus(cb) {
         full_history_eligible: function(cb) {
             var base = selector("tracked");
             base.full_history_time = {
-                $exists: true
+                $exists: false
             };
             db.players.count(base, cb);
         },
