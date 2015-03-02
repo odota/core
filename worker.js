@@ -119,7 +119,7 @@ function build(cb) {
         trackedPlayers = result.trackedPlayers;
         ratingPlayers = result.ratingPlayers;
         for (var key in result) {
-            redis.set(key, JSON.stringify(result));
+            redis.set(key, JSON.stringify(result[key]));
         }
         cb(err);
     });

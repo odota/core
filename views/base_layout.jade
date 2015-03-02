@@ -42,19 +42,24 @@ html
         #navbar.navbar-collapse.collapse
           ul.nav.navbar-nav
             li
-              a(href='/matches') Matches       
+              a(href='/matches') Matches
             li
-              a(href='/status') Status      
+              a(href='/status') Status
             li
               a(href='/about') FAQ 
             li
               a(href='/page/1') Blog      
             li
               a(href='/carry') Help Carry!
-          if user
-            ul.nav.navbar-nav.navbar-right
+          ul.nav.navbar-nav.navbar-right
+            if user
               li
                 a(href="/players/"+user.account_id)=user.personaname
+              li
+                a(href="/logout") Logout
+            else
+              li
+                a(href="/login") Login
 
     .sticky_footer_row
     .sticky_footer_row.expand
