@@ -60,7 +60,7 @@ before(function(done) {
             });
             },
             function(cb) {
-            console.log("loading bots/ratingPlayers into redis");
+            console.log("loading services into redis");
             redis.set("bots", JSON.stringify([{
                 "steamID": "76561198174479859",
                 "attempts": 1,
@@ -93,6 +93,8 @@ before(function(done) {
                 "friends": 1
                 }]));
             redis.set("ratingPlayers", JSON.stringify({}));
+            redis.set("retrievers", JSON.stringify(["http://localhost:5100"]));
+            redis.set("parsers", JSON.stringify(["http://localhost:5200"]));
             cb();
             },
             function(cb) {

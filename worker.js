@@ -66,9 +66,8 @@ function build(cb) {
         docs.forEach(function(player) {
             t[player.account_id] = true;
         });
-        redis.set("retrievers", "[http://localhost:5100]");
-        redis.set("parsers", "[http://localhost:5200]");
-        
+        redis.set("retrievers", JSON.stringify(["http://localhost:5100"]));
+        redis.set("parsers", JSON.stringify(["http://localhost:5200"]));
         //todo
         //async to manage:
         //retrievers
@@ -76,7 +75,6 @@ function build(cb) {
         //tracked players
         //rating players (depends on retrievers!)
         //bot array
-
         //build arrays from seaport
         //save parser and retriever arrays to redis
         //iterate through seaport instead of getretrieverurls
@@ -84,7 +82,6 @@ function build(cb) {
         ports.get('web@1.2.x', function (ps) {
             var u = 'http://' + ps[0].host + ':' + ps[0].port;
             var r = request(u);
-
             r.pipe(process.stdout);
             r.on('end', ports.close.bind(ports));
         });
