@@ -67,7 +67,8 @@ block match_content
                 tr
                   th Hero
                   each val, key in constants.gold_reasons
-                    th=val
+                    th: abbr(title=val.tooltip)=val.name
+
               tbody
                 each player, i in match.players
                   tr(class = player.isRadiant ? "success" : "danger")

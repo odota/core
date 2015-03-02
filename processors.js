@@ -198,7 +198,7 @@ function runParser(job, cb) {
 
     function setParsedData(e) {
         var t = parsed_data[e.type];
-        if (typeof t === "undefined"){
+        if (typeof t === "undefined") {
             console.log(e);
         }
         else if (t.constructor === Array) {
@@ -374,8 +374,18 @@ function runParser(job, cb) {
                     error = false;
                 },
                 "hero_log": populate,
-                "gold_reasons": getSlot,
-                "xp_reasons": getSlot,
+                "gold_reasons": function(e) {
+                    if (!constants.gold_reasons[e.key]) {
+                        console.log(e);
+                    }
+                    getSlot(e);
+                },
+                "xp_reasons": function(e) {
+                    if (!constants.xp_reasons[e.key]) {
+                        console.log(e);
+                    }
+                    getSlot(e);
+                },
                 "purchase": function(e) {
                     getSlot(e);
                     e.type = "purchase_log";
