@@ -6,7 +6,6 @@ var modes = constants.modes;
 var regions = constants.regions;
 module.exports = function(matches) {
     $('#matches').dataTable({
-        //todo allow sorting on heroes
         "order": [
                 [0, "desc"]
             ],
