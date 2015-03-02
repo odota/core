@@ -63,15 +63,16 @@ block content
         th User
         th Cheese Count
       each player, i in users
-        tr
-          td= i + 1
-          td
-            if player.avatarmedium
-              .col-md-2
-                img(src='#{player.avatarmedium}').img-thumbnail
-            .col-md-5
-              h4 <a href="/players/#{player.account_id}"> #{player.personaname || player.account_id}</a>
-          td #{player.cheese}
+        if player.cheese
+          tr
+            td= i + 1
+            td
+              if player.avatarmedium
+                .col-md-2
+                  img(src='#{player.avatarmedium}').img-thumbnail
+              .col-md-5
+                h4 <a href="/players/#{player.account_id}"> #{player.personaname || player.account_id}</a>
+            td #{player.cheese}
 
 append footer_assets
    link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")

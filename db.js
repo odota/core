@@ -41,4 +41,5 @@ db.ratings.index({
 db.players.index({
     'cheese': -1
 });
+
 module.exports = db;
