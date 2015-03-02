@@ -25,9 +25,9 @@ block match_content
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id              
-                    td.activate(data-index=ind, data-type=0)=constants.lane_ids[p.lane]
-                    td.activate(data-index=ind, data-type=1)=p.obs.length
-                    td.activate(data-index=ind, data-type=2)=p.sen.length
+                    td.activate(data-index=ind, data-type="pos")=constants.lane_ids[p.lane]
+                    td.activate(data-index=ind, data-type="obs")=match.posData[ind].obs.length
+                    td.activate(data-index=ind, data-type="sen")=match.posData[ind].sen.length
 
 
 append footer_assets
@@ -36,30 +36,33 @@ append footer_assets
         container: document.getElementById('map'),
         radius: 15
       });
-      var pos_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.pos || []}))}
-      var obs_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.obs || []}))}
-      var sen_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.sen || []}))}
+      var posData = !{JSON.stringify(match.posData)}
+      posData.forEach(function(d){
+        d.pos = scaleAndExtrema(d.pos, 10);
+        d.obs = scaleAndExtrema(d.obs, 1);
+        d.sen = scaleAndExtrema(d.sen, 1);
+      })
       
-      pos_data = scaleAndExtrema(pos_data, 10);
-      obs_data = scaleAndExtrema(obs_data, 1);
-      sen_data = scaleAndExtrema(sen_data, 1);
-      
-      function scaleAndExtrema(data, clamp){
-        return data.map(function(d){
-          var vals = d.map(function(p){p.x=p.x*(600/127);p.y=p.y*(600/127);return p.value;});
+      function scaleAndExtrema(points, max){
+        points.forEach(function(p){
+          p.x=p.x*(600/127);
+          p.y=p.y*(600/127);
+          })
+          /*
+          var vals = d.map(function(p){return p.value;});
           var max = Math.max.apply(null, vals);
-        return {
-        min: 0,
-        max:Math.min(max, clamp),
-        data: d,
-        }
-        });      
+          */
+          return {
+          min: 0,
+          max: max,
+          data: points,
+          };
       }
       
-      var arr = [pos_data, obs_data, sen_data];
-      
       $(".activate").on("mouseover", function(){
-        var data = arr[Number($(this).attr('data-type'))][Number($(this).attr('data-index'))];
+        var index = posData[Number($(this).attr('data-index'))]
+        console.log(index);
+        var data = index[$(this).attr('data-type')];
         console.log(data);
         heatmap.setData(data);
         heatmap.repaint();

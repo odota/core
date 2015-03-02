@@ -79,9 +79,10 @@ matches.param('match_id', function(req, res, next, id) {
                                     parsedPlayer.hero_hits = parsedHero.hero_hits;
                                     parsedPlayer.purchase_log = parsedHero.timeline;
                                     parsedPlayer.kill_log = parsedHero.herokills;
+                                    parsedPlayer.kills = parsedHero.kills;
                                     parsedPlayer.pos = parsedPlayer.positions || [];
-                                    parsedPlayer.obs = [];
-                                    parsedPlayer.sen = [];
+                                    parsedPlayer.obs = {};
+                                    parsedPlayer.sen = {};
                                     parsedPlayer.runes = {};
                                     parsedPlayer.pos = parsedPlayer.pos.map(function(p) {
                                         return {
@@ -102,6 +103,7 @@ matches.param('match_id', function(req, res, next, id) {
                                     c.key = c.text;
                                 });
                             }
+                            match.posData = [];
                             match.players.forEach(function(player) {
                                 player.isRadiant = utility.isRadiant(player);
                                 //mapping 0 to 0, 128 to 5, etc.
@@ -109,6 +111,7 @@ matches.param('match_id', function(req, res, next, id) {
                                 var p = match.parsed_data.players[parseSlot];
                                 //generate position data from hashes
                                 var keys = ["obs", "sen", "pos"];
+                                var d = {};
                                 keys.forEach(function(key) {
                                     var t = [];
                                     for (var x in p[key]) {
@@ -120,8 +123,9 @@ matches.param('match_id', function(req, res, next, id) {
                                             });
                                         }
                                     }
-                                    p[key] = t;
+                                    d[key] = t;
                                 });
+                                match.posData.push(d);
                                 player.parsedPlayer=p;
                             });
                             sortDetails(match);
@@ -155,60 +159,60 @@ matches.get('/:match_id/:info?', function(req, res, next) {
 function sortDetails(match) {
     //converts hashes to arrays and sorts them
     match.players.forEach(function(player, i) {
-        player=player.parsedPlayer;
+        var p=player.parsedPlayer;
         var t = [];
-        for (var key in player.ability_uses) {
+        for (var key in p.ability_uses) {
             var a = constants.abilities[key];
             if (a) {
                 var ability = {};
                 ability.img = a.img;
                 ability.name = key;
-                ability.val = player.ability_uses[key];
-                ability.hero_hits = player.hero_hits[key];
+                ability.val = p.ability_uses[key];
+                ability.hero_hits = p.hero_hits[key];
                 t.push(ability);
             }
             else {
                 console.log(key);
             }
         }
-        player.ability_uses = t;
+        p.ability_uses = t;
         var u = [];
-        for (var key in player.item_uses) {
+        for (var key in p.item_uses) {
             var b = constants.items[key];
             if (b) {
                 var item = {};
                 item.img = b.img;
                 item.name = key;
-                item.val = player.item_uses[key];
+                item.val = p.item_uses[key];
                 u.push(item);
             }
             else {
                 console.log(key);
             }
         }
-        player.item_uses = u;
+        p.item_uses = u;
         var v = [];
-        for (var key in player.damage) {
+        for (var key in p.damage) {
             var c = constants.hero_names[key];
             if (c) {
                 var dmg = {};
                 dmg.img = c.img;
-                dmg.val = player.damage[key];
-                dmg.kills = player.kills[key];
+                dmg.val = p.damage[key];
+                dmg.kills = p.kills[key];
                 v.push(dmg);
             }
             else {
                 //console.log(key);
             }
         }
-        player.damage = v;
-        player.ability_uses.sort(function(a, b) {
+        p.damage = v;
+        p.ability_uses.sort(function(a, b) {
             return b.val - a.val;
         });
-        player.item_uses.sort(function(a, b) {
+        p.item_uses.sort(function(a, b) {
             return b.val - a.val;
         });
-        player.damage.sort(function(a, b) {
+        p.damage.sort(function(a, b) {
             return b.val - a.val;
         });
     });
@@ -283,14 +287,15 @@ function generateGraphData(match) {
     for (var i = 0; i < match.parsed_data.times.length; i++) {
         var goldtotal = 0;
         var xptotal = 0;
-        match.parsed_data.players.forEach(function(elem, j) {
-            if (match.players[j].isRadiant) {
-                goldtotal += elem.gold[i];
-                xptotal += elem.xp[i];
+        match.players.forEach(function(elem, j) {
+            var p = elem.parsedPlayer;
+            if (elem.isRadiant) {
+                goldtotal += p.gold[i];
+                xptotal += p.xp[i];
             }
             else {
-                xptotal -= elem.xp[i];
-                goldtotal -= elem.gold[i];
+                xptotal -= p.xp[i];
+                goldtotal -= p.gold[i];
             }
         });
         goldDifference.push(goldtotal);
@@ -303,12 +308,13 @@ function generateGraphData(match) {
         xp: [time],
         lh: [time]
     };
-    match.parsed_data.players.forEach(function(elem, i) {
-        var hero = constants.heroes[match.players[i].hero_id] || {};
+    match.players.forEach(function(elem, i) {
+        var p = elem.parsedPlayer;
+        var hero = constants.heroes[elem.hero_id] || {};
         hero = hero.localized_name;
-        data.gold.push([hero].concat(elem.gold));
-        data.xp.push([hero].concat(elem.xp));
-        data.lh.push([hero].concat(elem.lh));
+        data.gold.push([hero].concat(p.gold));
+        data.xp.push([hero].concat(p.xp));
+        data.lh.push([hero].concat(p.lh));
     });
     //data for income chart
     var gold_reasons = [];
