@@ -97,3 +97,23 @@ block match_content
                         =player.hero_id
                       each val, key in constants.xp_reasons
                         td #{player.xp_reasons[key] || "-"}
+        .row
+          .col-md-12.table-responsive
+            h2 Runes
+            table.table.table-hover.summable
+              thead
+                tr
+                  th Hero
+                  each val, key in constants.runes
+                    th=val.name
+              tbody
+                each player, i in match.players
+                  tr(class = player.isRadiant ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      each val, key in constants.runes
+                        td #{player.runes[key] || "-"}

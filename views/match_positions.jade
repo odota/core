@@ -5,7 +5,7 @@ block match_content
     .col-md-12
           .row
             .col-md-7
-              h2: abbr(title="Player movement during the game") Position Map
+              h2 Map
               #map.mapContainer
                 img.map(src='/public/images/map.jpg', alt="map")
             .col-md-5
@@ -14,37 +14,52 @@ block match_content
                 tr
                   th Hero
                   th: abbr(title="Lane based on early game positions") Lane
+                  th Observer
+                  th Sentry
                 each player, ind in match.players
                   - var hero = constants.heroes[player.hero_id]
-                  tr.mapHero(id=ind, class = player.isRadiant ? "success" : "danger")
+                  tr(class = player.isRadiant ? "success" : "danger")
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id              
-                    td=constants.lane_ids[player.lane]
+                    td.activate(data-index=ind, data-type=0)=constants.lane_ids[player.lane]
+                    td.activate(data-index=ind, data-type=1)=player.obs.length
+                    td.activate(data-index=ind, data-type=2)=player.sen.length
+
 
 append footer_assets
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),
-        radius: 15
+        radius: 18
       });
       var pos_data = !{JSON.stringify(match.players.map(function(p){return p.pos || []}))}
-      var pos_data = pos_data.map(function(d){
-        var vals = d.map(function(p){p.x=p.x*(600/127);p.y=p.y*(600/127);return p.value;});
-        var min = Math.min.apply(null, vals);
-        var max = Math.max.apply(null, vals);
-      return {
-      min: min,
-      max:max/10,
-      points: d,
+      var obs_data = !{JSON.stringify(match.players.map(function(p){return p.obs || []}))}
+      var sen_data = !{JSON.stringify(match.players.map(function(p){return p.sen || []}))}
+      
+      pos_data = scaleAndExtrema(pos_data, 10);
+      obs_data = scaleAndExtrema(obs_data, 1);
+      sen_data = scaleAndExtrema(sen_data, 1);
+      
+      function scaleAndExtrema(data, clamp){
+        return data.map(function(d){
+          var vals = d.map(function(p){p.x=p.x*(600/127);p.y=p.y*(600/127);return p.value;});
+          var max = Math.max.apply(null, vals);
+        return {
+        min: 0,
+        max:Math.min(max, clamp),
+        data: d,
+        }
+        });      
       }
-      });
-
-      console.log(pos_data);
-      $(".mapHero").on("mouseover", function(){
-        var data = pos_data[Number($(this).attr('id'))];
-        heatmap.setData({min: data.min, max: data.max, data: data.points});
+      
+      var arr = [pos_data, obs_data, sen_data];
+      
+      $(".activate").on("mouseover", function(){
+        var data = arr[Number($(this).attr('data-type'))][Number($(this).attr('data-index'))];
+        console.log(data);
+        heatmap.setData(data);
         heatmap.repaint();
       })
