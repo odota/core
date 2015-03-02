@@ -38,5 +38,7 @@ db.ratings.index({
 }, {
     unique: true
 });
-
+db.players.index({
+    'cheese': -1
+});
 module.exports = db;
