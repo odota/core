@@ -97,16 +97,6 @@ block content
               #collapseNine.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingNine')
                 .panel-body
                   | The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTen', aria-expanded='false', aria-controls='collapseTen')
-                  | Why can&apos;t you parse uploaded private lobby replays?
-              |                         
-              #collapseTen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTen')
-                .panel-body
-                  | To generate the information for a match page, we combine the parsed data with data from the Valve API. Since private matches can&apos;t be accessed through the API, we don&apos;t support these replays.
-
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseThirteen', aria-expanded='false', aria-controls='collapseThirteen')
@@ -142,7 +132,3 @@ block content
               #collapseSixteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSixteen')
                 .panel-body
                   | Why, of course! Need you even ask?
-
-append footer_assets
-  script(src="/bower_components/jquery/dist/jquery.min.js")
-  script(src="/bower_components/bootstrap/dist/js/bootstrap.min.js")

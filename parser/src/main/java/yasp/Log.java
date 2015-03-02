@@ -21,7 +21,7 @@ public class Log{
     }
     public void flush(){
         if (log!=null){
-            g.toJson(log);
+            System.out.println(g.toJson(log));
         }
     }
 }
