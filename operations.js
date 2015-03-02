@@ -8,39 +8,36 @@ var jobs = require("./redis").jobs;
 function insertMatch(match, cb) {
     match.parse_status = match.parsed_data ? 2 : 0;
     db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, {
-            upsert: true
-        },
-        function(err) {
-            if (err) {
-                return cb(err);
-            }
-            async.eachSeries(match.players, function(p, cb) {
-                db.players.update({
+        match_id: match.match_id
+    }, match, {
+        upsert: true
+    }, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        async.eachSeries(match.players, function(p, cb) {
+            db.players.update({
+                account_id: p.account_id
+            }, {
+                $set: {
                     account_id: p.account_id
-                }, {
-                    $set: {
-                        account_id: p.account_id
-                    }
-                }, {
-                    upsert: true
-                }, function(err) {
+                }
+            }, {
+                upsert: true
+            }, function(err) {
+                cb(err);
+            });
+        }, function(err) {
+            if (err || match.parsed_data) {
+                cb(err);
+            }
+            else {
+                queueReq("parse", match, function(err) {
                     cb(err);
                 });
-            }, function(err) {
-                if (!err && !match.parse_status) {
-                    queueReq("parse", match, function(err) {
-                        cb(err);
-                    });
-                }
-                else {
-                    cb(err);
-                }
-            });
+            }
         });
+    });
 }
 
 function insertPlayer(player, cb) {

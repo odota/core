@@ -52,12 +52,8 @@ io.sockets.on('connection', function(socket) {
                 return socket.emit('log', err);
             }
             socket.emit('log', "queued api request");
-            job.on('complete', function(err) {
-                if (err) {
-                    return socket.emit('log', err);
-                }
+            job.on('complete', function(result) {
                 socket.emit('log', "completed api request");
-                //todo capture parse events or poll?
             });
         });
     });

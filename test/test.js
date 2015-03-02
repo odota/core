@@ -368,7 +368,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.-./);
+            browser.assert.text('body', /.-./);
             done();
         });
     });
@@ -384,7 +384,7 @@ describe("web", function() {
             done();
         });
         it('should have a w/l record', function(done) {
-            browser.assert.text('h2', /.-./);
+            browser.assert.text('body', /.-./);
             done();
         });
     });
@@ -589,6 +589,7 @@ describe("web", function() {
             done();
         });
     });
+    /*
     describe("GET /upload", function() {
         before(function(done) {
             browser.visit('/upload');
@@ -615,6 +616,7 @@ describe("web", function() {
             });
         });
     });
+    */
     //todo test passport-steam login function
     describe("/logout", function() {
         it('should 200', function(done) {
@@ -670,6 +672,7 @@ describe("web", function() {
             });
         });
     });
+    /*
     describe("/verify_recaptcha", function() {
         it('should return JSON', function(done) {
             request.post(process.env.ROOT_URL + '/verify_recaptcha', {
@@ -684,6 +687,7 @@ describe("web", function() {
             });
         });
     });
+    */
 });
 describe("tasks", function() {
     this.timeout(wait);

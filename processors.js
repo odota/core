@@ -7,6 +7,7 @@ var moment = require('moment');
 var getData = utility.getData;
 var request = require('request');
 var operations = require('./operations');
+var queueReq = operations.queueReq;
 var insertPlayer = operations.insertPlayer;
 var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
@@ -75,7 +76,7 @@ function getReplayUrl(job, cb) {
             if (err) {
                 return cb(err);
             }
-            result=JSON.parse(result);
+            result = JSON.parse(result);
             var urls = result.map(function(r) {
                 return r + "?match_id=" + job.data.payload.match_id;
             });
@@ -470,7 +471,7 @@ function processApi(job, cb) {
         else if (data.response) {
             logger.info("summaries response");
             async.mapSeries(data.response.players, insertPlayer, function(err) {
-                cb(err, job.data.payload);
+                cb(err, data.response.players);
             });
         }
         else if (payload.match_id) {
@@ -481,7 +482,7 @@ function processApi(job, cb) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
             insertMatch(match, function(err) {
-                cb(err, job.data.payload);
+                cb(err, match);
             });
         }
         else {
