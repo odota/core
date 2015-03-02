@@ -737,6 +737,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             processors.processParse(job, function(err) {
+                //todo check the site to make sure templates work
                 done(err);
             });
         });
