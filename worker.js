@@ -22,6 +22,11 @@ var ratingPlayers = {};
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(process.env.REGISTRY_PORT || 5300);
+process.env.RETRIEVER_HOST.split(",").forEach(function(r) {
+    server.register('retriever@' + constants.retriever_version + '.0.0', {
+        url: "http://" + r
+    });
+});
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -99,14 +104,6 @@ function build(cb) {
                     };
                     cb(err, result);
                 });
-            });
-        },
-        "parsers": function(cb) {
-            server.get('parser@' + constants.parser_version + '.0.0', function(ps) {
-                ps = ps.map(function(p) {
-                    return p.url || 'http://' + p.host + ':' + p.port;
-                });
-                cb(null, ps);
             });
         }
     }, function(err, result) {

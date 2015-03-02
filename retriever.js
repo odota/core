@@ -6,8 +6,7 @@ var utility = require("./utility");
 var async = require('async');
 var convert64To32 = utility.convert64to32;
 var express = require('express');
-var seaport = require('seaport');
-var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
+var constants = require('./constants.json');
 var app = express();
 var users = process.env.STEAM_USER.split(",");
 var passes = process.env.STEAM_PASS.split(",");
@@ -17,17 +16,20 @@ var replayRequests = 0;
 var launch = new Date();
 var ready = false;
 var a = [];
-var port = process.env.RETRIEVER_PORT || process.env.PORT || 5100;
-var server = app.listen(port, function() {
-    var host = server.address().address;
-    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
+/*
+var seaport = require('seaport');
+var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
     ports.register('retriever@' + constants.retriever_version + '.0.0', {
         host: host,
         port: port,
         url: process.env.RETRIEVER_URL
     });
+*/
+var port = process.env.RETRIEVER_PORT || process.env.PORT || 5100;
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });
-var constants = require('./constants.json');
 while (a.length < users.length) a.push(a.length + 0);
 async.map(a, function(i, cb) {
     var Steam = new steam.SteamClient();

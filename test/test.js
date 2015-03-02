@@ -176,10 +176,6 @@ before(function(done) {
                     replaySalt: 1
                 }
             });
-            //fake replay response
-            nock('http://replay1.valve.net').filteringPath(function(path) {
-                return '/';
-            }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
             //fake api response
             nock('http://api.steampowered.com').filteringPath(function(path) {
                     var split = path.split("?");
@@ -736,9 +732,14 @@ describe("unit test", function() {
 describe("parser", function() {
     this.timeout(wait);
     it('parse replay (download)', function(done) {
+        //fake replay response
+        nock('http://replay1.valve.net').filteringPath(function(path) {
+            return '/';
+        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
         var job = {
             match_id: 1151783218,
-            start_time: moment().format('X')
+            start_time: moment().format('X'),
+            url: "http://replay1.valve.net"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -748,22 +749,11 @@ describe("parser", function() {
             });
         });
     });
-    it('parse expired match', function(done) {
-        var job = {
-            match_id: 1,
-            start_time: 1
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            processors.processParse(job, function(err) {
-                done(err);
-            });
-        });
-    });
     it('parse replay (local)', function(done) {
         var job = {
             match_id: 1193091757,
-            start_time: moment().format('X')
+            start_time: moment().format('X'),
+            fileName: replay_dir + "/1193091757.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -775,7 +765,8 @@ describe("parser", function() {
     it('parse 1v1', function(done) {
         var job = {
             match_id: 1181392470,
-            start_time: moment().format('X')
+            start_time: moment().format('X'),
+            fileName: replay_dir + "/1181392470.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -787,7 +778,8 @@ describe("parser", function() {
     it('parse ardm', function(done) {
         var job = {
             match_id: 1189263979,
-            start_time: moment().format('X')
+            start_time: moment().format('X'),
+            fileName: replay_dir + "/1189263979.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);

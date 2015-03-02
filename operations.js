@@ -3,40 +3,82 @@ var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var generateJob = utility.generateJob;
 var async = require('async');
-var jobs = require("./redis").jobs;
+var r = require("./redis");
+var jobs = r.jobs;
+var redis = r.client;
+var moment = require('moment');
+var getData = utility.getData;
 
 function insertMatch(match, cb) {
-    match.parse_status = match.parsed_data ? 2 : 0;
-    db.matches.update({
-        match_id: match.match_id
-    }, match, {
-        upsert: true
-    }, function(err) {
+    getReplayUrl(match, function(err) {
         if (err) {
-            return cb(err);
+            console.log(err);
         }
-        async.eachSeries(match.players, function(p, cb) {
-            db.players.update({
-                account_id: p.account_id
-            }, {
-                $set: {
-                    account_id: p.account_id
-                }
-            }, {
-                upsert: true
-            }, function(err) {
-                cb(err);
-            });
+        db.matches.update({
+            match_id: match.match_id
+        }, match, {
+            upsert: true
         }, function(err) {
-            if (err || match.parsed_data) {
-                cb(err);
+            if (err) {
+                return cb(err);
             }
-            else {
+            async.eachSeries(match.players, function(p, cb) {
+                db.players.update({
+                    account_id: p.account_id
+                }, {
+                    $set: {
+                        account_id: p.account_id
+                    }
+                }, {
+                    upsert: true
+                }, function(err) {
+                    cb(err);
+                });
+            }, function(err) {
+                if (err) {
+                    return cb(err);
+                }
                 queueReq("parse", match, function(err, job) {
                     cb(err, job);
                 });
-            }
+            });
         });
+    });
+}
+
+function getReplayUrl(match, cb) {
+    if (match.start_time < moment().subtract(7, 'days').format('X')) {
+        match.expired = true;
+        return cb();
+    }
+    db.matches.findOne({
+        match_id: match.match_id
+    }, function(err, doc) {
+        if (!err && doc && doc.url) {
+            console.log("replay url in db");
+            match.url = doc.url;
+            return cb();
+        }
+        else {
+            redis.get("retrievers", function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                result = JSON.parse(result);
+                var urls = result.map(function(r) {
+                    return r + "?match_id=" + match.match_id;
+                });
+                getData(urls, function(err, body) {
+                    if (err || !body || !body.match) {
+                        //non-retryable error
+                        return cb("invalid body or error");
+                    }
+                    var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                    match.url = url;
+                    cb(err);
+                });
+            });
+        }
     });
 }
 

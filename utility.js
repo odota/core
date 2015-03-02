@@ -62,6 +62,7 @@ function generateJob(type, payload) {
                 title: [type, payload.match_id].join(),
                 type: type,
                 fileName: payload.fileName,
+                url: payload.url,
                 payload: payload
             };
         },

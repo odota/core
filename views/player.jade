@@ -29,7 +29,21 @@ block content
           button.btn.btn-default(disabled) MMR Tracked
         else
             a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-        include socket
+        input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
+        button(onclick='javascript:request();').btn.btn-success Request
+        #log
+        script(src="/socket.io/socket.io.js")
+        script.
+          var socket = io.connect();
+          socket.on('log',function(data){
+            document.getElementById('log').innerHTML+=JSON.stringify(data)+"<br>";
+          })
+          function request(){
+            var field = document.getElementById('match_id');
+            var match_id = field.value;
+            field.value = "";
+            socket.emit('match_id', match_id);
+          }
 
   .row(style="margin-top:1em;")
     .col-md-12
