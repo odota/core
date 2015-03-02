@@ -32,7 +32,7 @@ passport.use(new SteamStrategy({
     db.players.findOne({
         account_id: steam32,
         join_date: {
-            $exists: true
+            $ne: null
         }
     }, function(err, doc) {
         if (doc) {

@@ -12,19 +12,6 @@ module.exports = function(type) {
                     $gt: 0
                 }
             }]
-        },
-        "fullhistory": {
-            $or: [{
-                    last_visited: active,
-                    join_date: {
-                        $lt: moment().subtract(7, 'day').toDate()
-                    }
-        },
-                {
-                    contributor: {
-                        $gt: 0
-                    }
-            }]
         }
     };
     return opts[type];

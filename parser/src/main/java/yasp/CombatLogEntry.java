@@ -11,15 +11,6 @@ private final GameEvent event;
         this.event = event;
     }
 
-    private String translate(String in) {
-        if (in!=null){
-            if (in.startsWith("item_")){
-                in=in.substring("item_".length());
-            }
-        }
-        return in;
-    }
-    
     private String readCombatLogName(int idx) {
         return idx == 0 ? null : ctx.combatLogNames.getNameByIndex(idx);
     }
@@ -35,17 +26,9 @@ private final GameEvent event;
     public String getTargetName() {
         return translate(readCombatLogName((int)event.getProperty(ctx.targetNameIdx)));
     }
-    
-    public String getTargetNameCompiled() {
-        return (isTargetIllusion() ? "illusion_" : "") + getTargetName();
-    }
 
     public String getAttackerName() {
         return translate(readCombatLogName((int)event.getProperty(ctx.attackerNameIdx)));
-    }
-    
-    public String getAttackerNameCompiled() {
-        return (isAttackerIllusion() ? "illusion_" : "") + getAttackerName();
     }
 
     public String getInflictorName() {
@@ -105,6 +88,14 @@ private final GameEvent event;
     }
     
     //new functions
+    private String translate(String in) {
+        if (in!=null){
+            if (in.startsWith("item_")){
+                in=in.substring("item_".length());
+            }
+        }
+        return in;
+    }
     public int getXpReason() {
         return event.getProperty(ctx.xpReasonIdx);
     }
@@ -117,7 +108,16 @@ private final GameEvent event;
     public int getLocationY() {
         return event.getProperty(ctx.locationYIdx);
     }
+    public String getValueString(){
+        return String.valueOf(getValue());
+    }
     public String getValueName(){
         return translate(readCombatLogName(getValue()));
+    }
+    public String getTargetNameCompiled() {
+        return (isTargetIllusion() ? "illusion_" : "") + getTargetName();
+    }
+    public String getAttackerNameCompiled() {
+        return (isAttackerIllusion() ? "illusion_" : "") + getAttackerName();
     }
 }

@@ -3,7 +3,6 @@ extend match
 block match_content
   .row
     .col-md-12
-      if match.parsed_data
         h2 Details
         .table-responsive
           table.table.table-hover.summable
@@ -24,36 +23,35 @@ block match_content
                     th: abbr(title="Items used") Items
                     th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
               tbody
-                tr(class = player.player_slot<64 ? "success" : "danger")
+                tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
-                  - var parsedHero = match.parsed_data.heroes[hero.name]
-                  - var parsedPlayer = match.parsed_data.players[i]
+                  - var p = player.parsedPlayer
                   td.hero
                    if hero
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
-                  td #{parsedHero.itembuys.tpscroll || "-"}
-                  td #{parsedHero.itembuys.ward_observer*2 || "-"}
-                  td #{parsedHero.itembuys.ward_sentry*2 || "-"}
-                  td #{parsedHero.itembuys.smoke_of_deceit || "-"}
-                  td #{parsedHero.itembuys.dust*2 || "-"}
-                  td #{parsedHero.itembuys.gem || "-"}
-                  td #{parsedPlayer.buybacks.length || "-"}
-                  td #{parsedPlayer.stuns.toFixed(2)}
+                  td #{p.purchase.tpscroll || "-"}
+                  td #{p.purchase.ward_observer*2 || "-"}
+                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.smoke_of_deceit || "-"}
+                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.gem || "-"}
+                  td #{p.buyback_log.length || "-"}
+                  td #{p.stuns.toFixed(2)}
                   td.table-img
-                    each ability in player.abilityuses
+                    each ability in p.ability_uses
                       div.img-text
                         img.ability(src=ability.img, alt=ability.name)
                         div #{ability.val}
                         div (#{ability.hero_hits || 0})
                   td.table-img
-                    each item in player.itemuses
+                    each item in p.item_uses
                       div.img-text
                         img.item(src=item.img, alt=item.name)
                         div #{item.val}
                   td.table-img
-                    each dmg in player.damage
+                    each dmg in p.damage
                       div.img-text
                         img.dmg(src=dmg.img, title=dmg.localized_name)
                         div.format #{dmg.val}
@@ -69,19 +67,20 @@ block match_content
                 tr
                   th Hero
                   each val, key in constants.gold_reasons
-                    th=val
+                    th: abbr(title=val.tooltip)=val.name
+
               tbody
                 each player, i in match.players
-                  tr(class = player.player_slot<64 ? "success" : "danger")
+                  tr(class = player.isRadiant ? "success" : "danger")
                     - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
-                      - var parsedHero = match.parsed_data.heroes[hero.name]
                       each val, key in constants.gold_reasons
-                        td #{parsedHero.gold_log[key] || "-"}
+                        td #{p.gold_reasons[key] || "-"}
           .col-md-4.table-responsive
             h2 XP
             table.table.table-hover.summable
@@ -92,15 +91,34 @@ block match_content
                     th=val
               tbody
                 each player, i in match.players
-                  tr(class = player.player_slot<64 ? "success" : "danger")
+                  tr(class = player.isRadiant ? "success" : "danger")
                     - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
-                      - var parsedHero = match.parsed_data.heroes[hero.name]
                       each val, key in constants.xp_reasons
-                        td #{parsedHero.xp_log[key] || "-"}
-      else
-        h1 This match has no parsed data!
+                        td #{p.xp_reasons[key] || "-"}
+        .row
+          .col-md-12.table-responsive
+            h2 Runes
+            table.table.table-hover.summable
+              thead
+                tr
+                  th Hero
+                  each val, key in constants.runes
+                    th=val.name
+              tbody
+                each player, i in match.players
+                  tr(class = player.isRadiant ? "success" : "danger")
+                    - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
+                    td.hero
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                      each val, key in constants.runes
+                        td #{p.runes[key] || "-"}
