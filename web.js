@@ -54,6 +54,9 @@ io.sockets.on('connection', function(socket) {
             socket.emit('log', "queued api request");
             job.on('complete', function(result) {
                 socket.emit('log', "completed api request");
+                //result is the parse job for this api req
+                //get this job id from kue and listen for complete
+                //race condition if the job gets done fast?
             });
         });
     });

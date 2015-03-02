@@ -481,8 +481,8 @@ function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            insertMatch(match, function(err) {
-                cb(err, match);
+            insertMatch(match, function(err, job2) {
+                cb(err, job2);
             });
         }
         else {

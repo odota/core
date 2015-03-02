@@ -32,8 +32,8 @@ function insertMatch(match, cb) {
                 cb(err);
             }
             else {
-                queueReq("parse", match, function(err) {
-                    cb(err);
+                queueReq("parse", match, function(err, job) {
+                    cb(err, job);
                 });
             }
         });
