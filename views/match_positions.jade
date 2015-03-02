@@ -18,15 +18,16 @@ block match_content
                   th Sentry
                 each player, ind in match.players
                   - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
                   tr(class = player.isRadiant ? "success" : "danger")
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id              
-                    td.activate(data-index=ind, data-type=0)=constants.lane_ids[player.lane]
-                    td.activate(data-index=ind, data-type=1)=player.obs.length
-                    td.activate(data-index=ind, data-type=2)=player.sen.length
+                    td.activate(data-index=ind, data-type=0)=constants.lane_ids[p.lane]
+                    td.activate(data-index=ind, data-type=1)=p.obs.length
+                    td.activate(data-index=ind, data-type=2)=p.sen.length
 
 
 append footer_assets
@@ -35,9 +36,9 @@ append footer_assets
         container: document.getElementById('map'),
         radius: 15
       });
-      var pos_data = !{JSON.stringify(match.players.map(function(p){return p.pos || []}))}
-      var obs_data = !{JSON.stringify(match.players.map(function(p){return p.obs || []}))}
-      var sen_data = !{JSON.stringify(match.players.map(function(p){return p.sen || []}))}
+      var pos_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.pos || []}))}
+      var obs_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.obs || []}))}
+      var sen_data = !{JSON.stringify(match.players.map(function(pl){return pl.parsedPlayer.sen || []}))}
       
       pos_data = scaleAndExtrema(pos_data, 10);
       obs_data = scaleAndExtrema(obs_data, 1);

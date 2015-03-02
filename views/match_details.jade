@@ -25,32 +25,33 @@ block match_content
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
                   td.hero
                    if hero
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
-                  td #{player.purchase.tpscroll || "-"}
-                  td #{player.purchase.ward_observer*2 || "-"}
-                  td #{player.purchase.ward_sentry*2 || "-"}
-                  td #{player.purchase.smoke_of_deceit || "-"}
-                  td #{player.purchase.dust*2 || "-"}
-                  td #{player.purchase.gem || "-"}
-                  td #{player.buyback_log.length || "-"}
-                  td #{player.stuns.toFixed(2)}
+                  td #{p.purchase.tpscroll || "-"}
+                  td #{p.purchase.ward_observer*2 || "-"}
+                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.smoke_of_deceit || "-"}
+                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.gem || "-"}
+                  td #{p.buyback_log.length || "-"}
+                  td #{p.stuns.toFixed(2)}
                   td.table-img
-                    each ability in player.ability_uses
+                    each ability in p.ability_uses
                       div.img-text
                         img.ability(src=ability.img, alt=ability.name)
                         div #{ability.val}
                         div (#{ability.hero_hits || 0})
                   td.table-img
-                    each item in player.item_uses
+                    each item in p.item_uses
                       div.img-text
                         img.item(src=item.img, alt=item.name)
                         div #{item.val}
                   td.table-img
-                    each dmg in player.damage
+                    each dmg in p.damage
                       div.img-text
                         img.dmg(src=dmg.img, title=dmg.localized_name)
                         div.format #{dmg.val}
@@ -71,13 +72,14 @@ block match_content
                 each player, i in match.players
                   tr(class = player.isRadiant ? "success" : "danger")
                     - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
                       each val, key in constants.gold_reasons
-                        td #{player.gold_reasons[key] || "-"}
+                        td #{p.gold_reasons[key] || "-"}
           .col-md-4.table-responsive
             h2 XP
             table.table.table-hover.summable
@@ -90,13 +92,14 @@ block match_content
                 each player, i in match.players
                   tr(class = player.isRadiant ? "success" : "danger")
                     - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
                       each val, key in constants.xp_reasons
-                        td #{player.xp_reasons[key] || "-"}
+                        td #{p.xp_reasons[key] || "-"}
         .row
           .col-md-12.table-responsive
             h2 Runes
@@ -110,10 +113,11 @@ block match_content
                 each player, i in match.players
                   tr(class = player.isRadiant ? "success" : "danger")
                     - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
                     td.hero
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
                       each val, key in constants.runes
-                        td #{player.runes[key] || "-"}
+                        td #{p.runes[key] || "-"}

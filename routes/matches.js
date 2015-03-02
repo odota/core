@@ -60,33 +60,7 @@ matches.param('match_id', function(req, res, next, id) {
                         }
                         req.match = match;
                         if (match.parsed_data) {
-                            if (match.parsed_data.version >= 5) {
-                                match.players.forEach(function(p) {
-                                    //enrich the player with parse data
-                                    //mapping 0 to 0, 128 to 5, etc.
-                                    var parseSlot = p.player_slot % (128 - 5);
-                                    var parsedPlayer = match.parsed_data.players[parseSlot];
-                                    for (var key in parsedPlayer) {
-                                        p[key] = (key in p) ? p[key] : parsedPlayer[key];
-                                    }
-                                    //generate position data from hashes
-                                    var keys = ["obs", "sen", "pos"];
-                                    keys.forEach(function(key) {
-                                        var t = [];
-                                        for (var x in p[key]) {
-                                            for (var y in p[key][x]) {
-                                                t.push({
-                                                    x: Number(x),
-                                                    y: Number(y),
-                                                    value: p[key][x][y]
-                                                });
-                                            }
-                                        }
-                                        p[key] = t;
-                                    });
-                                });
-                            }
-                            else {
+                            if (match.parsed_data.version < 5) {
                                 mergeMatchData(match);
                                 //patch old data to fit new format
                                 //works for v4, anyway
@@ -94,39 +68,61 @@ matches.param('match_id', function(req, res, next, id) {
                                     var hero = constants.heroes[player.hero_id];
                                     var parsedHero = match.parsed_data.heroes[hero.name];
                                     var parsedPlayer = match.parsed_data.players[i];
-                                    player.purchase = parsedHero.itembuys;
-                                    player.buyback_log = parsedPlayer.buybacks;
-                                    player.stuns = parsedPlayer.stuns;
-                                    player.ability_uses = parsedHero.abilityuses;
-                                    player.item_uses = parsedHero.itemuses;
-                                    player.gold_reasons = parsedHero.gold_log;
-                                    player.xp_reasons = parsedHero.xp_log;
-                                    player.damage = parsedHero.damage;
-                                    player.hero_hits = parsedHero.hero_hits;
-                                    player.purchase_log = parsedHero.timeline;
-                                    player.kill_log = parsedHero.herokills;
-                                    player.pos = match.parsed_data.players[i].positions || [];
-                                    player.obs = [];
-                                    player.sen = [];
-                                    player.runes = {};
-                                    player.lane = match.parsed_data.players[i].lane;
-                                    player.pos = player.pos.map(function(p) {
-                                        return {x:p[0] - 64, y:127 - (p[1] - 64),value:1};
+                                    parsedPlayer.purchase = parsedHero.itembuys;
+                                    parsedPlayer.buyback_log = parsedPlayer.buybacks;
+                                    parsedPlayer.stuns = parsedPlayer.stuns;
+                                    parsedPlayer.ability_uses = parsedHero.abilityuses;
+                                    parsedPlayer.item_uses = parsedHero.itemuses;
+                                    parsedPlayer.gold_reasons = parsedHero.gold_log;
+                                    parsedPlayer.xp_reasons = parsedHero.xp_log;
+                                    parsedPlayer.damage = parsedHero.damage;
+                                    parsedPlayer.hero_hits = parsedHero.hero_hits;
+                                    parsedPlayer.purchase_log = parsedHero.timeline;
+                                    parsedPlayer.kill_log = parsedHero.herokills;
+                                    parsedPlayer.pos = parsedPlayer.positions || [];
+                                    parsedPlayer.obs = [];
+                                    parsedPlayer.sen = [];
+                                    parsedPlayer.runes = {};
+                                    parsedPlayer.pos = parsedPlayer.pos.map(function(p) {
+                                        return {
+                                            x: p[0] - 64,
+                                            y: 127 - (p[1] - 64),
+                                            value: 1
+                                        };
                                     });
-                                    var start = player.pos.slice(0, 10);
+                                    var start = parsedPlayer.pos.slice(0, 10);
                                     var lanes = start.map(function(p) {
                                         //y first, then x due to array of arrays structure
                                         return constants.lanes[p.y][p.x];
                                     });
                                     //determine lane
-                                    player.lane = mode(lanes);
+                                    parsedPlayer.lane = mode(lanes);
                                 });
                                 match.parsed_data.chat.forEach(function(c) {
                                     c.key = c.text;
                                 });
                             }
-                            match.players.forEach(function(p) {
-                                p.isRadiant = utility.isRadiant(p);
+                            match.players.forEach(function(player) {
+                                player.isRadiant = utility.isRadiant(player);
+                                //mapping 0 to 0, 128 to 5, etc.
+                                var parseSlot = player.player_slot % (128 - 5);
+                                var p = match.parsed_data.players[parseSlot];
+                                //generate position data from hashes
+                                var keys = ["obs", "sen", "pos"];
+                                keys.forEach(function(key) {
+                                    var t = [];
+                                    for (var x in p[key]) {
+                                        for (var y in p[key][x]) {
+                                            t.push({
+                                                x: Number(x),
+                                                y: Number(y),
+                                                value: p[key][x][y]
+                                            });
+                                        }
+                                    }
+                                    p[key] = t;
+                                });
+                                player.parsedPlayer=p;
                             });
                             sortDetails(match);
                             generateGraphData(match);
@@ -159,6 +155,7 @@ matches.get('/:match_id/:info?', function(req, res, next) {
 function sortDetails(match) {
     //converts hashes to arrays and sorts them
     match.players.forEach(function(player, i) {
+        player=player.parsedPlayer;
         var t = [];
         for (var key in player.ability_uses) {
             var a = constants.abilities[key];
@@ -330,7 +327,7 @@ function generateGraphData(match) {
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {
-            col.push(player.gold_reasons[key] || 0);
+            col.push(player.parsedPlayer.gold_reasons[key] || 0);
         });
         columns.push(col);
     }
