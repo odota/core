@@ -203,11 +203,7 @@ app.route('/about').get(function(req, res) {
     res.render("about");
 });
 app.route('/carry').get(function(req, res, next) {
-    db.players.find({
-        cheese: {
-            $exists: true
-        }
-    }, {
+    db.players.find({}, {
         sort: {
             cheese: -1
         },
