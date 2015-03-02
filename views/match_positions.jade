@@ -33,7 +33,7 @@ append footer_assets
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),
-        radius: 18
+        radius: 15
       });
       var pos_data = !{JSON.stringify(match.players.map(function(p){return p.pos || []}))}
       var obs_data = !{JSON.stringify(match.players.map(function(p){return p.obs || []}))}

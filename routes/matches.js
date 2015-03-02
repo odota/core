@@ -89,6 +89,7 @@ matches.param('match_id', function(req, res, next, id) {
                             else {
                                 mergeMatchData(match);
                                 //patch old data to fit new format
+                                //works for v4, anyway
                                 match.players.forEach(function(player, i) {
                                     var hero = constants.heroes[player.hero_id];
                                     var parsedHero = match.parsed_data.heroes[hero.name];
@@ -105,6 +106,9 @@ matches.param('match_id', function(req, res, next, id) {
                                     player.purchase_log = parsedHero.timeline;
                                     player.kill_log = parsedHero.herokills;
                                     player.pos = match.parsed_data.players[i].positions || [];
+                                    player.obs = [];
+                                    player.sen = [];
+                                    player.runes = {};
                                     player.lane = match.parsed_data.players[i].lane;
                                     player.pos = player.pos.map(function(p) {
                                         return {x:p[0] - 64, y:127 - (p[1] - 64),value:1};
