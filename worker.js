@@ -16,12 +16,12 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
+var constants = require('./constants.json');
+var trackedPlayers = {};
+var ratingPlayers = {};
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(process.env.REGISTRY_PORT || 5300);
-var ports = seaport.connect(process.env.REGISTRY_PORT || 5300);
-var trackedPlayers = {};
-var ratingPlayers = {};
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -56,66 +56,72 @@ d.run(function() {
 
 function build(cb) {
     console.log("rebuilding sets");
-    db.players.find(selector("tracked"), function(err, docs) {
+    //todo provide way to list all services for debug/monitoring server.query()
+    async.series({
+        "trackedPlayers": function(cb) {
+            db.players.find(selector("tracked"), function(err, docs) {
+                if (err) {
+                    return cb(err);
+                }
+                var t = {};
+                docs.forEach(function(player) {
+                    t[player.account_id] = true;
+                });
+                //console.log(t);
+                cb(err, t);
+            });
+        },
+        "retrievers": function(cb) {
+            server.get('retriever@' + constants.retriever_version + '.0.0', function(ps) {
+                ps = ps.map(function(p) {
+                    return p.url || 'http://' + p.host + ':' + p.port;
+                });
+                var r = {};
+                var b = [];
+                async.each(ps, function(url, cb) {
+                    getData(url, function(err, body) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        for (var key in body.accounts) {
+                            b.push(body.accounts[key]);
+                        }
+                        for (var key in body.accountToIdx) {
+                            r[key] = url + "?account_id=" + key;
+                        }
+                        cb(err);
+                    });
+                }, function(err) {
+                    var result = {
+                        ratingPlayers: r,
+                        bots: b,
+                        retrievers: ps
+                    };
+                    cb(err, result);
+                });
+            });
+        },
+        "parsers": function(cb) {
+            server.get('parser@' + constants.parser_version + '.0.0', function(ps) {
+                ps = ps.map(function(p) {
+                    return p.url || 'http://' + p.host + ':' + p.port;
+                });
+                cb(null, ps);
+            });
+        }
+    }, function(err, result) {
         if (err) {
             return build(cb);
         }
-        var t = {};
-        var r = {};
-        var b = [];
-        docs.forEach(function(player) {
-            t[player.account_id] = true;
-        });
-        redis.set("retrievers", JSON.stringify(["http://localhost:5100"]));
-        redis.set("parsers", JSON.stringify(["http://localhost:5200"]));
-        //todo
-        //async to manage:
-        //retrievers
-        //parsers
-        //tracked players
-        //rating players (depends on retrievers!)
-        //bot array
-        //build arrays from seaport
-        //save parser and retriever arrays to redis
-        //iterate through seaport instead of getretrieverurls
-        /*
-        ports.get('web@1.2.x', function (ps) {
-            var u = 'http://' + ps[0].host + ':' + ps[0].port;
-            var r = request(u);
-            r.pipe(process.stdout);
-            r.on('end', ports.close.bind(ports));
-        });
-        */
-        redis.get("retrievers", function(err, result) {
-            if (err) {
-                return build(cb);
-            }
-            result = JSON.parse(result);
-            async.each(result, function(url, cb) {
-                getData(url, function(err, body) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    for (var key in body.accounts) {
-                        b.push(body.accounts[key]);
-                    }
-                    for (var key in body.accountToIdx) {
-                        r[key] = url + "?account_id=" + key;
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                if (err) {
-                    return build(cb);
-                }
-                trackedPlayers = t;
-                ratingPlayers = r;
-                redis.set("bots", JSON.stringify(b));
-                redis.set("ratingPlayers", JSON.stringify(r));
-                redis.set("trackedPlayers", JSON.stringify(t));
-                return cb(err);
-            });
-        });
+        result.ratingPlayers = result.retrievers.ratingPlayers;
+        result.bots = result.retrievers.bots;
+        result.retrievers = result.retrievers.retrievers;
+        trackedPlayers = result.trackedPlayers;
+        ratingPlayers = result.ratingPlayers;
+        for (var key in result) {
+            redis.set(key, JSON.stringify(result));
+        }
+        cb(err);
     });
 }
 
