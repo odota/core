@@ -12,7 +12,7 @@ var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
 var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
-var queueReq = operations.queueReq;
+var redis = require('./redis').client;
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
 var mode = utility.mode;
@@ -71,15 +71,24 @@ function getReplayUrl(job, cb) {
     }
     var match = job.data.payload;
     if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        getData("http://retriever?match_id=" + job.data.payload.match_id, function(err, body) {
-            if (err || !body || !body.match) {
-                return cb("invalid body or error");
+        redis.get("retrievers", function(err, result) {
+            if (err) {
+                return cb(err);
             }
-            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-            job.data.url = url;
-            job.data.payload.url = url;
-            job.update();
-            return cb(null, job);
+            result=JSON.parse(result);
+            var urls = result.map(function(r) {
+                return r + "?match_id=" + job.data.payload.match_id;
+            });
+            getData(urls, function(err, body) {
+                if (err || !body || !body.match) {
+                    return cb("invalid body or error");
+                }
+                var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                job.data.url = url;
+                job.data.payload.url = url;
+                job.update();
+                return cb(null, job);
+            });
         });
     }
     /*
@@ -136,15 +145,7 @@ function streamReplay(job, cb) {
                     });
                 }
                 else {
-                    console.log("parsed match not in db");
-                    queueReq("api_details", job.data.payload, function(err, apijob) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        apijob.on('complete', function() {
-                            return cb();
-                        });
-                    });
+                    return cb("parsed match not in db");
                 }
             });
         });
@@ -306,8 +307,20 @@ function runParser(job, cb) {
                 parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
             }
         }
-        //todo choose a parser to stream from
-        //parse locally if upload
+        //todo choose a parser to stream from redis
+        /*
+        redis.get("retrievers", function(err, result) {
+            if (err) {
+                return cb(err);
+            }
+            result=JSON.parse(result);
+            //select a random element
+            request.get({url:job.data.url, timeout:30000}).pipe(outStream);
+            var urls = result.map(function(r) {
+                return r; //add filename or url
+            });
+            })
+            */
     var parser = spawn("java", ["-jar",
         "parser/target/stats-0.1.0.jar"
     ], {

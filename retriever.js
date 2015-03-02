@@ -15,6 +15,14 @@ var replayRequests = 0;
 var launch = new Date();
 var ready = false;
 var a = [];
+//todo register service
+/*
+var constants = require('./constants.json');
+var seaport = require('seaport');
+var ports = seaport.connect('localhost', process.env.REGISTRY_PORT || 5300);
+ports.register('retriever@'+constants.retriever_version)
+//set the public url
+*/
 while (a.length < users.length) a.push(a.length + 0);
 async.map(a, function(i, cb) {
     var Steam = new steam.SteamClient();
@@ -72,6 +80,7 @@ async.map(a, function(i, cb) {
             //iterate through friends and accept requests/populate hash
             var steamID = prop;
             var relationship = Steam.friends[prop];
+            //friends that came in while offline
             if (relationship === Steam.EFriendRelationship.PendingInvitee) {
                 Steam.addFriend(steamID);
                 console.log(steamID + " was added as a friend");
@@ -121,9 +130,6 @@ app.get('/', function(req, res, next) {
     if (!ready) {
         return next("retriever not ready");
     }
-    res.locals.to = setTimeout(function() {
-        next("retriever timeout");
-    }, 25000);
     //todo reject request if doesnt have key
     var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
     if (req.query.match_id) {
@@ -140,28 +146,14 @@ app.get('/', function(req, res, next) {
         });
     }
     else {
-        var stats = {};
-        for (var key in steamObj) {
-            stats[key] = {
-                steamID: key,
-                replays: steamObj[key].replays,
-                profiles: steamObj[key].profiles,
-                friends: Object.keys(steamObj[key].friends).length
-            };
-        }
-        var data = {
-            replayRequests: replayRequests,
-            uptime: (new Date() - launch) / 1000,
-            accounts: stats,
-            accountToIdx: accountToIdx
-        };
-        res.locals.data = data;
+        res.locals.data = genStats();
         return next();
     }
 });
 app.use(function(req, res) {
-    clearTimeout(res.locals.to);
-    res.json(res.locals.data);
+    if (!res.headerSent) {
+        res.json(res.locals.data);
+    }
 });
 app.use(function(err, req, res, next) {
     return res.status(500).json({
@@ -173,3 +165,23 @@ var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, 
     var port = server.address().port;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });
+
+function genStats() {
+    var stats = {};
+    for (var key in steamObj) {
+        stats[key] = {
+            steamID: key,
+            replays: steamObj[key].replays,
+            profiles: steamObj[key].profiles,
+            friends: Object.keys(steamObj[key].friends).length
+        };
+    }
+    var data = {
+        ready: ready,
+        replayRequests: replayRequests,
+        uptime: (new Date() - launch) / 1000,
+        accounts: stats,
+        accountToIdx: accountToIdx
+    };
+    return data;
+}

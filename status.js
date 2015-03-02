@@ -13,7 +13,7 @@ module.exports = function getStatus(cb) {
         visited: function(cb) {
             db.players.count({
                 last_visited: {
-                    $exists: true
+                    $ne: null
                 }
             }, cb);
         },
@@ -46,15 +46,13 @@ module.exports = function getStatus(cb) {
         full_history: function(cb) {
             db.players.count({
                 full_history_time: {
-                    $exists: true
+                    $ne: null
                 }
             }, cb);
         },
         full_history_eligible: function(cb) {
             var base = selector("tracked");
-            base.full_history_time = {
-                $exists: false
-            };
+            base.full_history_time = null;
             db.players.count(base, cb);
         },
         last_added: function(cb) {
