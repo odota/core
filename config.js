@@ -36,5 +36,8 @@ var defaults = {
 for (var key in config) {
     defaults[key] = config[key];
 }
-console.log(defaults) // object { API : 'http://this.is.a/example' }
+for (var key in process.env){
+    defaults[key] = process.env[key];
+}
+//console.log(defaults) // object { API : 'http://this.is.a/example' }
 module.exports = defaults;

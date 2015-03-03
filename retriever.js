@@ -1,21 +1,20 @@
-var dotenv = require('dotenv');
-dotenv.load();
-var steam = require("steam"),
-    dota2 = require("dota2");
+var config = require('./config');
+var steam = require("steam");
+var dota2 = require("dota2");
 var utility = require("./utility");
 var async = require('async');
 var convert64To32 = utility.convert64to32;
 var express = require('express');
 var app = express();
-var users = process.env.STEAM_USER.split(",");
-var passes = process.env.STEAM_PASS.split(",");
+var users = config.STEAM_USER.split(",");
+var passes = config.STEAM_PASS.split(",");
 var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
 var ready = false;
 var a = [];
-var port = process.env.PORT;
+var port = config.PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);

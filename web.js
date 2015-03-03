@@ -26,7 +26,7 @@ var auth = require('http-auth'),
     moment = require('moment'),
     bodyParser = require('body-parser'),
     async = require('async');
-var server = app.listen(config.PORT || 5000, function() {
+var server = app.listen(config.PORT, function() {
     var host = server.address().address;
     var port = server.address().port;
     console.log('[WEB] listening at http://%s:%s', host, port);
