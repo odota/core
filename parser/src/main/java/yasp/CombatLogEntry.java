@@ -82,10 +82,6 @@ private final GameEvent event;
     public int getAbilityLevel() {
         return event.getProperty(ctx.abilityLevelIdx);
     }
-
-    public int getGoldReason() {
-        return event.getProperty(ctx.goldReasonIdx);
-    }
     
     //new functions
     private String translate(String in) {
@@ -96,7 +92,16 @@ private final GameEvent event;
         }
         return in;
     }
+    public int getGoldReason() {
+        if (ctx.goldReasonIdx==null){
+            return 0;
+        }
+        return event.getProperty(ctx.goldReasonIdx);
+    }
     public int getXpReason() {
+        if (ctx.xpReasonIdx==null){
+            return 0;
+        }
         return event.getProperty(ctx.xpReasonIdx);
     }
     public int getStunDuration() {

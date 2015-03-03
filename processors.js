@@ -391,7 +391,7 @@ function processApi(job, cb) {
                     });
                     job2.on('complete', function() {
                         job.log("parse req complete");
-                        cb();
+                        cb(err, job2);
                     });
                 }
             });
