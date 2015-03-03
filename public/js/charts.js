@@ -78,8 +78,14 @@ module.exports = function generateCharts(data) {
                 y: {
                     label: chart.yLabel
                 }
+            },
+            tooltip: {
+                contents: function(d, defaultTitleFormat, defaultValueFormat, color) {
+                    d.sort(function(a,b){return b.value-a.value});
+                    return this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat,color);
+                }
             }
         });
         setTimeout(cb, 50);
     });
-}
+};
