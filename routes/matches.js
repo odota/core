@@ -1,6 +1,7 @@
 var express = require('express');
 var matches = express.Router();
 var db = require("../db");
+var config = require("../config");
 var utility = require('../utility');
 var mode = utility.mode;
 var mergeObjects = utility.mergeObjects;
@@ -132,7 +133,7 @@ matches.param('match_id', function(req, res, next, id) {
                             generateGraphData(match);
                         }
                         //Add to cache if we have parsed data
-                        if (match.parsed_data && process.env.NODE_ENV !== "development") {
+                        if (match.parsed_data && config.NODE_ENV !== "development") {
                             redis.setex(key, 86400, JSON.stringify(match));
                         }
                         return next();

@@ -23,51 +23,84 @@ function processParse(job, cb) {
     var t1 = new Date();
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
-    var d = domain.create();
-    var exited;
-
-    function exit(err) {
-        if (!exited) {
-            exited = true;
-            cb(err.message || err);
+    runParser(job, function(err, parsed_data) {
+        var match_id = job.data.payload.match_id || parsed_data.match_id;
+        job.data.payload.match_id = match_id;
+        job.data.payload.parsed_data = parsed_data;
+        if (err && noRetry) {
+            logger.info("match_id %s, error %s, not retrying", match_id, err);
+            job.data.payload.parse_status = 1;
         }
-    }
-    d.on('error', exit);
-    d.run(function() {
-        runParser(job, function(err, parsed_data) {
-            var match_id = job.data.payload.match_id || parsed_data.match_id;
-            job.data.payload.match_id = match_id;
-            job.data.payload.parsed_data = parsed_data;
-            if (err && noRetry) {
-                logger.info("match_id %s, error %s, not retrying", match_id, err);
-                job.data.payload.parse_status = 1;
-            }
-            else if (err) {
-                logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
-                return cb(err);
-            }
-            else {
-                logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
-                job.data.payload.parse_status = 2;
-            }
-            job.update();
-            //todo complete the job and let yasp core add data to db
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: job.data.payload,
-            }, function(err) {
-                return cb(err, job.data.payload);
-            });
+        else if (err) {
+            logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
+            return cb(err);
+        }
+        else {
+            logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
+            job.data.payload.parse_status = 2;
+        }
+        job.update();
+        //todo complete the job and let yasp core add data to db
+        db.matches.update({
+            match_id: match_id
+        }, {
+            $set: job.data.payload,
+        }, function(err) {
+            return cb(err, job.data.payload);
         });
     });
 }
 
 function runParser(job, cb) {
+    logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
+    //streams
+    var inStream;
+    var bz;
+    if (job.data.payload.fileName) {
+        inStream = fs.createReadStream(job.data.payload.fileName);
+    }
+    else {
+        inStream = progress(request.get({
+            url: job.data.payload.url,
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state) {
+            job.progress(state.percent, 100);
+        }).on('response', function(response) {
+            error = (response.statusCode !== 200) ? "download error" : error;
+        });
+        bz = spawn("bunzip2");
+    }
+    var parser = spawn("java", ["-jar",
+        "parser/target/stats-0.1.0.jar"
+    ], {
+        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
+        encoding: 'utf8'
+    });
+    var outStream = JSONStream.parse();
+    var exited;
+    var error = "incomplete";
+    var d = domain.create();
+    d.on('error', function exit(err) {
+        if (!exited) {
+            exited = true;
+            cb(err.message || err);
+        }
+    });
+    d.run(function() {
+        if (bz) {
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        }
+        else {
+            inStream.pipe(parser.stdin);
+        }
+        parser.stdout.pipe(outStream);
+    });
+    //parse state
     var entries = [];
     var name_to_slot = {};
     var hero_to_slot = {};
-    var error = "incomplete";
     var parsed_data = {
         "version": constants.parser_version,
         "game_zero": 0,
@@ -107,146 +140,6 @@ function runParser(job, cb) {
         "times": [],
         "chat": []
     };
-
-    function setParsedData(e) {
-        var t = parsed_data[e.type];
-        if (typeof t === "undefined") {
-            console.log(e);
-        }
-        else if (t.constructor === Array) {
-            t.push(e.value);
-        }
-        else {
-            parsed_data[e.type] = e.value;
-        }
-    }
-
-    function translate(e) {
-        //transform to 0-127 range from 64-191, y=0 at top left from bottom left
-        e.key = JSON.parse(e.key);
-        e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
-        entries.push(e);
-    }
-
-    function interval(e) {
-        e.interval = true;
-        populate(e);
-    }
-
-    function assocName(name) {
-        //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
-        if (!name) {
-            return;
-        }
-        else if (name in hero_to_slot) {
-            return name;
-        }
-        else if (name.indexOf("illusion_") === 0) {
-            var s = name.slice("illusion_".length);
-            return s;
-        }
-        else if (name.indexOf("npc_dota_") === 0) {
-            //split by _
-            var split = name.split("_");
-            //get the third element
-            var identifiers = [split[2], split[2] + "_" + split[3]];
-            identifiers.forEach(function(id) {
-                //append to npc_dota_hero_, see if matches
-                var attempt = "npc_dota_hero_" + id;
-                if (attempt in hero_to_slot) {
-                    return attempt;
-                }
-            });
-        }
-    }
-
-    function getChatSlot(e) {
-        e.slot = name_to_slot[e.unit];
-        parsed_data.chat.push(e);
-    }
-
-    function getSlot(e) {
-        //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
-        //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
-        e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
-        //use slot, then map value (could be undefined)
-        e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
-        populate(e);
-    }
-
-    function getSlotReverse(e) {
-        e.reverse = true;
-        getSlot(e);
-    }
-
-    function posPopulate(e) {
-        var x = e.key[0];
-        var y = e.key[1];
-        //hash this location
-        var h = parsed_data.players[e.slot][e.type];
-        if (!h[x]) {
-            h[x] = {};
-        }
-        if (!h[x][y]) {
-            h[x][y] = 0;
-        }
-        h[x][y] += 1;
-    }
-
-    function populate(e) {
-        if (typeof e.slot === "undefined") {
-            //console.log(e);
-            //couldn't associate with a player
-            return;
-        }
-        var t = parsed_data.players[e.slot][e.type];
-        if (typeof t === "undefined") {
-            console.log(e);
-        }
-        else if (t.constructor === Array) {
-            e = (e.interval) ? e.value : {
-                time: e.time,
-                key: e.key
-            };
-            t.push(e);
-        }
-        else if (typeof t === "object") {
-            e.value = e.value || 1;
-            t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
-        }
-        else {
-            parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
-        }
-    }
-    var parser = spawn("java", ["-jar",
-        "parser/target/stats-0.1.0.jar"
-    ], {
-        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
-        encoding: 'utf8'
-    });
-    logger.info("[PARSER] streaming from %s", job.data.payload.url || job.data.payload.fileName);
-    if (job.data.payload.fileName) {
-        fs.createReadStream(job.data.payload.fileName).pipe(parser.stdin);
-    }
-    else if (job.data.payload.url) {
-        var bz = spawn("bunzip2");
-        progress(request.get({
-            url: job.data.payload.url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state) {
-            job.progress(state.percent, 100);
-        }).on('response', function(response) {
-            error = (response.statusCode !== 200) ? "download error" : error;
-        }).pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
-    }
-    else {
-        console.log(job.data);
-        return cb("no data");
-    }
-    var outStream = JSONStream.parse();
-    parser.stdout.pipe(outStream);
     outStream.on('root', function preprocess(e) {
         var preTypes = {
             "times": setParsedData,
@@ -276,6 +169,26 @@ function runParser(job, cb) {
             preTypes[e.type](e);
         }
         else {
+            entries.push(e);
+        }
+
+        function setParsedData(e) {
+            var t = parsed_data[e.type];
+            if (typeof t === "undefined") {
+                console.log(e);
+            }
+            else if (t.constructor === Array) {
+                t.push(e.value);
+            }
+            else {
+                parsed_data[e.type] = e.value;
+            }
+        }
+
+        function translate(e) {
+            //transform to 0-127 range from 64-191, y=0 at top left from bottom left
+            e.key = JSON.parse(e.key);
+            e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
             entries.push(e);
         }
     });
@@ -338,6 +251,97 @@ function runParser(job, cb) {
             else {
                 console.log(e);
             }
+
+            function interval(e) {
+                e.interval = true;
+                populate(e);
+            }
+
+            function assocName(name) {
+                //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
+                if (!name) {
+                    return;
+                }
+                else if (name in hero_to_slot) {
+                    return name;
+                }
+                else if (name.indexOf("illusion_") === 0) {
+                    var s = name.slice("illusion_".length);
+                    return s;
+                }
+                else if (name.indexOf("npc_dota_") === 0) {
+                    //split by _
+                    var split = name.split("_");
+                    //get the third element
+                    var identifiers = [split[2], split[2] + "_" + split[3]];
+                    identifiers.forEach(function(id) {
+                        //append to npc_dota_hero_, see if matches
+                        var attempt = "npc_dota_hero_" + id;
+                        if (attempt in hero_to_slot) {
+                            return attempt;
+                        }
+                    });
+                }
+            }
+
+            function getChatSlot(e) {
+                e.slot = name_to_slot[e.unit];
+                parsed_data.chat.push(e);
+            }
+
+            function getSlot(e) {
+                //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
+                //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
+                e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
+                //use slot, then map value (could be undefined)
+                e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
+                populate(e);
+            }
+
+            function getSlotReverse(e) {
+                e.reverse = true;
+                getSlot(e);
+            }
+
+            function posPopulate(e) {
+                var x = e.key[0];
+                var y = e.key[1];
+                //hash this location
+                var h = parsed_data.players[e.slot][e.type];
+                if (!h[x]) {
+                    h[x] = {};
+                }
+                if (!h[x][y]) {
+                    h[x][y] = 0;
+                }
+                h[x][y] += 1;
+            }
+
+            function populate(e) {
+                if (typeof e.slot === "undefined") {
+                    //console.log(e);
+                    //couldn't associate with a player
+                    return;
+                }
+                var t = parsed_data.players[e.slot][e.type];
+                if (typeof t === "undefined") {
+                    console.log(e);
+                }
+                else if (t.constructor === Array) {
+                    e = (e.interval) ? e.value : {
+                        time: e.time,
+                        key: e.key
+                    };
+                    t.push(e);
+                }
+                else if (typeof t === "object") {
+                    e.value = e.value || 1;
+                    t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+                }
+                else {
+                    parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+                }
+            }
         });
         //postprocess
         parsed_data.players.forEach(function(p) {
@@ -382,7 +386,7 @@ function processApi(job, cb) {
                     //this is a request, log the progress
                     job.log("api req complete");
                     job2.on('progress', function(prog) {
-                        job.log(prog+"%");
+                        job.log(prog + "%");
                         job.progress(prog, 100);
                     });
                     job2.on('complete', function() {

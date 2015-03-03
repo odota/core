@@ -8,5 +8,3 @@ notifications:
 services:
 - mongodb
 - redis-server
-env:
-- NODE_ENV=test

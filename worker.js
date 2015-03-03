@@ -1,4 +1,5 @@
 var utility = require('./utility');
+var config = require('./config');
 var processors = require('./processors');
 var getData = utility.getData;
 var db = require('./db');
@@ -21,8 +22,8 @@ var trackedPlayers = {};
 var ratingPlayers = {};
 var seaport = require('seaport');
 var server = seaport.createServer();
-server.listen(process.env.REGISTRY_PORT || 5300);
-var retrievers = process.env.RETRIEVER_HOST || "localhost:5100";
+server.listen(config.REGISTRY_PORT);
+var retrievers = config.RETRIEVER_HOST;
 retrievers.split(",").forEach(function(r) {
     server.register('retriever@' + constants.retriever_version + '.0.0', {
         url: "http://" + r
@@ -122,7 +123,7 @@ function build(cb) {
 }
 
 function startScan() {
-    if (process.env.START_SEQ_NUM === "AUTO") {
+    if (config.START_SEQ_NUM === "AUTO") {
         var container = generateJob("api_history", {});
         getData(container.url, function(err, data) {
             if (err) {
@@ -131,8 +132,8 @@ function startScan() {
             scanApi(data.result.matches[0].match_seq_num);
         });
     }
-    else if (process.env.START_SEQ_NUM) {
-        scanApi(process.env.START_SEQ_NUM);
+    else if (config.START_SEQ_NUM) {
+        scanApi(config.START_SEQ_NUM);
     }
     else {
         redis.get("match_seq_num", function(err, result) {

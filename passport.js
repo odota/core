@@ -1,8 +1,9 @@
 var passport = require('passport');
-var api_key = process.env.STEAM_API_KEY.split(",")[0];
+var config = require('./config');
+var api_key = config.STEAM_API_KEY.split(",")[0];
 var db = require('./db');
 var SteamStrategy = require('passport-steam').Strategy;
-var host = process.env.ROOT_URL || "http://localhost:5000";
+var host = config.ROOT_URL;
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 
