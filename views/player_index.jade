@@ -2,13 +2,32 @@ extend player
 
 block playercontent
   .row
-    .col-md-6
-      h2 Record: #{player.win}-#{player.lose}
-    .col-md-6
-      h2 Win Rate: #{(player.win/player.games*100).toFixed(2) || 0.00}%
+    .col-md-3
+      h4 Record: #{player.win}-#{player.lose} (#{(player.win/player.games*100).toFixed(2) || 0.00}%)
+    .col-md-3
+      h4="Full History: " + (player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
+    .col-md-3
+      h4="Name Update: " + (player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
+    .col-md-3
+      h4 #{"Last Visit: " + (player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "Tracked" : "Untracked"})
   hr
   .row
-    .col-md-12
+    .col-md-4
+        h3 Top Heroes
+        table.table
+          thead
+            tr
+              th Hero
+              th Games
+              th Winrate
+          each h in player.heroes.slice(0,10)
+            - var hero = constants.heroes[h.hero_id]
+            tr
+              td.hero
+                img(src=hero.img, title=hero.localized_name)
+              td= h.games
+              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+    .col-md-8
       h3 Recent Matches
       table.table
         thead
@@ -36,27 +55,18 @@ block playercontent
             td=constants.parse_status[match.parse_status]
   hr
   .row
-    .col-md-4
-        h3 Top Heroes
-        table.table
-          thead
-            tr
-              th Hero
-              th Games
-              th Winrate
-          each h in player.heroes.slice(0,10)
-            - var hero = constants.heroes[h.hero_id]
-            tr
-              td.hero
-                img(src=hero.img, title=hero.localized_name)
-              td= h.games
-              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
-    .col-md-8.table-responsive
+    .col-md-7.table-responsive
       h3 Activity
       p
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       div#cal-heatmap
+    .col-md-5
+      h3 Rating (#{player.publicmmr ? "Public" : "Private"})
+      h4#solo Solo: 
+      h4#party Party: 
+      #ratings
+
   hr
   .row
     include ads/leaderboard_2
@@ -68,13 +78,55 @@ block playercontent
       hr
       h3 GPMs
       #chart-gpms
-  if player.publicmmr
-    hr
-    include mmr
       
 append footer_assets
   script.
     var data = !{JSON.stringify(player.histogramData)}
     generateHistograms(data);
-  if player.publicmmr
-    include mmr_script.jade
+    $(".pref").change(function() {
+        $.post(
+            "/preferences", {
+                dark_theme: $("#dark").is(":checked"),
+                publicmmr: $("#publicmmr").is(":checked")
+            },
+            function(data) {
+                if (data.sync) {
+                    location.reload(true);
+                }
+                else {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                }
+                $(".sync").fadeOut(3000);
+            });
+    });
+      var ratings = !{JSON.stringify(ratings)};
+      $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
+      $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
+      var times = ratings.map(function(r){return new Date(r.time);});
+      var solo = ratings.map(function(r){return r.soloCompetitiveRank;});
+      var party = ratings.map(function(r){return r.competitiveRank;});
+      c3.generate({
+      bindto: "#ratings",
+      data: {
+          x: 'x',
+          columns: [
+          ['x'].concat(times),
+          ['Solo'].concat(solo),
+          ['Party'].concat(party)
+          ],
+          type:"line"
+      },
+      axis: {
+          x: {
+              type: 'timeseries',
+              label: 'Date',
+              tick: {
+                  format: '%Y-%m-%d',
+                  count: 10
+              }
+          },
+          y: {
+              label: 'Rating'
+          }
+      }
+      });

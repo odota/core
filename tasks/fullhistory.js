@@ -16,7 +16,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
         done = heroes;
     }
     var match_ids = {};
-    db.players.find(selector("fullhistory"), {
+    db.players.find(selector("tracked"), {
         limit: 1,
         sort: {
             full_history_time: 1

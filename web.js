@@ -4,16 +4,15 @@ var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
 var paypal_id = process.env.PAYPAL_ID;
 var paypal_secret = process.env.PAYPAL_SECRET;
-var root_url = process.env.ROOT_URL
+var root_url = process.env.ROOT_URL;
 var goal = Number(process.env.GOAL);
-var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"]
-var paypal = require('paypal-rest-sdk')
+var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"];
+var paypal = require('paypal-rest-sdk');
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
 var db = require('./db');
-var queries = require('./queries');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -38,16 +37,31 @@ setInterval(function() {
         if (!err) io.emit(res);
     });
 }, 5000);
+*/
+var queueReq = require('./operations').queueReq;
 io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
+    socket.on('match_id', function(match_id) {
+        //todo implement rate limit
+        socket.emit('log', "received match_id " + match_id);
+        queueReq("api_details", {
+            match_id: Number(match_id),
+            request: true,
+            priority: "low"
+        }, function(err, job) {
+            if (err) {
+                return socket.emit('log', err);
+            }
+            socket.emit('log', "queued api request");
+            job.on('progress', function(prog) {
+                //todo mark api/parse transition
+                socket.emit('log', prog);
+            });
+            job.on('complete', function(result) {
+                socket.emit('log', "completed parse");
+            });
+        });
     });
 });
-app.use("/socket", function(req, res){
-    res.render("socket");
-});
-*/
 paypal.configure({
     'mode': process.env.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
@@ -124,19 +138,8 @@ poet.watch(function() {
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
-app.use('/upload', require("./routes/upload"));
 app.route('/').get(function(req, res, next) {
-    if (req.user) {
-        queries.getSets(function(err, results) {
-            queries.getRatingData(req.user.account_id, function(err, ratings) {
-                results.ratings = ratings;
-                res.render('index.jade', results);
-            });
-        });
-    }
-    else {
-        res.render('home');
-    }
+    res.render('home');
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -167,7 +170,7 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
-    res.redirect('/');
+    res.redirect('/players/' + req.user.account_id);
 });
 app.route('/logout').get(function(req, res) {
     req.logout();
@@ -175,6 +178,8 @@ app.route('/logout').get(function(req, res) {
         res.redirect('/');
     });
 });
+/*
+app.use('/upload', require("./routes/upload"));
 app.route('/verify_recaptcha').post(function(req, res) {
     var data = {
         remoteip: req.connection.remoteAddress,
@@ -189,6 +194,7 @@ app.route('/verify_recaptcha').post(function(req, res) {
         });
     });
 });
+*/
 app.route('/status').get(function(req, res, next) {
     status(function(err, result) {
         if (err) {
