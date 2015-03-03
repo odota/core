@@ -69,3 +69,7 @@ block playercontent
             - var a = player.against[hero.id]
             td #{a ? a.games : 0}
             td #{a ? (100*a.win/a.games).toFixed(2) : (0).toFixed(2)}%
+
+append footer_assets
+  script.
+    playerTables();

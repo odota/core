@@ -1,13 +1,12 @@
-var request = require('request'),
-    winston = require('winston');
+var request = require('request');
+var winston = require('winston');
+var config = require('./config');
 var BigNumber = require('big-number').n;
 var urllib = require('url');
 var transports = [];
-if (process.env.NODE_ENV !== "test") {
-    transports.push(new(winston.transports.Console)({
-        'timestamp': true
-    }));
-}
+transports.push(new(winston.transports.Console)({
+    'timestamp': true
+}));
 var logger = new(winston.Logger)({
     transports: transports
 });
@@ -79,50 +78,49 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-    var api_keys = process.env.STEAM_API_KEY.split(",");
-    var delay = 1000;
-    //select a random element if array
-    var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
-    var parse = urllib.parse(u, true);
-    if (parse.host === "api.steampowered.com") {
-        parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
-        parse.search = null;
-        delay = 1000 / api_keys.length;
-    }
-    var target = urllib.format(parse);
-    logger.info("getData: %s", target);
-    return setTimeout(function() {
-        request({
-            url: target,
-            json: true,
-            timeout: 30000
-        }, function(err, res, body) {
-            if (err || res.statusCode !== 200 || !body) {
-                if (body && body.error) {
-                    //body contained an error (probably from retriever)
-                    //non-retryable
-                    return cb(body);
-                }
-                logger.info("retrying: %s", target);
-                return getData(url, cb);
-            }
-            else if (body.result) {
-                if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
-                    //user does not have stats enabled or attempting to get private match/invalid id, don't retry
-                    //non-retryable
-                    return cb(body);
-                }
-                else if (body.result.error || body.result.status === 2) {
-                    //valid response, but invalid data, retry
-                    logger.info("invalid data: %s, %s", target, JSON.stringify(body));
+        var delay = 1000;
+        //select a random element if array
+        var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
+        var parse = urllib.parse(u, true);
+        if (parse.host === "api.steampowered.com") {
+            var api_keys = config.STEAM_API_KEY.split(",");
+            parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
+            parse.search = null;
+            delay = 1000 / api_keys.length;
+        }
+        var target = urllib.format(parse);
+        logger.info("getData: %s", target);
+        return setTimeout(function() {
+            request({
+                url: target,
+                json: true,
+                timeout: 30000
+            }, function(err, res, body) {
+                if (err || res.statusCode !== 200 || !body) {
+                    if (body && body.error) {
+                        //body contained an error (probably from retriever)
+                        //non-retryable
+                        return cb(body);
+                    }
+                    logger.info("retrying: %s", target);
                     return getData(url, cb);
                 }
-            }
-            return cb(null, body);
-        });
-    }, delay);
-}
-
+                else if (body.result) {
+                    if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
+                        //user does not have stats enabled or attempting to get private match/invalid id, don't retry
+                        //non-retryable
+                        return cb(body);
+                    }
+                    else if (body.result.error || body.result.status === 2) {
+                        //valid response, but invalid data, retry
+                        logger.info("invalid data: %s, %s", target, JSON.stringify(body));
+                        return getData(url, cb);
+                    }
+                }
+                return cb(null, body);
+            });
+        }, delay);
+    }
     /*
      * Converts a steamid 64 to a steamid 32
      *

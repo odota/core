@@ -1,7 +1,8 @@
 var moment = require('moment');
+var config = require('./config');
 module.exports = function(type) {
     var active = {
-        $gt: moment().subtract(3, 'day').toDate()
+        $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
     };
     var opts = {
         "tracked": {

@@ -15,7 +15,7 @@ var replayRequests = 0;
 var launch = new Date();
 var ready = false;
 var a = [];
-var port = process.env.RETRIEVER_PORT || process.env.PORT || 5100;
+var port = process.env.PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);

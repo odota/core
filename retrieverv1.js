@@ -1,5 +1,6 @@
 var dotenv = require('dotenv');
 dotenv.load();
+var port = process.env.PORT || 5100;
 var steam = require("steam"),
     dota2 = require("dota2"),
     Steam = new steam.SteamClient(),
@@ -113,7 +114,7 @@ function selfDestruct() {
 
 //setTimeout(selfDestruct, 1000 * 60 * 60 * 12);
 
-var server = app.listen(process.env.RETRIEVER_PORT || process.env.PORT || 5100, function() {
+var server = app.listen(port, function() {
     var host = server.address().address;
     var port = server.address().port;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);

@@ -1,11 +1,12 @@
 var express = require('express');
+var config = require('./config');
 var Recaptcha = require('recaptcha').Recaptcha;
-var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
-var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
-var paypal_id = process.env.PAYPAL_ID;
-var paypal_secret = process.env.PAYPAL_SECRET;
-var root_url = process.env.ROOT_URL;
-var goal = Number(process.env.GOAL);
+var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = config.RECAPTCHA_SECRET_KEY;
+var paypal_id = config.PAYPAL_ID;
+var paypal_secret = config.PAYPAL_SECRET;
+var root_url = config.ROOT_URL;
+var goal = Number(config.GOAL);
 var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"];
 var paypal = require('paypal-rest-sdk');
 var utility = require('./utility');
@@ -25,7 +26,7 @@ var auth = require('http-auth'),
     moment = require('moment'),
     bodyParser = require('body-parser'),
     async = require('async');
-var server = app.listen(process.env.PORT || 5000, function() {
+var server = app.listen(config.PORT || 5000, function() {
     var host = server.address().address;
     var port = server.address().port;
     console.log('[WEB] listening at http://%s:%s', host, port);
@@ -66,7 +67,7 @@ io.sockets.on('connection', function(socket) {
     });
 });
 paypal.configure({
-    'mode': process.env.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
+    'mode': config.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
     'client_secret': paypal_secret
 });
@@ -77,7 +78,7 @@ app.locals.constants = require('./constants.json');
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
-    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+    callback(username === config.KUE_USER && password === config.KUE_PASS);
 });
 app.use(compression());
 app.use("/kue", auth.connect(basic));
@@ -90,7 +91,7 @@ app.use(session({
         ttl: 2 * 7 * 24 * 60 * 60
     }),
     maxAge: 2 * 7 * 24 * 60 * 60 * 1000,
-    secret: process.env.SESSION_SECRET,
+    secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
@@ -334,7 +335,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     console.log(err);
-    if (process.env.NODE_ENV !== "development") {
+    if (config !== "development") {
         return res.render(err.status === 404 ? '404' : '500', {
             error: err
         });

@@ -17,7 +17,7 @@ About
 Quickstart
 ====
 * Install dependencies: `sudo bash init.sh`
-* Create .env file, add required config values: `cp .env_example .env`
+* Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
 * Build `npm install && npm run build`
 * Launch in dev mode: `npm run dev`
 
