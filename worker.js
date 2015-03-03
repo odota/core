@@ -22,7 +22,8 @@ var ratingPlayers = {};
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(process.env.REGISTRY_PORT || 5300);
-process.env.RETRIEVER_HOST.split(",").forEach(function(r) {
+var retrievers = process.env.RETRIEVER_HOST || "localhost:5100";
+retrievers.split(",").forEach(function(r) {
     server.register('retriever@' + constants.retriever_version + '.0.0', {
         url: "http://" + r
     });
@@ -51,7 +52,6 @@ d.run(function() {
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
-        jobs.process('parse', processors.processParse);
         setInterval(fullhistory, 17 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 2 * 60 * 1000, function() {});
@@ -61,7 +61,6 @@ d.run(function() {
 
 function build(cb) {
     console.log("rebuilding sets");
-    //todo provide way to list all services for debug/monitoring server.query()
     async.series({
         "trackedPlayers": function(cb) {
             db.players.find(selector("tracked"), function(err, docs) {

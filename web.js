@@ -56,7 +56,7 @@ io.sockets.on('connection', function(socket) {
                 //todo mark api/parse transition
                 socket.emit('log', prog);
             });
-            job.on('complete', function() {
+            job.on('complete', function(result) {
                 socket.emit('log', "completed parse");
             });
         });

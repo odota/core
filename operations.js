@@ -12,11 +12,14 @@ var getData = utility.getData;
 function insertMatch(match, cb) {
     getReplayUrl(match, function(err) {
         if (err) {
+            //failed to get replay url, but insert anyway
             console.log(err);
         }
         db.matches.update({
             match_id: match.match_id
-        }, match, {
+        }, {
+            $set: match
+        }, {
             upsert: true
         }, function(err) {
             if (err) {
@@ -57,7 +60,7 @@ function getReplayUrl(match, cb) {
         if (!err && doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;
-            return cb();
+            return cb(err);
         }
         else {
             redis.get("retrievers", function(err, result) {
