@@ -1,32 +1,38 @@
 extend player
 
 block playercontent
-  .row
-    .col-md-3
-      h4 Record: #{player.win}-#{player.lose} (#{(player.win/player.games*100).toFixed(2) || 0.00}%)
-    .col-md-3
-      h4="Full History: " + (player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
-    .col-md-3
-      h4="Name Update: " + (player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
-    .col-md-3
-      h4 #{"Last Visit: " + (player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "Tracked" : "Untracked"})
-  hr
-  .row
-    .col-md-4
-        h3 Top Heroes
+  if (user && user.account_id === player.account_id)
+    .row
+      .col-md-12
         table.table
-          thead
-            tr
-              th Hero
-              th Games
-              th Winrate
-          each h in player.heroes.slice(0,10)
-            - var hero = constants.heroes[h.hero_id]
-            tr
-              td.hero
-                img(src=hero.img, title=hero.localized_name)
-              td= h.games
-              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+          tr
+            th Welcome!
+            th Request
+            th Preferences
+            th MMR Tracker
+          tr
+            td
+              .alert.alert-info
+                | Just joined?  We probably don't have your old matches yet.
+                br
+                | Play a game and come back, or request a match by ID.
+            td
+              include request
+            td
+              .checkbox
+                label
+                  input.pref#dark(type="checkbox", checked=user.dark_theme)
+                  | Use Dark Theme
+              .checkbox
+                label
+                  input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
+                  | Make MMR public
+            td
+              if (user.account_id in ratingPlayers)
+                button.btn.btn-default(disabled) MMR Tracked
+              else
+                a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
+  .row
     .col-md-8
       h3 Recent Matches
       table.table
@@ -53,20 +59,35 @@ block playercontent
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
+    .col-md-4
+        h3 Top Heroes
+        table.table
+          thead
+            tr
+              th Hero
+              th Games
+              th Winrate
+          each h in player.heroes_arr.slice(0,10)
+            - var hero = constants.heroes[h.hero_id]
+            tr
+              td.hero
+                img(src=hero.img, title=hero.localized_name)
+              td= h.games
+              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
   hr
   .row
-    .col-md-7.table-responsive
+    .col-md-8.table-responsive
       h3 Activity
       p
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
-      div#cal-heatmap
-    .col-md-5
-      h3 Rating (#{player.publicmmr ? "Public" : "Private"})
+      #cal-heatmap
+    .col-md-4
+      h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo: 
-      h4#party Party: 
+      h4#party Party:
       #ratings
-
+      
   hr
   .row
     include ads/leaderboard_2
@@ -99,7 +120,7 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
-      var ratings = !{JSON.stringify(ratings)};
+      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? ratings : [])};
       $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
       $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
       var times = ratings.map(function(r){return new Date(r.time);});

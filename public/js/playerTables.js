@@ -4,7 +4,9 @@ module.exports = function playerTables() {
         $('#teammates').dataTable({
             "order": [
                 [1, "desc"]
-            ]
+            ],
+            //"searching": false,
+            "paging": false
         });
         $('#heroes').dataTable({
             "order": [
@@ -17,6 +19,7 @@ module.exports = function playerTables() {
                 "targets": [1],
                 visible: false
             }],
+            //"searching": false,
             "paging": false
         });
         $('#together').dataTable({
@@ -30,6 +33,7 @@ module.exports = function playerTables() {
                 "targets": [1],
                 visible: false
             }],
+            //"searching": false,
             "paging": false
         });
         $('#against').dataTable({
@@ -43,7 +47,9 @@ module.exports = function playerTables() {
                 "targets": [1],
                 visible: false
             }],
+            //"searching": false,
             "paging": false
         });
+        $(".dataTables_filter").parent().siblings().remove();
     });
 };

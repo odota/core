@@ -51,6 +51,7 @@ function processParse(job, cb) {
                 job.data.payload.parse_status = 2;
             }
             job.update();
+            //todo complete the job and let yasp core add data to db
             db.matches.update({
                 match_id: match_id
             }, {
@@ -357,11 +358,8 @@ function processApi(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, data) {
         if (err) {
-            //encountered non-retryable error, pass back to kue as the result
-            //cb with err causes kue to retry
-            return cb(null, {
-                error: err
-            });
+            job.log(JSON.stringify(err));
+            return cb(null);
         }
         else if (data.response) {
             logger.info("summaries response");
@@ -381,12 +379,14 @@ function processApi(job, cb) {
                     cb(err, job2);
                 }
                 else {
-                    var api_val = 0;
-                    job.progress(api_val, 100 + api_val);
+                    //this is a request, log the progress
+                    job.log("api req complete");
                     job2.on('progress', function(prog) {
-                        job.progress(api_val + prog, 100 + api_val);
+                        job.log(prog+"%");
+                        job.progress(prog, 100);
                     });
                     job2.on('complete', function() {
+                        job.log("parse req complete");
                         cb();
                     });
                 }

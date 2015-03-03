@@ -2,14 +2,13 @@ extend player
 
 block playercontent
   .row        
-    .col-md-12        
+    .col-md-3  
       h3 Teammates
       table.table#teammates
         thead
           tr
             th Name
             th Games
-            th Wins
             th Winrate          
         each teammate in player.teammates
           if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id && teammate.games > 2) 
@@ -18,13 +17,25 @@ block playercontent
                 img.user(src=teammate.avatar)
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
-              td= teammate.win
               td #{(100*teammate.win/teammate.games).toFixed(2)}%
-  .row
-    .col-md-12
-      include ads/leaderboard_2
-  .row
-    .col-md-6
+    .col-md-3
+      h3 Played As
+      table.table#heroes
+        thead
+          tr
+            th Hero
+            th Hero Name
+            th Games
+            th Winrate
+        each hero in constants.heroes
+          tr
+            td.hero
+              img(src=hero.img, title=hero.localized_name)
+            td=hero.localized_name
+            - var h = player.heroes[hero.id]
+            td #{h ? h.games : 0}
+            td #{h ? (100*h.win/h.games).toFixed(2) : (0).toFixed(2)}%
+    .col-md-3
       h3 Played With
       table.table#together
         thead
@@ -41,7 +52,7 @@ block playercontent
             - var t = player.together[hero.id]
             td #{t ? t.games : 0}
             td #{t ? (100*t.win/t.games).toFixed(2) : (0).toFixed(2)}%
-    .col-md-6
+    .col-md-3
       h3 Played Against
       table.table#against
         thead

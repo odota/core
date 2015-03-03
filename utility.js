@@ -209,33 +209,3 @@ module.exports = {
     mergeObjects: mergeObjects,
     mode: mode
 };
-/*
-function getS3Url(match_id, cb) {
-    var archiveName = match_id + ".dem.bz2";
-    var s3 = new AWS.S3();
-    var params = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: archiveName
-    };
-    var url;
-    try {
-        url = s3.getSignedUrl('getObject', params);
-        cb(null, url);
-    }
-    catch (e) {
-        logger.info("[S3] %s not in S3", match_id);
-        cb(new Error("S3 UNAVAILABLE"));
-    }
-}
-function uploadToS3(data, archiveName, cb) {
-    var s3 = new AWS.S3();
-    var params = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: archiveName
-    };
-    params.Body = data;
-    s3.putObject(params, function(err, data) {
-        cb(err);
-    });
-}
-*/

@@ -1,0 +1,19 @@
+form.form-inline#request
+  .form-group
+    input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
+  .form-group
+    button.btn.btn-success Request
+#log
+script(src="/socket.io/socket.io.js")
+script.
+  var socket = io.connect();
+  socket.on('log',function(data){
+    document.getElementById('log').innerHTML+=JSON.stringify(data)+"<br>";
+  })
+  document.getElementById("request").addEventListener("submit", function(e){
+    e.preventDefault();
+    var field = document.getElementById('match_id');
+    var match_id = field.value;
+    field.value = "";
+    socket.emit('match_id', match_id);
+  });

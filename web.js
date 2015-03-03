@@ -42,18 +42,21 @@ var queueReq = require('./operations').queueReq;
 io.sockets.on('connection', function(socket) {
     socket.on('match_id', function(match_id) {
         //todo implement rate limit
+        match_id = Number(match_id);
         socket.emit('log', "received match_id " + match_id);
         queueReq("api_details", {
-            match_id: Number(match_id),
+            match_id: match_id,
             request: true,
             priority: "low"
         }, function(err, job) {
             if (err) {
                 return socket.emit('log', err);
             }
-            socket.emit('log', "queued api request");
+            socket.emit('log', "queued api req");
             job.on('progress', function(prog) {
-                //todo mark api/parse transition
+                kue.Job.log(job.id, function(err, log){
+                    socket.emit('log', log);   
+                });
                 socket.emit('log', prog);
             });
             job.on('complete', function(result) {

@@ -12,9 +12,6 @@ var playerPages = {
     matches: {
         name: "Matches"
     },
-    heroes: {
-        name: "Heroes"
-    },
     matchups: {
         name: "Matchups"
     }
@@ -38,7 +35,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                         res.render("player_" + info, {
                             route: info,
                             player: player,
-                            ratings: (player.publicmmr || (req.user && req.user.account_id === player.account_id)) ? ratings : [],
+                            ratings: ratings,
                             tabs: playerPages,
                             trackedPlayers: results.trackedPlayers,
                             bots: results.bots,
@@ -161,7 +158,6 @@ function fillPlayerMatches(player, constants, matchups, cb) {
                 lose: 0
             };
         }
-        player.heroes = [];
         for (var i = 0; i < matches.length; i++) {
             var p = matches[i].players[0];
             player.radiantMap[matches[i].match_id] = isRadiant(p);
@@ -181,10 +177,12 @@ function fillPlayerMatches(player, constants, matchups, cb) {
                 }
             }
         }
+        player.heroes = heroes;
+        player.heroes_arr = [];
         for (var id in heroes) {
-            player.heroes.push(heroes[id]);
+            player.heroes_arr.push(heroes[id]);
         }
-        player.heroes.sort(function(a, b) {
+        player.heroes_arr.sort(function(a, b) {
             return b.games - a.games;
         });
         player.matches = matches;
