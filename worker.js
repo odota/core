@@ -167,6 +167,39 @@ function clearActiveJobs(cb) {
     });
 }
 
+var q = async.queue(function(match, cb) {
+    var tracked = false;
+    async.each(match.players, function(p, cb) {
+        if (p.account_id in trackedPlayers) {
+            tracked = true;
+        }
+        if (p.account_id in ratingPlayers && match.lobby_type === 7) {
+            queueReq("mmr", {
+                match_id: match.match_id,
+                account_id: p.account_id,
+                url: ratingPlayers[p.account_id]
+            }, function(err) {
+                cb(err);
+            });
+        }
+        else {
+            cb();
+        }
+    }, function(err) {
+        if (!err) {
+            redis.set("match_seq_num", match.match_seq_num);
+        }
+        if (tracked) {
+            insertMatch(match, function(err) {
+                cb(err);
+            });
+        }
+        else {
+            cb(err);
+        }
+    });
+});
+
 function scanApi(seq_num) {
     var container = generateJob("api_sequence", {
         start_at_match_seq_num: seq_num
@@ -176,47 +209,17 @@ function scanApi(seq_num) {
             return scanApi(seq_num);
         }
         var resp = data.result.matches;
-        logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-        async.each(resp, function(match, cb) {
-            var tracked = false;
-            async.each(match.players, function(p, cb) {
-                if (p.account_id in trackedPlayers) {
-                    tracked = true;
-                }
-                if (p.account_id in ratingPlayers && match.lobby_type === 7) {
-                    queueReq("mmr", {
-                        match_id: match.match_id,
-                        account_id: p.account_id,
-                        url: ratingPlayers[p.account_id]
-                    }, function(err) {
-                        cb(err);
-                    });
-                }
-                else {
-                    cb();
-                }
-            }, function(err) {
-                if (tracked) {
-                    insertMatch(match, function(err) {
-                        cb(err);
-                    });
-                }
-                else {
-                    cb(err);
-                }
-            });
-        }, function(err) {
-            var next_seq_num = seq_num;
-            if (resp.length && !err) {
-                next_seq_num = resp[resp.length - 1].match_seq_num + 1;
-                redis.set("match_seq_num", next_seq_num);
-            }
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(next_seq_num);
-            }, delay);
-        });
+        var next_seq_num = seq_num;
+        if (resp.length) {
+            next_seq_num = resp[resp.length - 1].match_seq_num + 1;
+        }
+        logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
+        q.push(resp);
+        //wait 100ms for each match less than 100
+        var delay = (100 - resp.length) * 100;
+        setTimeout(function() {
+            scanApi(next_seq_num);
+        }, delay);
     });
 }
 

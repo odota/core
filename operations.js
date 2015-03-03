@@ -11,9 +11,8 @@ var getData = utility.getData;
 
 function insertMatch(match, cb) {
     getReplayUrl(match, function(err) {
-        if (err) {
-            //failed to get replay url, but insert anyway
-            console.log(err);
+        if (err){
+            return cb(err);
         }
         db.matches.update({
             match_id: match.match_id
