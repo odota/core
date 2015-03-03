@@ -175,7 +175,7 @@ function sortDetails(match) {
                 console.log(key);
             }
         }
-        p.ability_uses = t;
+        p.ability_uses_arr = t;
         var u = [];
         for (var key in p.item_uses) {
             var b = constants.items[key];
@@ -190,7 +190,7 @@ function sortDetails(match) {
                 console.log(key);
             }
         }
-        p.item_uses = u;
+        p.item_uses_arr = u;
         var v = [];
         for (var key in p.damage) {
             var c = constants.hero_names[key];
@@ -205,14 +205,14 @@ function sortDetails(match) {
                 //console.log(key);
             }
         }
-        p.damage = v;
-        p.ability_uses.sort(function(a, b) {
+        p.damage_arr = v;
+        t.sort(function(a, b) {
             return b.val - a.val;
         });
-        p.item_uses.sort(function(a, b) {
+        u.sort(function(a, b) {
             return b.val - a.val;
         });
-        p.damage.sort(function(a, b) {
+        v.sort(function(a, b) {
             return b.val - a.val;
         });
     });
@@ -329,7 +329,7 @@ function generateGraphData(match) {
         categories.push(hero.localized_name);
     });
     for (var key in constants.gold_reasons) {
-        var reason = constants.gold_reasons[key];
+        var reason = constants.gold_reasons[key].name;
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {

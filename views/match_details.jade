@@ -11,6 +11,7 @@ block match_content
                 thead
                   tr
                     th Hero
+                    th: abbr(title="Lane based on early game position") Lane
                     th: abbr(title="Town Portal Scrolls bought") TP
                     th: abbr(title="Observer Wards bought") OBS
                     th: abbr(title="Sentry Wards bought") SEN
@@ -31,6 +32,7 @@ block match_content
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
+                  td #{constants.lane_ids[p.lane]}
                   td #{p.purchase.tpscroll || "-"}
                   td #{p.purchase.ward_observer*2 || "-"}
                   td #{p.purchase.ward_sentry*2 || "-"}
@@ -40,18 +42,18 @@ block match_content
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}
                   td.table-img
-                    each ability in p.ability_uses
+                    each ability in p.ability_uses_arr
                       div.img-text
                         img.ability(src=ability.img, alt=ability.name)
                         div #{ability.val}
                         div (#{ability.hero_hits || 0})
                   td.table-img
-                    each item in p.item_uses
+                    each item in p.item_uses_arr
                       div.img-text
                         img.item(src=item.img, alt=item.name)
                         div #{item.val}
                   td.table-img
-                    each dmg in p.damage
+                    each dmg in p.damage_arr
                       div.img-text
                         img.dmg(src=dmg.img, title=dmg.localized_name)
                         div.format #{dmg.val}

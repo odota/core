@@ -13,7 +13,7 @@ block match_content
               table.table.table-hover.table-responsive
                 tr
                   th Hero
-                  th: abbr(title="Lane based on early game positions") Lane
+                  th Position (Exploration %)
                   th Observer
                   th Sentry
                 each player, ind in match.players
@@ -25,9 +25,9 @@ block match_content
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id              
-                    td.activate(data-index=ind, data-type="pos")=constants.lane_ids[p.lane]
-                    td.activate(data-index=ind, data-type="obs")=match.posData[ind].obs.length
-                    td.activate(data-index=ind, data-type="sen")=match.posData[ind].sen.length
+                    td.activate(data-index=ind, data-type="pos") #{constants.lane_ids[p.lane]} (#{(match.posData[ind].pos.length/128/128*100).toFixed(2)}%)
+                    td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
+                    td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
 
 
 append footer_assets
@@ -38,23 +38,22 @@ append footer_assets
       });
       var posData = !{JSON.stringify(match.posData)}
       posData.forEach(function(d){
-        d.pos = scaleAndExtrema(d.pos, 10);
-        d.obs = scaleAndExtrema(d.obs, 1);
-        d.sen = scaleAndExtrema(d.sen, 1);
+        d.pos = scaleAndExtrema(d.pos, 10, 0);
+        d.obs = scaleAndExtrema(d.obs, null, 2);
+        d.sen = scaleAndExtrema(d.sen, null, 2);
       })
       
-      function scaleAndExtrema(points, max){
-        points.forEach(function(p){
-          p.x=p.x*(600/127);
-          p.y=p.y*(600/127);
+      function scaleAndExtrema(points, max, shift){
+          points.forEach(function(p){
+            p.x*=(600/127);
+            p.y*=(600/127);
+            p.value+=shift;
           })
-          /*
-          var vals = d.map(function(p){return p.value;});
-          var max = Math.max.apply(null, vals);
-          */
+          var vals = points.map(function(p){return p.value;});
+          var localMax = Math.max.apply(null, vals);
           return {
           min: 0,
-          max: max,
+          max: max || localMax,
           data: points,
           };
       }

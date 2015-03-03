@@ -12,7 +12,7 @@ block match_content
         each message in match.parsed_data.chat || []
           - var p = match.players[message.slot] || {}
           - var hero = constants.heroes[p.hero_id]
-          tr
+          tr(class=p.isRadiant ? "success" : "danger")
             if hero
               td: img(src=hero.img,title=hero.localized_name)
             else
