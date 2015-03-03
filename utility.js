@@ -1,7 +1,6 @@
 var request = require('request'),
     winston = require('winston');
 var BigNumber = require('big-number').n;
-var retrievers = (process.env.RETRIEVER_HOST || "localhost:5100").split(",");
 var urllib = require('url');
 var transports = [];
 if (process.env.NODE_ENV !== "test") {
@@ -63,6 +62,7 @@ function generateJob(type, payload) {
                 title: [type, payload.match_id].join(),
                 type: type,
                 fileName: payload.fileName,
+                url: payload.url,
                 payload: payload
             };
         },
@@ -81,13 +81,9 @@ function generateJob(type, payload) {
 function getData(url, cb) {
     var api_keys = process.env.STEAM_API_KEY.split(",");
     var delay = 1000;
-    var parse = urllib.parse(url, true);
-    //inject a random retriever
-    if (parse.host === "retriever") {
-        //todo inject a retriever key
-        parse.host = retrievers[Math.floor(Math.random() * retrievers.length)];
-    }
-    //inject a random key if steam api request
+    //select a random element if array
+    var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
+    var parse = urllib.parse(u, true);
     if (parse.host === "api.steampowered.com") {
         parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
         parse.search = null;
@@ -127,11 +123,6 @@ function getData(url, cb) {
     }, delay);
 }
 
-function getRetrieverUrls() {
-        return retrievers.map(function(r) {
-            return "http://" + r;
-        });
-    }
     /*
      * Converts a steamid 64 to a steamid 32
      *
@@ -211,7 +202,6 @@ module.exports = {
     logger: logger,
     generateJob: generateJob,
     getData: getData,
-    getRetrieverUrls: getRetrieverUrls,
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,

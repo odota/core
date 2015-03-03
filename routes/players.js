@@ -33,13 +33,18 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                queries.getRatingData(player.account_id, function(err, ratings) {
-                    res.render("player_" + info, {
-                        route: info,
-                        player: player,
-                        ratings: ratings,
-                        tabs: playerPages,
-                        title: (player.personaname || player.account_id) + " - YASP"
+                queries.getSets(function(err, results) {
+                    queries.getRatingData(player.account_id, function(err, ratings) {
+                        res.render("player_" + info, {
+                            route: info,
+                            player: player,
+                            ratings: (player.publicmmr || (req.user && req.user.account_id === player.account_id)) ? ratings : [],
+                            tabs: playerPages,
+                            trackedPlayers: results.trackedPlayers,
+                            bots: results.bots,
+                            ratingPlayers: results.ratingPlayers,
+                            title: (player.personaname || player.account_id) + " - YASP"
+                        });
                     });
                 });
             });

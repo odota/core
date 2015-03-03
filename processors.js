@@ -3,103 +3,26 @@ var async = require('async');
 var db = require('./db');
 var logger = utility.logger;
 var fs = require('fs');
-var moment = require('moment');
 var getData = utility.getData;
 var request = require('request');
 var operations = require('./operations');
 var insertPlayer = operations.insertPlayer;
 var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
-var replay_dir = process.env.REPLAY_DIR || "./replays/";
 var domain = require('domain');
-var queueReq = operations.queueReq;
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
+var progress = require('request-progress');
 var mode = utility.mode;
 
 function processParse(job, cb) {
+    if (job.data.payload.expired) {
+        console.log("match expired");
+        return cb(null);
+    }
     var t1 = new Date();
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
-    async.waterfall([
-        async.apply(checkLocal, job),
-        getReplayUrl,
-        streamReplay,
-    ], function(err) {
-        var match_id = job.data.payload.match_id;
-        logger.info("[PARSER] match_id %s, parse time: %s, error: %s", match_id, (new Date() - t1) / 1000, err);
-        if (err === "replay expired" || (err && noRetry)) {
-            logger.info("match_id %s, error %s, not retrying", match_id, err);
-            return db.matches.update({
-                match_id: match_id,
-                parse_status: 0
-            }, {
-                $set: {
-                    parse_status: 1
-                }
-            }, function(err2) {
-                //nullify error if replay expired
-                err = err === "replay expired" ? null : err;
-                cb(err || err2);
-            });
-        }
-        else if (err) {
-            logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
-            return cb(err);
-        }
-        else {
-            return cb(err, job.data.payload);
-        }
-    });
-}
-
-function checkLocal(job, cb) {
-    var match_id = job.data.payload.match_id;
-    var fileName = job.data.fileName || replay_dir + match_id + ".dem";
-    if (fs.existsSync(fileName)) {
-        logger.info("[PARSER] %s, found local replay", match_id);
-        job.data.fileName = fileName;
-        job.update();
-    }
-    cb(null, job);
-}
-
-function getReplayUrl(job, cb) {
-    if (job.data.url || job.data.fileName) {
-        logger.info("has url or fileName");
-        return cb(null, job);
-    }
-    var match = job.data.payload;
-    if (match.start_time > moment().subtract(7, 'days').format('X')) {
-        getData("http://retriever?match_id=" + job.data.payload.match_id, function(err, body) {
-            if (err || !body || !body.match) {
-                return cb("invalid body or error");
-            }
-            var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
-            job.data.url = url;
-            job.data.payload.url = url;
-            job.update();
-            return cb(null, job);
-        });
-    }
-    /*
-    else if (process.env.AWS_S3_BUCKET) {
-        getS3Url(match.match_id, function(err, url) {
-            if (!url) {
-                return cb("replay expired");
-            }
-            job.data.url = url;
-            job.update();
-            return cb(err, job);
-        });
-    }
-    */
-    else {
-        cb("replay expired");
-    }
-}
-
-function streamReplay(job, cb) {
     var d = domain.create();
     var exited;
 
@@ -112,40 +35,28 @@ function streamReplay(job, cb) {
     d.on('error', exit);
     d.run(function() {
         runParser(job, function(err, parsed_data) {
-            if (err) {
-                return exit(err);
-            }
             var match_id = job.data.payload.match_id || parsed_data.match_id;
             job.data.payload.match_id = match_id;
             job.data.payload.parsed_data = parsed_data;
-            job.data.payload.parse_status = 2;
+            if (err && noRetry) {
+                logger.info("match_id %s, error %s, not retrying", match_id, err);
+                job.data.payload.parse_status = 1;
+            }
+            else if (err) {
+                logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
+                return cb(err);
+            }
+            else {
+                logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
+                job.data.payload.parse_status = 2;
+            }
             job.update();
-            db.matches.find({
+            db.matches.update({
                 match_id: match_id
-            }, function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
-                else if (docs.length) {
-                    db.matches.update({
-                        match_id: match_id
-                    }, {
-                        $set: job.data.payload,
-                    }, function(err) {
-                        return cb(err);
-                    });
-                }
-                else {
-                    console.log("parsed match not in db");
-                    queueReq("api_details", job.data.payload, function(err, apijob) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        apijob.on('complete', function() {
-                            return cb();
-                        });
-                    });
-                }
+            }, {
+                $set: job.data.payload,
+            }, function(err) {
+                return cb(err, job.data.payload);
             });
         });
     });
@@ -282,57 +193,57 @@ function runParser(job, cb) {
     }
 
     function populate(e) {
-            if (typeof e.slot === "undefined") {
-                //console.log(e);
-                //couldn't associate with a player
-                return;
-            }
-            var t = parsed_data.players[e.slot][e.type];
-            if (typeof t === "undefined") {
-                console.log(e);
-            }
-            else if (t.constructor === Array) {
-                e = (e.interval) ? e.value : {
-                    time: e.time,
-                    key: e.key
-                };
-                t.push(e);
-            }
-            else if (typeof t === "object") {
-                e.value = e.value || 1;
-                t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
-            }
-            else {
-                parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
-            }
+        if (typeof e.slot === "undefined") {
+            //console.log(e);
+            //couldn't associate with a player
+            return;
         }
-        //todo choose a parser to stream from
-        //parse locally if upload
+        var t = parsed_data.players[e.slot][e.type];
+        if (typeof t === "undefined") {
+            console.log(e);
+        }
+        else if (t.constructor === Array) {
+            e = (e.interval) ? e.value : {
+                time: e.time,
+                key: e.key
+            };
+            t.push(e);
+        }
+        else if (typeof t === "object") {
+            e.value = e.value || 1;
+            t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+        }
+        else {
+            parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+        }
+    }
     var parser = spawn("java", ["-jar",
         "parser/target/stats-0.1.0.jar"
     ], {
         stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
         encoding: 'utf8'
     });
-    logger.info("[PARSER] streaming from %s", job.data.url || job.data.fileName);
-    if (job.data.fileName) {
-        fs.createReadStream(job.data.fileName).pipe(parser.stdin);
+    logger.info("[PARSER] streaming from %s", job.data.payload.url || job.data.payload.fileName);
+    if (job.data.payload.fileName) {
+        fs.createReadStream(job.data.payload.fileName).pipe(parser.stdin);
     }
-    else if (job.data.url) {
+    else if (job.data.payload.url) {
         var bz = spawn("bunzip2");
-        request.get({
-            url: job.data.url,
+        progress(request.get({
+            url: job.data.payload.url,
             encoding: null,
             timeout: 30000
+        })).on('progress', function(state) {
+            job.progress(state.percent, 100);
         }).on('response', function(response) {
             error = (response.statusCode !== 200) ? "download error" : error;
         }).pipe(bz.stdin);
         bz.stdout.pipe(parser.stdin);
     }
     else {
+        console.log(job.data);
         return cb("no data");
     }
-    //end parser code
     var outStream = JSONStream.parse();
     parser.stdout.pipe(outStream);
     outStream.on('root', function preprocess(e) {
@@ -438,8 +349,6 @@ function runParser(job, cb) {
             p.lane = mode(lanes);
         });
         cb(error, parsed_data);
-        fs.writeFileSync("output2.json", JSON.stringify(parsed_data));
-        fs.writeFileSync("output3.json", JSON.stringify(entries));
     });
 }
 
@@ -457,7 +366,7 @@ function processApi(job, cb) {
         else if (data.response) {
             logger.info("summaries response");
             async.mapSeries(data.response.players, insertPlayer, function(err) {
-                cb(err, job.data.payload);
+                cb(err, data.response.players);
             });
         }
         else if (payload.match_id) {
@@ -467,8 +376,20 @@ function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            insertMatch(match, function(err) {
-                cb(err, job.data.payload);
+            insertMatch(match, function(err, job2) {
+                if (err || !match.request) {
+                    cb(err, job2);
+                }
+                else {
+                    var api_val = 0;
+                    job.progress(api_val, 100 + api_val);
+                    job2.on('progress', function(prog) {
+                        job.progress(api_val + prog, 100 + api_val);
+                    });
+                    job2.on('complete', function() {
+                        cb();
+                    });
+                }
             });
         }
         else {

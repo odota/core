@@ -16,8 +16,18 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
+var constants = require('./constants.json');
 var trackedPlayers = {};
 var ratingPlayers = {};
+var seaport = require('seaport');
+var server = seaport.createServer();
+server.listen(process.env.REGISTRY_PORT || 5300);
+var retrievers = process.env.RETRIEVER_HOST || "localhost:5100";
+retrievers.split(",").forEach(function(r) {
+    server.register('retriever@' + constants.retriever_version + '.0.0', {
+        url: "http://" + r
+    });
+});
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -42,51 +52,72 @@ d.run(function() {
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
-        jobs.process('parse', processors.processParse);
         setInterval(fullhistory, 17 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 2 * 60 * 1000, function() {});
         setInterval(apiStatus, 2 * 60 * 1000);
     });
-    //todo start a seaport
 });
 
 function build(cb) {
     console.log("rebuilding sets");
-    db.players.find(selector("tracked"), function(err, docs) {
-        if (err) {
-            return build(cb);
-        }
-        var t = {};
-        var r = {};
-        var b = [];
-        docs.forEach(function(player) {
-            t[player.account_id] = true;
-        });
-        async.each(utility.getRetrieverUrls(), function(url, cb) {
-            getData(url, function(err, body) {
+    async.series({
+        "trackedPlayers": function(cb) {
+            db.players.find(selector("tracked"), function(err, docs) {
                 if (err) {
                     return cb(err);
                 }
-                for (var key in body.accounts) {
-                    b.push(body.accounts[key]);
-                }
-                for (var key in body.accountToIdx) {
-                    r[key] = url + "?account_id=" + key;
-                }
-                cb(err);
+                var t = {};
+                docs.forEach(function(player) {
+                    t[player.account_id] = true;
+                });
+                //console.log(t);
+                cb(err, t);
             });
-        }, function(err) {
-            if (err) {
-                return build(cb);
-            }
-            trackedPlayers = t;
-            ratingPlayers = r;
-            redis.set("bots", JSON.stringify(b));
-            redis.set("ratingPlayers", JSON.stringify(r));
-            redis.set("trackedPlayers", JSON.stringify(t));
-            return cb(err);
-        });
+        },
+        "retrievers": function(cb) {
+            server.get('retriever@' + constants.retriever_version + '.0.0', function(ps) {
+                ps = ps.map(function(p) {
+                    return p.url || 'http://' + p.host + ':' + p.port;
+                });
+                var r = {};
+                var b = [];
+                async.each(ps, function(url, cb) {
+                    getData(url, function(err, body) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        for (var key in body.accounts) {
+                            b.push(body.accounts[key]);
+                        }
+                        for (var key in body.accountToIdx) {
+                            r[key] = url + "?account_id=" + key;
+                        }
+                        cb(err);
+                    });
+                }, function(err) {
+                    var result = {
+                        ratingPlayers: r,
+                        bots: b,
+                        retrievers: ps
+                    };
+                    cb(err, result);
+                });
+            });
+        }
+    }, function(err, result) {
+        if (err) {
+            return build(cb);
+        }
+        result.ratingPlayers = result.retrievers.ratingPlayers;
+        result.bots = result.retrievers.bots;
+        result.retrievers = result.retrievers.retrievers;
+        trackedPlayers = result.trackedPlayers;
+        ratingPlayers = result.ratingPlayers;
+        for (var key in result) {
+            redis.set(key, JSON.stringify(result[key]));
+        }
+        cb(err);
     });
 }
 
