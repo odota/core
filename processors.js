@@ -35,40 +35,28 @@ function processParse(job, cb) {
     d.on('error', exit);
     d.run(function() {
         runParser(job, function(err, parsed_data) {
-            if (err) {
-                return cb(err);
-            }
             var match_id = job.data.payload.match_id || parsed_data.match_id;
             job.data.payload.match_id = match_id;
             job.data.payload.parsed_data = parsed_data;
-            job.data.payload.parse_status = 2;
+            if (err && noRetry) {
+                logger.info("match_id %s, error %s, not retrying", match_id, err);
+                job.data.payload.parse_status = 1;
+            }
+            else if (err) {
+                logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
+                return cb(err);
+            }
+            else {
+                logger.info("[PARSER] match_id %s, parse time: %s", match_id, (new Date() - t1) / 1000);
+                job.data.payload.parse_status = 2;
+            }
             job.update();
             db.matches.update({
                 match_id: match_id
             }, {
                 $set: job.data.payload,
             }, function(err) {
-                logger.info("[PARSER] match_id %s, parse time: %s, error: %s", match_id, (new Date() - t1) / 1000, err || 0);
-                if (err && noRetry) {
-                    logger.info("match_id %s, error %s, not retrying", match_id, err);
-                    return db.matches.update({
-                        match_id: match_id,
-                        parse_status: 0
-                    }, {
-                        $set: {
-                            parse_status: 1
-                        }
-                    }, function(err2) {
-                        cb(err || err2);
-                    });
-                }
-                else if (err) {
-                    logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
-                    return cb(err);
-                }
-                else {
-                    return cb(err, job.data.payload);
-                }
+                return cb(err, job.data.payload);
             });
         });
     });
