@@ -2,7 +2,7 @@ extend player
 
 block playercontent
   .row        
-    .col-md-3  
+    .col-md-4
       h3 Teammates
       table.table#teammates
         thead
@@ -18,15 +18,19 @@ block playercontent
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
               td #{(100*teammate.win/teammate.games).toFixed(2)}%
-    .col-md-3
-      h3 Played As
+    .col-md-8
+      h3 Heroes
       table.table#heroes
         thead
           tr
             th Hero
             th Hero Name
-            th Games
-            th Winrate
+            th As
+            th As Winrate
+            th With
+            th With Winrate
+            th Against
+            th Against Winrate
         each hero in constants.heroes
           tr
             td.hero
@@ -35,40 +39,10 @@ block playercontent
             - var h = player.heroes[hero.id]
             td #{h ? h.games : 0}
             td #{h ? (100*h.win/h.games).toFixed(2) : (0).toFixed(2)}%
-    .col-md-3
-      h3 Played With
-      table.table#together
-        thead
-          tr
-            th Hero
-            th Hero Name
-            th Games
-            th Winrate
-        each hero in constants.heroes
-          tr
-            td.hero
-              img(src=hero.img, title=hero.localized_name)
-            td=hero.localized_name
-            - var t = player.together[hero.id]
-            td #{t ? t.games : 0}
-            td #{t ? (100*t.win/t.games).toFixed(2) : (0).toFixed(2)}%
-    .col-md-3
-      h3 Played Against
-      table.table#against
-        thead
-          tr
-            th Hero
-            th Hero Name
-            th Games
-            th Winrate
-        each hero in constants.heroes
-          tr
-            td.hero
-              img(src=hero.img, title=hero.localized_name)
-            td=hero.localized_name
-            - var a = player.against[hero.id]
-            td #{a ? a.games : 0}
-            td #{a ? (100*a.win/a.games).toFixed(2) : (0).toFixed(2)}%
+            td #{h ? h.with_games : 0}
+            td #{h ? (100*h.with_win/h.with_games).toFixed(2) : (0).toFixed(2)}%
+            td #{h ? h.against_games : 0}
+            td #{h ? (100*h.against_win/h.against_games).toFixed(2) : (0).toFixed(2)}%
 
 append footer_assets
   script.

@@ -34,7 +34,6 @@ api.get('/matches', function(req, res, next) {
             return next(err);
         }
         result.draw = draw;
-        //properties: draw, summaries, data
         res.json(result);
     });
 });

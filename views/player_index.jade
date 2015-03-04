@@ -99,6 +99,16 @@ block playercontent
       hr
       h3 GPMs
       #chart-gpms
+  hr
+  .row
+    .col-md-6
+      h3 Observers
+      #map.mapContainer
+        img.map(src='/public/images/map.jpg', alt="map")
+    .col-md-6
+      h3 Sentries
+      #map2.mapContainer
+        img.map(src='/public/images/map.jpg', alt="map")
       
 append footer_assets
   script.
@@ -120,7 +130,7 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
-      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? ratings : [])};
+      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? player.ratings : [])};
       $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
       $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
       var times = ratings.map(function(r){return new Date(r.time);});
@@ -151,3 +161,36 @@ append footer_assets
           }
       }
       });
+      var heatmap = h337.create({
+          container: document.getElementById('map'),
+          radius: 15
+        });
+        var heatmap2 = h337.create({
+          container: document.getElementById('map2'),
+          radius: 15
+        });
+        var posData = !{JSON.stringify(player.posData)}
+        posData.forEach(function(d){
+          d.obs = scaleAndExtrema(d.obs);
+          d.sen = scaleAndExtrema(d.sen);
+        })
+        
+        function scaleAndExtrema(points, max, shift){
+            points.forEach(function(p){
+              p.x*=(600/127);
+              p.y*=(600/127);
+              p.value+=shift;
+            })
+            var vals = points.map(function(p){return p.value;});
+            var localMax = Math.max.apply(null, vals);
+            return {
+            min: 0,
+            max: max || localMax,
+            data: points,
+            };
+        }
+          heatmap.setData(posData[0]["obs"]);
+          heatmap.repaint();
+          heatmap2.setData(posData[0]["sen"]);
+          heatmap2.repaint();
+

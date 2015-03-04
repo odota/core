@@ -22,34 +22,5 @@ module.exports = function playerTables() {
             //"searching": false,
             "paging": false
         });
-        $('#together').dataTable({
-            "order": [
-                [2, "desc"]
-            ],
-            "columnDefs": [{
-                "targets": [0],
-                "orderData": [1]
-            }, {
-                "targets": [1],
-                visible: false
-            }],
-            //"searching": false,
-            "paging": false
-        });
-        $('#against').dataTable({
-            "order": [
-                [2, "desc"]
-            ],
-            "columnDefs": [{
-                "targets": [0],
-                "orderData": [1]
-            }, {
-                "targets": [1],
-                visible: false
-            }],
-            //"searching": false,
-            "paging": false
-        });
-        $(".dataTables_filter").parent().siblings().remove();
     });
 };

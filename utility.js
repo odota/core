@@ -162,20 +162,18 @@ function makeSort(order, columns) {
 
 function mergeObjects(merge, val) {
     for (var attr in val) {
-        if (val[attr].constructor === Array) {
+        //does property exist?
+        if (!merge[attr]) {
+            merge[attr] = val[attr];
+        }
+        else if (val[attr].constructor === Array) {
             merge[attr] = merge[attr].concat(val[attr]);
         }
         else if (typeof val[attr] === "object") {
             mergeObjects(merge[attr], val[attr]);
         }
         else {
-            //does property exist?
-            if (!merge[attr]) {
-                merge[attr] = val[attr];
-            }
-            else {
-                merge[attr] += val[attr];
-            }
+            merge[attr] += val[attr];
         }
     }
 }

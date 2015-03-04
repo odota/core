@@ -5,6 +5,7 @@ var redis = require('./redis').client;
 var constants = require('./constants.json');
 var mode = utility.mode;
 var mergeObjects = utility.mergeObjects;
+var isRadiant = utility.isRadiant;
 var config = require("./config");
 //readies a match for display
 function prepareMatch(match_id, cb) {
@@ -80,21 +81,13 @@ function prepareMatch(match_id, cb) {
                                 var parseSlot = player.player_slot % (128 - 5);
                                 var p = match.parsed_data.players[parseSlot];
                                 //generate position data from hashes
-                                var keys = ["obs", "sen", "pos", "lane_pos"];
-                                var d = {};
-                                keys.forEach(function(key) {
-                                    var t = [];
-                                    for (var x in p[key]) {
-                                        for (var y in p[key][x]) {
-                                            t.push({
-                                                x: Number(x) - 64,
-                                                y: 127 - (Number(y) - 64),
-                                                value: p[key][x][y]
-                                            });
-                                        }
-                                    }
-                                    d[key] = t;
-                                });
+                                var d = {
+                                    "obs": {},
+                                    "sen": {},
+                                    "pos": {},
+                                    "lane_pos": {}
+                                };
+                                createPoints(d, p);
                                 match.posData.push(d);
                                 var lanes = d.lane_pos.map(function(p) {
                                     //y first, then x due to array of arrays structure
@@ -102,6 +95,11 @@ function prepareMatch(match_id, cb) {
                                 });
                                 p.lane = mode(lanes);
                                 player.parsedPlayer = p;
+                                //todo
+                                //neutrals: sum kills with "npc_dota_neutral"
+                                //towers: sum kills with "tower" in name
+                                //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+                                //interval lhs : extract lhs for every 5 minutes from existing data and render in table ? maybe shade for effect
                             });
                             sortDetails(match);
                             generateGraphData(match);
@@ -117,6 +115,22 @@ function prepareMatch(match_id, cb) {
         }
     });
 }
+
+function createPoints(d, p) {
+    for (var key in d) {
+        var t = [];
+        for (var x in p[key]) {
+            for (var y in p[key][x]) {
+                t.push({
+                    x: Number(x) - 64,
+                    y: 127 - (Number(y) - 64),
+                    value: p[key][x][y]
+                });
+            }
+        }
+        d[key] = t;
+    }
+};
 
 function sortDetails(match) {
     //converts hashes to arrays and sorts them
@@ -368,83 +382,264 @@ function getRatingData(account_id, cb) {
             cb(err, docs);
         });
     }
+    /*
     //client side
     //todo implement query builder ui
     //don't use datatables ajax options, just submit the request via jquery and get back array, render table based on that data
     //client options should include:
     //default all games
-    //filter: specific players
+    //filter: specific player(s)?
     //filter: specific hero was played by me, was on my team, was against me, was in the game
     //filter: specific game modes
     //filter: specific patches
     //filter: specific regions
-    //gold advantage/disadvantage
-    //report w/l for each filter, relative to who?
+    //filter: detect no stats recorded (algorithmically)
+    //filter: significant game modes only    
+    //filter: player's max gold advantage > n
+    //report w/l for each filter, relative to which player?  only defined if user query contained account id?
     //client calls api, which processes a maximum number of matches (currently 10, parsed matches are really big and we dont want to spend massive bandwidth!)
     //can we increase the limit depending on the options passed?  if a user requests just a field or two we can return more
     //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
-function advQuery(select, options, cb) {
-    //if passed a specific player, should we project only that user in players array?
-    /*
-        //return only that player
-        project["players.$"] = 1;
     */
     //select, a mongodb search hash
     //options, a mongodb/monk options hash
-    //options.advQuery, a string containing a type of advanced query to do
+function advQuery(select, options, cb) {
+    /*
+    //server side
+    //we want to be able to specify:
+    //selection condition(s)
+    //fields to return (as a hash)
+    //check select.keys to see if user requested special conditions
+    //check options.fields.keys to see if user requested special fields
+    //options, do a LOT of indexes on the parsed data to enable mongo lookup
+    //or post-process it in js
     //fields (projection)
     //limit
     //skip
     //sort (but sorts are probably best done in js)
-    //given a query, does post-processing on returned array of matches
-    //if no post-processing needed, just use mongo's array
-    //adv query returns an object with {summary:{},data:[]}
-    //player pages should use this function to generate the necessary data
-    
-    /*
-    There are two types of queries, ones that are predefined by YASP and we build something with the data, like a histogram, or nick's ward map, and ones that users build using some custom UI.
-    A key difference between automatic and manual queries is that automatic queries can occur on the server side prior to rendering data back to the user. 
-    Custom queries require hitting an API endpoint and sending back results.
 
-    Examples of automatic queries (We already build histograms of match duration and GPM)
-    select user, gpm, gets back array of gpms, build a histogram with it. Could also report numerical summaries.
-    select user, match duration, same as above
-    select user, runes, gets back array of hashes of counts by rune type.
-    select user, Kills/Deaths/Assists, get back array of hashes of counts for each
-    consumables avg/cumulative
-    item timings, for each item, hero?
-    HD/TD/HH (histograms)
-    Chat (ggs called/messages, Swearing/profanity analysis)
-    Grouping of heroes played (by valve groupings/primary attribute)
-    @nickhh 's idea, select user, obs, get back array of hashes of x,y,value, iterate through all of them, sum the totals, build a heatmap.
-
-    Examples of custom queries:
-    User selects user, spectre, radiance, get back array of radiance timings.
-
-    After the result of an advanced query, we want two things back:
-    returning the full array of values (with this we can display a table, or build a histogram)
-    returning the min/max/avg/sum (with this we can display a numerical summary of that data set)
-    Optionally, we also return some metric such as win/loss so we can get a winrate for each particular query.
-
-    Part 1 is building the functions to return these desired results for some given query.
-    Part 2 involves building a UI to allow users to build custom queries, then use the same functions for data.
-
-    Sorting: As long as the result set size is under 16MB (MongoDB's maximum) we can sort/filter on JS side (which is better since it doesn't require an index anyway).
-    Filtering: detect no stats recorded (algorithmically), significant game modes only
-    */
+    //if selecting by account_id, we project only that user in players array
+    //options.fields["players.$"] = 1;
+    //we also compute winrate if this is defined
+    //var wins = 0
+    //var wins = null;
+*/
+    var wins = null;
     db.matches.find(select, options, function(err, docs) {
         if (err) {
             cb(err);
         }
-        //returns results in {summary:{},data:[]} format
+        //iterate and compute
         var results = {
-            summary: {},
+            wins: wins,
             data: docs
         };
         cb(err, results);
     });
 }
+
+function fillPlayerMatches(player, constants, matchups, cb) {
+    var account_id = player.account_id;
+    db.matches.find({
+        'players.account_id': account_id
+    }, {
+        fields: {
+            start_time: 1,
+            match_id: 1,
+            game_mode: 1,
+            duration: 1,
+            cluster: 1,
+            radiant_win: 1,
+            parse_status: 1,
+            parsed_data: 1,
+            "players.$": 1
+        }
+    }, function(err, matches) {
+        if (err) {
+            cb(err);
+        }
+        matches.sort(function(a, b) {
+            return b.match_id - a.match_id;
+        });
+        player.matches = matches;
+        player.radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later
+        player.win = 0;
+        player.lose = 0;
+        player.games = 0;
+        player.aggData = {};
+        var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+        var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
+        var aggPos = {
+            "obs": {},
+            "sen": {}
+        };
+
+        function agg(key, value) {
+            if (!player.aggData[key]) {
+                player.aggData[key] = {
+                    sum: 0,
+                    min: Number.MAX_VALUE,
+                    max: 0,
+                    n: 0,
+                    counts: {},
+                };
+            }
+            var m = player.aggData[key];
+            if (!m.counts[value]) {
+                m.counts[value] = 0;
+            }
+            m.counts[value] += 1;
+            m.sum += value;
+            m.min = (value < m.min) ? value : m.min;
+            m.max = (value > m.max) ? value : m.max;
+            m.n += (typeof value === "undefined") ? 0 : 1;
+        }
+        for (var i = 0; i < matches.length; i++) {
+            var m = matches[i];
+            var p = m.players[0];
+            player.radiantMap[m.match_id] = isRadiant(p);
+            m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
+            var parseSlot = p.player_slot % (128 - 5);
+            if (matches[i].parsed_data) {
+                p.parsedPlayer = m.parsed_data.players[parseSlot];
+            }
+            //aggregate only if balanced game mode
+            if (constants.modes[matches[i].game_mode].balanced) {
+                player.games += 1;
+                m.player_win ? player.win += 1 : player.lose += 1;
+                agg("start_time", m.start_time);
+                agg("duration", m.duration);
+                agg("gold_per_min", p.gold_per_min);
+                agg("hero_damage", p.hero_damage);
+                agg("tower_damage", p.tower_damage);
+                agg("hero_healing", p.hero_healing);
+                agg("kills", p.kills);
+                agg("deaths", p.deaths);
+                agg("assists", p.assists);
+                agg("hero_id", p.hero_id);
+                agg("hero_win", m.player_win ? p.hero_id : undefined);
+                //match times into buckets
+                var mins = Math.floor(matches[i].duration / 60) % 120;
+                arr[mins] += 1;
+                //gpms into buckets
+                var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
+                arr2[gpm] += 1;
+                if (p.parsedPlayer) {
+                    utility.mergeObjects(aggPos.sen, p.parsedPlayer.sen);
+                    utility.mergeObjects(aggPos.obs, p.parsedPlayer.obs);
+                }
+                //todo
+                //Grouping of heroes played(by valve groupings / primary attribute)
+                //runes, each type (sum,min,max,avg)
+                //selected list of consumables (sum,min,max,avg), wards, tps
+                //item timings
+                //Chat(ggs called / messages, Swearing / profanity analysis)
+                //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
+            }
+        }
+        //console.log(aggPos);
+        var d = {
+            "obs": {},
+            "sen": {}
+        };
+        createPoints(d, aggPos);
+        player.posData = [d];
+        player.heroes_arr = [];
+        player.heroes = {};
+        for (var id in constants.heroes) {
+            var obj = {
+                hero_id: id,
+                games: player.aggData.hero_id.counts[id] || 0,
+                win: player.aggData.hero_win.counts[id] || 0,
+                with_games: 0,
+                with_win: 0,
+                against_games: 0,
+                against_win: 0
+            };
+            player.heroes_arr.push(obj);
+            player.heroes[id] = obj;
+        }
+        player.heroes_arr.sort(function(a, b) {
+            return b.games - a.games;
+        });
+        player.histogramData = {};
+        player.histogramData.durations = arr;
+        player.histogramData.gpms = arr2;
+        player.histogramData.calheatmap = player.aggData.start_time.counts;
+        if (matchups) {
+            computeStatistics(player, function(err) {
+                cb(err);
+            });
+        }
+        else {
+            cb(err);
+        }
+    });
+}
+
+function computeStatistics(player, cb) {
+    var counts = {};
+    var against = {};
+    var together = {};
+    db.matches.find({
+        'players.account_id': player.account_id
+    }, {
+        fields: {
+            players: 1,
+            match_id: 1,
+            radiant_win: 1
+        }
+    }, function(err, docs) {
+        if (err) {
+            return cb(err);
+        }
+        //console.log(player.heroes);
+        docs.forEach(function(match) {
+            var playerRadiant = player.radiantMap[match.match_id];
+            for (var j = 0; j < match.players.length; j++) {
+                var tm = match.players[j];
+                var tm_hero = tm.hero_id;
+                if (isRadiant(tm) === playerRadiant) {
+                    //count teammate players
+                    if (!counts[tm.account_id]) {
+                        counts[tm.account_id] = {
+                            account_id: tm.account_id,
+                            win: 0,
+                            lose: 0,
+                            games: 0
+                        };
+                    }
+                    counts[tm.account_id].games += 1;
+                    playerRadiant === match.radiant_win ? counts[tm.account_id].win += 1 : counts[tm.account_id].lose += 1;
+                    //count teammate heroes
+                    if (tm_hero) {
+                        player.heroes[tm_hero].with_games += 1;
+                        player.heroes[tm_hero].with_win += (playerRadiant === match.radiant_win) ? 1 : 0;
+                    }
+                }
+                else {
+                    //count enemy heroes
+                    if (tm_hero) {
+                        player.heroes[tm_hero].against_games += 1;
+                        player.heroes[tm_hero].against_win += (playerRadiant === match.radiant_win) ? 1 : 0;
+                    }
+                }
+            }
+        });
+        player.together = together;
+        player.against = against;
+        player.teammates = [];
+        for (var id in counts) {
+            var count = counts[id];
+            player.teammates.push(count);
+        }
+        fillPlayerNames(player.teammates, function(err) {
+            cb(err);
+        });
+    });
+}
 module.exports = {
+    fillPlayerMatches: fillPlayerMatches,
     fillPlayerNames: fillPlayerNames,
     getRatingData: getRatingData,
     getSets: getSets,
