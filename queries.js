@@ -52,7 +52,7 @@ function prepareMatch(match_id, cb) {
                                     parsedPlayer.damage = parsedHero.damage;
                                     parsedPlayer.hero_hits = parsedHero.hero_hits;
                                     parsedPlayer.purchase_log = parsedHero.timeline;
-                                    parsedPlayer.kill_log = parsedHero.herokills;
+                                    parsedPlayer.kills_log = parsedHero.herokills;
                                     parsedPlayer.kills = parsedHero.kills;
                                     parsedPlayer.pos = parsedPlayer.positions || [];
                                     parsedPlayer.obs = {};
@@ -61,19 +61,13 @@ function prepareMatch(match_id, cb) {
                                     //old format didn't translate coordinates
                                     parsedPlayer.pos = parsedPlayer.pos.map(function(p) {
                                         return {
-                                            x: p[0] - 64,
-                                            y: 127 - (p[1] - 64),
+                                            x: p[0],
+                                            y: p[1],
                                             value: 1
                                         };
                                     });
-                                    //old format didn't compute lanes
-                                    var start = parsedPlayer.pos.slice(0, 10);
-                                    var lanes = start.map(function(p) {
-                                        //y first, then x due to array of arrays structure
-                                        return constants.lanes[p.y][p.x];
-                                    });
-                                    //determine lane
-                                    parsedPlayer.lane = mode(lanes);
+                                    //get the first 10 values for lane calc
+                                    parsedPlayer.lane_pos = parsedPlayer.pos.slice(0, 10);
                                 });
                                 match.parsed_data.chat.forEach(function(c) {
                                     c.key = c.text;
@@ -86,15 +80,15 @@ function prepareMatch(match_id, cb) {
                                 var parseSlot = player.player_slot % (128 - 5);
                                 var p = match.parsed_data.players[parseSlot];
                                 //generate position data from hashes
-                                var keys = ["obs", "sen", "pos"];
+                                var keys = ["obs", "sen", "pos", "lane_pos"];
                                 var d = {};
                                 keys.forEach(function(key) {
                                     var t = [];
                                     for (var x in p[key]) {
                                         for (var y in p[key][x]) {
                                             t.push({
-                                                x: Number(x),
-                                                y: Number(y),
+                                                x: Number(x) - 64,
+                                                y: 127 - (Number(y) - 64),
                                                 value: p[key][x][y]
                                             });
                                         }
@@ -102,6 +96,11 @@ function prepareMatch(match_id, cb) {
                                     d[key] = t;
                                 });
                                 match.posData.push(d);
+                                var lanes = d.lane_pos.map(function(p) {
+                                    //y first, then x due to array of arrays structure
+                                    return constants.lanes[p.y][p.x];
+                                });
+                                p.lane = mode(lanes);
                                 player.parsedPlayer = p;
                             });
                             sortDetails(match);
@@ -359,19 +358,96 @@ function getSets(cb) {
 }
 
 function getRatingData(account_id, cb) {
-    db.ratings.find({
-        account_id: account_id
-    }, {
-        sort: {
-            time: -1
+        db.ratings.find({
+            account_id: account_id
+        }, {
+            sort: {
+                time: -1
+            }
+        }, function(err, docs) {
+            cb(err, docs);
+        });
+    }
+    //client side
+    //todo implement query builder ui
+    //don't use datatables ajax options, just submit the request via jquery and get back array, render table based on that data
+    //client options should include:
+    //default all games
+    //filter: specific players
+    //filter: specific hero was played by me, was on my team, was against me, was in the game
+    //filter: specific game modes
+    //filter: specific patches
+    //filter: specific regions
+    //gold advantage/disadvantage
+    //report w/l for each filter, relative to who?
+    //client calls api, which processes a maximum number of matches (currently 10, parsed matches are really big and we dont want to spend massive bandwidth!)
+    //can we increase the limit depending on the options passed?  if a user requests just a field or two we can return more
+    //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
+function advQuery(select, options, cb) {
+    //if passed a specific player, should we project only that user in players array?
+    /*
+        //return only that player
+        project["players.$"] = 1;
+    */
+    //select, a mongodb search hash
+    //options, a mongodb/monk options hash
+    //options.advQuery, a string containing a type of advanced query to do
+    //fields (projection)
+    //limit
+    //skip
+    //sort (but sorts are probably best done in js)
+    //given a query, does post-processing on returned array of matches
+    //if no post-processing needed, just use mongo's array
+    //adv query returns an object with {summary:{},data:[]}
+    //player pages should use this function to generate the necessary data
+    
+    /*
+    There are two types of queries, ones that are predefined by YASP and we build something with the data, like a histogram, or nick's ward map, and ones that users build using some custom UI.
+    A key difference between automatic and manual queries is that automatic queries can occur on the server side prior to rendering data back to the user. 
+    Custom queries require hitting an API endpoint and sending back results.
+
+    Examples of automatic queries (We already build histograms of match duration and GPM)
+    select user, gpm, gets back array of gpms, build a histogram with it. Could also report numerical summaries.
+    select user, match duration, same as above
+    select user, runes, gets back array of hashes of counts by rune type.
+    select user, Kills/Deaths/Assists, get back array of hashes of counts for each
+    consumables avg/cumulative
+    item timings, for each item, hero?
+    HD/TD/HH (histograms)
+    Chat (ggs called/messages, Swearing/profanity analysis)
+    Grouping of heroes played (by valve groupings/primary attribute)
+    @nickhh 's idea, select user, obs, get back array of hashes of x,y,value, iterate through all of them, sum the totals, build a heatmap.
+
+    Examples of custom queries:
+    User selects user, spectre, radiance, get back array of radiance timings.
+
+    After the result of an advanced query, we want two things back:
+    returning the full array of values (with this we can display a table, or build a histogram)
+    returning the min/max/avg/sum (with this we can display a numerical summary of that data set)
+    Optionally, we also return some metric such as win/loss so we can get a winrate for each particular query.
+
+    Part 1 is building the functions to return these desired results for some given query.
+    Part 2 involves building a UI to allow users to build custom queries, then use the same functions for data.
+
+    Sorting: As long as the result set size is under 16MB (MongoDB's maximum) we can sort/filter on JS side (which is better since it doesn't require an index anyway).
+    Filtering: detect no stats recorded (algorithmically), significant game modes only
+    */
+    db.matches.find(select, options, function(err, docs) {
+        if (err) {
+            cb(err);
         }
-    }, function(err, docs) {
-        cb(err, docs);
+        //returns results in {summary:{},data:[]} format
+        var results = {
+            summary: {},
+            data: docs
+        };
+        cb(err, results);
     });
 }
 module.exports = {
     fillPlayerNames: fillPlayerNames,
     getRatingData: getRatingData,
     getSets: getSets,
-    prepareMatch: prepareMatch
+    prepareMatch: prepareMatch,
+    advQuery: advQuery
 };

@@ -59,7 +59,7 @@ block match_content
                         =player.hero_id              
                     - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                       td
-                        each entry in p.kill_log || []
+                        each entry in p.kills_log || []
                           if entry.time < i && entry.time >= i-bucket
                             - var hero = constants.hero_names[entry.key]
                             if hero

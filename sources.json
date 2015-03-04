@@ -1,7 +1,9 @@
 {
   "sources": {
     "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
-    "abilities": "http://www.dota2.com/jsfeed/abilitydata"
+    "abilities": "http://www.dota2.com/jsfeed/abilitydata",
+    "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata",
+    "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata"
   },
   "gold_reasons": {
     "0": {

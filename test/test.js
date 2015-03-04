@@ -188,8 +188,6 @@ before(function(done) {
                         error: "error"
                     }
                 }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
-            //fake dota2 response
-            nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api);
             cb();
             }
         ], function(err) {
@@ -704,6 +702,12 @@ describe("tasks", function() {
         });
     });
     it('constants', function(done) {
+        //fake constants response
+        nock('http://www.dota2.com')
+        .get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api)
+        .get('/jsfeed/abilitydata').reply(200, testdata.ability_api)
+        .get('/jsfeed/heropickerdata').reply(200, {})
+        .get('/jsfeed/heropediadata?feeds=herodata').reply(200,{});
         constants("./constants_test.json", function(err) {
             done(err);
         });

@@ -308,7 +308,7 @@ public class Main {
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getAttackerNameCompiled();
 								entry2.key = cle.getTargetNameCompiled();
-								entry2.type = "kill_log";
+								entry2.type = "kills_log";
 								log.output(entry2);
 							}
 							break;

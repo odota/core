@@ -111,11 +111,14 @@ function runParser(job, cb) {
                 "lh": [],
                 "xp": [],
                 "pos_log": [],
+                "obs_log": [],
+                "sen_log": [],
                 "hero_log": [],
                 "purchase_log": [],
-                "kill_log": [],
+                "kills_log": [],
                 "buyback_log": [],
                 "pos": {},
+                "lane_pos": {},
                 "obs": {},
                 "sen": {},
                 "purchase": {},
@@ -132,7 +135,8 @@ function runParser(job, cb) {
                 "killed_by": {},
                 "modifier_applied": {},
                 "modifier_lost": {},
-                "healing": {}
+                "healing": {},
+                "ability_trigger": {}
             };
         }),
         "times": [],
@@ -158,10 +162,7 @@ function runParser(job, cb) {
             },
             "name": function(e) {
                 name_to_slot[e.key] = e.slot;
-            },
-            "pos": translate,
-            "obs": translate,
-            "sen": translate
+            }
         };
         if (preTypes[e.type]) {
             preTypes[e.type](e);
@@ -173,6 +174,7 @@ function runParser(job, cb) {
         function setParsedData(e) {
             var t = parsed_data[e.type];
             if (typeof t === "undefined") {
+                //parsed_data doesn't have a type for this event
                 console.log(e);
             }
             else if (t.constructor === Array) {
@@ -181,13 +183,6 @@ function runParser(job, cb) {
             else {
                 parsed_data[e.type] = e.value;
             }
-        }
-
-        function translate(e) {
-            //transform to 0-127 range from 64-191, y=0 at top left from bottom left
-            e.key = JSON.parse(e.key);
-            e.key = [e.key[0] - 64, 127 - (e.key[1] - 64)];
-            entries.push(e);
         }
     });
     outStream.on('end', function() {
@@ -199,12 +194,14 @@ function runParser(job, cb) {
                 "hero_log": populate,
                 "gold_reasons": function(e) {
                     if (!constants.gold_reasons[e.key]) {
+                        //new gold reason
                         console.log(e);
                     }
                     getSlot(e);
                 },
                 "xp_reasons": function(e) {
                     if (!constants.xp_reasons[e.key]) {
+                        //new xp reason
                         console.log(e);
                     }
                     getSlot(e);
@@ -231,14 +228,31 @@ function runParser(job, cb) {
                 "gold": interval,
                 "xp": interval,
                 "pos": function(e) {
+                    e.key = JSON.parse(e.key); //position keys are JSON arrays
                     posPopulate(e);
+                    if (e.time < 600) {
+                        e.type = "lane_pos";
+                        posPopulate(e);
+                    }
+                    /*
                     e.type = "pos_log";
                     populate(e);
+                    */
                 },
-                "obs": posPopulate,
-                "sen": posPopulate,
+                "obs": function(e) {
+                    e.key = JSON.parse(e.key);
+                    posPopulate(e);
+                    e.type = "obs_log";
+                    populate(e);
+                },
+                "sen": function(e) {
+                    e.key = JSON.parse(e.key);
+                    posPopulate(e);
+                    e.type = "sen_log";
+                    populate(e);
+                },
                 "hero_hits": getSlot,
-                "kill_log": getSlot,
+                "kills_log": getSlot,
                 "damage_taken": getSlotReverse,
                 "killed_by": getSlotReverse
             };
@@ -247,6 +261,7 @@ function runParser(job, cb) {
                 types[e.type](e);
             }
             else {
+                //no event handler for this type
                 console.log(e);
             }
 
@@ -317,12 +332,13 @@ function runParser(job, cb) {
 
             function populate(e) {
                 if (typeof e.slot === "undefined") {
+                    //couldn't associate with a player, probably attributed to a creep/tower/necro unit
                     //console.log(e);
-                    //couldn't associate with a player
                     return;
                 }
                 var t = parsed_data.players[e.slot][e.type];
                 if (typeof t === "undefined") {
+                    //parsed player doesn't have a type for this event
                     console.log(e);
                 }
                 else if (t.constructor === Array) {
@@ -340,16 +356,6 @@ function runParser(job, cb) {
                     parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
                 }
             }
-        });
-        //postprocess
-        parsed_data.players.forEach(function(p) {
-            var lanes = p.pos_log.filter(function(e) {
-                return e.time < 600;
-            }).map(function(e) {
-                return constants.lanes[e.key[1]][e.key[0]];
-            });
-            delete p["pos_log"];
-            p.lane = mode(lanes);
         });
         cb(error, parsed_data);
     });

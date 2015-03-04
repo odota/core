@@ -4,25 +4,25 @@ var modes = constants.modes;
 var regions = constants.regions;
 var parse_status = constants.parse_status;
 var $ = jQuery = require('jquery');
-
 module.exports = function matchTable() {
     $(document).on('ready', function() {
-        //todo support advanced querying on serverside
-        //default all games
-        //filter: specific players
-        //filter: specific hero was played by me, was on my team, was against me, was in the game
-        //filter: specific game modes
-        //filter: specific patches
-        //filter: specific regions
-        //gold advantage/disadvantage
-        //report w/l for each filter, relative to who?
         $('#table').dataTable({
             "order": [
                 [0, "desc"]
             ],
             ajax: {
                 'url': '/api/matches',
-                'data': {}
+                'data': {
+                    "project": {
+                        start_time: 1,
+                        match_id: 1,
+                        cluster: 1,
+                        game_mode: 1,
+                        duration: 1,
+                        radiant_win: 1,
+                        parse_status: 1
+                    }
+                }
             },
             serverSide: true,
             processing: true,
