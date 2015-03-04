@@ -29,6 +29,7 @@ retrievers.split(",").forEach(function(r) {
         url: "http://" + r
     });
 });
+
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -59,6 +60,26 @@ d.run(function() {
         setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
+
+function clearActiveJobs(cb) {
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (job) {
+                    console.log("requeued job %s", id);
+                    job.inactive();
+                }
+                cb(err);
+            });
+        }, function(err) {
+            console.log("cleared active jobs");
+            cb(err);
+        });
+    });
+}
 
 function build(cb) {
     console.log("rebuilding sets");
@@ -145,26 +166,6 @@ function startScan() {
             }
         });
     }
-}
-
-function clearActiveJobs(cb) {
-    jobs.active(function(err, ids) {
-        if (err) {
-            return cb(err);
-        }
-        async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (job) {
-                    console.log("requeued job %s", id);
-                    job.inactive();
-                }
-                cb(err);
-            });
-        }, function(err) {
-            console.log("cleared active jobs");
-            cb(err);
-        });
-    });
 }
 
 var q = async.queue(function(match, cb) {

@@ -36,7 +36,6 @@ function processParse(job, cb) {
             job.data.payload.parse_status = 2;
         }
         job.update();
-        //todo complete the job and let yasp core add data to db
         db.matches.update({
             match_id: match_id
         }, {

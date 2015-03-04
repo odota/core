@@ -1,0 +1,318 @@
+#top.header.alt.vert
+  .container
+    br
+    br
+    h1 YASP
+    p.lead YASP: Another Stats Page 
+    div &nbsp;
+    a.btn.btn-default.btn-lg(href='/login')
+      img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
+      h4 to start!
+section.main
+  a.arrow-wrap(href='#philosophy')
+    span.arrow
+.fab
+  .fab-buttons
+    core-tooltip(noarrow='', label='Tap to scroll to the top!', position='left')
+      a(href='#top')
+        paper-fab.fab-button(icon='dashboard', touch-action='none')
+#philosophy.blurb
+  .right-img
+      .container
+        .row
+          .col-md-7
+            h1 Our Mission
+            p.lead Free Replay Parsing for All
+          .col-md-5
+#content.featurette
+  .container
+    .row
+      .col-md-12.text-center.bottom-padding
+        h1 Why We're Awesome  
+    .row
+      .col-md-4.text-center.team-text
+        .featurette-item
+          .icon-circle
+            img.circle-margin(src='../public/images/tools2.png')
+          h4 Open source.
+          p All of YASP's code is open source and available on Github for contributors to improve and modify.     
+      .col-md-4.text-center.team-text
+        .featurette-item
+          .icon-circle
+            img.circle-margin(src='../public/images/barchart.png')
+          h4 Go beyond the API.
+          p Free replay parsing that provides Dota 2 match stats unavailable through the API or game client.     
+      .col-md-4.text-center.team-text
+        .featurette-item
+          .icon-circle
+            img.circle-margin(src='../public/images/present.png')
+          h4 Free of charge.
+          p YASP is supported by volunteer developers and community contributions, making it free for users.
+#match_statistics.callout
+    .container.bottom-padding
+      .col-md-12.text-center
+        h1 Featuring
+        h2 Detailed Game Play Breakdowns
+      .col-md-8.col-md-offset-2.bottom-padding
+          hr
+      .col-md-12.text-center.table-responsive.bottom-padding
+        table.table.table-hover.table-responsive#stats-table
+                  thead
+                    tr
+                      th Hero
+                      th Other
+                      th Deaths
+                      th Buybacks
+                      th Abandons
+                      th Sells
+                      th Structures
+                      th Heroes
+                      th Creeps
+                      th Roshan
+                      th Couriers
+                  tbody
+                    tr.success
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='133', oldtitle='Pugna', title='')
+                      td 625
+                      td -1404
+                      td -89
+                      td -
+                      td -
+                      td 160
+                      td 1007
+                      td 1021
+                      td -
+                      td -
+                    tr.success
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png', data-hasqtip='134', oldtitle='Mirana', title='')
+                      td 699
+                      td -895
+                      td -
+                      td -
+                      td 246
+                      td 160
+                      td 1364
+                      td 1589
+                      td -
+                      td -
+                    tr.success
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png', data-hasqtip='135', oldtitle='Viper', title='')
+                      td 1012
+                      td -2541
+                      td -822
+                      td -
+                      td 25
+                      td 160
+                      td 2713
+                      td 3757
+                      td -
+                      td -
+                    tr.success
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png', data-hasqtip='136', oldtitle='Phantom Assassin', title='')
+                      td 1011
+                      td -2482
+                      td -
+                      td -
+                      td 137
+                      td 160
+                      td 1648
+                      td 7637
+                      td -
+                      td -
+                    tr.success
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png', data-hasqtip='137', oldtitle='Disruptor', title='')
+                      td 898
+                      td -1344
+                      td -
+                      td -
+                      td 15
+                      td 160
+                      td 2732
+                      td 1162
+                      td -
+                      td -
+                    tr.danger
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png', data-hasqtip='138', oldtitle='Windranger', title='')
+                      td 665
+                      td -
+                      td -
+                      td -
+                      td -
+                      td 4262
+                      td 1375
+                      td 3108
+                      td 386
+                      td -
+                    tr.danger
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png', data-hasqtip='139', oldtitle='Lina', title='')
+                      td 1024
+                      td -1135
+                      td -
+                      td -
+                      td -
+                      td 3528
+                      td 1391
+                      td 3912
+                      td 200
+                      td -
+                    tr.danger
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png', data-hasqtip='140', oldtitle='Bristleback', title='')
+                      td 946
+                      td -419
+                      td -
+                      td -
+                      td 262
+                      td 4088
+                      td 2347
+                      td 4362
+                      td 200
+                      td -
+                    tr.danger
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png', data-hasqtip='141', oldtitle='Shadow Fiend', title='')
+                      td 1490
+                      td -509
+                      td -
+                      td -
+                      td 605
+                      td 4191
+                      td 5256
+                      td 8785
+                      td 200
+                      td -
+                    tr.danger
+                      td.hero
+                        img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='142', oldtitle='Queen of Pain', title='')
+                      td 1393
+                      td -896
+                      td -
+                      td -
+                      td -
+                      td 3968
+                      td 4205
+                      td 5694
+                      td 200
+                      td -
+                  tfoot
+                    tr
+                      td Radiant
+                      td.format 4.2k
+                      td.format -8.7k
+                      td.format -911
+                      td.format -
+                      td.format 423
+                      td.format 800
+                      td.format 9.5k
+                      td.format 15.2k
+                      td.format -
+                      td.format -
+                    tr
+                      td Dire
+                      td.format 5.5k
+                      td.format -3.0k
+                      td.format -
+                      td.format -
+                      td.format 867
+                      td.format 20.0k
+                      td.format 14.6k
+                      td.format 25.9k
+                      td.format 1.2k
+                      td.format -
+      .col-md-8.col-md-offset-2.text-center
+        h3 View gold and xp breakdowns from the game. Also see <a href="http://yasp.co/matches/1239495484/details">skill usage</a>, 
+          | <a href="http://yasp.co/matches/1239495484/timelines">timelines of item purchases and of kills</a>, and more.
+.featurette.dark
+  .container
+    .vert
+        .col-md-12.text-center
+          h2 Graphs
+        .col-md-8.col-md-offset-2.bottom-padding
+          hr
+        .col-md-12.text-center.bottom-padding
+          .div.well.text-center
+            #chart-gold
+        .col-md-8.col-md-offset-2.text-center.bottom-padding
+          h3 See <a href="/matches/1239495484/graphs">charts</a> of how gold, XP, last hits, and income changed over the game.
+.blurb.bright
+  .container
+    .col-md-12.text-center
+      h2 Positions
+    .col-md-8.col-md-offset-2.bottom-padding
+      hr(style="border-top: 1px solid #777;")
+    .row
+      .col-md-7.bottom-padding
+        #map.mapContainer.table-responsive
+          img.map(src='/public/images/map.jpg', alt="map")
+      
+      .col-md-5
+        table.table.table-hover.table-responsive#heatmap-table
+          thead
+            tr
+              th Hero
+              th
+                abbr(data-hasqtip='2', title='Lane based on early game location') Lane
+          tbody
+            tr#0.mapHero.success
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/pugna_sb.png', data-hasqtip='3', oldtitle='Pugna', title='', aria-describedby='qtip-3')
+              td Bottom
+            tr#1.mapHero.success
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/mirana_sb.png', data-hasqtip='4', oldtitle='Mirana', title='', aria-describedby='qtip-4')
+              td Top
+            tr#2.mapHero.success
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/viper_sb.png', data-hasqtip='5', oldtitle='Viper', title='', aria-describedby='qtip-5')
+              td Middle
+            tr#3.mapHero.success
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/phantom_assassin_sb.png', data-hasqtip='6', oldtitle='Phantom Assassin', title='', aria-describedby='qtip-6')
+              td Bottom
+            tr#4.mapHero.success
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/disruptor_sb.png', data-hasqtip='7', oldtitle='Disruptor', title='', aria-describedby='qtip-7')
+              td Top
+            tr#5.mapHero.danger
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/windrunner_sb.png', data-hasqtip='8', oldtitle='Windranger', title='', aria-describedby='qtip-8')
+              td Top
+            tr#6.mapHero.danger
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/lina_sb.png', data-hasqtip='9', oldtitle='Lina', title='')
+              td Top
+            tr#7.mapHero.danger
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/bristleback_sb.png', data-hasqtip='10', oldtitle='Bristleback', title='')
+              td Bottom
+            tr#8.mapHero.danger
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/nevermore_sb.png', data-hasqtip='11', oldtitle='Shadow Fiend', title='')
+              td Middle
+            tr#9.mapHero.danger
+              td.hero
+                img(src='http://cdn.dota2.com/apps/dota2/images/heroes/queenofpain_sb.png', data-hasqtip='12', oldtitle='Queen of Pain', title='')
+              td Top
+    .col-md-8.col-md-offset-2.text-center
+      br
+      h3 See how players moved throughout the course of the game.
+#cheeses.featurette.dark
+  .container
+    .vert
+      .col-md-12.text-center.bottom-padding
+        h2 And more to come!
+        h3 We are constantly developing and improving YASP. <br>
+           | <a href="https://github.com/yasp-dota/yasp/issues"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls">build it yourself!</a>
+        br
+        hr
+        br
+        h1 The generous Dota 2 <br> community keeps us running
+        br
+        hr
