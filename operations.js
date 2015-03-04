@@ -11,7 +11,7 @@ var getData = utility.getData;
 
 function insertMatch(match, cb) {
     getReplayUrl(match, function(err) {
-        if (err){
+        if (err) {
             return cb(err);
         }
         db.matches.update({
@@ -37,25 +37,29 @@ function insertMatch(match, cb) {
                     cb(err);
                 });
             }, function(err) {
-                if (err) {
+                if (err || match.expired) {
                     return cb(err);
                 }
-                queueReq("parse", match, function(err, job) {
-                    cb(err, job);
-                });
+                else {
+                    queueReq("parse", match, function(err, job) {
+                        cb(err, job);
+                    });
+                }
             });
         });
     });
 }
 
 function getReplayUrl(match, cb) {
-    if (match.start_time < moment().subtract(7, 'days').format('X')) {
-        match.expired = true;
-        return cb();
-    }
     db.matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
+        if (match.start_time < moment().subtract(7, 'days').format('X')) {
+            match.expired = true;
+            match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 1;
+            return cb();
+        }
+        match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 0;
         if (!err && doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;

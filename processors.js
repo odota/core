@@ -16,10 +16,6 @@ var progress = require('request-progress');
 var mode = utility.mode;
 
 function processParse(job, cb) {
-    if (job.data.payload.expired) {
-        console.log("match expired");
-        return cb(null);
-    }
     var t1 = new Date();
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
@@ -53,6 +49,9 @@ function processParse(job, cb) {
 
 function runParser(job, cb) {
     logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
+    if (job.data.payload.expired) {
+        return cb("match expired");
+    }
     //streams
     var inStream;
     var bz;
@@ -358,8 +357,9 @@ function runParser(job, cb) {
 }
 
 function processApi(job, cb) {
-    //process an api request
     var payload = job.data.payload;
+    job.log("api: starting");
+    job.progress(0, 100);
     getData(job.data.url, function(err, data) {
         if (err) {
             job.log(JSON.stringify(err));
@@ -380,17 +380,26 @@ function processApi(job, cb) {
             }
             insertMatch(match, function(err, job2) {
                 if (err || !match.request) {
-                    cb(err, job2);
+                    return cb(err, job2);
+                }
+                job.log("api: complete");
+                if (!job2) {
+                    //request, but didn't queue for parse, probably expired
+                    job.log("api: match expired");
+                    job.progress(100, 100);
+                    cb(err);
                 }
                 else {
-                    //this is a request, log the progress
-                    job.log("api req complete");
+                    job.log("parse: starting");
+                    job.progress(0, 100);
+                    //request, parse and log the progress
                     job2.on('progress', function(prog) {
                         job.log(prog + "%");
                         job.progress(prog, 100);
                     });
                     job2.on('complete', function() {
-                        job.log("parse req complete");
+                        job.log("parse: complete");
+                        job.progress(100, 100);
                         cb(err, job2);
                     });
                 }

@@ -44,7 +44,7 @@ io.sockets.on('connection', function(socket) {
     socket.on('match_id', function(match_id) {
         //todo implement rate limit
         match_id = Number(match_id);
-        socket.emit('log', "received match_id " + match_id);
+        socket.emit('log', "received: " + match_id);
         queueReq("api_details", {
             match_id: match_id,
             request: true,
@@ -53,15 +53,15 @@ io.sockets.on('connection', function(socket) {
             if (err) {
                 return socket.emit('log', err);
             }
-            socket.emit('log', "queued api req");
+            socket.emit('log', "api: queued");
             job.on('progress', function(prog) {
                 kue.Job.log(job.id, function(err, log){
-                    socket.emit('log', log);   
+                    socket.emit('log', err || log);   
                 });
                 socket.emit('log', prog);
             });
             job.on('complete', function(result) {
-                socket.emit('log', "completed parse");
+                socket.emit('log', "request complete!");
             });
         });
     });
