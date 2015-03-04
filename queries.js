@@ -99,7 +99,6 @@ function prepareMatch(match_id, cb) {
                                 //neutrals: sum kills with "npc_dota_neutral"
                                 //towers: sum kills with "tower" in name
                                 //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-                                //interval lhs : extract lhs for every 5 minutes from existing data and render in table ? maybe shade for effect
                             });
                             sortDetails(match);
                             generateGraphData(match);
@@ -117,6 +116,8 @@ function prepareMatch(match_id, cb) {
 }
 
 function createPoints(d, p) {
+    //given a hash of keys and an option containing those keys in hash format
+    //convert the hash to an array with weights and store in the first object
     for (var key in d) {
         var t = [];
         for (var x in p[key]) {
@@ -130,7 +131,7 @@ function createPoints(d, p) {
         }
         d[key] = t;
     }
-};
+}
 
 function sortDetails(match) {
     //converts hashes to arrays and sorts them
@@ -467,29 +468,82 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.lose = 0;
         player.games = 0;
         player.aggData = {};
+        player.heroes = {};
+        player.obs = {};
+        player.sen = {};
+        player.runes = {};
+        for (var id in constants.heroes) {
+            var obj = {
+                hero_id: id,
+                games: 0,
+                win: 0,
+                with_games: 0,
+                with_win: 0,
+                against_games: 0,
+                against_win: 0
+            };
+            player.heroes[id] = obj;
+        }
         var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
-        var aggPos = {
-            "obs": {},
-            "sen": {}
+        var types = {
+            "start_time": function(key, m, p) {
+                agg(key, m.start_time);
+            },
+            "duration": function(key, m, p) {
+                agg(key, m.duration);
+            },
+            "gold_per_min": function(key, m, p) {
+                agg(key, p.gold_per_min);
+            },
+            "hero_damage": function(key, m, p) {
+                agg(key, p.hero_damage);
+            },
+            "tower_damage": function(key, m, p) {
+                agg(key, p.tower_damage);
+            },
+            "kills": function(key, m, p) {
+                agg(key, p.kills);
+            },
+            "deaths": function(key, m, p) {
+                agg(key, p.deaths);
+            },
+            "assists": function(key, m, p) {
+                agg(key, p.assists);
+            },
+            "obs": function(key, m, p) {
+                utility.mergeObjects(player.obs, p.parsedPlayer.obs);
+                if (p.parsedPlayer.item_uses) {
+                    agg(key, p.parsedPlayer.item_uses.ward_observer);
+                }
+            },
+            "sen": function(key, m, p) {
+                utility.mergeObjects(player.sen, p.parsedPlayer.sen);
+                if (p.parsedPlayer.item_uses) {
+                    agg(key, p.parsedPlayer.item_uses.ward_sentry);
+                }
+            },
+            "runes": function(key, m, p) {
+                utility.mergeObjects(player.runes, p.parsedPlayer.runes);
+            }
         };
+        for (var key in types) {
+            player.aggData[key] = {
+                sum: 0,
+                min: Number.MAX_VALUE,
+                max: 0,
+                n: 0,
+                counts: {},
+            };
+        }
 
         function agg(key, value) {
-            if (!player.aggData[key]) {
-                player.aggData[key] = {
-                    sum: 0,
-                    min: Number.MAX_VALUE,
-                    max: 0,
-                    n: 0,
-                    counts: {},
-                };
-            }
             var m = player.aggData[key];
             if (!m.counts[value]) {
                 m.counts[value] = 0;
             }
             m.counts[value] += 1;
-            m.sum += value;
+            m.sum += (value || 0);
             m.min = (value < m.min) ? value : m.min;
             m.max = (value > m.max) ? value : m.max;
             m.n += (typeof value === "undefined") ? 0 : 1;
@@ -500,64 +554,43 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             player.radiantMap[m.match_id] = isRadiant(p);
             m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
             var parseSlot = p.player_slot % (128 - 5);
+            p.parsedPlayer = {};
             if (matches[i].parsed_data) {
                 p.parsedPlayer = m.parsed_data.players[parseSlot];
             }
             //aggregate only if balanced game mode
             if (constants.modes[matches[i].game_mode].balanced) {
+                for (var key in types) {
+                    types[key](key, m, p);
+                }
                 player.games += 1;
                 m.player_win ? player.win += 1 : player.lose += 1;
-                agg("start_time", m.start_time);
-                agg("duration", m.duration);
-                agg("gold_per_min", p.gold_per_min);
-                agg("hero_damage", p.hero_damage);
-                agg("tower_damage", p.tower_damage);
-                agg("hero_healing", p.hero_healing);
-                agg("kills", p.kills);
-                agg("deaths", p.deaths);
-                agg("assists", p.assists);
-                agg("hero_id", p.hero_id);
-                agg("hero_win", m.player_win ? p.hero_id : undefined);
+                player.heroes[p.hero_id].games += 1;
+                player.heroes[p.hero_id].win += (isRadiant(p) === m.radiant_win) ? 1 : 0;
                 //match times into buckets
                 var mins = Math.floor(matches[i].duration / 60) % 120;
                 arr[mins] += 1;
                 //gpms into buckets
                 var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
                 arr2[gpm] += 1;
-                if (p.parsedPlayer) {
-                    utility.mergeObjects(aggPos.sen, p.parsedPlayer.sen);
-                    utility.mergeObjects(aggPos.obs, p.parsedPlayer.obs);
-                }
                 //todo
                 //Grouping of heroes played(by valve groupings / primary attribute)
-                //runes, each type (sum,min,max,avg)
-                //selected list of consumables (sum,min,max,avg), wards, tps
+                //runes, each type (sum,min,max,avg, n)
+                //selected list of consumables (sum,min,max,avg, n), wards, tps
                 //item timings
                 //Chat(ggs called / messages, Swearing / profanity analysis)
                 //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
             }
         }
-        //console.log(aggPos);
         var d = {
             "obs": {},
             "sen": {}
         };
-        createPoints(d, aggPos);
+        createPoints(d, player);
         player.posData = [d];
         player.heroes_arr = [];
-        player.heroes = {};
-        for (var id in constants.heroes) {
-            var obj = {
-                hero_id: id,
-                games: player.aggData.hero_id.counts[id] || 0,
-                win: player.aggData.hero_win.counts[id] || 0,
-                with_games: 0,
-                with_win: 0,
-                against_games: 0,
-                against_win: 0
-            };
-            player.heroes_arr.push(obj);
-            player.heroes[id] = obj;
+        for (var key in player.heroes) {
+            player.heroes_arr.push(player.heroes[key]);
         }
         player.heroes_arr.sort(function(a, b) {
             return b.games - a.games;
@@ -566,6 +599,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.histogramData.durations = arr;
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = player.aggData.start_time.counts;
+        //require('fs').writeFile("./output.json", JSON.stringify(player), function() {});
         if (matchups) {
             computeStatistics(player, function(err) {
                 cb(err);
@@ -579,8 +613,6 @@ function fillPlayerMatches(player, constants, matchups, cb) {
 
 function computeStatistics(player, cb) {
     var counts = {};
-    var against = {};
-    var together = {};
     db.matches.find({
         'players.account_id': player.account_id
     }, {
@@ -626,8 +658,6 @@ function computeStatistics(player, cb) {
                 }
             }
         });
-        player.together = together;
-        player.against = against;
         player.teammates = [];
         for (var id in counts) {
             var count = counts[id];

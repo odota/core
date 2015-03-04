@@ -47,7 +47,7 @@ append footer_assets
           points.forEach(function(p){
             p.x*=(600/127);
             p.y*=(600/127);
-            p.value+=shift;
+            p.value+=(shift || 0);
           })
           var vals = points.map(function(p){return p.value;});
           var localMax = Math.max.apply(null, vals);
