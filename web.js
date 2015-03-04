@@ -14,6 +14,7 @@ var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
 var db = require('./db');
+var queries = require('./queries');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('express-session');
@@ -55,8 +56,8 @@ io.sockets.on('connection', function(socket) {
             }
             socket.emit('log', "api: queued");
             job.on('progress', function(prog) {
-                kue.Job.log(job.id, function(err, log){
-                    socket.emit('log', err || log);   
+                kue.Job.log(job.id, function(err, log) {
+                    socket.emit('log', err || log);
                 });
                 socket.emit('log', prog);
             });
@@ -75,12 +76,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = require('./constants.json');
+app.use(compression());
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
     callback(username === config.KUE_USER && password === config.KUE_PASS);
 });
-app.use(compression());
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
@@ -121,17 +122,6 @@ app.use(function(req, res, next) {
         return next(err);
     });
 });
-/*
-io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
-    });
-});
-app.use("/socket", function(req, res){
-    res.render("socket");
-});
-*/
 var Poet = require('poet');
 var poet = Poet(app);
 poet.watch(function() {
@@ -143,11 +133,16 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
-    res.render('home');
+    queries.prepareMatch(1281139233, function(err, match) {
+        res.render('home', {
+            match: match
+        });
+    });
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {
+            //convert string to boolean
             req.body[key] = req.body[key] === "true";
         }
         db.players.update({
@@ -222,10 +217,10 @@ app.route('/carry').get(function(req, res, next) {
         if (err) return next(err);
         res.render("carry", {
             users: results
-        })
+        });
     });
-}).post(function(req, res) {
-    var num = req.body.num
+}).post(function(req, res, next) {
+    var num = req.body.num;
     if (!isNaN(num)) {
         var payment = {
             "intent": "sale",
@@ -246,7 +241,7 @@ app.route('/carry').get(function(req, res, next) {
         };
         paypal.payment.create(payment, function(err, payment) {
             if (err) {
-                next(err)
+                return next(err)
             }
             else {
                 req.session.paymentId = payment.id;
@@ -347,5 +342,5 @@ app.use(function(err, req, res, next) {
 function clearPaymentSessions(req) {
     PAYMENT_SESSIONS.forEach(function(s) {
         req.session[s] = null;
-    })
+    });
 }
