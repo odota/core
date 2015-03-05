@@ -11,7 +11,8 @@ block match_content
                 thead
                   tr
                     th Hero
-                    th: abbr(title="Lane based on early game position (percentage of standard lane gold obtained)") Lane (Efficiency%)
+                    th: abbr(title="Lane based on early game position") Lane
+                    th: abbr(title="Percentage of standard lane gold obtained") Efficiency
                     th: abbr(title="Town Portal Scrolls bought") TP
                     th: abbr(title="Observer Wards bought") OBS
                     th: abbr(title="Sentry Wards bought") SEN
@@ -31,7 +32,8 @@ block match_content
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
-                  td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_efficiency.toFixed(2)}%)
+                  td #{constants.lane_ids[p.lane] || "-"}
+                  td #{p.lane_efficiency.toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
                   td #{p.purchase.ward_observer*2 || "-"}
                   td #{p.purchase.ward_sentry*2 || "-"}

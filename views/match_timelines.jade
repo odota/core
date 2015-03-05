@@ -72,11 +72,11 @@ block match_content
         .row
           .col-md-12.table-responsive
             h2 Last Hits
-            table.table.table-hover
+            table.table.table-hover.summable
               thead
                 tr
                   th Hero
-                  - var bucket = 120
+                  - var bucket = 300
                   - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                     th= i/60+"'"
               tbody  
