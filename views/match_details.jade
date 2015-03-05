@@ -33,7 +33,7 @@ block match_content
                    else
                      =player.hero_id
                   td #{constants.lane_ids[p.lane] || "-"}
-                  td #{p.lane_efficiency*100.toFixed(2)}
+                  td #{(p.lane_efficiency*100).toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
                   td #{p.purchase.ward_observer*2 || "-"}
                   td #{p.purchase.ward_sentry*2 || "-"}
