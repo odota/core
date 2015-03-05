@@ -482,8 +482,8 @@ describe("web", function() {
             browser.assert.status(200);
             done();
         });
-        it('should say Hero Kills', function(done) {
-            browser.assert.text('body', /Hero Kills/);
+        it('should say Kills', function(done) {
+            browser.assert.text('body', /Kills/);
             done();
         });
     });
