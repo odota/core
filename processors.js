@@ -167,8 +167,10 @@ function runParser(job, cb) {
                 },
                 "purchase": function(e) {
                     getSlot(e);
-                    e.type = "purchase_log";
-                    populate(e);
+                    if (e.key.indexOf("recipe_") === -1) {
+                        e.type = "purchase_log";
+                        populate(e);
+                    }
                 },
                 "modifier_applied": getSlot,
                 "modifier_lost": getSlot,
@@ -176,7 +178,17 @@ function runParser(job, cb) {
                 "ability_trigger": getSlot,
                 "item_uses": getSlot,
                 "ability_uses": getSlot,
-                "kills": getSlot,
+                "kills": function(e) {
+                    getSlot(e);
+                    var logs = ["npc_dota_hero_", "_tower", "_rax", "_fort", "_roshan"];
+                    var pass = logs.some(function(s) {
+                        return (e.key.indexOf(s) !== -1 && !e.target_illusion);
+                    });
+                    if (pass) {
+                        e.type = "kills_log";
+                        populate(e);
+                    }
+                },
                 "damage": getSlot,
                 "buyback_log": getSlot,
                 "chat": getChatSlot,
@@ -211,7 +223,6 @@ function runParser(job, cb) {
                     populate(e);
                 },
                 "hero_hits": getSlot,
-                "kills_log": getSlot,
                 "damage_taken": getSlotReverse,
                 "killed_by": getSlotReverse
             };

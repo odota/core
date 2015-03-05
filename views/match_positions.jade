@@ -43,8 +43,8 @@ append footer_assets
       posData.forEach(function(d){
         d.lane_pos = scaleAndExtrema(d.lane_pos, 10, 0);
         d.pos = scaleAndExtrema(d.pos, 10, 0);
-        d.obs = scaleAndExtrema(d.obs, null, 3);
-        d.sen = scaleAndExtrema(d.sen, null, 3);
+        d.obs = scaleAndExtrema(d.obs, null, 5);
+        d.sen = scaleAndExtrema(d.sen, null, 5);
       })
       
       function scaleAndExtrema(points, max, shift){

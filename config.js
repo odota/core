@@ -1,14 +1,6 @@
 //load environment variables and export them
 var dotenv = require('dotenv');
 var fs = require('fs');
-var config = {};
-try {
-    var file = fs.readFileSync('./.env');
-    config = dotenv.parse(file); // passing in a buffer
-}
-catch (e) {
-    console.log(e);
-}
 var defaults = {
     "STEAM_API_KEY": null,
     "STEAM_USER": null,
@@ -39,8 +31,16 @@ var defaults = {
     "PAYPAL_SECRET": null,
     "GOAL": 5
 };
-for (var key in config) {
-    defaults[key] = config[key];
+var fileConfig = {};
+try {
+    var file = fs.readFileSync('./.env');
+    fileConfig = dotenv.parse(file); // passing in a buffer
+}
+catch (e) {
+    console.log(e);
+}
+for (var key in fileConfig) {
+    defaults[key] = fileConfig[key];
 }
 for (var key in process.env) {
     defaults[key] = process.env[key];

@@ -25,6 +25,7 @@ public class Main {
 	public static void main(String[] args) throws Exception{
 		long tStart = System.currentTimeMillis();
 		float MINUTE = 60;
+		float POSITION_INTERVAL = 1;
 		HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
 		HashMap<Long, Integer> steamid_to_slot = new HashMap<Long, Integer>();
 		//HashMap<Integer, Integer> hero_to_slot = new HashMap<Integer,Integer>();
@@ -129,7 +130,7 @@ public class Main {
 						log.output(entry);
                     }
 					}
-                    nextShort += MINUTE/60;
+                    nextShort += POSITION_INTERVAL;
 					}
 
 				//todo figure out when wards get killed and by who, can detect entity disappearance, but how to figure out cause?
@@ -295,6 +296,7 @@ public class Main {
 							//kill
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
+							entry.target_illusion = cle.isTargetIllusion();
 							entry.type = "kills";
 							log.output(entry);
 							if (true){
@@ -302,13 +304,6 @@ public class Main {
 								entry2.unit = cle.getTargetNameCompiled();
 								entry2.key = cle.getAttackerNameCompiled();
 								entry2.type = "killed_by";
-								log.output(entry2);
-							}
-							if (cle.isAttackerHero() && cle.isTargetHero() && !cle.isTargetIllusion()){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getAttackerNameCompiled();
-								entry2.key = cle.getTargetNameCompiled();
-								entry2.type = "kills_log";
 								log.output(entry2);
 							}
 							break;

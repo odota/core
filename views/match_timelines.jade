@@ -31,7 +31,7 @@ block match_content
                               img.item(src=item.img, alt=entry.key)
                               div.format-seconds=entry.time
                           else
-                            =key
+                            =entry.key
         hr
         .row
          .col-md-12
@@ -39,7 +39,7 @@ block match_content
         hr
         .row
           .col-md-12.table-responsive
-            h2 Hero Kills
+            h2 Kills
             table.table.table-hover
               thead
                 tr
@@ -59,7 +59,7 @@ block match_content
                         =player.hero_id              
                     - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                       td
-                        each entry in p.kills_log || []
+                        each entry in p.kills_log
                           if entry.time < i && entry.time >= i-bucket
                             - var hero = constants.hero_names[entry.key]
                             if hero
@@ -67,7 +67,7 @@ block match_content
                                 img.dmg(src=hero.img, title=hero.localized_name)
                                 div.format-seconds=entry.time
                             else
-                              =key
+                              =entry.key
         hr
         .row
           .col-md-12.table-responsive
@@ -76,7 +76,7 @@ block match_content
               thead
                 tr
                   th Hero
-                  - var bucket = 300
+                  - var bucket = 120
                   - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                     th= i/60+"'"
               tbody  

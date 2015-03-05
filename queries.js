@@ -46,11 +46,14 @@ function prepareMatch(match_id, cb) {
                             };
                             return generatePositionData(d, p.parsedPlayer);
                         });
-                        match.players.forEach(function(p, i) {
-                            var lanes = match.posData[i].lane_pos.map(function(p) {
-                                //y first, then x due to array of arrays structure
-                                return constants.lanes[p.y][p.x];
-                            });
+                        match.players.forEach(function(p, ind) {
+                            var lanes = [];
+                            for (var i = 0; i < match.posData[ind].lane_pos.length; i++) {
+                                var d = match.posData[ind].lane_pos[i];
+                                for (var j = 0; j < d.value; j++) {
+                                    lanes.push(constants.lanes[d.y][d.x]);
+                                }
+                            }
                             p.parsedPlayer.lane = mode(lanes);
                         });
                         //Add to cache if we have parsed data
@@ -133,10 +136,18 @@ function patchData(match) {
         //mapping 0 to 0, 128 to 5, etc.
         var parseSlot = player.player_slot % (128 - 5);
         var p = match.parsed_data.players[parseSlot];
-        //todo
-        //neutrals: sum kills with "npc_dota_neutral"
-        //towers: sum kills with "tower" in name
+        p.neutral_kills = 0;
+        p.tower_kills = 0;
+        for (var key in p.kills) {
+            if (key.indexOf("npc_dota_neutral") === 0) {
+                p.neutral_kills += p.kills[key];
+            }
+            if (key.indexOf("_tower") !== -1) {
+                p.tower_kills += p.kills[key];
+            }
+        }
         //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+        p.lane_efficiency = p.gold[10] / (43 * 60 + 48 * 20 + 74 * 2)*100;
         player.parsedPlayer = p;
     });
 }
@@ -434,17 +445,130 @@ function advQuery(select, options, cb) {
     //var wins = null;
 */
     var wins = null;
-    db.matches.find(select, options, function(err, docs) {
+    db.matches.find(select, options, function(err, matches) {
         if (err) {
             cb(err);
         }
         //iterate and compute
+        //filter and send through aggregator?
         var results = {
             wins: wins,
-            data: docs
+            data: matches
         };
         cb(err, results);
     });
+}
+
+function aggregator(fields, matches) {
+    var types = {
+        "start_time": function(key, m, p) {
+            agg(key, m.start_time);
+        },
+        "duration": function(key, m, p) {
+            agg(key, m.duration);
+        },
+        "gold_per_min": function(key, m, p) {
+            agg(key, p.gold_per_min);
+        },
+        "hero_damage": function(key, m, p) {
+            agg(key, p.hero_damage);
+        },
+        "tower_damage": function(key, m, p) {
+            agg(key, p.tower_damage);
+        },
+        "kills": function(key, m, p) {
+            agg(key, p.kills);
+        },
+        "deaths": function(key, m, p) {
+            agg(key, p.deaths);
+        },
+        "assists": function(key, m, p) {
+            agg(key, p.assists);
+        },
+        //ward positions
+        "obs": function(key, m, p) {
+            utility.mergeObjects(aggData.obs.counts, p.parsedPlayer.obs);
+        },
+        "sen": function(key, m, p) {
+            utility.mergeObjects(aggData.sen.counts, p.parsedPlayer.sen);
+        },
+        //lifetime rune counts
+        "runes": function(key, m, p) {
+            utility.mergeObjects(aggData.runes.counts, p.parsedPlayer.runes);
+        },
+        //lifetime item uses
+        "item_uses": function(key, m, p) {
+            utility.mergeObjects(aggData.item_uses.counts, p.parsedPlayer.item_uses);
+        },
+        //selected list of consumables (sum,min,max,avg, n), wards, tps
+        "ward_observer": function(key, m, p) {
+            agg(key, p.parsedPlayer.item_uses.ward_observer);
+        },
+        "ward_sentry": function(key, m, p) {
+            agg(key, p.parsedPlayer.item_uses.ward_sentry);
+        },
+        "hero_id": function(key, m, p) {
+            agg(key, p.hero_id);
+        },
+        "hero_wins": function(key, m, p) {
+            agg(key, (isRadiant(p) === m.radiant_win) ? p.hero_id : undefined);
+        },
+        "match": function(key, m, p) {
+            agg(key, m.match_id);
+        },
+        "match_wins": function(key, m, p) {
+            agg(key, (isRadiant(p) === m.radiant_win) ? m.match_id : undefined);
+        }
+    };
+    //todo
+    //Grouping of heroes played(by valve groupings / primary attribute)
+    //item timings
+    //Chat(ggs called / messages, Swearing / profanity analysis)
+    //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
+    var aggData = {};
+    for (var key in types) {
+        aggData[key] = {
+            sum: 0,
+            min: Number.MAX_VALUE,
+            max: 0,
+            n: 0,
+            counts: {},
+        };
+    }
+
+    function agg(key, value) {
+        //todo handle numerical values or hashes
+        var m = aggData[key];
+        if (!m.counts[value]) {
+            m.counts[value] = 0;
+        }
+        m.counts[value] += 1;
+        m.sum += (value || 0);
+        m.min = (value < m.min) ? value : m.min;
+        m.max = (value > m.max) ? value : m.max;
+        m.n += (typeof value === "undefined") ? 0 : 1;
+    }
+    for (var i = 0; i < matches.length; i++) {
+        var m = matches[i];
+        patchData(m);
+        var p = m.players[0];
+        for (var key in types) {
+            //todo accept a hash of types and only aggregate those?
+            types[key](key, m, p);
+        }
+    }
+    return aggData;
+}
+
+function filter(type, matches) {
+    var filtered = [];
+    //todo implement filters based on type
+    for (var i = 0; i < matches.length; i++) {
+        if (constants.modes[matches[i].game_mode].balanced) {
+            filtered.push(matches[i]);
+        }
+    }
+    return filtered;
 }
 
 function fillPlayerMatches(player, constants, matchups, cb) {
@@ -465,69 +589,19 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         }
     }, function(err, matches) {
         if (err) {
-            cb(err);
+            return cb(err);
         }
-        matches.sort(function(a, b) {
-            return b.match_id - a.match_id;
-        });
         player.radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later
-        player.win = 0;
-        player.lose = 0;
-        player.games = 0;
-        player.obs = {};
-        player.sen = {};
-        player.runes = {};
         var calheatmap = {};
+        for (var i = 0; i < matches.length; i++) {
+            var m = matches[i];
+            var p = m.players[0];
+            player.radiantMap[m.match_id] = isRadiant(p);
+            m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
+            calheatmap[m.start_time] = 1;
+        }
         var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
-        var types = {
-            "start_time": function(key, m, p) {
-                agg(key, m.start_time);
-            },
-            "duration": function(key, m, p) {
-                agg(key, m.duration);
-            },
-            "gold_per_min": function(key, m, p) {
-                agg(key, p.gold_per_min);
-            },
-            "hero_damage": function(key, m, p) {
-                agg(key, p.hero_damage);
-            },
-            "tower_damage": function(key, m, p) {
-                agg(key, p.tower_damage);
-            },
-            "kills": function(key, m, p) {
-                agg(key, p.kills);
-            },
-            "deaths": function(key, m, p) {
-                agg(key, p.deaths);
-            },
-            "assists": function(key, m, p) {
-                agg(key, p.assists);
-            },
-            "obs": function(key, m, p) {
-                //console.log(m);
-                utility.mergeObjects(player.obs, p.parsedPlayer.obs);
-                agg(key, p.parsedPlayer.item_uses.ward_observer);
-            },
-            "sen": function(key, m, p) {
-                utility.mergeObjects(player.sen, p.parsedPlayer.sen);
-                agg(key, p.parsedPlayer.item_uses.ward_sentry);
-            },
-            "runes": function(key, m, p) {
-                utility.mergeObjects(player.runes, p.parsedPlayer.runes);
-            }
-        };
-        player.aggData = {};
-        for (var key in types) {
-            player.aggData[key] = {
-                sum: 0,
-                min: Number.MAX_VALUE,
-                max: 0,
-                n: 0,
-                counts: {},
-            };
-        }
         player.heroes = {};
         for (var id in constants.heroes) {
             var obj = {
@@ -541,52 +615,31 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             };
             player.heroes[id] = obj;
         }
-
-        function agg(key, value) {
-            var m = player.aggData[key];
-            if (!m.counts[value]) {
-                m.counts[value] = 0;
-            }
-            m.counts[value] += 1;
-            m.sum += (value || 0);
-            m.min = (value < m.min) ? value : m.min;
-            m.max = (value > m.max) ? value : m.max;
-            m.n += (typeof value === "undefined") ? 0 : 1;
+        player.win = 0;
+        player.lose = 0;
+        player.games = 0;
+        var filtered = filter("balanced", matches);
+        for (var i = 0; i < filtered.length; i++) {
+            var f = filtered[i];
+            var p = f.players[0];
+            player.games += 1;
+            f.player_win ? player.win += 1 : player.lose += 1;
+            player.heroes[p.hero_id].games += 1;
+            player.heroes[p.hero_id].win += f.player_win ? 1 : 0;
+            //match times into buckets
+            var mins = Math.floor(f.duration / 60) % 120;
+            arr[mins] += 1;
+            //gpms into buckets
+            var gpm = Math.floor(f.players[0].gold_per_min / 10) % 120;
+            arr2[gpm] += 1;
         }
-        for (var i = 0; i < matches.length; i++) {
-            var m = matches[i];
-            patchData(m);
-            var p = m.players[0];
-            player.radiantMap[m.match_id] = isRadiant(p);
-            m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
-            calheatmap[m.start_time] = 1;
-            if (constants.modes[matches[i].game_mode].balanced) {
-                for (var key in types) {
-                    types[key](key, m, p);
-                }
-                player.games += 1;
-                m.player_win ? player.win += 1 : player.lose += 1;
-                player.heroes[p.hero_id].games += 1;
-                player.heroes[p.hero_id].win += m.player_win ? 1 : 0;
-                //match times into buckets
-                var mins = Math.floor(matches[i].duration / 60) % 120;
-                arr[mins] += 1;
-                //gpms into buckets
-                var gpm = Math.floor(matches[i].players[0].gold_per_min / 10) % 120;
-                arr2[gpm] += 1;
-                //todo
-                //Grouping of heroes played(by valve groupings / primary attribute)
-                //runes, each type (sum,min,max,avg, n)
-                //selected list of consumables (sum,min,max,avg, n), wards, tps
-                //item timings
-                //Chat(ggs called / messages, Swearing / profanity analysis)
-                //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
-            }
-        }
+        player.aggData = aggregator({}, filtered);
         var d = {
             "obs": true,
             "sen": true
         };
+        player.obs = player.aggData.obs.counts;
+        player.sen = player.aggData.sen.counts;
         player.posData = [generatePositionData(d, player)];
         player.heroes_arr = [];
         for (var key in player.heroes) {
@@ -599,8 +652,11 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.histogramData.durations = arr;
         player.histogramData.gpms = arr2;
         player.histogramData.calheatmap = calheatmap;
+        matches.sort(function(a, b) {
+            return b.match_id - a.match_id;
+        });
         player.matches = matches;
-        //require('fs').writeFile("./output.json", JSON.stringify(player), function() {});
+        //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         if (matchups) {
             computeStatistics(player, function(err) {
                 cb(err);
@@ -618,7 +674,8 @@ function computeStatistics(player, cb) {
         'players.account_id': player.account_id
     }, {
         fields: {
-            players: 1,
+            "players.account_id": 1,
+            "players.hero_id": 1,
             match_id: 1,
             radiant_win: 1
         }
@@ -627,7 +684,8 @@ function computeStatistics(player, cb) {
             return cb(err);
         }
         //console.log(player.heroes);
-        docs.forEach(function(match) {
+        for (var i = 0; i < docs.length; i++) {
+            var match = docs[i];
             var playerRadiant = player.radiantMap[match.match_id];
             for (var j = 0; j < match.players.length; j++) {
                 var tm = match.players[j];
@@ -658,7 +716,7 @@ function computeStatistics(player, cb) {
                     }
                 }
             }
-        });
+        }
         player.teammates = [];
         for (var id in counts) {
             var count = counts[id];

@@ -7,11 +7,11 @@ block match_content
         .table-responsive
           table.table.table-hover.summable
             each player, i in match.players
-              if !(i%5)
+              if !(i%10)
                 thead
                   tr
                     th Hero
-                    th: abbr(title="Lane based on early game position") Lane
+                    th: abbr(title="Lane based on early game position (percentage of standard lane gold obtained)") Lane (Efficiency%)
                     th: abbr(title="Town Portal Scrolls bought") TP
                     th: abbr(title="Observer Wards bought") OBS
                     th: abbr(title="Sentry Wards bought") SEN
@@ -20,6 +20,37 @@ block match_content
                     th: abbr(title="Gems of True Sight bought") GEM
                     th: abbr(title="Number of Buybacks") BB
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
+                    th: abbr(title="Neutral creeps killed") NK
+                    th: abbr(title="Towers killed") TK
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_efficiency.toFixed(2)}%)
+                  td #{p.purchase.tpscroll || "-"}
+                  td #{p.purchase.ward_observer*2 || "-"}
+                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.smoke_of_deceit || "-"}
+                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.gem || "-"}
+                  td #{p.buyback_log.length || "-"}
+                  td #{p.stuns.toFixed(2)}
+                  td #{p.neutral_kills || "-"}
+                  td #{p.tower_kills || "-"}
+                  
+        h2 Performance
+        .table-responsive
+          table.table.table-hover
+            each player, i in match.players
+              if !(i%10)
+                thead
+                  tr
+                    th Hero
                     th: abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
                     th: abbr(title="Items used") Items
                     th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
@@ -32,15 +63,6 @@ block match_content
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
-                  td #{constants.lane_ids[p.lane]}
-                  td #{p.purchase.tpscroll || "-"}
-                  td #{p.purchase.ward_observer*2 || "-"}
-                  td #{p.purchase.ward_sentry*2 || "-"}
-                  td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust*2 || "-"}
-                  td #{p.purchase.gem || "-"}
-                  td #{p.buyback_log.length || "-"}
-                  td #{p.stuns.toFixed(2)}
                   td.table-img
                     each ability in p.ability_uses_arr
                       div.img-text

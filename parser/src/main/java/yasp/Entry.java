@@ -13,6 +13,8 @@ public class Entry {
     public String inflictor;
     public Integer gold_reason;
     public Integer xp_reason;
+    public Boolean target_illusion;
+    public Boolean attacker_illusion;
     public Entry(){
     }
     public Entry(Integer time){
