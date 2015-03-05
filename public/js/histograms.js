@@ -24,8 +24,8 @@ module.exports = function generateHistograms(data) {
                 subDomainTextFormat: function(date, value) {
                     return value;
                 },
-                cellSize: 15,
-                domainGutter: 10,
+                cellSize: 12,
+                domainGutter: 5,
                 previousSelector: "#prev",
                 nextSelector: "#next",
                 legendHorizontalPosition: "right"

@@ -211,7 +211,8 @@
       },
       "15": {
         "id": 15,
-        "name": "Custom"
+        "name": "Custom",
+        "balanced": true
       },
       "16": {
         "id": 16,

@@ -99,49 +99,8 @@ function runParser(job, cb) {
     var entries = [];
     var name_to_slot = {};
     var hero_to_slot = {};
-    var parsed_data = {
-        "version": constants.parser_version,
-        "game_zero": 0,
-        "match_id": 0,
-        "players": Array.apply(null, new Array(10)).map(function() {
-            return {
-                "stuns": -1,
-                "lane": -1,
-                "gold": [],
-                "lh": [],
-                "xp": [],
-                "pos_log": [],
-                "obs_log": [],
-                "sen_log": [],
-                "hero_log": [],
-                "purchase_log": [],
-                "kills_log": [],
-                "buyback_log": [],
-                "pos": {},
-                "lane_pos": {},
-                "obs": {},
-                "sen": {},
-                "purchase": {},
-                "gold_reasons": {},
-                "xp_reasons": {},
-                "kills": {},
-                "item_uses": {},
-                "ability_uses": {},
-                "hero_hits": {},
-                "damage": {},
-                "damage_taken": {},
-                "runes": {},
-                "runes_bottled": {},
-                "killed_by": {},
-                "modifier_applied": {},
-                "modifier_lost": {},
-                "healing": {},
-                "ability_trigger": {}
-            };
-        }),
-        "times": [],
-        "chat": []
-    };
+    var parsed_data = utility.getParseSchema();
+    parsed_data.version = constants.parser_version;
     outStream.on('root', function preprocess(e) {
         var preTypes = {
             "times": setParsedData,

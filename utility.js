@@ -194,6 +194,52 @@ function mode(array) {
     }
     return maxEl;
 }
+
+function getParseSchema() {
+    return {
+        "version": 0,
+        "game_zero": 0,
+        "match_id": 0,
+        "players": Array.apply(null, new Array(10)).map(function() {
+            return {
+                "stuns": 0,
+                "lane": 0,
+                "gold": [],
+                "lh": [],
+                "xp": [],
+                "pos_log": [],
+                "obs_log": [],
+                "sen_log": [],
+                "hero_log": [],
+                "purchase_log": [],
+                "kills_log": [],
+                "buyback_log": [],
+                "pos": {},
+                "lane_pos": {},
+                "obs": {},
+                "sen": {},
+                "purchase": {},
+                "gold_reasons": {},
+                "xp_reasons": {},
+                "kills": {},
+                "item_uses": {},
+                "ability_uses": {},
+                "hero_hits": {},
+                "damage": {},
+                "damage_taken": {},
+                "runes": {},
+                "runes_bottled": {},
+                "killed_by": {},
+                "modifier_applied": {},
+                "modifier_lost": {},
+                "healing": {},
+                "ability_trigger": {}
+            };
+        }),
+        "times": [],
+        "chat": []
+    };
+}
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -203,5 +249,6 @@ module.exports = {
     isRadiant: isRadiant,
     makeSort: makeSort,
     mergeObjects: mergeObjects,
-    mode: mode
+    mode: mode,
+    getParseSchema: getParseSchema
 };

@@ -7,13 +7,14 @@ block match_content
             .col-md-7
               h2 Map
               #map.mapContainer
-                img.map(src='/public/images/map.jpg', alt="map")
+                img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
             .col-md-5
               h2 Positions
               table.table.table-hover.table-responsive
                 tr
                   th Hero
-                  th Position (Exploration%)
+                  th Lane
+                  th Exploration
                   th Observer
                   th Sentry
                 each player, ind in match.players
@@ -24,8 +25,9 @@ block match_content
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
-                        =player.hero_id              
-                    td.activate(data-index=ind, data-type="pos") #{constants.lane_ids[p.lane]} (#{(match.posData[ind].pos.length/128/128*100).toFixed(2)}%)
+                        =player.hero_id
+                    td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane]}
+                    td.activate(data-index=ind, data-type="pos") #{(match.posData[ind].pos.length/128/128*100).toFixed(2)}%
                     td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
                     td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
 
@@ -37,10 +39,12 @@ append footer_assets
         radius: 15
       });
       var posData = !{JSON.stringify(match.posData)}
+      console.log(posData);
       posData.forEach(function(d){
+        d.lane_pos = scaleAndExtrema(d.lane_pos, 10, 0);
         d.pos = scaleAndExtrema(d.pos, 10, 0);
-        d.obs = scaleAndExtrema(d.obs, null, 2);
-        d.sen = scaleAndExtrema(d.sen, null, 2);
+        d.obs = scaleAndExtrema(d.obs, null, 3);
+        d.sen = scaleAndExtrema(d.sen, null, 3);
       })
       
       function scaleAndExtrema(points, max, shift){
@@ -59,9 +63,8 @@ append footer_assets
       }
       
       $(".activate").on("mouseover", function(){
-        var index = posData[Number($(this).attr('data-index'))]
-        console.log(index);
-        var data = index[$(this).attr('data-type')];
+        var pData = posData[Number($(this).attr('data-index'))]
+        var data = pData[$(this).attr('data-type')];
         console.log(data);
         heatmap.setData(data);
         heatmap.repaint();

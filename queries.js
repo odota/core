@@ -34,75 +34,25 @@ function prepareMatch(match_id, cb) {
                         if (err) {
                             return cb(err);
                         }
-                        if (match.parsed_data) {
-                            if (match.parsed_data.version < 5) {
-                                mergeMatchData(match);
-                                //patch old data to fit new format
-                                //works for v4, anyway
-                                match.players.forEach(function(player, i) {
-                                    var hero = constants.heroes[player.hero_id];
-                                    var parsedHero = match.parsed_data.heroes[hero.name];
-                                    var parsedPlayer = match.parsed_data.players[i];
-                                    parsedPlayer.purchase = parsedHero.itembuys;
-                                    parsedPlayer.buyback_log = parsedPlayer.buybacks;
-                                    parsedPlayer.stuns = parsedPlayer.stuns;
-                                    parsedPlayer.ability_uses = parsedHero.abilityuses;
-                                    parsedPlayer.item_uses = parsedHero.itemuses;
-                                    parsedPlayer.gold_reasons = parsedHero.gold_log;
-                                    parsedPlayer.xp_reasons = parsedHero.xp_log;
-                                    parsedPlayer.damage = parsedHero.damage;
-                                    parsedPlayer.hero_hits = parsedHero.hero_hits;
-                                    parsedPlayer.purchase_log = parsedHero.timeline;
-                                    parsedPlayer.kills_log = parsedHero.herokills;
-                                    parsedPlayer.kills = parsedHero.kills;
-                                    parsedPlayer.pos = parsedPlayer.positions || [];
-                                    parsedPlayer.obs = {};
-                                    parsedPlayer.sen = {};
-                                    parsedPlayer.runes = {};
-                                    //old format didn't translate coordinates
-                                    parsedPlayer.pos = parsedPlayer.pos.map(function(p) {
-                                        return {
-                                            x: p[0],
-                                            y: p[1],
-                                            value: 1
-                                        };
-                                    });
-                                    //get the first 10 values for lane calc
-                                    parsedPlayer.lane_pos = parsedPlayer.pos.slice(0, 10);
-                                });
-                                match.parsed_data.chat.forEach(function(c) {
-                                    c.key = c.text;
-                                });
-                            }
-                            match.posData = [];
-                            match.players.forEach(function(player) {
-                                player.isRadiant = utility.isRadiant(player);
-                                //mapping 0 to 0, 128 to 5, etc.
-                                var parseSlot = player.player_slot % (128 - 5);
-                                var p = match.parsed_data.players[parseSlot];
-                                //generate position data from hashes
-                                var d = {
-                                    "obs": {},
-                                    "sen": {},
-                                    "pos": {},
-                                    "lane_pos": {}
-                                };
-                                createPoints(d, p);
-                                match.posData.push(d);
-                                var lanes = d.lane_pos.map(function(p) {
-                                    //y first, then x due to array of arrays structure
-                                    return constants.lanes[p.y][p.x];
-                                });
-                                p.lane = mode(lanes);
-                                player.parsedPlayer = p;
-                                //todo
-                                //neutrals: sum kills with "npc_dota_neutral"
-                                //towers: sum kills with "tower" in name
-                                //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+                        patchData(match);
+                        sortDetails(match);
+                        generateGraphData(match);
+                        match.posData = match.players.map(function(p) {
+                            var d = {
+                                "obs": true,
+                                "sen": true,
+                                "pos": true,
+                                "lane_pos": true
+                            };
+                            return generatePositionData(d, p.parsedPlayer);
+                        });
+                        match.players.forEach(function(p, i) {
+                            var lanes = match.posData[i].lane_pos.map(function(p) {
+                                //y first, then x due to array of arrays structure
+                                return constants.lanes[p.y][p.x];
                             });
-                            sortDetails(match);
-                            generateGraphData(match);
-                        }
+                            p.parsedPlayer.lane = mode(lanes);
+                        });
                         //Add to cache if we have parsed data
                         if (match.parsed_data && config.NODE_ENV !== "development") {
                             redis.setex(key, 86400, JSON.stringify(match));
@@ -115,9 +65,9 @@ function prepareMatch(match_id, cb) {
     });
 }
 
-function createPoints(d, p) {
-    //given a hash of keys and an option containing those keys in hash format
-    //convert the hash to an array with weights and store in the first object
+function generatePositionData(d, p) {
+    //d, a hash of keys to process
+    //p, a player containing keys with values as position hashes
     for (var key in d) {
         var t = [];
         for (var x in p[key]) {
@@ -131,6 +81,64 @@ function createPoints(d, p) {
         }
         d[key] = t;
     }
+    return d;
+}
+
+function patchData(match) {
+    var schema = utility.getParseSchema();
+    if (!match.parsed_data || !match.parsed_data.version || match.parsed_data.version <= 3) {
+        //nonexistent or old data, blank it
+        match.parsed_data = schema;
+    }
+    else if (match.parsed_data.version === 4) {
+        //v4 data, patch it
+        mergeMatchData(match);
+        match.players.forEach(function(player, i) {
+            var hero = constants.heroes[player.hero_id];
+            var parsedHero = match.parsed_data.heroes[hero.name];
+            var parseSlot = player.player_slot % (128 - 5);
+            var parsedPlayer = match.parsed_data.players[parseSlot];
+            parsedPlayer.purchase = parsedHero.itembuys;
+            parsedPlayer.buyback_log = parsedPlayer.buybacks;
+            parsedPlayer.stuns = parsedPlayer.stuns;
+            parsedPlayer.ability_uses = parsedHero.abilityuses;
+            parsedPlayer.item_uses = parsedHero.itemuses;
+            parsedPlayer.gold_reasons = parsedHero.gold_log;
+            parsedPlayer.xp_reasons = parsedHero.xp_log;
+            parsedPlayer.damage = parsedHero.damage;
+            parsedPlayer.hero_hits = parsedHero.hero_hits;
+            parsedPlayer.purchase_log = parsedHero.timeline;
+            parsedPlayer.kills_log = parsedHero.herokills;
+            parsedPlayer.kills = parsedHero.kills;
+            /*
+            parsedPlayer.pos = parsedPlayer.positions.map(function(p) {
+                return {
+                    x: p[0],
+                    y: p[1],
+                    value: 1
+                };
+            });
+            //get the first 10 values for lane calc
+            parsedPlayer.lane_pos = parsedPlayer.pos.slice(0, 10);
+            */
+            //ensure all fields are present
+            mergeObjects(parsedPlayer, schema.players[i]);
+        });
+        match.parsed_data.chat.forEach(function(c) {
+            c.key = c.text;
+        });
+    }
+    match.players.forEach(function(player) {
+        player.isRadiant = isRadiant(player);
+        //mapping 0 to 0, 128 to 5, etc.
+        var parseSlot = player.player_slot % (128 - 5);
+        var p = match.parsed_data.players[parseSlot];
+        //todo
+        //neutrals: sum kills with "npc_dota_neutral"
+        //towers: sum kills with "tower" in name
+        //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+        player.parsedPlayer = p;
+    });
 }
 
 function sortDetails(match) {
@@ -462,28 +470,14 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         matches.sort(function(a, b) {
             return b.match_id - a.match_id;
         });
-        player.matches = matches;
         player.radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later
         player.win = 0;
         player.lose = 0;
         player.games = 0;
-        player.aggData = {};
-        player.heroes = {};
         player.obs = {};
         player.sen = {};
         player.runes = {};
-        for (var id in constants.heroes) {
-            var obj = {
-                hero_id: id,
-                games: 0,
-                win: 0,
-                with_games: 0,
-                with_win: 0,
-                against_games: 0,
-                against_win: 0
-            };
-            player.heroes[id] = obj;
-        }
+        var calheatmap = {};
         var arr = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var arr2 = Array.apply(null, new Array(120)).map(Number.prototype.valueOf, 0);
         var types = {
@@ -512,21 +506,19 @@ function fillPlayerMatches(player, constants, matchups, cb) {
                 agg(key, p.assists);
             },
             "obs": function(key, m, p) {
+                //console.log(m);
                 utility.mergeObjects(player.obs, p.parsedPlayer.obs);
-                if (p.parsedPlayer.item_uses) {
-                    agg(key, p.parsedPlayer.item_uses.ward_observer);
-                }
+                agg(key, p.parsedPlayer.item_uses.ward_observer);
             },
             "sen": function(key, m, p) {
                 utility.mergeObjects(player.sen, p.parsedPlayer.sen);
-                if (p.parsedPlayer.item_uses) {
-                    agg(key, p.parsedPlayer.item_uses.ward_sentry);
-                }
+                agg(key, p.parsedPlayer.item_uses.ward_sentry);
             },
             "runes": function(key, m, p) {
                 utility.mergeObjects(player.runes, p.parsedPlayer.runes);
             }
         };
+        player.aggData = {};
         for (var key in types) {
             player.aggData[key] = {
                 sum: 0,
@@ -535,6 +527,19 @@ function fillPlayerMatches(player, constants, matchups, cb) {
                 n: 0,
                 counts: {},
             };
+        }
+        player.heroes = {};
+        for (var id in constants.heroes) {
+            var obj = {
+                hero_id: id,
+                games: 0,
+                win: 0,
+                with_games: 0,
+                with_win: 0,
+                against_games: 0,
+                against_win: 0
+            };
+            player.heroes[id] = obj;
         }
 
         function agg(key, value) {
@@ -550,15 +555,11 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         }
         for (var i = 0; i < matches.length; i++) {
             var m = matches[i];
+            patchData(m);
             var p = m.players[0];
             player.radiantMap[m.match_id] = isRadiant(p);
             m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
-            var parseSlot = p.player_slot % (128 - 5);
-            p.parsedPlayer = {};
-            if (matches[i].parsed_data) {
-                p.parsedPlayer = m.parsed_data.players[parseSlot];
-            }
-            //aggregate only if balanced game mode
+            calheatmap[m.start_time] = 1;
             if (constants.modes[matches[i].game_mode].balanced) {
                 for (var key in types) {
                     types[key](key, m, p);
@@ -566,7 +567,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
                 player.games += 1;
                 m.player_win ? player.win += 1 : player.lose += 1;
                 player.heroes[p.hero_id].games += 1;
-                player.heroes[p.hero_id].win += (isRadiant(p) === m.radiant_win) ? 1 : 0;
+                player.heroes[p.hero_id].win += m.player_win ? 1 : 0;
                 //match times into buckets
                 var mins = Math.floor(matches[i].duration / 60) % 120;
                 arr[mins] += 1;
@@ -583,11 +584,10 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             }
         }
         var d = {
-            "obs": {},
-            "sen": {}
+            "obs": true,
+            "sen": true
         };
-        createPoints(d, player);
-        player.posData = [d];
+        player.posData = [generatePositionData(d, player)];
         player.heroes_arr = [];
         for (var key in player.heroes) {
             player.heroes_arr.push(player.heroes[key]);
@@ -598,7 +598,8 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         player.histogramData = {};
         player.histogramData.durations = arr;
         player.histogramData.gpms = arr2;
-        player.histogramData.calheatmap = player.aggData.start_time.counts;
+        player.histogramData.calheatmap = calheatmap;
+        player.matches = matches;
         //require('fs').writeFile("./output.json", JSON.stringify(player), function() {});
         if (matchups) {
             computeStatistics(player, function(err) {

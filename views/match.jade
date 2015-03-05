@@ -29,7 +29,7 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-  if !match.parsed_data || !match.parsed_data.version || match.parsed_data.version < constants.parser_version
+  if match.parsed_data.version < constants.parser_version
     .row
       .col-md-12
         .alert.alert-info This match has outdated parse data or is not yet parsed.  Some fields may not be available.

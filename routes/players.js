@@ -7,6 +7,9 @@ var playerPages = {
     index: {
         name: "Player"
     },
+    trends: {
+        name: "Trends"
+    },
     matches: {
         name: "Matches"
     },
@@ -15,6 +18,7 @@ var playerPages = {
     }
 };
 players.get('/:account_id/:info?', function(req, res, next) {
+    console.time("player page");
     var account_id = Number(req.params.account_id);
     var info = playerPages[req.params.info] ? req.params.info : "index";
     db.players.findOne({
@@ -27,6 +31,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             queries.fillPlayerMatches(player, constants, info === "matchups", function(err) {
                 queries.getSets(function(err, results) {
                     queries.getRatingData(player.account_id, function(err, ratings) {
+                        console.timeEnd("player page");
                         player.ratings = ratings;
                         res.render("player_" + info, {
                             route: info,

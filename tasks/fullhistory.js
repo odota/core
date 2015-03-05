@@ -19,7 +19,8 @@ module.exports = function getFullMatchHistory(heroes, done) {
     db.players.find(selector("tracked"), {
         limit: 1,
         sort: {
-            full_history_time: 1
+            full_history_time: 1,
+            join_date: 1
         }
     }, function(err, players) {
         if (err) {
@@ -28,7 +29,8 @@ module.exports = function getFullMatchHistory(heroes, done) {
         //find all the matches to add to kue
         async.mapSeries(players, getHistoryByHero, function(err) {
             if (err) {
-                return done(err);
+                //non-retryable error while scanning, a user had a private account, but proceed anyway
+                console.log("error: %s", err);
             }
             //convert hash to array
             var arr = [];
@@ -53,7 +55,7 @@ module.exports = function getFullMatchHistory(heroes, done) {
                 });
             }, function(err) {
                 if (err) {
-                    console.log(err);
+                    return done(err);
                 }
                 //added all the matches to kue
                 async.mapSeries(players, function(player, cb) {
@@ -61,7 +63,8 @@ module.exports = function getFullMatchHistory(heroes, done) {
                         account_id: player.account_id
                     }, {
                         $set: {
-                            full_history_time: new Date()
+                            full_history_time: new Date(),
+                            fh_unavailable: player.unavailable
                         }
                     }, function(err) {
                         console.log("got full match history for %s", player.account_id);
@@ -74,10 +77,31 @@ module.exports = function getFullMatchHistory(heroes, done) {
         });
     });
 
+    function getHistoryByHero(player, cb) {
+        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
+        async.mapSeries(heroArray, function(hero_id, cb) {
+            //make a request for every possible hero
+            var container = generateJob("api_history", {
+                account_id: player.account_id,
+                hero_id: hero_id,
+                matches_requested: 100
+            });
+            getApiMatchPage(container.url, function(err) {
+                console.log("%s matches found", Object.keys(match_ids).length);
+                cb(err);
+            });
+        }, function(err) {
+            player.fh_unavailable = Boolean(err);
+            //done with this player
+            cb(err);
+        });
+    }
+
     function getApiMatchPage(url, cb) {
         getData(url, function(err, body) {
             if (err) {
-                //non-retryable error
+                //non-retryable error, probably the user's account is private
+                console.log("non-retryable error");
                 return cb(err);
             }
             //response for match history for single player
@@ -102,25 +126,6 @@ module.exports = function getFullMatchHistory(heroes, done) {
                 url = urllib.format(parse);
                 getApiMatchPage(url, cb);
             }
-        });
-    }
-
-    function getHistoryByHero(player, cb) {
-        //use steamapi via specific player history and specific hero id (up to 500 games per hero)
-        async.mapSeries(heroArray, function(hero_id, cb) {
-            //make a request for every possible hero
-            var container = generateJob("api_history", {
-                account_id: player.account_id,
-                hero_id: hero_id,
-                matches_requested: 100
-            });
-            getApiMatchPage(container.url, function(err) {
-                console.log("%s matches found", Object.keys(match_ids).length);
-                cb(err);
-            });
-        }, function(err) {
-            //done with this player
-            cb(err);
         });
     }
 };
