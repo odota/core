@@ -198,8 +198,9 @@ function mode(array) {
 function getParseSchema() {
     return {
         "version": 0,
-        "game_zero": 0,
         "match_id": 0,
+        "times": [],
+        "chat": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
@@ -235,9 +236,7 @@ function getParseSchema() {
                 "healing": {},
                 "ability_trigger": {}
             };
-        }),
-        "times": [],
-        "chat": []
+        })
     };
 }
 module.exports = {
