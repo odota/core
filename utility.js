@@ -200,7 +200,6 @@ function getParseSchema() {
         "version": 0,
         "match_id": 0,
         "times": [],
-        "chat": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
@@ -215,6 +214,7 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
+                "chat": [],
                 "pos": {},
                 "lane_pos": {},
                 "obs": {},
@@ -234,8 +234,7 @@ function getParseSchema() {
                 "modifier_applied": {},
                 "modifier_lost": {},
                 "healing": {},
-                "ability_trigger": {},
-                "purchase_time": {}
+                "ability_trigger": {}
             };
         })
     };

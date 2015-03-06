@@ -9,16 +9,16 @@ block match_content
           th Hero
           th Time
           th Message
-        each message in match.parsed_data.chat || []
+        each message in match.chat
           - var p = match.players[message.slot] || {}
           - var hero = constants.heroes[p.hero_id]
           tr(class=p.isRadiant ? "success" : "danger")
             if hero
               td: img(src=hero.img,title=hero.localized_name)
             else
-              td= message.slot
-            td.format-seconds= message.time
-            td= message.key
+              td=message.slot
+            td.format-seconds=message.time
+            td=message.key
     .col-md-5
       style .skyscraper {margin-top: 2em;}
       include ads/skyscraper

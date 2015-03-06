@@ -53,22 +53,22 @@ module.exports = function generateConstants(outputFile, done) {
             for (var j = 0; j < 128; j++) {
                 var lane;
                 if (Math.abs(i - (127 - j)) < 10) {
-                    lane = 1;
+                    lane = 2; //mid
                 }
                 else if (j < 27 || i < 27) {
-                    lane = 2;
+                    lane = 3; //top
                 }
                 else if (j >= 100 || i >= 100) {
-                    lane = 0;
+                    lane = 1; //bot
                 }
                 else if (i < 45) {
-                    lane = 4;
+                    lane = 5; //rjung
                 }
                 else if (i >= 82) {
-                    lane = 3;
+                    lane = 4; //djung
                 }
                 else {
-                    lane = 1;
+                    lane = 2; //mid
                 }
                 constants.lanes[i].push(lane);
             }

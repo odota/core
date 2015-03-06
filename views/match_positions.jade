@@ -27,7 +27,7 @@ block match_content
                       else
                         =player.hero_id
                     td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane]}
-                    td.activate(data-index=ind, data-type="pos") #{(match.posData[ind].pos.length/128/128*100).toFixed(2)}%
+                    td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
                     td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
                     td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
 

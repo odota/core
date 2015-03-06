@@ -11,7 +11,7 @@ block playercontent
             th Games
             th Winrate          
         each teammate in player.teammates
-          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id && teammate.games > 2) 
+          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id)
             tr
               td
                 img.user(src=teammate.avatar)

@@ -5,6 +5,11 @@
     "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata",
     "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata"
   },
+  "leaver_status": {
+    "0": "Played",
+    "1": "Left Safely",
+    "2": "Abandoned"
+  },
   "gold_reasons": {
     "0": {
       "name": "Other",
@@ -54,11 +59,11 @@
     "3": "Roshan"
   },
   "lane_ids": {
-    "0": "Bottom",
-    "1": "Middle",
-    "2": "Top",
-    "3": "Radiant Jungle",
-    "4": "Dire Jungle"
+    "1": "Bottom",
+    "2": "Middle",
+    "3": "Top",
+    "4": "Radiant Jungle",
+    "5": "Dire Jungle"
   },
   "runes": {
     "0": {
@@ -936,6 +941,7 @@
     "5625": "phoenix_fire_spirits",
     "5626": "phoenix_sun_ray",
     "5630": "phoenix_supernova",
+    "5631": "phoenix_fire_spirits",
     "5632": "drow_ranger_wave_of_silence",
     "5637": "oracle_fortunes_end",
     "5638": "oracle_fates_edict",

@@ -34,28 +34,10 @@ function prepareMatch(match_id, cb) {
                         if (err) {
                             return cb(err);
                         }
-                        patchData(match);
-                        sortDetails(match);
-                        generateGraphData(match);
-                        match.posData = match.players.map(function(p) {
-                            var d = {
-                                "obs": true,
-                                "sen": true,
-                                "pos": true,
-                                "lane_pos": true
-                            };
-                            return generatePositionData(d, p.parsedPlayer);
-                        });
-                        match.players.forEach(function(p, ind) {
-                            var lanes = [];
-                            for (var i = 0; i < match.posData[ind].lane_pos.length; i++) {
-                                var d = match.posData[ind].lane_pos[i];
-                                for (var j = 0; j < d.value; j++) {
-                                    lanes.push(constants.lanes[d.y][d.x]);
-                                }
-                            }
-                            p.parsedPlayer.lane = mode(lanes);
-                        });
+                        //for rendering a match we can use a blank valid schema if deprecated, set a flag to allow it through compute
+                        match.display_only = true;
+                        computeMatchData(match);
+                        renderMatch(match);
                         //Add to cache if we have parsed data
                         if (match.parsed_data && config.NODE_ENV !== "development") {
                             redis.setex(key, 86400, JSON.stringify(match));
@@ -71,6 +53,7 @@ function prepareMatch(match_id, cb) {
 function generatePositionData(d, p) {
     //d, a hash of keys to process
     //p, a player containing keys with values as position hashes
+    //stores the resulting arrays in the keys of d
     for (var key in d) {
         var t = [];
         for (var x in p[key]) {
@@ -87,75 +70,76 @@ function generatePositionData(d, p) {
     return d;
 }
 
-function patchData(match) {
-    //make old parsed data format fit, enrich each player with a parsedPlayer property
-    var schema = utility.getParseSchema();
-    if (!match.parsed_data || !match.parsed_data.version || match.parsed_data.version <= 3) {
-        //nonexistent or old data, blank it
-        match.parsed_data = schema;
+function computeMatchData(match) {
+    if (!match.parsed_data || !match.parsed_data.version || match.parsed_data.version < 4) {
+        //nonexistent or deprecated data, use a blank schema or null it
+        match.parsed_data = match.display_only ? utility.getParseSchema() : null;
     }
     else if (match.parsed_data.version === 4) {
-        //v4 data, patch it
-        mergeMatchData(match);
-        match.players.forEach(function(player, i) {
-            var hero = constants.heroes[player.hero_id];
-            var parsedHero = match.parsed_data.heroes[hero.name];
-            var parseSlot = player.player_slot % (128 - 5);
-            var parsedPlayer = match.parsed_data.players[parseSlot];
-            parsedPlayer.purchase = parsedHero.itembuys;
-            parsedPlayer.buyback_log = parsedPlayer.buybacks;
-            parsedPlayer.stuns = parsedPlayer.stuns;
-            parsedPlayer.ability_uses = parsedHero.abilityuses;
-            parsedPlayer.item_uses = parsedHero.itemuses;
-            parsedPlayer.gold_reasons = parsedHero.gold_log;
-            parsedPlayer.xp_reasons = parsedHero.xp_log;
-            parsedPlayer.damage = parsedHero.damage;
-            parsedPlayer.hero_hits = parsedHero.hero_hits;
-            parsedPlayer.purchase_log = parsedHero.timeline;
-            parsedPlayer.kills_log = parsedHero.herokills;
-            parsedPlayer.kills = parsedHero.kills;
-            /*
-            parsedPlayer.pos = parsedPlayer.positions.map(function(p) {
-                return {
-                    x: p[0],
-                    y: p[1],
-                    value: 1
-                };
-            });
-            //get the first 10 values for lane calc
-            parsedPlayer.lane_pos = parsedPlayer.pos.slice(0, 10);
-            */
-            //ensure all fields are present
-            mergeObjects(parsedPlayer, schema.players[i]);
-        });
-        match.parsed_data.chat.forEach(function(c) {
-            c.key = c.text;
-        });
+        patchv4(match);
     }
-    match.players.forEach(function(player) {
+    //add a parsedplayer property to each player, and comppute more stats
+    match.players.forEach(function(player, ind) {
         player.isRadiant = isRadiant(player);
-        //mapping 0 to 0, 128 to 5, etc.
-        var parseSlot = player.player_slot % (128 - 5);
-        var p = match.parsed_data.players[parseSlot];
-        p.neutral_kills = 0;
-        p.tower_kills = 0;
-        for (var key in p.kills) {
-            if (key.indexOf("npc_dota_neutral") === 0) {
-                p.neutral_kills += p.kills[key];
+        var p = {};
+        if (match.parsed_data) {
+            //at this point the data should be either safely in v5 format or null
+            //mapping 0 to 0, 128 to 5, etc.
+            var parseSlot = player.player_slot % (128 - 5);
+            p = match.parsed_data.players[parseSlot];
+            p.neutral_kills = 0;
+            p.tower_kills = 0;
+            for (var key in p.kills) {
+                if (key.indexOf("npc_dota_neutral") === 0) {
+                    p.neutral_kills += p.kills[key];
+                }
+                if (key.indexOf("_tower") !== -1) {
+                    p.tower_kills += p.kills[key];
+                }
             }
-            if (key.indexOf("_tower") !== -1) {
-                p.tower_kills += p.kills[key];
+            //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+            p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
+            //convert position hashes to heatmap array of x,y,value
+            var d = {
+                "obs": true,
+                "sen": true,
+                "pos": true,
+                "lane_pos": true
+            };
+            p.posData = generatePositionData(d, p);
+            //compute lanes
+            var lanes = [];
+            for (var i = 0; i < p.posData.lane_pos.length; i++) {
+                var dp = p.posData.lane_pos[i];
+                for (var j = 0; j < dp.value; j++) {
+                    lanes.push(constants.lanes[dp.y][dp.x]);
+                }
+            }
+            p.lane = mode(lanes);
+            p.explore = p.posData.pos.length / 128 / 128;
+            //compute hashes of purchase time sums and counts from logs
+            p.purchase_time = {};
+            p.purchase_time_count = {};
+            for (var i = 0; i < p.purchase_log.length; i++) {
+                var k = p.purchase_log[i].key;
+                var time = p.purchase_log[i].time;
+                if (!p.purchase_time[k]) {
+                    p.purchase_time[k] = 0;
+                    p.purchase_time_count[k] = 0;
+                }
+                p.purchase_time[k] += time;
+                p.purchase_time_count[k] += 1;
             }
         }
-        //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-        p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
         player.parsedPlayer = p;
     });
 }
 
-function sortDetails(match) {
-    //converts hashes to arrays and sorts them
+function renderMatch(match) {
+    //build the chat
+    match.chat = [];
     match.players.forEach(function(player, i) {
+        //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
         var t = [];
         for (var key in p.ability_uses) {
@@ -172,6 +156,9 @@ function sortDetails(match) {
                 console.log(key);
             }
         }
+        t.sort(function(a, b) {
+            return b.val - a.val;
+        });
         p.ability_uses_arr = t;
         var u = [];
         for (var key in p.item_uses) {
@@ -187,6 +174,9 @@ function sortDetails(match) {
                 console.log(key);
             }
         }
+        u.sort(function(a, b) {
+            return b.val - a.val;
+        });
         p.item_uses_arr = u;
         var v = [];
         for (var key in p.damage) {
@@ -202,79 +192,19 @@ function sortDetails(match) {
                 //console.log(key);
             }
         }
-        p.damage_arr = v;
-        t.sort(function(a, b) {
-            return b.val - a.val;
-        });
-        u.sort(function(a, b) {
-            return b.val - a.val;
-        });
         v.sort(function(a, b) {
             return b.val - a.val;
         });
+        p.damage_arr = v;
+        match.chat = match.chat.concat(p.chat);
     });
-}
-
-function mergeMatchData(match) {
-    var heroes = match.parsed_data.heroes;
-    //loop through all units
-    //look up corresponding hero_id
-    //hero if can find in constants
-    //find player slot associated with that unit(hero_to_slot)
-    //merge into player's primary unit
-    //if not hero attempt to associate with a hero
-    for (var key in heroes) {
-        var primary = key;
-        if (constants.hero_names[key]) {
-            //is a hero
-            //merging multiple heroes together, only occurs in ARDM
-            var hero_id = constants.hero_names[key].id;
-            var slot = match.parsed_data.hero_to_slot[hero_id];
-            if (match.players[slot]) {
-                var primary_id = match.players[slot].hero_id;
-                primary = constants.heroes[primary_id].name;
-                //build hero_ids for each player
-                if (!match.players[slot].hero_ids) {
-                    match.players[slot].hero_ids = [];
-                }
-                match.players[slot].hero_ids.push(hero_id);
-            }
-            else {
-                //console.log("couldn't find slot for hero id %s", hero_id);
-            }
-        }
-        else {
-            //is not a hero
-            primary = getAssociatedHero(key, heroes);
-        }
-        if (key !== primary) {
-            //merge the objects into primary, but not with itself
-            mergeObjects(heroes[primary], heroes[key]);
-        }
-    }
-    return match;
-}
-
-function getAssociatedHero(unit, heroes) {
-    //assume all illusions belong to that hero
-    if (unit.slice(0, "illusion_".length) === "illusion_") {
-        unit = unit.slice("illusion_".length);
-    }
-    //attempt to recover hero name from unit
-    if (unit.slice(0, "npc_dota_".length) === "npc_dota_") {
-        //split by _
-        var split = unit.split("_");
-        //get the third element
-        var identifiers = [split[2], split[2] + "_" + split[3]];
-        identifiers.forEach(function(id) {
-            //append to npc_dota_hero_, see if matches
-            var attempt = "npc_dota_hero_" + id;
-            if (heroes[attempt]) {
-                unit = attempt;
-            }
-        });
-    }
-    return unit;
+    match.chat.sort(function(a, b) {
+        return a.time - b.time;
+    });
+    match.graphData = generateGraphData(match);
+    match.posData = match.players.map(function(p) {
+        return p.parsedPlayer.posData;
+    });
 }
 
 function generateGraphData(match) {
@@ -330,15 +260,15 @@ function generateGraphData(match) {
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {
-            col.push(player.parsedPlayer.gold_reasons[key] || 0);
+            var g = player.parsedPlayer.gold_reasons;
+            col.push(g[key] || 0);
         });
         columns.push(col);
     }
     data.cats = categories;
     data.goldCols = columns;
     data.gold_reasons = gold_reasons;
-    match.graphData = data;
-    return match;
+    return data;
 }
 
 function fillPlayerNames(players, cb) {
@@ -407,6 +337,7 @@ function getRatingData(account_id, cb) {
 function advQuery(select, options, cb) {
     //todo implement this
     //api wants full matches back, but no aggregation
+    //player pages wants matches by account_id
     //custom query wants some fields back, with aggregation on those fields
     //client options should include:
     //filter: specific player/specific hero id
@@ -492,12 +423,6 @@ function aggregator(matches, fields) {
         "item_uses": function(key, m, p) {
             agg(key, p.parsedPlayer.item_uses);
         },
-        "ward_observer": function(key, m, p) {
-            agg(key, p.parsedPlayer.item_uses.ward_observer);
-        },
-        "ward_sentry": function(key, m, p) {
-            agg(key, p.parsedPlayer.item_uses.ward_sentry);
-        },
         "hero_id": function(key, m, p) {
             agg(key, p.hero_id);
         },
@@ -509,33 +434,71 @@ function aggregator(matches, fields) {
         },
         "purchase_time": function(key, m, p) {
             agg(key, p.parsedPlayer.purchase_time);
+        },
+        "purchase_time_count": function(key, m, p) {
+            agg(key, p.parsedPlayer.purchase_time_count);
+        },
+        "leaver_status": function(key, m, p) {
+            agg(key, p.leaver_status);
+        },
+        "last_hits": function(key, m, p) {
+            agg(key, p.last_hits);
+        },
+        "denies": function(key, m, p) {
+            agg(key, p.denies);
+        },
+        "xp_per_min": function(key, m, p) {
+            agg(key, p.xp_per_min);
+        },
+        "hero_healing": function(key, m, p) {
+            agg(key, p.hero_healing);
+        },
+        "cluster": function(key, m, p) {
+            agg(key, m.cluster);
+        },
+        "first_blood_time": function(key, m, p) {
+            agg(key, m.first_blood_time);
+        },
+        "lobby_type": function(key, m, p) {
+            agg(key, m.lobby_type);
+        },
+        "game_mode": function(key, m, p) {
+            agg(key, m.game_mode);
+        },
+        "stuns": function(key, m, p) {
+            agg(key, p.parsedPlayer.stuns);
+        },
+        "lane": function(key, m, p) {
+            agg(key, p.parsedPlayer.lane);
+        },
+        "purchase": function(key, m, p) {
+            agg(key, p.parsedPlayer.purchase);
+        },
+        "p_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.kills);
+        },
+        "gold_reasons": function(key, m, p) {
+            agg(key, p.parsedPlayer.gold_reasons);
+        },
+        "xp_reasons": function(key, m, p) {
+            agg(key, p.parsedPlayer.xp_reasons);
+        },
+        "ability_uses": function(key, m, p) {
+            agg(key, p.parsedPlayer.ability_uses);
+        },
+        "hero_hits": function(key, m, p) {
+            agg(key, p.parsedPlayer.hero_hits);
         }
     };
     //todo aggregations
-    //leaver status
-    //lhs
-    //denies
-    //xpm
-    //hero healing
-    //cluster
-    //first_blood_time
-    //lobby_type
-    //game_mode
-    //stuns
-    //lifetime lane counts
-    //lifetime purchases
-    //lifetime kill counts, dewards
-    //buyback counts
-    //lifetime gold/xp reasons
-    //lifetime ability uses/hero hits
-    //define constant skillshots
+    //display ward buys, ward uses, ward kills, tp buys, tp uses
+    //dusts used/modifiers applied?  attach specific modifier names to abilities in order to compute accuracy for non-damaging abilities?
+    //define constants skillshots to compute (ability uses/hits)
     //Grouping of heroes played(by valve groupings / primary attribute)
-    //Chat(ggs called / #messages, profanity analysis)
-    //purchase_time
-    //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
-    //by default, aggregate everything in the "types" list
-    fields = fields || types;
+    //Chat(ggs called, #messages, profanity analysis)
+    //divide sum of purchase time by purchase time count for mean time
     var aggData = {};
+    fields = fields || types;
     for (var type in fields) {
         aggData[type] = {
             sum: 0,
@@ -547,18 +510,21 @@ function aggregator(matches, fields) {
     }
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
-        //select the first player only, projection means only the desired player will be included
         var p = m.players[0];
         for (var type in fields) {
-            types[type](type, m, p);
-            //todo support dynamic type
-            //split the key by "." and go to the first property of player, then the second property with that (make this scale with an array)
+            if (types[type]) {
+                types[type](type, m, p);
+            }
         }
     }
     return aggData;
 
-    function agg(key, value) {
+    function agg(key, value, match) {
         var m = aggData[key];
+        if (typeof value === "undefined") {
+            return;
+        }
+        m.n += 1;
         if (typeof value === "object") {
             utility.mergeObjects(m.counts, value);
         }
@@ -568,25 +534,31 @@ function aggregator(matches, fields) {
             }
             m.counts[value] += 1;
             m.sum += (value || 0);
-            m.min = (value < m.min) ? value : m.min;
-            m.max = (value > m.max) ? value : m.max;
-            m.n += (typeof value === "undefined") ? 0 : 1;
+            if (value < m.min) {
+                m.min = value;
+            }
+            if (value > m.max) {
+                m.max = value;
+            }
         }
     }
 }
 
-function filter(type, matches) {
+function filter(matches, type) {
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
-        //todo allow boolean logic (AND OR filters)
-        //AND can be implemented by applying filters in series
-        if (type === "balanced") {
+        if (type["balanced"]) {
             if (constants.modes[matches[i].game_mode].balanced) {
                 filtered.push(matches[i]);
             }
         }
-        else if (type === "win") {
+        else if (type["win"]) {
             if (isRadiant(matches[i].players[0]) === matches[i].radiant_win) {
+                filtered.push(matches[i]);
+            }
+        }
+        else if (type["hero_id"]) {
+            if (matches[i].players[0].hero_id === type["hero_id"]) {
                 filtered.push(matches[i]);
             }
         }
@@ -598,6 +570,7 @@ function filter(type, matches) {
 }
 
 function fillPlayerMatches(player, constants, matchups, cb) {
+    //todo filter by hero on trends page?  expand to advanced querying?
     console.time('db');
     var account_id = player.account_id;
     db.matches.find({
@@ -606,12 +579,14 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         fields: {
             start_time: 1,
             match_id: 1,
-            game_mode: 1,
             duration: 1,
             cluster: 1,
             radiant_win: 1,
             parse_status: 1,
             parsed_data: 1,
+            first_blood_time: 1,
+            lobby_type: 1,
+            game_mode: 1,
             "players.$": 1
         }
     }, function(err, matches) {
@@ -621,17 +596,25 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         }
         console.time('patch');
         for (var i = 0; i < matches.length; i++) {
-            patchData(matches[i]);
+            computeMatchData(matches[i]);
         }
         console.timeEnd('patch');
         console.time('filter');
-        var balanced = filter("balanced", matches);
-        var balanced_win_matches = filter("win", balanced);
+        var balanced = filter(matches, {
+            "balanced": 1
+        });
+        var balanced_win_matches = filter(balanced, {
+            "win": 1
+        });
         console.timeEnd('filter');
         console.time('agg');
-        player.aggData_all = aggregator(matches);
+        player.aggData_all = aggregator(matches, {
+            "start_time": 1
+        });
         player.aggData = aggregator(balanced);
-        player.aggData_win = aggregator(balanced_win_matches);
+        player.aggData_win = aggregator(balanced_win_matches, {
+            "hero_id": 1
+        });
         console.timeEnd('agg');
         console.time('post');
         var radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later when doing teammates/matchups
@@ -650,7 +633,8 @@ function fillPlayerMatches(player, constants, matchups, cb) {
             "obs": true,
             "sen": true
         };
-        player.posData = [generatePositionData(d, player)];
+        generatePositionData(d, player);
+        player.posData = [d];
         player.heroes = {};
         player.heroes_arr = [];
         for (var hero_id in constants.heroes) {
@@ -684,7 +668,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         });
         player.matches = matches;
         console.timeEnd('post');
-        //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
+        require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         if (matchups) {
             console.time('matchups');
             computeMatchups(player, radiantMap, function(err) {
@@ -699,37 +683,43 @@ function fillPlayerMatches(player, constants, matchups, cb) {
 }
 
 function computeMatchups(player, radiantMap, cb) {
-    //compute stats that require iteration through all players in a match
-    var teammates = {};
-    player.heroes = {};
-    for (var hero_id in constants.heroes) {
-        var obj = {
-            hero_id: hero_id,
-            games: 0,
-            win: 0,
-            with_games: 0,
-            with_win: 0,
-            against_games: 0,
-            against_win: 0
-        };
-        player.heroes[hero_id] = obj;
-    }
     db.matches.find({
         'players.account_id': player.account_id
     }, {
         fields: {
             "players.account_id": 1,
             "players.hero_id": 1,
+            "players.player_slot": 1,
             match_id: 1,
-            radiant_win: 1
+            radiant_win: 1,
+            game_mode: 1
         }
     }, function(err, docs) {
         if (err) {
             return cb(err);
         }
+        //compute stats that require iteration through all players in a match
+        var teammates = {};
+        player.heroes = {};
+        for (var hero_id in constants.heroes) {
+            var obj = {
+                hero_id: hero_id,
+                games: 0,
+                win: 0,
+                with_games: 0,
+                with_win: 0,
+                against_games: 0,
+                against_win: 0
+            };
+            player.heroes[hero_id] = obj;
+        }
+        docs = filter(docs, {
+            "balanced": 1
+        });
         for (var i = 0; i < docs.length; i++) {
             var match = docs[i];
             var playerRadiant = radiantMap[match.match_id];
+            var player_win = (playerRadiant === match.radiant_win);
             for (var j = 0; j < match.players.length; j++) {
                 var tm = match.players[j];
                 var tm_hero = tm.hero_id;
@@ -739,29 +729,31 @@ function computeMatchups(player, radiantMap, cb) {
                         teammates[tm.account_id] = {
                             account_id: tm.account_id,
                             win: 0,
-                            lose: 0,
                             games: 0
                         };
                     }
                     teammates[tm.account_id].games += 1;
-                    playerRadiant === match.radiant_win ? teammates[tm.account_id].win += 1 : teammates[tm.account_id].lose += 1;
+                    teammates[tm.account_id].win += player_win ? 1 : 0;
                     //count teammate heroes
-                    if (tm_hero) {
+                    if (tm_hero in player.heroes) {
                         if (tm.account_id === player.account_id) {
+                            //console.log("self %s", tm_hero);
                             player.heroes[tm_hero].games += 1;
-                            player.heroes[tm_hero].win += (playerRadiant === match.radiant_win) ? 1 : 0;
+                            player.heroes[tm_hero].win += player_win ? 1 : 0;
                         }
                         else {
+                            //console.log("teammate %s", tm_hero);
                             player.heroes[tm_hero].with_games += 1;
-                            player.heroes[tm_hero].with_win += (playerRadiant === match.radiant_win) ? 1 : 0;
+                            player.heroes[tm_hero].with_win += player_win ? 1 : 0;
                         }
                     }
                 }
                 else {
                     //count enemy heroes
-                    if (tm_hero) {
+                    if (tm_hero in player.heroes) {
+                        //console.log("opp %s", tm_hero);
                         player.heroes[tm_hero].against_games += 1;
-                        player.heroes[tm_hero].against_win += (playerRadiant === match.radiant_win) ? 1 : 0;
+                        player.heroes[tm_hero].against_win += player_win ? 1 : 0;
                     }
                 }
             }
@@ -769,9 +761,13 @@ function computeMatchups(player, radiantMap, cb) {
         player.teammates = [];
         for (var id in teammates) {
             var count = teammates[id];
-            player.teammates.push(count);
+            if (count.games >= 3) {
+                player.teammates.push(count);
+            }
         }
+        console.time('teammate_lookup');
         fillPlayerNames(player.teammates, function(err) {
+            console.timeEnd('teammate_lookup');
             cb(err);
         });
     });
@@ -784,3 +780,111 @@ module.exports = {
     prepareMatch: prepareMatch,
     advQuery: advQuery
 };
+//deprecated v4 functions
+function mergeMatchData(match) {
+    var heroes = match.parsed_data.heroes;
+    //loop through all units
+    //look up corresponding hero_id
+    //hero if can find in constants
+    //find player slot associated with that unit(hero_to_slot)
+    //merge into player's primary unit
+    //if not hero attempt to associate with a hero
+    for (var key in heroes) {
+        var primary = key;
+        if (constants.hero_names[key]) {
+            //is a hero
+            //merging multiple heroes together, only occurs in ARDM
+            var hero_id = constants.hero_names[key].id;
+            var slot = match.parsed_data.hero_to_slot[hero_id];
+            if (match.players[slot]) {
+                var primary_id = match.players[slot].hero_id;
+                primary = constants.heroes[primary_id].name;
+                //build hero_ids for each player
+                if (!match.players[slot].hero_ids) {
+                    match.players[slot].hero_ids = [];
+                }
+                match.players[slot].hero_ids.push(hero_id);
+            }
+            else {
+                //console.log("couldn't find slot for hero id %s", hero_id);
+            }
+        }
+        else {
+            //is not a hero
+            primary = getAssociatedHero(key, heroes);
+        }
+        if (key !== primary) {
+            //merge the objects into primary, but not with itself
+            mergeObjects(heroes[primary], heroes[key]);
+        }
+    }
+    return match;
+}
+
+function getAssociatedHero(unit, heroes) {
+    //assume all illusions belong to that hero
+    if (unit.slice(0, "illusion_".length) === "illusion_") {
+        unit = unit.slice("illusion_".length);
+    }
+    //attempt to recover hero name from unit
+    if (unit.slice(0, "npc_dota_".length) === "npc_dota_") {
+        //split by _
+        var split = unit.split("_");
+        //get the third element
+        var identifiers = [split[2], split[2] + "_" + split[3]];
+        identifiers.forEach(function(id) {
+            //append to npc_dota_hero_, see if matches
+            var attempt = "npc_dota_hero_" + id;
+            if (heroes[attempt]) {
+                unit = attempt;
+            }
+        });
+    }
+    return unit;
+}
+
+function patchv4(match) {
+    var schema = utility.getParseSchema();
+    mergeMatchData(match);
+    //ensure all parsed_data properties are present
+    for (var key in schema) {
+        match.parsed_data[key] = match.parsed_data[key] || schema[key];
+    }
+    match.players.forEach(function(player, i) {
+        var hero = constants.heroes[player.hero_id];
+        var parsedHero = match.parsed_data.heroes[hero.name];
+        var parseSlot = player.player_slot % (128 - 5);
+        var parsedPlayer = match.parsed_data.players[parseSlot];
+        parsedPlayer.purchase = parsedHero.itembuys;
+        parsedPlayer.buyback_log = parsedPlayer.buybacks;
+        parsedPlayer.stuns = parsedPlayer.stuns;
+        parsedPlayer.ability_uses = parsedHero.abilityuses;
+        parsedPlayer.item_uses = parsedHero.itemuses;
+        parsedPlayer.gold_reasons = parsedHero.gold_log;
+        parsedPlayer.xp_reasons = parsedHero.xp_log;
+        parsedPlayer.damage = parsedHero.damage;
+        parsedPlayer.hero_hits = parsedHero.hero_hits;
+        parsedPlayer.purchase_log = parsedHero.timeline;
+        parsedPlayer.kills_log = parsedHero.herokills;
+        parsedPlayer.kills = parsedHero.kills;
+        parsedPlayer.pos = null;
+        parsedPlayer.lane = null;
+        /*
+        parsedPlayer.pos = parsedPlayer.positions.map(function(p) {
+            return {
+                x: p[0],
+                y: p[1],
+                value: 1
+            };
+        });
+        //get the first 10 values for lane calc
+        parsedPlayer.lane_pos = parsedPlayer.pos.slice(0, 10);
+        */
+        //ensure all player properties are present
+        mergeObjects(parsedPlayer, schema.players[i]);
+    });
+    match.parsed_data.chat.forEach(function(c) {
+        c.key = c.text;
+    });
+    match.parsed_data.players[0].chat = match.parsed_data.chat;
+}

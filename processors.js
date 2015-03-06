@@ -159,10 +159,9 @@ function runParser(job, cb) {
             if (e.key.indexOf("recipe_") === -1) {
                 e.type = "purchase_log";
                 populate(e);
-                if (!(e.key in parsed_data.players[e.slot].purchase_time)) {
-                    //log only the first build of each item
-                    parsed_data.players[e.slot].purchase_time[e.key] = e.time;
-                }
+                //e.type = "purchase_time";
+                //e.value = e.time;
+                //populate(e);
             }
         },
         "modifier_applied": getSlot,
@@ -186,7 +185,7 @@ function runParser(job, cb) {
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
             e.slot = name_to_slot[e.unit];
-            setParsedData(e);
+            parsed_data.players[e.slot].chat.push(e);
         },
         "stuns": populate,
         "runes": populate,

@@ -23,6 +23,9 @@ block match_content
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
                     th: abbr(title="Neutral creeps killed") NK
                     th: abbr(title="Towers killed") TK
+                    each val, key in constants.runes
+                      th=val.name
+
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
@@ -44,6 +47,8 @@ block match_content
                   td #{p.stuns.toFixed(2)}
                   td #{p.neutral_kills || "-"}
                   td #{p.tower_kills || "-"}
+                  each val, key in constants.runes
+                    td #{p.runes[key] || "-"}
                   
         h2 Performance
         .table-responsive
@@ -53,8 +58,8 @@ block match_content
                 thead
                   tr
                     th Hero
-                    th: abbr(title="Skills used (Number of hits on enemy heroes)") Skills (Hero Hits)
-                    th: abbr(title="Items used") Items
+                    th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hero Hits)
+                    th: abbr(title="Items used") Item Use
                     th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
@@ -127,24 +132,3 @@ block match_content
                         =player.hero_id
                       each val, key in constants.xp_reasons
                         td #{p.xp_reasons[key] || "-"}
-        .row
-          .col-md-12.table-responsive
-            h2 Runes
-            table.table.table-hover.summable
-              thead
-                tr
-                  th Hero
-                  each val, key in constants.runes
-                    th=val.name
-              tbody
-                each player, i in match.players
-                  tr(class = player.isRadiant ? "success" : "danger")
-                    - var hero = constants.heroes[player.hero_id]
-                    - var p = player.parsedPlayer
-                    td.hero
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id
-                      each val, key in constants.runes
-                        td #{p.runes[key] || "-"}
