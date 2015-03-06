@@ -684,7 +684,7 @@ function fillPlayerMatches(player, constants, matchups, cb) {
         });
         player.matches = matches;
         console.timeEnd('post');
-        require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
+        //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         if (matchups) {
             console.time('matchups');
             computeMatchups(player, radiantMap, function(err) {
