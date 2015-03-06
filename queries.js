@@ -492,7 +492,7 @@ function aggregator(matches, fields) {
         "item_uses": function(key, m, p) {
             agg(key, p.parsedPlayer.item_uses);
         },
-        //todo support queries for any item
+        //todo support queries for any item_uses
         //selected list of consumables (sum,min,max,avg, n), wards, tps
         "ward_observer": function(key, m, p) {
             agg(key, p.parsedPlayer.item_uses.ward_observer);

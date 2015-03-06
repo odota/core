@@ -24,7 +24,8 @@ block playercontent
       h3 Sentries (#{player.aggData.item_uses.counts.ward_sentry || 0})
       #map2.mapContainer
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-      
+  hr
+  pre #{JSON.stringify(player.aggData,null,2)}
 append footer_assets
   script.
     var data = !{JSON.stringify(player.histogramData)}
