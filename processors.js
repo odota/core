@@ -105,8 +105,8 @@ function runParser(job, cb) {
     parsed_data.version = constants.parser_version;
     var preTypes = {
         "state": function(e) {
-            if (e.type === "PLAYING") {
-                game_zero = e.value;
+            if (e.key === "PLAYING") {
+                game_zero = e.time;
             }
             console.log(e);
         },
@@ -159,6 +159,10 @@ function runParser(job, cb) {
             if (e.key.indexOf("recipe_") === -1) {
                 e.type = "purchase_log";
                 populate(e);
+                if (!(e.key in parsed_data.players[e.slot].purchase_time)) {
+                    //log only the first build of each item
+                    parsed_data.players[e.slot].purchase_time[e.key] = e.time;
+                }
             }
         },
         "modifier_applied": getSlot,
@@ -231,6 +235,7 @@ function runParser(job, cb) {
                 console.log(e);
             }
         }
+        fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
 
@@ -338,6 +343,7 @@ function runParser(job, cb) {
         }
         else {
             //we must use the full reference since this is a primitive type
+            //use the value most of the time, but key when stuns since value only holds Integers in Java
             parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
         }
     }

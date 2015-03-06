@@ -234,7 +234,8 @@ function getParseSchema() {
                 "modifier_applied": {},
                 "modifier_lost": {},
                 "healing": {},
-                "ability_trigger": {}
+                "ability_trigger": {},
+                "purchase_time": {}
             };
         })
     };

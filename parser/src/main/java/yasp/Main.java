@@ -388,7 +388,7 @@ public class Main {
 				Entry entry = new Entry();
 				entry.slot=i;
 				entry.type="stuns";
-				entry.key=stuns;
+				entry.value=stuns;
 				log.output(entry);
 			}
 
