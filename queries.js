@@ -530,7 +530,7 @@ function aggregator(matches, fields) {
     //Grouping of heroes played(by valve groupings / primary attribute)
     //Chat(ggs called / messages, Swearing / profanity analysis)
     //item timings, but this is an array!  can't look up item, so this could be a very slow query
-    //todo make parser store first/last build time for each item?
+    //todo make parser store first build time for each item?
     //custom queries: User selects user, spectre, radiance, get back array of radiance timings.
     fields = fields || types;
     //if not defined, do everything
