@@ -3,7 +3,7 @@ var matches = express.Router();
 var queries = require('../queries');
 var matchPages = {
     index: {
-        name: "Match"
+        name: "Basic"
     },
     details: {
         name: "Details"

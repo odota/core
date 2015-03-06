@@ -144,7 +144,8 @@
     "modes": {
       "0": {
         "id": 0,
-        "name": "Unknown"
+        "name": "Unknown",
+        "balanced": true
       },
       "1": {
         "id": 1,
@@ -211,8 +212,7 @@
       },
       "15": {
         "id": 15,
-        "name": "Custom",
-        "balanced": true
+        "name": "Custom"
       },
       "16": {
         "id": 16,
