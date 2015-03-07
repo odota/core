@@ -67,6 +67,10 @@ td.abilities img {
     width: 600px;
     height: 600px;
 }
+.mapContainer-small {
+    width: 300px;
+    height: 300px;
+}
 .map {
     width: 100%;
 }

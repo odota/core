@@ -12,9 +12,6 @@ var playerPages = {
     },
     matches: {
         name: "Matches"
-    },
-    matchups: {
-        name: "Matchups"
     }
 };
 players.get('/:account_id/:info?', function(req, res, next) {
@@ -28,7 +25,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerMatches(player, constants, info === "matchups", function(err) {
+            queries.fillPlayerMatches(player, constants, function(err) {
                 queries.getSets(function(err, results) {
                     queries.getRatingData(player.account_id, function(err, ratings) {
                         console.timeEnd("player page");

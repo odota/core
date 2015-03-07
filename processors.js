@@ -180,12 +180,32 @@ function runParser(job, cb) {
                 e.type = "kills_log";
                 populate(e);
             }
+            //reverse and log killed by
+            var r = {
+                time: e.time,
+                key: e.unit,
+                unit: e.key,
+                value: e.value,
+                type: "killed_by"
+            };
+            getSlotReverse(r);
         },
-        "damage": getSlot,
+        "damage": function(e) {
+            getSlot(e);
+            //reverse and count as damage taken
+            var r = {
+                time: e.time,
+                key: e.unit,
+                unit: e.key,
+                type: "damage_taken"
+            };
+            getSlotReverse(r);
+        },
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
             e.slot = name_to_slot[e.unit];
-            parsed_data.players[e.slot].chat.push(e);
+            //time, key, only, so we lose the original prefix (stored in unit)
+            populate(e);
         },
         "stuns": populate,
         "runes": populate,
@@ -217,14 +237,13 @@ function runParser(job, cb) {
             e.type = "sen_log";
             populate(e);
         },
-        "hero_hits": getSlot,
-        "damage_taken": getSlotReverse,
-        "killed_by": getSlotReverse
+        "hero_hits": getSlot
     };
 
     function postProcess() {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
+            //adjust time by zero value to get actual game time
             e.time -= game_zero;
             if (types[e.type]) {
                 types[e.type](e);
@@ -252,10 +271,12 @@ function runParser(job, cb) {
             return name;
         }
         else if (name.indexOf("illusion_") === 0) {
+            //associate illusions with the heroes they are illusions of
             var s = name.slice("illusion_".length);
             return s;
         }
         else if (name.indexOf("npc_dota_") === 0) {
+            //try to get the hero this minion is associated with
             //split by _
             var split = name.split("_");
             //get the third element
@@ -291,12 +312,13 @@ function runParser(job, cb) {
             console.log(e);
         }
         else if (t.constructor === Array) {
-            //determine whether we want the value only or the time and key
-            e = (e.interval) ? e.value : {
+            //determine whether we want the value only (interval) or the time and key (log)
+            //either way this creates a new value so e can be mutated later
+            var arrEntry = (e.interval) ? e.value : {
                 time: e.time,
                 key: e.key
             };
-            t.push(e);
+            t.push(arrEntry);
         }
         else {
             parsed_data[e.type] = e.value;
@@ -329,14 +351,16 @@ function runParser(job, cb) {
             console.log(e);
         }
         else if (t.constructor === Array) {
-            //determine whether we want the value only or the time and key
-            e = (e.interval) ? e.value : {
+            //determine whether we want the value only (interval) or the time and key (log)
+            //either way this creates a new value so e can be mutated later
+            var arrEntry = (e.interval) ? e.value : {
                 time: e.time,
                 key: e.key
             };
-            t.push(e);
+            t.push(arrEntry);
         }
         else if (typeof t === "object") {
+            //add it to hash of counts
             e.value = e.value || 1;
             t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
         }

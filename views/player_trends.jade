@@ -9,23 +9,102 @@ block playercontent
         button.btn.btn-default#next &raquo;
       #cal-heatmap
     .col-md-3
-      h3 Durations
-      #chart-duration
+      //these counts may not correspond to the map as they include ward transfers and matches without positional data
+      h4 Observers (#{player.aggData.obs.n || 0} games)
+      #map.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-3
-      h3 GPMs
-      #chart-gpms    
+      h4 Sentries (#{player.aggData.sen.n || 0} games)
+      #map2.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+
   hr
   .row
     .col-md-6
-      h3 Observers (#{player.aggData.item_uses.counts.ward_observer || 0})
-      #map.mapContainer
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+      h3 Durations
+      #chart-duration
     .col-md-6
-      h3 Sentries (#{player.aggData.item_uses.counts.ward_sentry || 0})
-      #map2.mapContainer
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+      h3 GPMs
+      #chart-gpms    
+      
   hr
-  pre #{JSON.stringify(player.aggData,null,2)}
+  .row
+    .col-md-6
+      h3 Lifetime
+      table.table
+        tr
+          th Stat
+          th N
+          th Sum
+          th Mean
+          th Min
+          th Max
+          //th Counts
+        each val, key in player.aggData
+          tr
+            td=key
+            td=val.n
+            td.format=val.sum
+            td.format=val.sum/val.n
+            td.format=val.min
+            td.format=val.max
+            //td=JSON.stringify(val.counts) 
+    .col-md-6
+      h3 Mean Build Times (#{player.aggData.purchase.n} games)
+      table.table
+        each val, key in player.aggData.purchase_time.counts
+          tr 
+            td=key
+            td=player.aggData.purchase.counts[key]
+            td.format-seconds=val/player.aggData.purchase_time_count.counts[key]
+  hr
+  .row
+    .col-md-5
+      h3 Teammates
+      table.table#teammates
+        thead
+          tr
+            th Name
+            th Games
+            th Win%       
+        each teammate in player.teammates
+          if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id)
+            tr
+              td
+                img.user(src=teammate.avatar)
+                a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+              td= teammate.games
+              td #{(100*teammate.win/teammate.games).toFixed(2)}%
+    .col-md-7
+      h3 Matchups
+      table.table#heroes
+        thead
+          tr
+            th Hero
+            th Hero Name
+            th As
+            th Win% As
+            th With
+            th Win% With
+            th Against
+            th Win% Against
+        each hero in constants.heroes
+          tr
+            td.hero
+              img(src=hero.img, title=hero.localized_name)
+            td=hero.localized_name
+            - var h = player.heroes[hero.id]
+            td #{h ? h.games : 0}
+            td #{h ? ~~(100*h.win/h.games) : 0}%
+            td #{h ? h.with_games : 0}
+            td #{h ? ~~(100*h.with_win/h.with_games) : 0}%
+            td #{h ? h.against_games : 0}
+            td #{h ? ~~(100*h.against_win/h.against_games) : 0}%
+
+append footer_assets
+  script.
+    playerTables();
+    
 append footer_assets
   script.
     var data = !{JSON.stringify(player.histogramData)}
@@ -46,8 +125,8 @@ append footer_assets
         
         function scaleAndExtrema(points, max, shift){
             points.forEach(function(p){
-              p.x*=(600/127);
-              p.y*=(600/127);
+              p.x*=(300/127);
+              p.y*=(300/127);
               p.value+=(shift || 0);
             })
             var vals = points.map(function(p){return p.value;});

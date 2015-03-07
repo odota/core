@@ -51,44 +51,27 @@ block content
               |                         
               #collapseFour.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
                 .panel-body
-                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays.
+                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays from that point on.  Note that probably only a few of your previous matches are listed.  If you remain an active user, we'll get your full match history.  We can get API data but cannot parse most full history matches, as the replay has expired.  We can only get a limited number of full histories per day, so please be patient.
             |                     
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFive', aria-expanded='false', aria-controls='collapseFive')
-                  | Why are my matches showing up, but don&apos;t get parsed?
+                  | Why are my matches missing parse data?
               |                         
               #collapseFive.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFive')
                 .panel-body
-                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSix', aria-expanded='false', aria-controls='collapseSix')
-                  | Why don&apos;t you have my old matches?
-              |                         
-              #collapseSix.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSix')
-                .panel-body
-                  | YASP only starts tracking your matches from when you signed in.  If we have a few of your games, these are games you were in with a tracked user.  Note that we can get API data but cannot parse matches older than 7 days, as the replay has expired.
+                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.  And of course, we can't parse matches older than 7 days as the replay has expired.
             |                     
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeven', aria-expanded='false', aria-controls='collapseSeven')
-                  | I signed in a while ago and just came back, why haven&apos;t my matches been tracked?
+                  | I signed in a while ago and just came back.  Why am I missing matches?
               |                         
               #collapseSeven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeven')
                 .panel-body
-                  | To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
+                  | To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.  You can either manually request those matches by ID or wait for the next full history scan to "fill" the gap.
             |  
           .panel-left.col-sm-6
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEight', aria-expanded='false', aria-controls='collapseEight')
-                  | How do untracking and full history eligibility work?
-              |                         
-              #collapseEight.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEight')
-                .panel-body
-                  | Currently, we untrack users who have not visited YASP for 3 days.  We get full histories for ~100 tracked users per day, so please be patient.
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseNine', aria-expanded='false', aria-controls='collapseNine')

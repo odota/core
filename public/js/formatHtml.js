@@ -3,7 +3,6 @@ var utility = require('./utility');
 var formatSeconds = utility.formatSeconds;
 var format = utility.format;
 var moment = require('moment');
-
 module.exports = function processHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
@@ -26,6 +25,7 @@ module.exports = function processHtml() {
                     .remove() //remove all the children
                     .end() //again go back to selected element
                     .text();
+                //todo support stuff like % symbols
                 target[j] += Number(content) || 0;
             });
         });
@@ -37,10 +37,15 @@ module.exports = function processHtml() {
             sum["0"] = key;
             for (var index in sum) {
                 var td = $("<td>");
-                if (index != "0") {
+                if (index !== "0") {
                     td.addClass('format');
                 }
                 td.text(sum[index]);
+                //mark if this team  "won" this category
+                var other = (key === "Radiant") ? "Dire" : "Radiant";
+                if (sum[index] > sums[other][index]) {
+                    td.addClass((key === "Radiant") ? 'success': 'danger');
+                }
                 tr.append(td);
             }
             tfoot.append(tr);

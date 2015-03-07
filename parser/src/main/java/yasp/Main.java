@@ -253,14 +253,6 @@ public class Main {
 							entry.value = cle.getValue();
 							entry.type = "damage";
 							log.output(entry);
-							if (true){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getTargetNameCompiled();
-								entry2.key = cle.getAttackerNameCompiled();
-								entry2.value = cle.getValue();
-								entry2.type = "damage_taken";
-								log.output(entry2);	
-							}
 							if (cle.isTargetHero() && !cle.isTargetIllusion()){
 								Entry entry2 = new Entry(time);
 								entry2.unit = cle.getAttackerNameCompiled();
@@ -299,13 +291,6 @@ public class Main {
 							entry.target_illusion = cle.isTargetIllusion();
 							entry.type = "kills";
 							log.output(entry);
-							if (true){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getTargetNameCompiled();
-								entry2.key = cle.getAttackerNameCompiled();
-								entry2.type = "killed_by";
-								log.output(entry2);
-							}
 							break;
 						case 5:
 							//ability use
@@ -336,6 +321,7 @@ public class Main {
 							entry.key = state;
 							entry.value = Integer.valueOf(time);
 							if (state.equals("PLAYING")){
+								//set the gamezero to sample interval (gold,lh,xp) at appropriate moments
 								gameZero = time;
 							}
 							log.output(entry);
@@ -366,7 +352,6 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled(); //triggered?
 							entry.key = cle.getInflictorName();
 							//entry.unit = cle.getTargetNameCompiled(); //triggerer?
-							//triggered and triggering hashes?
 							log.output(entry);
 							break;
 						default:

@@ -5,7 +5,7 @@ module.exports = function playerTables() {
             "order": [
                 [1, "desc"]
             ],
-            //"searching": false,
+            "searching": false,
             "paging": false
         });
         $('#heroes').dataTable({
@@ -19,7 +19,7 @@ module.exports = function playerTables() {
                 "targets": [1],
                 visible: false
             }],
-            //"searching": false,
+            "searching": false,
             "paging": false
         });
     });

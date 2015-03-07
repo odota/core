@@ -67,27 +67,27 @@
   },
   "runes": {
     "0": {
-      "name": "Double Damage",
+      "name": "DD",
       "img": ""
     },
     "1": {
-      "name": "Haste",
+      "name": "HST",
       "img": ""
     },
     "2": {
-      "name": "Illusion",
+      "name": "ILL",
       "img": ""
     },
     "3": {
-      "name": "Invisibility",
+      "name": "INV",
       "img": ""
     },
     "4": {
-      "name": "Regeneration",
+      "name": "REG",
       "img": ""
     },
     "5": {
-      "name": "Bounty",
+      "name": "BTY",
       "img": ""
     }
   },
