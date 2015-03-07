@@ -35,11 +35,18 @@ function prepareMatch(match_id, cb) {
                             return cb(err);
                         }
                         computeMatchData(match);
-                        //display, need all fields for invalids, templates expect an empty {} or []
-                        match.parsed_data = match.parsed_data || utility.getParseSchema();
+                        var schema = utility.getParseSchema();
+                        //make sure parsed_data has all fields
+                        if (!match.parsed_data) {
+                            match.parsed_data = schema;
+                        }
+                        //make sure each player's parsedplayer has all fields
+                        match.players.forEach(function(p, i) {
+                            mergeObjects(p.parsedPlayer, schema.players[i]);
+                        });
                         renderMatch(match);
-                        //Add to cache if we have parsed data
-                        if (match.parsed_data && config.NODE_ENV !== "development") {
+                        //Add to cache if status is parsed
+                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
                             redis.setex(key, 86400, JSON.stringify(match));
                         }
                         return cb(err, match);
@@ -148,8 +155,6 @@ function renderMatch(match) {
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
-        //console.log(match.parsed_data);
-        match.chat = match.chat.concat(p.chat);
         var t = [];
         for (var key in p.ability_uses) {
             var a = constants.abilities[key];
@@ -205,6 +210,10 @@ function renderMatch(match) {
             return b.val - a.val;
         });
         p.damage_arr = v;
+        p.chat.forEach(function(c) {
+            c.slot = i;
+            match.chat.push(c);
+        });
     });
     match.chat.sort(function(a, b) {
         return a.time - b.time;
@@ -344,7 +353,8 @@ function getRatingData(account_id, cb) {
 
 function advQuery(select, options, cb) {
     //todo implement this
-    //api wants full matches back, but no aggregation
+    //currently api is using it
+    //api wants matches but no aggregation
     //player pages wants matches by account_id
     //custom query wants some fields back, with aggregation on those fields
     //client options should include:
@@ -624,7 +634,6 @@ function fillPlayerMatches(player, constants, cb) {
         matches = filter(matches, {
             "hero_id": undefined
         });
-        console.log(matches.length);
         var balanced = filter(matches, {
             "balanced": 1
         });
@@ -683,7 +692,7 @@ function fillPlayerMatches(player, constants, cb) {
             players: {
                 $elemMatch: {
                     account_id: player.account_id
-                        //add hero_id filter if defined?
+                        //todo add hero_id filter if defined?
                 }
             }
         }, {

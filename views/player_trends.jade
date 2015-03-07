@@ -8,13 +8,13 @@ block playercontent
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       #cal-heatmap
+    h3 Warding (#{player.aggData.obs.n || 0} games)
     .col-md-3
-      //these counts may not correspond to the map as they include ward transfers and matches without positional data
-      h4 Observers (#{player.aggData.obs.n || 0} games)
+      h4 Observers 
       #map.mapContainer.mapContainer-small
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-3
-      h4 Sentries (#{player.aggData.sen.n || 0} games)
+      h4 Sentries
       #map2.mapContainer.mapContainer-small
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 

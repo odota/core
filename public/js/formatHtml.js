@@ -10,6 +10,7 @@ module.exports = function processHtml() {
             Radiant: {},
             Dire: {}
         };
+        var negatives = {}
         var tbody = $(table).find('tbody');
         tbody.children().each(function(i, row) {
             row = $(row);
@@ -20,15 +21,18 @@ module.exports = function processHtml() {
                 if (!target[j]) {
                     target[j] = 0;
                 }
+                negatives[j] = cell.hasClass('negative');
                 var content = cell.clone() //clone the element
                     .children() //select all the children
                     .remove() //remove all the children
                     .end() //again go back to selected element
                     .text();
                 //todo support stuff like % symbols
+                //todo invert "winner" if a negative category
                 target[j] += Number(content) || 0;
             });
         });
+        console.log(sums, negatives)
         //add sums to table
         var tfoot = $("<tfoot>");
         for (var key in sums) {
@@ -43,7 +47,10 @@ module.exports = function processHtml() {
                 td.text(sum[index]);
                 //mark if this team  "won" this category
                 var other = (key === "Radiant") ? "Dire" : "Radiant";
-                if (sum[index] > sums[other][index]) {
+                var greaterThan = sum[index] > sums[other][index];
+                //invert if a negative category
+                greaterThan = (negatives[index]) ? !greaterThan : greaterThan;
+                if (greaterThan) {
                     td.addClass((key === "Radiant") ? 'success': 'danger');
                 }
                 tr.append(td);

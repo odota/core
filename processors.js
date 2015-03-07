@@ -119,6 +119,12 @@ function runParser(job, cb) {
         },
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
+        },
+        "times": function(e) {
+            parsed_data.times.push(e.value);
+        },
+        "match_id": function(e){
+            parsed_data.match_id = e.value;
         }
     };
 
@@ -134,11 +140,6 @@ function runParser(job, cb) {
         "epilogue": function() {
             error = false;
         },
-        "times": function(e) {
-            e.interval = true;
-            setParsedData(e);
-        },
-        "match_id": setParsedData,
         "hero_log": populate,
         "gold_reasons": function(e) {
             if (!constants.gold_reasons[e.key]) {
@@ -303,26 +304,6 @@ function runParser(job, cb) {
     function getSlotReverse(e) {
         e.reverse = true;
         getSlot(e);
-    }
-
-    function setParsedData(e) {
-        var t = parsed_data[e.type];
-        if (typeof t === "undefined") {
-            //parsed_data doesn't have a field for this event type
-            console.log(e);
-        }
-        else if (t.constructor === Array) {
-            //determine whether we want the value only (interval) or the time and key (log)
-            //either way this creates a new value so e can be mutated later
-            var arrEntry = (e.interval) ? e.value : {
-                time: e.time,
-                key: e.key
-            };
-            t.push(arrEntry);
-        }
-        else {
-            parsed_data[e.type] = e.value;
-        }
     }
 
     function posPopulate(e) {
