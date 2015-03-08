@@ -123,7 +123,7 @@ function runParser(job, cb) {
         "times": function(e) {
             parsed_data.times.push(e.value);
         },
-        "match_id": function(e){
+        "match_id": function(e) {
             parsed_data.match_id = e.value;
         }
     };
@@ -193,6 +193,16 @@ function runParser(job, cb) {
         },
         "damage": function(e) {
             getSlot(e);
+            //check if hero hit
+            if (e.target_hero && !e.target_illusion) {
+                var h = {
+                    time: e.time,
+                    key: e.inflictor,
+                    unit: e.unit,
+                    type: "hero_hits"
+                };
+                getSlot(h);
+            }
             //reverse and count as damage taken
             var r = {
                 time: e.time,
@@ -237,8 +247,7 @@ function runParser(job, cb) {
             posPopulate(e);
             e.type = "sen_log";
             populate(e);
-        },
-        "hero_hits": getSlot
+        }
     };
 
     function postProcess() {

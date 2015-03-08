@@ -32,7 +32,7 @@ module.exports = function processHtml() {
                 target[j] += Number(content) || 0;
             });
         });
-        console.log(sums, negatives)
+        //console.log(sums, negatives)
         //add sums to table
         var tfoot = $("<tfoot>");
         for (var key in sums) {
@@ -49,7 +49,7 @@ module.exports = function processHtml() {
                 var other = (key === "Radiant") ? "Dire" : "Radiant";
                 var greaterThan = sum[index] > sums[other][index];
                 //invert if a negative category
-                greaterThan = (negatives[index]) ? !greaterThan : greaterThan;
+                greaterThan = negatives[index] ? sum[index] < sums[other][index] : greaterThan;
                 if (greaterThan) {
                     td.addClass((key === "Radiant") ? 'success': 'danger');
                 }
@@ -66,6 +66,6 @@ module.exports = function processHtml() {
         $(this).text(moment.unix($(this).text()).fromNow());
     });
     $('.format-seconds').each(function() {
-        $(this).text(formatSeconds($(this).text()));
+        $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
 };

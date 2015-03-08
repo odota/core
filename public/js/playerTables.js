@@ -1,14 +1,18 @@
 var $ = jQuery = require('jquery');
+var utility = require('./utility');
+var formatSeconds = utility.formatSeconds;
 module.exports = function playerTables() {
     $(document).on('ready', function() {
         $('#teammates').dataTable({
+            "searching": false,
+            //"paging": false
             "order": [
                 [1, "desc"]
-            ],
-            "searching": false,
-            "paging": false
+            ]
         });
         $('#heroes').dataTable({
+            "searching": false,
+            //"paging": false,
             "order": [
                 [2, "desc"]
             ],
@@ -18,9 +22,19 @@ module.exports = function playerTables() {
             }, {
                 "targets": [1],
                 visible: false
+            }]
+        });
+        $('#builds').dataTable({
+            "order": [
+                [2, "asc"]
+            ],
+            columns: [{}, {}, {
+                render: function(data, type) {
+                    return formatSeconds(data);
+                }
             }],
             "searching": false,
-            "paging": false
+            //"paging": false
         });
     });
 };

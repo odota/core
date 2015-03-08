@@ -250,16 +250,12 @@ public class Main {
 							//damage
 							entry.unit = cle.getAttackerNameCompiled();
 							entry.key = cle.getTargetNameCompiled();
+							entry.target_hero = cle.isTargetHero();
+							entry.inflictor = cle.getInflictorName();
+							entry.target_illusion = cle.isTargetIllusion();
 							entry.value = cle.getValue();
 							entry.type = "damage";
 							log.output(entry);
-							if (cle.isTargetHero() && !cle.isTargetIllusion()){
-								Entry entry2 = new Entry(time);
-								entry2.unit = cle.getAttackerNameCompiled();
-								entry2.key = cle.getInflictorName();
-								entry2.type = "hero_hits";
-								log.output(entry2);
-							}
 							break;
 						case 1:
 							//healing
@@ -352,7 +348,7 @@ public class Main {
 							entry.unit = cle.getAttackerNameCompiled(); //triggered?
 							entry.key = cle.getInflictorName();
 							//entry.unit = cle.getTargetNameCompiled(); //triggerer?
-							log.output(entry);
+							//log.output(entry);
 							break;
 						default:
 							DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());

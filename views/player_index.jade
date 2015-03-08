@@ -3,42 +3,34 @@ extend player
 block playercontent
   if (user && user.account_id === player.account_id)
     .row
-      .col-md-12
-        table.table
-          tr
-            th Welcome!
-            th Request
-            th Preferences
-            th MMR Tracker
-          tr
-            td
-              .alert.alert-info
-                | Just joined?  We probably don't have your old matches yet.
-                br
-                | Play a game and come back, or request a match by ID.
-            td
-              include request
-            td
-              .checkbox
-                label
-                  input.pref#dark(type="checkbox", checked=user.dark_theme)
-                  | Use Dark Theme
-              .checkbox
-                label
-                  input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
-                  | Make MMR public
-            td
-              if (user.account_id in ratingPlayers)
-                button.btn.btn-default(disabled) MMR Tracked
-              else
-                a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
+      .col-md-6
+        h3 Actions
+        .checkbox
+          label
+            input.pref#dark(type="checkbox", checked=user.dark_theme)
+            | Use Dark Theme
+        .checkbox
+          label
+            input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
+            | Make MMR public
+        if (user.account_id in ratingPlayers)
+          p: button.btn.btn-default(disabled) MMR Tracked
+        else
+          p: a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
+        p: include request
+      .col-md-6
+        h3 Welcome!
+        .alert.alert-info
+          | Just joined?  We probably don't have your old matches yet.
+          br
+          | Play a game and come back, or request a match by ID.
   .row
-    .col-md-5
+    .col-md-6
       h3 Recent Matches
       table.table
         thead
           tr
-           //th Match ID
+           th ID
            th Hero
            th Result
            th Mode
@@ -47,9 +39,9 @@ block playercontent
            th: abbr(title=constants.tooltips.status) Status
         each match in player.matches.slice(0,10)
           tr(class= match.player_win ? "success" : "danger")
-            //td: a(href='/matches/#{match.match_id}')= match.match_id
+            td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]
-            td.hero: a(href='/matches/#{match.match_id}')
+            td.hero
               if hero
                 img(src=hero.img, title=hero.localized_name)
               else
@@ -59,36 +51,36 @@ block playercontent
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
-    .col-md-3
-        h3 Top Heroes
+    .col-md-2
+        h3 Heroes
         table.table
           thead
             tr
               th Hero
               th Games
-              th Winrate
+              th Win%
           each h in player.heroes_arr.slice(0,10)
             - var hero = constants.heroes[h.hero_id]
             tr
               td.hero
                 img(src=hero.img, title=hero.localized_name)
               td= h.games
-              td #{(100*h.win/h.games).toFixed(2) || 0.00}%
+              td #{(100*h.win/h.games).toFixed(0) || 0}%
     .col-md-4
-        h3 Top Teammates
+        h3 Teammates
         table.table#teammates
           thead
             tr
               th Name
               th Games
-              th Winrate          
+              th Win%      
           each teammate in player.teammates.slice(0,10)
             tr
               td
                 img.user(src=teammate.avatar)
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
-              td #{(100*teammate.win/teammate.games).toFixed(2)}%
+              td #{(100*teammate.win/teammate.games).toFixed(0) || 0}%
   hr
   .row
     include ads/leaderboard_2

@@ -29,7 +29,7 @@ block match_content
                           if item
                             div.img-text
                               img.item(src=item.img, alt=entry.key)
-                              div.format-seconds=entry.time
+                              div.format-seconds(data-format-seconds=entry.time)=entry.time
                           else
                             =entry.key
         hr
@@ -65,7 +65,7 @@ block match_content
                             if hero
                               div.img-text
                                 img.dmg(src=hero.img, title=hero.localized_name)
-                                div.format-seconds=entry.time
+                                div.format-seconds(data-format-seconds=entry.time)=entry.time
                             else
                               =entry.key
         hr
@@ -88,6 +88,6 @@ block match_content
                       if hero
                         img(src=hero.img, title=hero.localized_name)
                       else
-                        =player.hero_id              
+                        =player.hero_id
                     - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                       td #{p.lh[i/60]}

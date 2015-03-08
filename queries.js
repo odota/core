@@ -352,10 +352,7 @@ function getRatingData(account_id, cb) {
 }
 
 function advQuery(select, options, cb) {
-    //todo implement this
-    //currently api is using it
-    //api wants matches but no aggregation
-    //player pages wants matches by account_id
+    //currently api is using this
     //custom query wants some fields back, with aggregation on those fields
     //client options should include:
     //filter: specific player/specific hero id
@@ -371,20 +368,14 @@ function advQuery(select, options, cb) {
     //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
     //select, a mongodb search hash
     //options, a mongodb/monk options hash
-    //server side, we want to be able to specify:
-    //selection condition(s)
-    //fields to return (as a hash)
     //CONSTRAINT: each match can only have a SINGLE player matching the condition in order to make winrate defined and aggregations to work!
     //therefore a specific player or hero MUST be defined if we want to aggregate!
     //or we can do it anyway, and just not use the data since it only applies to the first hero
     //check select.keys to see if user requested special conditions
     //check options.fields.keys to see if user requested special fields, aggregate the selected fields
     //we need to pass aggregator specific fields since not all fields may exist (since we projected)
-    //we can do a LOT of indexes on the parsed data to enable mongo lookup, or post-process it in js
-    //fields (projection)
-    //limit
-    //skip
-    //sort (but sorts are probably best done in js)
+    //we can do indexes on the parsed data to enable mongo lookup, or post-process it in js
+    //fields (projection), limit, skip, sort (but sorts are probably best done in js)
     //if selecting by account_id or hero_id, we project only that user in players array
     //if (select["players.account_id"] || select["players.hero_id"]){options.fields["players.$"] = 1;}
     db.matches.find(select, options, function(err, matches) {
@@ -419,9 +410,6 @@ function aggregator(matches, fields) {
         },
         "game_mode": function(key, m, p) {
             agg(key, m.game_mode);
-        },
-        "match_id": function(key, m, p) {
-            agg(key, m.match_id);
         },
         "hero_id": function(key, m, p) {
             agg(key, p.hero_id);
@@ -511,22 +499,24 @@ function aggregator(matches, fields) {
             if (p.parsedPlayer.chat) {
                 agg(key, p.parsedPlayer.chat.length);
             }
-            //count ggs/profanities
         },
-        "buybacks": function(key, m, p) {
+        "gg_count": function(key, m, p) {
+            //count ggs
+            if (p.parsedPlayer.chat) {
+                agg(key, p.parsedPlayer.chat.filter(function(c){
+                    return c.key.indexOf("gg")===0;
+                }).length);
+            }
+        },
+        "buyback_count": function(key, m, p) {
             if (p.parsedPlayer.buyback_log) {
                 agg(key, p.parsedPlayer.buyback_log.length);
             }
         }
     };
     //todo aggregations
-    //display ward buys, ward uses, ward kills
-    //define constants skillshots to compute (ability uses/hits)
     //Grouping of heroes played(by valve groupings / primary attribute)
-    //divide sum of purchase time by purchase time count for mean build time (really only meaningful if filtered by hero)
     //track min/max ids?
-    //numerical summaries (max/min/n/avg/sum)
-    //histogram/piechart the counts
     var aggData = {};
     fields = fields || types;
     for (var type in fields) {
@@ -599,15 +589,21 @@ function filter(matches, type) {
     return filtered;
 }
 
-function fillPlayerMatches(player, constants, cb) {
-    //todo filter by hero?  integrate with advanced querying?
-    //accept a filter param on the player page, or use the /api/matches endpoint?
+function fillPlayerMatches(player, options, cb) {
     console.time('db');
     var account_id = player.account_id;
     db.matches.find({
-        'players.account_id': account_id
+        players: {
+            $elemMatch: {
+                account_id: account_id,
+                hero_id: Number(options.hero_id) || {
+                    $ne: null
+                }
+            }
+        }
     }, {
         fields: {
+            "players.$": 1,
             start_time: 1,
             match_id: 1,
             duration: 1,
@@ -617,14 +613,14 @@ function fillPlayerMatches(player, constants, cb) {
             parsed_data: 1,
             first_blood_time: 1,
             lobby_type: 1,
-            game_mode: 1,
-            "players.$": 1
+            game_mode: 1
         }
     }, function(err, matches) {
-        console.timeEnd('db');
         if (err) {
+            console.log(err);
             return cb(err);
         }
+        console.timeEnd('db');
         console.time('compute');
         for (var i = 0; i < matches.length; i++) {
             computeMatchData(matches[i]);
@@ -642,6 +638,7 @@ function fillPlayerMatches(player, constants, cb) {
         });
         console.timeEnd('filter');
         console.time('agg');
+        //todo we're currently displaying in the cal-heatmap only balanced mode matches.  do we want to do all?
         player.aggData_all = aggregator(matches, {
             "start_time": 1
         });
@@ -669,19 +666,6 @@ function fillPlayerMatches(player, constants, cb) {
         };
         generatePositionData(d, player);
         player.posData = [d];
-        //temp function to generate bar charts, next version of c3 should support histograms from counts
-        function generateBarChart(counts, scalef, max) {
-            var arr = Array.apply(null, new Array(max)).map(Number.prototype.valueOf, 0);
-            Object.keys(counts).forEach(function(key) {
-                var bucket = Math.round(Number(key) * scalef) % max;
-                arr[bucket] += counts[key];
-            });
-            return arr;
-        }
-        player.histogramData = {};
-        player.histogramData.durations = generateBarChart(player.aggData.duration.counts, 1 / 60, 120);
-        player.histogramData.gpms = generateBarChart(player.aggData.gold_per_min.counts, 0.1, 120);
-        player.histogramData.calheatmap = player.aggData_all.start_time.counts;
         matches.sort(function(a, b) {
             return b.match_id - a.match_id;
         });
@@ -691,8 +675,10 @@ function fillPlayerMatches(player, constants, cb) {
         db.matches.find({
             players: {
                 $elemMatch: {
-                    account_id: player.account_id
-                        //todo add hero_id filter if defined?
+                    account_id: account_id,
+                    hero_id: Number(options.hero_id) || {
+                        $ne: null
+                    }
                 }
             }
         }, {
@@ -892,6 +878,14 @@ function patchLegacy(match) {
                 parsedPlayer.chat.push(c);
             }
         });
+        //remove recipes
+        /*
+        parsedPlayer.purchase_log.forEach(function(p,i){
+            if(p.key.indexOf("recipe_")===0){
+                parsedPlayer.purchase_log.splice(i,1);
+            }
+        });
+        */
         //console.log('completed %s', match.match_id, parseSlot, i);
     });
 }

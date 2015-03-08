@@ -7,11 +7,11 @@ var playerPages = {
     index: {
         name: "Player"
     },
-    trends: {
-        name: "Trends"
-    },
     matches: {
         name: "Matches"
+    },
+    trends: {
+        name: "Trends"
     }
 };
 players.get('/:account_id/:info?', function(req, res, next) {
@@ -25,12 +25,13 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            queries.fillPlayerMatches(player, constants, function(err) {
+            queries.fillPlayerMatches(player, {hero_id:req.query.hero_id}, function(err) {
                 queries.getSets(function(err, results) {
                     queries.getRatingData(player.account_id, function(err, ratings) {
                         console.timeEnd("player page");
                         player.ratings = ratings;
                         res.render("player_" + info, {
+                            q: req.query,
                             route: info,
                             player: player,
                             tabs: playerPages,

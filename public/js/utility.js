@@ -2,6 +2,7 @@ var numeral = require('numeral');
 
 function format(input) {
     input = Number(input);
+    //console.log(input, isNaN(input));
     if (input === 0 || isNaN(input)) {
         return "-";
     }

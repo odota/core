@@ -2,33 +2,20 @@ extend player
 
 block playercontent
   .row
+    .col-md-12
+      h3 Filter
+      form.form-inline(action="" method="GET")
+        select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
+          option(value=0) All Heroes
+          each val, key in constants.heroes
+            option(value=key selected=(q.hero_id===key))=val.localized_name
+  .row
     .col-md-6.table-responsive
       h3 Activity
       p
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       #cal-heatmap
-    h3 Warding (#{player.aggData.obs.n || 0} games)
-    .col-md-3
-      h4 Observers 
-      #map.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    .col-md-3
-      h4 Sentries
-      #map2.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-
-  hr
-  .row
-    .col-md-6
-      h3 Durations
-      #chart-duration
-    .col-md-6
-      h3 GPMs
-      #chart-gpms    
-      
-  hr
-  .row
     .col-md-6
       h3 Lifetime
       table.table
@@ -40,26 +27,60 @@ block playercontent
           th Min
           th Max
           //th Counts
+        - var dates={"start_time":1}
+        - var times={"duration":1,"first_blood_time":1}
+        - var display={"gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1}
+        //compute kda2, ward bought/used/killed pct, tp bought/used pct
+        //ward use pct
+        //skillshots
+        //couriers killed
+        //roshans killed
+        //towers killed
+        //tps bought/used/pct
         each val, key in player.aggData
           tr
-            td=key
-            td=val.n
-            td.format=val.sum
-            td.format=val.sum/val.n
-            td.format=val.min
-            td.format=val.max
-            //td=JSON.stringify(val.counts) 
-    .col-md-6
-      h3 Mean Build Times (#{player.aggData.purchase.n} games)
-      table.table
-        each val, key in player.aggData.purchase_time.counts
-          tr 
-            td=key
-            td=player.aggData.purchase.counts[key]
-            td.format-seconds=val/player.aggData.purchase_time_count.counts[key]
+            if key in times
+              td=key
+              td=val.n
+              td=moment.duration(val.sum, "seconds").humanize()
+              td.format-seconds(data-format-seconds=val.sum/val.n)
+              td.format-seconds(data-format-seconds=val.min)
+              td.format-seconds(data-format-seconds=val.max)
+            else if key in dates
+              td=key
+              td=val.n
+              td
+              td
+              td=moment.unix(val.min).toString()
+              td=moment.unix(val.max).toString()            
+            else if key in display
+              td=key
+              td=val.n
+              td.format=val.sum
+              td=(val.sum/val.n).toFixed(2)
+              td=val.min
+              td=val.max     
   hr
   .row
-    .col-md-5
+    .col-md-4
+      h3 Mean Build Times (#{player.aggData.purchase.n} games)
+      table.table#builds
+        thead
+          tr
+            th Item
+            th N
+            th Time
+        tbody
+          each val, key in player.aggData.purchase_time.counts
+            tr 
+              - var item = constants.items[key]
+              if item
+                td: img.item(src=item.img, alt=key)
+              else 
+                td=key
+              td=player.aggData.purchase.counts[key]
+              td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
+    .col-md-4
       h3 Teammates
       table.table#teammates
         thead
@@ -75,7 +96,7 @@ block playercontent
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
               td #{(100*teammate.win/teammate.games).toFixed(2)}%
-    .col-md-7
+    .col-md-4
       h3 Matchups
       table.table#heroes
         thead
@@ -95,50 +116,80 @@ block playercontent
             td=hero.localized_name
             - var h = player.heroes[hero.id]
             td #{h ? h.games : 0}
-            td #{h ? ~~(100*h.win/h.games) : 0}%
+            //td #{h ? ~~(100*h.win/h.games) : 0}%
+            td
+             - var pct = h ? ~~(100*h.win/h.games) : 0
+             .progress
+               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
             td #{h ? h.with_games : 0}
             td #{h ? ~~(100*h.with_win/h.with_games) : 0}%
             td #{h ? h.against_games : 0}
             td #{h ? ~~(100*h.against_win/h.against_games) : 0}%
-
+  hr
+  .row
+    .col-md-8
+      h3 Histogram
+      #chart-histogram
+      button.btn.btn-default.histogram(data-histogram="cluster") cluster
+      button.btn.btn-default.histogram(data-histogram="duration") duration
+      button.btn.btn-default.histogram(data-histogram="first_blood_time") first_blood_time
+      button.btn.btn-default.histogram(data-histogram="lobby_type") lobby_type
+      button.btn.btn-default.histogram(data-histogram="game_mode") game_mode
+      button.btn.btn-default.histogram(data-histogram="hero_id") hero_id
+      button.btn.btn-default.histogram(data-histogram="gold_per_min") gold_per_min
+      button.btn.btn-default.histogram(data-histogram="hero_damage") hero_damage
+      button.btn.btn-default.histogram(data-histogram="tower_damage") tower_damage
+      button.btn.btn-default.histogram(data-histogram="hero_healing") hero_healing
+      button.btn.btn-default.histogram(data-histogram="kills") kills
+      button.btn.btn-default.histogram(data-histogram="deaths") deaths
+      button.btn.btn-default.histogram(data-histogram="assists") assists
+      button.btn.btn-default.histogram(data-histogram="leaver_status") leaver_status
+      button.btn.btn-default.histogram(data-histogram="stuns") stuns
+      button.btn.btn-default.histogram(data-histogram="lane") lane
+      button.btn.btn-default.histogram(data-histogram="chat_message_count") chat_message_count
+      button.btn.btn-default.histogram(data-histogram="buyback_count") buyback_count
+    .col-md-4
+      h3 Warding (#{player.aggData.obs.n || 0} games)
+      #map.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+      button.btn.btn-lrg.btn-warning.activate#obs Observers 
+      button.btn.btn-lrg.btn-info.activate#sen Sentries
+      
 append footer_assets
   script.
     playerTables();
     
 append footer_assets
   script.
-    var data = !{JSON.stringify(player.histogramData)}
-    generateHistograms(data);
-      var heatmap = h337.create({
-          container: document.getElementById('map'),
-          radius: 15
-        });
-        var heatmap2 = h337.create({
-          container: document.getElementById('map2'),
-          radius: 15
-        });
-        var posData = !{JSON.stringify(player.posData)}
-        posData.forEach(function(d){
-          d.obs = scaleAndExtrema(d.obs);
-          d.sen = scaleAndExtrema(d.sen);
-        })
-        
-        function scaleAndExtrema(points, max, shift){
-            points.forEach(function(p){
-              p.x*=(300/127);
-              p.y*=(300/127);
-              p.value+=(shift || 0);
-            })
-            var vals = points.map(function(p){return p.value;});
-            var localMax = Math.max.apply(null, vals);
-            return {
-            min: 0,
-            max: max || localMax,
-            data: points,
-            };
-        }
-          heatmap.setData(posData[0]["obs"]);
-          heatmap.repaint();
-          heatmap2.setData(posData[0]["sen"]);
-          heatmap2.repaint();
+    var aggData = !{JSON.stringify(player.aggData)}
+    generateHistograms(aggData);
+    var heatmap = h337.create({
+        container: document.getElementById('map'),
+        radius: 15
+      });
+      var posData = !{JSON.stringify(player.posData)}
+      posData.forEach(function(d){
+        d.obs = scaleAndExtrema(d.obs);
+        d.sen = scaleAndExtrema(d.sen);
+      })
+      
+      function scaleAndExtrema(points, max, shift){
+          points.forEach(function(p){
+            p.x*=(300/127);
+            p.y*=(300/127);
+            p.value+=(shift || 0);
+          })
+          var vals = points.map(function(p){return p.value;});
+          var localMax = Math.max.apply(null, vals);
+          return {
+          min: 0,
+          max: max || localMax,
+          data: points,
+          };
+      }
+      $(".activate").on('click', function(){
+        heatmap.setData(posData[0][$(this).attr('id')]);
+        heatmap.repaint();
+      })
+
 

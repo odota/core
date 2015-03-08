@@ -231,10 +231,10 @@ function getParseSchema() {
                 "runes": {},
                 "runes_bottled": {},
                 "killed_by": {},
-                "modifier_applied": {},
-                "modifier_lost": {},
+                //"modifier_applied": {},
+                //"modifier_lost": {},
+                //"ability_trigger": {}
                 "healing": {},
-                "ability_trigger": {}
             };
         })
     };

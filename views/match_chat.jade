@@ -17,7 +17,7 @@ block match_content
               td: img(src=hero.img,title=hero.localized_name)
             else
               td=message.slot
-            td.format-seconds=message.time
+            td.format-seconds(data-format-seconds=message.time)=message.time
             td=message.key
     .col-md-5
       style .skyscraper {margin-top: 2em;}
