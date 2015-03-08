@@ -30,7 +30,10 @@ module.exports = function playerTables() {
             ],
             columns: [{}, {}, {
                 render: function(data, type) {
+                    if (type==="display"){
                     return formatSeconds(data);
+                    }
+                    return data;
                 }
             }],
             "searching": false,
