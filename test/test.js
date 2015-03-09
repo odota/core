@@ -123,6 +123,7 @@ before(function(done) {
             },
             function(cb) {
             console.log("copying replays to test dir");
+            nock.enableNetConnect('rawgit.com');
 
             function dl(filename, cb) {
                 var arr = filename.split(".");
@@ -144,6 +145,7 @@ before(function(done) {
             },
             function(cb) {
             console.log("starting web");
+            nock.enableNetConnect();
             require('../web');
             cb();
             },
@@ -547,6 +549,7 @@ describe("web", function() {
             done();
         });
     });
+    /*
     describe("/login", function() {
         before(function(done) {
             browser.visit('/login');
@@ -571,6 +574,7 @@ describe("web", function() {
             done();
         });
     });
+    */
     describe("/about", function() {
         before(function(done) {
             browser.visit('/about');
@@ -703,11 +707,7 @@ describe("tasks", function() {
     });
     it('constants', function(done) {
         //fake constants response
-        nock('http://www.dota2.com')
-        .get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api)
-        .get('/jsfeed/abilitydata').reply(200, testdata.ability_api)
-        .get('/jsfeed/heropickerdata').reply(200, {})
-        .get('/jsfeed/heropediadata?feeds=herodata').reply(200,{});
+        nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
         constants("./constants_test.json", function(err) {
             done(err);
         });
