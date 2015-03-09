@@ -312,6 +312,8 @@ public class Main {
 							break;
 						case 9:
 							//state
+							//System.err.println(cle.getValue());
+							//todo there is a new type 7 that causes parser to crash on some replays
 							String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
 							entry.type = "state";
 							entry.key = state;
