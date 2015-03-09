@@ -101,12 +101,20 @@ function computeMatchData(match) {
             p = match.parsed_data.players[parseSlot];
             p.neutral_kills = 0;
             p.tower_kills = 0;
+            p.courier_kills = 0;
+            p.ward_kills = 0;
             for (var key in p.kills) {
                 if (key.indexOf("npc_dota_neutral") === 0) {
                     p.neutral_kills += p.kills[key];
                 }
                 if (key.indexOf("_tower") !== -1) {
                     p.tower_kills += p.kills[key];
+                }
+                if (key.indexOf("ward_observer") !== -1 || key.indexOf("ward_sentry") === -1) {
+                    p.ward_kils += p.kills[key];
+                }
+                if (key.indexOf("courier") !== -1) {
+                    p.courier_kills += p.kills[key];
                 }
             }
             //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
@@ -414,15 +422,6 @@ function aggregator(matches, fields) {
         "hero_id": function(key, m, p) {
             agg(key, p.hero_id);
         },
-        "gold_per_min": function(key, m, p) {
-            agg(key, p.gold_per_min);
-        },
-        "hero_damage": function(key, m, p) {
-            agg(key, p.hero_damage);
-        },
-        "tower_damage": function(key, m, p) {
-            agg(key, p.tower_damage);
-        },
         "kills": function(key, m, p) {
             agg(key, p.kills);
         },
@@ -432,20 +431,29 @@ function aggregator(matches, fields) {
         "assists": function(key, m, p) {
             agg(key, p.assists);
         },
-        "leaver_status": function(key, m, p) {
-            agg(key, p.leaver_status);
-        },
         "last_hits": function(key, m, p) {
             agg(key, p.last_hits);
         },
         "denies": function(key, m, p) {
             agg(key, p.denies);
         },
+        "gold_per_min": function(key, m, p) {
+            agg(key, p.gold_per_min);
+        },
         "xp_per_min": function(key, m, p) {
             agg(key, p.xp_per_min);
         },
+        "hero_damage": function(key, m, p) {
+            agg(key, p.hero_damage);
+        },
+        "tower_damage": function(key, m, p) {
+            agg(key, p.tower_damage);
+        },
         "hero_healing": function(key, m, p) {
             agg(key, p.hero_healing);
+        },
+        "leaver_status": function(key, m, p) {
+            agg(key, p.leaver_status);
         },
         "isRadiant": function(key, m, p) {
             agg(key, isRadiant(p));
@@ -503,14 +511,39 @@ function aggregator(matches, fields) {
         "gg_count": function(key, m, p) {
             //count ggs
             if (p.parsedPlayer.chat) {
-                agg(key, p.parsedPlayer.chat.filter(function(c){
-                    return c.key.indexOf("gg")===0;
+                agg(key, p.parsedPlayer.chat.filter(function(c) {
+                    return c.key.indexOf("gg") === 0;
                 }).length);
             }
         },
         "buyback_count": function(key, m, p) {
             if (p.parsedPlayer.buyback_log) {
                 agg(key, p.parsedPlayer.buyback_log.length);
+            }
+        },
+        "courier_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.courier_kills);
+        },
+        "tower_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.tower_kills);
+        },
+        "neutral_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.neutral_kills);
+        },
+        "ward_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.ward_kills);
+        },
+        "kda": function(key, m, p) {
+            agg(key, (p.kills + p.assists) / (p.deaths + 1));
+        },
+        "observer_uses": function(key, m, p) {
+            if (p.parsedPlayer.item_uses) {
+                agg(key, p.parsedPlayer.item_uses.ward_observer || 0);
+            }
+        },
+        "sentry_uses": function(key, m, p) {
+            if (p.parsedPlayer.item_uses) {
+                agg(key, p.parsedPlayer.item_uses.ward_sentry || 0);
             }
         }
     };

@@ -8,7 +8,11 @@
   "leaver_status": {
     "0": "Played",
     "1": "Left Safely",
-    "2": "Abandoned"
+    "2": "Disconnect Abandoned",
+    "3": "Abandoned",
+    "4": "AFK Abandoned",
+    "5": "Never Connected",
+    "6": "Never Connected Timeout"
   },
   "gold_reasons": {
     "0": {

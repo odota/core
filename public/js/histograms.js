@@ -21,26 +21,35 @@ module.exports = function generateHistograms(data) {
         subDomainTextFormat: function(date, value) {
             return value;
         },
-        cellSize: 12,
+        cellSize: 13,
         domainGutter: 5,
         previousSelector: "#prev",
         nextSelector: "#next",
         legendHorizontalPosition: "right"
     });
-    //todo add mouseover listener to generate histogram on demand
     //need a param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
     //need a max to determine how many bins we should have
     //need a param to define the label on the x axis
     $(".histogram").on("click", function() {
-        createHistogram(data[$(this).attr('data-histogram')].counts, 1 / 60, 120);
+        var label = $(this).attr('data-histogram');
+        var counts = data[label].counts;
+        //figure out the max
+        var max = Math.max.apply(null, Object.keys(counts).map(function(c) {
+            return Number(c);
+        }));
+        var bins = ~~Math.min(120, max);
+        var scalef = bins/max;
+        //figure out number of bins
+        //figure out label
+        createHistogram(counts, scalef, bins, label);
     });
 
-    function createHistogram(counts, scalef, max) {
+    function createHistogram(counts, scalef, bins, label) {
         //creates a histogram from counts by binning values
         //temp function to generate bar charts, next version of c3 should support histograms from counts
-        var arr = Array.apply(null, new Array(max)).map(Number.prototype.valueOf, 0);
+        var arr = Array.apply(null, new Array(bins+1)).map(Number.prototype.valueOf, 0);
         Object.keys(counts).forEach(function(key) {
-            var bucket = Math.round(Number(key) * scalef) % max;
+            var bucket = ~~(Number(key) * scalef);
             arr[bucket] += counts[key];
         });
         c3.generate({
@@ -58,7 +67,12 @@ module.exports = function generateHistograms(data) {
             },
             axis: {
                 x: {
-                    label: 'X'
+                    label: label,
+                    tick: {
+                        format: function(t) {
+                            return (Number(t)/scalef).toFixed(0);
+                        }
+                    }
                 },
                 y: {
                     label: 'Matches'
