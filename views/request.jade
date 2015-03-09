@@ -3,17 +3,25 @@ form.form-inline#request
     input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
   .form-group
     button.btn.btn-success Request
-#log
+.progress
+  .progress-bar.progress-bar-info.progress-bar-striped.active.progbar-text#bar
 script(src="/socket.io/socket.io.js")
 script.
   var socket = io.connect();
-  socket.on('log',function(data){
-    document.getElementById('log').innerHTML+=JSON.stringify(data)+"<br>";
+  socket.on('log', function(data){
+    document.getElementById("bar").innerHTML = data;
   })
+  socket.on('prog', function(prog){
+  document.getElementById("bar").style.width = prog + "%";
+  });
+  socket.on('complete', function(){
+  //redir to match page?
+  });
   document.getElementById("request").addEventListener("submit", function(e){
     e.preventDefault();
     var field = document.getElementById('match_id');
     var match_id = field.value;
     field.value = "";
     socket.emit('match_id', match_id);
+    //disable/remove the form?
   });

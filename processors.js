@@ -71,7 +71,7 @@ function runParser(job, cb) {
     var parser = spawn("java", ["-jar",
         "parser/target/stats-0.1.0.jar"
     ], {
-        stdio: ['pipe', 'pipe', 'ignore'], //don't handle stderr
+        stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
         encoding: 'utf8'
     });
     var outStream = JSONStream.parse();
@@ -186,7 +186,6 @@ function runParser(job, cb) {
                 time: e.time,
                 key: e.unit,
                 unit: e.key,
-                value: e.value,
                 type: "killed_by"
             };
             getSlotReverse(r);
@@ -208,6 +207,7 @@ function runParser(job, cb) {
                 time: e.time,
                 key: e.unit,
                 unit: e.key,
+                value: e.value,
                 type: "damage_taken"
             };
             getSlotReverse(r);
@@ -365,7 +365,6 @@ function runParser(job, cb) {
 function processApi(job, cb) {
     var payload = job.data.payload;
     job.log("api: starting");
-    job.progress(0, 100);
     getData(job.data.url, function(err, data) {
         if (err) {
             job.log(JSON.stringify(err));
