@@ -29,7 +29,6 @@ retrievers.split(",").forEach(function(r) {
         url: "http://" + r
     });
 });
-
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -56,7 +55,6 @@ d.run(function() {
         jobs.process('mmr', processors.processMmr);
         setInterval(fullhistory, 17 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
-        setInterval(build, 2 * 60 * 1000, function() {});
         setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
@@ -139,6 +137,7 @@ function build(cb) {
         for (var key in result) {
             redis.set(key, JSON.stringify(result[key]));
         }
+        setTimeout(build, 3 * 60 * 1000, function() {});
         cb(err);
     });
 }
@@ -167,7 +166,6 @@ function startScan() {
         });
     }
 }
-
 var q = async.queue(function(match, cb) {
     var tracked = false;
     async.each(match.players, function(p, cb) {

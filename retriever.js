@@ -157,7 +157,7 @@ app.get('/', function(req, res, next) {
     }
 });
 app.use(function(req, res) {
-    if (!res.headerSent) {
+    if (!res.headersSent) {
         res.json(res.locals.data);
     }
 });
