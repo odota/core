@@ -533,9 +533,6 @@ function aggregator(matches, fields) {
         "ward_kills": function(key, m, p) {
             agg(key, p.parsedPlayer.ward_kills);
         },
-        "kda": function(key, m, p) {
-            agg(key, (p.kills + p.assists) / (p.deaths + 1));
-        },
         "observer_uses": function(key, m, p) {
             if (p.parsedPlayer.item_uses) {
                 agg(key, p.parsedPlayer.item_uses.ward_observer || 0);

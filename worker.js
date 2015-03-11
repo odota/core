@@ -29,6 +29,7 @@ retrievers.split(",").forEach(function(r) {
         url: "http://" + r
     });
 });
+//don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);

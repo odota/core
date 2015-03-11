@@ -18,7 +18,7 @@ block playercontent
       #cal-heatmap
       
       h3 Warding (#{player.aggData.obs.n || 0} games)
-      #map.mapContainer.mapContainer-small
+      #map.mapContainer
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
       button.btn.btn-lrg.btn-warning.activate#obs Observers 
       button.btn.btn-lrg.btn-info.activate#sen Sentries
@@ -59,6 +59,9 @@ block playercontent
               td=val.max   
               td.format=val.sum
               td=val.n
+         tr
+           td kda
+           td=(player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.games)
   hr
   .row
     .col-md-12
@@ -169,8 +172,8 @@ append footer_assets
       
       function scaleAndExtrema(points, max, shift){
           points.forEach(function(p){
-            p.x*=(300/127);
-            p.y*=(300/127);
+            p.x*=(600/127);
+            p.y*=(600/127);
             p.value+=(shift || 0);
           })
           var vals = points.map(function(p){return p.value;});
