@@ -47,14 +47,21 @@ d.on('error', function(err) {
     });
 });
 d.run(function() {
+    console.log("[WORKER] starting worker");
     build(function() {
-        console.log("[WORKER] starting worker");
         startScan();
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
-        setInterval(fullhistory, 17 * 60 * 1000, function() {});
-        setInterval(updatenames, 3 * 60 * 1000, function() {});
+        fullhistory(function() {
+            setTimeout(fullhistory, 17 * 60 * 1000, function() {});
+        });
+        updatenames(function() {
+            setTimeout(updatenames, 3 * 60 * 1000, function() {});
+        });
+        build(function() {
+            setTimeout(build, 3 * 60 * 1000, function() {});
+        });
         setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
@@ -137,7 +144,6 @@ function build(cb) {
         for (var key in result) {
             redis.set(key, JSON.stringify(result[key]));
         }
-        setTimeout(build, 3 * 60 * 1000, function() {});
         cb(err);
     });
 }
