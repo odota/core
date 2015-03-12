@@ -236,6 +236,7 @@ function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
+    match.parsed_data.times = match.parsed_data.times || [];
     for (var i = 0; i < match.parsed_data.times.length; i++) {
         var goldtotal = 0;
         var xptotal = 0;
@@ -285,7 +286,7 @@ function generateGraphData(match) {
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {
-            var g = player.parsedPlayer.gold_reasons;
+            var g = player.parsedPlayer.gold_reasons || {};
             col.push(g[key] || 0);
         });
         columns.push(col);
