@@ -115,7 +115,8 @@
     },
     "0": {
       "id": 0,
-      "name": "Public MM"
+      "name": "Public MM",
+      "balanced": true
     },
     "1": {
       "id": 1,
@@ -123,7 +124,8 @@
     },
     "2": {
       "id": 2,
-      "name": "Tournament"
+      "name": "Tournament",
+      "balanced": true
     },
     "3": {
       "id": 3,
@@ -131,19 +133,22 @@
     },
     "4": {
       "id": 4,
-      "name": "Co-op with bots"
+      "name": "Co-Op with bots"
     },
     "5": {
       "id": 5,
-      "name": "Team MM"
+      "name": "Team MM",
+      "balanced": true
     },
     "6": {
       "id": 6,
-      "name": "Solo Queue"
+      "name": "Solo Queue",
+      "balanced": true
     },
     "7": {
       "id": 7,
-      "name": "Ranked MM"
+      "name": "Ranked MM",
+      "balanced": true
     },
     "8": {
       "id": 8,

@@ -598,7 +598,7 @@ function filter(matches, type) {
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
         if (type["balanced"]) {
-            if (constants.modes[matches[i].game_mode].balanced) {
+            if (constants.modes[matches[i].game_mode].balanced && constants.lobbies[matches[i].lobby_type].balanced) {
                 filtered.push(matches[i]);
             }
         }
@@ -608,7 +608,7 @@ function filter(matches, type) {
             }
         }
         else if (type["hero_id"]) {
-            if (matches[i].players[0].hero_id === type["hero_id"]) {
+            if (matches[i].players[0].hero_id === Number(type["hero_id"])) {
                 filtered.push(matches[i]);
             }
         }
@@ -657,9 +657,6 @@ function fillPlayerMatches(player, options, cb) {
         }
         console.timeEnd('compute');
         console.time('filter');
-        matches = filter(matches, {
-            "hero_id": undefined
-        });
         var balanced = filter(matches, {
             "balanced": 1
         });
@@ -718,7 +715,8 @@ function fillPlayerMatches(player, options, cb) {
                 "players.player_slot": 1,
                 match_id: 1,
                 radiant_win: 1,
-                game_mode: 1
+                game_mode: 1,
+                lobby_type: 1
             }
         }, function(err, docs) {
             if (err) {
@@ -795,7 +793,8 @@ function fillPlayerMatches(player, options, cb) {
             player.teammates = [];
             for (var id in teammates) {
                 var count = teammates[id];
-                if (id != constants.anonymous_account_id && id != player.account_id && count.games >= 3) {
+                id = Number(id);
+                if (id !== constants.anonymous_account_id && id !== player.account_id && count.games >= 3) {
                     player.teammates.push(count);
                 }
             }

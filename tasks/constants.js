@@ -23,11 +23,17 @@ module.exports = function generateConstants(outputFile, done) {
             return done(err);
         }
         var heroes = constants.heroes;
+        var alpha_heroes = [];
         //key heroes by name
         constants.hero_names = {};
         for (var key in heroes) {
             constants.hero_names[heroes[key].name] = heroes[key];
+            alpha_heroes.push(heroes[key]);
         }
+        alpha_heroes.sort(function(a,b){
+            return a.localized_name.localeCompare(b.localized_name);
+        });
+        constants.alpha_heroes = alpha_heroes;
         var items = constants.items.itemdata;
         constants.item_ids = {};
         for (var key in items) {
