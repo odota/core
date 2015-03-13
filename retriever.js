@@ -136,6 +136,9 @@ app.get('/', function(req, res, next) {
     if (!ready) {
         return next("retriever not ready");
     }
+    res.locals.to = setTimeout(function() {
+        next("retriever timeout");
+    }, 25000);
     //todo reject request if doesnt have key
     var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
     if (req.query.match_id) {
@@ -157,9 +160,8 @@ app.get('/', function(req, res, next) {
     }
 });
 app.use(function(req, res) {
-    if (!res.headersSent) {
-        res.json(res.locals.data);
-    }
+    clearTimeout(res.locals.to);
+    res.json(res.locals.data);
 });
 app.use(function(err, req, res, next) {
     return res.status(500).json({
