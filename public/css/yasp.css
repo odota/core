@@ -171,7 +171,12 @@ td>img.user {
     border-bottom-left-radius: 20px;
     overflow: hidden;
 }
-.progbar-text {
+.progress-bar {
     color: #FFF;
     text-shadow: 0px 0px 2px #000;
+}
+
+.progress
+{
+    margin-bottom:0px;
 }

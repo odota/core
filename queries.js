@@ -102,16 +102,12 @@ function computeMatchData(match) {
             p.neutral_kills = 0;
             p.tower_kills = 0;
             p.courier_kills = 0;
-            p.ward_kills = 0;
             for (var key in p.kills) {
                 if (key.indexOf("npc_dota_neutral") === 0) {
                     p.neutral_kills += p.kills[key];
                 }
                 if (key.indexOf("_tower") !== -1) {
                     p.tower_kills += p.kills[key];
-                }
-                if (key.indexOf("ward_observer") !== -1 || key.indexOf("ward_sentry") === -1) {
-                    p.ward_kils += p.kills[key];
                 }
                 if (key.indexOf("courier") !== -1) {
                     p.courier_kills += p.kills[key];
@@ -531,9 +527,6 @@ function aggregator(matches, fields) {
         "neutral_kills": function(key, m, p) {
             agg(key, p.parsedPlayer.neutral_kills);
         },
-        "ward_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.ward_kills);
-        },
         "observer_uses": function(key, m, p) {
             if (p.parsedPlayer.item_uses) {
                 agg(key, p.parsedPlayer.item_uses.ward_observer || 0);
@@ -545,9 +538,6 @@ function aggregator(matches, fields) {
             }
         }
     };
-    //todo aggregations
-    //Grouping of heroes played(by valve groupings / primary attribute)
-    //track min/max ids?
     var aggData = {};
     fields = fields || types;
     for (var type in fields) {

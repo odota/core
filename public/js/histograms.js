@@ -30,7 +30,8 @@ module.exports = function generateHistograms(data) {
     //need a param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
     //need a max to determine how many bins we should have
     //need a param to define the label on the x axis
-    $(".histogram").on("click", function() {
+    //need a param to determine whether the time should be formatted
+    $(".histogram").on("mouseover", function() {
         var label = $(this).attr('data-histogram');
         var counts = data[label].counts;
         //figure out the max
@@ -39,10 +40,9 @@ module.exports = function generateHistograms(data) {
         }));
         var bins = ~~Math.min(120, max);
         var scalef = bins/max;
-        //figure out number of bins
-        //figure out label
         createHistogram(counts, scalef, bins, label);
     });
+    $(".histogram").first().trigger("mouseover");
 
     function createHistogram(counts, scalef, bins, label) {
         //creates a histogram from counts by binning values

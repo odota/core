@@ -291,20 +291,24 @@ function runParser(job, cb) {
             var split = name.split("_");
             //get the third element
             var identifiers = [split[2], split[2] + "_" + split[3]];
-            identifiers.forEach(function(id) {
+            for (var i = 0; i < identifiers.length; i++) {
+                var id = identifiers[i];
                 //append to npc_dota_hero_, see if matches
                 var attempt = "npc_dota_hero_" + id;
                 if (attempt in hero_to_slot) {
                     return attempt;
                 }
-            });
+            }
         }
     }
 
     function getSlot(e) {
         //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
         //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
+        var debug = e.key && e.key.indexOf("visage") > 0;
+        if (debug) console.log("before %s", e);
         e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
+        if (debug) console.log("after %s", e);
         //use slot, then map value (could be undefined)
         e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
         populate(e);

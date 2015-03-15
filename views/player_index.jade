@@ -65,7 +65,10 @@ block playercontent
               td.hero
                 img(src=hero.img, title=hero.localized_name)
               td= h.games
-              td #{(100*h.win/h.games).toFixed(0) || 0}%
+              td
+               - var pct = h ? ~~(100*h.win/h.games) : 0
+               .progress
+                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
     .col-md-4
         h3 Teammates
         table.table#teammates
@@ -80,7 +83,10 @@ block playercontent
                 img.user(src=teammate.avatar)
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
-              td #{(100*teammate.win/teammate.games).toFixed(0) || 0}%
+              td
+               - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
+               .progress
+                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
   hr
   .row
     include ads/leaderboard_2

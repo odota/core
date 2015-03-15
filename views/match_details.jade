@@ -23,6 +23,7 @@ block match_content
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
                     th: abbr(title="Neutral creeps killed") NK
                     th: abbr(title="Towers killed") TK
+                    th: abbr(title="Couriers killed") CK
                     each val, key in constants.runes
                       th=val.name
 
@@ -47,6 +48,7 @@ block match_content
                   td #{p.stuns.toFixed(2)}
                   td #{p.neutral_kills || "-"}
                   td #{p.tower_kills || "-"}
+                  td #{p.courier_kills || "-"}
                   each val, key in constants.runes
                     td #{p.runes[key] || "-"}
                   

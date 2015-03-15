@@ -2,90 +2,104 @@ extend player
 
 block playercontent
   .row
-    .col-md-12
+    .col-md-5
       h3 Filter
       form.form-inline(action="" method="GET")
         select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
-          option(value=0) All Heroes
+          option(value="0") All Heroes
           each entry in constants.alpha_heroes
-            option(value=entry.id selected=(q.hero_id===entry.id))=entry.localized_name
-  .row
+            option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
     .col-md-7.table-responsive
       h3 Activity
       p
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       #cal-heatmap
-      
-      h3 Warding (#{player.aggData.obs.n || 0} games)
-      #map.mapContainer
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-      button.btn.btn-lrg.btn-warning.activate#obs Observers 
-      button.btn.btn-lrg.btn-info.activate#sen Sentries
-    .col-md-5
-      h3 Lifetime
+  hr
+  .row
+    .col-md-4
+      h3 Records
       table.table
         tr
           th Stat
           th Avg
-          th Min
           th Max
-          th Sum
-          th Games
-        - var dates={"start_time":1}
         - var times={"duration":1,"first_blood_time":1}
-        - var display={"courier_kills":1, "tower_kills":1, "ward_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1}
-        //skillshots
+        - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1}
         each val, key in player.aggData
           tr
             if key in times
               td=key
               td.format-seconds(data-format-seconds=val.sum/val.n)
-              td.format-seconds(data-format-seconds=val.min)
               td.format-seconds(data-format-seconds=val.max)
-              td=moment.duration(val.sum, "seconds").humanize()
-              td=val.n
-            else if key in dates
-              td=key
-              td
-              td(title=moment.unix(val.min).format("YYYY-MM-DD")) #{moment.unix(val.min).fromNow()} 
-              td(title=moment.unix(val.max).format("YYYY-MM-DD")) #{moment.unix(val.max).fromNow()} 
-              td
-              td=val.n
             else if key in display
               td=key
               td=(val.sum/val.n).toFixed(2)
-              td=val.min
               td=val.max   
-              td.format=val.sum
-              td=val.n
-         tr
-           td kda
-           td=(player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.games)
+    .col-md-4
+      h3 Accuracy
+      table.table
+        tr
+          td Ability
+          td Casts
+          td Hits
+          td Hit%
+        each val, key in player.aggData.ability_uses.counts
+          tr
+            td=key
+            td=val
+            td=player.aggData.hero_hits.counts[key]
+            td= (player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
+            
+    .col-md-4
+      h3 Stats
+      table.table
+        tr
+          td KDA
+          td=((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.games)).toFixed(2)
+        tr
+          td Abandon Rate
+          td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.games)*100 || 0).toFixed(2)}%
+      h3 Laning
+      table.table
+        each val, key in player.aggData.lane.counts
+          tr
+            td=constants.lane_ids[key]
+            td=val
+      h3 Leaver Status
+      table.table
+        each val, key in player.aggData.leaver_status.counts
+          tr
+            td=constants.leaver_status[key]
+            td=val
+      h3 Modes
+      table.table
+        each val, key in player.aggData.game_mode.counts
+          tr
+            td=constants.modes[key].name
+            td=val
   hr
   .row
-    .col-md-12
+    .col-md-6
+      h3 Warding (#{player.aggData.obs.n || 0} games)
+      button.btn.btn-lrg.btn-warning.activate#obs Observers 
+      button.btn.btn-lrg.btn-info.activate#sen Sentries
+      #map.mapContainer
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+
+    .col-md-6
       h3 Histogram
+      button.btn.btn-default.histogram(data-histogram="duration") Duration
+      button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
+      button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
+      button.btn.btn-default.histogram(data-histogram="hero_damage") HD
+      button.btn.btn-default.histogram(data-histogram="tower_damage") TD
+      button.btn.btn-default.histogram(data-histogram="hero_healing") HH
+      button.btn.btn-default.histogram(data-histogram="kills") K
+      button.btn.btn-default.histogram(data-histogram="deaths") D
+      button.btn.btn-default.histogram(data-histogram="assists") A
       #chart-histogram
-      button.btn.btn-default.histogram(data-histogram="cluster") cluster
-      button.btn.btn-default.histogram(data-histogram="duration") duration
-      button.btn.btn-default.histogram(data-histogram="first_blood_time") first_blood_time
-      button.btn.btn-default.histogram(data-histogram="lobby_type") lobby_type
-      button.btn.btn-default.histogram(data-histogram="game_mode") game_mode
-      button.btn.btn-default.histogram(data-histogram="hero_id") hero_id
-      button.btn.btn-default.histogram(data-histogram="gold_per_min") gold_per_min
-      button.btn.btn-default.histogram(data-histogram="hero_damage") hero_damage
-      button.btn.btn-default.histogram(data-histogram="tower_damage") tower_damage
-      button.btn.btn-default.histogram(data-histogram="hero_healing") hero_healing
-      button.btn.btn-default.histogram(data-histogram="kills") kills
-      button.btn.btn-default.histogram(data-histogram="deaths") deaths
-      button.btn.btn-default.histogram(data-histogram="assists") assists
-      button.btn.btn-default.histogram(data-histogram="leaver_status") leaver_status
-      button.btn.btn-default.histogram(data-histogram="stuns") stuns
-      button.btn.btn-default.histogram(data-histogram="lane") lane
-      button.btn.btn-default.histogram(data-histogram="chat_message_count") chat_message_count
-      button.btn.btn-default.histogram(data-histogram="buyback_count") buyback_count
-      
+     
   hr
   .row
     .col-md-4
@@ -121,7 +135,10 @@ block playercontent
                 img.user(src=teammate.avatar)
                 a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
               td= teammate.games
-              td #{(100*teammate.win/teammate.games).toFixed(2)}%
+              td
+               - var pct = ~~(100*teammate.win/teammate.games)
+               .progress
+                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
     .col-md-4
       h3 Matchups
       table.table#heroes
@@ -142,15 +159,20 @@ block playercontent
             td=hero.localized_name
             - var h = player.heroes[hero.id]
             td #{h ? h.games : 0}
-            //td #{h ? ~~(100*h.win/h.games) : 0}%
             td
              - var pct = h ? ~~(100*h.win/h.games) : 0
              .progress
                .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
             td #{h ? h.with_games : 0}
-            td #{h ? ~~(100*h.with_win/h.with_games) : 0}%
+            td
+             - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
+             .progress
+               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
             td #{h ? h.against_games : 0}
-            td #{h ? ~~(100*h.against_win/h.against_games) : 0}%
+            td
+             - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
+             .progress
+               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
             
 append footer_assets
   script.
@@ -184,7 +206,7 @@ append footer_assets
           data: points,
           };
       }
-      $(".activate").on('click', function(){
+      $(".activate").on('mouseover', function(){
         heatmap.setData(posData[0][$(this).attr('id')]);
         heatmap.repaint();
       })

@@ -1,10 +1,10 @@
 form.form-inline#request
-  .progress
-    .progress-bar.progress-bar-info.progress-bar-striped.active.progbar-text#bar
   .form-group
     input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
   .form-group
     button.btn.btn-success Request
+.progress
+  .progress-bar.progress-bar-info.progress-bar-striped.active#bar
 
 script(src="/socket.io/socket.io.js")
 script.
