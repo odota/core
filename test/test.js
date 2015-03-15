@@ -43,6 +43,7 @@ before(function(done) {
     var DatabaseCleaner = require('database-cleaner');
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
+    nock.enableNetConnect();
     async.series([
             function(cb) {
             console.log("wiping mongodb");
@@ -348,10 +349,6 @@ describe("web", function() {
     var supertest = require('supertest');
     var app = require('../web');
     //this.timeout(wait);
-    before(function() {
-        console.log("starting web");
-        nock.enableNetConnect();
-    });
     it('/', function(done) {
         supertest(app).get('/')
             //.expect('Content-Type', /json/)
