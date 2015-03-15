@@ -226,7 +226,7 @@ function runParser(job, cb) {
         "xp": interval,
         "pos": function(e) {
             e.key = JSON.parse(e.key); //position keys are JSON arrays
-            posPopulate(e);
+            //posPopulate(e);
             if (e.time < 600) {
                 e.type = "lane_pos";
                 posPopulate(e);

@@ -119,7 +119,7 @@ app.use(function(req, res, next) {
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
         res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
-        logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.originalUrl);
         return next(err);
     });
 });
@@ -345,3 +345,5 @@ function clearPaymentSessions(req) {
         req.session[s] = null;
     });
 }
+
+module.exports = app;

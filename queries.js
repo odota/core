@@ -119,10 +119,11 @@ function computeMatchData(match) {
             var d = {
                 "obs": true,
                 "sen": true,
-                "pos": true,
+                //"pos": true,
                 "lane_pos": true
             };
             p.posData = generatePositionData(d, p);
+            //p.explore = p.posData.pos.length / 128 / 128;
             //compute lanes
             var lanes = [];
             for (var i = 0; i < p.posData.lane_pos.length; i++) {
@@ -134,7 +135,6 @@ function computeMatchData(match) {
             if (lanes.length) {
                 p.lane = mode(lanes);
             }
-            p.explore = p.posData.pos.length / 128 / 128;
             //compute hashes of purchase time sums and counts from logs
             p.purchase_time = {};
             p.purchase_time_count = {};

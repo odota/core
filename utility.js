@@ -215,7 +215,7 @@ function getParseSchema() {
                 "kills_log": [],
                 "buyback_log": [],
                 "chat": [],
-                "pos": {},
+                //"pos": {},
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},

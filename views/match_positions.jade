@@ -14,7 +14,7 @@ block match_content
               table.table.table-hover.table-responsive
                 tr
                   th Hero
-                  th Exploration
+                  //th Exploration
                   th Lane
                   th Observer
                   th Sentry
@@ -27,11 +27,10 @@ block match_content
                         img(src=hero.img, title=hero.localized_name)
                       else
                         =player.hero_id
-                    td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
+                    //td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
                     td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
                     td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
                     td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
-
 
 append footer_assets
   script.
