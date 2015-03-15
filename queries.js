@@ -690,7 +690,11 @@ function fillPlayerMatches(player, options, cb) {
         player.matches = matches;
         console.timeEnd('post');
         //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
+        console.time("db2");
+        var match_ids = balanced.map(function(m){return m.match_id});
         db.matches.find({
+            match_id: {$in: match_ids}
+            /*
             players: {
                 $elemMatch: {
                     account_id: account_id,
@@ -699,6 +703,7 @@ function fillPlayerMatches(player, options, cb) {
                     }
                 }
             }
+            */
         }, {
             fields: {
                 "players.account_id": 1,
@@ -713,6 +718,7 @@ function fillPlayerMatches(player, options, cb) {
             if (err) {
                 return cb(err);
             }
+            console.timeEnd("db2");
             //compute stats that require iteration through all players in a match
             var teammates = {};
             player.heroes = {};
@@ -728,9 +734,6 @@ function fillPlayerMatches(player, options, cb) {
                 };
                 player.heroes[hero_id] = obj;
             }
-            docs = filter(docs, {
-                "balanced": 1
-            });
             for (var i = 0; i < docs.length; i++) {
                 var match = docs[i];
                 var playerRadiant = radiantMap[match.match_id];

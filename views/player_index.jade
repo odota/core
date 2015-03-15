@@ -32,12 +32,12 @@ block playercontent
           tr
            th ID
            th Hero
-           th Result
+           //th Result
            th Mode
            th Duration
            th Played
            th: abbr(title=constants.tooltips.status) Status
-        each match in player.matches.slice(0,10)
+        each match in player.matches.slice(0,15)
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]
@@ -46,12 +46,12 @@ block playercontent
                 img(src=hero.img, title=hero.localized_name)
               else
                 =match.players[0].hero_id
-            td= match.player_win ? "Won" : "Lost"
+            //td= match.player_win ? "Won" : "Lost"
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
-    .col-md-2
+    .col-md-3
         h3 Heroes
         table.table
           thead
@@ -59,7 +59,7 @@ block playercontent
               th Hero
               th Games
               th Win%
-          each h in player.heroes_arr.slice(0,10)
+          each h in player.heroes_arr.slice(0,15)
             - var hero = constants.heroes[h.hero_id]
             tr
               td.hero
@@ -69,7 +69,7 @@ block playercontent
                - var pct = h ? ~~(100*h.win/h.games) : 0
                .progress
                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-    .col-md-4
+    .col-md-3
         h3 Teammates
         table.table#teammates
           thead
@@ -77,7 +77,7 @@ block playercontent
               th Name
               th Games
               th Win%      
-          each teammate in player.teammates.slice(0,10)
+          each teammate in player.teammates.slice(0,15)
             tr
               td
                 img.user(src=teammate.avatar)

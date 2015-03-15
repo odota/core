@@ -50,8 +50,6 @@ block playercontent
             td=val
             td=player.aggData.hero_hits.counts[key]
             td= (player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
-            
-    .col-md-4
       h3 Stats
       table.table
         tr
@@ -78,6 +76,22 @@ block playercontent
           tr
             td=constants.modes[key].name
             td=val
+    .col-md-4
+      h3 Mean Build Times (#{player.aggData.purchase.n} games)
+      table.table#builds
+        thead
+          tr
+            th Item
+            th N
+            th Time
+        tbody
+          each val, key in player.aggData.purchase_time.counts
+            - var item = constants.big_items[key]
+            if item
+              tr 
+                td: img.item(src=item.img, alt=key)
+                td=player.aggData.purchase.counts[key]
+                td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
   hr
   .row
     .col-md-6
@@ -102,25 +116,7 @@ block playercontent
      
   hr
   .row
-    .col-md-4
-      h3 Mean Build Times (#{player.aggData.purchase.n} games)
-      table.table#builds
-        thead
-          tr
-            th Item
-            th N
-            th Time
-        tbody
-          each val, key in player.aggData.purchase_time.counts
-            tr 
-              - var item = constants.items[key]
-              if item
-                td: img.item(src=item.img, alt=key)
-              else 
-                td=key
-              td=player.aggData.purchase.counts[key]
-              td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
-    .col-md-4
+    .col-md-6
       h3 Teammates
       table.table#teammates
         thead
@@ -139,7 +135,7 @@ block playercontent
                - var pct = ~~(100*teammate.win/teammate.games)
                .progress
                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-    .col-md-4
+    .col-md-6
       h3 Matchups
       table.table#heroes
         thead

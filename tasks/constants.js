@@ -2,7 +2,6 @@ var async = require('async');
 var utility = require('../utility');
 var getData = utility.getData;
 var fs = require('fs');
-
 module.exports = function generateConstants(outputFile, done) {
     var fileName = './constants.json';
     if (typeof outputFile === "string") {
@@ -12,13 +11,13 @@ module.exports = function generateConstants(outputFile, done) {
         done = outputFile;
     }
     var constants = require('../sources.json');
-    async.map(Object.keys(constants.sources), function (key, cb) {
+    async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
-        getData(val, function (err, result) {
+        getData(val, function(err, result) {
             constants[key] = result;
             cb(err);
         });
-    }, function (err) {
+    }, function(err) {
         if (err) {
             return done(err);
         }
@@ -30,7 +29,7 @@ module.exports = function generateConstants(outputFile, done) {
             constants.hero_names[heroes[key].name] = heroes[key];
             alpha_heroes.push(heroes[key]);
         }
-        alpha_heroes.sort(function(a,b){
+        alpha_heroes.sort(function(a, b) {
             return a.localized_name.localeCompare(b.localized_name);
         });
         constants.alpha_heroes = alpha_heroes;
@@ -41,6 +40,13 @@ module.exports = function generateConstants(outputFile, done) {
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
+        //significant items
+        constants.big_items = {};
+        for (var key in items) {
+            if (items[key].cost > 2100) {
+                constants.big_items[key] = items[key];
+            }
+        }
         var abilities = constants.abilities.abilitydata;
         for (var key2 in abilities) {
             abilities[key2].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
@@ -79,7 +85,7 @@ module.exports = function generateConstants(outputFile, done) {
                 constants.lanes[i].push(lane);
             }
         }
-        fs.writeFile(fileName, JSON.stringify(constants, null, 2), function (err) {
+        fs.writeFile(fileName, JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }

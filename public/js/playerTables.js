@@ -4,15 +4,15 @@ var formatSeconds = utility.formatSeconds;
 module.exports = function playerTables() {
     $(document).on('ready', function() {
         $('#teammates').dataTable({
-            "searching": false,
-            //"paging": false
+            //"searching": false,
+            "paging": false,
             "order": [
                 [1, "desc"]
             ]
         });
         $('#heroes').dataTable({
-            "searching": false,
-            //"paging": false,
+            //"searching": false,
+            "paging": false,
             "order": [
                 [2, "desc"]
             ],
@@ -25,19 +25,19 @@ module.exports = function playerTables() {
             }]
         });
         $('#builds').dataTable({
+            //"searching": false,
+            "paging": false,
             "order": [
                 [2, "asc"]
             ],
             columns: [{}, {}, {
                 render: function(data, type) {
-                    if (type==="display"){
-                    return formatSeconds(data);
+                    if (type === "display") {
+                        return formatSeconds(data);
                     }
                     return data;
                 }
-            }],
-            "searching": false,
-            //"paging": false
+            }]
         });
     });
 };
