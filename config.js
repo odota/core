@@ -23,7 +23,7 @@ var defaults = {
     "AWS_ACCESS_KEY_ID": false,
     "AWS_SECRET_ACCESS_KEY": false,
     "STEAM_GUARD_CODE": false,
-    "UNTRACK_DAYS": 3,
+    "UNTRACK_DAYS": 7,
     "PAYPAL_ID": null,
     "PAYPAL_SECRET": null,
     "GOAL": 5
