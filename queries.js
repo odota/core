@@ -7,6 +7,7 @@ var mode = utility.mode;
 var mergeObjects = utility.mergeObjects;
 var isRadiant = utility.isRadiant;
 var config = require("./config");
+var sentiment = require('sentiment');
 //readies a match for display
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;
@@ -134,26 +135,29 @@ function computeMatchData(match) {
             }
             if (lanes.length) {
                 p.lane = mode(lanes);
-                //if radiant, top=off, bot=safe
-                //if dire, top=safe, bot=off
-                //both jungles (4/5) are jungle
                 var lane_roles = {
-                    "true": {
-                        "1": "Safe",
-                        "2": "Mid",
-                        "3": "Off",
-                        "4": "Jungle",
-                        "5": "Jungle"
+                    "1": function(radiant) {
+                        //bot
+                        return radiant ? "Safe" : "Off";
                     },
-                    "false": {
-                        "1": "Off",
-                        "2": "Mid",
-                        "3": "Safe",
-                        "4": "Jungle",
-                        "5": "Jungle"
+                    "2": function(radiant) {
+                        //mid
+                        return "Mid";
+                    },
+                    "3": function(radiant) {
+                        //top
+                        return radiant ? "Off" : "Safe";
+                    },
+                    "4": function(radiant) {
+                        //rjung
+                        return "Jungle";
+                    },
+                    "5": function(radiant) {
+                        //djung
+                        return "Jungle";
                     }
                 };
-                p.lane_role = lane_roles[player.isRadiant][p.lane];
+                p.lane_role = lane_roles[p.lane](player.isRadiant);
             }
             //compute hashes of purchase time sums and counts from logs
             p.purchase_time = {};
@@ -176,6 +180,7 @@ function computeMatchData(match) {
 function renderMatch(match) {
     //build the chat
     match.chat = [];
+    match.chat_words = [];
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
@@ -237,7 +242,15 @@ function renderMatch(match) {
         p.chat.forEach(function(c) {
             c.slot = i;
             match.chat.push(c);
+            match.chat_words.push(c.key);
         });
+    });
+    match.chat_words = match.chat_words.join(' ');
+    match.sentiment = sentiment(match.chat_words, {
+        "report": -2,
+        "bg": -1,
+        "feed": -1,
+        "noob": -1
     });
     match.chat.sort(function(a, b) {
         return a.time - b.time;

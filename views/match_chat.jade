@@ -3,7 +3,9 @@ extend match
 block match_content
   .row
     .col-md-7
-      h3 Chat
+      h3 Chat 
+        small Positivity Score: #{match.sentiment.score} (#{match.sentiment.comparative.toFixed(2)} per word)
+      //pre=JSON.stringify(match.sentiment, null, 2)
       table.table.table-hover.table-responsive
         tr
           th Hero
