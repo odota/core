@@ -575,6 +575,8 @@ describe("web", function() {
             });
         });
     });
+    //todo add test for socket request
+    //todo add test for getreplayurl method
 });
 //deprecated
 /*

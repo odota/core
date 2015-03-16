@@ -1,6 +1,3 @@
-//load environment variables and export them
-var dotenv = require('dotenv');
-var fs = require('fs');
 var defaults = {
     "STEAM_API_KEY": null,
     "STEAM_USER": null,
@@ -31,6 +28,10 @@ var defaults = {
     "PAYPAL_SECRET": null,
     "GOAL": 5
 };
+/*
+var dotenv = require('dotenv');
+var fs = require('fs');
+
 var fileConfig = {};
 try {
     var file = fs.readFileSync('./.env');
@@ -42,8 +43,10 @@ catch (e) {
 for (var key in fileConfig) {
     defaults[key] = fileConfig[key];
 }
+*/
+//nf puts values in .env into process.env
 for (var key in process.env) {
     defaults[key] = process.env[key];
 }
-//console.log(defaults) // object { API : 'http://this.is.a/example' }
+//console.log(defaults)
 module.exports = defaults;

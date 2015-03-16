@@ -134,6 +134,26 @@ function computeMatchData(match) {
             }
             if (lanes.length) {
                 p.lane = mode(lanes);
+                //if radiant, top=off, bot=safe
+                //if dire, top=safe, bot=off
+                //both jungles (4/5) are jungle
+                var lane_roles = {
+                    "true": {
+                        "1": "Safe",
+                        "2": "Mid",
+                        "3": "Off",
+                        "4": "Jungle",
+                        "5": "Jungle"
+                    },
+                    "false": {
+                        "1": "Off",
+                        "2": "Mid",
+                        "3": "Safe",
+                        "4": "Jungle",
+                        "5": "Jungle"
+                    }
+                };
+                p.lane_role = lane_roles[player.isRadiant][p.lane];
             }
             //compute hashes of purchase time sums and counts from logs
             p.purchase_time = {};
@@ -461,6 +481,9 @@ function aggregator(matches, fields) {
         "lane": function(key, m, p) {
             agg(key, p.parsedPlayer.lane);
         },
+        "lane_role": function(key, m, p) {
+            agg(key, p.parsedPlayer.lane_role);
+        },
         //lifetime ward positions
         "obs": function(key, m, p) {
             agg(key, p.parsedPlayer.obs);
@@ -691,9 +714,13 @@ function fillPlayerMatches(player, options, cb) {
         console.timeEnd('post');
         //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         console.time("db2");
-        var match_ids = balanced.map(function(m){return m.match_id});
+        var match_ids = balanced.map(function(m) {
+            return m.match_id
+        });
         db.matches.find({
-            match_id: {$in: match_ids}
+            match_id: {
+                $in: match_ids
+            }
             /*
             players: {
                 $elemMatch: {

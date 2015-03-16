@@ -28,7 +28,7 @@ block match_content
                       else
                         =player.hero_id
                     //td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
-                    td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
+                    td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
                     td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
                     td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
 
@@ -42,7 +42,7 @@ append footer_assets
       console.log(posData);
       posData.forEach(function(d){
         d.lane_pos = scaleAndExtrema(d.lane_pos, 10, 0);
-        d.pos = scaleAndExtrema(d.pos, 10, 0);
+        //d.pos = scaleAndExtrema(d.pos, 10, 0);
         d.obs = scaleAndExtrema(d.obs, null, 5);
         d.sen = scaleAndExtrema(d.sen, null, 5);
       })

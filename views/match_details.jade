@@ -36,7 +36,7 @@ block match_content
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
-                  td #{constants.lane_ids[p.lane] || "-"}
+                  td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
                   td #{(p.lane_efficiency*100).toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
                   td #{p.purchase.ward_observer*2 || "-"}

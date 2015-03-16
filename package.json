@@ -76,6 +76,7 @@
     "mocha": "~2.2.1",
     "mongodb": "~1.4.34",
     "nock": "~1.1.0",
+    "nodemon": "^1.3.7",
     "supertest": "^0.15.0",
     "watchify": "~2.4.0",
     "zombie": "~2.5.1"
