@@ -8,6 +8,7 @@ public class Log{
     private List<Entry> log;
     public Log(){
         g = new Gson();
+        //buffers the log in Java before emitting
         //log = new ArrayList<Entry>();
         log = null;
     }

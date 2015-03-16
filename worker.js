@@ -17,18 +17,12 @@ var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
-var constants = require('./constants.json');
 var trackedPlayers = {};
 var ratingPlayers = {};
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
 var retrievers = config.RETRIEVER_HOST;
-retrievers.split(",").forEach(function(r) {
-    server.register('retriever@' + constants.retriever_version + '.0.0', {
-        url: "http://" + r
-    });
-});
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -99,33 +93,31 @@ function build(cb) {
             });
         },
         "retrievers": function(cb) {
-            server.get('retriever@' + constants.retriever_version + '.0.0', function(ps) {
-                ps = ps.map(function(p) {
-                    return p.url || 'http://' + p.host + ':' + p.port;
+            var r = {};
+            var b = [];
+            var ps = retrievers.split(",").map(function(r) {
+                return "http://" + r;
+            });
+            async.each(ps, function(url, cb) {
+                getData(url, function(err, body) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    for (var key in body.accounts) {
+                        b.push(body.accounts[key]);
+                    }
+                    for (var key in body.accountToIdx) {
+                        r[key] = url + "?account_id=" + key;
+                    }
+                    cb(err);
                 });
-                var r = {};
-                var b = [];
-                async.each(ps, function(url, cb) {
-                    getData(url, function(err, body) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        for (var key in body.accounts) {
-                            b.push(body.accounts[key]);
-                        }
-                        for (var key in body.accountToIdx) {
-                            r[key] = url + "?account_id=" + key;
-                        }
-                        cb(err);
-                    });
-                }, function(err) {
-                    var result = {
-                        ratingPlayers: r,
-                        bots: b,
-                        retrievers: ps
-                    };
-                    cb(err, result);
-                });
+            }, function(err) {
+                var result = {
+                    ratingPlayers: r,
+                    bots: b,
+                    retrievers: ps
+                };
+                cb(err, result);
             });
         }
     }, function(err, result) {

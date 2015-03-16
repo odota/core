@@ -22,7 +22,4 @@ public class Entry {
     public Entry(Integer time){
         this.time = time;
     }
-    public Entry(CombatLogEntry cle){
-        this.time = Math.round(cle.getTimestamp());
-    }
 }

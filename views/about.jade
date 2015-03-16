@@ -51,7 +51,7 @@ block content
               |                         
               #collapseFour.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
                 .panel-body
-                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays from that point on.  Note that probably only a few of your previous matches are listed.  If you remain an active user, we'll get your full match history.  We can get API data but cannot parse most full history matches, as the replay has expired.  We can only get a limited number of full histories per day, so please be patient.
+                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays from that point on.  Note that probably only a few of your previous matches are listed.  If you remain an active user, we'll get your full match history.  We can get API data but cannot parse most full history matches, since most of the replays have expired.  We can only get a limited number of full histories per day, so please be patient.
             |                     
             .list-group
               h4.panel-title
@@ -60,7 +60,7 @@ block content
               |                         
               #collapseFive.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFive')
                 .panel-body
-                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.  And of course, we can't parse matches older than 7 days as the replay has expired.
+                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.  Finally, we can't parse matches older than 7 days as the replay has expired.
             |                     
             .list-group
               h4.panel-title
