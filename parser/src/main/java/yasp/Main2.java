@@ -21,16 +21,14 @@ import skadistats.clarity.processor.runner.Runner;
 
 public class Main2 {
 	long tStart = System.currentTimeMillis();
-	float MINUTE = 60;
-	float POSITION_INTERVAL = 1;
+	float INTERVAL = 1;
 	HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
 	HashMap<Long, Integer> steamid_to_slot = new HashMap<Long, Integer>();
 	boolean initialized = false;
 	GameEventDescriptor combatLogDescriptor = null;
 	CombatLogContext ctx = null;
 	Entity pr=null;
-	float nextMinute = 0;
-	float nextShort = 0;
+	float nextInterval = 0;
 	int time = 0;
 	int gameZero = Integer.MAX_VALUE;
 	int numPlayers = 10;
@@ -167,7 +165,6 @@ public class Main2 {
 	        new Main2().run(args);
 	    }
 	    /*
-			TickIterator iter = Clarity.tickIteratorForStream(System.in, CustomProfile.ENTITIES, CustomProfile.COMBAT_LOG, CustomProfile.ALL_CHAT, CustomProfile.FILE_INFO, CustomProfile.CHAT_MESSAGES);
 			while(iter.hasNext()) {
 				iter.next().apply(match);
 				time = (int) match.getGameTime();
@@ -202,44 +199,24 @@ public class Main2 {
 					}
 				}
 				
-				if (trueTime > nextMinute) {
-					Entry entry = new Entry(time);
-					entry.type="times";
-					entry.value = trueTime;
-					log.output(entry);
-				}
-				if (trueTime > nextMinute){
-					HashMap<String, Integer> m = new HashMap<String, Integer>();
-					m.put("lh", lhIdx);
-					m.put("gold", goldIdx);
-					m.put("xp", xpIdx);
+				if (trueTime > nextInterval){
 				    for (int i = 0; i < numPlayers; i++) {
-				    	for (String key : m.keySet()){
-				    		Entry entry = new Entry(time);
-				    		entry.type = key;
-				    		entry.slot = i;
-				    		entry.value = (Integer)pr.getState()[m.get(key)+i];
-				    		log.output(entry);
-				    	}
-					}
-					nextMinute += MINUTE;
-				}
-
-				if (trueTime > nextShort){
-					for (int i = 0; i < numPlayers; i++) {
-					int handle = (Integer)pr.getState()[handleIdx+i];
-                    Entity e = ec.getByHandle(handle);
-                    if (e!=null){
-                    	Entry entry = new Entry(time);
-                    	entry.slot = i;
-                    	entry.type="pos";
-                    	Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-                    	entry.key = Arrays.toString(pos);
+				    	Entry entry = new Entry(time);
+				    	entry.type = "interval";
+				    	entry.slot = i;
+                    	entry.gold=(Integer)pr.getState()[goldIdx+i];
+						entry.lh=(Integer)pr.getState()[lhIdx+i];
+						entry.xp=(Integer)pr.getState()[xpIdx+i];
+						int handle = (Integer)pr.getState()[handleIdx+i];
+                    	Entity e = ec.getByHandle(handle);
+						if (e!=null){
+							entry.x=(Integer)e.getProperty("m_cellX");
+							entry.y=(Integer)e.getProperty("m_cellY");
+						}
 						log.output(entry);
-                    }
 					}
-                    nextShort += POSITION_INTERVAL;
-					}
+					nextInterval += INTERVAL;
+				}
 
                 //todo deduplicate code
                 Iterator<Entity> obs = ec.getAllByDtName("DT_DOTA_NPC_Observer_Ward");

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.Runner;
-
 import java.io.FileInputStream;
 
 public class Main {

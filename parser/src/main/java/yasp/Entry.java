@@ -17,6 +17,11 @@ public class Entry {
     public Boolean attacker_hero;
     public Boolean target_illusion;
     public Boolean attacker_illusion;
+    public Integer gold;
+    public Integer lh;
+    public Integer xp;
+    public Integer x;
+    public Integer y;
     public Entry(){
     }
     public Entry(Integer time){
