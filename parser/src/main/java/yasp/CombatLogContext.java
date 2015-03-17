@@ -4,7 +4,7 @@ import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.StringTable;
 import java.util.Arrays;
 
-public class CombatLogContext {
+public class CombatLogContext{
 
     StringTable combatLogNames;
 
