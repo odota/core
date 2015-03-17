@@ -210,9 +210,6 @@ public class YASPCombatLog extends skadistats.clarity.processor.gameevents.Comba
         public int getLocationY() {
             return event.getProperty(locationYIdx);
         }
-        public String getValueString(){
-            return String.valueOf(getValue());
-        }
         public String getValueName(){
             return translate(readCombatLogName(getValue()));
         }
