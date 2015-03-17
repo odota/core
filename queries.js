@@ -38,9 +38,7 @@ function prepareMatch(match_id, cb) {
                         computeMatchData(match);
                         var schema = utility.getParseSchema();
                         //make sure parsed_data has all fields
-                        if (!match.parsed_data) {
-                            match.parsed_data = schema;
-                        }
+                        match.parsed_data = match.parsed_data || schema;
                         //make sure each player's parsedplayer has all fields
                         match.players.forEach(function(p, i) {
                             mergeObjects(p.parsedPlayer, schema.players[i]);
@@ -250,7 +248,9 @@ function renderMatch(match) {
         "report": -2,
         "bg": -1,
         "feed": -1,
-        "noob": -1
+        "noob": -1,
+        "commended": 1,
+        "gg":1
     });
     match.chat.sort(function(a, b) {
         return a.time - b.time;
@@ -265,8 +265,7 @@ function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
-    match.parsed_data.times = match.parsed_data.times || [];
-    for (var i = 0; i < match.parsed_data.times.length; i++) {
+    for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
         var goldtotal = 0;
         var xptotal = 0;
         match.players.forEach(function(elem, j) {
@@ -283,7 +282,7 @@ function generateGraphData(match) {
         goldDifference.push(goldtotal);
         xpDifference.push(xptotal);
     }
-    var time = ["time"].concat(match.parsed_data.times);
+    var time = ["time"].concat(match.parsed_data.players[0].times);
     var data = {
         difference: [time, goldDifference, xpDifference],
         gold: [time],
@@ -512,6 +511,7 @@ function aggregator(matches, fields) {
         "item_uses": function(key, m, p) {
             agg(key, p.parsedPlayer.item_uses);
         },
+        //track sum of purchase times and counts to get average build time
         "purchase_time": function(key, m, p) {
             agg(key, p.parsedPlayer.purchase_time);
         },
@@ -728,7 +728,7 @@ function fillPlayerMatches(player, options, cb) {
         //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         console.time("db2");
         var match_ids = balanced.map(function(m) {
-            return m.match_id
+            return m.match_id;
         });
         db.matches.find({
             match_id: {
@@ -933,6 +933,7 @@ function patchLegacy(match) {
         parsedPlayer.purchase_log = parsedHero.timeline;
         parsedPlayer.kills_log = parsedHero.herokills;
         parsedPlayer.kills = parsedHero.kills;
+        parsedPlayer.times = match.parsed_data.times;
         parsedPlayer.chat = [];
         //fill the chat for each player
         match.parsed_data.chat.forEach(function(c) {

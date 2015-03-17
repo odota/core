@@ -24,8 +24,6 @@ import com.google.gson.Gson;
 public class Main {
 	public static void main(String[] args) throws Exception{
 		long tStart = System.currentTimeMillis();
-		float MINUTE = 60;
-		float POSITION_INTERVAL = 1;
 		HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
 		HashMap<Long, Integer> steamid_to_slot = new HashMap<Long, Integer>();
 		//HashMap<Integer, Integer> hero_to_slot = new HashMap<Integer,Integer>();
@@ -45,8 +43,8 @@ public class Main {
 		int missIdx=0;
 		Match match = new Match();
 		Entity pr=null;
-		float nextMinute = 0;
-		float nextShort = 0;
+		float nextInterval = 0;
+		float INTERVAL = 1;
 		int time = 0;
 		int gameZero = Integer.MAX_VALUE;
 		int numPlayers = 10;
@@ -94,44 +92,24 @@ public class Main {
 					}
 				}
 				
-				if (trueTime > nextMinute) {
-					Entry entry = new Entry(time);
-					entry.type="times";
-					entry.value = trueTime;
-					log.output(entry);
-				}
-				if (trueTime > nextMinute){
-					HashMap<String, Integer> m = new HashMap<String, Integer>();
-					m.put("lh", lhIdx);
-					m.put("gold", goldIdx);
-					m.put("xp", xpIdx);
+				if (trueTime > nextInterval){
 				    for (int i = 0; i < numPlayers; i++) {
-				    	for (String key : m.keySet()){
-				    		Entry entry = new Entry(time);
-				    		entry.type = key;
-				    		entry.slot = i;
-				    		entry.value = (Integer)pr.getState()[m.get(key)+i];
-				    		log.output(entry);
-				    	}
-					}
-					nextMinute += MINUTE;
-				}
-
-				if (trueTime > nextShort){
-					for (int i = 0; i < numPlayers; i++) {
-					int handle = (Integer)pr.getState()[handleIdx+i];
-                    Entity e = ec.getByHandle(handle);
-                    if (e!=null){
-                    	Entry entry = new Entry(time);
-                    	entry.slot = i;
-                    	entry.type="pos";
-                    	Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-                    	entry.key = Arrays.toString(pos);
+				    	Entry entry = new Entry(time);
+				    	entry.type = "interval";
+				    	entry.slot = i;
+                    	entry.gold=(Integer)pr.getState()[goldIdx+i];
+						entry.lh=(Integer)pr.getState()[lhIdx+i];
+						entry.xp=(Integer)pr.getState()[xpIdx+i];
+						int handle = (Integer)pr.getState()[handleIdx+i];
+                    	Entity e = ec.getByHandle(handle);
+						if (e!=null){
+							entry.x=(Integer)e.getProperty("m_cellX");
+							entry.y=(Integer)e.getProperty("m_cellY");
+						}
 						log.output(entry);
-                    }
 					}
-                    nextShort += POSITION_INTERVAL;
-					}
+					nextInterval += INTERVAL;
+				}
 
 				//todo figure out when wards get killed and by who, can detect entity disappearance, but how to figure out cause?
 				//todo, rune spawns, maybe

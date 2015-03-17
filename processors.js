@@ -221,17 +221,34 @@ function runParser(job, cb) {
         "stuns": populate,
         "runes": populate,
         "runes_bottled": populate,
-        "lh": interval,
-        "gold": interval,
-        "xp": interval,
-        "pos": function(e) {
-            e.key = JSON.parse(e.key); //position keys are JSON arrays
+        "interval": function(e) {
+            //if on minute, add to lh/gold/xp
+            if (e.time%60===0){
+                e.interval=true;
+                e.type="times";
+                e.value=e.time;
+                populate(e);
+                e.type="gold";
+                e.value =e.gold;
+                populate(e);
+                e.type="xp";
+                e.value = e.xp;
+                populate(e);
+                e.type="lh";
+                e.value=e.lh;
+                populate(e);
+            }
+            e.interval = false;
+            //add to positions
+            e.type="pos";
+            e.key = [e.x,e.y];
             //posPopulate(e);
             if (e.time < 600) {
                 e.type = "lane_pos";
                 posPopulate(e);
             }
             /*
+            //log all the positions for animation
             e.type = "pos_log";
             populate(e);
             */
@@ -265,11 +282,6 @@ function runParser(job, cb) {
         }
         //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
-    }
-
-    function interval(e) {
-        e.interval = true;
-        populate(e);
     }
 
     function assocName(name) {

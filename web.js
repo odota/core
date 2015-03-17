@@ -140,6 +140,9 @@ app.route('/').get(function(req, res, next) {
         });
     });
 });
+app.route('/request').get(function(req,res){
+    res.render('request');
+});
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {

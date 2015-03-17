@@ -199,11 +199,11 @@ function getParseSchema() {
     return {
         "version": 0,
         "match_id": 0,
-        "times": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
                 "lane": 0,
+                "times": [],
                 "gold": [],
                 "lh": [],
                 "xp": [],
