@@ -4,6 +4,14 @@ block playercontent
   if (user && user.account_id === player.account_id)
     .row
       .col-md-6
+        h3 Welcome!
+        .alert.alert-info
+          | Just joined?  We probably don't have your old matches yet.
+          br
+          | Play a game and come back, or request a match by ID.
+          br
+          | Keep using YASP and we'll get your full match history.
+      .col-md-6
         h3 Actions
         .checkbox
           label
@@ -17,12 +25,7 @@ block playercontent
           p: button.btn.btn-default(disabled) MMR Tracked
         else
           p: a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-      .col-md-6
-        h3 Welcome!
-        .alert.alert-info
-          | Just joined?  We probably don't have your old matches yet.
-          br
-          | Play a game and come back, or request a match by ID.
+
   .row
     .col-md-6
       h3 Recent Matches
