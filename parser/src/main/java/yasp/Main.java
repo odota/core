@@ -12,7 +12,7 @@ import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.GameRulesStateType;
 import skadistats.clarity.processor.gameevents.OnGameEvent;
-import skadistats.clarity.processor.gameevents.CombatLog;
+//import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
 import skadistats.clarity.processor.entities.UsesEntities;
@@ -41,7 +41,7 @@ public class Main {
 	int numPlayers = 10;
 	Log log = new Log();
 	Set<Integer> seenEntities = new HashSet<Integer>();
-/*
+	/*
     @OnMessage(GeneratedMessage.class)
     public void onMessage(Context ctx, GeneratedMessage message) {
         if (message instanceof Netmessages.CSVCMsg_VoiceData) {
@@ -64,135 +64,135 @@ public class Main {
     public void onEntity(Context ctx, Entity e) {
         System.out.println(e);
     }
-        */
+	 */
 
-	   @OnCombatLogEntry
-	    public void onCombatLogEntry(Context ctx, CombatLogEntry cle) {
-	        time = Math.round(cle.getTimestamp());
-			Entry entry = new Entry(time);
-			switch(cle.getType()) {
-			case 0:
-				//damage
-				entry.unit = cle.getAttackerNameCompiled();
-				entry.key = cle.getTargetNameCompiled();
-				entry.target_hero = cle.isTargetHero();
-				entry.inflictor = cle.getInflictorName();
-				entry.target_illusion = cle.isTargetIllusion();
-				entry.value = cle.getValue();
-				entry.type = "damage";
-				log.output(entry);
-				break;
-			case 1:
-				//healing
-               entry.unit = cle.getAttackerNameCompiled();
-               entry.key = cle.getTargetNameCompiled();
-               entry.value = cle.getValue();
-               entry.type = "healing";
-               log.output(entry);
-				break;
-			case 2:
-				//gain buff/debuff
-				entry.type = "modifier_applied";
-               entry.unit = cle.getAttackerNameCompiled(); //source of buff
-               entry.key = cle.getInflictorName(); //the buff
-               //todo do something with buff target
-               //String unit2 = cle.getTargetNameCompiled(); //target of buff
-               //log.output(entry);
-				break;
-			case 3:
-				//lose buff/debuff
-				entry.type = "modifier_lost";
-				//todo do something with modifier lost events
-				// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
-				break;
-			case 4:
-				//kill
-				entry.unit = cle.getAttackerNameCompiled();
-				entry.key = cle.getTargetNameCompiled();
-				entry.target_illusion = cle.isTargetIllusion();
-				entry.type = "kills";
-				log.output(entry);
-				break;
-			case 5:
-				//ability use
-				entry.unit = cle.getAttackerNameCompiled();
-				entry.key = cle.getInflictorName();
-				entry.type = "ability_uses";
-				log.output(entry);
-				break;
-			case 6:
-				//item use
-				entry.unit = cle.getAttackerNameCompiled();
-				entry.key = cle.getInflictorName();
-				entry.type = "item_uses";
-				log.output(entry);
-				break;
-			case 8:
-				//gold gain/loss
-				entry.key = String.valueOf(cle.getGoldReason());
-				entry.unit = cle.getTargetNameCompiled();
-				entry.value = cle.getValue();
-				entry.type = "gold_reasons";
-				log.output(entry);
-				break;
-			case 9:
-				//state
-				//System.err.println(cle.getValue());
-				//todo there is a new type 7 that causes parser to crash on some replays
-				String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
-				entry.type = "state";
-				entry.key = state;
-				entry.value = Integer.valueOf(time);
-				log.output(entry);
-				break;
-			case 10:
-				//xp gain
-				entry.unit = cle.getTargetNameCompiled();
-				entry.value = cle.getValue();
-				//entry.key = String.valueOf(cle.getXpReason());
-				entry.type = "xp_reasons";
-				log.output(entry);
-				break;
-			case 11:
-				//purchase
-				entry.unit = cle.getTargetNameCompiled();
-				//entry.key = cle.getValueName();
-				entry.type = "purchase";
-				log.output(entry);
-				break;
-			case 12:
-				//buyback
-				entry.slot = cle.getValue();
-				entry.type = "buyback_log";
-				log.output(entry);
-				break;
-			case 13:
-				entry.type = "ability_trigger";
-				entry.unit = cle.getAttackerNameCompiled(); //triggered?
-				entry.key = cle.getInflictorName();
-				//entry.unit = cle.getTargetNameCompiled(); //triggerer?
-				//log.output(entry);
-				break;
-			default:
-                DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
-				entry.type = type.name();
-				System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
-				log.output(entry);
-				break;
-			}
-	   }
+	@OnCombatLogEntry
+	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
+		time = Math.round(cle.getTimestamp());
+		Entry entry = new Entry(time);
+		switch(cle.getType()) {
+		case 0:
+			//damage
+			entry.unit = cle.getAttackerNameCompiled();
+			entry.key = cle.getTargetNameCompiled();
+			entry.target_hero = cle.isTargetHero();
+			entry.inflictor = cle.getInflictorName();
+			entry.target_illusion = cle.isTargetIllusion();
+			entry.value = cle.getValue();
+			entry.type = "damage";
+			log.output(entry);
+			break;
+		case 1:
+			//healing
+			entry.unit = cle.getAttackerNameCompiled();
+			entry.key = cle.getTargetNameCompiled();
+			entry.value = cle.getValue();
+			entry.type = "healing";
+			log.output(entry);
+			break;
+		case 2:
+			//gain buff/debuff
+			entry.type = "modifier_applied";
+			entry.unit = cle.getAttackerNameCompiled(); //source of buff
+			entry.key = cle.getInflictorName(); //the buff
+			//todo do something with buff target
+			//String unit2 = cle.getTargetNameCompiled(); //target of buff
+			//log.output(entry);
+			break;
+		case 3:
+			//lose buff/debuff
+			entry.type = "modifier_lost";
+			//todo do something with modifier lost events
+			// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
+			break;
+		case 4:
+			//kill
+			entry.unit = cle.getAttackerNameCompiled();
+			entry.key = cle.getTargetNameCompiled();
+			entry.target_illusion = cle.isTargetIllusion();
+			entry.type = "kills";
+			log.output(entry);
+			break;
+		case 5:
+			//ability use
+			entry.unit = cle.getAttackerNameCompiled();
+			entry.key = cle.getInflictorName();
+			entry.type = "ability_uses";
+			log.output(entry);
+			break;
+		case 6:
+			//item use
+			entry.unit = cle.getAttackerNameCompiled();
+			entry.key = cle.getInflictorName();
+			entry.type = "item_uses";
+			log.output(entry);
+			break;
+		case 8:
+			//gold gain/loss
+			entry.key = String.valueOf(cle.getGoldReason());
+			entry.unit = cle.getTargetNameCompiled();
+			entry.value = cle.getValue();
+			entry.type = "gold_reasons";
+			log.output(entry);
+			break;
+		case 9:
+			//state
+			//System.err.println(cle.getValue());
+			//todo there is a new type 7 that causes parser to crash on some replays
+			String state =  GameRulesStateType.values()[cle.getValue() - 1].toString();
+			entry.type = "state";
+			entry.key = state;
+			entry.value = Integer.valueOf(time);
+			log.output(entry);
+			break;
+		case 10:
+			//xp gain
+			entry.unit = cle.getTargetNameCompiled();
+			entry.value = cle.getValue();
+			entry.key = String.valueOf(cle.getXpReason());
+			entry.type = "xp_reasons";
+			log.output(entry);
+			break;
+		case 11:
+			//purchase
+			entry.unit = cle.getTargetNameCompiled();
+			entry.key = cle.getValueName();
+			entry.type = "purchase";
+			log.output(entry);
+			break;
+		case 12:
+			//buyback
+			entry.slot = cle.getValue();
+			entry.type = "buyback_log";
+			log.output(entry);
+			break;
+		case 13:
+			entry.type = "ability_trigger";
+			entry.unit = cle.getAttackerNameCompiled(); //triggered?
+			entry.key = cle.getInflictorName();
+			//entry.unit = cle.getTargetNameCompiled(); //triggerer?
+			//log.output(entry);
+			break;
+		default:
+			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
+			entry.type = type.name();
+			System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
+			log.output(entry);
+			break;
+		}
+	}
 
-    public void run(String[] args) throws Exception {
-        long tStart = System.currentTimeMillis();
-        Context ctx = new Runner().runWith(System.in, this);
-        //summary(ctx);
-        long tMatch = System.currentTimeMillis() - tStart;
-        System.err.format("total time taken: %s\n", (tMatch) / 1000.0);
-    }
+	public void run(String[] args) throws Exception {
+		long tStart = System.currentTimeMillis();
+		Context ctx = new Runner().runWith(System.in, this);
+		//summary(ctx);
+		long tMatch = System.currentTimeMillis() - tStart;
+		System.err.format("total time taken: %s\n", (tMatch) / 1000.0);
+	}
 
-    public static void main(String[] args) throws Exception {
-        new Main().run(args);
-    }
+	public static void main(String[] args) throws Exception {
+		new Main().run(args);
+	}
 }
 
 /*
@@ -249,8 +249,8 @@ public class Main {
         }
     }
 
-*/
-    		    /*
+ */
+/*
     		public static void finish(match){
     		    			//load endgame stats
 			for (int i = 0; i < numPlayers; i++) {
@@ -284,11 +284,11 @@ public class Main {
 			entry.type="epilogue";
 			entry.key = new Gson().toJson(info.getGameInfo().getDota());
 			log.output(entry);
-			
+
 //flush the log if it was buffered	
 			log.flush();
 	}
-	
+
 			while(iter.hasNext()) {
 				iter.next().apply(match);
 				time = (int) match.getGameTime();
@@ -308,7 +308,7 @@ public class Main {
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
 					initialized = true;
 				}
-							
+
 							//check hero every tick	
 				for (int i = 0; i < numPlayers; i++) {
 					Integer hero = (Integer)pr.getState()[heroIdx+i];
@@ -322,7 +322,7 @@ public class Main {
 						log.output(entry);
 					}
 				}
-				
+
 				//output a player resource summary every second
 				if (trueTime > nextInterval){
 				    for (int i = 0; i < numPlayers; i++) {
@@ -440,9 +440,9 @@ public class Main {
 					}
 				}
 			}
-			*/
-			//detect rune spawns
-							/*
+ */
+//detect rune spawns
+/*
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
                 while (runes.hasNext()){
                 Entity e = runes.next();
@@ -452,4 +452,4 @@ public class Main {
                 seenEntities.add(handle);
                 }
                 }
-                */
+ */
