@@ -5,13 +5,14 @@ import skadistats.clarity.event.Provides;
 import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.StringTable;
+import skadistats.clarity.processor.gameevents.CombatLog;
+import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
+import skadistats.clarity.processor.gameevents.OnGameEvent;
+import skadistats.clarity.processor.gameevents.OnGameEventDescriptor;
 import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.stringtables.StringTables;
 import skadistats.clarity.processor.stringtables.UsesStringTable;
-
-
-
 import java.util.LinkedList;
 import java.util.List;
 

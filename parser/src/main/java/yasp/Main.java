@@ -39,7 +39,7 @@ public class Main {
 	//float nextInterval = 0;
 	Integer time = 0;
 	int numPlayers = 10;
-	Log log = new Log();
+	EventStream es = new EventStream();
 	Set<Integer> seenEntities = new HashSet<Integer>();
 	/*
     @OnMessage(GeneratedMessage.class)
@@ -67,7 +67,7 @@ public class Main {
 	 */
 
 	@OnCombatLogEntry
-	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
+	public void onCombatLogEntry(Context ctx, YASPCombatLog.Entry cle) {
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
 		switch(cle.getType()) {
@@ -80,7 +80,7 @@ public class Main {
 			entry.target_illusion = cle.isTargetIllusion();
 			entry.value = cle.getValue();
 			entry.type = "damage";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 1:
 			//healing
@@ -88,7 +88,7 @@ public class Main {
 			entry.key = cle.getTargetNameCompiled();
 			entry.value = cle.getValue();
 			entry.type = "healing";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 2:
 			//gain buff/debuff
@@ -111,21 +111,21 @@ public class Main {
 			entry.key = cle.getTargetNameCompiled();
 			entry.target_illusion = cle.isTargetIllusion();
 			entry.type = "kills";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 5:
 			//ability use
 			entry.unit = cle.getAttackerNameCompiled();
 			entry.key = cle.getInflictorName();
 			entry.type = "ability_uses";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 6:
 			//item use
 			entry.unit = cle.getAttackerNameCompiled();
 			entry.key = cle.getInflictorName();
 			entry.type = "item_uses";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 8:
 			//gold gain/loss
@@ -133,7 +133,7 @@ public class Main {
 			entry.unit = cle.getTargetNameCompiled();
 			entry.value = cle.getValue();
 			entry.type = "gold_reasons";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 9:
 			//state
@@ -143,7 +143,7 @@ public class Main {
 			entry.type = "state";
 			entry.key = state;
 			entry.value = Integer.valueOf(time);
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 10:
 			//xp gain
@@ -151,20 +151,20 @@ public class Main {
 			entry.value = cle.getValue();
 			entry.key = String.valueOf(cle.getXpReason());
 			entry.type = "xp_reasons";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 11:
 			//purchase
 			entry.unit = cle.getTargetNameCompiled();
 			entry.key = cle.getValueName();
 			entry.type = "purchase";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 12:
 			//buyback
 			entry.slot = cle.getValue();
 			entry.type = "buyback_log";
-			log.output(entry);
+			es.output(entry);
 			break;
 		case 13:
 			entry.type = "ability_trigger";
@@ -177,7 +177,7 @@ public class Main {
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 			entry.type = type.name();
 			System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
-			log.output(entry);
+			es.output(entry);
 			break;
 		}
 	}
