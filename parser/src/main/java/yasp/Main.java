@@ -271,11 +271,13 @@ public class Main {
 		}
 	}
 
-
+	@UsesEntities
 	@OnTickStart
 	public void onTick(Context ctx){
-		time = ctx.getTick()/30;
+		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
+        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : 0; 
 		Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
+		if (time > nextInterval){
 		if (pr!=null){
 			if (!initialized) {
 				lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
@@ -288,9 +290,9 @@ public class Main {
 				steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
 				initialized = true;
 			}
-			//check hero every tick	
-			for (int i = 0; i < numPlayers; i++) {
-				Integer hero = (Integer)pr.getState()[heroIdx+i];
+
+				for (int i = 0; i < numPlayers; i++) {
+									Integer hero = (Integer)pr.getState()[heroIdx+i];
 				if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
 					//hero_to_slot.put(hero, i);
 					slot_to_hero.put(i, hero);
@@ -300,11 +302,7 @@ public class Main {
 					entry.key=String.valueOf(hero);
 					es.output(entry);
 				}
-			}
-
-			//output a player resource summary every second
-			if (time > nextInterval){
-				for (int i = 0; i < numPlayers; i++) {
+				
 					Entry entry = new Entry(time);
 					entry.type = "interval";
 					entry.slot = i;

@@ -202,7 +202,6 @@ function getParseSchema() {
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
-                "lane": 0,
                 "times": [],
                 "gold": [],
                 "lh": [],
