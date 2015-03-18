@@ -16,8 +16,8 @@ import skadistats.clarity.processor.stringtables.UsesStringTable;
 import java.util.LinkedList;
 import java.util.List;
 
-@Provides({OnCombatLogEntry.class})
-public class YASPCombatLog extends skadistats.clarity.processor.gameevents.CombatLog{
+@Provides({OnYASPCombatLogEntry.class})
+public class YASPCombatLog{
 
     public static final String STRING_TABLE_NAME = "CombatLogNames";
     public static final String GAME_EVENT_NAME   = "dota_combatlog";
@@ -94,7 +94,7 @@ public class YASPCombatLog extends skadistats.clarity.processor.gameevents.Comba
     Integer locationXIdx;
     Integer locationYIdx;
 
-    public class Entry extends skadistats.clarity.processor.gameevents.CombatLog.Entry{
+    public class Entry {
 
         private final StringTable combatLogNames;
         private final GameEvent event;
