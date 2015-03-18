@@ -282,7 +282,7 @@ function runParser(job, cb) {
                 console.log(e);
             }
         }
-        fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
+        //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
 
