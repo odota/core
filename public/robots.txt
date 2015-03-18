@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /matches
+Disallow: /players
