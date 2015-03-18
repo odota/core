@@ -69,7 +69,7 @@ function runParser(job, cb) {
         bz = spawn("bunzip2");
     }
     var parser = spawn("java", ["-jar",
-        "parser/target/stats-0.1.0.jar"
+        "parser/target/stats-0.1.0.one-jar.jar"
     ], {
         stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
         encoding: 'utf8'

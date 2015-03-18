@@ -26,3 +26,16 @@ wget http://replay151.valve.net/570/1305144352_560278439.dem.bz2 -qO- | bunzip2 
         "players.$": 1
     }
 ).explain()
+
+/*
+//detect rune spawns
+                Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
+                while (runes.hasNext()){
+                Entity e = runes.next();
+                Integer handle = e.getHandle();
+                if (!seenEntities.contains(handle)){
+                System.err.format("rune: time:%s,x:%s,y:%s,type:%s\n", time, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
+                seenEntities.add(handle);
+                }
+                }
+ */

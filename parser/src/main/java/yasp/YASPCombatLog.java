@@ -94,7 +94,7 @@ public class YASPCombatLog extends skadistats.clarity.processor.gameevents.Comba
     Integer locationXIdx;
     Integer locationYIdx;
 
-    public class Entry {
+    public class Entry extends skadistats.clarity.processor.gameevents.CombatLog.Entry{
 
         private final StringTable combatLogNames;
         private final GameEvent event;

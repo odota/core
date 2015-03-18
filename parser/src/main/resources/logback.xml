@@ -47,7 +47,7 @@
 	<logger name="skadistats.clarity.parser.handler.UserMsgGamerulesStateChangedHandler" level="info" />
 
 	<root level="info">
-		<appender-ref ref="stderr" />
+		<appender-ref ref="devnull" />
 	</root>
 
 </configuration>
