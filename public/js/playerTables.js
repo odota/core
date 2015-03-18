@@ -28,16 +28,16 @@ module.exports = function playerTables() {
             //"searching": false,
             "paging": false,
             "order": [
-                [2, "asc"]
+                [1, "asc"]
             ],
-            columns: [{}, {}, {
+            columns: [{}, {
                 render: function(data, type) {
                     if (type === "display") {
                         return formatSeconds(data);
                     }
                     return data;
                 }
-            }]
+            }, {}]
         });
     });
 };
