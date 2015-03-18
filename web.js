@@ -91,9 +91,9 @@ app.use("/bower_components", express.static(path.join(__dirname, '/bower_compone
 app.use(session({
     store: new RedisStore({
         client: redis,
-        ttl: 8 * 7 * 24 * 60 * 60
+        ttl: 52 * 7 * 24 * 60 * 60
     }),
-    maxAge: 8 * 7 * 24 * 60 * 60 * 1000,
+    cookie: { maxAge: 52 * 7 * 24 * 60 * 60 * 1000},
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
