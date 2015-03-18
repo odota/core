@@ -218,6 +218,7 @@ function getParseSchema() {
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},
+                //"chat_hero_kill":{},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
@@ -233,7 +234,7 @@ function getParseSchema() {
                 //"modifier_applied": {},
                 //"modifier_lost": {},
                 //"ability_trigger": {}
-                "healing": {},
+                "healing": {}
             };
         })
     };

@@ -218,6 +218,7 @@ function runParser(job, cb) {
             //time, key, only, so we lose the original prefix (stored in unit)
             populate(e);
         },
+        //"chat_hero_kill": populate,
         "stuns": populate,
         "runes": populate,
         "runes_bottled": populate,

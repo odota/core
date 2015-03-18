@@ -69,10 +69,13 @@ public class Main {
 		String value = String.valueOf(u.getValue());
 		String type = String.valueOf(u.getType());
 		if (type.equals("CHAT_MESSAGE_HERO_KILL")){
-			//System.err.format("%s,%s%n", time, u);
-		}
-		else if (type.equals("CHAT_MESSAGE_BUYBACK")){
-			//System.err.format("%s,%s%n", time, u);
+			Entry entry = new Entry(time);
+			entry.type = "chat_hero_kill";
+			//player2 killed player 1
+			//subsequent players assisted
+			entry.slot=player2;
+			entry.key=String.valueOf(player1);
+			//es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP") || type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
 			Entry entry = new Entry(time);
@@ -80,7 +83,10 @@ public class Main {
 			entry.slot=player1;
 			entry.key=value;
 			es.output(entry);
-		}                   
+		}             
+		else if (type.equals("CHAT_MESSAGE_BUYBACK")){
+			//System.err.format("%s,%s%n", time, u);
+		}
 		else if (type.equals("CHAT_MESSAGE_RANDOM")){
 		}
 		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
@@ -101,6 +107,16 @@ public class Main {
 		}
 		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
 		}
+		/*
+	CHAT_MESSAGE_COURIER_LOST = 10;
+	CHAT_MESSAGE_COURIER_RESPAWNED = 11;
+	CHAT_MESSAGE_GLYPH_USED = 12;
+	CHAT_MESSAGE_PAUSED = 34;
+	CHAT_MESSAGE_UNPAUSE_COUNTDOWN = 35;
+	CHAT_MESSAGE_UNPAUSED = 36;
+	CHAT_MESSAGE_DENIED_AEGIS = 51;
+	CHAT_MESSAGE_AEGIS_STOLEN = 53;
+	*/
 		else{
 			//System.err.format("%s %s\n", time, u);
 		}
