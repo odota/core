@@ -36,11 +36,11 @@
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>com.skadistats</groupId>
-            <artifactId>clarity</artifactId>
-            <version>1.1</version>
-        </dependency>
+<dependency>
+    <groupId>com.skadistats</groupId>
+    <artifactId>clarity</artifactId>
+    <version>2.0-SNAPSHOT</version>
+</dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -67,6 +67,18 @@
                                 </transformer>
                             </transformers>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+             <plugin>
+                <groupId>com.jolira</groupId>
+                <artifactId>onejar-maven-plugin</artifactId>
+                <version>1.4.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>one-jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

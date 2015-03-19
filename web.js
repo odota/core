@@ -86,13 +86,14 @@ var basic = auth.basic({
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
+app.use("/", express.static(path.join(__dirname, '/public')));
 app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
-        ttl: 8 * 7 * 24 * 60 * 60
+        ttl: 52 * 7 * 24 * 60 * 60
     }),
-    maxAge: 8 * 7 * 24 * 60 * 60 * 1000,
+    cookie: { maxAge: 52 * 7 * 24 * 60 * 60 * 1000},
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false

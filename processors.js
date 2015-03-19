@@ -69,7 +69,7 @@ function runParser(job, cb) {
         bz = spawn("bunzip2");
     }
     var parser = spawn("java", ["-jar",
-        "parser/target/stats-0.1.0.jar"
+        "parser/target/stats-0.1.0.one-jar.jar"
     ], {
         stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
         encoding: 'utf8'
@@ -218,40 +218,43 @@ function runParser(job, cb) {
             //time, key, only, so we lose the original prefix (stored in unit)
             populate(e);
         },
+        //"chat_hero_kill": populate,
         "stuns": populate,
         "runes": populate,
         "runes_bottled": populate,
         "interval": function(e) {
             //if on minute, add to lh/gold/xp
-            if (e.time%60===0){
-                e.interval=true;
-                e.type="times";
-                e.value=e.time;
+            if (e.time % 60 === 0) {
+                e.interval = true;
+                e.type = "times";
+                e.value = e.time;
                 populate(e);
-                e.type="gold";
-                e.value =e.gold;
+                e.type = "gold";
+                e.value = e.gold;
                 populate(e);
-                e.type="xp";
+                e.type = "xp";
                 e.value = e.xp;
                 populate(e);
-                e.type="lh";
-                e.value=e.lh;
+                e.type = "lh";
+                e.value = e.lh;
                 populate(e);
             }
             e.interval = false;
             //add to positions
-            e.type="pos";
-            e.key = [e.x,e.y];
-            //posPopulate(e);
-            if (e.time < 600) {
-                e.type = "lane_pos";
-                posPopulate(e);
-            }
-            /*
+            if (e.x && e.y) {
+                e.type = "pos";
+                e.key = [e.x, e.y];
+                //posPopulate(e);
+                if (e.time < 600) {
+                    e.type = "lane_pos";
+                    posPopulate(e);
+                }
+                /*
             //log all the positions for animation
             e.type = "pos_log";
             populate(e);
             */
+            }
         },
         "obs": function(e) {
             e.key = JSON.parse(e.key);
