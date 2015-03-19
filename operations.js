@@ -10,20 +10,18 @@ var moment = require('moment');
 var getData = utility.getData;
 
 function insertMatch(match, cb) {
-    getReplayUrl(match, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, {
-            upsert: true
-        }, function(err) {
-            if (err) {
-                return cb(err);
-            }
+    async.series([function(cb) {
+            //put api data in db
+            db.matches.update({
+                match_id: match.match_id
+            }, {
+                $set: match
+            }, {
+                upsert: true
+            }, cb);
+            },
+            function(cb) {
+            //insert players into db
             async.eachSeries(match.players, function(p, cb) {
                 db.players.update({
                     account_id: p.account_id
@@ -36,18 +34,85 @@ function insertMatch(match, cb) {
                 }, function(err) {
                     cb(err);
                 });
+            }, cb);
+            },
+            function(cb) {
+            //get replay url from retriever
+            getReplayUrl(match, cb);
+            },
+            function(cb) {
+            //update match in db
+            db.matches.update({
+                match_id: match.match_id
+            }, {
+                $set: match
+            }, {
+                upsert: true
+            }, cb);
+        }], function(err) {
+        if (err || match.expired) {
+            return cb(err);
+        }
+        else {
+            //queue for parse if valid
+            queueReq("parse", match, function(err, job) {
+                cb(err, job);
+            });
+        }
+    });
+    /*
+    //insert match into db
+    db.matches.update({
+        match_id: match.match_id
+    }, {
+        $set: match
+    }, {
+        upsert: true
+    }, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        //insert a player for each player in the match
+        async.eachSeries(match.players, function(p, cb) {
+            db.players.update({
+                account_id: p.account_id
+            }, {
+                $set: {
+                    account_id: p.account_id
+                }
+            }, {
+                upsert: true
             }, function(err) {
-                if (err || match.expired) {
+                cb(err);
+            });
+        }, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            getReplayUrl(match, function(err) {
+                if (err) {
                     return cb(err);
                 }
-                else {
+                //update the match
+                db.matches.update({
+                    match_id: match.match_id
+                }, {
+                    $set: match
+                }, {
+                    upsert: true
+                }, function(err) {
+                    if (err || match.expired) {
+                        return cb(err);
+                    }
+                    //queue for parse if not expired
                     queueReq("parse", match, function(err, job) {
                         cb(err, job);
                     });
-                }
+                });
             });
         });
     });
+    */
 }
 
 function getReplayUrl(match, cb) {
@@ -57,7 +122,7 @@ function getReplayUrl(match, cb) {
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             match.expired = true;
             match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 1;
-            return cb();
+            return cb(err);
         }
         match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 0;
         if (!err && doc && doc.url) {
