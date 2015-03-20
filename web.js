@@ -168,8 +168,8 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
-    queries.prepareMatch(1281139233, function(err, match) {
-        if (err) {
+    queries.prepareMatch(1321352005, function(err, match) {
+        if (err){
             return next(err);
         }
         res.render('home', {

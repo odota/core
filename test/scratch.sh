@@ -21,6 +21,8 @@ wget http://replay122.valve.net/570/1317849236_1002325006.dem.bz2 -qO- | bunzip2
     }
 ).explain()
 
+mongoexport --db dota --collection matches --query {match_id:1321352005} > output.json
+
 /*
 //detect rune spawns
                 Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
