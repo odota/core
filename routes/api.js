@@ -46,4 +46,19 @@ api.get('/matches', function(req, res, next) {
         });
     });
 });
+
+api.get('/carries', function(req, res, next) {
+    db.players.find({
+        cheese: {
+            $gt: 0
+        }
+    }, {
+        fields: {
+            account_id: 1
+        }
+    }, function(err, results) {
+        if (err) return next(err);
+        res.json(results);
+    });
+})
 module.exports = api;
