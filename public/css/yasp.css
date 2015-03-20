@@ -5,11 +5,16 @@
 }
 /* ads */
 
-.skyscraper,
 .leaderboard {
     margin: 0 auto;
     display: block;
 }
+
+.skyscraper {
+    margin: 2em auto;
+    display: block;
+}
+
 .match-top {
     margin-top: 1.5em;
 }

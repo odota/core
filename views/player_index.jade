@@ -52,7 +52,7 @@ block playercontent
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
-    .col-md-3
+    .col-md-6
         h3 Heroes
         table.table
           thead
@@ -70,34 +70,34 @@ block playercontent
                - var pct = h ? ~~(100*h.win/h.games) : 0
                .progress
                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-    .col-md-3
-        h3 Teammates
-        table.table#teammates
-          thead
-            tr
-              th Name
-              th Games
-              th Win%      
-          each teammate in player.teammates.slice(0,15)
-            tr
-              td
-                img.user(src=teammate.avatar)
-                a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-              td= teammate.games
-              td
-               - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
-               .progress
-                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
   hr
   .row
     include ads/leaderboard_2
   hr
   .row
-    .col-md-12
+    .col-md-6
+      h3 Teammates
+      table.table#teammates
+        thead
+          tr
+            th Name
+            th Games
+            th Win%      
+        each teammate in player.teammates.slice(0,15)
+          tr
+            td
+              img.user(src=teammate.avatar)
+              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+            td= teammate.games
+            td
+             - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
+             .progress
+               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+    .col-md-6
       h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo:
       h4#party Party:
-      #ratings
+      #ratings(style="margin-top:5em;")
 
 append footer_assets
   script.
