@@ -315,6 +315,7 @@ function runParser(job, cb) {
                 }
             }
         }
+        return name;
     }
 
     function getSlot(e) {

@@ -16,6 +16,8534 @@
 			"match_seq_num": 2
 		},
 		{
+			"barracks_status_dire": 51,
+			"barracks_status_radiant": 3,
+			"cluster": 111,
+			"duration": 3444,
+			"first_blood_time": 7,
+			"game_mode": 1,
+			"human_players": 10,
+			"leagueid": 0,
+			"lobby_type": 0,
+			"match_id": 1321352005,
+			"match_seq_num": 1184818834,
+			"negative_votes": 0,
+			"parse_status": 2,
+			"parsed_data": {
+				"version": 5,
+				"match_id": 1321352005,
+				"players": [{
+					"stuns": 16.576778,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 244, 466, 608, 938, 1310, 1978, 2142, 2340, 2822, 3067, 3434, 3753, 4184, 4509, 5040, 5673, 6578, 6942, 7344, 8256, 8686, 9231, 9559, 10019, 11057, 11305, 11659, 11929, 12422, 12609, 13086, 13433, 13759, 14132, 14232, 14545, 15503, 15881, 16450, 17516, 17728, 18689, 18904, 19176, 19506, 20273, 21222, 21488, 22125, 22532, 22632, 22732, 23050, 23571, 23671, 23771, 23871, 23912],
+					"lh": [0, 0, 0, 1, 4, 5, 10, 17, 26, 30, 32, 33, 36, 42, 47, 50, 58, 67, 83, 92, 98, 113, 121, 132, 141, 148, 159, 171, 175, 181, 185, 200, 202, 210, 211, 218, 224, 224, 229, 232, 233, 236, 240, 246, 261, 262, 266, 275, 285, 291, 292, 299, 301, 301, 301, 304, 307, 307, 307, 307, 307],
+					"xp": [0, 0, 0, 327, 781, 987, 1605, 2187, 3020, 3286, 3533, 4290, 4558, 4689, 4907, 5240, 5613, 6134, 6930, 7597, 8097, 8531, 9784, 10471, 11245, 11709, 11944, 12260, 12486, 13012, 13348, 13985, 14051, 14590, 14674, 15125, 15421, 15509, 15836, 18192, 18392, 20259, 23266, 23713, 24590, 24745, 25013, 25366, 26263, 26464, 26774, 27404, 28839, 28839, 28839, 29713, 29860, 29860, 30018, 30018, 30018],
+					"pos_log": [],
+					"obs_log": [{
+						"time": 426,
+						"key": [163, 96]
+					}, {
+						"time": 769,
+						"key": [126, 141]
+					}],
+					"sen_log": [{
+						"time": 213,
+						"key": [177, 92]
+					}, {
+						"time": 498,
+						"key": [173, 102]
+					}],
+					"hero_log": [{
+						"time": -110,
+						"key": "72"
+					}],
+					"purchase_log": [{
+						"time": -56,
+						"key": "tango"
+					}, {
+						"time": -56,
+						"key": "flask"
+					}, {
+						"time": -55,
+						"key": "ring_of_protection"
+					}, {
+						"time": -55,
+						"key": "branches"
+					}, {
+						"time": -55,
+						"key": "branches"
+					}, {
+						"time": -54,
+						"key": "branches"
+					}, {
+						"time": 82,
+						"key": "ring_of_basilius"
+					}, {
+						"time": 82,
+						"key": "sobi_mask"
+					}, {
+						"time": 134,
+						"key": "ward_sentry"
+					}, {
+						"time": 297,
+						"key": "circlet"
+					}, {
+						"time": 297,
+						"key": "slippers"
+					}, {
+						"time": 298,
+						"key": "wraith_band"
+					}, {
+						"time": 319,
+						"key": "tpscroll"
+					}, {
+						"time": 337,
+						"key": "boots"
+					}, {
+						"time": 361,
+						"key": "ring_of_aquila"
+					}, {
+						"time": 396,
+						"key": "ward_observer"
+					}, {
+						"time": 457,
+						"key": "tpscroll"
+					}, {
+						"time": 527,
+						"key": "blades_of_attack"
+					}, {
+						"time": 546,
+						"key": "tpscroll"
+					}, {
+						"time": 610,
+						"key": "blades_of_attack"
+					}, {
+						"time": 666,
+						"key": "phase_boots"
+					}, {
+						"time": 669,
+						"key": "tpscroll"
+					}, {
+						"time": 685,
+						"key": "circlet"
+					}, {
+						"time": 702,
+						"key": "gauntlets"
+					}, {
+						"time": 729,
+						"key": "bracer"
+					}, {
+						"time": 789,
+						"key": "tpscroll"
+					}, {
+						"time": 814,
+						"key": "robe"
+					}, {
+						"time": 949,
+						"key": "ancient_janggo"
+					}, {
+						"time": 984,
+						"key": "ogre_axe"
+					}, {
+						"time": 1024,
+						"key": "tpscroll"
+					}, {
+						"time": 1060,
+						"key": "tpscroll"
+					}, {
+						"time": 1171,
+						"key": "mithril_hammer"
+					}, {
+						"time": 1517,
+						"key": "blade_of_alacrity"
+					}, {
+						"time": 1567,
+						"key": "boots_of_elves"
+					}, {
+						"time": 1582,
+						"key": "black_king_bar"
+					}, {
+						"time": 1621,
+						"key": "yasha"
+					}, {
+						"time": 2128,
+						"key": "ultimate_orb"
+					}, {
+						"time": 2223,
+						"key": "manta"
+					}, {
+						"time": 2551,
+						"key": "demon_edge"
+					}, {
+						"time": 2753,
+						"key": "javelin"
+					}, {
+						"time": 2898,
+						"key": "javelin"
+					}, {
+						"time": 2963,
+						"key": "monkey_king_bar"
+					}],
+					"kills_log": [{
+						"time": 308,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 525,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 973,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 1141,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 1499,
+						"key": "npc_dota_badguys_tower2_bot"
+					}, {
+						"time": 2173,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 2370,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 2788,
+						"key": "npc_dota_badguys_range_rax_mid"
+					}, {
+						"time": 2792,
+						"key": "npc_dota_badguys_melee_rax_mid"
+					}],
+					"buyback_log": [{
+						"time": 2378,
+						"key": null
+					}],
+					"chat": [],
+					"lane_pos": {
+						"71": {
+							"75": 7,
+							"76": 10
+						},
+						"72": {
+							"75": 1,
+							"76": 37
+						},
+						"74": {
+							"75": 13,
+							"76": 1
+						},
+						"75": {
+							"78": 1
+						},
+						"76": {
+							"78": 1,
+							"79": 1
+						},
+						"77": {
+							"79": 1
+						},
+						"80": {
+							"80": 1
+						},
+						"82": {
+							"82": 1
+						},
+						"83": {
+							"84": 1
+						},
+						"85": {
+							"85": 1
+						},
+						"87": {
+							"87": 1
+						},
+						"89": {
+							"88": 1
+						},
+						"91": {
+							"90": 1
+						},
+						"92": {
+							"92": 1
+						},
+						"94": {
+							"94": 1
+						},
+						"95": {
+							"96": 1
+						},
+						"97": {
+							"97": 1
+						},
+						"100": {
+							"98": 1
+						},
+						"102": {
+							"99": 1
+						},
+						"104": {
+							"99": 1
+						},
+						"107": {
+							"100": 1
+						},
+						"109": {
+							"100": 1
+						},
+						"112": {
+							"100": 1
+						},
+						"114": {
+							"100": 1
+						},
+						"116": {
+							"101": 1
+						},
+						"118": {
+							"103": 1
+						},
+						"119": {
+							"104": 1
+						},
+						"121": {
+							"105": 1
+						},
+						"122": {
+							"106": 1
+						},
+						"125": {
+							"107": 1
+						},
+						"127": {
+							"107": 1
+						},
+						"130": {
+							"107": 1
+						},
+						"132": {
+							"108": 1
+						},
+						"135": {
+							"108": 1
+						},
+						"137": {
+							"108": 1
+						},
+						"140": {
+							"108": 1
+						},
+						"142": {
+							"107": 1
+						},
+						"143": {
+							"89": 1,
+							"91": 1,
+							"107": 2
+						},
+						"144": {
+							"94": 1,
+							"96": 1,
+							"103": 1,
+							"106": 1,
+							"107": 2,
+							"108": 1
+						},
+						"145": {
+							"99": 1,
+							"101": 1,
+							"107": 1,
+							"108": 1
+						},
+						"146": {
+							"89": 1,
+							"107": 8
+						},
+						"147": {
+							"109": 2
+						},
+						"148": {
+							"88": 1,
+							"109": 1
+						},
+						"149": {
+							"109": 1
+						},
+						"150": {
+							"80": 1,
+							"87": 1
+						},
+						"151": {
+							"108": 1,
+							"109": 2
+						},
+						"152": {
+							"80": 2
+						},
+						"153": {
+							"86": 1
+						},
+						"154": {
+							"80": 1
+						},
+						"155": {
+							"80": 1,
+							"85": 1
+						},
+						"156": {
+							"81": 1
+						},
+						"157": {
+							"80": 1,
+							"83": 1,
+							"85": 1
+						},
+						"159": {
+							"81": 1,
+							"82": 1
+						},
+						"160": {
+							"81": 1
+						},
+						"161": {
+							"79": 2,
+							"82": 1
+						},
+						"162": {
+							"82": 2
+						},
+						"163": {
+							"78": 1,
+							"79": 3,
+							"80": 1,
+							"81": 3
+						},
+						"164": {
+							"79": 1,
+							"80": 6,
+							"81": 2,
+							"82": 37
+						},
+						"165": {
+							"79": 1,
+							"81": 37,
+							"82": 4,
+							"93": 1,
+							"94": 1
+						},
+						"166": {
+							"79": 1,
+							"81": 1,
+							"82": 3,
+							"83": 2,
+							"84": 1,
+							"92": 1
+						},
+						"167": {
+							"79": 3,
+							"80": 1,
+							"82": 4,
+							"83": 4,
+							"91": 1
+						},
+						"168": {
+							"80": 2,
+							"81": 4,
+							"82": 2,
+							"83": 4,
+							"84": 2,
+							"85": 3,
+							"87": 1,
+							"90": 1
+						},
+						"169": {
+							"79": 1,
+							"80": 6,
+							"81": 2,
+							"82": 4,
+							"83": 2,
+							"84": 9,
+							"85": 2,
+							"86": 1,
+							"87": 1,
+							"89": 1
+						},
+						"170": {
+							"80": 1,
+							"82": 2,
+							"83": 4,
+							"84": 1,
+							"85": 8,
+							"86": 10,
+							"87": 1
+						},
+						"171": {
+							"80": 1,
+							"82": 2,
+							"85": 11,
+							"86": 7,
+							"87": 38,
+							"88": 4,
+							"89": 1,
+							"91": 1
+						},
+						"172": {
+							"84": 2,
+							"85": 3,
+							"86": 6,
+							"87": 11,
+							"88": 9,
+							"89": 3,
+							"90": 1,
+							"93": 2,
+							"94": 1,
+							"95": 1
+						},
+						"173": {
+							"84": 1,
+							"85": 1,
+							"86": 1,
+							"87": 2,
+							"88": 5,
+							"89": 5,
+							"90": 6,
+							"91": 2,
+							"93": 1,
+							"96": 4,
+							"97": 1,
+							"98": 6,
+							"99": 2
+						},
+						"174": {
+							"87": 4,
+							"88": 8,
+							"89": 4,
+							"90": 2,
+							"91": 2,
+							"92": 3,
+							"93": 1,
+							"94": 2,
+							"96": 4,
+							"97": 2,
+							"98": 4,
+							"99": 1,
+							"101": 1
+						},
+						"175": {
+							"86": 1,
+							"87": 1,
+							"89": 3,
+							"90": 2,
+							"91": 2,
+							"93": 2,
+							"94": 1,
+							"95": 6,
+							"96": 1,
+							"97": 9,
+							"98": 6,
+							"99": 8,
+							"100": 4,
+							"103": 1,
+							"105": 1
+						},
+						"176": {
+							"89": 1,
+							"90": 7,
+							"91": 1,
+							"92": 4,
+							"93": 3,
+							"95": 4,
+							"96": 1,
+							"97": 9,
+							"98": 4,
+							"99": 3,
+							"100": 1,
+							"101": 6,
+							"102": 4,
+							"103": 1,
+							"104": 1,
+							"105": 2,
+							"106": 1,
+							"108": 2
+						},
+						"177": {
+							"91": 1,
+							"92": 1,
+							"93": 6,
+							"94": 3,
+							"96": 1,
+							"97": 8,
+							"98": 3,
+							"99": 3,
+							"100": 2,
+							"102": 1,
+							"103": 2,
+							"104": 2,
+							"105": 1,
+							"107": 3,
+							"108": 1,
+							"110": 1
+						},
+						"178": {
+							"95": 1,
+							"96": 2,
+							"98": 4,
+							"99": 2,
+							"100": 3,
+							"102": 1,
+							"104": 2
+						},
+						"179": {
+							"93": 1,
+							"97": 2,
+							"98": 2
+						},
+						"180": {
+							"96": 1,
+							"97": 2,
+							"98": 1
+						},
+						"181": {
+							"94": 1
+						},
+						"182": {
+							"97": 4
+						},
+						"184": {
+							"95": 1,
+							"97": 3
+						}
+					},
+					"obs": {
+						"126": {
+							"141": 1
+						},
+						"163": {
+							"96": 1
+						}
+					},
+					"sen": {
+						"173": {
+							"102": 1
+						},
+						"177": {
+							"92": 1
+						}
+					},
+					"purchase": {
+						"tango": 1,
+						"flask": 1,
+						"ring_of_protection": 1,
+						"branches": 3,
+						"ring_of_basilius": 1,
+						"sobi_mask": 1,
+						"ward_sentry": 1,
+						"circlet": 2,
+						"slippers": 1,
+						"wraith_band": 1,
+						"recipe_wraith_band": 1,
+						"tpscroll": 7,
+						"boots": 1,
+						"ring_of_aquila": 1,
+						"ward_observer": 1,
+						"blades_of_attack": 2,
+						"phase_boots": 1,
+						"gauntlets": 1,
+						"bracer": 1,
+						"recipe_bracer": 1,
+						"robe": 1,
+						"recipe_ancient_janggo": 1,
+						"ancient_janggo": 1,
+						"ogre_axe": 1,
+						"mithril_hammer": 1,
+						"recipe_black_king_bar": 1,
+						"blade_of_alacrity": 1,
+						"boots_of_elves": 1,
+						"black_king_bar": 1,
+						"recipe_yasha": 1,
+						"yasha": 1,
+						"recipe_manta": 1,
+						"ultimate_orb": 1,
+						"manta": 1,
+						"demon_edge": 1,
+						"javelin": 2,
+						"monkey_king_bar": 1
+					},
+					"gold_reasons": {
+						"0": 1356,
+						"1": -4131,
+						"2": -1294,
+						"6": 75,
+						"11": 2604,
+						"12": 3759,
+						"13": 11201
+					},
+					"xp_reasons": {
+						"0": 1501,
+						"1": 10552,
+						"2": 17970
+					},
+					"kills": {
+						"npc_dota_creep_badguys_melee": 109,
+						"npc_dota_creep_goodguys_melee": 3,
+						"npc_dota_creep_goodguys_ranged": 1,
+						"npc_dota_creep_badguys_ranged": 48,
+						"npc_dota_broodmother_spiderite": 29,
+						"npc_dota_broodmother_spiderling": 20,
+						"npc_dota_hero_broodmother": 4,
+						"npc_dota_hero_earthshaker": 2,
+						"npc_dota_neutral_giant_wolf": 2,
+						"npc_dota_neutral_alpha_wolf": 1,
+						"npc_dota_neutral_dark_troll": 6,
+						"npc_dota_neutral_dark_troll_warlord": 3,
+						"npc_dota_dark_troll_warlord_skeleton_warrior": 4,
+						"npc_dota_badguys_siege": 6,
+						"npc_dota_neutral_satyr_hellcaller": 2,
+						"npc_dota_neutral_satyr_trickster": 6,
+						"npc_dota_neutral_satyr_soulstealer": 6,
+						"npc_dota_neutral_ogre_magi": 3,
+						"npc_dota_neutral_ogre_mauler": 5,
+						"npc_dota_neutral_mud_golem": 6,
+						"npc_dota_neutral_kobold": 3,
+						"npc_dota_neutral_kobold_tunneler": 1,
+						"npc_dota_neutral_kobold_taskmaster": 2,
+						"npc_dota_neutral_wildkin": 3,
+						"npc_dota_neutral_enraged_wildkin": 2,
+						"npc_dota_goodguys_siege": 1,
+						"npc_dota_badguys_tower2_bot": 1,
+						"npc_dota_neutral_centaur_khan": 5,
+						"npc_dota_neutral_centaur_outrunner": 5,
+						"npc_dota_neutral_ghost": 1,
+						"npc_dota_neutral_fel_beast": 1,
+						"npc_dota_neutral_forest_troll_berserker": 3,
+						"npc_dota_neutral_rock_golem": 1,
+						"npc_dota_neutral_polar_furbolg_champion": 1,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
+						"npc_dota_neutral_black_drake": 4,
+						"npc_dota_neutral_black_dragon": 2,
+						"npc_dota_neutral_granite_golem": 1,
+						"npc_dota_creep_badguys_melee_upgraded": 8,
+						"npc_dota_badguys_range_rax_mid": 1,
+						"npc_dota_badguys_melee_rax_mid": 1,
+						"npc_dota_badguys_fillers": 2,
+						"npc_dota_creep_badguys_ranged_upgraded": 1,
+						"npc_dota_sentry_wards": 1
+					},
+					"item_uses": {
+						"ring_of_basilius": 3,
+						"tango": 4,
+						"ward_sentry": 2,
+						"ring_of_aquila": 4,
+						"tpscroll": 7,
+						"ward_observer": 2,
+						"flask": 1,
+						"phase_boots": 66,
+						"ancient_janggo": 6,
+						"dust": 2,
+						"black_king_bar": 7,
+						"manta": 6
+					},
+					"ability_uses": {
+						"gyrocopter_rocket_barrage": 29,
+						"gyrocopter_flak_cannon": 37,
+						"gyrocopter_call_down": 18,
+						"gyrocopter_homing_missile": 13
+					},
+					"hero_hits": {
+						"undefined": 87,
+						"gyrocopter_rocket_barrage": 232,
+						"gyrocopter_call_down": 39,
+						"gyrocopter_homing_missile": 10
+					},
+					"damage": {
+						"npc_dota_creep_badguys_melee": 58958,
+						"npc_dota_hero_broodmother": 6574,
+						"npc_dota_creep_goodguys_melee": 559,
+						"npc_dota_creep_goodguys_ranged": 124,
+						"npc_dota_broodmother_spiderling": 16684,
+						"npc_dota_broodmother_spiderite": 8928,
+						"npc_dota_creep_badguys_ranged": 18382,
+						"npc_dota_hero_earthshaker": 4447,
+						"npc_dota_hero_clinkz": 3743,
+						"npc_dota_hero_lion": 266,
+						"npc_dota_hero_winter_wyvern": 3807,
+						"npc_dota_neutral_alpha_wolf": 638,
+						"npc_dota_neutral_giant_wolf": 1029,
+						"npc_dota_neutral_dark_troll_warlord": 3581,
+						"npc_dota_neutral_dark_troll": 3480,
+						"npc_dota_dark_troll_warlord_skeleton_warrior": 1269,
+						"npc_dota_badguys_siege": 4532,
+						"npc_dota_neutral_satyr_hellcaller": 2884,
+						"npc_dota_neutral_satyr_trickster": 2242,
+						"npc_dota_neutral_satyr_soulstealer": 3920,
+						"npc_dota_badguys_tower1_bot": 252,
+						"npc_dota_neutral_ogre_mauler": 4499,
+						"npc_dota_neutral_ogre_magi": 1853,
+						"npc_dota_neutral_mud_golem": 5265,
+						"npc_dota_neutral_kobold_tunneler": 367,
+						"npc_dota_neutral_kobold": 804,
+						"npc_dota_neutral_kobold_taskmaster": 856,
+						"npc_dota_neutral_enraged_wildkin": 1790,
+						"npc_dota_neutral_wildkin": 992,
+						"npc_dota_goodguys_siege": 123,
+						"npc_dota_badguys_tower2_bot": 457,
+						"npc_dota_neutral_centaur_khan": 6234,
+						"npc_dota_neutral_centaur_outrunner": 3346,
+						"illusion_npc_dota_hero_terrorblade": 7849,
+						"illusion_npc_dota_hero_earthshaker": 570,
+						"npc_dota_neutral_ghost": 509,
+						"npc_dota_neutral_fel_beast": 503,
+						"npc_dota_neutral_forest_troll_berserker": 1273,
+						"npc_dota_badguys_tower2_mid": 216,
+						"npc_dota_badguys_tower3_mid": 583,
+						"npc_dota_badguys_melee_rax_mid": 1110,
+						"npc_dota_neutral_rock_golem": 1455,
+						"npc_dota_neutral_granite_golem": 2081,
+						"npc_dota_hero_terrorblade": 4178,
+						"npc_dota_neutral_polar_furbolg_champion": 1107,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1038,
+						"npc_dota_neutral_black_dragon": 4227,
+						"npc_dota_neutral_black_drake": 3854,
+						"npc_dota_creep_badguys_melee_upgraded": 6698,
+						"illusion_npc_dota_hero_gyrocopter": 1664,
+						"npc_dota_badguys_range_rax_mid": 332,
+						"npc_dota_badguys_fillers": 751,
+						"npc_dota_creep_badguys_ranged_upgraded": 502,
+						"npc_dota_sentry_wards": 274,
+						"npc_dota_badguys_tower4": 601
+					},
+					"damage_taken": {
+						"npc_dota_hero_broodmother": 4683,
+						"undefined": 5899,
+						"npc_dota_hero_clinkz": 3876,
+						"npc_dota_hero_earthshaker": 4606,
+						"npc_dota_hero_winter_wyvern": 2133,
+						"npc_dota_hero_shadow_demon": 93,
+						"npc_dota_hero_lina": 332,
+						"npc_dota_hero_lion": 45,
+						"npc_dota_hero_terrorblade": 699
+					},
+					"runes": {
+						"0": 1,
+						"5": 3
+					},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_clinkz": 5,
+						"npc_dota_hero_broodmother": 2,
+						"npc_dota_hero_winter_wyvern": 1,
+						"npc_dota_hero_terrorblade": 1
+					},
+					"healing": {}
+				}, {
+					"stuns": 40.395866,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 100, 200, 299, 592, 732, 1013, 1159, 1311, 1599, 2007, 2400, 2835, 3096, 3245, 3446, 3545, 4014, 4248, 4394, 4537, 4637, 4903, 5003, 5103, 5479, 5579, 5679, 5832, 5932, 6032, 6219, 6519, 6710, 6851, 6951, 7216, 7316, 7693, 7793, 8025, 8365, 8561, 8741, 8841, 9121, 9423, 9842, 10179, 10411, 11148, 11248, 11576, 11948, 12444, 12692, 12919, 13104, 13239],
+					"lh": [0, 0, 0, 0, 0, 0, 3, 4, 8, 9, 10, 13, 13, 16, 16, 16, 17, 18, 18, 21, 24, 25, 26, 26, 27, 27, 27, 28, 28, 28, 29, 29, 29, 31, 31, 33, 34, 34, 37, 37, 38, 38, 41, 42, 45, 46, 46, 50, 50, 52, 54, 60, 63, 63, 66, 79, 82, 89, 95, 100, 106],
+					"xp": [0, 0, 0, 33, 185, 357, 706, 912, 1120, 1266, 1319, 1977, 2281, 2480, 2912, 2912, 3132, 3487, 3487, 4139, 4507, 4613, 4683, 4854, 5575, 5575, 5739, 6055, 6121, 6121, 6162, 6162, 6162, 6316, 6410, 6918, 7381, 7381, 7623, 7640, 7980, 8393, 8546, 8898, 9016, 9104, 9197, 9507, 10124, 10496, 11557, 11857, 13271, 13321, 14483, 14983, 15209, 15416, 15590, 15659, 15752],
+					"pos_log": [],
+					"obs_log": [{
+						"time": 1189,
+						"key": [126, 141]
+					}, {
+						"time": 1199,
+						"key": [121, 161]
+					}, {
+						"time": 1417,
+						"key": [146, 99]
+					}, {
+						"time": 1545,
+						"key": [158, 131]
+					}, {
+						"time": 2892,
+						"key": [100, 80]
+					}, {
+						"time": 3295,
+						"key": [99, 80]
+					}, {
+						"time": 3374,
+						"key": [106, 108]
+					}, {
+						"time": 3387,
+						"key": [77, 116]
+					}],
+					"sen_log": [{
+						"time": 1932,
+						"key": [113, 78]
+					}, {
+						"time": 2028,
+						"key": [175, 133]
+					}, {
+						"time": 3066,
+						"key": [93, 82]
+					}, {
+						"time": 3303,
+						"key": [93, 83]
+					}],
+					"hero_log": [{
+						"time": -85,
+						"key": "26"
+					}],
+					"purchase_log": [{
+						"time": -60,
+						"key": "courier"
+					}, {
+						"time": -51,
+						"key": "ring_of_protection"
+					}, {
+						"time": -47,
+						"key": "tango"
+					}, {
+						"time": -47,
+						"key": "flask"
+					}, {
+						"time": -42,
+						"key": "branches"
+					}, {
+						"time": 210,
+						"key": "ring_of_regen"
+					}, {
+						"time": 330,
+						"key": "tranquil_boots"
+					}, {
+						"time": 330,
+						"key": "boots"
+					}, {
+						"time": 455,
+						"key": "branches"
+					}, {
+						"time": 503,
+						"key": "ring_of_regen"
+					}, {
+						"time": 567,
+						"key": "headdress"
+					}, {
+						"time": 623,
+						"key": "chainmail"
+					}, {
+						"time": 654,
+						"key": "tpscroll"
+					}, {
+						"time": 665,
+						"key": "buckler"
+					}, {
+						"time": 941,
+						"key": "mekansm"
+					}, {
+						"time": 1136,
+						"key": "ward_observer"
+					}, {
+						"time": 1136,
+						"key": "ward_observer"
+					}, {
+						"time": 1318,
+						"key": "staff_of_wizardry"
+					}, {
+						"time": 1374,
+						"key": "ward_sentry"
+					}, {
+						"time": 1670,
+						"key": "ward_observer"
+					}, {
+						"time": 1808,
+						"key": "ward_sentry"
+					}, {
+						"time": 2170,
+						"key": "ogre_axe"
+					}, {
+						"time": 2238,
+						"key": "tpscroll"
+					}, {
+						"time": 2668,
+						"key": "point_booster"
+					}, {
+						"time": 2830,
+						"key": "ultimate_scepter"
+					}, {
+						"time": 2830,
+						"key": "blade_of_alacrity"
+					}, {
+						"time": 2882,
+						"key": "ward_observer"
+					}, {
+						"time": 2882,
+						"key": "ward_observer"
+					}, {
+						"time": 2959,
+						"key": "ward_sentry"
+					}, {
+						"time": 3140,
+						"key": "staff_of_wizardry"
+					}],
+					"kills_log": [{
+						"time": 590,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 708,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 2978,
+						"key": "npc_dota_hero_broodmother"
+					}],
+					"buyback_log": [],
+					"chat": [],
+					"lane_pos": {
+						"71": {
+							"75": 25
+						},
+						"72": {
+							"75": 1
+						},
+						"73": {
+							"74": 6,
+							"77": 2,
+							"162": 1,
+							"163": 1
+						},
+						"74": {
+							"78": 1,
+							"103": 1,
+							"160": 1
+						},
+						"75": {
+							"76": 1,
+							"78": 5,
+							"79": 2,
+							"80": 1,
+							"81": 2,
+							"82": 1,
+							"83": 1,
+							"84": 1,
+							"85": 1,
+							"86": 1,
+							"88": 1,
+							"91": 1,
+							"94": 1,
+							"97": 1,
+							"100": 1,
+							"106": 1,
+							"109": 1,
+							"159": 1,
+							"164": 2
+						},
+						"76": {
+							"83": 1,
+							"85": 1,
+							"88": 1,
+							"90": 1,
+							"92": 1,
+							"94": 1,
+							"97": 1,
+							"99": 1,
+							"111": 1,
+							"114": 1,
+							"117": 1,
+							"120": 1,
+							"158": 2,
+							"159": 1,
+							"160": 1,
+							"163": 4,
+							"164": 3,
+							"165": 1,
+							"166": 1,
+							"168": 1
+						},
+						"77": {
+							"79": 1,
+							"101": 1,
+							"103": 1,
+							"105": 1,
+							"108": 1,
+							"110": 1,
+							"112": 1,
+							"114": 1,
+							"117": 1,
+							"119": 1,
+							"121": 1,
+							"123": 2,
+							"126": 1,
+							"128": 1,
+							"130": 1,
+							"133": 1,
+							"135": 1,
+							"137": 1,
+							"139": 1,
+							"142": 1,
+							"144": 1,
+							"153": 1,
+							"155": 2,
+							"158": 4,
+							"160": 4,
+							"161": 1,
+							"162": 2,
+							"164": 2,
+							"165": 11,
+							"166": 4,
+							"167": 5,
+							"168": 1,
+							"169": 1,
+							"170": 2,
+							"173": 1
+						},
+						"78": {
+							"87": 1,
+							"89": 1,
+							"91": 1,
+							"126": 1,
+							"146": 1,
+							"148": 1,
+							"151": 1,
+							"153": 3,
+							"155": 1,
+							"157": 2,
+							"158": 1,
+							"160": 2,
+							"161": 1,
+							"162": 1,
+							"163": 3,
+							"164": 1,
+							"165": 20,
+							"166": 7,
+							"167": 4,
+							"168": 9,
+							"169": 1
+						},
+						"79": {
+							"80": 1,
+							"84": 1,
+							"93": 1,
+							"96": 1,
+							"129": 1,
+							"132": 1,
+							"148": 13,
+							"150": 1,
+							"157": 1,
+							"159": 4,
+							"161": 1,
+							"162": 1,
+							"163": 6,
+							"164": 2,
+							"165": 7,
+							"166": 14,
+							"167": 2,
+							"168": 17,
+							"170": 6,
+							"171": 1,
+							"175": 1
+						},
+						"80": {
+							"83": 1,
+							"135": 1,
+							"138": 1,
+							"147": 1,
+							"161": 1,
+							"164": 5,
+							"165": 6,
+							"166": 5,
+							"167": 6,
+							"168": 15,
+							"169": 7,
+							"170": 3
+						},
+						"81": {
+							"81": 1,
+							"96": 1,
+							"140": 1,
+							"142": 2,
+							"144": 4,
+							"154": 1,
+							"163": 3,
+							"164": 1,
+							"165": 1,
+							"166": 18,
+							"167": 4,
+							"168": 10,
+							"169": 7,
+							"170": 4,
+							"174": 1,
+							"175": 1
+						},
+						"82": {
+							"164": 1,
+							"165": 13,
+							"166": 2,
+							"167": 5,
+							"168": 3,
+							"169": 6,
+							"170": 5,
+							"171": 5,
+							"173": 3,
+							"174": 2
+						},
+						"83": {
+							"83": 1,
+							"96": 1,
+							"155": 1,
+							"164": 3,
+							"166": 5,
+							"167": 2,
+							"169": 19,
+							"170": 8,
+							"171": 9,
+							"172": 1,
+							"174": 3
+						},
+						"84": {
+							"164": 1,
+							"165": 3,
+							"166": 3,
+							"168": 1,
+							"169": 8,
+							"170": 2,
+							"171": 2
+						},
+						"85": {
+							"156": 1,
+							"164": 1,
+							"165": 2,
+							"168": 2,
+							"170": 7,
+							"172": 1,
+							"173": 1
+						},
+						"86": {
+							"96": 1,
+							"169": 1,
+							"170": 15,
+							"171": 2,
+							"172": 1
+						},
+						"87": {
+							"170": 1,
+							"173": 1,
+							"175": 1
+						},
+						"88": {
+							"97": 1,
+							"158": 1,
+							"163": 1,
+							"170": 1,
+							"171": 2,
+							"174": 1
+						},
+						"89": {
+							"160": 1,
+							"170": 1,
+							"175": 4,
+							"176": 3
+						},
+						"90": {
+							"98": 1,
+							"162": 1,
+							"170": 1
+						},
+						"91": {
+							"176": 5
+						},
+						"92": {
+							"99": 1,
+							"161": 2
+						},
+						"93": {
+							"101": 1,
+							"175": 4,
+							"176": 21
+						},
+						"95": {
+							"103": 1,
+							"161": 3,
+							"162": 4
+						},
+						"97": {
+							"104": 1
+						},
+						"98": {
+							"106": 1
+						},
+						"99": {
+							"108": 1
+						},
+						"100": {
+							"110": 1
+						},
+						"101": {
+							"112": 1,
+							"114": 1
+						},
+						"102": {
+							"116": 1
+						},
+						"103": {
+							"118": 1
+						},
+						"104": {
+							"120": 1
+						},
+						"105": {
+							"122": 1
+						},
+						"107": {
+							"124": 1
+						},
+						"108": {
+							"126": 1,
+							"141": 1
+						},
+						"109": {
+							"128": 1,
+							"130": 1,
+							"142": 9
+						},
+						"110": {
+							"132": 1,
+							"135": 1,
+							"139": 1,
+							"141": 1
+						},
+						"111": {
+							"135": 1,
+							"137": 1,
+							"141": 5
+						}
+					},
+					"obs": {
+						"77": {
+							"116": 1
+						},
+						"99": {
+							"80": 1
+						},
+						"100": {
+							"80": 1
+						},
+						"106": {
+							"108": 1
+						},
+						"121": {
+							"161": 1
+						},
+						"126": {
+							"141": 1
+						},
+						"146": {
+							"99": 1
+						},
+						"158": {
+							"131": 1
+						}
+					},
+					"sen": {
+						"93": {
+							"82": 1,
+							"83": 1
+						},
+						"113": {
+							"78": 1
+						},
+						"175": {
+							"133": 1
+						}
+					},
+					"purchase": {
+						"courier": 1,
+						"ring_of_protection": 1,
+						"tango": 1,
+						"flask": 1,
+						"branches": 2,
+						"ring_of_regen": 2,
+						"tranquil_boots": 1,
+						"boots": 1,
+						"recipe_headdress": 1,
+						"headdress": 1,
+						"chainmail": 1,
+						"recipe_buckler": 1,
+						"tpscroll": 2,
+						"buckler": 1,
+						"recipe_mekansm": 1,
+						"mekansm": 1,
+						"ward_observer": 5,
+						"staff_of_wizardry": 2,
+						"ward_sentry": 3,
+						"ogre_axe": 1,
+						"point_booster": 1,
+						"ultimate_scepter": 1,
+						"blade_of_alacrity": 1
+					},
+					"gold_reasons": {
+						"0": 1004,
+						"1": -3079,
+						"11": 1875,
+						"12": 2131,
+						"13": 3114
+					},
+					"xp_reasons": {
+						"0": 733,
+						"1": 6051,
+						"2": 8971
+					},
+					"kills": {
+						"npc_dota_creep_badguys_melee": 29,
+						"npc_dota_badguys_siege": 4,
+						"npc_dota_creep_badguys_ranged": 10,
+						"npc_dota_hero_earthshaker": 2,
+						"npc_dota_neutral_mud_golem": 2,
+						"npc_dota_creep_badguys_melee_upgraded": 40,
+						"npc_dota_neutral_satyr_trickster": 1,
+						"npc_dota_neutral_satyr_soulstealer": 1,
+						"npc_dota_neutral_satyr_hellcaller": 1,
+						"npc_dota_creep_badguys_ranged_upgraded": 8,
+						"npc_dota_broodmother_spiderling": 6,
+						"npc_dota_hero_broodmother": 1,
+						"npc_dota_badguys_siege_upgraded": 1,
+						"npc_dota_broodmother_spiderite": 3
+					},
+					"item_uses": {
+						"courier": 1,
+						"tango": 4,
+						"flask": 1,
+						"buckler": 3,
+						"mekansm": 10,
+						"tpscroll": 2,
+						"ward_observer": 8,
+						"ward_sentry": 4
+					},
+					"ability_uses": {
+						"lion_impale": 34,
+						"lion_voodoo": 25,
+						"lion_finger_of_death": 10,
+						"lion_mana_drain": 8
+					},
+					"hero_hits": {
+						"lion_impale": 18,
+						"undefined": 52,
+						"lion_finger_of_death": 4
+					},
+					"damage": {
+						"npc_dota_hero_winter_wyvern": 1845,
+						"npc_dota_hero_clinkz": 109,
+						"npc_dota_hero_earthshaker": 2436,
+						"npc_dota_creep_badguys_melee": 14695,
+						"npc_dota_creep_badguys_ranged": 3844,
+						"npc_dota_badguys_siege": 789,
+						"npc_dota_creep_goodguys_melee": 167,
+						"npc_dota_badguys_tower1_top": 76,
+						"npc_dota_hero_shadow_demon": 105,
+						"illusion_npc_dota_hero_terrorblade": 17534,
+						"npc_dota_neutral_mud_golem": 278,
+						"npc_dota_badguys_tower1_bot": 139,
+						"npc_dota_hero_lion": 130,
+						"npc_dota_neutral_satyr_soulstealer": 746,
+						"npc_dota_neutral_satyr_hellcaller": 1836,
+						"npc_dota_badguys_tower2_bot": 338,
+						"npc_dota_badguys_tower2_mid": 94,
+						"npc_dota_hero_gyrocopter": 45,
+						"npc_dota_neutral_polar_furbolg_champion": 166,
+						"npc_dota_badguys_melee_rax_mid": 53,
+						"npc_dota_creep_badguys_melee_upgraded": 42370,
+						"npc_dota_neutral_satyr_trickster": 366,
+						"npc_dota_hero_terrorblade": 951,
+						"illusion_npc_dota_hero_gyrocopter": 186,
+						"npc_dota_creep_badguys_ranged_upgraded": 6928,
+						"npc_dota_badguys_siege_upgraded": 485,
+						"npc_dota_broodmother_spiderling": 4953,
+						"npc_dota_hero_broodmother": 2763,
+						"npc_dota_broodmother_spiderite": 780
+					},
+					"damage_taken": {
+						"npc_dota_hero_clinkz": 2200,
+						"npc_dota_hero_winter_wyvern": 2113,
+						"npc_dota_hero_earthshaker": 4879,
+						"npc_dota_hero_terrorblade": 2936,
+						"undefined": 7313,
+						"npc_dota_hero_gyrocopter": 266,
+						"npc_dota_hero_shadow_demon": 201,
+						"npc_dota_hero_lion": 130,
+						"npc_dota_hero_broodmother": 304,
+						"npc_dota_hero_lina": 117,
+						"npc_dota_hero_mirana": 76
+					},
+					"runes": {},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_winter_wyvern": 3,
+						"npc_dota_hero_clinkz": 3,
+						"npc_dota_hero_terrorblade": 2,
+						"npc_dota_hero_broodmother": 1,
+						"npc_dota_hero_earthshaker": 2
+					},
+					"healing": {
+						"npc_dota_hero_gyrocopter": 1000,
+						"npc_dota_hero_shadow_demon": 500,
+						"npc_dota_hero_lion": 1609,
+						"npc_dota_hero_lina": 842,
+						"npc_dota_hero_mirana": 750
+					}
+				}, {
+					"stuns": 102.740166,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 365, 680, 1127, 1484, 1869, 2331, 2845, 3186, 3553, 3834, 4459, 5598, 6428, 6656, 6910, 7341, 7684, 8777, 9138, 9449, 10331, 11175, 11369, 12007, 12890, 13139, 13718, 14195, 14876, 15424, 15524, 16331, 16678, 16778, 17097, 18112, 19770, 20427, 21328, 21993, 22439, 22734, 23000, 23362, 23462, 24259, 24898, 25406, 25733, 27145, 27245, 27345, 28606, 29365, 30752, 31419, 31519, 31560],
+					"lh": [0, 0, 0, 3, 8, 16, 21, 26, 34, 42, 53, 62, 66, 72, 92, 99, 102, 104, 104, 104, 112, 116, 119, 136, 137, 137, 149, 152, 155, 166, 174, 185, 185, 185, 193, 198, 198, 203, 231, 239, 248, 258, 269, 276, 285, 290, 296, 296, 298, 304, 314, 319, 322, 322, 322, 332, 337, 352, 364, 364, 364],
+					"xp": [0, 0, 0, 432, 886, 1402, 1882, 2344, 2798, 3518, 4074, 4474, 4680, 5287, 7409, 7830, 7995, 8423, 8794, 9006, 10481, 10730, 11253, 11849, 12590, 12750, 13554, 15203, 15431, 16178, 16584, 17541, 18932, 18968, 19423, 19748, 19828, 20117, 21006, 23269, 23636, 24458, 26005, 26399, 26719, 27012, 27280, 27280, 28136, 28329, 29354, 29682, 32424, 32424, 32424, 32424, 32424, 32424, 32424, 32424, 32424],
+					"pos_log": [],
+					"obs_log": [],
+					"sen_log": [],
+					"hero_log": [{
+						"time": -108,
+						"key": "25"
+					}],
+					"purchase_log": [{
+						"time": -53,
+						"key": "bottle"
+					}, {
+						"time": -50,
+						"key": "branches"
+					}, {
+						"time": -50,
+						"key": "branches"
+					}, {
+						"time": 419,
+						"key": "boots"
+					}, {
+						"time": 419,
+						"key": "blades_of_attack"
+					}, {
+						"time": 419,
+						"key": "phase_boots"
+					}, {
+						"time": 419,
+						"key": "blades_of_attack"
+					}, {
+						"time": 423,
+						"key": "staff_of_wizardry"
+					}, {
+						"time": 439,
+						"key": "tpscroll"
+					}, {
+						"time": 448,
+						"key": "dust"
+					}, {
+						"time": 539,
+						"key": "tpscroll"
+					}, {
+						"time": 543,
+						"key": "sobi_mask"
+					}, {
+						"time": 714,
+						"key": "tpscroll"
+					}, {
+						"time": 719,
+						"key": "void_stone"
+					}, {
+						"time": 732,
+						"key": "cyclone"
+					}, {
+						"time": 767,
+						"key": "tpscroll"
+					}, {
+						"time": 1096,
+						"key": "mystic_staff"
+					}, {
+						"time": 1243,
+						"key": "ultimate_orb"
+					}, {
+						"time": 1336,
+						"key": "void_stone"
+					}, {
+						"time": 1351,
+						"key": "sheepstick"
+					}, {
+						"time": 1371,
+						"key": "dust"
+					}, {
+						"time": 1469,
+						"key": "tpscroll"
+					}, {
+						"time": 1518,
+						"key": "tpscroll"
+					}, {
+						"time": 1662,
+						"key": "talisman_of_evasion"
+					}, {
+						"time": 1739,
+						"key": "tpscroll"
+					}, {
+						"time": 1786,
+						"key": "ogre_axe"
+					}, {
+						"time": 1787,
+						"key": "belt_of_strength"
+					}, {
+						"time": 1803,
+						"key": "tpscroll"
+					}, {
+						"time": 1809,
+						"key": "tpscroll"
+					}, {
+						"time": 1911,
+						"key": "sange"
+					}, {
+						"time": 1911,
+						"key": "heavens_halberd"
+					}, {
+						"time": 1959,
+						"key": "gem"
+					}, {
+						"time": 2411,
+						"key": "boots"
+					}, {
+						"time": 2411,
+						"key": "travel_boots"
+					}, {
+						"time": 2560,
+						"key": "gem"
+					}, {
+						"time": 2574,
+						"key": "smoke_of_deceit"
+					}, {
+						"time": 2899,
+						"key": "vitality_booster"
+					}, {
+						"time": 2899,
+						"key": "energy_booster"
+					}, {
+						"time": 2899,
+						"key": "soul_booster"
+					}, {
+						"time": 2899,
+						"key": "point_booster"
+					}, {
+						"time": 3028,
+						"key": "ring_of_regen"
+					}, {
+						"time": 3028,
+						"key": "sobi_mask"
+					}, {
+						"time": 3028,
+						"key": "soul_ring"
+					}, {
+						"time": 3115,
+						"key": "bloodstone"
+					}],
+					"kills_log": [{
+						"time": 678,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 735,
+						"key": "npc_dota_badguys_tower1_top"
+					}, {
+						"time": 909,
+						"key": "npc_dota_hero_winter_wyvern"
+					}, {
+						"time": 1024,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 1281,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 1291,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 1460,
+						"key": "npc_dota_hero_terrorblade"
+					}, {
+						"time": 1748,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 1886,
+						"key": "npc_dota_badguys_tower2_mid"
+					}, {
+						"time": 2180,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 2185,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 2328,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 2394,
+						"key": "npc_dota_hero_terrorblade"
+					}, {
+						"time": 2430,
+						"key": "npc_dota_badguys_tower2_top"
+					}, {
+						"time": 2728,
+						"key": "npc_dota_hero_terrorblade"
+					}, {
+						"time": 2942,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 2945,
+						"key": "npc_dota_hero_winter_wyvern"
+					}, {
+						"time": 3140,
+						"key": "npc_dota_hero_earthshaker"
+					}, {
+						"time": 3266,
+						"key": "npc_dota_hero_terrorblade"
+					}],
+					"buyback_log": [{
+						"time": 2370,
+						"key": null
+					}, {
+						"time": 3242,
+						"key": null
+					}],
+					"chat": [{
+						"time": 784,
+						"key": "?"
+					}, {
+						"time": 3460,
+						"key": "rat and your ulties"
+					}, {
+						"time": 3469,
+						"key": "gg "
+					}],
+					"lane_pos": {
+						"71": {
+							"75": 16
+						},
+						"72": {
+							"76": 2
+						},
+						"73": {
+							"78": 1
+						},
+						"75": {
+							"79": 10
+						},
+						"76": {
+							"80": 2,
+							"81": 1
+						},
+						"77": {
+							"84": 1
+						},
+						"78": {
+							"86": 1
+						},
+						"79": {
+							"87": 1
+						},
+						"81": {
+							"89": 1
+						},
+						"83": {
+							"91": 1
+						},
+						"84": {
+							"92": 1
+						},
+						"86": {
+							"94": 1
+						},
+						"87": {
+							"96": 1
+						},
+						"89": {
+							"97": 1
+						},
+						"91": {
+							"98": 1
+						},
+						"93": {
+							"98": 1
+						},
+						"95": {
+							"99": 1
+						},
+						"96": {
+							"100": 2
+						},
+						"98": {
+							"101": 1
+						},
+						"99": {
+							"103": 1
+						},
+						"101": {
+							"104": 1
+						},
+						"102": {
+							"116": 1
+						},
+						"103": {
+							"106": 1,
+							"114": 1
+						},
+						"104": {
+							"108": 1,
+							"110": 1,
+							"112": 1,
+							"118": 1,
+							"140": 1
+						},
+						"105": {
+							"120": 1,
+							"138": 1,
+							"141": 1
+						},
+						"106": {
+							"122": 1,
+							"142": 1,
+							"145": 1,
+							"147": 2
+						},
+						"107": {
+							"124": 1,
+							"137": 1,
+							"149": 1,
+							"150": 1
+						},
+						"108": {
+							"126": 1,
+							"136": 1,
+							"142": 2,
+							"145": 1
+						},
+						"109": {
+							"128": 1,
+							"130": 1,
+							"140": 1,
+							"141": 1,
+							"142": 2
+						},
+						"110": {
+							"130": 11,
+							"132": 1,
+							"133": 1,
+							"135": 1,
+							"139": 1,
+							"142": 1
+						},
+						"111": {
+							"135": 1,
+							"136": 1,
+							"137": 2,
+							"140": 3,
+							"141": 3
+						},
+						"112": {
+							"134": 2,
+							"136": 3,
+							"139": 2
+						},
+						"113": {
+							"131": 1,
+							"132": 1,
+							"138": 2,
+							"140": 1
+						},
+						"114": {
+							"127": 1,
+							"129": 1,
+							"130": 1,
+							"137": 2,
+							"138": 1,
+							"140": 1
+						},
+						"115": {
+							"125": 1,
+							"126": 1,
+							"136": 2,
+							"138": 2
+						},
+						"116": {
+							"125": 1,
+							"134": 1,
+							"135": 1,
+							"136": 2
+						},
+						"117": {
+							"125": 1,
+							"134": 1,
+							"137": 1
+						},
+						"118": {
+							"120": 1,
+							"132": 1,
+							"134": 1,
+							"135": 2
+						},
+						"119": {
+							"123": 1,
+							"124": 3,
+							"125": 3,
+							"126": 1,
+							"130": 1,
+							"132": 2,
+							"133": 2,
+							"138": 1
+						},
+						"120": {
+							"121": 1,
+							"122": 2,
+							"123": 1,
+							"124": 3,
+							"125": 7,
+							"126": 2,
+							"127": 1,
+							"128": 2,
+							"131": 1
+						},
+						"121": {
+							"123": 3,
+							"124": 6,
+							"125": 17,
+							"126": 3,
+							"127": 1,
+							"129": 1,
+							"130": 1,
+							"131": 2,
+							"139": 2,
+							"140": 3
+						},
+						"122": {
+							"124": 8,
+							"125": 8,
+							"126": 14,
+							"127": 5,
+							"129": 4,
+							"139": 2
+						},
+						"123": {
+							"124": 15,
+							"125": 2,
+							"126": 6,
+							"127": 5,
+							"129": 2,
+							"139": 1
+						},
+						"124": {
+							"125": 3,
+							"126": 3,
+							"127": 7,
+							"128": 2,
+							"129": 3,
+							"130": 2
+						},
+						"125": {
+							"127": 3,
+							"128": 6,
+							"129": 31,
+							"130": 28,
+							"139": 1
+						},
+						"126": {
+							"127": 1,
+							"128": 10,
+							"129": 18,
+							"130": 18,
+							"131": 4,
+							"132": 1,
+							"134": 1,
+							"136": 1,
+							"138": 1,
+							"141": 4
+						},
+						"127": {
+							"127": 1,
+							"128": 4,
+							"129": 13,
+							"130": 11,
+							"131": 3
+						},
+						"128": {
+							"130": 13,
+							"131": 2
+						},
+						"129": {
+							"128": 6,
+							"129": 1,
+							"130": 5,
+							"131": 2
+						},
+						"130": {
+							"130": 11,
+							"131": 5
+						},
+						"131": {
+							"128": 38,
+							"129": 1,
+							"131": 6
+						},
+						"132": {
+							"131": 2
+						},
+						"133": {
+							"131": 6
+						},
+						"166": {
+							"84": 1,
+							"85": 1
+						},
+						"168": {
+							"82": 1
+						},
+						"169": {
+							"77": 3,
+							"78": 1,
+							"80": 4,
+							"86": 1,
+							"87": 5
+						},
+						"171": {
+							"88": 1
+						},
+						"173": {
+							"89": 1,
+							"95": 42,
+							"96": 1,
+							"103": 4
+						},
+						"174": {
+							"95": 1,
+							"96": 6,
+							"98": 1,
+							"99": 1,
+							"101": 2,
+							"102": 1,
+							"103": 1,
+							"106": 1,
+							"108": 2
+						},
+						"175": {
+							"92": 1,
+							"101": 2,
+							"102": 1,
+							"104": 1,
+							"105": 1
+						},
+						"176": {
+							"99": 1,
+							"100": 1,
+							"105": 1,
+							"108": 1
+						},
+						"177": {
+							"95": 1,
+							"98": 1
+						},
+						"178": {
+							"106": 2
+						}
+					},
+					"obs": {},
+					"sen": {},
+					"purchase": {
+						"bottle": 1,
+						"branches": 2,
+						"boots": 2,
+						"blades_of_attack": 2,
+						"phase_boots": 1,
+						"staff_of_wizardry": 1,
+						"tpscroll": 9,
+						"dust": 2,
+						"sobi_mask": 2,
+						"recipe_cyclone": 1,
+						"void_stone": 2,
+						"cyclone": 1,
+						"mystic_staff": 1,
+						"ultimate_orb": 1,
+						"sheepstick": 1,
+						"talisman_of_evasion": 1,
+						"ogre_axe": 1,
+						"belt_of_strength": 1,
+						"sange": 1,
+						"heavens_halberd": 1,
+						"recipe_sange": 1,
+						"gem": 2,
+						"travel_boots": 1,
+						"recipe_travel_boots": 1,
+						"smoke_of_deceit": 1,
+						"vitality_booster": 1,
+						"energy_booster": 1,
+						"soul_booster": 1,
+						"point_booster": 1,
+						"recipe_bloodstone": 1,
+						"ring_of_regen": 1,
+						"soul_ring": 1,
+						"recipe_soul_ring": 1,
+						"bloodstone": 1
+					},
+					"gold_reasons": {
+						"0": 2152,
+						"1": -3455,
+						"2": -1436,
+						"6": 1075,
+						"11": 2479,
+						"12": 9341,
+						"13": 12695
+					},
+					"xp_reasons": {
+						"0": 2082,
+						"1": 14413,
+						"2": 15934
+					},
+					"kills": {
+						"npc_dota_creep_badguys_melee": 172,
+						"npc_dota_creep_badguys_ranged": 86,
+						"npc_dota_creep_goodguys_melee": 2,
+						"npc_dota_badguys_siege": 11,
+						"npc_dota_broodmother_spiderling": 21,
+						"npc_dota_broodmother_spiderite": 28,
+						"npc_dota_hero_broodmother": 1,
+						"npc_dota_badguys_tower1_top": 1,
+						"npc_dota_neutral_mud_golem": 1,
+						"npc_dota_hero_winter_wyvern": 2,
+						"npc_dota_hero_clinkz": 5,
+						"npc_dota_neutral_enraged_wildkin": 3,
+						"npc_dota_neutral_wildkin": 6,
+						"npc_dota_hero_earthshaker": 4,
+						"npc_dota_hero_terrorblade": 4,
+						"npc_dota_badguys_tower2_mid": 1,
+						"npc_dota_neutral_centaur_khan": 2,
+						"npc_dota_neutral_satyr_trickster": 4,
+						"npc_dota_neutral_satyr_soulstealer": 4,
+						"npc_dota_neutral_centaur_outrunner": 1,
+						"npc_dota_neutral_forest_troll_berserker": 2,
+						"npc_dota_neutral_kobold_taskmaster": 1,
+						"npc_dota_sentry_wards": 1,
+						"npc_dota_badguys_tower2_top": 1,
+						"npc_dota_creep_badguys_melee_upgraded": 15,
+						"npc_dota_creep_badguys_ranged_upgraded": 3
+					},
+					"item_uses": {
+						"bottle": 71,
+						"tpscroll": 9,
+						"phase_boots": 72,
+						"dust": 2,
+						"cyclone": 19,
+						"sheepstick": 20,
+						"travel_boots": 4,
+						"smoke_of_deceit": 1,
+						"heavens_halberd": 1
+					},
+					"ability_uses": {
+						"lina_light_strike_array": 94,
+						"lina_dragon_slave": 98,
+						"lina_laguna_blade": 16
+					},
+					"hero_hits": {
+						"lina_light_strike_array": 27,
+						"undefined": 88,
+						"lina_dragon_slave": 42,
+						"cyclone": 15,
+						"lina_laguna_blade": 16
+					},
+					"damage": {
+						"npc_dota_hero_winter_wyvern": 3414,
+						"npc_dota_hero_clinkz": 7642,
+						"npc_dota_creep_badguys_melee": 121881,
+						"npc_dota_creep_badguys_ranged": 40703,
+						"npc_dota_creep_goodguys_melee": 262,
+						"npc_dota_badguys_tower1_mid": 392,
+						"npc_dota_badguys_siege": 6048,
+						"npc_dota_broodmother_spiderite": 8463,
+						"npc_dota_broodmother_spiderling": 12160,
+						"npc_dota_badguys_tower1_bot": 23,
+						"npc_dota_hero_broodmother": 8129,
+						"npc_dota_hero_earthshaker": 7161,
+						"npc_dota_badguys_tower1_top": 106,
+						"illusion_npc_dota_hero_terrorblade": 37064,
+						"npc_dota_hero_terrorblade": 7788,
+						"npc_dota_neutral_mud_golem": 204,
+						"npc_dota_neutral_enraged_wildkin": 2723,
+						"npc_dota_neutral_wildkin": 3255,
+						"illusion_npc_dota_hero_earthshaker": 555,
+						"npc_dota_badguys_tower2_mid": 317,
+						"npc_dota_hero_gyrocopter": 332,
+						"npc_dota_neutral_centaur_khan": 1909,
+						"npc_dota_badguys_tower3_mid": 644,
+						"npc_dota_badguys_melee_rax_mid": 1371,
+						"npc_dota_neutral_satyr_trickster": 2240,
+						"npc_dota_neutral_satyr_soulstealer": 3025,
+						"npc_dota_neutral_centaur_outrunner": 627,
+						"npc_dota_neutral_forest_troll_berserker": 1120,
+						"npc_dota_neutral_kobold_taskmaster": 560,
+						"npc_dota_sentry_wards": 227,
+						"npc_dota_hero_lion": 117,
+						"npc_dota_badguys_tower2_top": 584,
+						"npc_dota_creep_badguys_melee_upgraded": 10947,
+						"npc_dota_creep_badguys_ranged_upgraded": 2562,
+						"npc_dota_badguys_tower4": 686
+					},
+					"damage_taken": {
+						"npc_dota_hero_winter_wyvern": 1849,
+						"npc_dota_hero_terrorblade": 7329,
+						"undefined": 5030,
+						"npc_dota_hero_clinkz": 4512,
+						"npc_dota_hero_earthshaker": 4756,
+						"npc_dota_hero_broodmother": 2366,
+						"npc_dota_hero_mirana": 412
+					},
+					"runes": {
+						"0": 3,
+						"1": 1,
+						"3": 1,
+						"4": 1,
+						"5": 9
+					},
+					"runes_bottled": {
+						"0": 2,
+						"1": 1,
+						"3": 1,
+						"4": 1,
+						"5": 9
+					},
+					"killed_by": {
+						"npc_dota_hero_clinkz": 2,
+						"npc_dota_hero_terrorblade": 3,
+						"npc_dota_hero_winter_wyvern": 2
+					},
+					"healing": {
+						"npc_dota_hero_shadow_demon": 1600,
+						"npc_dota_hero_gyrocopter": 770
+					}
+				}, {
+					"stuns": 37.48732,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 345, 445, 544, 679, 779, 880, 1027, 1128, 1228, 1382, 1690, 1838, 2400, 2499, 2694, 2933, 3194, 3294, 3393, 3542, 3642, 3850, 3994, 4144, 4570, 4831, 4988, 5230, 5330, 5470, 5745, 6045, 6235, 6388, 6488, 6660, 7236, 7886, 8376, 8800, 9062, 9273, 9528, 9628, 10093, 10442, 10941, 11764, 12259, 12644, 12894, 13599, 14519, 14853, 14868, 15155, 15356, 15436],
+					"lh": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 6, 7, 10, 15, 18, 21, 21, 22, 26, 26, 28, 29, 29, 30, 30, 32, 35, 48, 48, 52, 58, 58, 66, 68, 71, 77, 86, 92, 95, 98, 106, 106, 106, 115, 120, 122],
+					"xp": [0, 0, 0, 107, 213, 246, 425, 425, 458, 604, 719, 821, 1146, 1389, 1537, 1865, 1968, 2367, 2802, 2918, 3122, 3228, 3298, 3629, 4308, 4399, 4521, 4837, 5146, 5201, 5581, 5625, 5691, 5936, 6002, 6190, 6436, 6436, 6737, 9032, 9139, 10551, 11885, 11965, 12018, 12184, 12184, 12623, 13218, 13395, 14493, 15151, 15815, 16037, 16963, 18003, 18024, 18024, 18273, 18492, 18607],
+					"pos_log": [],
+					"obs_log": [{
+						"time": 26,
+						"key": [110, 147]
+					}, {
+						"time": 246,
+						"key": [101, 170]
+					}, {
+						"time": 2203,
+						"key": [152, 127]
+					}, {
+						"time": 2220,
+						"key": [165, 151]
+					}],
+					"sen_log": [{
+						"time": 1402,
+						"key": [134, 78]
+					}, {
+						"time": 1411,
+						"key": [147, 97]
+					}],
+					"hero_log": [{
+						"time": -81,
+						"key": "9"
+					}],
+					"purchase_log": [{
+						"time": -56,
+						"key": "ward_observer"
+					}, {
+						"time": -42,
+						"key": "tango"
+					}, {
+						"time": -40,
+						"key": "ring_of_protection"
+					}, {
+						"time": -17,
+						"key": "clarity"
+					}, {
+						"time": 63,
+						"key": "boots"
+					}, {
+						"time": 316,
+						"key": "ring_of_basilius"
+					}, {
+						"time": 316,
+						"key": "sobi_mask"
+					}, {
+						"time": 482,
+						"key": "circlet"
+					}, {
+						"time": 483,
+						"key": "slippers"
+					}, {
+						"time": 502,
+						"key": "wraith_band"
+					}, {
+						"time": 649,
+						"key": "gloves"
+					}, {
+						"time": 761,
+						"key": "blades_of_attack"
+					}, {
+						"time": 772,
+						"key": "ring_of_aquila"
+					}, {
+						"time": 782,
+						"key": "tpscroll"
+					}, {
+						"time": 790,
+						"key": "clarity"
+					}, {
+						"time": 956,
+						"key": "blades_of_attack"
+					}, {
+						"time": 1028,
+						"key": "phase_boots"
+					}, {
+						"time": 1081,
+						"key": "tpscroll"
+					}, {
+						"time": 1509,
+						"key": "mithril_hammer"
+					}, {
+						"time": 1616,
+						"key": "tpscroll"
+					}, {
+						"time": 1707,
+						"key": "maelstrom"
+					}, {
+						"time": 2000,
+						"key": "tpscroll"
+					}, {
+						"time": 2437,
+						"key": "tpscroll"
+					}, {
+						"time": 2665,
+						"key": "demon_edge"
+					}, {
+						"time": 2862,
+						"key": "broadsword"
+					}, {
+						"time": 2862,
+						"key": "blades_of_attack"
+					}, {
+						"time": 3067,
+						"key": "lesser_crit"
+					}, {
+						"time": 3067,
+						"key": "greater_crit"
+					}, {
+						"time": 3166,
+						"key": "tpscroll"
+					}, {
+						"time": 3389,
+						"key": "ward_sentry"
+					}],
+					"kills_log": [{
+						"time": 14,
+						"key": "npc_dota_hero_clinkz"
+					}, {
+						"time": 743,
+						"key": "npc_dota_hero_winter_wyvern"
+					}, {
+						"time": 2242,
+						"key": "npc_dota_badguys_tower3_mid"
+					}, {
+						"time": 2847,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 3106,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 3150,
+						"key": "npc_dota_hero_winter_wyvern"
+					}],
+					"buyback_log": [{
+						"time": 2372,
+						"key": null
+					}, {
+						"time": 3212,
+						"key": null
+					}],
+					"chat": [],
+					"lane_pos": {
+						"70": {
+							"161": 6,
+							"162": 9
+						},
+						"71": {
+							"76": 2,
+							"162": 2
+						},
+						"72": {
+							"163": 3
+						},
+						"73": {
+							"161": 1,
+							"163": 1
+						},
+						"74": {
+							"76": 1,
+							"163": 1,
+							"164": 1
+						},
+						"75": {
+							"74": 5,
+							"75": 1,
+							"76": 2,
+							"159": 1,
+							"164": 1
+						},
+						"76": {
+							"74": 9,
+							"75": 11,
+							"76": 9,
+							"80": 2,
+							"133": 1,
+							"151": 1,
+							"154": 1,
+							"165": 1
+						},
+						"77": {
+							"78": 1,
+							"80": 1,
+							"82": 2,
+							"83": 1,
+							"84": 1,
+							"133": 1,
+							"135": 1,
+							"146": 1,
+							"148": 1,
+							"150": 4,
+							"151": 2,
+							"153": 1,
+							"156": 1,
+							"158": 1,
+							"159": 1,
+							"162": 1,
+							"163": 1
+						},
+						"78": {
+							"86": 1,
+							"137": 1,
+							"141": 1,
+							"144": 2,
+							"152": 1,
+							"155": 1,
+							"156": 6,
+							"157": 4,
+							"161": 1,
+							"164": 2,
+							"165": 1,
+							"166": 2
+						},
+						"79": {
+							"82": 1,
+							"85": 1,
+							"134": 1,
+							"140": 4,
+							"152": 1,
+							"162": 1,
+							"164": 1,
+							"165": 1,
+							"166": 1,
+							"167": 1
+						},
+						"80": {
+							"134": 1,
+							"143": 1,
+							"145": 1,
+							"146": 1,
+							"147": 13,
+							"149": 2,
+							"154": 1,
+							"155": 1,
+							"159": 2,
+							"161": 2,
+							"162": 1,
+							"163": 1,
+							"164": 1,
+							"169": 1,
+							"170": 1
+						},
+						"81": {
+							"132": 1,
+							"134": 1,
+							"137": 1,
+							"139": 1,
+							"143": 1,
+							"144": 1,
+							"145": 1,
+							"146": 1,
+							"151": 1,
+							"154": 1,
+							"157": 3,
+							"161": 1,
+							"164": 4,
+							"165": 1,
+							"169": 1,
+							"171": 6,
+							"172": 1
+						},
+						"82": {
+							"83": 1,
+							"142": 3,
+							"143": 11,
+							"144": 1,
+							"155": 1,
+							"160": 1,
+							"164": 2,
+							"165": 1,
+							"166": 4,
+							"167": 2,
+							"168": 1,
+							"169": 1,
+							"170": 1,
+							"171": 1,
+							"172": 1
+						},
+						"83": {
+							"142": 2,
+							"156": 3,
+							"158": 1,
+							"159": 1,
+							"163": 1,
+							"164": 10,
+							"165": 8,
+							"166": 3,
+							"167": 13,
+							"168": 3,
+							"169": 7,
+							"171": 1,
+							"172": 2,
+							"173": 4
+						},
+						"84": {
+							"84": 1,
+							"141": 1,
+							"142": 7,
+							"158": 1,
+							"163": 1,
+							"164": 3,
+							"165": 11,
+							"166": 2,
+							"167": 3,
+							"168": 1,
+							"169": 1,
+							"170": 1
+						},
+						"85": {
+							"142": 6,
+							"158": 11,
+							"163": 1,
+							"165": 1,
+							"166": 1,
+							"168": 1,
+							"169": 1,
+							"170": 1
+						},
+						"86": {
+							"85": 1,
+							"139": 1,
+							"157": 3,
+							"158": 1,
+							"161": 2,
+							"163": 3,
+							"164": 1,
+							"170": 10,
+							"171": 1
+						},
+						"87": {
+							"87": 1,
+							"137": 1,
+							"157": 17,
+							"158": 15,
+							"159": 4,
+							"160": 10,
+							"161": 1,
+							"164": 1,
+							"170": 1
+						},
+						"88": {
+							"89": 1,
+							"157": 2,
+							"158": 1,
+							"159": 1,
+							"162": 1,
+							"163": 2,
+							"171": 1
+						},
+						"89": {
+							"92": 1,
+							"94": 1,
+							"136": 1,
+							"155": 1,
+							"156": 2,
+							"158": 1,
+							"159": 1,
+							"160": 3,
+							"162": 2,
+							"163": 1,
+							"170": 1
+						},
+						"90": {
+							"96": 1,
+							"158": 1,
+							"159": 4,
+							"160": 17,
+							"161": 6,
+							"162": 1,
+							"171": 2
+						},
+						"91": {
+							"136": 1,
+							"160": 1,
+							"161": 1,
+							"162": 2,
+							"163": 1,
+							"171": 1
+						},
+						"92": {
+							"98": 1,
+							"160": 2,
+							"161": 1,
+							"162": 49,
+							"163": 3,
+							"171": 1
+						},
+						"93": {
+							"100": 1,
+							"136": 1,
+							"162": 19,
+							"163": 1
+						},
+						"94": {
+							"162": 2,
+							"163": 5,
+							"172": 1
+						},
+						"95": {
+							"101": 1,
+							"174": 1
+						},
+						"96": {
+							"103": 1,
+							"136": 1,
+							"164": 2,
+							"165": 1,
+							"173": 1,
+							"174": 1
+						},
+						"97": {
+							"162": 1,
+							"164": 2,
+							"165": 1,
+							"173": 1,
+							"174": 4
+						},
+						"98": {
+							"105": 1,
+							"137": 1,
+							"162": 1,
+							"164": 1,
+							"165": 1,
+							"166": 1,
+							"167": 1,
+							"173": 1
+						},
+						"99": {
+							"107": 1,
+							"164": 2,
+							"166": 1,
+							"171": 1
+						},
+						"100": {
+							"109": 1,
+							"111": 1,
+							"138": 1,
+							"164": 1,
+							"165": 1,
+							"166": 1,
+							"169": 1,
+							"170": 1
+						},
+						"101": {
+							"113": 1,
+							"138": 1,
+							"166": 1,
+							"168": 1
+						},
+						"102": {
+							"115": 1,
+							"138": 1,
+							"139": 1,
+							"164": 2,
+							"165": 3,
+							"166": 1,
+							"167": 1
+						},
+						"103": {
+							"118": 1,
+							"119": 1,
+							"140": 1
+						},
+						"104": {
+							"121": 1,
+							"138": 1,
+							"140": 1
+						},
+						"105": {
+							"123": 1,
+							"141": 1,
+							"142": 1,
+							"165": 1,
+							"166": 2
+						},
+						"106": {
+							"125": 1,
+							"137": 1,
+							"143": 1,
+							"166": 1
+						},
+						"107": {
+							"127": 1,
+							"144": 1,
+							"166": 1
+						},
+						"108": {
+							"129": 1,
+							"135": 1,
+							"144": 1,
+							"166": 19
+						},
+						"109": {
+							"131": 1,
+							"166": 6
+						},
+						"110": {
+							"133": 1
+						},
+						"111": {
+							"133": 2
+						},
+						"112": {
+							"135": 2
+						},
+						"113": {
+							"135": 4
+						}
+					},
+					"obs": {
+						"101": {
+							"170": 1
+						},
+						"110": {
+							"147": 1
+						},
+						"152": {
+							"127": 1
+						},
+						"165": {
+							"151": 1
+						}
+					},
+					"sen": {
+						"134": {
+							"78": 1
+						},
+						"147": {
+							"97": 1
+						}
+					},
+					"purchase": {
+						"ward_observer": 1,
+						"tango": 1,
+						"ring_of_protection": 1,
+						"clarity": 2,
+						"boots": 1,
+						"ring_of_basilius": 1,
+						"sobi_mask": 1,
+						"circlet": 1,
+						"slippers": 1,
+						"wraith_band": 1,
+						"recipe_wraith_band": 1,
+						"gloves": 1,
+						"blades_of_attack": 3,
+						"ring_of_aquila": 1,
+						"tpscroll": 6,
+						"phase_boots": 1,
+						"mithril_hammer": 1,
+						"recipe_maelstrom": 1,
+						"maelstrom": 1,
+						"demon_edge": 1,
+						"broadsword": 1,
+						"recipe_lesser_crit": 1,
+						"recipe_greater_crit": 1,
+						"lesser_crit": 1,
+						"greater_crit": 1,
+						"ward_sentry": 1
+					},
+					"gold_reasons": {
+						"0": 900,
+						"1": -2125,
+						"2": -999,
+						"11": 2125,
+						"12": 3574,
+						"13": 3936
+					},
+					"xp_reasons": {
+						"0": 807,
+						"1": 9369,
+						"2": 8436
+					},
+					"kills": {
+						"npc_dota_hero_clinkz": 1,
+						"npc_dota_creep_badguys_melee": 53,
+						"npc_dota_hero_winter_wyvern": 2,
+						"npc_dota_creep_badguys_ranged": 17,
+						"npc_dota_creep_goodguys_melee": 1,
+						"npc_dota_neutral_satyr_trickster": 2,
+						"npc_dota_neutral_satyr_soulstealer": 2,
+						"npc_dota_neutral_dark_troll": 2,
+						"npc_dota_neutral_dark_troll_warlord": 1,
+						"npc_dota_dark_troll_warlord_skeleton_warrior": 2,
+						"npc_dota_badguys_siege": 1,
+						"npc_dota_badguys_tower3_mid": 1,
+						"npc_dota_neutral_rock_golem": 1,
+						"npc_dota_neutral_granite_golem": 1,
+						"npc_dota_creep_badguys_melee_upgraded": 25,
+						"npc_dota_neutral_forest_troll_high_priest": 1,
+						"npc_dota_neutral_forest_troll_berserker": 1,
+						"npc_dota_creep_badguys_ranged_upgraded": 7,
+						"npc_dota_hero_broodmother": 2,
+						"npc_dota_sentry_wards": 1,
+						"npc_dota_neutral_satyr_hellcaller": 1,
+						"npc_dota_broodmother_spiderling": 3
+					},
+					"item_uses": {
+						"ward_observer": 4,
+						"clarity": 2,
+						"tango": 4,
+						"tango_single": 2,
+						"tpscroll": 5,
+						"phase_boots": 104,
+						"ward_sentry": 2
+					},
+					"ability_uses": {
+						"mirana_arrow": 43,
+						"mirana_leap": 32,
+						"mirana_invis": 10,
+						"mirana_starfall": 26
+					},
+					"hero_hits": {
+						"mirana_arrow": 16,
+						"undefined": 65,
+						"mirana_starfall": 7,
+						"maelstrom": 12
+					},
+					"damage": {
+						"npc_dota_hero_clinkz": 1928,
+						"npc_dota_creep_badguys_melee": 32412,
+						"npc_dota_creep_badguys_ranged": 9171,
+						"npc_dota_hero_earthshaker": 1520,
+						"npc_dota_hero_winter_wyvern": 2222,
+						"npc_dota_badguys_tower1_top": 58,
+						"npc_dota_neutral_kobold_taskmaster": 50,
+						"npc_dota_badguys_siege": 718,
+						"npc_dota_badguys_tower2_mid": 17,
+						"npc_dota_hero_broodmother": 3080,
+						"npc_dota_badguys_tower1_bot": 56,
+						"illusion_npc_dota_hero_terrorblade": 10422,
+						"npc_dota_neutral_fel_beast": 552,
+						"npc_dota_neutral_enraged_wildkin": 145,
+						"npc_dota_neutral_wildkin": 84,
+						"npc_dota_badguys_tower2_bot": 378,
+						"npc_dota_creep_goodguys_melee": 192,
+						"npc_dota_neutral_satyr_trickster": 936,
+						"npc_dota_neutral_satyr_soulstealer": 1480,
+						"npc_dota_neutral_dark_troll": 1157,
+						"npc_dota_neutral_dark_troll_warlord": 1153,
+						"npc_dota_dark_troll_warlord_skeleton_warrior": 611,
+						"illusion_npc_dota_hero_earthshaker": 574,
+						"npc_dota_badguys_tower3_bot": 108,
+						"npc_dota_badguys_tower3_mid": 144,
+						"npc_dota_badguys_fillers": 44,
+						"npc_dota_badguys_melee_rax_mid": 342,
+						"npc_dota_neutral_rock_golem": 428,
+						"npc_dota_neutral_granite_golem": 1136,
+						"npc_dota_hero_terrorblade": 3115,
+						"npc_dota_hero_lion": 76,
+						"npc_dota_hero_mirana": 153,
+						"npc_dota_creep_badguys_melee_upgraded": 23257,
+						"npc_dota_neutral_forest_troll_berserker": 1023,
+						"npc_dota_neutral_forest_troll_high_priest": 620,
+						"npc_dota_creep_badguys_ranged_upgraded": 3446,
+						"npc_dota_sentry_wards": 229,
+						"npc_dota_creep_goodguys_melee_upgraded": 180,
+						"npc_dota_neutral_satyr_hellcaller": 1162,
+						"npc_dota_broodmother_spiderling": 1485,
+						"npc_dota_badguys_tower4": 84,
+						"npc_dota_hero_lina": 412
+					},
+					"damage_taken": {
+						"undefined": 4287,
+						"npc_dota_hero_earthshaker": 4410,
+						"npc_dota_hero_winter_wyvern": 1155,
+						"npc_dota_hero_terrorblade": 2297,
+						"npc_dota_hero_broodmother": 953,
+						"npc_dota_hero_clinkz": 595,
+						"npc_dota_hero_mirana": 153
+					},
+					"runes": {
+						"2": 1,
+						"3": 1,
+						"5": 2
+					},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_broodmother": 1,
+						"npc_dota_hero_clinkz": 1,
+						"npc_dota_hero_earthshaker": 2,
+						"npc_dota_hero_terrorblade": 1
+					},
+					"healing": {}
+				}, {
+					"stuns": 80.57963599999999,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 100, 243, 517, 963, 1296, 1482, 1722, 1823, 2339, 2582, 3003, 3175, 3474, 3693, 4121, 4377, 4713, 4857, 4956, 5137, 5237, 5491, 5591, 5811, 6289, 6699, 6799, 6987, 7150, 7250, 7443, 7898, 8356, 8676, 8776, 9005, 9404, 9974, 10676, 10776, 11076, 11176, 11454, 11844, 12105, 12544, 13060, 13506, 13696, 14125, 14295, 14628, 14887, 15797, 16841, 16895, 16995, 17036],
+					"lh": [0, 0, 0, 0, 1, 5, 7, 12, 14, 17, 17, 19, 21, 24, 24, 24, 27, 27, 29, 29, 30, 30, 30, 30, 31, 31, 33, 37, 44, 44, 46, 48, 48, 50, 53, 61, 66, 66, 69, 71, 76, 77, 77, 77, 77, 81, 89, 93, 96, 100, 106, 108, 111, 114, 117, 120, 120, 125, 125, 125, 125],
+					"xp": [0, 0, 0, 169, 321, 493, 754, 1001, 1209, 1355, 1408, 1880, 2215, 2458, 2943, 3284, 3405, 3804, 4278, 4945, 5020, 5199, 5722, 5826, 7009, 7154, 7389, 8158, 8737, 8819, 9154, 9379, 9445, 9721, 10001, 10738, 11471, 11471, 12009, 13262, 13767, 15195, 15244, 15244, 15461, 15977, 16721, 17044, 17761, 17861, 18546, 18716, 20246, 20572, 21534, 22624, 24019, 27681, 28176, 28424, 28548],
+					"pos_log": [],
+					"obs_log": [],
+					"sen_log": [],
+					"hero_log": [{
+						"time": -81,
+						"key": "79"
+					}],
+					"purchase_log": [{
+						"time": -58,
+						"key": "tango"
+					}, {
+						"time": -57,
+						"key": "flask"
+					}, {
+						"time": -56,
+						"key": "clarity"
+					}, {
+						"time": -55,
+						"key": "clarity"
+					}, {
+						"time": -53,
+						"key": "branches"
+					}, {
+						"time": -53,
+						"key": "branches"
+					}, {
+						"time": 235,
+						"key": "boots"
+					}, {
+						"time": 238,
+						"key": "flying_courier"
+					}, {
+						"time": 359,
+						"key": "arcane_boots"
+					}, {
+						"time": 359,
+						"key": "energy_booster"
+					}, {
+						"time": 429,
+						"key": "tpscroll"
+					}, {
+						"time": 440,
+						"key": "tpscroll"
+					}, {
+						"time": 764,
+						"key": "ring_of_regen"
+					}, {
+						"time": 766,
+						"key": "staff_of_wizardry"
+					}, {
+						"time": 773,
+						"key": "tpscroll"
+					}, {
+						"time": 832,
+						"key": "smoke_of_deceit"
+					}, {
+						"time": 833,
+						"key": "dust"
+					}, {
+						"time": 1055,
+						"key": "force_staff"
+					}, {
+						"time": 1058,
+						"key": "tpscroll"
+					}, {
+						"time": 1058,
+						"key": "tpscroll"
+					}, {
+						"time": 1061,
+						"key": "flask"
+					}, {
+						"time": 1061,
+						"key": "tango"
+					}, {
+						"time": 1211,
+						"key": "dust"
+					}, {
+						"time": 1354,
+						"key": "belt_of_strength"
+					}, {
+						"time": 1356,
+						"key": "tpscroll"
+					}, {
+						"time": 1654,
+						"key": "staff_of_wizardry"
+					}, {
+						"time": 1656,
+						"key": "dust"
+					}, {
+						"time": 1765,
+						"key": "tpscroll"
+					}, {
+						"time": 1809,
+						"key": "dust"
+					}, {
+						"time": 1950,
+						"key": "tpscroll"
+					}, {
+						"time": 2064,
+						"key": "necronomicon"
+					}, {
+						"time": 2070,
+						"key": "tpscroll"
+					}, {
+						"time": 2243,
+						"key": "tpscroll"
+					}, {
+						"time": 2297,
+						"key": "necronomicon_2"
+					}, {
+						"time": 2567,
+						"key": "necronomicon_3"
+					}, {
+						"time": 2659,
+						"key": "smoke_of_deceit"
+					}, {
+						"time": 2660,
+						"key": "tpscroll"
+					}, {
+						"time": 2661,
+						"key": "tpscroll"
+					}, {
+						"time": 2882,
+						"key": "point_booster"
+					}, {
+						"time": 2895,
+						"key": "tpscroll"
+					}, {
+						"time": 2896,
+						"key": "tpscroll"
+					}, {
+						"time": 3065,
+						"key": "tpscroll"
+					}, {
+						"time": 3378,
+						"key": "gem"
+					}],
+					"kills_log": [{
+						"time": 203,
+						"key": "npc_dota_hero_winter_wyvern"
+					}, {
+						"time": 534,
+						"key": "npc_dota_hero_winter_wyvern"
+					}],
+					"buyback_log": [{
+						"time": 3257,
+						"key": null
+					}],
+					"chat": [],
+					"lane_pos": {
+						"70": {
+							"77": 14,
+							"78": 8
+						},
+						"71": {
+							"75": 2,
+							"76": 1,
+							"77": 1,
+							"162": 4
+						},
+						"72": {
+							"78": 1,
+							"79": 1,
+							"161": 1,
+							"162": 6,
+							"163": 1
+						},
+						"73": {
+							"74": 6,
+							"79": 1,
+							"163": 2
+						},
+						"74": {
+							"80": 1,
+							"102": 1,
+							"160": 1,
+							"163": 3,
+							"164": 1
+						},
+						"75": {
+							"79": 1,
+							"100": 1,
+							"105": 1,
+							"108": 1,
+							"110": 1,
+							"113": 1,
+							"164": 2,
+							"165": 1
+						},
+						"76": {
+							"80": 1,
+							"81": 1,
+							"83": 1,
+							"86": 1,
+							"89": 1,
+							"91": 1,
+							"94": 1,
+							"97": 1,
+							"116": 1,
+							"118": 1,
+							"121": 1,
+							"124": 1,
+							"153": 1,
+							"154": 1,
+							"158": 1,
+							"160": 1,
+							"164": 2,
+							"165": 3
+						},
+						"77": {
+							"126": 1,
+							"150": 1,
+							"152": 1,
+							"156": 1,
+							"157": 1,
+							"159": 1,
+							"162": 1,
+							"165": 2,
+							"166": 2,
+							"167": 3,
+							"169": 1
+						},
+						"78": {
+							"81": 1,
+							"129": 1,
+							"147": 1,
+							"149": 1,
+							"150": 1,
+							"151": 2,
+							"152": 2,
+							"153": 1,
+							"157": 1,
+							"158": 1,
+							"159": 1,
+							"161": 1,
+							"162": 1,
+							"163": 1,
+							"164": 3,
+							"165": 7,
+							"166": 2,
+							"167": 4,
+							"168": 4,
+							"169": 3,
+							"170": 2,
+							"172": 4,
+							"173": 1
+						},
+						"79": {
+							"135": 1,
+							"140": 1,
+							"144": 1,
+							"146": 1,
+							"147": 1,
+							"151": 3,
+							"161": 1,
+							"162": 1,
+							"163": 1,
+							"164": 5,
+							"165": 2,
+							"166": 5,
+							"167": 5,
+							"168": 5,
+							"169": 5,
+							"170": 1,
+							"171": 1,
+							"175": 1
+						},
+						"80": {
+							"81": 1,
+							"131": 1,
+							"133": 1,
+							"138": 1,
+							"145": 1,
+							"150": 1,
+							"154": 1,
+							"155": 1,
+							"164": 2,
+							"165": 6,
+							"166": 9,
+							"167": 4,
+							"168": 1,
+							"169": 7,
+							"170": 10
+						},
+						"81": {
+							"141": 2,
+							"143": 1,
+							"145": 1,
+							"151": 2,
+							"164": 2,
+							"165": 16,
+							"166": 5,
+							"167": 7,
+							"168": 10,
+							"169": 16,
+							"170": 7,
+							"171": 3,
+							"172": 1,
+							"173": 1,
+							"174": 1
+						},
+						"82": {
+							"82": 1,
+							"136": 1,
+							"138": 1,
+							"141": 1,
+							"142": 1,
+							"155": 2,
+							"160": 1,
+							"165": 3,
+							"166": 8,
+							"167": 15,
+							"168": 6,
+							"169": 10,
+							"170": 9,
+							"171": 14,
+							"172": 1,
+							"173": 2
+						},
+						"83": {
+							"134": 1,
+							"156": 3,
+							"164": 1,
+							"165": 5,
+							"166": 8,
+							"167": 13,
+							"168": 4,
+							"169": 11,
+							"170": 3,
+							"171": 3,
+							"172": 5,
+							"173": 3,
+							"175": 1
+						},
+						"84": {
+							"84": 1,
+							"156": 1,
+							"159": 1,
+							"163": 1,
+							"165": 4,
+							"166": 3,
+							"168": 2,
+							"169": 3,
+							"171": 1,
+							"172": 2,
+							"174": 4,
+							"175": 1,
+							"176": 1
+						},
+						"85": {
+							"85": 1,
+							"133": 1,
+							"163": 2,
+							"164": 2,
+							"169": 3,
+							"170": 1,
+							"172": 2,
+							"173": 8,
+							"175": 3,
+							"176": 1
+						},
+						"86": {
+							"135": 1,
+							"157": 2,
+							"158": 1,
+							"161": 12,
+							"162": 1,
+							"163": 1,
+							"164": 1,
+							"170": 1,
+							"173": 1,
+							"174": 2,
+							"175": 2,
+							"176": 7
+						},
+						"87": {
+							"87": 1,
+							"159": 6,
+							"160": 5,
+							"161": 4,
+							"162": 1,
+							"170": 1,
+							"174": 2,
+							"175": 1
+						},
+						"88": {
+							"89": 1,
+							"91": 1,
+							"135": 1,
+							"158": 1,
+							"159": 2,
+							"161": 1,
+							"163": 1,
+							"175": 2,
+							"177": 2
+						},
+						"89": {
+							"94": 1,
+							"158": 1,
+							"159": 1,
+							"161": 2,
+							"175": 1,
+							"176": 1,
+							"177": 1
+						},
+						"90": {
+							"96": 1,
+							"136": 1,
+							"161": 1,
+							"177": 4
+						},
+						"91": {
+							"160": 2,
+							"163": 1,
+							"177": 1
+						},
+						"92": {
+							"97": 1,
+							"160": 4,
+							"173": 1,
+							"175": 1,
+							"177": 1
+						},
+						"93": {
+							"99": 1,
+							"136": 1,
+							"161": 2,
+							"175": 1
+						},
+						"94": {
+							"161": 2,
+							"163": 1,
+							"175": 1
+						},
+						"95": {
+							"101": 1,
+							"136": 1
+						},
+						"96": {
+							"103": 1,
+							"164": 1
+						},
+						"97": {
+							"105": 1,
+							"137": 1,
+							"166": 1,
+							"174": 1
+						},
+						"98": {
+							"168": 1
+						},
+						"99": {
+							"107": 1,
+							"138": 1,
+							"172": 1
+						},
+						"100": {
+							"109": 1,
+							"111": 1,
+							"169": 5
+						},
+						"101": {
+							"113": 1,
+							"138": 1
+						},
+						"102": {
+							"115": 1,
+							"117": 1
+						},
+						"103": {
+							"119": 1,
+							"138": 1
+						},
+						"105": {
+							"121": 1,
+							"138": 1
+						},
+						"106": {
+							"123": 1,
+							"137": 1
+						},
+						"107": {
+							"125": 1,
+							"136": 2
+						},
+						"108": {
+							"127": 1,
+							"129": 9,
+							"133": 1,
+							"134": 1,
+							"135": 1,
+							"136": 3
+						},
+						"109": {
+							"130": 7,
+							"132": 1,
+							"133": 1,
+							"134": 1,
+							"135": 1
+						},
+						"110": {
+							"135": 2
+						},
+						"111": {
+							"133": 1,
+							"135": 2,
+							"137": 1
+						},
+						"112": {
+							"137": 1
+						},
+						"113": {
+							"136": 3
+						}
+					},
+					"obs": {},
+					"sen": {},
+					"purchase": {
+						"tango": 2,
+						"flask": 2,
+						"clarity": 2,
+						"branches": 2,
+						"boots": 1,
+						"flying_courier": 1,
+						"arcane_boots": 1,
+						"energy_booster": 1,
+						"tpscroll": 15,
+						"ring_of_regen": 1,
+						"staff_of_wizardry": 2,
+						"smoke_of_deceit": 2,
+						"dust": 4,
+						"force_staff": 1,
+						"recipe_force_staff": 1,
+						"belt_of_strength": 1,
+						"necronomicon": 1,
+						"recipe_necronomicon": 3,
+						"necronomicon_2": 1,
+						"necronomicon_3": 1,
+						"point_booster": 1,
+						"gem": 1
+					},
+					"gold_reasons": {
+						"0": 833,
+						"1": -1527,
+						"2": -1575,
+						"6": 56,
+						"11": 1982,
+						"12": 4407,
+						"13": 4815
+					},
+					"xp_reasons": {
+						"0": 935,
+						"1": 13601,
+						"2": 14017
+					},
+					"kills": {
+						"npc_dota_creep_goodguys_melee": 2,
+						"npc_dota_creep_badguys_melee": 43,
+						"npc_dota_creep_badguys_ranged": 31,
+						"npc_dota_hero_winter_wyvern": 2,
+						"npc_dota_badguys_siege": 3,
+						"npc_dota_broodmother_spiderite": 3,
+						"npc_dota_neutral_satyr_hellcaller": 1,
+						"npc_dota_creep_badguys_melee_upgraded": 7,
+						"npc_dota_creep_badguys_ranged_upgraded": 2
+					},
+					"item_uses": {
+						"tango": 6,
+						"clarity": 1,
+						"arcane_boots": 23,
+						"flask": 2,
+						"tpscroll": 15,
+						"smoke_of_deceit": 2,
+						"dust": 6,
+						"force_staff": 11,
+						"necronomicon": 1,
+						"necronomicon_3": 5
+					},
+					"ability_uses": {
+						"shadow_demon_disruption": 32,
+						"shadow_demon_soul_catcher": 20,
+						"shadow_demon_demonic_purge": 13,
+						"shadow_demon_shadow_poison": 91,
+						"shadow_demon_shadow_poison_release": 9
+					},
+					"hero_hits": {
+						"undefined": 68,
+						"shadow_demon_demonic_purge": 3,
+						"shadow_demon_shadow_poison": 27
+					},
+					"damage": {
+						"npc_dota_hero_clinkz": 865,
+						"npc_dota_hero_winter_wyvern": 1063,
+						"npc_dota_creep_goodguys_melee": 201,
+						"npc_dota_creep_badguys_melee": 30144,
+						"npc_dota_hero_earthshaker": 621,
+						"npc_dota_creep_badguys_ranged": 16751,
+						"npc_dota_badguys_tower1_top": 195,
+						"npc_dota_badguys_siege": 1555,
+						"illusion_npc_dota_hero_terrorblade": 9785,
+						"npc_dota_hero_lion": 201,
+						"npc_dota_neutral_mud_golem": 142,
+						"npc_dota_hero_terrorblade": 1660,
+						"npc_dota_badguys_tower2_mid": 37,
+						"npc_dota_hero_broodmother": 1625,
+						"npc_dota_badguys_tower1_bot": 75,
+						"npc_dota_broodmother_spiderling": 2055,
+						"npc_dota_broodmother_spiderite": 1792,
+						"npc_dota_badguys_tower2_top": 34,
+						"npc_dota_neutral_ogre_magi": 100,
+						"npc_dota_neutral_ogre_mauler": 150,
+						"npc_dota_neutral_satyr_hellcaller": 91,
+						"npc_dota_neutral_kobold_taskmaster": 100,
+						"npc_dota_neutral_forest_troll_berserker": 200,
+						"npc_dota_hero_gyrocopter": 93,
+						"npc_dota_hero_shadow_demon": 59,
+						"npc_dota_neutral_polar_furbolg_champion": 97,
+						"npc_dota_sentry_wards": 132,
+						"npc_dota_badguys_melee_rax_mid": 205,
+						"npc_dota_creep_badguys_melee_upgraded": 6019,
+						"npc_dota_creep_badguys_ranged_upgraded": 1496,
+						"npc_dota_badguys_fillers": 84,
+						"npc_dota_badguys_siege_upgraded": 208,
+						"npc_dota_badguys_tower4": 167
+					},
+					"damage_taken": {
+						"npc_dota_hero_earthshaker": 5586,
+						"undefined": 5883,
+						"npc_dota_hero_winter_wyvern": 1260,
+						"npc_dota_hero_lion": 105,
+						"npc_dota_hero_terrorblade": 6241,
+						"npc_dota_hero_broodmother": 1925,
+						"npc_dota_hero_clinkz": 1178,
+						"npc_dota_hero_shadow_demon": 59
+					},
+					"runes": {
+						"4": 1
+					},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_clinkz": 1,
+						"npc_dota_hero_earthshaker": 1,
+						"npc_dota_hero_terrorblade": 1
+					},
+					"healing": {}
+				}, {
+					"stuns": 116.38178,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 193, 432, 658, 928, 1119, 1263, 1443, 1608, 1773, 1872, 2132, 2371, 2520, 2849, 3036, 3390, 3628, 3987, 4176, 4423, 4523, 4623, 4723, 5003, 5241, 5615, 5977, 6165, 6309, 6777, 7184, 7416, 7604, 7785, 8588, 8917, 9092, 9365, 9551, 11620, 11720, 11992, 12188, 12501, 12931, 13348, 13545, 13907, 14076, 14646, 14978, 15384, 15484, 16280, 16660, 17286, 17626, 18006],
+					"lh": [0, 0, 0, 2, 5, 8, 12, 14, 15, 17, 17, 17, 17, 17, 20, 21, 26, 28, 32, 35, 37, 39, 42, 42, 42, 42, 47, 50, 55, 58, 60, 61, 61, 64, 67, 69, 70, 75, 80, 80, 84, 86, 87, 87, 91, 93, 94, 97, 100, 102, 110, 113, 119, 122, 127, 127, 137, 137, 150, 150, 153],
+					"xp": [0, 0, 0, 218, 402, 608, 979, 1270, 1429, 1553, 2068, 2506, 2598, 2660, 3129, 3294, 3686, 4093, 4673, 4915, 5337, 5758, 6039, 6039, 6358, 6482, 6900, 7095, 7639, 8493, 8493, 8584, 9156, 9378, 9574, 9907, 9966, 11179, 11447, 11874, 12121, 12389, 16180, 16180, 16469, 16569, 16724, 16925, 17046, 17236, 17716, 17866, 18066, 19569, 19809, 19980, 21775, 21775, 23834, 24144, 24202],
+					"pos_log": [],
+					"obs_log": [{
+						"time": 1208,
+						"key": [136, 165]
+					}, {
+						"time": 1365,
+						"key": [80, 154]
+					}, {
+						"time": 1436,
+						"key": [132, 125]
+					}, {
+						"time": 1575,
+						"key": [148, 106]
+					}],
+					"sen_log": [{
+						"time": 1354,
+						"key": [109, 150]
+					}, {
+						"time": 1366,
+						"key": [80, 154]
+					}, {
+						"time": 1862,
+						"key": [126, 141]
+					}, {
+						"time": 1953,
+						"key": [148, 112]
+					}, {
+						"time": 2929,
+						"key": [161, 155]
+					}, {
+						"time": 2937,
+						"key": [146, 141]
+					}],
+					"hero_log": [{
+						"time": -76,
+						"key": "7"
+					}],
+					"purchase_log": [{
+						"time": -61,
+						"key": "courier"
+					}, {
+						"time": -59,
+						"key": "tango"
+					}, {
+						"time": -55,
+						"key": "branches"
+					}, {
+						"time": -55,
+						"key": "branches"
+					}, {
+						"time": 153,
+						"key": "bottle"
+					}, {
+						"time": 311,
+						"key": "boots"
+					}, {
+						"time": 333,
+						"key": "gauntlets"
+					}, {
+						"time": 334,
+						"key": "gauntlets"
+					}, {
+						"time": 446,
+						"key": "sobi_mask"
+					}, {
+						"time": 490,
+						"key": "tpscroll"
+					}, {
+						"time": 552,
+						"key": "tpscroll"
+					}, {
+						"time": 620,
+						"key": "tpscroll"
+					}, {
+						"time": 742,
+						"key": "urn_of_shadows"
+					}, {
+						"time": 838,
+						"key": "tpscroll"
+					}, {
+						"time": 934,
+						"key": "tpscroll"
+					}, {
+						"time": 1054,
+						"key": "arcane_boots"
+					}, {
+						"time": 1054,
+						"key": "energy_booster"
+					}, {
+						"time": 1055,
+						"key": "ward_observer"
+					}, {
+						"time": 1059,
+						"key": "tpscroll"
+					}, {
+						"time": 1059,
+						"key": "tpscroll"
+					}, {
+						"time": 1232,
+						"key": "ward_sentry"
+					}, {
+						"time": 1380,
+						"key": "ward_observer"
+					}, {
+						"time": 1822,
+						"key": "ward_sentry"
+					}, {
+						"time": 1936,
+						"key": "blink"
+					}, {
+						"time": 2073,
+						"key": "tpscroll"
+					}, {
+						"time": 2564,
+						"key": "ogre_axe"
+					}, {
+						"time": 2565,
+						"key": "mithril_hammer"
+					}, {
+						"time": 2737,
+						"key": "tpscroll"
+					}, {
+						"time": 2920,
+						"key": "black_king_bar"
+					}, {
+						"time": 2922,
+						"key": "ward_sentry"
+					}],
+					"kills_log": [{
+						"time": 2050,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 2363,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 2365,
+						"key": "npc_dota_hero_mirana"
+					}, {
+						"time": 2366,
+						"key": "npc_dota_hero_shadow_demon"
+					}, {
+						"time": 3206,
+						"key": "npc_dota_hero_mirana"
+					}, {
+						"time": 3214,
+						"key": "npc_dota_hero_earthshaker"
+					}],
+					"buyback_log": [{
+						"time": 3196,
+						"key": null
+					}],
+					"chat": [{
+						"time": 3452,
+						"key": "i cant believe we won"
+					}, {
+						"time": 3459,
+						"key": "tb doesn't even like hitting other heros"
+					}],
+					"lane_pos": {
+						"79": {
+							"161": 2,
+							"162": 2,
+							"163": 1,
+							"174": 2
+						},
+						"80": {
+							"162": 2,
+							"163": 3,
+							"164": 3,
+							"165": 1,
+							"167": 1,
+							"174": 1,
+							"175": 1
+						},
+						"81": {
+							"161": 1,
+							"162": 1,
+							"163": 1,
+							"164": 4,
+							"165": 1,
+							"168": 2,
+							"169": 1,
+							"170": 1,
+							"171": 1,
+							"174": 1
+						},
+						"82": {
+							"165": 1,
+							"169": 2,
+							"170": 5,
+							"171": 1,
+							"172": 1,
+							"176": 1
+						},
+						"83": {
+							"165": 1,
+							"168": 1,
+							"169": 3,
+							"170": 1,
+							"171": 3,
+							"172": 1,
+							"173": 4,
+							"176": 1
+						},
+						"84": {
+							"169": 1,
+							"170": 6,
+							"171": 9,
+							"172": 7,
+							"173": 6,
+							"174": 1
+						},
+						"85": {
+							"164": 1,
+							"169": 3,
+							"170": 1,
+							"171": 8,
+							"172": 9,
+							"173": 5
+						},
+						"86": {
+							"169": 1,
+							"170": 6,
+							"171": 4,
+							"172": 9,
+							"173": 14,
+							"176": 1
+						},
+						"87": {
+							"162": 1,
+							"170": 4,
+							"171": 8,
+							"172": 14,
+							"173": 5,
+							"174": 1,
+							"175": 1
+						},
+						"88": {
+							"169": 2,
+							"170": 2,
+							"171": 6,
+							"172": 6,
+							"173": 9,
+							"174": 5,
+							"175": 3
+						},
+						"89": {
+							"161": 1,
+							"170": 3,
+							"171": 4,
+							"172": 7,
+							"173": 5,
+							"174": 5,
+							"175": 4,
+							"176": 3
+						},
+						"90": {
+							"170": 1,
+							"171": 4,
+							"172": 8,
+							"173": 4,
+							"176": 1
+						},
+						"91": {
+							"160": 1,
+							"169": 1,
+							"170": 1,
+							"171": 4,
+							"172": 8,
+							"173": 10,
+							"176": 6,
+							"177": 1
+						},
+						"92": {
+							"172": 5,
+							"173": 10,
+							"174": 3,
+							"175": 4,
+							"176": 3,
+							"177": 2
+						},
+						"93": {
+							"160": 1,
+							"161": 1,
+							"171": 1,
+							"172": 6,
+							"173": 4,
+							"174": 3,
+							"175": 6,
+							"176": 3,
+							"178": 3
+						},
+						"94": {
+							"162": 15,
+							"171": 2,
+							"173": 1,
+							"174": 6,
+							"175": 4,
+							"176": 7,
+							"177": 3
+						},
+						"95": {
+							"172": 2,
+							"174": 4,
+							"176": 3,
+							"177": 5,
+							"179": 2
+						},
+						"96": {
+							"160": 1,
+							"164": 1,
+							"171": 1,
+							"172": 2,
+							"173": 1,
+							"174": 2,
+							"175": 3,
+							"177": 2
+						},
+						"97": {
+							"165": 1,
+							"173": 1,
+							"174": 3,
+							"175": 1,
+							"176": 1,
+							"178": 1
+						},
+						"98": {
+							"159": 1,
+							"166": 1,
+							"172": 2,
+							"173": 2,
+							"174": 2,
+							"175": 2
+						},
+						"99": {
+							"171": 1,
+							"174": 3,
+							"175": 1
+						},
+						"100": {
+							"169": 1,
+							"171": 1,
+							"173": 1
+						},
+						"101": {
+							"159": 1,
+							"171": 1,
+							"174": 3,
+							"175": 1,
+							"176": 1
+						},
+						"102": {
+							"173": 1
+						},
+						"103": {
+							"158": 1
+						},
+						"104": {
+							"173": 1,
+							"174": 1
+						},
+						"105": {
+							"157": 1,
+							"173": 1
+						},
+						"107": {
+							"143": 1,
+							"144": 1,
+							"146": 1,
+							"147": 1,
+							"173": 1,
+							"174": 1
+						},
+						"108": {
+							"145": 2,
+							"147": 2,
+							"149": 1,
+							"150": 2,
+							"152": 1,
+							"155": 1,
+							"157": 1,
+							"173": 1
+						},
+						"109": {
+							"142": 1,
+							"144": 1,
+							"151": 1,
+							"174": 1
+						},
+						"110": {
+							"142": 2,
+							"143": 1,
+							"144": 1,
+							"153": 1,
+							"173": 1
+						},
+						"111": {
+							"142": 1,
+							"173": 1
+						},
+						"112": {
+							"154": 1,
+							"174": 1
+						},
+						"113": {
+							"173": 1
+						},
+						"114": {
+							"154": 14,
+							"155": 1,
+							"173": 1
+						},
+						"115": {
+							"174": 1
+						},
+						"116": {
+							"156": 1
+						},
+						"118": {
+							"158": 1,
+							"174": 1
+						},
+						"120": {
+							"159": 1
+						},
+						"121": {
+							"174": 1
+						},
+						"123": {
+							"160": 1,
+							"173": 1
+						},
+						"125": {
+							"160": 1
+						},
+						"126": {
+							"173": 1
+						},
+						"127": {
+							"161": 1
+						},
+						"129": {
+							"173": 1
+						},
+						"130": {
+							"161": 1
+						},
+						"132": {
+							"162": 1,
+							"173": 1
+						},
+						"133": {
+							"162": 1
+						},
+						"134": {
+							"162": 1
+						},
+						"135": {
+							"173": 1
+						},
+						"136": {
+							"162": 1
+						},
+						"137": {
+							"173": 1
+						},
+						"139": {
+							"162": 1
+						},
+						"140": {
+							"173": 1
+						},
+						"141": {
+							"162": 1,
+							"165": 1
+						},
+						"143": {
+							"173": 1
+						},
+						"144": {
+							"166": 1
+						},
+						"145": {
+							"175": 3
+						},
+						"146": {
+							"166": 1,
+							"173": 1
+						},
+						"147": {
+							"175": 1
+						},
+						"148": {
+							"168": 1
+						},
+						"149": {
+							"169": 1,
+							"174": 1
+						},
+						"150": {
+							"175": 1
+						},
+						"152": {
+							"170": 1,
+							"174": 1
+						},
+						"153": {
+							"175": 1
+						},
+						"154": {
+							"171": 1,
+							"174": 1
+						},
+						"156": {
+							"172": 1,
+							"176": 1
+						},
+						"157": {
+							"173": 1
+						},
+						"158": {
+							"173": 1,
+							"176": 1
+						},
+						"160": {
+							"172": 1,
+							"173": 1
+						},
+						"161": {
+							"176": 1
+						},
+						"162": {
+							"173": 1
+						},
+						"163": {
+							"172": 1
+						},
+						"164": {
+							"176": 1
+						},
+						"165": {
+							"172": 1,
+							"173": 1
+						},
+						"167": {
+							"173": 1,
+							"175": 1
+						},
+						"168": {
+							"173": 1
+						},
+						"170": {
+							"173": 1,
+							"175": 1
+						},
+						"171": {
+							"174": 1
+						},
+						"172": {
+							"173": 1,
+							"175": 1
+						},
+						"173": {
+							"175": 1
+						},
+						"174": {
+							"173": 1,
+							"174": 2
+						},
+						"175": {
+							"94": 2,
+							"175": 3,
+							"177": 5
+						},
+						"176": {
+							"94": 27,
+							"95": 1,
+							"175": 1
+						},
+						"177": {
+							"98": 1,
+							"175": 2
+						},
+						"178": {
+							"176": 1
+						},
+						"179": {
+							"100": 1,
+							"101": 1,
+							"175": 2
+						},
+						"180": {
+							"103": 1,
+							"106": 1,
+							"111": 1,
+							"112": 1,
+							"175": 1,
+							"177": 1
+						},
+						"181": {
+							"109": 1,
+							"118": 1,
+							"176": 1,
+							"179": 1
+						},
+						"182": {
+							"112": 2,
+							"113": 3,
+							"117": 1,
+							"175": 1
+						},
+						"183": {
+							"114": 1,
+							"116": 1,
+							"175": 1
+						},
+						"184": {
+							"113": 1,
+							"175": 8,
+							"177": 21
+						}
+					},
+					"obs": {
+						"80": {
+							"154": 1
+						},
+						"132": {
+							"125": 1
+						},
+						"136": {
+							"165": 1
+						},
+						"148": {
+							"106": 1
+						}
+					},
+					"sen": {
+						"80": {
+							"154": 1
+						},
+						"109": {
+							"150": 1
+						},
+						"126": {
+							"141": 1
+						},
+						"146": {
+							"141": 1
+						},
+						"148": {
+							"112": 1
+						},
+						"161": {
+							"155": 1
+						}
+					},
+					"purchase": {
+						"courier": 1,
+						"tango": 1,
+						"branches": 2,
+						"bottle": 1,
+						"boots": 1,
+						"gauntlets": 2,
+						"sobi_mask": 1,
+						"tpscroll": 9,
+						"urn_of_shadows": 1,
+						"recipe_urn_of_shadows": 1,
+						"arcane_boots": 1,
+						"energy_booster": 1,
+						"ward_observer": 2,
+						"ward_sentry": 3,
+						"blink": 1,
+						"ogre_axe": 1,
+						"mithril_hammer": 1,
+						"black_king_bar": 1,
+						"recipe_black_king_bar": 1
+					},
+					"gold_reasons": {
+						"0": 835,
+						"1": -3381,
+						"2": -1440,
+						"6": 400,
+						"11": 2670,
+						"12": 3719,
+						"13": 5701
+					},
+					"xp_reasons": {
+						"0": 807,
+						"1": 11615,
+						"2": 11784
+					},
+					"kills": {
+						"npc_dota_creep_goodguys_melee": 65,
+						"npc_dota_creep_goodguys_ranged": 21,
+						"npc_dota_creep_badguys_melee": 1,
+						"npc_dota_neutral_centaur_khan": 2,
+						"npc_dota_neutral_centaur_outrunner": 2,
+						"npc_dota_neutral_alpha_wolf": 1,
+						"npc_dota_neutral_giant_wolf": 2,
+						"npc_dota_goodguys_siege": 1,
+						"npc_dota_neutral_satyr_hellcaller": 1,
+						"npc_dota_neutral_satyr_trickster": 1,
+						"npc_dota_neutral_satyr_soulstealer": 1,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
+						"npc_dota_hero_lion": 2,
+						"npc_dota_observer_wards": 1,
+						"npc_dota_hero_mirana": 2,
+						"npc_dota_hero_shadow_demon": 1,
+						"npc_dota_neutral_granite_golem": 1,
+						"npc_dota_neutral_black_dragon": 1,
+						"npc_dota_neutral_black_drake": 2,
+						"npc_dota_neutral_dark_troll": 2,
+						"npc_dota_neutral_dark_troll_warlord": 1,
+						"npc_dota_creep_goodguys_melee_upgraded": 32,
+						"npc_dota_creep_goodguys_ranged_upgraded": 14,
+						"npc_dota_goodguys_siege_upgraded": 1,
+						"npc_dota_hero_earthshaker": 1
+					},
+					"item_uses": {
+						"courier": 1,
+						"tango": 4,
+						"bottle": 68,
+						"tpscroll": 8,
+						"arcane_boots": 26,
+						"ward_observer": 4,
+						"ward_sentry": 6,
+						"urn_of_shadows": 5,
+						"blink": 32,
+						"black_king_bar": 4
+					},
+					"ability_uses": {
+						"earthshaker_fissure": 43,
+						"earthshaker_enchant_totem": 126,
+						"earthshaker_echo_slam": 10
+					},
+					"hero_hits": {
+						"earthshaker_fissure": 43,
+						"undefined": 41,
+						"earthshaker_aftershock": 36,
+						"earthshaker_echo_slam": 175,
+						"urn_of_shadows": 8
+					},
+					"damage": {
+						"npc_dota_hero_lion": 4879,
+						"npc_dota_hero_shadow_demon": 5586,
+						"npc_dota_creep_goodguys_melee": 34553,
+						"npc_dota_creep_goodguys_ranged": 11530,
+						"npc_dota_creep_badguys_melee": 103,
+						"illusion_npc_dota_hero_winter_wyvern": 280,
+						"npc_dota_goodguys_siege": 1050,
+						"npc_dota_hero_mirana": 4410,
+						"npc_dota_hero_lina": 4756,
+						"npc_dota_hero_gyrocopter": 4606,
+						"npc_dota_hero_earthshaker": 790,
+						"illusion_npc_dota_hero_clinkz": 1293,
+						"npc_dota_neutral_centaur_khan": 2421,
+						"npc_dota_neutral_centaur_outrunner": 1618,
+						"npc_dota_neutral_giant_wolf": 1010,
+						"npc_dota_neutral_alpha_wolf": 642,
+						"npc_dota_neutral_satyr_hellcaller": 1399,
+						"npc_dota_neutral_satyr_trickster": 650,
+						"npc_dota_neutral_satyr_soulstealer": 1168,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1129,
+						"npc_dota_neutral_polar_furbolg_champion": 200,
+						"illusion_npc_dota_hero_gyrocopter": 14910,
+						"npc_dota_observer_wards": 91,
+						"npc_dota_neutral_granite_golem": 2278,
+						"npc_dota_neutral_black_dragon": 2055,
+						"npc_dota_neutral_black_drake": 2598,
+						"npc_dota_neutral_dark_troll_warlord": 1075,
+						"npc_dota_neutral_dark_troll": 1061,
+						"npc_dota_necronomicon_warrior_3": 330,
+						"npc_dota_necronomicon_archer_3": 330,
+						"npc_dota_creep_goodguys_ranged_upgraded": 11758,
+						"npc_dota_creep_goodguys_melee_upgraded": 24946,
+						"npc_dota_goodguys_siege_upgraded": 221,
+						"npc_dota_goodguys_tower2_mid": 128,
+						"illusion_npc_dota_hero_earthshaker": 2054,
+						"npc_dota_hero_broodmother": 113,
+						"npc_dota_goodguys_melee_rax_mid": 82
+					},
+					"damage_taken": {
+						"npc_dota_hero_lion": 2436,
+						"npc_dota_hero_mirana": 1520,
+						"npc_dota_hero_shadow_demon": 621,
+						"undefined": 6643,
+						"npc_dota_hero_gyrocopter": 4447,
+						"npc_dota_hero_lina": 7161,
+						"npc_dota_hero_earthshaker": 790
+					},
+					"runes": {
+						"1": 1,
+						"2": 1
+					},
+					"runes_bottled": {
+						"1": 1,
+						"2": 1
+					},
+					"killed_by": {
+						"npc_dota_hero_gyrocopter": 2,
+						"npc_dota_hero_lion": 2,
+						"npc_dota_hero_lina": 4,
+						"npc_dota_hero_earthshaker": 1
+					},
+					"healing": {
+						"npc_dota_hero_earthshaker": 1200,
+						"npc_dota_hero_terrorblade": 400
+					}
+				}, {
+					"stuns": 0.334375,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 203, 397, 541, 685, 915, 1067, 1531, 2106, 2968, 3195, 3493, 3754, 3936, 4035, 4184, 4635, 4869, 5129, 5228, 5329, 5429, 5621, 5721, 5821, 5959, 6262, 6786, 6990, 8165, 8805, 9322, 9534, 9721, 9938, 10412, 10631, 11105, 11204, 11304, 11819, 11919, 12151, 12476, 12782, 13021, 13321, 13453, 13894, 14353, 14662, 15352, 16217, 16507, 17291, 17956, 18307, 18737, 19077],
+					"lh": [0, 0, 0, 2, 4, 5, 6, 9, 10, 10, 12, 12, 15, 16, 18, 19, 19, 20, 20, 23, 23, 23, 23, 23, 23, 23, 23, 24, 25, 25, 25, 25, 33, 36, 36, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 40, 42, 42, 42, 43, 52, 64, 66, 68, 78, 83, 89, 102, 102, 104, 105],
+					"xp": [0, 0, 0, 197, 620, 1074, 1575, 1864, 2256, 2695, 3847, 4700, 4844, 5357, 5866, 5985, 5985, 6062, 6446, 6869, 6881, 7046, 7046, 7046, 7387, 7387, 7573, 7655, 7950, 8649, 8835, 10624, 11140, 11403, 11610, 11847, 12085, 12925, 13149, 13559, 13579, 13721, 13721, 13845, 14100, 14921, 15236, 15710, 15941, 16100, 16727, 17378, 17466, 18957, 19467, 19787, 21770, 22105, 23839, 23969, 24139],
+					"pos_log": [],
+					"obs_log": [],
+					"sen_log": [],
+					"hero_log": [{
+						"time": -76,
+						"key": "56"
+					}],
+					"purchase_log": [{
+						"time": -66,
+						"key": "tango"
+					}, {
+						"time": -60,
+						"key": "circlet"
+					}, {
+						"time": -59,
+						"key": "slippers"
+					}, {
+						"time": -56,
+						"key": "flask"
+					}, {
+						"time": 26,
+						"key": "tpscroll"
+					}, {
+						"time": 256,
+						"key": "bottle"
+					}, {
+						"time": 451,
+						"key": "boots"
+					}, {
+						"time": 454,
+						"key": "sobi_mask"
+					}, {
+						"time": 454,
+						"key": "ring_of_basilius"
+					}, {
+						"time": 454,
+						"key": "ring_of_protection"
+					}, {
+						"time": 456,
+						"key": "tpscroll"
+					}, {
+						"time": 479,
+						"key": "wraith_band"
+					}, {
+						"time": 479,
+						"key": "ring_of_aquila"
+					}, {
+						"time": 554,
+						"key": "gloves"
+					}, {
+						"time": 554,
+						"key": "belt_of_strength"
+					}, {
+						"time": 575,
+						"key": "power_treads"
+					}, {
+						"time": 879,
+						"key": "tpscroll"
+					}, {
+						"time": 886,
+						"key": "quarterstaff"
+					}, {
+						"time": 1072,
+						"key": "sobi_mask"
+					}, {
+						"time": 1072,
+						"key": "oblivion_staff"
+					}, {
+						"time": 1072,
+						"key": "robe"
+					}, {
+						"time": 1338,
+						"key": "tpscroll"
+					}, {
+						"time": 1584,
+						"key": "quarterstaff"
+					}, {
+						"time": 1662,
+						"key": "robe"
+					}, {
+						"time": 1671,
+						"key": "tpscroll"
+					}, {
+						"time": 1742,
+						"key": "sobi_mask"
+					}, {
+						"time": 1753,
+						"key": "oblivion_staff"
+					}, {
+						"time": 1753,
+						"key": "orchid"
+					}, {
+						"time": 2127,
+						"key": "demon_edge"
+					}, {
+						"time": 3111,
+						"key": "javelin"
+					}, {
+						"time": 3111,
+						"key": "javelin"
+					}, {
+						"time": 3186,
+						"key": "monkey_king_bar"
+					}, {
+						"time": 3190,
+						"key": "lifesteal"
+					}, {
+						"time": 3391,
+						"key": "boots"
+					}, {
+						"time": 3391,
+						"key": "travel_boots"
+					}],
+					"kills_log": [{
+						"time": 378,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 429,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 525,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 532,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 907,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 1563,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 1713,
+						"key": "npc_dota_hero_shadow_demon"
+					}, {
+						"time": 1723,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 1815,
+						"key": "npc_dota_goodguys_tower1_mid"
+					}, {
+						"time": 2052,
+						"key": "npc_dota_hero_mirana"
+					}, {
+						"time": 2171,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 3020,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 3105,
+						"key": "npc_dota_goodguys_tower2_mid"
+					}, {
+						"time": 3212,
+						"key": "npc_dota_hero_gyrocopter"
+					}],
+					"buyback_log": [{
+						"time": 2957,
+						"key": null
+					}],
+					"chat": [{
+						"time": 3446,
+						"key": "gg"
+					}],
+					"lane_pos": {
+						"92": {
+							"161": 2
+						},
+						"93": {
+							"160": 1
+						},
+						"96": {
+							"158": 1
+						},
+						"100": {
+							"157": 1
+						},
+						"103": {
+							"157": 1
+						},
+						"107": {
+							"157": 1
+						},
+						"108": {
+							"147": 1,
+							"150": 1,
+							"154": 1
+						},
+						"109": {
+							"144": 1
+						},
+						"111": {
+							"141": 2
+						},
+						"112": {
+							"141": 6
+						},
+						"113": {
+							"141": 1
+						},
+						"114": {
+							"140": 9
+						},
+						"115": {
+							"140": 4
+						},
+						"116": {
+							"139": 3
+						},
+						"117": {
+							"138": 1,
+							"139": 1
+						},
+						"118": {
+							"138": 1,
+							"139": 1
+						},
+						"119": {
+							"137": 1,
+							"138": 1,
+							"139": 9
+						},
+						"120": {
+							"137": 22
+						},
+						"121": {
+							"136": 1,
+							"138": 1
+						},
+						"122": {
+							"127": 1,
+							"138": 2
+						},
+						"123": {
+							"127": 1,
+							"135": 1
+						},
+						"124": {
+							"128": 1,
+							"129": 1,
+							"136": 1,
+							"138": 1,
+							"139": 1
+						},
+						"125": {
+							"126": 1,
+							"128": 1,
+							"129": 1,
+							"130": 2,
+							"133": 1
+						},
+						"126": {
+							"125": 1,
+							"129": 2,
+							"130": 10,
+							"131": 1,
+							"132": 2,
+							"135": 1,
+							"137": 1,
+							"140": 1
+						},
+						"127": {
+							"127": 1,
+							"128": 2,
+							"129": 2,
+							"130": 4,
+							"131": 3,
+							"133": 1,
+							"135": 1,
+							"141": 1
+						},
+						"128": {
+							"127": 2,
+							"129": 16,
+							"130": 7,
+							"131": 2,
+							"134": 6
+						},
+						"129": {
+							"123": 1,
+							"127": 1,
+							"128": 3,
+							"129": 5,
+							"130": 7,
+							"131": 2,
+							"143": 1
+						},
+						"130": {
+							"127": 5,
+							"128": 6,
+							"129": 7,
+							"130": 7,
+							"131": 6,
+							"132": 2
+						},
+						"131": {
+							"122": 1,
+							"128": 5,
+							"129": 5,
+							"131": 1,
+							"133": 2,
+							"144": 1
+						},
+						"132": {
+							"128": 2,
+							"129": 2,
+							"130": 6,
+							"131": 8,
+							"132": 1,
+							"133": 2
+						},
+						"133": {
+							"120": 1,
+							"128": 2,
+							"129": 4,
+							"130": 6,
+							"131": 10,
+							"132": 2,
+							"133": 2
+						},
+						"134": {
+							"127": 1,
+							"128": 4,
+							"129": 3,
+							"130": 4,
+							"131": 16,
+							"132": 11,
+							"133": 4,
+							"134": 1,
+							"144": 1
+						},
+						"135": {
+							"119": 1,
+							"127": 3,
+							"129": 2,
+							"131": 3,
+							"132": 8,
+							"133": 7,
+							"134": 3
+						},
+						"136": {
+							"125": 1,
+							"126": 1,
+							"128": 4,
+							"132": 2,
+							"133": 9,
+							"134": 3,
+							"135": 2,
+							"136": 1,
+							"144": 1
+						},
+						"137": {
+							"124": 1,
+							"125": 2,
+							"129": 1,
+							"132": 3,
+							"133": 4,
+							"134": 9
+						},
+						"138": {
+							"118": 1,
+							"124": 1,
+							"133": 3,
+							"134": 12,
+							"135": 3,
+							"137": 2,
+							"138": 1,
+							"143": 1
+						},
+						"139": {
+							"123": 3,
+							"132": 3,
+							"133": 2,
+							"134": 3,
+							"135": 3,
+							"136": 2,
+							"137": 3
+						},
+						"140": {
+							"117": 1,
+							"123": 1,
+							"133": 4,
+							"134": 8,
+							"135": 4,
+							"136": 1
+						},
+						"141": {
+							"121": 2,
+							"122": 1,
+							"132": 1,
+							"135": 2,
+							"136": 5,
+							"138": 1,
+							"143": 1
+						},
+						"142": {
+							"115": 1,
+							"121": 1,
+							"135": 2,
+							"136": 3,
+							"137": 2,
+							"138": 1
+						},
+						"143": {
+							"119": 1,
+							"120": 2,
+							"137": 1,
+							"138": 1,
+							"144": 1
+						},
+						"144": {
+							"120": 1,
+							"124": 1,
+							"126": 1,
+							"128": 1,
+							"131": 1,
+							"133": 1,
+							"135": 1
+						},
+						"145": {
+							"99": 1,
+							"109": 1,
+							"115": 1,
+							"117": 1,
+							"118": 2,
+							"122": 1,
+							"137": 1,
+							"139": 1,
+							"145": 1
+						},
+						"146": {
+							"97": 1,
+							"102": 2,
+							"103": 1,
+							"104": 1,
+							"105": 1,
+							"106": 1,
+							"107": 2,
+							"111": 1,
+							"114": 1,
+							"116": 1,
+							"118": 1,
+							"120": 1,
+							"139": 1
+						},
+						"147": {
+							"100": 2,
+							"109": 2,
+							"114": 1,
+							"115": 2,
+							"116": 1,
+							"118": 1,
+							"146": 1
+						},
+						"148": {
+							"98": 1,
+							"99": 1,
+							"113": 1,
+							"114": 1,
+							"116": 1,
+							"148": 1
+						},
+						"149": {
+							"109": 1,
+							"112": 2,
+							"113": 1,
+							"114": 1
+						},
+						"150": {
+							"97": 1,
+							"98": 1,
+							"109": 1,
+							"110": 1,
+							"111": 1,
+							"112": 1,
+							"150": 1
+						},
+						"151": {
+							"98": 1,
+							"110": 3,
+							"111": 1
+						},
+						"152": {
+							"109": 4,
+							"151": 1
+						},
+						"153": {
+							"97": 2,
+							"98": 1,
+							"110": 1
+						},
+						"154": {
+							"153": 1
+						},
+						"155": {
+							"97": 2,
+							"108": 1,
+							"155": 1
+						},
+						"156": {
+							"97": 1
+						},
+						"157": {
+							"97": 1,
+							"107": 1,
+							"156": 1
+						},
+						"158": {
+							"97": 1,
+							"158": 1
+						},
+						"159": {
+							"160": 1
+						},
+						"160": {
+							"97": 3,
+							"106": 1
+						},
+						"161": {
+							"92": 4,
+							"162": 1
+						},
+						"162": {
+							"91": 1,
+							"92": 1,
+							"93": 1,
+							"95": 1,
+							"96": 1
+						},
+						"163": {
+							"96": 1,
+							"106": 1,
+							"163": 1
+						},
+						"164": {
+							"92": 1,
+							"95": 2,
+							"165": 1
+						},
+						"165": {
+							"93": 5,
+							"94": 2
+						},
+						"166": {
+							"92": 2,
+							"93": 1,
+							"94": 1,
+							"105": 1,
+							"167": 1
+						},
+						"167": {
+							"91": 1,
+							"92": 1
+						},
+						"168": {
+							"91": 3,
+							"105": 1,
+							"168": 1
+						},
+						"169": {
+							"84": 1,
+							"90": 3,
+							"170": 1
+						},
+						"170": {
+							"85": 1,
+							"86": 1
+						},
+						"171": {
+							"88": 1,
+							"91": 1,
+							"92": 6,
+							"105": 1,
+							"171": 1
+						},
+						"172": {
+							"86": 1,
+							"89": 1,
+							"91": 1
+						},
+						"173": {
+							"89": 1,
+							"91": 1,
+							"94": 1,
+							"103": 1,
+							"173": 1
+						},
+						"174": {
+							"97": 1
+						},
+						"175": {
+							"92": 1,
+							"101": 1,
+							"174": 1
+						},
+						"176": {
+							"93": 1,
+							"95": 1,
+							"96": 1,
+							"97": 1,
+							"99": 1
+						},
+						"177": {
+							"174": 1,
+							"175": 1
+						},
+						"178": {
+							"174": 1
+						},
+						"179": {
+							"175": 1,
+							"176": 1
+						},
+						"180": {
+							"175": 1
+						},
+						"181": {
+							"176": 3,
+							"177": 16
+						},
+						"183": {
+							"178": 2
+						}
+					},
+					"obs": {},
+					"sen": {},
+					"purchase": {
+						"tango": 1,
+						"circlet": 1,
+						"slippers": 1,
+						"flask": 1,
+						"tpscroll": 5,
+						"bottle": 1,
+						"boots": 2,
+						"recipe_wraith_band": 1,
+						"sobi_mask": 3,
+						"ring_of_basilius": 1,
+						"ring_of_protection": 1,
+						"wraith_band": 1,
+						"ring_of_aquila": 1,
+						"gloves": 1,
+						"belt_of_strength": 1,
+						"power_treads": 1,
+						"quarterstaff": 2,
+						"oblivion_staff": 2,
+						"robe": 2,
+						"recipe_orchid": 1,
+						"orchid": 1,
+						"demon_edge": 1,
+						"javelin": 2,
+						"monkey_king_bar": 1,
+						"lifesteal": 1,
+						"travel_boots": 1,
+						"recipe_travel_boots": 1
+					},
+					"gold_reasons": {
+						"0": 2040,
+						"1": -2184,
+						"2": -92,
+						"6": 1255,
+						"11": 3046,
+						"12": 5514,
+						"13": 3459
+					},
+					"xp_reasons": {
+						"0": 2825,
+						"1": 10714,
+						"2": 10604
+					},
+					"kills": {
+						"npc_dota_creep_goodguys_melee": 32,
+						"npc_dota_creep_goodguys_ranged": 8,
+						"npc_dota_hero_gyrocopter": 5,
+						"npc_dota_hero_lina": 2,
+						"npc_dota_neutral_alpha_wolf": 2,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
+						"npc_dota_hero_lion": 3,
+						"npc_dota_neutral_satyr_hellcaller": 1,
+						"npc_dota_hero_shadow_demon": 1,
+						"npc_dota_goodguys_tower1_mid": 1,
+						"npc_dota_hero_mirana": 1,
+						"npc_dota_neutral_mud_golem": 1,
+						"npc_dota_neutral_satyr_soulstealer": 2,
+						"npc_dota_goodguys_siege": 1,
+						"npc_dota_creep_goodguys_ranged_upgraded": 11,
+						"npc_dota_neutral_enraged_wildkin": 2,
+						"npc_dota_neutral_wildkin": 4,
+						"npc_dota_neutral_giant_wolf": 2,
+						"npc_dota_neutral_satyr_trickster": 2,
+						"npc_dota_neutral_centaur_khan": 2,
+						"npc_dota_neutral_centaur_outrunner": 2,
+						"npc_dota_creep_goodguys_melee_upgraded": 29,
+						"npc_dota_goodguys_tower2_mid": 1,
+						"npc_dota_creep_badguys_melee": 2,
+						"npc_dota_goodguys_siege_upgraded": 1
+					},
+					"item_uses": {
+						"tpscroll": 4,
+						"flask": 1,
+						"tango": 4,
+						"bottle": 69,
+						"orchid": 3,
+						"travel_boots": 1
+					},
+					"ability_uses": {
+						"clinkz_wind_walk": 71,
+						"clinkz_strafe": 21,
+						"clinkz_death_pact": 7
+					},
+					"hero_hits": {
+						"clinkz_searing_arrows": 94,
+						"undefined": 137,
+						"orchid": 2
+					},
+					"damage": {
+						"npc_dota_hero_lion": 2200,
+						"npc_dota_creep_goodguys_melee": 11211,
+						"npc_dota_creep_goodguys_ranged": 3004,
+						"npc_dota_hero_lina": 4512,
+						"npc_dota_hero_gyrocopter": 3876,
+						"npc_dota_neutral_alpha_wolf": 1418,
+						"npc_dota_goodguys_siege": 668,
+						"npc_dota_hero_clinkz": 806,
+						"illusion_npc_dota_hero_clinkz": 310,
+						"npc_dota_creep_badguys_melee": 568,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 950,
+						"npc_dota_goodguys_tower1_top": 316,
+						"npc_dota_neutral_satyr_hellcaller": 1100,
+						"npc_dota_hero_shadow_demon": 1178,
+						"npc_dota_goodguys_tower1_mid": 830,
+						"npc_dota_hero_mirana": 595,
+						"npc_dota_neutral_mud_golem": 800,
+						"npc_dota_goodguys_tower2_top": 182,
+						"npc_dota_neutral_satyr_soulstealer": 1205,
+						"npc_dota_creep_goodguys_ranged_upgraded": 7301,
+						"npc_dota_neutral_enraged_wildkin": 1900,
+						"npc_dota_neutral_wildkin": 1844,
+						"npc_dota_neutral_giant_wolf": 1210,
+						"npc_dota_neutral_satyr_trickster": 647,
+						"npc_dota_neutral_centaur_khan": 2438,
+						"npc_dota_neutral_centaur_outrunner": 1327,
+						"npc_dota_creep_goodguys_melee_upgraded": 24890,
+						"npc_dota_creep_badguys_ranged": 125,
+						"npc_dota_badguys_siege": 126,
+						"npc_dota_goodguys_tower2_mid": 1254,
+						"illusion_npc_dota_hero_earthshaker": 935,
+						"npc_dota_goodguys_siege_upgraded": 455
+					},
+					"damage_taken": {
+						"npc_dota_hero_lion": 109,
+						"npc_dota_hero_shadow_demon": 865,
+						"npc_dota_hero_mirana": 1928,
+						"npc_dota_hero_lina": 7642,
+						"undefined": 2193,
+						"npc_dota_hero_gyrocopter": 3743,
+						"npc_dota_hero_clinkz": 806,
+						"npc_dota_hero_terrorblade": 117
+					},
+					"runes": {
+						"0": 4,
+						"1": 3,
+						"2": 1,
+						"3": 1,
+						"4": 3,
+						"5": 11
+					},
+					"runes_bottled": {
+						"0": 4,
+						"1": 3,
+						"2": 1,
+						"3": 1,
+						"4": 3,
+						"5": 10
+					},
+					"killed_by": {
+						"npc_dota_hero_mirana": 1,
+						"npc_dota_hero_lina": 5
+					},
+					"healing": {
+						"npc_dota_hero_clinkz": 4953
+					}
+				}, {
+					"stuns": 0,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 175, 350, 544, 861, 961, 1373, 1688, 1995, 2271, 2819, 3380, 3623, 4090, 4571, 4817, 5239, 5698, 6248, 6957, 7304, 7502, 8173, 8826, 9599, 9715, 10195, 10849, 11433, 12148, 14247, 15056, 15156, 16290, 16768, 17479, 17988, 18921, 19344, 20211, 20999, 21099, 21685, 22771, 23999, 25333, 26429, 26698, 27428, 28051, 29345, 29681, 30048, 30571, 31695, 33637, 34233, 35381, 36017],
+					"lh": [0, 0, 0, 1, 3, 7, 11, 11, 18, 26, 31, 35, 45, 52, 54, 62, 71, 76, 82, 90, 100, 110, 115, 117, 120, 133, 144, 145, 159, 171, 181, 194, 210, 227, 227, 246, 255, 265, 269, 287, 294, 310, 313, 313, 321, 343, 363, 388, 403, 407, 419, 425, 426, 437, 440, 448, 448, 451, 451, 476, 482],
+					"xp": [0, 0, 0, 120, 233, 439, 759, 759, 1265, 1692, 2095, 2379, 3034, 3428, 3635, 4177, 4706, 5020, 5480, 5866, 6533, 7016, 7491, 7651, 8417, 9046, 9909, 9934, 10714, 11408, 11829, 12464, 14514, 15046, 15046, 16033, 16388, 17170, 17500, 18847, 19420, 19768, 19955, 19955, 20513, 21664, 22071, 22463, 22607, 22937, 23697, 24407, 27495, 27592, 27776, 28230, 31335, 32485, 32485, 32485, 32485],
+					"pos_log": [],
+					"obs_log": [],
+					"sen_log": [],
+					"hero_log": [{
+						"time": -77,
+						"key": "109"
+					}],
+					"purchase_log": [{
+						"time": -48,
+						"key": "quelling_blade"
+					}, {
+						"time": -47,
+						"key": "circlet"
+					}, {
+						"time": -47,
+						"key": "circlet"
+					}, {
+						"time": -46,
+						"key": "branches"
+					}, {
+						"time": 73,
+						"key": "slippers"
+					}, {
+						"time": 98,
+						"key": "wraith_band"
+					}, {
+						"time": 205,
+						"key": "slippers"
+					}, {
+						"time": 245,
+						"key": "ring_of_protection"
+					}, {
+						"time": 261,
+						"key": "wraith_band"
+					}, {
+						"time": 354,
+						"key": "sobi_mask"
+					}, {
+						"time": 437,
+						"key": "boots"
+					}, {
+						"time": 483,
+						"key": "ring_of_basilius"
+					}, {
+						"time": 483,
+						"key": "ring_of_aquila"
+					}, {
+						"time": 495,
+						"key": "boots_of_elves"
+					}, {
+						"time": 653,
+						"key": "blade_of_alacrity"
+					}, {
+						"time": 718,
+						"key": "yasha"
+					}, {
+						"time": 980,
+						"key": "belt_of_strength"
+					}, {
+						"time": 980,
+						"key": "ogre_axe"
+					}, {
+						"time": 1048,
+						"key": "sange"
+					}, {
+						"time": 1118,
+						"key": "sange_and_yasha"
+					}, {
+						"time": 1354,
+						"key": "travel_boots"
+					}, {
+						"time": 1580,
+						"key": "ultimate_orb"
+					}, {
+						"time": 1803,
+						"key": "ultimate_orb"
+					}, {
+						"time": 1879,
+						"key": "point_booster"
+					}, {
+						"time": 1879,
+						"key": "skadi"
+					}, {
+						"time": 1879,
+						"key": "orb_of_venom"
+					}, {
+						"time": 2498,
+						"key": "eagle"
+					}, {
+						"time": 2607,
+						"key": "talisman_of_evasion"
+					}, {
+						"time": 2607,
+						"key": "quarterstaff"
+					}, {
+						"time": 2619,
+						"key": "butterfly"
+					}, {
+						"time": 2939,
+						"key": "eagle"
+					}, {
+						"time": 3085,
+						"key": "talisman_of_evasion"
+					}, {
+						"time": 3085,
+						"key": "quarterstaff"
+					}, {
+						"time": 3201,
+						"key": "butterfly"
+					}],
+					"kills_log": [{
+						"time": 874,
+						"key": "npc_dota_hero_terrorblade"
+					}, {
+						"time": 1319,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 1754,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 1781,
+						"key": "npc_dota_goodguys_tower2_bot"
+					}, {
+						"time": 2323,
+						"key": "npc_dota_hero_terrorblade"
+					}, {
+						"time": 2372,
+						"key": "npc_dota_goodguys_tower3_bot"
+					}, {
+						"time": 2381,
+						"key": "npc_dota_goodguys_melee_rax_bot"
+					}, {
+						"time": 2736,
+						"key": "npc_dota_goodguys_tower2_top"
+					}, {
+						"time": 2973,
+						"key": "npc_dota_goodguys_tower4"
+					}, {
+						"time": 2996,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 3207,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 3236,
+						"key": "npc_dota_hero_mirana"
+					}, {
+						"time": 3240,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 3243,
+						"key": "npc_dota_hero_shadow_demon"
+					}, {
+						"time": 3252,
+						"key": "npc_dota_goodguys_tower4"
+					}, {
+						"time": 3270,
+						"key": "npc_dota_hero_broodmother"
+					}, {
+						"time": 3353,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 3419,
+						"key": "npc_dota_goodguys_tower3_mid"
+					}, {
+						"time": 3426,
+						"key": "npc_dota_goodguys_range_rax_mid"
+					}, {
+						"time": 3432,
+						"key": "npc_dota_goodguys_melee_rax_mid"
+					}, {
+						"time": 3444,
+						"key": "npc_dota_goodguys_fort"
+					}],
+					"buyback_log": [{
+						"time": 2360,
+						"key": null
+					}, {
+						"time": 3344,
+						"key": null
+					}],
+					"chat": [],
+					"lane_pos": {
+						"95": {
+							"156": 1,
+							"157": 1
+						},
+						"96": {
+							"157": 6
+						},
+						"97": {
+							"157": 1
+						},
+						"98": {
+							"157": 2,
+							"160": 1
+						},
+						"99": {
+							"157": 1
+						},
+						"100": {
+							"157": 1
+						},
+						"101": {
+							"157": 1
+						},
+						"102": {
+							"157": 1
+						},
+						"103": {
+							"157": 1
+						},
+						"104": {
+							"157": 1
+						},
+						"105": {
+							"157": 2
+						},
+						"107": {
+							"141": 3,
+							"142": 1,
+							"143": 1,
+							"144": 1,
+							"146": 1,
+							"148": 1,
+							"157": 2
+						},
+						"108": {
+							"144": 4,
+							"146": 3,
+							"147": 1,
+							"148": 2,
+							"157": 1
+						},
+						"109": {
+							"150": 2
+						},
+						"110": {
+							"151": 11,
+							"152": 1,
+							"156": 2
+						},
+						"111": {
+							"153": 1,
+							"154": 1,
+							"156": 1,
+							"157": 2
+						},
+						"112": {
+							"155": 2
+						},
+						"113": {
+							"154": 2
+						},
+						"114": {
+							"153": 1
+						},
+						"115": {
+							"148": 14,
+							"149": 3,
+							"150": 1,
+							"155": 1
+						},
+						"116": {
+							"148": 4,
+							"149": 1,
+							"150": 2,
+							"152": 1,
+							"153": 1
+						},
+						"117": {
+							"148": 1,
+							"149": 5,
+							"150": 6,
+							"151": 1,
+							"152": 2,
+							"154": 1,
+							"155": 1,
+							"157": 1
+						},
+						"118": {
+							"150": 8,
+							"151": 1,
+							"152": 1,
+							"156": 1,
+							"157": 2,
+							"158": 1
+						},
+						"119": {
+							"150": 1,
+							"151": 1,
+							"152": 1,
+							"155": 1,
+							"157": 1,
+							"162": 1,
+							"164": 1
+						},
+						"120": {
+							"149": 1,
+							"151": 2,
+							"152": 1,
+							"158": 2,
+							"159": 1,
+							"160": 2,
+							"165": 1
+						},
+						"121": {
+							"151": 2,
+							"162": 1,
+							"164": 1
+						},
+						"122": {
+							"151": 2,
+							"158": 1,
+							"159": 2,
+							"160": 14
+						},
+						"123": {
+							"149": 1,
+							"151": 2,
+							"157": 3,
+							"159": 16
+						},
+						"124": {
+							"151": 1,
+							"155": 1,
+							"157": 11,
+							"159": 1,
+							"160": 1
+						},
+						"125": {
+							"148": 1,
+							"151": 3,
+							"157": 9
+						},
+						"126": {
+							"159": 13,
+							"160": 3
+						},
+						"127": {
+							"147": 1,
+							"151": 3,
+							"156": 16,
+							"160": 1
+						},
+						"128": {
+							"151": 1,
+							"155": 6,
+							"156": 17,
+							"159": 2,
+							"160": 1
+						},
+						"129": {
+							"149": 1,
+							"151": 1,
+							"152": 1,
+							"153": 2,
+							"154": 1,
+							"155": 2,
+							"156": 8,
+							"157": 3,
+							"159": 1
+						},
+						"130": {
+							"152": 1,
+							"153": 1,
+							"154": 1,
+							"155": 1,
+							"156": 3,
+							"157": 2,
+							"158": 2
+						},
+						"131": {
+							"153": 7,
+							"154": 3,
+							"155": 3,
+							"156": 1,
+							"157": 1,
+							"159": 1
+						},
+						"132": {
+							"153": 7,
+							"154": 5,
+							"155": 3,
+							"157": 1
+						},
+						"133": {
+							"153": 5,
+							"155": 4,
+							"156": 2,
+							"157": 1,
+							"163": 4
+						},
+						"134": {
+							"154": 2,
+							"156": 1,
+							"160": 2
+						},
+						"135": {
+							"154": 1,
+							"155": 1,
+							"156": 1,
+							"157": 2,
+							"158": 2,
+							"159": 1,
+							"162": 1
+						},
+						"136": {
+							"153": 8,
+							"154": 13,
+							"156": 2,
+							"157": 2,
+							"158": 1,
+							"159": 1,
+							"160": 4,
+							"161": 1
+						},
+						"137": {
+							"153": 24,
+							"154": 5,
+							"155": 1,
+							"156": 1,
+							"157": 1,
+							"158": 1,
+							"159": 3,
+							"160": 2
+						},
+						"138": {
+							"154": 6,
+							"155": 1,
+							"159": 5,
+							"160": 9,
+							"161": 1
+						},
+						"139": {
+							"158": 1,
+							"159": 2,
+							"160": 2,
+							"161": 1
+						},
+						"140": {
+							"159": 1
+						},
+						"141": {
+							"160": 1,
+							"161": 2,
+							"162": 3
+						},
+						"142": {
+							"161": 1,
+							"162": 1
+						},
+						"143": {
+							"163": 5
+						},
+						"144": {
+							"163": 1,
+							"164": 1
+						},
+						"145": {
+							"164": 1,
+							"165": 5
+						},
+						"146": {
+							"166": 2,
+							"167": 1
+						},
+						"147": {
+							"167": 4
+						},
+						"148": {
+							"168": 5
+						},
+						"149": {
+							"168": 1,
+							"169": 2
+						},
+						"150": {
+							"170": 5
+						},
+						"151": {
+							"170": 2
+						},
+						"152": {
+							"170": 1,
+							"171": 3
+						},
+						"153": {
+							"171": 1
+						},
+						"154": {
+							"171": 4
+						},
+						"155": {
+							"171": 3
+						},
+						"156": {
+							"172": 1
+						},
+						"157": {
+							"172": 6
+						},
+						"158": {
+							"172": 1
+						},
+						"159": {
+							"172": 4,
+							"173": 1
+						},
+						"160": {
+							"172": 1
+						},
+						"161": {
+							"172": 1,
+							"173": 2
+						},
+						"162": {
+							"172": 3,
+							"173": 1
+						},
+						"163": {
+							"173": 1
+						},
+						"164": {
+							"172": 3,
+							"174": 1
+						},
+						"165": {
+							"172": 1,
+							"174": 1
+						},
+						"166": {
+							"173": 1,
+							"174": 2
+						},
+						"167": {
+							"171": 2,
+							"173": 1
+						},
+						"168": {
+							"175": 2
+						},
+						"169": {
+							"171": 2,
+							"173": 2,
+							"175": 1
+						},
+						"171": {
+							"172": 1,
+							"173": 1,
+							"175": 3
+						},
+						"172": {
+							"171": 1,
+							"174": 1
+						},
+						"173": {
+							"173": 1,
+							"175": 2
+						},
+						"174": {
+							"172": 1,
+							"174": 2,
+							"175": 1
+						},
+						"175": {
+							"175": 1
+						},
+						"176": {
+							"173": 1,
+							"174": 1,
+							"175": 3
+						},
+						"177": {
+							"175": 2
+						},
+						"178": {
+							"175": 3,
+							"176": 1
+						},
+						"179": {
+							"175": 1,
+							"176": 5,
+							"177": 2
+						},
+						"180": {
+							"175": 6,
+							"176": 8,
+							"177": 1,
+							"179": 1
+						},
+						"181": {
+							"176": 5,
+							"177": 6,
+							"178": 2,
+							"179": 1
+						},
+						"182": {
+							"176": 2,
+							"177": 3,
+							"178": 3,
+							"179": 1
+						},
+						"183": {
+							"175": 1,
+							"176": 2,
+							"177": 3,
+							"178": 11,
+							"179": 2
+						},
+						"184": {
+							"176": 2,
+							"177": 5,
+							"178": 2
+						},
+						"185": {
+							"178": 3
+						},
+						"186": {
+							"177": 1
+						}
+					},
+					"obs": {},
+					"sen": {},
+					"purchase": {
+						"quelling_blade": 1,
+						"circlet": 2,
+						"branches": 1,
+						"slippers": 2,
+						"wraith_band": 2,
+						"recipe_wraith_band": 2,
+						"ring_of_protection": 1,
+						"sobi_mask": 1,
+						"boots": 1,
+						"ring_of_basilius": 1,
+						"ring_of_aquila": 1,
+						"boots_of_elves": 1,
+						"blade_of_alacrity": 1,
+						"yasha": 1,
+						"recipe_yasha": 1,
+						"belt_of_strength": 1,
+						"ogre_axe": 1,
+						"sange": 1,
+						"recipe_sange": 1,
+						"sange_and_yasha": 1,
+						"recipe_travel_boots": 1,
+						"travel_boots": 1,
+						"ultimate_orb": 2,
+						"point_booster": 1,
+						"skadi": 1,
+						"orb_of_venom": 1,
+						"eagle": 2,
+						"talisman_of_evasion": 2,
+						"quarterstaff": 2,
+						"butterfly": 2
+					},
+					"gold_reasons": {
+						"0": 1412,
+						"1": -3144,
+						"2": -3102,
+						"6": 772,
+						"11": 4217,
+						"12": 4810,
+						"13": 20564
+					},
+					"xp_reasons": {
+						"0": 734,
+						"1": 8911,
+						"2": 22841
+					},
+					"kills": {
+						"npc_dota_neutral_mud_golem": 18,
+						"npc_dota_neutral_wildkin": 11,
+						"npc_dota_neutral_satyr_trickster": 29,
+						"npc_dota_neutral_satyr_soulstealer": 29,
+						"npc_dota_neutral_enraged_wildkin": 5,
+						"npc_dota_neutral_satyr_hellcaller": 10,
+						"npc_dota_neutral_centaur_khan": 14,
+						"npc_dota_neutral_centaur_outrunner": 14,
+						"npc_dota_neutral_dark_troll_warlord": 3,
+						"npc_dota_neutral_dark_troll": 6,
+						"npc_dota_neutral_giant_wolf": 8,
+						"npc_dota_neutral_alpha_wolf": 3,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 5,
+						"npc_dota_neutral_polar_furbolg_champion": 7,
+						"npc_dota_neutral_ogre_magi": 5,
+						"npc_dota_neutral_ogre_mauler": 10,
+						"npc_dota_creep_goodguys_ranged": 40,
+						"npc_dota_neutral_forest_troll_berserker": 2,
+						"npc_dota_hero_terrorblade": 2,
+						"npc_dota_creep_goodguys_melee": 151,
+						"npc_dota_neutral_black_dragon": 3,
+						"npc_dota_neutral_black_drake": 6,
+						"npc_dota_hero_lion": 2,
+						"npc_dota_neutral_big_thunder_lizard": 7,
+						"npc_dota_neutral_small_thunder_lizard": 14,
+						"npc_dota_neutral_fel_beast": 4,
+						"npc_dota_neutral_kobold": 3,
+						"npc_dota_neutral_kobold_tunneler": 1,
+						"npc_dota_neutral_kobold_taskmaster": 1,
+						"npc_dota_neutral_ghost": 2,
+						"npc_dota_neutral_granite_golem": 2,
+						"npc_dota_neutral_rock_golem": 8,
+						"npc_dota_goodguys_siege": 7,
+						"npc_dota_hero_lina": 3,
+						"npc_dota_goodguys_tower2_bot": 1,
+						"npc_dota_creep_badguys_melee": 8,
+						"npc_dota_creep_badguys_ranged": 7,
+						"npc_dota_goodguys_tower3_bot": 1,
+						"npc_dota_goodguys_melee_rax_bot": 1,
+						"npc_dota_goodguys_tower2_top": 1,
+						"npc_dota_creep_goodguys_ranged_upgraded": 13,
+						"npc_dota_creep_goodguys_melee_upgraded": 29,
+						"npc_dota_goodguys_tower4": 2,
+						"npc_dota_hero_mirana": 1,
+						"npc_dota_hero_shadow_demon": 1,
+						"npc_dota_necronomicon_warrior_3": 1,
+						"npc_dota_creep_badguys_ranged_upgraded": 1,
+						"npc_dota_hero_broodmother": 1,
+						"npc_dota_creep_badguys_melee_upgraded": 2,
+						"npc_dota_hero_gyrocopter": 1,
+						"npc_dota_goodguys_siege_upgraded": 1,
+						"npc_dota_observer_wards": 1,
+						"npc_dota_goodguys_tower3_mid": 1,
+						"npc_dota_goodguys_range_rax_mid": 1,
+						"npc_dota_goodguys_melee_rax_mid": 1,
+						"npc_dota_goodguys_fort": 1
+					},
+					"item_uses": {
+						"quelling_blade": 5,
+						"travel_boots": 12
+					},
+					"ability_uses": {
+						"terrorblade_metamorphosis": 12,
+						"terrorblade_conjure_image": 124,
+						"terrorblade_reflection": 5,
+						"terrorblade_sunder": 3
+					},
+					"hero_hits": {
+						"undefined": 194,
+						"terrorblade_sunder": 2
+					},
+					"damage": {
+						"npc_dota_hero_lina": 7329,
+						"npc_dota_hero_lion": 2936,
+						"npc_dota_neutral_mud_golem": 17537,
+						"npc_dota_neutral_wildkin": 4605,
+						"npc_dota_neutral_enraged_wildkin": 5413,
+						"npc_dota_neutral_satyr_trickster": 10781,
+						"npc_dota_neutral_satyr_soulstealer": 19452,
+						"npc_dota_neutral_centaur_khan": 16976,
+						"npc_dota_neutral_satyr_hellcaller": 12111,
+						"npc_dota_neutral_centaur_outrunner": 8544,
+						"npc_dota_neutral_dark_troll_warlord": 3540,
+						"npc_dota_neutral_dark_troll": 3681,
+						"npc_dota_neutral_giant_wolf": 4527,
+						"npc_dota_neutral_alpha_wolf": 1995,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 5011,
+						"npc_dota_neutral_polar_furbolg_champion": 6840,
+						"npc_dota_neutral_ogre_magi": 3510,
+						"npc_dota_neutral_ogre_mauler": 9219,
+						"npc_dota_creep_goodguys_melee": 88827,
+						"npc_dota_creep_goodguys_ranged": 18003,
+						"npc_dota_neutral_forest_troll_berserker": 1140,
+						"npc_dota_hero_shadow_demon": 6241,
+						"npc_dota_hero_terrorblade": 2348,
+						"npc_dota_goodguys_tower1_top": 522,
+						"illusion_npc_dota_hero_terrorblade": 17500,
+						"npc_dota_goodguys_siege": 3746,
+						"npc_dota_neutral_black_dragon": 6209,
+						"npc_dota_neutral_black_drake": 6140,
+						"npc_dota_neutral_big_thunder_lizard": 10387,
+						"npc_dota_neutral_small_thunder_lizard": 12111,
+						"npc_dota_hero_mirana": 2297,
+						"npc_dota_neutral_fel_beast": 2110,
+						"npc_dota_neutral_kobold": 1143,
+						"npc_dota_neutral_kobold_tunneler": 390,
+						"npc_dota_neutral_kobold_taskmaster": 487,
+						"npc_dota_neutral_ghost": 1230,
+						"npc_dota_neutral_granite_golem": 4812,
+						"npc_dota_neutral_rock_golem": 7225,
+						"illusion_npc_dota_hero_clinkz": 236,
+						"npc_dota_goodguys_tower1_mid": 42,
+						"npc_dota_goodguys_tower2_top": 843,
+						"npc_dota_goodguys_tower2_bot": 697,
+						"npc_dota_creep_badguys_melee": 3967,
+						"npc_dota_creep_badguys_ranged": 2565,
+						"npc_dota_hero_clinkz": 117,
+						"npc_dota_hero_gyrocopter": 699,
+						"npc_dota_goodguys_tower3_bot": 440,
+						"npc_dota_goodguys_melee_rax_bot": 1032,
+						"npc_dota_goodguys_range_rax_bot": 342,
+						"npc_dota_creep_goodguys_ranged_upgraded": 8750,
+						"npc_dota_creep_goodguys_melee_upgraded": 24151,
+						"npc_dota_goodguys_tower4": 1304,
+						"npc_dota_necronomicon_warrior_3": 886,
+						"npc_dota_necronomicon_archer_3": 363,
+						"npc_dota_goodguys_fort": 3902,
+						"npc_dota_goodguys_fillers": 126,
+						"npc_dota_creep_badguys_ranged_upgraded": 745,
+						"npc_dota_hero_broodmother": 770,
+						"npc_dota_creep_badguys_melee_upgraded": 541,
+						"illusion_npc_dota_hero_earthshaker": 2389,
+						"npc_dota_goodguys_siege_upgraded": 1006,
+						"npc_dota_observer_wards": 321,
+						"npc_dota_goodguys_tower3_mid": 1548,
+						"npc_dota_goodguys_range_rax_mid": 1188,
+						"npc_dota_goodguys_melee_rax_mid": 1506
+					},
+					"damage_taken": {
+						"undefined": 11315,
+						"npc_dota_hero_terrorblade": 2348,
+						"npc_dota_hero_lina": 7788,
+						"npc_dota_hero_shadow_demon": 1660,
+						"npc_dota_hero_mirana": 3115,
+						"npc_dota_hero_gyrocopter": 4178,
+						"npc_dota_hero_lion": 951
+					},
+					"runes": {
+						"1": 1,
+						"4": 1,
+						"5": 1
+					},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_terrorblade": 2,
+						"npc_dota_hero_lina": 4
+					},
+					"healing": {
+						"npc_dota_hero_terrorblade": 5889
+					}
+				}, {
+					"stuns": 65.02831999999999,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 473, 614, 713, 813, 913, 1014, 1155, 1556, 1656, 1845, 2105, 2595, 2696, 2893, 3082, 3344, 3535, 3976, 4213, 4358, 4500, 4749, 5022, 5164, 5403, 5503, 5770, 5870, 6021, 6650, 6910, 7010, 7110, 7356, 7803, 7903, 8078, 8230, 8330, 10376, 11021, 11167, 11267, 11467, 11567, 11867, 12061, 12361, 12461, 12771, 12835, 13135, 13235, 13335, 13715, 14603, 14943, 15259],
+					"lh": [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 5, 5, 7, 9, 11, 13, 17, 20, 21, 22, 22, 26, 27, 30, 30, 31, 31, 32, 32, 32, 32, 32, 35, 39, 39, 39, 40, 40, 40, 52, 53, 53, 53, 53, 53, 55, 56, 56, 56, 56, 56, 56, 56, 56, 59, 59, 59],
+					"xp": [0, 0, 0, 94, 340, 546, 628, 878, 1140, 1408, 1876, 2165, 2381, 2443, 2798, 2860, 3234, 3411, 3795, 3939, 4228, 4352, 4695, 4922, 5690, 6092, 6123, 6401, 6743, 7459, 7678, 7789, 9256, 9289, 9382, 9477, 9825, 11171, 11266, 11693, 12064, 12064, 18055, 18848, 19034, 19155, 19155, 19232, 19353, 19512, 19727, 19857, 20057, 20165, 20249, 20349, 20349, 20409, 22386, 22386, 22416],
+					"pos_log": [],
+					"obs_log": [{
+						"time": 40,
+						"key": [112, 131]
+					}, {
+						"time": 234,
+						"key": [91, 163]
+					}, {
+						"time": 703,
+						"key": [103, 153]
+					}, {
+						"time": 788,
+						"key": [155, 126]
+					}, {
+						"time": 807,
+						"key": [125, 141]
+					}, {
+						"time": 1225,
+						"key": [111, 148]
+					}, {
+						"time": 1822,
+						"key": [125, 141]
+					}, {
+						"time": 1847,
+						"key": [100, 153]
+					}, {
+						"time": 2308,
+						"key": [136, 165]
+					}, {
+						"time": 2325,
+						"key": [154, 130]
+					}, {
+						"time": 3032,
+						"key": [154, 136]
+					}, {
+						"time": 3050,
+						"key": [125, 141]
+					}, {
+						"time": 3066,
+						"key": [148, 106]
+					}],
+					"sen_log": [{
+						"time": 2250,
+						"key": [168, 151]
+					}, {
+						"time": 2261,
+						"key": [159, 154]
+					}, {
+						"time": 2476,
+						"key": [159, 156]
+					}, {
+						"time": 2486,
+						"key": [136, 164]
+					}],
+					"hero_log": [{
+						"time": -110,
+						"key": "112"
+					}],
+					"purchase_log": [{
+						"time": -58,
+						"key": "ward_observer"
+					}, {
+						"time": -55,
+						"key": "smoke_of_deceit"
+					}, {
+						"time": -54,
+						"key": "flask"
+					}, {
+						"time": -53,
+						"key": "tango"
+					}, {
+						"time": -52,
+						"key": "clarity"
+					}, {
+						"time": -52,
+						"key": "clarity"
+					}, {
+						"time": 183,
+						"key": "flying_courier"
+					}, {
+						"time": 213,
+						"key": "tpscroll"
+					}, {
+						"time": 291,
+						"key": "boots"
+					}, {
+						"time": 304,
+						"key": "tpscroll"
+					}, {
+						"time": 546,
+						"key": "tpscroll"
+					}, {
+						"time": 612,
+						"key": "tpscroll"
+					}, {
+						"time": 643,
+						"key": "gauntlets"
+					}, {
+						"time": 643,
+						"key": "gauntlets"
+					}, {
+						"time": 646,
+						"key": "magic_stick"
+					}, {
+						"time": 659,
+						"key": "ward_observer"
+					}, {
+						"time": 660,
+						"key": "ward_observer"
+					}, {
+						"time": 754,
+						"key": "tpscroll"
+					}, {
+						"time": 829,
+						"key": "sobi_mask"
+					}, {
+						"time": 866,
+						"key": "urn_of_shadows"
+					}, {
+						"time": 918,
+						"key": "tpscroll"
+					}, {
+						"time": 1164,
+						"key": "arcane_boots"
+					}, {
+						"time": 1164,
+						"key": "energy_booster"
+					}, {
+						"time": 1789,
+						"key": "ogre_axe"
+					}, {
+						"time": 1792,
+						"key": "ward_observer"
+					}, {
+						"time": 1794,
+						"key": "tpscroll"
+					}, {
+						"time": 1968,
+						"key": "mithril_hammer"
+					}, {
+						"time": 2227,
+						"key": "ward_sentry"
+					}, {
+						"time": 2274,
+						"key": "ward_observer"
+					}, {
+						"time": 2392,
+						"key": "black_king_bar"
+					}, {
+						"time": 2454,
+						"key": "platemail"
+					}, {
+						"time": 2464,
+						"key": "ward_sentry"
+					}, {
+						"time": 3009,
+						"key": "ward_observer"
+					}, {
+						"time": 3009,
+						"key": "ward_observer"
+					}, {
+						"time": 3384,
+						"key": "ward_observer"
+					}],
+					"kills_log": [{
+						"time": 8,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 421,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 716,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 2365,
+						"key": "npc_dota_hero_lina"
+					}, {
+						"time": 2372,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 3347,
+						"key": "npc_dota_hero_lina"
+					}],
+					"buyback_log": [{
+						"time": 2957,
+						"key": null
+					}],
+					"chat": [],
+					"lane_pos": {
+						"78": {
+							"155": 1,
+							"156": 1,
+							"158": 1,
+							"159": 1,
+							"175": 1
+						},
+						"79": {
+							"157": 3,
+							"158": 3,
+							"159": 1,
+							"175": 1
+						},
+						"80": {
+							"156": 1,
+							"157": 1,
+							"158": 4,
+							"159": 1,
+							"160": 1,
+							"161": 1,
+							"162": 1,
+							"175": 1
+						},
+						"81": {
+							"163": 1,
+							"175": 1
+						},
+						"82": {
+							"163": 1,
+							"167": 2,
+							"169": 2,
+							"171": 1,
+							"172": 1,
+							"175": 2
+						},
+						"83": {
+							"163": 1,
+							"166": 4,
+							"167": 1,
+							"169": 2,
+							"170": 1,
+							"171": 4,
+							"172": 1,
+							"174": 2,
+							"175": 1,
+							"177": 2
+						},
+						"84": {
+							"163": 1,
+							"165": 4,
+							"167": 1,
+							"168": 1,
+							"169": 3,
+							"170": 3,
+							"171": 7,
+							"172": 26,
+							"173": 6,
+							"174": 2,
+							"175": 2,
+							"177": 1
+						},
+						"85": {
+							"163": 1,
+							"164": 1,
+							"165": 2,
+							"170": 2,
+							"171": 4,
+							"172": 8,
+							"173": 1,
+							"174": 4,
+							"175": 2,
+							"177": 1
+						},
+						"86": {
+							"162": 1,
+							"163": 1,
+							"164": 1,
+							"170": 2,
+							"171": 7,
+							"172": 9,
+							"173": 8,
+							"174": 8,
+							"175": 4,
+							"176": 8,
+							"177": 3
+						},
+						"87": {
+							"160": 1,
+							"170": 1,
+							"171": 2,
+							"172": 9,
+							"173": 6,
+							"174": 2,
+							"175": 8,
+							"176": 6,
+							"177": 1
+						},
+						"88": {
+							"158": 1,
+							"163": 2,
+							"171": 1,
+							"172": 3,
+							"173": 5,
+							"174": 5,
+							"175": 5,
+							"176": 6,
+							"177": 8
+						},
+						"89": {
+							"159": 1,
+							"171": 1,
+							"172": 2,
+							"173": 2,
+							"174": 8,
+							"175": 2,
+							"176": 9,
+							"177": 3,
+							"178": 2,
+							"179": 5
+						},
+						"90": {
+							"161": 1,
+							"163": 2,
+							"171": 1,
+							"172": 2,
+							"173": 7,
+							"176": 39,
+							"177": 5,
+							"178": 1
+						},
+						"91": {
+							"168": 17,
+							"169": 2,
+							"170": 2,
+							"171": 2,
+							"172": 3,
+							"173": 5,
+							"176": 6,
+							"177": 5,
+							"178": 7
+						},
+						"92": {
+							"161": 1,
+							"162": 1,
+							"170": 1,
+							"172": 2,
+							"174": 2,
+							"175": 1,
+							"176": 4,
+							"177": 7,
+							"178": 1
+						},
+						"93": {
+							"171": 1,
+							"172": 3,
+							"173": 4,
+							"174": 1,
+							"175": 2,
+							"176": 3,
+							"177": 6,
+							"178": 3,
+							"179": 1
+						},
+						"94": {
+							"162": 1,
+							"163": 1,
+							"171": 1,
+							"172": 2,
+							"173": 2,
+							"175": 1,
+							"176": 3,
+							"177": 2
+						},
+						"95": {
+							"161": 1,
+							"162": 1,
+							"163": 1,
+							"164": 2,
+							"172": 2,
+							"173": 1,
+							"174": 2,
+							"176": 2,
+							"177": 8,
+							"178": 2
+						},
+						"96": {
+							"159": 1,
+							"164": 2,
+							"165": 2,
+							"172": 3,
+							"173": 1,
+							"175": 1,
+							"177": 1,
+							"178": 1
+						},
+						"97": {
+							"164": 1,
+							"166": 2,
+							"172": 2,
+							"173": 1,
+							"177": 1,
+							"178": 1
+						},
+						"98": {
+							"159": 1,
+							"166": 1,
+							"171": 2,
+							"172": 1,
+							"176": 1
+						},
+						"99": {
+							"164": 1,
+							"166": 2,
+							"167": 1,
+							"168": 2,
+							"171": 2,
+							"172": 1
+						},
+						"100": {
+							"158": 1,
+							"167": 1,
+							"168": 1,
+							"169": 1,
+							"170": 3,
+							"171": 1
+						},
+						"101": {
+							"165": 1
+						},
+						"102": {
+							"158": 1
+						},
+						"103": {
+							"167": 1
+						},
+						"104": {
+							"157": 1,
+							"165": 1
+						},
+						"105": {
+							"167": 1
+						},
+						"106": {
+							"165": 1
+						},
+						"107": {
+							"157": 1,
+							"166": 1
+						},
+						"108": {
+							"145": 1,
+							"147": 1,
+							"149": 1,
+							"151": 1,
+							"153": 1,
+							"156": 1,
+							"164": 1
+						},
+						"109": {
+							"143": 1,
+							"165": 1
+						},
+						"110": {
+							"141": 1,
+							"164": 1
+						},
+						"111": {
+							"139": 1,
+							"165": 1
+						},
+						"112": {
+							"134": 1,
+							"137": 1
+						},
+						"113": {
+							"135": 1
+						},
+						"114": {
+							"136": 1,
+							"140": 6
+						},
+						"115": {
+							"140": 3
+						},
+						"116": {
+							"137": 1,
+							"139": 1
+						},
+						"117": {
+							"139": 1
+						},
+						"118": {
+							"137": 1,
+							"138": 1
+						},
+						"119": {
+							"139": 1
+						},
+						"120": {
+							"137": 3,
+							"138": 4,
+							"139": 6
+						},
+						"121": {
+							"138": 1,
+							"139": 3
+						},
+						"122": {
+							"136": 2,
+							"139": 1
+						},
+						"123": {
+							"135": 1,
+							"139": 3
+						},
+						"124": {
+							"134": 1
+						},
+						"125": {
+							"128": 2,
+							"132": 1,
+							"133": 1,
+							"139": 1,
+							"141": 1
+						},
+						"126": {
+							"129": 4,
+							"130": 1,
+							"131": 1,
+							"143": 1
+						},
+						"127": {
+							"130": 1,
+							"146": 1
+						},
+						"128": {
+							"147": 1
+						},
+						"129": {
+							"149": 1
+						},
+						"130": {
+							"152": 1,
+							"154": 1
+						},
+						"131": {
+							"156": 1,
+							"158": 1
+						},
+						"132": {
+							"160": 1,
+							"162": 1
+						},
+						"133": {
+							"164": 1,
+							"166": 1
+						},
+						"135": {
+							"168": 1
+						},
+						"137": {
+							"169": 1
+						},
+						"139": {
+							"170": 1
+						},
+						"141": {
+							"170": 1
+						},
+						"143": {
+							"171": 1
+						},
+						"145": {
+							"171": 1
+						},
+						"147": {
+							"171": 1
+						},
+						"150": {
+							"171": 1
+						},
+						"152": {
+							"171": 1
+						},
+						"154": {
+							"171": 1
+						},
+						"156": {
+							"172": 1
+						},
+						"158": {
+							"172": 1
+						},
+						"161": {
+							"172": 1
+						},
+						"163": {
+							"172": 1
+						},
+						"165": {
+							"171": 1
+						},
+						"167": {
+							"171": 1
+						},
+						"169": {
+							"171": 1
+						},
+						"171": {
+							"172": 1
+						},
+						"173": {
+							"172": 1
+						},
+						"175": {
+							"173": 1
+						},
+						"177": {
+							"174": 1
+						},
+						"179": {
+							"175": 1
+						},
+						"181": {
+							"176": 1,
+							"177": 7
+						},
+						"182": {
+							"176": 28
+						}
+					},
+					"obs": {
+						"91": {
+							"163": 1
+						},
+						"100": {
+							"153": 1
+						},
+						"103": {
+							"153": 1
+						},
+						"111": {
+							"148": 1
+						},
+						"112": {
+							"131": 1
+						},
+						"125": {
+							"141": 3
+						},
+						"136": {
+							"165": 1
+						},
+						"148": {
+							"106": 1
+						},
+						"154": {
+							"130": 1,
+							"136": 1
+						},
+						"155": {
+							"126": 1
+						}
+					},
+					"sen": {
+						"136": {
+							"164": 1
+						},
+						"159": {
+							"154": 1,
+							"156": 1
+						},
+						"168": {
+							"151": 1
+						}
+					},
+					"purchase": {
+						"ward_observer": 8,
+						"smoke_of_deceit": 1,
+						"flask": 1,
+						"tango": 1,
+						"clarity": 2,
+						"flying_courier": 1,
+						"tpscroll": 7,
+						"boots": 1,
+						"gauntlets": 2,
+						"magic_stick": 1,
+						"sobi_mask": 1,
+						"recipe_urn_of_shadows": 1,
+						"urn_of_shadows": 1,
+						"arcane_boots": 1,
+						"energy_booster": 1,
+						"ogre_axe": 1,
+						"mithril_hammer": 1,
+						"ward_sentry": 2,
+						"black_king_bar": 1,
+						"recipe_black_king_bar": 1,
+						"platemail": 1
+					},
+					"gold_reasons": {
+						"0": 625,
+						"1": -1854,
+						"2": -453,
+						"6": 15,
+						"11": 2670,
+						"12": 4150,
+						"13": 2805
+					},
+					"xp_reasons": {
+						"0": 359,
+						"1": 12144,
+						"2": 9915
+					},
+					"kills": {
+						"npc_dota_hero_lion": 3,
+						"npc_dota_creep_goodguys_melee": 33,
+						"npc_dota_creep_badguys_melee": 2,
+						"npc_dota_creep_goodguys_ranged": 22,
+						"npc_dota_hero_lina": 2,
+						"npc_dota_hero_gyrocopter": 1,
+						"npc_dota_necronomicon_warrior_3": 1,
+						"npc_dota_neutral_dark_troll_warlord": 1,
+						"npc_dota_neutral_dark_troll": 2
+					},
+					"item_uses": {
+						"ward_observer": 13,
+						"tango": 3,
+						"tpscroll": 5,
+						"clarity": 2,
+						"flask": 1,
+						"smoke_of_deceit": 1,
+						"magic_stick": 4,
+						"arcane_boots": 15,
+						"urn_of_shadows": 5,
+						"ward_sentry": 4,
+						"black_king_bar": 2
+					},
+					"ability_uses": {
+						"winter_wyvern_arctic_burn": 14,
+						"winter_wyvern_splinter_blast": 29,
+						"winter_wyvern_cold_embrace": 9,
+						"winter_wyvern_winters_curse": 11
+					},
+					"hero_hits": {
+						"undefined": 57,
+						"winter_wyvern_arctic_burn": 37,
+						"winter_wyvern_splinter_blast": 23,
+						"winter_wyvern_winters_curse": 2,
+						"urn_of_shadows": 8
+					},
+					"damage": {
+						"npc_dota_hero_lina": 1849,
+						"npc_dota_hero_lion": 2113,
+						"npc_dota_hero_winter_wyvern": 509,
+						"npc_dota_creep_goodguys_melee": 17650,
+						"npc_dota_creep_badguys_melee": 218,
+						"npc_dota_hero_shadow_demon": 1260,
+						"npc_dota_creep_goodguys_ranged": 8464,
+						"npc_dota_hero_mirana": 1155,
+						"illusion_npc_dota_hero_clinkz": 827,
+						"npc_dota_badguys_tower1_top": 14,
+						"npc_dota_hero_gyrocopter": 2133,
+						"npc_dota_goodguys_tower2_bot": 147,
+						"npc_dota_goodguys_tower1_mid": 17,
+						"illusion_npc_dota_hero_terrorblade": 382,
+						"illusion_npc_dota_hero_gyrocopter": 3627,
+						"npc_dota_observer_wards": 161,
+						"npc_dota_neutral_dark_troll_warlord": 1324,
+						"npc_dota_necronomicon_archer_3": 204,
+						"npc_dota_necronomicon_warrior_3": 205,
+						"npc_dota_creep_goodguys_melee_upgraded": 435,
+						"npc_dota_creep_goodguys_ranged_upgraded": 485,
+						"npc_dota_goodguys_siege_upgraded": 193,
+						"npc_dota_goodguys_tower2_mid": 101,
+						"npc_dota_badguys_siege": 60,
+						"npc_dota_neutral_dark_troll": 1122,
+						"illusion_npc_dota_hero_earthshaker": 262
+					},
+					"damage_taken": {
+						"npc_dota_hero_lina": 3414,
+						"npc_dota_hero_lion": 1845,
+						"npc_dota_hero_winter_wyvern": 509,
+						"npc_dota_hero_shadow_demon": 1063,
+						"undefined": 3081,
+						"npc_dota_hero_mirana": 2222,
+						"npc_dota_hero_gyrocopter": 3807
+					},
+					"runes": {},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_shadow_demon": 2,
+						"npc_dota_hero_mirana": 2,
+						"npc_dota_hero_lina": 2
+					},
+					"healing": {
+						"npc_dota_hero_winter_wyvern": 2630,
+						"npc_dota_hero_broodmother": 1287,
+						"npc_dota_hero_terrorblade": 1051
+					}
+				}, {
+					"stuns": 0,
+					"times": [-120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1740, 1800, 1860, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 2820, 2880, 2940, 3000, 3060, 3120, 3180, 3240, 3300, 3360, 3420, 3480],
+					"gold": [0, 0, 0, 145, 442, 582, 805, 1104, 1338, 1728, 2379, 2666, 3105, 4040, 4179, 4280, 4379, 4529, 4908, 5009, 5633, 6033, 6134, 6507, 6867, 7351, 7474, 7884, 8335, 8828, 8967, 9421, 10812, 11405, 11825, 12105, 12569, 13444, 13793, 13893, 14301, 14693, 15528, 15839, 16177, 16407, 16924, 17465, 17951, 18218, 18501, 18601, 19190, 19290, 19633, 19733, 20349, 21108, 21208, 21977, 22293],
+					"lh": [0, 0, 0, 1, 5, 6, 9, 13, 16, 20, 24, 25, 34, 37, 38, 38, 38, 39, 45, 45, 53, 61, 61, 67, 73, 82, 83, 86, 94, 103, 104, 104, 108, 116, 123, 130, 136, 155, 160, 160, 167, 174, 181, 186, 191, 194, 200, 210, 212, 217, 221, 221, 225, 225, 226, 226, 228, 229, 229, 238, 238],
+					"xp": [0, 0, 0, 186, 629, 1145, 1444, 1945, 2172, 2900, 4011, 5055, 5653, 6914, 7100, 7100, 7100, 7203, 7698, 7698, 8084, 8469, 8469, 8902, 9568, 10083, 10244, 10523, 11256, 11834, 11958, 13667, 15247, 15768, 16599, 16975, 17554, 18566, 19005, 19067, 19686, 20352, 21055, 21354, 22035, 22784, 22908, 23517, 24109, 24607, 24999, 24999, 25692, 25692, 25857, 25857, 28929, 32282, 32282, 32406, 32406],
+					"pos_log": [],
+					"obs_log": [],
+					"sen_log": [{
+						"time": 579,
+						"key": [176, 99]
+					}, {
+						"time": 1584,
+						"key": [157, 80]
+					}],
+					"hero_log": [{
+						"time": -75,
+						"key": "61"
+					}],
+					"purchase_log": [{
+						"time": -57,
+						"key": "ring_of_protection"
+					}, {
+						"time": -49,
+						"key": "flask"
+					}, {
+						"time": 31,
+						"key": "ward_sentry"
+					}, {
+						"time": 159,
+						"key": "ring_of_regen"
+					}, {
+						"time": 224,
+						"key": "soul_ring"
+					}, {
+						"time": 224,
+						"key": "sobi_mask"
+					}, {
+						"time": 314,
+						"key": "tpscroll"
+					}, {
+						"time": 422,
+						"key": "ring_of_basilius"
+					}, {
+						"time": 422,
+						"key": "sobi_mask"
+					}, {
+						"time": 479,
+						"key": "boots"
+					}, {
+						"time": 485,
+						"key": "belt_of_strength"
+					}, {
+						"time": 486,
+						"key": "tpscroll"
+					}, {
+						"time": 892,
+						"key": "ogre_axe"
+					}, {
+						"time": 1019,
+						"key": "sange"
+					}, {
+						"time": 1022,
+						"key": "tpscroll"
+					}, {
+						"time": 1205,
+						"key": "tpscroll"
+					}, {
+						"time": 1208,
+						"key": "blade_of_alacrity"
+					}, {
+						"time": 1350,
+						"key": "boots_of_elves"
+					}, {
+						"time": 1350,
+						"key": "yasha"
+					}, {
+						"time": 1417,
+						"key": "sange_and_yasha"
+					}, {
+						"time": 1815,
+						"key": "mithril_hammer"
+					}, {
+						"time": 1920,
+						"key": "gloves"
+					}, {
+						"time": 1937,
+						"key": "maelstrom"
+					}, {
+						"time": 1995,
+						"key": "travel_boots"
+					}, {
+						"time": 2450,
+						"key": "ogre_axe"
+					}, {
+						"time": 3068,
+						"key": "black_king_bar"
+					}, {
+						"time": 3068,
+						"key": "mithril_hammer"
+					}],
+					"kills_log": [{
+						"time": 450,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 627,
+						"key": "npc_dota_hero_gyrocopter"
+					}, {
+						"time": 649,
+						"key": "npc_dota_goodguys_tower1_bot"
+					}, {
+						"time": 1743,
+						"key": "npc_dota_hero_mirana"
+					}, {
+						"time": 1746,
+						"key": "npc_dota_hero_lion"
+					}, {
+						"time": 2623,
+						"key": "npc_dota_goodguys_range_rax_bot"
+					}],
+					"buyback_log": [],
+					"chat": [{
+						"time": 3447,
+						"key": "GG"
+					}],
+					"lane_pos": {
+						"159": {
+							"86": 1
+						},
+						"160": {
+							"86": 1
+						},
+						"161": {
+							"87": 3
+						},
+						"163": {
+							"88": 2
+						},
+						"165": {
+							"80": 1
+						},
+						"166": {
+							"80": 1,
+							"82": 1,
+							"88": 1,
+							"89": 1
+						},
+						"167": {
+							"79": 1,
+							"81": 1,
+							"82": 4,
+							"83": 1,
+							"86": 1
+						},
+						"168": {
+							"80": 1,
+							"83": 1,
+							"84": 1,
+							"85": 1,
+							"90": 2,
+							"93": 1
+						},
+						"169": {
+							"83": 2,
+							"84": 2,
+							"85": 1,
+							"87": 2,
+							"88": 1,
+							"89": 1,
+							"91": 1,
+							"92": 1
+						},
+						"170": {
+							"83": 1,
+							"84": 4,
+							"86": 1,
+							"87": 3,
+							"88": 1,
+							"89": 7,
+							"90": 2
+						},
+						"171": {
+							"83": 1,
+							"85": 2,
+							"86": 3,
+							"87": 7,
+							"88": 1,
+							"89": 9,
+							"90": 5,
+							"91": 1,
+							"92": 1
+						},
+						"172": {
+							"83": 1,
+							"85": 3,
+							"86": 2,
+							"87": 2,
+							"88": 2,
+							"89": 9,
+							"90": 2,
+							"91": 5,
+							"92": 4,
+							"93": 1,
+							"94": 2,
+							"95": 2,
+							"97": 1,
+							"99": 1,
+							"101": 1,
+							"107": 4
+						},
+						"173": {
+							"84": 1,
+							"85": 2,
+							"86": 5,
+							"87": 2,
+							"88": 4,
+							"89": 7,
+							"90": 3,
+							"91": 3,
+							"92": 4,
+							"93": 3,
+							"94": 2,
+							"95": 2,
+							"96": 8,
+							"97": 2,
+							"99": 2,
+							"100": 1,
+							"101": 2,
+							"102": 3,
+							"106": 1,
+							"110": 2
+						},
+						"174": {
+							"85": 3,
+							"86": 3,
+							"87": 4,
+							"88": 3,
+							"89": 1,
+							"90": 30,
+							"91": 2,
+							"92": 2,
+							"93": 3,
+							"94": 5,
+							"95": 5,
+							"96": 4,
+							"97": 4,
+							"101": 3,
+							"102": 9,
+							"103": 4,
+							"104": 1,
+							"106": 1,
+							"107": 2,
+							"108": 1,
+							"109": 5,
+							"110": 1,
+							"111": 1,
+							"112": 1,
+							"137": 5
+						},
+						"175": {
+							"85": 1,
+							"86": 2,
+							"87": 1,
+							"88": 4,
+							"89": 10,
+							"90": 4,
+							"91": 6,
+							"92": 5,
+							"93": 4,
+							"94": 8,
+							"95": 3,
+							"96": 2,
+							"97": 2,
+							"100": 1,
+							"101": 1,
+							"102": 14,
+							"103": 7,
+							"104": 8,
+							"105": 3,
+							"106": 2,
+							"107": 1,
+							"108": 2,
+							"110": 2,
+							"111": 4,
+							"137": 1,
+							"139": 1
+						},
+						"176": {
+							"88": 1,
+							"90": 2,
+							"91": 5,
+							"93": 4,
+							"94": 4,
+							"95": 5,
+							"96": 2,
+							"97": 4,
+							"98": 3,
+							"100": 4,
+							"101": 5,
+							"102": 6,
+							"103": 8,
+							"104": 3,
+							"105": 1,
+							"109": 1,
+							"110": 3,
+							"111": 2,
+							"113": 3,
+							"114": 1
+						},
+						"177": {
+							"90": 1,
+							"92": 2,
+							"94": 5,
+							"95": 1,
+							"96": 3,
+							"98": 1,
+							"99": 2,
+							"100": 2,
+							"101": 6,
+							"102": 3,
+							"103": 2,
+							"104": 2,
+							"105": 2,
+							"106": 2,
+							"107": 3,
+							"110": 1,
+							"111": 1,
+							"112": 1,
+							"113": 4,
+							"114": 2,
+							"115": 1,
+							"117": 1,
+							"120": 1,
+							"122": 2,
+							"123": 1,
+							"127": 1,
+							"132": 1,
+							"135": 1,
+							"136": 1,
+							"138": 2,
+							"139": 1,
+							"140": 1,
+							"141": 2,
+							"152": 1,
+							"155": 1
+						},
+						"178": {
+							"91": 2,
+							"92": 1,
+							"93": 1,
+							"94": 3,
+							"95": 2,
+							"96": 2,
+							"97": 2,
+							"98": 2,
+							"103": 2,
+							"105": 2,
+							"106": 1,
+							"107": 1,
+							"109": 1,
+							"110": 1,
+							"111": 1,
+							"112": 2,
+							"113": 2,
+							"114": 1,
+							"115": 3,
+							"116": 1,
+							"117": 2,
+							"118": 3,
+							"119": 2,
+							"120": 2,
+							"121": 1,
+							"123": 1,
+							"124": 1,
+							"125": 2,
+							"126": 1,
+							"127": 2,
+							"128": 1,
+							"129": 1,
+							"130": 2,
+							"131": 1,
+							"132": 1,
+							"134": 2,
+							"137": 2,
+							"139": 1,
+							"141": 1,
+							"143": 1,
+							"146": 1,
+							"148": 1,
+							"150": 1,
+							"163": 1,
+							"166": 1
+						},
+						"179": {
+							"95": 1,
+							"96": 3,
+							"98": 2,
+							"100": 1,
+							"110": 1,
+							"134": 1,
+							"156": 4,
+							"157": 1,
+							"159": 1,
+							"161": 1,
+							"167": 1,
+							"170": 1,
+							"172": 1
+						},
+						"180": {
+							"92": 1,
+							"95": 2,
+							"96": 1,
+							"97": 2,
+							"98": 2,
+							"99": 1,
+							"113": 1,
+							"174": 1
+						},
+						"181": {
+							"96": 1,
+							"97": 2,
+							"98": 1,
+							"99": 1,
+							"112": 1,
+							"176": 1,
+							"178": 1,
+							"179": 3
+						},
+						"182": {
+							"95": 2,
+							"96": 1,
+							"97": 3,
+							"98": 2,
+							"99": 3,
+							"175": 1
+						},
+						"183": {
+							"97": 5,
+							"174": 19
+						},
+						"184": {
+							"97": 1,
+							"177": 3
+						}
+					},
+					"obs": {},
+					"sen": {
+						"157": {
+							"80": 1
+						},
+						"176": {
+							"99": 1
+						}
+					},
+					"purchase": {
+						"recipe_soul_ring": 1,
+						"ring_of_protection": 1,
+						"flask": 1,
+						"ward_sentry": 1,
+						"ring_of_regen": 1,
+						"soul_ring": 1,
+						"sobi_mask": 2,
+						"tpscroll": 4,
+						"ring_of_basilius": 1,
+						"boots": 1,
+						"belt_of_strength": 1,
+						"ogre_axe": 2,
+						"recipe_sange": 1,
+						"sange": 1,
+						"blade_of_alacrity": 1,
+						"boots_of_elves": 1,
+						"yasha": 1,
+						"recipe_yasha": 1,
+						"sange_and_yasha": 1,
+						"recipe_travel_boots": 1,
+						"mithril_hammer": 2,
+						"gloves": 1,
+						"maelstrom": 1,
+						"recipe_maelstrom": 1,
+						"travel_boots": 1,
+						"recipe_black_king_bar": 1,
+						"black_king_bar": 1
+					},
+					"gold_reasons": {
+						"0": 1064,
+						"1": -4401,
+						"6": 400,
+						"11": 3088,
+						"12": 3052,
+						"13": 9974
+					},
+					"xp_reasons": {
+						"0": 1247,
+						"1": 11312,
+						"2": 19850
+					},
+					"kills": {
+						"npc_dota_creep_goodguys_melee": 126,
+						"npc_dota_creep_goodguys_ranged": 51,
+						"npc_dota_broodmother_spiderling": 106,
+						"npc_dota_broodmother_spiderite": 93,
+						"npc_dota_goodguys_siege": 6,
+						"npc_dota_hero_gyrocopter": 2,
+						"npc_dota_sentry_wards": 1,
+						"npc_dota_goodguys_tower1_bot": 1,
+						"npc_dota_neutral_kobold_taskmaster": 2,
+						"npc_dota_neutral_forest_troll_berserker": 6,
+						"npc_dota_neutral_wildkin": 2,
+						"npc_dota_neutral_enraged_wildkin": 1,
+						"npc_dota_neutral_gnoll_assassin": 6,
+						"npc_dota_neutral_polar_furbolg_champion": 1,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
+						"npc_dota_neutral_ogre_mauler": 3,
+						"npc_dota_neutral_black_drake": 2,
+						"npc_dota_neutral_black_dragon": 1,
+						"npc_dota_creep_badguys_melee": 1,
+						"npc_dota_hero_mirana": 1,
+						"npc_dota_hero_lion": 1,
+						"npc_dota_neutral_mud_golem": 4,
+						"npc_dota_neutral_satyr_trickster": 2,
+						"npc_dota_neutral_satyr_hellcaller": 2,
+						"npc_dota_neutral_satyr_soulstealer": 2,
+						"npc_dota_neutral_forest_troll_high_priest": 1,
+						"npc_dota_neutral_giant_wolf": 2,
+						"npc_dota_neutral_alpha_wolf": 1,
+						"npc_dota_neutral_centaur_outrunner": 1,
+						"npc_dota_neutral_rock_golem": 2,
+						"npc_dota_neutral_granite_golem": 1,
+						"npc_dota_neutral_fel_beast": 2,
+						"npc_dota_neutral_ghost": 1,
+						"npc_dota_neutral_ogre_magi": 1,
+						"npc_dota_goodguys_range_rax_bot": 1,
+						"npc_dota_neutral_harpy_storm": 1,
+						"npc_dota_neutral_harpy_scout": 2,
+						"npc_dota_goodguys_fillers": 1,
+						"npc_dota_creep_badguys_ranged_upgraded": 1,
+						"npc_dota_creep_goodguys_melee_upgraded": 1
+					},
+					"item_uses": {
+						"soul_ring": 12,
+						"tpscroll": 4,
+						"ring_of_basilius": 2,
+						"flask": 1,
+						"ward_sentry": 2,
+						"travel_boots": 6,
+						"black_king_bar": 3
+					},
+					"ability_uses": {
+						"broodmother_spin_web": 14,
+						"broodmother_spawn_spiderlings": 50,
+						"broodmother_insatiable_hunger": 19
+					},
+					"hero_hits": {
+						"undefined": 320,
+						"broodmother_poison_sting": 68,
+						"broodmother_spawn_spiderlings": 3,
+						"maelstrom": 8
+					},
+					"damage": {
+						"npc_dota_creep_goodguys_melee": 69542,
+						"npc_dota_hero_gyrocopter": 4683,
+						"npc_dota_creep_goodguys_ranged": 19524,
+						"npc_dota_creep_badguys_melee": 117,
+						"npc_dota_goodguys_siege": 3858,
+						"npc_dota_creep_badguys_ranged": 9,
+						"npc_dota_goodguys_tower1_bot": 616,
+						"npc_dota_hero_lina": 2366,
+						"npc_dota_sentry_wards": 411,
+						"npc_dota_goodguys_tower2_bot": 1000,
+						"npc_dota_hero_shadow_demon": 1925,
+						"npc_dota_neutral_kobold_taskmaster": 860,
+						"npc_dota_neutral_forest_troll_berserker": 3319,
+						"npc_dota_neutral_wildkin": 685,
+						"npc_dota_neutral_enraged_wildkin": 917,
+						"npc_dota_hero_broodmother": 633,
+						"npc_dota_neutral_gnoll_assassin": 2727,
+						"npc_dota_neutral_polar_furbolg_champion": 946,
+						"npc_dota_neutral_polar_furbolg_ursa_warrior": 944,
+						"npc_dota_neutral_ogre_mauler": 2711,
+						"npc_dota_neutral_ogre_magi": 763,
+						"npc_dota_neutral_black_drake": 2026,
+						"npc_dota_neutral_black_dragon": 2087,
+						"npc_dota_hero_mirana": 953,
+						"npc_dota_hero_lion": 304,
+						"npc_dota_neutral_mud_golem": 3263,
+						"npc_dota_neutral_satyr_trickster": 700,
+						"npc_dota_neutral_satyr_hellcaller": 2321,
+						"npc_dota_neutral_satyr_soulstealer": 1374,
+						"npc_dota_goodguys_tower3_bot": 766,
+						"npc_dota_neutral_forest_troll_high_priest": 545,
+						"npc_dota_neutral_giant_wolf": 1076,
+						"npc_dota_neutral_alpha_wolf": 592,
+						"npc_dota_neutral_centaur_outrunner": 621,
+						"npc_dota_neutral_rock_golem": 1926,
+						"npc_dota_neutral_granite_golem": 2022,
+						"npc_dota_neutral_fel_beast": 777,
+						"npc_dota_neutral_ghost": 490,
+						"npc_dota_goodguys_melee_rax_bot": 547,
+						"npc_dota_goodguys_range_rax_bot": 567,
+						"npc_dota_neutral_harpy_storm": 587,
+						"npc_dota_neutral_harpy_scout": 892,
+						"npc_dota_goodguys_fillers": 506,
+						"npc_dota_goodguys_tower4": 1074,
+						"npc_dota_creep_badguys_melee_upgraded": 249,
+						"npc_dota_creep_badguys_ranged_upgraded": 272,
+						"npc_dota_necronomicon_warrior_3": 287,
+						"npc_dota_necronomicon_archer_3": 466,
+						"illusion_npc_dota_hero_earthshaker": 1460,
+						"npc_dota_creep_goodguys_melee_upgraded": 957,
+						"npc_dota_goodguys_fort": 802
+					},
+					"damage_taken": {
+						"npc_dota_hero_gyrocopter": 6574,
+						"undefined": 8936,
+						"npc_dota_hero_lina": 8129,
+						"npc_dota_hero_shadow_demon": 1625,
+						"npc_dota_hero_mirana": 3080,
+						"npc_dota_hero_broodmother": 633,
+						"npc_dota_hero_lion": 2763,
+						"npc_dota_hero_earthshaker": 113,
+						"npc_dota_hero_terrorblade": 770
+					},
+					"runes": {},
+					"runes_bottled": {},
+					"killed_by": {
+						"npc_dota_hero_gyrocopter": 4,
+						"npc_dota_hero_lina": 1,
+						"npc_dota_hero_mirana": 2,
+						"npc_dota_hero_lion": 1,
+						"npc_dota_hero_terrorblade": 1
+					},
+					"healing": {
+						"npc_dota_hero_broodmother": 3571
+					}
+				}]
+			},
+			"players": [{
+				"account_id": 73084405,
+				"player_slot": 0,
+				"hero_id": 72,
+				"item_0": 185,
+				"item_1": 116,
+				"item_2": 212,
+				"item_3": 50,
+				"item_4": 135,
+				"item_5": 147,
+				"kills": 6,
+				"deaths": 9,
+				"assists": 10,
+				"leaver_status": 0,
+				"gold": 784,
+				"last_hits": 307,
+				"denies": 5,
+				"gold_per_min": 416,
+				"xp_per_min": 522,
+				"gold_spent": 19970,
+				"hero_damage": 13431,
+				"tower_damage": 2432,
+				"hero_healing": 0,
+				"level": 24,
+				"ability_upgrades": [{
+					"ability": 5361,
+					"time": 157,
+					"level": 1
+				}, {
+					"ability": 5363,
+					"time": 222,
+					"level": 2
+				}, {
+					"ability": 5362,
+					"time": 256,
+					"level": 3
+				}, {
+					"ability": 5361,
+					"time": 327,
+					"level": 4
+				}, {
+					"ability": 5361,
+					"time": 395,
+					"level": 5
+				}, {
+					"ability": 5364,
+					"time": 458,
+					"level": 6
+				}, {
+					"ability": 5361,
+					"time": 485,
+					"level": 7
+				}, {
+					"ability": 5363,
+					"time": 595,
+					"level": 8
+				}, {
+					"ability": 5363,
+					"time": 757,
+					"level": 9
+				}, {
+					"ability": 5363,
+					"time": 1006,
+					"level": 10
+				}, {
+					"ability": 5364,
+					"time": 1055,
+					"level": 11
+				}, {
+					"ability": 5362,
+					"time": 1274,
+					"level": 12
+				}, {
+					"ability": 5362,
+					"time": 1326,
+					"level": 13
+				}, {
+					"ability": 5362,
+					"time": 1435,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 1610,
+					"level": 15
+				}, {
+					"ability": 5364,
+					"time": 1879,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2164,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 2379,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 2522,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 2575,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 2575,
+					"level": 21
+				}, {
+					"ability": 5002,
+					"time": 2850,
+					"level": 22
+				}, {
+					"ability": 5002,
+					"time": 3130,
+					"level": 23
+				}, {
+					"ability": 5002,
+					"time": 3531,
+					"level": 24
+				}]
+			}, {
+				"account_id": 82462275,
+				"player_slot": 1,
+				"hero_id": 26,
+				"item_0": 79,
+				"item_1": 0,
+				"item_2": 0,
+				"item_3": 214,
+				"item_4": 23,
+				"item_5": 108,
+				"kills": 3,
+				"deaths": 11,
+				"assists": 10,
+				"leaver_status": 0,
+				"gold": 1464,
+				"last_hits": 106,
+				"denies": 0,
+				"gold_per_min": 230,
+				"xp_per_min": 274,
+				"gold_spent": 10405,
+				"hero_damage": 5726,
+				"tower_damage": 523,
+				"hero_healing": 1685,
+				"level": 17,
+				"ability_upgrades": [{
+					"ability": 5044,
+					"time": 114,
+					"level": 1
+				}, {
+					"ability": 5046,
+					"time": 305,
+					"level": 2
+				}, {
+					"ability": 5045,
+					"time": 385,
+					"level": 3
+				}, {
+					"ability": 5044,
+					"time": 471,
+					"level": 4
+				}, {
+					"ability": 5044,
+					"time": 673,
+					"level": 5
+				}, {
+					"ability": 5047,
+					"time": 732,
+					"level": 6
+				}, {
+					"ability": 5044,
+					"time": 897,
+					"level": 7
+				}, {
+					"ability": 5045,
+					"time": 1094,
+					"level": 8
+				}, {
+					"ability": 5045,
+					"time": 1252,
+					"level": 9
+				}, {
+					"ability": 5045,
+					"time": 1504,
+					"level": 10
+				}, {
+					"ability": 5047,
+					"time": 1685,
+					"level": 11
+				}, {
+					"ability": 5046,
+					"time": 2484,
+					"level": 12
+				}, {
+					"ability": 5046,
+					"time": 2697,
+					"level": 13
+				}, {
+					"ability": 5046,
+					"time": 3001,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 3198,
+					"level": 15
+				}, {
+					"ability": 5047,
+					"time": 3286,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 3424,
+					"level": 17
+				}]
+			}, {
+				"account_id": 79127220,
+				"player_slot": 2,
+				"hero_id": 25,
+				"item_0": 48,
+				"item_1": 96,
+				"item_2": 100,
+				"item_3": 0,
+				"item_4": 121,
+				"item_5": 210,
+				"kills": 16,
+				"deaths": 7,
+				"assists": 10,
+				"leaver_status": 0,
+				"gold": 2210,
+				"last_hits": 364,
+				"denies": 2,
+				"gold_per_min": 549,
+				"xp_per_min": 564,
+				"gold_spent": 25035,
+				"hero_damage": 22129,
+				"tower_damage": 2641,
+				"hero_healing": 935,
+				"level": 25,
+				"ability_upgrades": [{
+					"ability": 5041,
+					"time": 161,
+					"level": 1
+				}, {
+					"ability": 5040,
+					"time": 205,
+					"level": 2
+				}, {
+					"ability": 5040,
+					"time": 255,
+					"level": 3
+				}, {
+					"ability": 5042,
+					"time": 304,
+					"level": 4
+				}, {
+					"ability": 5040,
+					"time": 361,
+					"level": 5
+				}, {
+					"ability": 5043,
+					"time": 420,
+					"level": 6
+				}, {
+					"ability": 5040,
+					"time": 523,
+					"level": 7
+				}, {
+					"ability": 5041,
+					"time": 577,
+					"level": 8
+				}, {
+					"ability": 5041,
+					"time": 707,
+					"level": 9
+				}, {
+					"ability": 5041,
+					"time": 843,
+					"level": 10
+				}, {
+					"ability": 5043,
+					"time": 859,
+					"level": 11
+				}, {
+					"ability": 5002,
+					"time": 1056,
+					"level": 12
+				}, {
+					"ability": 5042,
+					"time": 1171,
+					"level": 13
+				}, {
+					"ability": 5042,
+					"time": 1253,
+					"level": 14
+				}, {
+					"ability": 5042,
+					"time": 1478,
+					"level": 15
+				}, {
+					"ability": 5043,
+					"time": 1612,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 1683,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 1894,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 1933,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 2320,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 2366,
+					"level": 21
+				}, {
+					"ability": 5002,
+					"time": 2613,
+					"level": 22
+				}, {
+					"ability": 5002,
+					"time": 2912,
+					"level": 23
+				}, {
+					"ability": 5002,
+					"time": 3130,
+					"level": 24
+				}, {
+					"ability": 5002,
+					"time": 3176,
+					"level": 25
+				}]
+			}, {
+				"account_id": 4294967295,
+				"player_slot": 3,
+				"hero_id": 9,
+				"item_0": 50,
+				"item_1": 40,
+				"item_2": 212,
+				"item_3": 141,
+				"item_4": 166,
+				"item_5": 46,
+				"kills": 5,
+				"deaths": 5,
+				"assists": 14,
+				"leaver_status": 0,
+				"gold": 383,
+				"last_hits": 122,
+				"denies": 1,
+				"gold_per_min": 268,
+				"xp_per_min": 324,
+				"gold_spent": 11885,
+				"hero_damage": 7155,
+				"tower_damage": 747,
+				"hero_healing": 0,
+				"level": 18,
+				"ability_upgrades": [{
+					"ability": 5048,
+					"time": 162,
+					"level": 1
+				}, {
+					"ability": 5050,
+					"time": 277,
+					"level": 2
+				}, {
+					"ability": 5048,
+					"time": 548,
+					"level": 3
+				}, {
+					"ability": 5050,
+					"time": 777,
+					"level": 4
+				}, {
+					"ability": 5048,
+					"time": 867,
+					"level": 5
+				}, {
+					"ability": 5049,
+					"time": 1052,
+					"level": 6
+				}, {
+					"ability": 5048,
+					"time": 1090,
+					"level": 7
+				}, {
+					"ability": 5051,
+					"time": 1310,
+					"level": 8
+				}, {
+					"ability": 5051,
+					"time": 1559,
+					"level": 9
+				}, {
+					"ability": 5051,
+					"time": 1849,
+					"level": 10
+				}, {
+					"ability": 5049,
+					"time": 2054,
+					"level": 11
+				}, {
+					"ability": 5051,
+					"time": 2364,
+					"level": 12
+				}, {
+					"ability": 5002,
+					"time": 2374,
+					"level": 13
+				}, {
+					"ability": 5050,
+					"time": 2507,
+					"level": 14
+				}, {
+					"ability": 5050,
+					"time": 2581,
+					"level": 15
+				}, {
+					"ability": 5049,
+					"time": 3030,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 3126,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 3305,
+					"level": 18
+				}]
+			}, {
+				"account_id": 41731361,
+				"player_slot": 4,
+				"hero_id": 79,
+				"item_0": 102,
+				"item_1": 30,
+				"item_2": 60,
+				"item_3": 194,
+				"item_4": 0,
+				"item_5": 180,
+				"kills": 6,
+				"deaths": 3,
+				"assists": 19,
+				"leaver_status": 0,
+				"gold": 774,
+				"last_hits": 125,
+				"denies": 2,
+				"gold_per_min": 296,
+				"xp_per_min": 497,
+				"gold_spent": 14310,
+				"hero_damage": 8619,
+				"tower_damage": 535,
+				"hero_healing": 0,
+				"level": 23,
+				"ability_upgrades": [{
+					"ability": 5421,
+					"time": 161,
+					"level": 1
+				}, {
+					"ability": 5422,
+					"time": 272,
+					"level": 2
+				}, {
+					"ability": 5422,
+					"time": 388,
+					"level": 3
+				}, {
+					"ability": 5421,
+					"time": 470,
+					"level": 4
+				}, {
+					"ability": 5422,
+					"time": 682,
+					"level": 5
+				}, {
+					"ability": 5425,
+					"time": 777,
+					"level": 6
+				}, {
+					"ability": 5422,
+					"time": 908,
+					"level": 7
+				}, {
+					"ability": 5421,
+					"time": 928,
+					"level": 8
+				}, {
+					"ability": 5423,
+					"time": 1157,
+					"level": 9
+				}, {
+					"ability": 5423,
+					"time": 1329,
+					"level": 10
+				}, {
+					"ability": 5425,
+					"time": 1489,
+					"level": 11
+				}, {
+					"ability": 5423,
+					"time": 1680,
+					"level": 12
+				}, {
+					"ability": 5423,
+					"time": 1839,
+					"level": 13
+				}, {
+					"ability": 5421,
+					"time": 2119,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 2322,
+					"level": 15
+				}, {
+					"ability": 5425,
+					"time": 2415,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2522,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 3002,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 3232,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 3343,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 3462,
+					"level": 21
+				}, {
+					"ability": 5002,
+					"time": 3462,
+					"level": 22
+				}, {
+					"ability": 5002,
+					"time": 3462,
+					"level": 23
+				}]
+			}, {
+				"account_id": 47132611,
+				"player_slot": 128,
+				"hero_id": 7,
+				"item_0": 180,
+				"item_1": 92,
+				"item_2": 46,
+				"item_3": 1,
+				"item_4": 116,
+				"item_5": 30,
+				"kills": 5,
+				"deaths": 9,
+				"assists": 16,
+				"leaver_status": 0,
+				"gold": 3121,
+				"last_hits": 153,
+				"denies": 1,
+				"gold_per_min": 313,
+				"xp_per_min": 421,
+				"gold_spent": 11395,
+				"hero_damage": 16490,
+				"tower_damage": 126,
+				"hero_healing": 139,
+				"level": 21,
+				"ability_upgrades": [{
+					"ability": 5023,
+					"time": 128,
+					"level": 1
+				}, {
+					"ability": 5024,
+					"time": 230,
+					"level": 2
+				}, {
+					"ability": 5025,
+					"time": 334,
+					"level": 3
+				}, {
+					"ability": 5023,
+					"time": 409,
+					"level": 4
+				}, {
+					"ability": 5024,
+					"time": 536,
+					"level": 5
+				}, {
+					"ability": 5026,
+					"time": 619,
+					"level": 6
+				}, {
+					"ability": 5023,
+					"time": 836,
+					"level": 7
+				}, {
+					"ability": 5023,
+					"time": 937,
+					"level": 8
+				}, {
+					"ability": 5024,
+					"time": 1093,
+					"level": 9
+				}, {
+					"ability": 5024,
+					"time": 1283,
+					"level": 10
+				}, {
+					"ability": 5026,
+					"time": 1367,
+					"level": 11
+				}, {
+					"ability": 5025,
+					"time": 1780,
+					"level": 12
+				}, {
+					"ability": 5025,
+					"time": 1934,
+					"level": 13
+				}, {
+					"ability": 5025,
+					"time": 2233,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 2454,
+					"level": 15
+				}, {
+					"ability": 5026,
+					"time": 2573,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2574,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 2900,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 3230,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 3394,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 3541,
+					"level": 21
+				}]
+			}, {
+				"account_id": 75392401,
+				"player_slot": 129,
+				"hero_id": 56,
+				"item_0": 135,
+				"item_1": 26,
+				"item_2": 48,
+				"item_3": 41,
+				"item_4": 0,
+				"item_5": 98,
+				"kills": 12,
+				"deaths": 6,
+				"assists": 3,
+				"leaver_status": 0,
+				"gold": 1352,
+				"last_hits": 105,
+				"denies": 2,
+				"gold_per_min": 332,
+				"xp_per_min": 420,
+				"gold_spent": 16720,
+				"hero_damage": 10413,
+				"tower_damage": 1880,
+				"hero_healing": 0,
+				"level": 21,
+				"ability_upgrades": [{
+					"ability": 5260,
+					"time": 149,
+					"level": 1
+				}, {
+					"ability": 5261,
+					"time": 239,
+					"level": 2
+				}, {
+					"ability": 5260,
+					"time": 281,
+					"level": 3
+				}, {
+					"ability": 5259,
+					"time": 326,
+					"level": 4
+				}, {
+					"ability": 5260,
+					"time": 396,
+					"level": 5
+				}, {
+					"ability": 5262,
+					"time": 499,
+					"level": 6
+				}, {
+					"ability": 5260,
+					"time": 556,
+					"level": 7
+				}, {
+					"ability": 5261,
+					"time": 608,
+					"level": 8
+				}, {
+					"ability": 5261,
+					"time": 711,
+					"level": 9
+				}, {
+					"ability": 5261,
+					"time": 878,
+					"level": 10
+				}, {
+					"ability": 5262,
+					"time": 1071,
+					"level": 11
+				}, {
+					"ability": 5259,
+					"time": 1741,
+					"level": 12
+				}, {
+					"ability": 5259,
+					"time": 1891,
+					"level": 13
+				}, {
+					"ability": 5259,
+					"time": 1901,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 2198,
+					"level": 15
+				}, {
+					"ability": 5262,
+					"time": 2349,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2786,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 3074,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 3222,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 3398,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 3527,
+					"level": 21
+				}]
+			}, {
+				"account_id": 88367253,
+				"player_slot": 130,
+				"hero_id": 109,
+				"item_0": 11,
+				"item_1": 48,
+				"item_2": 160,
+				"item_3": 154,
+				"item_4": 139,
+				"item_5": 139,
+				"kills": 8,
+				"deaths": 6,
+				"assists": 1,
+				"leaver_status": 0,
+				"gold": 5173,
+				"last_hits": 482,
+				"denies": 0,
+				"gold_per_min": 627,
+				"xp_per_min": 565,
+				"gold_spent": 25995,
+				"hero_damage": 10848,
+				"tower_damage": 6962,
+				"hero_healing": 0,
+				"level": 25,
+				"ability_upgrades": [{
+					"ability": 5621,
+					"time": 125,
+					"level": 1
+				}, {
+					"ability": 5620,
+					"time": 239,
+					"level": 2
+				}, {
+					"ability": 5620,
+					"time": 358,
+					"level": 3
+				}, {
+					"ability": 5621,
+					"time": 504,
+					"level": 4
+				}, {
+					"ability": 5620,
+					"time": 556,
+					"level": 5
+				}, {
+					"ability": 5621,
+					"time": 638,
+					"level": 6
+				}, {
+					"ability": 5620,
+					"time": 729,
+					"level": 7
+				}, {
+					"ability": 5621,
+					"time": 813,
+					"level": 8
+				}, {
+					"ability": 5622,
+					"time": 986,
+					"level": 9
+				}, {
+					"ability": 5619,
+					"time": 1127,
+					"level": 10
+				}, {
+					"ability": 5622,
+					"time": 1223,
+					"level": 11
+				}, {
+					"ability": 5002,
+					"time": 1497,
+					"level": 12
+				}, {
+					"ability": 5002,
+					"time": 1553,
+					"level": 13
+				}, {
+					"ability": 5002,
+					"time": 1718,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 1864,
+					"level": 15
+				}, {
+					"ability": 5622,
+					"time": 1933,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2125,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 2267,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 2415,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 2706,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 3006,
+					"level": 21
+				}, {
+					"ability": 5002,
+					"time": 3206,
+					"level": 22
+				}, {
+					"ability": 5619,
+					"time": 3211,
+					"level": 23
+				}, {
+					"ability": 5619,
+					"time": 3385,
+					"level": 24
+				}, {
+					"ability": 5619,
+					"time": 3424,
+					"level": 25
+				}]
+			}, {
+				"account_id": 83750177,
+				"player_slot": 131,
+				"hero_id": 112,
+				"item_0": 46,
+				"item_1": 42,
+				"item_2": 180,
+				"item_3": 116,
+				"item_4": 92,
+				"item_5": 9,
+				"kills": 6,
+				"deaths": 6,
+				"assists": 6,
+				"leaver_status": 0,
+				"gold": 2243,
+				"last_hits": 59,
+				"denies": 2,
+				"gold_per_min": 265,
+				"xp_per_min": 390,
+				"gold_spent": 10855,
+				"hero_damage": 6603,
+				"tower_damage": 216,
+				"hero_healing": 1101,
+				"level": 20,
+				"ability_upgrades": [{
+					"ability": 5651,
+					"time": 128,
+					"level": 1
+				}, {
+					"ability": 5652,
+					"time": 369,
+					"level": 2
+				}, {
+					"ability": 5653,
+					"time": 376,
+					"level": 3
+				}, {
+					"ability": 5652,
+					"time": 479,
+					"level": 4
+				}, {
+					"ability": 5652,
+					"time": 600,
+					"level": 5
+				}, {
+					"ability": 5654,
+					"time": 690,
+					"level": 6
+				}, {
+					"ability": 5652,
+					"time": 897,
+					"level": 7
+				}, {
+					"ability": 5653,
+					"time": 1018,
+					"level": 8
+				}, {
+					"ability": 5651,
+					"time": 1330,
+					"level": 9
+				}, {
+					"ability": 5651,
+					"time": 1500,
+					"level": 10
+				}, {
+					"ability": 5654,
+					"time": 1547,
+					"level": 11
+				}, {
+					"ability": 5653,
+					"time": 1941,
+					"level": 12
+				}, {
+					"ability": 5651,
+					"time": 1941,
+					"level": 13
+				}, {
+					"ability": 5653,
+					"time": 2235,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 2442,
+					"level": 15
+				}, {
+					"ability": 5654,
+					"time": 2554,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 2555,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 2555,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 2672,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 3554,
+					"level": 20
+				}]
+			}, {
+				"account_id": 102344608,
+				"player_slot": 132,
+				"hero_id": 61,
+				"item_0": 0,
+				"item_1": 88,
+				"item_2": 48,
+				"item_3": 166,
+				"item_4": 154,
+				"item_5": 116,
+				"kills": 4,
+				"deaths": 9,
+				"assists": 9,
+				"leaver_status": 0,
+				"gold": 3643,
+				"last_hits": 238,
+				"denies": 1,
+				"gold_per_min": 388,
+				"xp_per_min": 564,
+				"gold_spent": 15360,
+				"hero_damage": 8566,
+				"tower_damage": 2764,
+				"hero_healing": 0,
+				"level": 25,
+				"ability_upgrades": [{
+					"ability": 5280,
+					"time": 110,
+					"level": 1
+				}, {
+					"ability": 5279,
+					"time": 241,
+					"level": 2
+				}, {
+					"ability": 5279,
+					"time": 288,
+					"level": 3
+				}, {
+					"ability": 5280,
+					"time": 338,
+					"level": 4
+				}, {
+					"ability": 5279,
+					"time": 398,
+					"level": 5
+				}, {
+					"ability": 5282,
+					"time": 515,
+					"level": 6
+				}, {
+					"ability": 5279,
+					"time": 559,
+					"level": 7
+				}, {
+					"ability": 5280,
+					"time": 631,
+					"level": 8
+				}, {
+					"ability": 5280,
+					"time": 719,
+					"level": 9
+				}, {
+					"ability": 5281,
+					"time": 735,
+					"level": 10
+				}, {
+					"ability": 5282,
+					"time": 815,
+					"level": 11
+				}, {
+					"ability": 5281,
+					"time": 1264,
+					"level": 12
+				}, {
+					"ability": 5281,
+					"time": 1444,
+					"level": 13
+				}, {
+					"ability": 5281,
+					"time": 1650,
+					"level": 14
+				}, {
+					"ability": 5002,
+					"time": 1856,
+					"level": 15
+				}, {
+					"ability": 5282,
+					"time": 1901,
+					"level": 16
+				}, {
+					"ability": 5002,
+					"time": 1964,
+					"level": 17
+				}, {
+					"ability": 5002,
+					"time": 2170,
+					"level": 18
+				}, {
+					"ability": 5002,
+					"time": 2294,
+					"level": 19
+				}, {
+					"ability": 5002,
+					"time": 2555,
+					"level": 20
+				}, {
+					"ability": 5002,
+					"time": 2828,
+					"level": 21
+				}, {
+					"ability": 5002,
+					"time": 3130,
+					"level": 22
+				}, {
+					"ability": 5002,
+					"time": 3395,
+					"level": 23
+				}, {
+					"ability": 5002,
+					"time": 3428,
+					"level": 24
+				}, {
+					"ability": 5002,
+					"time": 3560,
+					"level": 25
+				}]
+			}],
+			"positive_votes": 0,
+			"priority": "high",
+			"radiant_win": false,
+			"request": true,
+			"start_time": 1426398535,
+			"tower_status_dire": 772,
+			"tower_status_radiant": 4,
+			"url": "http://replay111.valve.net/570/1321352005_792135918.dem.bz2"
+		}
+
+		{
 			"barracks_status_dire": 0,
 			"barracks_status_radiant": 51,
 			"cluster": 124,
