@@ -120,9 +120,6 @@ function runParser(job, cb) {
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
         },
-        "times": function(e) {
-            parsed_data.times.push(e.value);
-        },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
         }
@@ -211,6 +208,8 @@ function runParser(job, cb) {
                 type: "damage_taken"
             };
             getSlotReverse(r);
+            //biggest hit
+            //sum damage taken/dealt?
         },
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {

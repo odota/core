@@ -442,114 +442,114 @@ function advQuery(select, options, cb) {
 function aggregator(matches, fields) {
     var types = {
         "start_time": function(key, m, p) {
-            agg(key, m.start_time);
+            agg(key, m.start_time, m);
         },
         "duration": function(key, m, p) {
-            agg(key, m.duration);
+            agg(key, m.duration, m);
         },
         "cluster": function(key, m, p) {
-            agg(key, m.cluster);
+            agg(key, m.cluster, m);
         },
         "first_blood_time": function(key, m, p) {
-            agg(key, m.first_blood_time);
+            agg(key, m.first_blood_time, m);
         },
         "lobby_type": function(key, m, p) {
-            agg(key, m.lobby_type);
+            agg(key, m.lobby_type, m);
         },
         "game_mode": function(key, m, p) {
-            agg(key, m.game_mode);
+            agg(key, m.game_mode, m);
         },
         "hero_id": function(key, m, p) {
-            agg(key, p.hero_id);
+            agg(key, p.hero_id, m);
         },
         "kills": function(key, m, p) {
-            agg(key, p.kills);
+            agg(key, p.kills, m);
         },
         "deaths": function(key, m, p) {
-            agg(key, p.deaths);
+            agg(key, p.deaths, m);
         },
         "assists": function(key, m, p) {
-            agg(key, p.assists);
+            agg(key, p.assists, m);
         },
         "last_hits": function(key, m, p) {
-            agg(key, p.last_hits);
+            agg(key, p.last_hits, m);
         },
         "denies": function(key, m, p) {
-            agg(key, p.denies);
+            agg(key, p.denies, m);
         },
         "gold_per_min": function(key, m, p) {
-            agg(key, p.gold_per_min);
+            agg(key, p.gold_per_min, m);
         },
         "xp_per_min": function(key, m, p) {
-            agg(key, p.xp_per_min);
+            agg(key, p.xp_per_min, m);
         },
         "hero_damage": function(key, m, p) {
-            agg(key, p.hero_damage);
+            agg(key, p.hero_damage, m);
         },
         "tower_damage": function(key, m, p) {
-            agg(key, p.tower_damage);
+            agg(key, p.tower_damage, m);
         },
         "hero_healing": function(key, m, p) {
-            agg(key, p.hero_healing);
+            agg(key, p.hero_healing, m);
         },
         "leaver_status": function(key, m, p) {
-            agg(key, p.leaver_status);
+            agg(key, p.leaver_status, m);
         },
         "isRadiant": function(key, m, p) {
-            agg(key, isRadiant(p));
+            agg(key, isRadiant(p), m);
         },
         "stuns": function(key, m, p) {
-            agg(key, p.parsedPlayer.stuns);
+            agg(key, p.parsedPlayer.stuns, m);
         },
         "lane": function(key, m, p) {
-            agg(key, p.parsedPlayer.lane);
+            agg(key, p.parsedPlayer.lane, m);
         },
         "lane_role": function(key, m, p) {
-            agg(key, p.parsedPlayer.lane_role);
+            agg(key, p.parsedPlayer.lane_role, m);
         },
         //lifetime ward positions
         "obs": function(key, m, p) {
-            agg(key, p.parsedPlayer.obs);
+            agg(key, p.parsedPlayer.obs, m);
         },
         "sen": function(key, m, p) {
-            agg(key, p.parsedPlayer.sen);
+            agg(key, p.parsedPlayer.sen, m);
         },
         //lifetime rune counts
         "runes": function(key, m, p) {
-            agg(key, p.parsedPlayer.runes);
+            agg(key, p.parsedPlayer.runes, m);
         },
         //lifetime item uses
         "item_uses": function(key, m, p) {
-            agg(key, p.parsedPlayer.item_uses);
+            agg(key, p.parsedPlayer.item_uses, m);
         },
         //track sum of purchase times and counts to get average build time
         "purchase_time": function(key, m, p) {
-            agg(key, p.parsedPlayer.purchase_time);
+            agg(key, p.parsedPlayer.purchase_time, m);
         },
         "purchase_time_count": function(key, m, p) {
-            agg(key, p.parsedPlayer.purchase_time_count);
+            agg(key, p.parsedPlayer.purchase_time_count, m);
         },
         "purchase": function(key, m, p) {
-            agg(key, p.parsedPlayer.purchase);
+            agg(key, p.parsedPlayer.purchase, m);
         },
         "kills_count": function(key, m, p) {
-            agg(key, p.parsedPlayer.kills);
+            agg(key, p.parsedPlayer.kills, m);
         },
         "gold_reasons": function(key, m, p) {
-            agg(key, p.parsedPlayer.gold_reasons);
+            agg(key, p.parsedPlayer.gold_reasons, m);
         },
         "xp_reasons": function(key, m, p) {
-            agg(key, p.parsedPlayer.xp_reasons);
+            agg(key, p.parsedPlayer.xp_reasons, m);
         },
         "ability_uses": function(key, m, p) {
-            agg(key, p.parsedPlayer.ability_uses);
+            agg(key, p.parsedPlayer.ability_uses, m);
         },
         "hero_hits": function(key, m, p) {
-            agg(key, p.parsedPlayer.hero_hits);
+            agg(key, p.parsedPlayer.hero_hits, m);
         },
         "chat_message_count": function(key, m, p) {
             if (p.parsedPlayer.chat) {
-                agg(key, p.parsedPlayer.chat.length);
+                agg(key, p.parsedPlayer.chat.length, m);
             }
         },
         "gg_count": function(key, m, p) {
@@ -557,31 +557,31 @@ function aggregator(matches, fields) {
             if (p.parsedPlayer.chat) {
                 agg(key, p.parsedPlayer.chat.filter(function(c) {
                     return c.key.indexOf("gg") === 0;
-                }).length);
+                }).length, m);
             }
         },
         "buyback_count": function(key, m, p) {
             if (p.parsedPlayer.buyback_log) {
-                agg(key, p.parsedPlayer.buyback_log.length);
+                agg(key, p.parsedPlayer.buyback_log.length, m);
             }
         },
         "courier_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.courier_kills);
+            agg(key, p.parsedPlayer.courier_kills, m);
         },
         "tower_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.tower_kills);
+            agg(key, p.parsedPlayer.tower_kills, m);
         },
         "neutral_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.neutral_kills);
+            agg(key, p.parsedPlayer.neutral_kills, m);
         },
         "observer_uses": function(key, m, p) {
             if (p.parsedPlayer.item_uses) {
-                agg(key, p.parsedPlayer.item_uses.ward_observer || 0);
+                agg(key, p.parsedPlayer.item_uses.ward_observer || 0, m);
             }
         },
         "sentry_uses": function(key, m, p) {
             if (p.parsedPlayer.item_uses) {
-                agg(key, p.parsedPlayer.item_uses.ward_sentry || 0);
+                agg(key, p.parsedPlayer.item_uses.ward_sentry || 0, m);
             }
         }
     };
@@ -592,6 +592,7 @@ function aggregator(matches, fields) {
             sum: 0,
             min: Number.MAX_VALUE,
             max: 0,
+            max_match: null,
             n: 0,
             counts: {},
         };
@@ -627,6 +628,7 @@ function aggregator(matches, fields) {
             }
             if (value > m.max) {
                 m.max = value;
+                m.max_match = match;
             }
         }
     }

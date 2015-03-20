@@ -27,7 +27,8 @@ var unparsed = require('../tasks/unparsed');
 var updatenames = require('../tasks/updatenames');
 var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
-var queueReq = require('../operations').queueReq;
+var operations = require('../operations');
+var queueReq = operations.queueReq;
 var wait = 60000;
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
@@ -167,6 +168,11 @@ before(function(done) {
                 "soloCalibrationGamesRemaining": 0,
                 "recruitmentLevel": 0
             }).get('match_id=1151783218').reply(200, {
+                match: {
+                    cluster: 1,
+                    replaySalt: 1
+                }
+            }).get('match_id=2').reply(200, {
                 match: {
                     cluster: 1,
                     replaySalt: 1
@@ -575,9 +581,16 @@ describe("web", function() {
             });
         });
     });
-    //todo add test for socket request
-    //todo add test for getreplayurl method
 });
+describe("unit test", function() {
+    it('insertmatch', function(done){
+        operations.insertMatch({match_id: 2, start_time: new Date().getTime()/1000, players:[]}, function(err, job2){
+            done(err);
+        });
+    });
+});
+        //todo add test for socket request
+
 //deprecated
 /*
 describe("GET /upload", function() {
