@@ -79,11 +79,13 @@ io.sockets.on('connection', function(socket) {
                         socket.emit('prog', prog);
                     });
                     job.on('complete', function(result) {
-                        socket.emit('log', "request complete!");
-                        if (result.error) {
+                        console.log(result);
+                        if (result && result.error) {
+                            socket.emit('log', JSON.stringify(result.error));
                             socket.emit("failed");
                         }
                         else {
+                            socket.emit('log', "request complete");
                             socket.emit('complete');
                         }
                     });
@@ -117,7 +119,9 @@ app.use(session({
         client: redis,
         ttl: 52 * 7 * 24 * 60 * 60
     }),
-    cookie: { maxAge: 52 * 7 * 24 * 60 * 60 * 1000},
+    cookie: {
+        maxAge: 52 * 7 * 24 * 60 * 60 * 1000
+    },
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false

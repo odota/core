@@ -1,23 +1,23 @@
 extend layout
 
 block content
-  form.form-inline#request
+  form#request
     .form-group
       input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
     .form-group
       #recaptcha(data-sitekey=rc_public)
+  .progress
+    .progress-bar.progress-bar-info.progress-bar-striped.active#bar
   .row
     .col-md-4
-      .progress
-        .progress-bar.progress-bar-info.progress-bar-striped.active#bar
     .col-md-4
     .col-md-4
 
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
-  //script(src="https://www.google.com/recaptcha/api.js",async,defer)
   script(src="/socket.io/socket.io.js")
   script.
+    var match_id;
     var onloadCallback = function() {
        grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
@@ -30,10 +30,11 @@ append footer_assets
     });
     socket.on('complete', function(){
     //redir to match page?
+    window.location.assign("/matches/"+match_id);
     });
     function submit(response){
       var field = document.getElementById("match_id");
-         var match_id = field.value;
+      match_id = field.value;
       field.value = "";
       grecaptcha.reset();
       socket.emit('request', {match_id:match_id,
