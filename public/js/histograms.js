@@ -5,18 +5,18 @@ module.exports = function generateHistograms(data) {
     //need a max to determine how many bins we should have
     //need a param to define the label on the x axis
     //need a param to determine whether the time should be formatted
-    $(".histogram").on("mouseover", function() {
+    $(".histogram").on("click", function() {
         var label = $(this).attr('data-histogram');
         var counts = data[label].counts;
         //figure out the max
         var max = Math.max.apply(null, Object.keys(counts).map(function(c) {
             return Number(c);
         }));
-        var bins = ~~Math.min(120, max);
+        var bins = ~~Math.min(80, max);
         var scalef = bins/max;
         createHistogram(counts, scalef, bins, label);
     });
-    $(".histogram").first().trigger("mouseover");
+    $(".histogram").first().trigger("click");
 
     function createHistogram(counts, scalef, bins, label) {
         //creates a histogram from counts by binning values
@@ -44,7 +44,12 @@ module.exports = function generateHistograms(data) {
                     label: label,
                     tick: {
                         format: function(t) {
-                            return (Number(t)/scalef).toFixed(0);
+                            t = Number(t)/scalef;
+                            var times = {"duration": 1, "first_blood_time":1};
+                            if (times[label]){
+                                return moment().startOf('day').seconds(t).format("H:mm:ss");
+                            }
+                            return t.toFixed(0);
                         }
                     }
                 },

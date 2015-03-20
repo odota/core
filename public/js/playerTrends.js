@@ -24,7 +24,7 @@ function getCharts() {
 function getWards() {
     $content.empty();
     $content.append($wards);
-    $(".activate").on('mouseover', function(){
+    $(".activate").on('click', function(){
       heatmap.setData(posData[0][$(this).attr('id')]);
       heatmap.repaint();
     })
