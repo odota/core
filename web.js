@@ -325,7 +325,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     console.log(err);
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
         return res.render(err.status === 404 ? '404' : '500', {
             error: err
         });
