@@ -95,9 +95,9 @@ block playercontent
                .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
     .col-md-6
       h3 Rating (#{player.publicmmr ? "public" : "private"})
-        h4#solo Solo: 
-        h4#party Party:
-        #ratings(style="margin-top:5em;")
+      h4#solo Solo:
+      h4#party Party:
+      #ratings(style="margin-top:5em;")
 
 append footer_assets
   script.
