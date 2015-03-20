@@ -1,11 +1,15 @@
 extend layout
     
 block content
-  .row
+  .row.match-top
     .col-md-1
       img(src='#{player.avatarmedium}').img-thumbnail
     .col-md-4
       h1(style='font-weight: 700;')= player.personaname || player.account_id
+    .col-md-1
+      if player.cheese
+        i.flaticon-1.medium-cheese(style="display:inline-block")
+        div.text-right x#{player.cheese}
     .col-md-6
       table.table.table-condensed
         thead
@@ -19,11 +23,7 @@ block content
             td #{player.win}-#{player.lose} (#{(player.win/player.games*100).toFixed(2) || 0.00}%)
             td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
             td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
-            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})   
-    .col-md-1
-      if player.cheese
-        i.flaticon-1.medium-cheese(style="display:inline-block")
-        div.text-right x#{player.cheese}
+            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs

@@ -3,8 +3,8 @@ extend player
 block playercontent
   .row
     .col-md-4
-      h3 Filter
       form.form-inline(action="" method="GET")
+        h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Hero Filter
         select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
           option(value="0") All Heroes
           each entry in constants.alpha_heroes
