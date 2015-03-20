@@ -29,15 +29,15 @@ block playercontent
             th Avg
             th Max
           - var times={"duration":1,"first_blood_time":1}
-          - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1}
+          - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1} 
           each val, key in player.aggData
             tr
               if key in times
-                td=key
+                td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                 td.format-seconds(data-format-seconds=val.sum/val.n)
                 td.format-seconds(data-format-seconds=val.max)
               else if key in display
-                td=key
+                td= key === "kda" ? KDA : key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                 td=(val.sum/val.n).toFixed(2)
                 td=val.max   
       .col-md-4.accuracy
