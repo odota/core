@@ -5,12 +5,22 @@ block content
     .form-group
       input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
     .form-group
-      button.btn.btn-success Request
-  .progress
-    .progress-bar.progress-bar-info.progress-bar-striped.active#bar
-  
+      #recaptcha(data-sitekey=rc_public)
+  .row
+    .col-md-4
+      .progress
+        .progress-bar.progress-bar-info.progress-bar-striped.active#bar
+    .col-md-4
+    .col-md-4
+
+append footer_assets
+  script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
+  //script(src="https://www.google.com/recaptcha/api.js",async,defer)
   script(src="/socket.io/socket.io.js")
   script.
+    var onloadCallback = function() {
+       grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
+    };
     var socket = io.connect();
     socket.on('log', function(data){
       document.getElementById("bar").innerHTML = data;
@@ -21,11 +31,12 @@ block content
     socket.on('complete', function(){
     //redir to match page?
     });
-    document.getElementById("request").addEventListener("submit", function(e){
-      e.preventDefault();
-      var field = document.getElementById('match_id');
-      var match_id = field.value;
+    function submit(response){
+      var field = document.getElementById("match_id");
+         var match_id = field.value;
       field.value = "";
-      socket.emit('match_id', match_id);
-      //disable/remove the form?
-    });
+      grecaptcha.reset();
+      socket.emit('request', {match_id:match_id,
+        response: response
+            });
+    }
