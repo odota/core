@@ -3,26 +3,26 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Log{
+public class EventStream{
     private Gson g;
-    private List<Entry> log;
-    public Log(){
+    private List<Entry> es;
+    public EventStream(){
         g = new Gson();
         //buffers the log in Java before emitting
         //log = new ArrayList<Entry>();
-        log = null;
+        es = null;
     }
     public void output(Entry e){
-        if (log!=null){
-            log.add(e);
+        if (es!=null){
+            es.add(e);
         }
         else{
             System.out.println(g.toJson(e));
         }
     }
     public void flush(){
-        if (log!=null){
-            System.out.println(g.toJson(log));
+        if (es!=null){
+            System.out.println(g.toJson(es));
         }
     }
 }

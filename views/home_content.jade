@@ -5,9 +5,10 @@
     h1 YASP
     p.lead YASP: Another Stats Page 
     div &nbsp;
-    a.btn.btn-default.btn-lg(href='/login')
-      img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
-      h4 to start!
+    if !user
+      a.btn.btn-default.btn-lg(href='/login')
+        img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
+        h4 to start!
 section.main
   a.arrow-wrap(href='#philosophy')
     span.arrow
@@ -316,10 +317,5 @@ section.main
         h1 The generous Dota 2 <br> community keeps us running
         br
         hr
-        h2 Found us helpful?
-        .row
-          .col-md-4.text-center.col-md-offset-4
-            p(style="margin-top:25px;")
-              span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
-              a(href="/carry", target="_blank")
-                button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Buy some cheese
+        h2(style="margin-bottom:25px;") Found us helpful?
+        include cheese_block

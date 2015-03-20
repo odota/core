@@ -2,19 +2,14 @@ extend player
 
 block playercontent
   .row
-    .col-md-5
-      h3 Filter
+    .col-md-4
       form.form-inline(action="" method="GET")
+        h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Hero Filter
         select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
           option(value="0") All Heroes
           each entry in constants.alpha_heroes
             option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
-    .col-md-7.table-responsive
-      h3 Activity
-      p
-        button.btn.btn-default#prev &laquo;
-        button.btn.btn-default#next &raquo;
-      #cal-heatmap
+      
   hr
   .row
     .col-md-4
@@ -80,31 +75,37 @@ block playercontent
             td=constants.modes[key].name
             td=val
     .col-md-4
-      h3 Mean Build Times (#{player.aggData.purchase.n} games)
+      h3 Build Times (#{player.aggData.purchase.n} games)
       table.table#builds
         thead
           tr
             th Item
+            th Avg
             th N
-            th Time
         tbody
           each val, key in player.aggData.purchase_time.counts
             - var item = constants.big_items[key]
             if item
               tr 
                 td: img.item(src=item.img, alt=key)
-                td=player.aggData.purchase.counts[key]
                 td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
+                td=player.aggData.purchase.counts[key]
+
   hr
   .row
-    .col-md-6
+    .col-md-7.table-responsive
+      h3 Activity
+      p
+        button.btn.btn-default#prev &laquo;
+        button.btn.btn-default#next &raquo;
+      #cal-heatmap
+    .col-md-5
       h3 Warding (#{player.aggData.obs.n || 0} games)
       button.btn.btn-lrg.btn-warning.activate#obs Observers 
       button.btn.btn-lrg.btn-info.activate#sen Sentries
-      #map.mapContainer
+      #map.mapContainer.mapContainer-small
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-
-    .col-md-6
+        
       h3 Histogram
       button.btn.btn-default.histogram(data-histogram="duration") Duration
       button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
@@ -193,8 +194,8 @@ append footer_assets
       
       function scaleAndExtrema(points, max, shift){
           points.forEach(function(p){
-            p.x*=(600/127);
-            p.y*=(600/127);
+            p.x*=(300/127);
+            p.y*=(300/127);
             p.value+=(shift || 0);
           })
           var vals = points.map(function(p){return p.value;});

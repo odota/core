@@ -98,6 +98,12 @@ function computeMatchData(match) {
             //mapping 0 to 0, 128 to 5, etc.
             var parseSlot = player.player_slot % (128 - 5);
             p = match.parsed_data.players[parseSlot];
+            //filter meepo/meepo kills
+            if (player.hero_id === 82) {
+                p.kills_log = p.kills_log.filter(function(k) {
+                    k.key !== "npc_dota_hero_meepo";
+                });
+            }
             p.neutral_kills = 0;
             p.tower_kills = 0;
             p.courier_kills = 0;
@@ -249,8 +255,13 @@ function renderMatch(match) {
         "bg": -1,
         "feed": -1,
         "noob": -1,
-        "commended": 1,
-        "gg":1
+        "commended": 2,
+        "ty": 1,
+        "thanks": 1,
+        "wp": 1,
+        "end": -1,
+        "garbage": -1,
+        "trash": -1
     });
     match.chat.sort(function(a, b) {
         return a.time - b.time;

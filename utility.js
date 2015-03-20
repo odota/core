@@ -202,7 +202,6 @@ function getParseSchema() {
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
-                "lane": 0,
                 "times": [],
                 "gold": [],
                 "lh": [],
@@ -219,6 +218,7 @@ function getParseSchema() {
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},
+                //"chat_hero_kill":{},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
@@ -234,7 +234,7 @@ function getParseSchema() {
                 //"modifier_applied": {},
                 //"modifier_lost": {},
                 //"ability_trigger": {}
-                "healing": {},
+                "healing": {}
             };
         })
     };
