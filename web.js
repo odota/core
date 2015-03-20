@@ -1,8 +1,8 @@
 var express = require('express');
 var config = require('./config');
-var Recaptcha = require('recaptcha').Recaptcha;
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
+var request = require('request');
 var paypal_id = config.PAYPAL_ID;
 var paypal_secret = config.PAYPAL_SECRET;
 var root_url = config.ROOT_URL;
@@ -42,29 +42,55 @@ setInterval(function() {
 */
 var queueReq = require('./operations').queueReq;
 io.sockets.on('connection', function(socket) {
-    socket.on('match_id', function(match_id) {
-        //todo implement rate limit
-        match_id = Number(match_id);
-        socket.emit('prog', 100);
-        socket.emit('log', "received: " + match_id);
-        queueReq("api_details", {
-            match_id: match_id,
-            request: true,
-            priority: "high"
-        }, function(err, job) {
-            if (err) {
-                return socket.emit('log', err);
+    socket.on('request', function(data) {
+        console.log(data);
+        request.post("https://www.google.com/recaptcha/api/siteverify", {
+            form: {
+                secret: rc_secret,
+                response: data.response
             }
-            socket.emit('log', "api: queued " + match_id);
-            job.on('progress', function(prog) {
-                socket.emit('log', prog + "%");
-                //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
-                socket.emit('prog', prog);
-            });
-            job.on('complete', function(result) {
-                socket.emit('log', "request complete!");
-                socket.emit('complete');
-            });
+        }, function(err, resp, body) {
+            try {
+                body = JSON.parse(body);
+            }
+            catch (err) {
+                return socket.emit("log", err);
+            }
+            if (!body.success) {
+                socket.emit("log", "failed recaptcha");
+            }
+            else {
+                var match_id = data.match_id;
+                match_id = Number(match_id);
+                socket.emit('prog', 100);
+                socket.emit('log', "received: " + match_id);
+                queueReq("api_details", {
+                    match_id: match_id,
+                    request: true,
+                    priority: "high"
+                }, function(err, job) {
+                    if (err) {
+                        return socket.emit('log', err);
+                    }
+                    socket.emit('log', "api: queued " + match_id);
+                    job.on('progress', function(prog) {
+                        socket.emit('log', prog + "%");
+                        //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                        socket.emit('prog', prog);
+                    });
+                    job.on('complete', function(result) {
+                        console.log(result);
+                        if (result && result.error) {
+                            socket.emit('log', JSON.stringify(result.error));
+                            socket.emit("failed");
+                        }
+                        else {
+                            socket.emit('log', "request complete");
+                            socket.emit('complete');
+                        }
+                    });
+                });
+            }
         });
     });
 });
@@ -93,7 +119,9 @@ app.use(session({
         client: redis,
         ttl: 52 * 7 * 24 * 60 * 60
     }),
-    cookie: { maxAge: 52 * 7 * 24 * 60 * 60 * 1000},
+    cookie: {
+        maxAge: 52 * 7 * 24 * 60 * 60 * 1000
+    },
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
@@ -131,19 +159,24 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
+app.route('/request').get(function(req, res) {
+    res.render('request', {
+        rc_public: rc_public
+    });
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
     queries.prepareMatch(1281139233, function(err, match) {
+        if (err) {
+            return next(err);
+        }
         res.render('home', {
             match: match,
             home: true
         });
     });
-});
-app.route('/request').get(function(req,res){
-    res.render('request');
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -185,20 +218,6 @@ app.route('/logout').get(function(req, res) {
 });
 /*
 app.use('/upload', require("./routes/upload"));
-app.route('/verify_recaptcha').post(function(req, res) {
-    var data = {
-        remoteip: req.connection.remoteAddress,
-        challenge: req.body.recaptcha_challenge_field,
-        response: req.body.recaptcha_response_field
-    };
-    var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-    recaptcha.verify(function(success) {
-        req.session.captcha_verified = success;
-        res.json({
-            verified: success
-        });
-    });
-});
 */
 app.route('/status').get(function(req, res, next) {
     status(function(err, result) {
@@ -350,5 +369,4 @@ function clearPaymentSessions(req) {
         req.session[s] = null;
     });
 }
-
 module.exports = app;

@@ -59,7 +59,6 @@
     "paypal-rest-sdk": "~1.5",
     "poet": "~2.0.0",
     "qtip2": "~2.2.0",
-    "recaptcha": "1.2.0",
     "redis": "0.12.1",
     "request": "~2.53.0",
     "request-progress": "^0.3.1",

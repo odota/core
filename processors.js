@@ -383,8 +383,9 @@ function processApi(job, cb) {
     job.log("api: starting");
     getData(job.data.url, function(err, data) {
         if (err) {
+            //couldn't get data from api
             job.log(JSON.stringify(err));
-            return cb(null);
+            return cb(null, {error: err});
         }
         else if (data.response) {
             logger.info("summaries response");
@@ -401,11 +402,12 @@ function processApi(job, cb) {
             }
             insertMatch(match, function(err, job2) {
                 if (err || !match.request) {
-                    return cb(err, job2);
+                    //error occured, or don't wait for parse
+                    return cb(err, {error: err});
                 }
                 job.log("api: complete");
                 if (!job2) {
-                    //request, but didn't queue for parse, probably expired
+                    //got api data, but didn't queue for parse, probably expired
                     job.log("api: match expired");
                     job.progress(100, 100);
                     cb(err);
@@ -421,7 +423,7 @@ function processApi(job, cb) {
                     job2.on('complete', function() {
                         job.log("parse: complete");
                         job.progress(100, 100);
-                        cb(err, job2);
+                        cb(err);
                     });
                 }
             });
