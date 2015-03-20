@@ -137,7 +137,8 @@ app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
     queries.prepareMatch(1281139233, function(err, match) {
         res.render('home', {
-            match: match
+            match: match,
+            home: true
         });
     });
 });
