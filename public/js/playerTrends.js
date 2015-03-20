@@ -6,22 +6,10 @@ var $records = $(".records"),
 $("#the_stats").empty();
 $content.append($records);
 
-function makeHeroesDT() {
+function makeDT() {
     if (! $.fn.dataTable.isDataTable( '#heroes' )) {
-        $('#heroes').dataTable({
-            "paging": true,
-            "order": [
-                [2, "desc"]
-            ],
-            "columnDefs": [{
-                "targets": [0],
-                "orderData": [1]
-            }, {
-                "targets": [1],
-                visible: false
-            }]
-        });
-    } 
+        playerTables();
+    }
 }
 
 $("#charts").click(function() {
@@ -48,6 +36,6 @@ $("#records").click(function(){
 $("#matchups").click(function(){
   $content.empty();
   $content.append($matchups);
-  makeHeroesDT();
+  makeDT();
   tooltips();
 })

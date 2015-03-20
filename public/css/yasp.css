@@ -185,3 +185,18 @@ td>img.user {
 {
     margin-bottom:0px;
 }
+
+.btn-dark {
+  color: #fff;
+  background-color: #848484;
+  border-color: #848484;
+}
+
+.wards button {
+    display: block;
+    margin: 10em auto;
+}
+
+.charts button {
+    margin-right: .5em;
+}
