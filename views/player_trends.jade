@@ -63,9 +63,11 @@ block playercontent
                 each val, key in player.aggData.ability_uses.counts
                   tr
                     - var ability = constants.abilities[key]
-                    if ability
-                      td
+                    td
+                      if ability
                         img.ability(src=ability.img, alt=key)
+                      else
+                        =key
                     td=val
                     td=player.aggData.hero_hits.counts[key]
                     td= (player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
