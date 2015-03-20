@@ -12,10 +12,10 @@ block playercontent
       
   hr
   .row
-    button.btn.button-warning#records Records
-    button.btn.button-warning#matchups Matchups
-    button.btn.button-warning#wards Wards
-    
+    button.btn.btn-warning#records Records
+    button.btn.btn-warning#matchups Matchups
+    button.btn.btn-warning#wards Wards
+    button.btn.btn-warning#histogram Histogram
   hr 
   .row
     .col-md-12#content
@@ -184,14 +184,20 @@ block playercontent
               
 append footer_assets
   script.
-    var aggData = !{JSON.stringify(player.aggData)}
+    var aggData = !{JSON.stringify(player.aggData)};
     generateHistograms(aggData);
-    var posData = !{JSON.stringify(player.posData)}
+  script.
+    var posData = !{JSON.stringify(player.posData)};
     posData.forEach(function(d){
       d.obs = scaleAndExtrema(d.obs);
       d.sen = scaleAndExtrema(d.sen);
     })
-    
+    var heatmap = h337.create({
+      container: document.getElementById('map'),
+      radius: 15
+    });
+    console.log("test")
+
     function scaleAndExtrema(points, max, shift){
         points.forEach(function(p){
           p.x*=(300/127);

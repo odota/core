@@ -1,0 +1,17 @@
+.row
+  .col-md-4.text-center
+    p Buy Cheese. Help Pay for Our Servers.
+    p Reaching the goal each day keeps YASP running.
+  .col-md-4.text-center
+    .meter_wrapper
+      h3(style="font-weight:700; margin-top: 0;") Daily Cheese Goal
+      .meter
+        span(style="width: #{cheese_goal}%;")
+      if cheese_goal >= 50 && cheese_goal < 100
+        small Getting there...
+      else if cheese_goal === 100
+        small Woo!!! We did it! Thanks guys!
+  .col-md-4.text-center
+    span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+    a(href="/carry", target="_blank")
+      button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
