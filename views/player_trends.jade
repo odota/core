@@ -15,7 +15,7 @@ block playercontent
     button.btn.btn-warning#records Records
     button.btn.btn-warning#matchups Matchups
     button.btn.btn-warning#wards Wards
-    button.btn.btn-warning#histogram Histogram
+    button.btn.btn-warning#charts Charts
   hr 
   .row
     .col-md-12#content
@@ -100,31 +100,32 @@ block playercontent
                   td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
                   td=player.aggData.purchase.counts[key]
     .row
-      .col-md-7.table-responsive
-        h3 Activity
-        p
-          button.btn.btn-default#prev &laquo;
-          button.btn.btn-default#next &raquo;
-        #cal-heatmap
+      .charts
+        .col-md-6.table-responsive
+          h3 Activity
+          p
+            button.btn.btn-default#prev &laquo;
+            button.btn.btn-default#next &raquo;
+          #cal-heatmap
+        .col-md-6
+          h3 Histogram
+          button.btn.btn-default.histogram(data-histogram="duration") Duration
+          button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
+          button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
+          button.btn.btn-default.histogram(data-histogram="hero_damage") HD
+          button.btn.btn-default.histogram(data-histogram="tower_damage") TD
+          button.btn.btn-default.histogram(data-histogram="hero_healing") HH
+          button.btn.btn-default.histogram(data-histogram="kills") K
+          button.btn.btn-default.histogram(data-histogram="deaths") D
+          button.btn.btn-default.histogram(data-histogram="assists") A
+          #chart-histogram
+    .row
       .col-md-5.wards
         h3 Warding (#{player.aggData.obs.n || 0} games)
         button.btn.btn-lrg.btn-warning.activate#obs Observers 
         button.btn.btn-lrg.btn-info.activate#sen Sentries
         #map.mapContainer.mapContainer-small
           img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    .row
-      .col-md-12.histogram
-        h3 Histogram
-        button.btn.btn-default.histogram(data-histogram="duration") Duration
-        button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
-        button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
-        button.btn.btn-default.histogram(data-histogram="hero_damage") HD
-        button.btn.btn-default.histogram(data-histogram="tower_damage") TD
-        button.btn.btn-default.histogram(data-histogram="hero_healing") HH
-        button.btn.btn-default.histogram(data-histogram="kills") K
-        button.btn.btn-default.histogram(data-histogram="deaths") D
-        button.btn.btn-default.histogram(data-histogram="assists") A
-        #chart-histogram
     .row
       .col-md-12
         h3 Teammates
@@ -185,7 +186,6 @@ block playercontent
 append footer_assets
   script.
     var aggData = !{JSON.stringify(player.aggData)};
-    generateHistograms(aggData);
   script.
     var posData = !{JSON.stringify(player.posData)};
     posData.forEach(function(d){
