@@ -181,11 +181,18 @@ td>img.user {
     text-shadow: 0px 0px 2px #000;
 }
 
-.progress
-{
-    margin-bottom:0px;
+.progress {
+    margin: 0 auto;
 }
 
+#messages {
+    margin: 3em auto 20em;
+}
+
+#loading {
+    height: 8em;
+    margin: 0 auto;
+}
 .btn-dark {
   color: #fff;
   background-color: #848484;
