@@ -36,13 +36,6 @@ function prepareMatch(match_id, cb) {
                             return cb(err);
                         }
                         computeMatchData(match);
-                        var schema = utility.getParseSchema();
-                        //make sure parsed_data has all fields
-                        match.parsed_data = match.parsed_data || schema;
-                        //make sure each player's parsedplayer has all fields
-                        match.players.forEach(function(p, i) {
-                            mergeObjects(p.parsedPlayer, schema.players[i]);
-                        });
                         renderMatch(match);
                         //Add to cache if status is parsed
                         if (match.parse_status === 2 && config.NODE_ENV !== "development") {
@@ -183,6 +176,13 @@ function computeMatchData(match) {
 }
 
 function renderMatch(match) {
+    var schema = utility.getParseSchema();
+    //make sure parsed_data has all fields
+    match.parsed_data = match.parsed_data || schema;
+    //make sure each player's parsedplayer has all fields
+    match.players.forEach(function(p, i) {
+        mergeObjects(p.parsedPlayer, schema.players[i]);
+    });
     //build the chat
     match.chat = [];
     match.chat_words = [];
@@ -513,6 +513,16 @@ function aggregator(matches, fields) {
         "hero_hits": function(key, m, p) {
             agg(key, p.parsedPlayer.hero_hits, m);
         },
+        "courier_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.courier_kills, m);
+        },
+        "tower_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.tower_kills, m);
+        },
+        "neutral_kills": function(key, m, p) {
+            agg(key, p.parsedPlayer.neutral_kills, m);
+        },
+        //todo compute these values in computematchdata
         "chat_message_count": function(key, m, p) {
             if (p.parsedPlayer.chat) {
                 agg(key, p.parsedPlayer.chat.length, m);
@@ -530,15 +540,6 @@ function aggregator(matches, fields) {
             if (p.parsedPlayer.buyback_log) {
                 agg(key, p.parsedPlayer.buyback_log.length, m);
             }
-        },
-        "courier_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.courier_kills, m);
-        },
-        "tower_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.tower_kills, m);
-        },
-        "neutral_kills": function(key, m, p) {
-            agg(key, p.parsedPlayer.neutral_kills, m);
         },
         "observer_uses": function(key, m, p) {
             if (p.parsedPlayer.item_uses) {

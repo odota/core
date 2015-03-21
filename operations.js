@@ -55,10 +55,6 @@ function insertMatch(match, cb) {
             return cb(err);
         }
         else {
-            //queue for parse if valid
-            if (match.request){
-                match.attempts = 1;
-            }
             queueReq("parse", match, function(err, job) {
                 cb(err, job);
             });

@@ -393,7 +393,7 @@ function processApi(job, cb) {
     job.log("api: starting");
     getData(job.data.url, function(err, data) {
         if (err) {
-            //couldn't get data from api
+            //couldn't get data from api, non-retryable
             job.log(JSON.stringify(err));
             return cb(null, {
                 error: err
@@ -412,9 +412,13 @@ function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
+            if (match.request) {
+                //only attempt parse once if request
+                match.attempts = 1;
+            }
             insertMatch(match, function(err, job2) {
                 if (err || !match.request) {
-                    //error occured, or don't wait for parse
+                    //error occured, or don't wait for parse (not a request)
                     return cb(err, {
                         error: err
                     });
@@ -456,7 +460,6 @@ function processMmr(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             logger.info(err);
-            //retry with backoff
             return cb(err, err);
         }
         logger.info("mmr response");
