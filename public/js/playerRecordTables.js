@@ -2,7 +2,7 @@ var $ = jQuery = require('jquery');
 var utility = require('./utility');
 var formatSeconds = utility.formatSeconds;
 module.exports = function playerTables() {
-    $('#accuracy').dataTable({
+    var accuracy = $('#accuracy').dataTable({
         "searching": true,
         "paging": true,
         "order": [
@@ -16,7 +16,7 @@ module.exports = function playerTables() {
             visible: false
             }]
     });
-    $('#builds').dataTable({
+    var builds = $('#builds').dataTable({
         //"searching": false,
         "paging": true,
         "order": [
@@ -38,4 +38,6 @@ module.exports = function playerTables() {
             visible: false
             }]
     });
+    
+    return [accuracy, builds];
 };

@@ -5,15 +5,17 @@ var $records = $(".records"),
     $content = $("#content");
 $("#the_stats").empty();
 
+var recordTables;
+var matchupTables;
 function makeMatchupDT() {
     if (!$.fn.dataTable.isDataTable('#heroes')) {
-        playerMatchupTables();
+        matchupTables = playerMatchupTables();
     }
 }
 
 function makeRecordsDT() {
     if (!$.fn.dataTable.isDataTable('#builds')) {
-        playerRecordTables();
+        recordTables = playerRecordTables();
     }
 }
 
@@ -38,12 +40,22 @@ function getWards() {
 function getMatchups() {
     $content.empty();
     $content.append($matchups);
+    if (matchupTables) { //Destroy and remake otherwise the events are bound...
+        matchupTables.forEach(function(table){
+            table.fnDestroy();
+        })
+    }
     makeMatchupDT();
 }
 
 function getRecords() {
     $content.empty();
     $content.append($records);
+    if (recordTables) {
+        recordTables.forEach(function(table){
+            table.fnDestroy();
+        })
+    }
     makeRecordsDT();
 }
 
@@ -69,11 +81,11 @@ function showSection() {
     }
 }
 showSection();
-window.onhashchange = function() {
-    showSection();
-    tooltips();
-    formatHtml();
-}
+// window.onhashchange = function() {
+//     showSection();
+//     tooltips();
+//     formatHtml();
+// }
 $("#charts").click(function() {
     getCharts();
 });

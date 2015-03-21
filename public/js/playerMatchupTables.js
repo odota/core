@@ -1,13 +1,13 @@
 var $ = jQuery = require('jquery');
 module.exports = function playerTables() {
-    $('#teammates').dataTable({
+    var teammates = $('#teammates').dataTable({
         //"searching": false,
         "paging": true,
         "order": [
             [1, "desc"]
         ]
     });
-    $('#heroes').dataTable({
+    var heroes = $('#heroes').dataTable({
         //"searching": false,
         "paging": true,
         "order": [
@@ -21,4 +21,6 @@ module.exports = function playerTables() {
             visible: false
         }]
     });
+    
+    return [teammates, heroes];
 };
