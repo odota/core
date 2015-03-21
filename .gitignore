@@ -13,3 +13,4 @@ coverage
 constants*.json
 parser/target
 /bin/
+Thumbs.db
