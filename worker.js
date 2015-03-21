@@ -49,7 +49,6 @@ d.run(function() {
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
-        jobs.process('request_parse', processors.processParse);
         setInterval(fullhistory, 17 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});

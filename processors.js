@@ -16,11 +16,11 @@ var progress = require('request-progress');
 var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
-    console.time("parse");
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
     runParser(job, function(err, parsed_data) {
         var match_id = job.data.payload.match_id || parsed_data.match_id;
+        console.time("parse " + match_id);
         job.data.payload.match_id = match_id;
         job.data.payload.parsed_data = parsed_data;
         if (err && noRetry) {
@@ -32,7 +32,6 @@ function processParse(job, cb) {
             return cb(err);
         }
         else {
-            console.timeEnd("parse");
             job.data.payload.parse_status = 2;
         }
         job.update();
@@ -41,6 +40,7 @@ function processParse(job, cb) {
         }, {
             $set: job.data.payload,
         }, function(err) {
+            console.timeEnd("parse " + match_id);
             return cb(err, job.data.payload);
         });
     });
@@ -277,7 +277,7 @@ function runParser(job, cb) {
     };
 
     function postProcess() {
-        console.time("postprocess");
+        //console.time("postprocess");
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
@@ -290,7 +290,7 @@ function runParser(job, cb) {
                 console.log(e);
             }
         }
-        console.timeEnd("postprocess");
+        //console.timeEnd("postprocess");
         //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
