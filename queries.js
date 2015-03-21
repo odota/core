@@ -834,29 +834,7 @@ function mergeMatchData(match) {
     //merge into player's primary unit
     //if not hero attempt to associate with a hero
     for (var key in heroes) {
-        var primary = key;
-        if (constants.hero_names[key]) {
-            //is a hero
-            //merging multiple heroes together, only occurs in ARDM
-            var hero_id = constants.hero_names[key].id;
-            var slot = match.parsed_data.hero_to_slot[hero_id];
-            if (match.players[slot]) {
-                var primary_id = match.players[slot].hero_id;
-                primary = constants.heroes[primary_id].name;
-                //build hero_ids for each player
-                if (!match.players[slot].hero_ids) {
-                    match.players[slot].hero_ids = [];
-                }
-                match.players[slot].hero_ids.push(hero_id);
-            }
-            else {
-                //console.log("couldn't find slot for hero id %s", hero_id);
-            }
-        }
-        else {
-            //is not a hero
-            primary = getAssociatedHero(key, heroes);
-        }
+        var primary = getAssociatedHero(key, heroes);
         if (key !== primary) {
             //merge the objects into primary, but not with itself
             mergeObjects(heroes[primary], heroes[key]);
