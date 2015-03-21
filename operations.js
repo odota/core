@@ -38,19 +38,25 @@ function insertMatch(match, cb) {
             }, cb);
             },
             function(cb) {
-            //get replay url from retriever
-            getReplayUrl(match, cb);
-            },
-            function(cb) {
-            //update match in db
-            db.matches.update({
-                match_id: match.match_id
-            }, {
-                $set: match
-            }, {
-                upsert: true
-            }, cb);
-        }], function(err) {
+            //get replay url from retriever, if queued for parse
+            if (match.parse_status === 0) {
+                getReplayUrl(match, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    db.matches.update({
+                        match_id: match.match_id
+                    }, {
+                        $set: match
+                    }, {
+                        upsert: true
+                    }, cb);
+                });
+            }
+            else {
+                cb();
+            }
+            }], function(err) {
         return cb(err);
     });
 }
