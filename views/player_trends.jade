@@ -1,0 +1,253 @@
+extend player
+
+block playercontent
+  .row
+    .col-md-5
+      form.form-inline(action="" method="GET")
+        h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Hero Filter
+        select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
+          option(value="0") All Heroes
+          each entry in constants.alpha_heroes
+            option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
+    .col-md-7  
+      h3
+        .col-md-3.text-center
+          a(href="#records")
+            button.btn.btn-dark#records Records
+        .col-md-3.text-center
+          a(href="#matchups")
+            button.btn.btn-dark#matchups Matchups
+        .col-md-3.text-center
+          a(href="#wards")
+            button.btn.btn-dark#wards Wards
+        .col-md-3.text-center
+          a(href="#charts")
+            button.btn.btn-dark#charts Charts
+  hr 
+  .row
+    .col-md-12#content
+  #the_stats
+    .records
+      .row
+        .col-md-6.text-center
+            h3 Overall KDA: #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.games)).toFixed(2)}
+        .col-md-6.text-center
+            h3 Abandon Rate: #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.games)*100 || 0).toFixed(2)}%
+      hr
+      .row
+        .col-md-4
+          h3 Records
+          table.table
+            tr
+              th Stat
+              th Avg
+              th Record
+              th Set
+            - var times={"duration":1,"first_blood_time":1}
+            - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1} 
+            each val, key in player.aggData
+              tr
+                if key in times
+                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+                  td.format-seconds(data-format-seconds=val.sum/val.n)
+                  td.format-seconds(data-format-seconds=val.max)
+                else if key in display
+                  td= key === "kda" ? KDA : key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+                  td=(val.sum/val.n).toFixed(2)
+                  td=(val.max).toFixed(0)
+                if key in times || key in display
+                  td
+                    a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
+        .col-md-8
+          .row
+            .col-md-12
+              h3 Skill Accuracy
+              table.table#accuracy
+                thead
+                  tr
+                    td Ability
+                    td Ability Name
+                    td Casts
+                    td Hits
+                    td Hit%
+                tbody
+                  each val, key in player.aggData.ability_uses.counts
+                    if player.aggData.hero_hits.counts[key]
+                      tr
+                        - var ability = constants.abilities[key]
+                        if ability
+                          td
+                            img.ability(src=ability.img, alt=key)
+                          td= ability.dname
+                        else
+                          td=key
+                          td=key
+                        td=val
+                        td=player.aggData.hero_hits.counts[key]
+                        td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
+          .row
+            .col-md-12
+              h3 Build Times (#{player.aggData.purchase.n} games)
+              table.table#builds
+                thead
+                  tr
+                    th Item
+                    th Item Name
+                    th Avg
+                    th #
+                tbody
+                  each val, key in player.aggData.purchase_time.counts
+                    - var item = constants.big_items[key]
+                    if item
+                      tr 
+                        td: img.item(src=item.img, alt=key)
+                        td= item.dname
+                        td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
+                        td=player.aggData.purchase.counts[key]
+      hr
+      .row
+        .col-md-4
+          h3 Laning
+          table.table
+            each val, key in player.aggData.lane_role.counts
+              tr
+                td=key
+                td=val
+        .col-md-4
+          h3 Leaver Status
+          table.table
+            each val, key in player.aggData.leaver_status.counts
+              tr
+                td=constants.leaver_status[key]
+                td=val
+        .col-md-4
+          h3 Modes
+          table.table
+            each val, key in player.aggData.game_mode.counts
+              tr
+                td=constants.modes[key].name
+                td=val
+    .row
+      .charts
+        .row
+          .col-md-12.table-responsive
+            h3 Histogram
+            button.btn.btn-default.histogram(data-histogram="duration") Duration
+            button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
+            button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
+            button.btn.btn-default.histogram(data-histogram="hero_damage") HD
+            button.btn.btn-default.histogram(data-histogram="tower_damage") TD
+            button.btn.btn-default.histogram(data-histogram="hero_healing") HH
+            button.btn.btn-default.histogram(data-histogram="kills") K
+            button.btn.btn-default.histogram(data-histogram="deaths") D
+            button.btn.btn-default.histogram(data-histogram="assists") A
+            #chart-histogram
+        .row
+          .col-md-12.table-responsive
+            h3 Activity
+            p
+              button.btn.btn-default#prev &laquo;
+              button.btn.btn-default#next &raquo;
+            #cal-heatmap
+    .row
+      .wards
+        h3 Warding (#{player.aggData.obs.n || 0} games)
+        .row
+          .col-md-4.text-center
+            button.btn.btn-lg.btn-warning.activate#obs Observers 
+            button.btn.btn-lg.btn-info.activate#sen Sentries
+          .col-md-8.table-responsive
+            #map.mapContainer(style="margin: 0 auto;")
+              img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+    .matchups
+      .row
+        .col-md-12
+          h3 Teammates
+          table.table#teammates
+            thead
+              tr
+                th Name
+                th Games
+                th Win%       
+            each teammate in player.teammates
+              if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id)
+                tr
+                  td
+                    img.user(src=teammate.avatar)
+                    a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+                  td= teammate.games
+                  td
+                   - var pct = ~~(100*teammate.win/teammate.games)
+                   .progress
+      
+                     .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+      .row
+        .col-md-12
+          h3 Matchups
+          table.table#heroes
+            thead
+              tr
+                th Hero
+                th Hero Name
+                th As
+                th Win% As
+                th With
+                th Win% With
+                th Against
+                th Win% Against
+            each hero in constants.heroes
+              tr
+                td.hero
+                  img(src=hero.img, title=hero.localized_name)
+                td=hero.localized_name
+                - var h = player.heroes[hero.id]
+                td #{h ? h.games : 0}
+                td
+                 - var pct = h ? ~~(100*h.win/h.games) : 0
+                 .progress
+                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                td #{h ? h.with_games : 0}
+                td
+                 - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
+                 .progress
+                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                td #{h ? h.against_games : 0}
+                td
+                 - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
+                 .progress
+                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                
+append footer_assets
+  script.
+    var aggData = !{JSON.stringify(player.aggData)};
+  script.
+    var posData = !{JSON.stringify(player.posData)};
+    posData.forEach(function(d){
+      d.obs = scaleAndExtrema(d.obs);
+      d.sen = scaleAndExtrema(d.sen);
+    })
+    var heatmap = h337.create({
+      container: document.getElementById('map'),
+      radius: 30
+    });
+    console.log("test")
+
+    function scaleAndExtrema(points, max, shift){
+        points.forEach(function(p){
+          p.x*=(600/127);
+          p.y*=(600/127);
+          p.value+=(shift || 0);
+        })
+        var vals = points.map(function(p){return p.value;});
+        var localMax = Math.max.apply(null, vals);
+        return {
+        min: 0,
+        max: max || localMax,
+        data: points,
+        };
+    }
+
+  script
+    include ../public/js/playerTrends.js
+    
+

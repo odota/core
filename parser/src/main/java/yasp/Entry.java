@@ -1,19 +1,30 @@
 package yasp;
 
 public class Entry {
-    public String prefix;
-    public String text;
-    public int time;
-    public transient String type;
-    public transient String unit;
+    public Integer time;
+    public String type;
+    public String unit;
     public String key;
-    public transient int value = 1;
+    public Integer value;
     public Integer slot;
-    public transient boolean herokills;
+    public String subtype;
+    public String attacker;
+    public String target;
+    public String inflictor;
+    public Integer gold_reason;
+    public Integer xp_reason;
+    public Boolean target_hero;
+    public Boolean attacker_hero;
+    public Boolean target_illusion;
+    public Boolean attacker_illusion;
+    public Integer gold;
+    public Integer lh;
+    public Integer xp;
+    public Integer x;
+    public Integer y;
+    public Entry(){
+    }
     public Entry(Integer time){
         this.time = time;
-    }
-    public void adjust(int gameZero){
-        time -=gameZero;
     }
 }

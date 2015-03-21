@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-- '0.10'
+- '0.12'
 notifications:
   email:
   - howardc93@gmail.com
@@ -8,5 +8,3 @@ notifications:
 services:
 - mongodb
 - redis-server
-env:
-- NODE_ENV=test

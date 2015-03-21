@@ -29,17 +29,16 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-  if match.parsed_data && (match.parsed_data.version < 4 || !match.parsed_data.version)
+  if match.parsed_data.version < constants.parser_version
     .row
       .col-md-12
-        .alert.alert-info This match has outdated parse data.  Some fields may not be available.
+        .alert.alert-info This match has outdated parse data or is not yet parsed.  Some fields may not be available.
   .row
       .col-md-10
-        if match.parsed_data
-          ul.nav.nav-tabs
-            each val, key in tabs
-              li(class= (route == key ? 'active' : ''))
-                  a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+        ul.nav.nav-tabs
+          each val, key in tabs
+            li(class= (route == key ? 'active' : ''))
+                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
         .addthis_sharing_toolbox.pull-right
   block match_content

@@ -1,4 +1,4 @@
-web: node web.js
-worker: node worker.js
-parser: node parser.js
-retriever: node retriever.js
+web: nodemon web.js
+retriever: nodemon retriever.js
+parser: nodemon parser.js
+worker: nodemon worker.js

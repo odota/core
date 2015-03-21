@@ -1,16 +1,29 @@
 extend layout
     
 block content
-  .row
-    if player.avatarmedium
-      .col-xs-3.col-sm-2.col-md-1
-        img(src='#{player.avatarmedium}').img-thumbnail
-    .col-md-5
-      h1(style='font-weight: 700;')=player.personaname || player.account_id
-    if player.cheese
-      .col-md-2.col-md-offset-4
+  .row.match-top
+    .col-md-1
+      img(src='#{player.avatarmedium}').img-thumbnail
+    .col-md-4
+      h1(style='font-weight: 700;')= player.personaname || player.account_id
+    .col-md-1
+      if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")
-        p(style="display:inline;") x#{player.cheese}
+        div.text-right x#{player.cheese}
+    .col-md-6
+      table.table.table-condensed
+        thead
+          tr
+            th Record
+            th Full History
+            th Name Update
+            th Last Visit
+        tbody
+          tr
+            td #{player.win}-#{player.lose} (#{(player.win/player.games*100).toFixed(2) || 0.00}%)
+            td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
+            td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
+            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs
@@ -24,6 +37,3 @@ block content
       include ads/leaderboard_3
 append footer_assets
   include assets/datatables
-  script.
-    var account_id = #{player.account_id};
-    playerTables();

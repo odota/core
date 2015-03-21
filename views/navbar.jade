@@ -1,0 +1,30 @@
+.navbar.navbar-fixed-top.opaque(data-spy='affix', data-offset-top='1000')
+  .container
+    .navbar-header
+      a.navbar-brand(href='/')
+        strong.theme-blue YASP  
+        a.navbar-toggle(data-toggle='collapse', data-target='.navbar-collapse')
+          span.icon-bar        
+          span.icon-bar        
+          span.icon-bar 
+    #navbar.navbar-collapse.collapse
+      ul.nav.navbar-nav
+        li
+          a(href='/matches') Matches
+        li
+          a(href='/status') Status
+        li
+          a(href='/about') FAQ 
+        li
+          a(href='/page/1') Blog      
+        li
+          a(href='/carry') Help Carry!
+      ul.nav.navbar-nav.navbar-right
+        if user
+          li
+            a(href="/players/"+user.account_id)=user.personaname
+          li
+            a(href="/logout") Logout
+        else
+          li
+            a(href="/login") Login

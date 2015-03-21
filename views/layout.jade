@@ -11,3 +11,14 @@ block banners
    .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
   if !error
    include ads/leaderboard
+
+block sticky_content
+  body(style="margin-top:70px;")
+    include navbar
+    .sticky_footer_row
+    .sticky_footer_row.expand
+      .container
+        block banners
+        block content
+    .sticky_footer_row
+      include footer

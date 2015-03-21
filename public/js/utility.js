@@ -2,6 +2,7 @@ var numeral = require('numeral');
 
 function format(input) {
     input = Number(input);
+    //console.log(input, isNaN(input));
     if (input === 0 || isNaN(input)) {
         return "-";
     }
@@ -17,7 +18,7 @@ function pad(n, width, z) {
 function formatSeconds(input) {
     var absTime = Math.abs(input);
     var minutes = ~~(absTime / 60);
-    var seconds = pad(absTime % 60, 2);
+    var seconds = pad(~~(absTime % 60), 2);
     var time = ((input < 0) ? "-" : "");
     time += minutes + ":" + seconds;
     return time;

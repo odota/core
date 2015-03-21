@@ -1,4 +1,5 @@
-var db = require('monk')(process.env.MONGO_URL || "mongodb://localhost/dota");
+var config = require('./config');
+var db = require('monk')(config.MONGO_URL);
 db.players = db.get('players');
 db.matches = db.get('matches');
 db.ratings = db.get('ratings');

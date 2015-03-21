@@ -44,7 +44,7 @@ upload.post("/", function(req, res) {
     }
 
     function close(err, job) {
-        if (job && process.env.NODE_ENV !== "test") {
+        if (job) {
             console.log(job.data.payload);
             job.on("complete", function(result) {
                 if (result.error) {

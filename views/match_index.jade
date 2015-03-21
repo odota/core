@@ -29,7 +29,7 @@ block match_content
                  td
                    if (player.last_visited)
                      img.user(src='/public/images/favicon-16x16.png', title="YASP User")
-                   if (player.account_id == constants.anonymous_account_id)
+                   if (player.account_id === constants.anonymous_account_id)
                      ="Anonymous"
                    else if (!player.account_id)
                      ="Bot"
@@ -43,7 +43,7 @@ block match_content
                      =player.hero_id
                  td= player.level
                  td= player.kills
-                 td= player.deaths
+                 td.negative= player.deaths
                  td= player.assists
                  td= player.last_hits
                  td= player.denies
@@ -99,7 +99,7 @@ block match_content
     h2 Buildings
     .col-md-6
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
-        img.map(src='/public/images/map.jpg', alt="map")
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-6
       include ads/skyscraper
       

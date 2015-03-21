@@ -1,4 +1,5 @@
 var utility = require('./utility');
+var config = require('./config');
 var processors = require('./processors');
 var getData = utility.getData;
 var db = require('./db');
@@ -18,6 +19,11 @@ var selector = require('./selector');
 var domain = require('domain');
 var trackedPlayers = {};
 var ratingPlayers = {};
+var seaport = require('seaport');
+var server = seaport.createServer();
+server.listen(config.REGISTRY_PORT);
+var retrievers = config.RETRIEVER_HOST;
+//don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -36,82 +42,19 @@ d.on('error', function(err) {
     });
 });
 d.run(function() {
+    console.log("[WORKER] starting worker");
     build(function() {
-        console.log("[WORKER] starting worker");
         startScan();
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
-        setInterval(fullhistory, 31 * 60 * 1000, function() {});
-        setInterval(updatenames, 7 * 60 * 1000, function() {});
-        setInterval(build, 5 * 60 * 1000, function() {});
-        setInterval(apiStatus, 2 * 60 * 1000);
+        setInterval(fullhistory, 17 * 60 * 1000, function() {});
+        setInterval(updatenames, 3 * 60 * 1000, function() {});
+        setInterval(build, 3 * 60 * 1000, function() {});
+        //todo implement redis window check 
+        //setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
-
-function build(cb) {
-    console.log("rebuilding sets");
-    db.players.find(selector("tracked"), function(err, docs) {
-        if (err) {
-            return build(cb);
-        }
-        var t = {};
-        var r = {};
-        var b = [];
-        docs.forEach(function(player) {
-            t[player.account_id] = true;
-        });
-        async.each(utility.getRetrieverUrls(), function(url, cb) {
-            getData(url, function(err, body) {
-                if (err) {
-                    return cb(err);
-                }
-                for (var key in body.accounts) {
-                    b.push(body.accounts[key]);
-                }
-                for (var key in body.accountToIdx) {
-                    r[key] = url + "?account_id=" + key;
-                }
-                cb(err);
-            });
-        }, function(err) {
-            if (err) {
-                return build(cb);
-            }
-            trackedPlayers = t;
-            ratingPlayers = r;
-            redis.set("bots", JSON.stringify(b));
-            redis.set("ratingPlayers", JSON.stringify(r));
-            redis.set("trackedPlayers", JSON.stringify(t));
-            return cb(err);
-        });
-    });
-}
-
-function startScan() {
-    if (process.env.START_SEQ_NUM === "AUTO") {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
-            if (err) {
-                return startScan();
-            }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
-    else if (process.env.START_SEQ_NUM) {
-        scanApi(process.env.START_SEQ_NUM);
-    }
-    else {
-        redis.get("match_seq_num", function(err, result) {
-            if (!err && result) {
-                scanApi(result);
-            }
-            else {
-                return startScan();
-            }
-        });
-    }
-}
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
@@ -131,6 +74,91 @@ function clearActiveJobs(cb) {
             cb(err);
         });
     });
+}
+
+function build(cb) {
+    console.log("rebuilding sets");
+    async.series({
+        "trackedPlayers": function(cb) {
+            db.players.find(selector("tracked"), function(err, docs) {
+                if (err) {
+                    return cb(err);
+                }
+                var t = {};
+                docs.forEach(function(player) {
+                    t[player.account_id] = true;
+                });
+                //console.log(t);
+                cb(err, t);
+            });
+        },
+        "retrievers": function(cb) {
+            var r = {};
+            var b = [];
+            var ps = retrievers.split(",").map(function(r) {
+                return "http://" + r;
+            });
+            async.each(ps, function(url, cb) {
+                getData(url, function(err, body) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    for (var key in body.accounts) {
+                        b.push(body.accounts[key]);
+                    }
+                    for (var key in body.accountToIdx) {
+                        r[key] = url + "?account_id=" + key;
+                    }
+                    cb(err);
+                });
+            }, function(err) {
+                var result = {
+                    ratingPlayers: r,
+                    bots: b,
+                    retrievers: ps
+                };
+                cb(err, result);
+            });
+        }
+    }, function(err, result) {
+        if (err) {
+            return build(cb);
+        }
+        result.ratingPlayers = result.retrievers.ratingPlayers;
+        result.bots = result.retrievers.bots;
+        result.retrievers = result.retrievers.retrievers;
+        trackedPlayers = result.trackedPlayers;
+        ratingPlayers = result.ratingPlayers;
+        for (var key in result) {
+            redis.set(key, JSON.stringify(result[key]));
+        }
+        cb();
+    });
+}
+
+function startScan() {
+    if (config.START_SEQ_NUM === "AUTO") {
+        var container = generateJob("api_history", {});
+        getData(container.url, function(err, data) {
+            if (err) {
+                return startScan();
+            }
+            scanApi(data.result.matches[0].match_seq_num);
+        });
+    }
+    else if (config.START_SEQ_NUM) {
+        scanApi(config.START_SEQ_NUM);
+    }
+    else {
+        redis.get("match_seq_num", function(err, result) {
+            if (!err && result) {
+                scanApi(result);
+            }
+            else {
+                return startScan();
+            }
+        });
+    }
 }
 var q = async.queue(function(match, cb) {
     var tracked = false;

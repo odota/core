@@ -1,13 +1,14 @@
 var express = require('express');
-var Recaptcha = require('recaptcha').Recaptcha;
-var rc_public = process.env.RECAPTCHA_PUBLIC_KEY;
-var rc_secret = process.env.RECAPTCHA_SECRET_KEY;
-var paypal_id = process.env.PAYPAL_ID;
-var paypal_secret = process.env.PAYPAL_SECRET;
-var root_url = process.env.ROOT_URL
-var goal = Number(process.env.GOAL);
-var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"]
-var paypal = require('paypal-rest-sdk')
+var config = require('./config');
+var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = config.RECAPTCHA_SECRET_KEY;
+var request = require('request');
+var paypal_id = config.PAYPAL_ID;
+var paypal_secret = config.PAYPAL_SECRET;
+var root_url = config.ROOT_URL;
+var goal = Number(config.GOAL);
+var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"];
+var paypal = require('paypal-rest-sdk');
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;
@@ -26,7 +27,7 @@ var auth = require('http-auth'),
     moment = require('moment'),
     bodyParser = require('body-parser'),
     async = require('async');
-var server = app.listen(process.env.PORT || 5000, function() {
+var server = app.listen(config.PORT, function() {
     var host = server.address().address;
     var port = server.address().port;
     console.log('[WEB] listening at http://%s:%s', host, port);
@@ -38,18 +39,61 @@ setInterval(function() {
         if (!err) io.emit(res);
     });
 }, 5000);
+*/
+var queueReq = require('./operations').queueReq;
 io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
+    socket.on('request', function(data) {
+        console.log(data);
+        request.post("https://www.google.com/recaptcha/api/siteverify", {
+            form: {
+                secret: rc_secret,
+                response: data.response
+            }
+        }, function(err, resp, body) {
+            try {
+                body = JSON.parse(body);
+            }
+            catch (err) {
+                return socket.emit("err", err);
+            }
+            if (!body.success) {
+                socket.emit("err", "Recaptcha Failed!");
+            }
+            else {
+                var match_id = data.match_id;
+                match_id = Number(match_id);
+                socket.emit('log', "Received request for " + match_id);
+                queueReq("api_details", {
+                    match_id: match_id,
+                    request: true,
+                    priority: "high"
+                }, function(err, job) {
+                    if (err) {
+                        return socket.emit('err', err);
+                    }
+                    socket.emit('log', "Queued API request for " + match_id);
+                    job.on('progress', function(prog) {
+                        //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                        socket.emit('prog', prog);
+                    });
+                    job.on('complete', function(result) {
+                        console.log(result);
+                        if (result && result.error) {
+                            socket.emit('err', JSON.stringify(result.error));
+                            socket.emit("failed");
+                        }
+                        else {
+                            socket.emit('log', "Request Complete!");
+                            socket.emit('complete');
+                        }
+                    });
+                });
+            }
+        });
     });
 });
-app.use("/socket", function(req, res){
-    res.render("socket");
-});
-*/
 paypal.configure({
-    'mode': process.env.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
+    'mode': config.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
     'client_id': paypal_id,
     'client_secret': paypal_secret
 });
@@ -57,23 +101,26 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = require('./constants.json');
+app.use(compression());
 var basic = auth.basic({
     realm: "Kue"
 }, function(username, password, callback) { // Custom authentication method.
-    callback(username === process.env.KUE_USER && password === process.env.KUE_PASS);
+    callback(username === config.KUE_USER && password === config.KUE_PASS);
 });
-app.use(compression());
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
+app.use("/", express.static(path.join(__dirname, '/public')));
 app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
-        ttl: 2 * 7 * 24 * 60 * 60
+        ttl: 52 * 7 * 24 * 60 * 60
     }),
-    maxAge: 2 * 7 * 24 * 60 * 60 * 1000,
-    secret: process.env.SESSION_SECRET,
+    cookie: {
+        maxAge: 52 * 7 * 24 * 60 * 60 * 1000
+    },
+    secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
@@ -99,21 +146,10 @@ app.use(function(req, res, next) {
         res.locals.api_down = Number(results.apiDown);
         var theGoal = Number(results.cheese || 0.1) / goal * 100;
         res.locals.cheese_goal = (theGoal - 100) > 0 ? 100 : theGoal;
-        logger.info("%s visit", req.user ? req.user.account_id : "anonymous");
+        logger.info("%s visit %s", req.user ? req.user.account_id : "anonymous", req.originalUrl);
         return next(err);
     });
 });
-/*
-io.sockets.on('connection', function(socket) {
-    socket.on('send-file', function(name, buffer) {
-        console.log(buffer.length);
-        socket.emit('recFile');
-    });
-});
-app.use("/socket", function(req, res){
-    res.render("socket");
-});
-*/
 var Poet = require('poet');
 var poet = Poet(app);
 poet.watch(function() {
@@ -121,26 +157,29 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
+app.route('/request').get(function(req, res) {
+    res.render('request', {
+        rc_public: rc_public
+    });
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
-app.use('/upload', require("./routes/upload"));
 app.route('/').get(function(req, res, next) {
-    if (req.user) {
-        queries.getSets(function(err, results) {
-            queries.getRatingData(req.user.account_id, function(err, ratings) {
-                results.ratings = ratings;
-                res.render('index.jade', results);
-            });
+    queries.prepareMatch(1321352005, function(err, match) {
+        if (err){
+            return next(err);
+        }
+        res.render('home', {
+            match: match,
+            home: true
         });
-    }
-    else {
-        res.render('home');
-    }
+    });
 });
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {
+            //convert string to boolean
             req.body[key] = req.body[key] === "true";
         }
         db.players.update({
@@ -167,7 +206,7 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res) {
-    res.redirect('/');
+    res.redirect('/players/' + req.user.account_id);
 });
 app.route('/logout').get(function(req, res) {
     req.logout();
@@ -175,20 +214,9 @@ app.route('/logout').get(function(req, res) {
         res.redirect('/');
     });
 });
-app.route('/verify_recaptcha').post(function(req, res) {
-    var data = {
-        remoteip: req.connection.remoteAddress,
-        challenge: req.body.recaptcha_challenge_field,
-        response: req.body.recaptcha_response_field
-    };
-    var recaptcha = new Recaptcha(rc_public, rc_secret, data);
-    recaptcha.verify(function(success) {
-        req.session.captcha_verified = success;
-        res.json({
-            verified: success
-        });
-    });
-});
+/*
+app.use('/upload', require("./routes/upload"));
+*/
 app.route('/status').get(function(req, res, next) {
     status(function(err, result) {
         if (err) {
@@ -212,10 +240,10 @@ app.route('/carry').get(function(req, res, next) {
         if (err) return next(err);
         res.render("carry", {
             users: results
-        })
+        });
     });
-}).post(function(req, res) {
-    var num = req.body.num
+}).post(function(req, res, next) {
+    var num = req.body.num;
     if (!isNaN(num)) {
         var payment = {
             "intent": "sale",
@@ -236,7 +264,7 @@ app.route('/carry').get(function(req, res, next) {
         };
         paypal.payment.create(payment, function(err, payment) {
             if (err) {
-                next(err)
+                return next(err)
             }
             else {
                 req.session.paymentId = payment.id;
@@ -325,7 +353,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     console.log(err);
-    if (process.env.NODE_ENV !== "development") {
+    if (config.NODE_ENV !== "development") {
         return res.render(err.status === 404 ? '404' : '500', {
             error: err
         });
@@ -337,5 +365,6 @@ app.use(function(err, req, res, next) {
 function clearPaymentSessions(req) {
     PAYMENT_SESSIONS.forEach(function(s) {
         req.session[s] = null;
-    })
+    });
 }
+module.exports = app;

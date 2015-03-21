@@ -1,4 +1,4 @@
-extend base_layout
+extend layout
 
 block content
   #about-top.gallery.faq
@@ -25,7 +25,7 @@ block content
                   |                                 
                   li Rating tracking. This allows us to show you your rating history.
                   |                                 
-                  li Visualizations. We generate histograms and heatmaps of your Dota 2 match data.                   
+                  li Player statistics.  We generate histograms and heatmaps of match history, and break down statistics such as hero matchups.               
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTwo', aria-expanded='false', aria-controls='collapseTwo')
@@ -51,44 +51,26 @@ block content
               |                         
               #collapseFour.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
                 .panel-body
-                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays.
+                  | Sign in through Steam, and we&apos;ll start tracking your matches and automatically parse the replays from that point on.  Note that probably only a few of your previous matches are listed.  If you remain an active user, we'll get your full match history.  We can get API data but cannot parse most full history matches, since most of the replays have expired.  We can only get a limited number of full histories per day, so please be patient.
             |                     
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseFive', aria-expanded='false', aria-controls='collapseFive')
-                  | Why are my matches showing up, but don&apos;t get parsed?
+                  | Why are my matches missing parse data?
               |                         
               #collapseFive.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFive')
                 .panel-body
-                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can. Usually, we&apos;re able to parse over 95% of games.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSix', aria-expanded='false', aria-controls='collapseSix')
-                  | Why don&apos;t you have my old matches?
-              |                         
-              #collapseSix.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSix')
-                .panel-body
-                  | YASP only starts tracking your matches from when you signed in. We get full match histories for contributors and active YASP users.
-            |                     
+                  | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.  Finally, we can't parse matches older than 7 days as the replay has expired.
+            |                  
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeven', aria-expanded='false', aria-controls='collapseSeven')
-                  | I signed in a while ago and just came back, why haven&apos;t my matches been tracked?
+                  | I signed in a while ago and just came back.  Why am I missing matches?
               |                         
               #collapseSeven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeven')
                 .panel-body
-                  | To keep the load reasonable, we stop parsing players&apos; matches after a period of inactivity. Each visit to the YASP site while signed in resets this period.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEight', aria-expanded='false', aria-controls='collapseEight')
-                  | How do untracking and full history eligibility work?
-              |                         
-              #collapseEight.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEight')
-                .panel-body
-                  | Currently, we untrack users who have not visited YASP for 3 days. Users who have used YASP for 7 days and remain tracked are eligible for full history.
-          |                     
+                  | To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.  You can either manually request those matches by ID or wait for the next full history scan to "fill" the gap.
+            |  
           .panel-left.col-sm-6
             .list-group
               h4.panel-title
@@ -98,39 +80,6 @@ block content
               #collapseNine.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingNine')
                 .panel-body
                   | The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTen', aria-expanded='false', aria-controls='collapseTen')
-                  | Why can&apos;t you parse uploaded private lobby replays?
-              |                         
-              #collapseTen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTen')
-                .panel-body
-                  | To generate the information for a match page, we combine the parsed data with data from the Valve API. Since private matches can&apos;t be accessed through the API, we don&apos;t support these replays.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseEleven', aria-expanded='false', aria-controls='collapseEleven')
-                  | Why is there a difference between my parsed stats and what actually happened in the game?
-              |                         
-              #collapseEleven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingEleven')
-                .panel-body
-                  | Known issues:
-                  li
-                    | Hero Kills: doesn&apos;t always show all kills. This is because the combat log credits kills to the unit who delivers the fatal blow, so kills by creeps/towers do not count.
-                  |                                 
-                  li
-                    | Hero Kills: Lots of Meepo kills in the log. This is because the game has Meepo kill all remaining clones when one is killed.
-            |                     
-            .list-group
-              h4.panel-title
-                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseTwelve', aria-expanded='false', aria-controls='collapseTwelve')
-                  | What do I do if I have a bug or feature request?
-              |                         
-              #collapseTwelve.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwelve')
-                .panel-body
-                  | The best way to let us know is by making an issue on GitHub. This way we can discuss the issue/request with you.
-            |                     
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseThirteen', aria-expanded='false', aria-controls='collapseThirteen')
@@ -156,8 +105,16 @@ block content
               |                         
               #collapseFifteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFifteen')
                 .panel-body
-                  | YASP's main site and replay retriever are built with Node.js. We use MongoDB to store our data and Redis/Kue to manage our job queue. On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables. The parser is written in Java, using the clarity replay parsing library.The original project code was based on matchurls.
-            |                     
+                  | YASP's main site and replay retriever are built with Node.js. We use MongoDB to store our data and Redis/Kue to manage our job queue. On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables. The parser is written in Java, using the clarity replay parsing library. The original project code was based on matchurls.
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeventeen', aria-expanded='false', aria-controls='collapseSeventeen')
+                  | How do I ask more questions?
+              |                         
+              #collapseSeventeen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeventeen')
+                .panel-body
+                  | You can tweet us or <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank">fill this out</a>.
+            |    
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSixteen', aria-expanded='false', aria-controls='collapseSixteen')
@@ -166,8 +123,3 @@ block content
               #collapseSixteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSixteen')
                 .panel-body
                   | Why, of course! Need you even ask?
-
-
-
-
-

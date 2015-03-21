@@ -1,6 +1,7 @@
-var redis = require('redis'),
-    parseRedisUrl = require('parse-redis-url')(redis);
-var options = parseRedisUrl.parse(process.env.REDIS_URL || "redis://127.0.0.1:6379/0");
+var redis = require('redis');
+var parseRedisUrl = require('parse-redis-url')(redis);
+var config = require('./config');
+var options = parseRedisUrl.parse(config.REDIS_URL);
 //set keys for kue
 options.auth = options.password;
 options.db = options.database;

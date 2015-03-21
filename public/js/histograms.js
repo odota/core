@@ -1,91 +1,62 @@
 var c3 = require('c3');
-var CalHeatMap = require('cal-heatmap');
 var moment = require('moment');
-var async = require('async');
 module.exports = function generateHistograms(data) {
-    async.series([
-            function(cb) {
-            var cal = new CalHeatMap();
-            cal.init({
-                start: new Date(moment().subtract(1, 'year')),
-                range: 13,
-                domain: "month",
-                subDomain: "day",
-                data: data.calheatmap,
-                verticalOrientation: true,
-                label: {
-                  position: "left"  
-                },
-                colLimit: 31,
-                tooltip: true,
-                legend: [1, 2, 3, 4],
-                highlight: new Date(),
-                itemName: ["match", "matches"],
-                subDomainTextFormat: function(date, value) {
-                    return value;
-                },
-                cellSize: 15,
-                domainGutter: 10,
-                previousSelector: "#prev",
-                nextSelector: "#next",
-                legendHorizontalPosition: "right"
-            });
-            setTimeout(cb, 50);
-            },
-            function(cb) {
-            c3.generate({
-                bindto: "#chart-duration",
-                data: {
-                    columns: [
-                            ['Matches'].concat(data.durations)
+    //need a param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
+    //need a max to determine how many bins we should have
+    //need a param to define the label on the x axis
+    //need a param to determine whether the time should be formatted
+    $(".histogram").on("click", function() {
+        var label = $(this).attr('data-histogram');
+        var counts = data[label].counts;
+        //figure out the max
+        var max = Math.max.apply(null, Object.keys(counts).map(function(c) {
+            return Number(c);
+        }));
+        var bins = ~~Math.min(80, max);
+        var scalef = bins/max;
+        createHistogram(counts, scalef, bins, label);
+    });
+    $(".histogram").first().trigger("click");
+
+    function createHistogram(counts, scalef, bins, label) {
+        //creates a histogram from counts by binning values
+        //temp function to generate bar charts, next version of c3 should support histograms from counts
+        var arr = Array.apply(null, new Array(bins+1)).map(Number.prototype.valueOf, 0);
+        Object.keys(counts).forEach(function(key) {
+            var bucket = ~~(Number(key) * scalef);
+            arr[bucket] += counts[key];
+        });
+        c3.generate({
+            bindto: "#chart-histogram",
+            data: {
+                columns: [
+                            ['Matches'].concat(arr)
                         ],
-                    type: 'bar'
-                },
-                bar: {
-                    width: {
-                        ratio: 0.8
-                    }
-                },
-                axis: {
-                    x: {
-                        label: 'Minutes'
-                    },
-                    y: {
-                        label: 'Matches'
-                    }
+                type: 'bar'
+            },
+            bar: {
+                width: {
+                    ratio: 0.8
                 }
-            });
-            setTimeout(cb, 50);
             },
-            function(cb) {
-            c3.generate({
-                bindto: "#chart-gpms",
-                data: {
-                    columns: [
-                            ['Matches'].concat(data.gpms)
-                        ],
-                    type: 'bar'
-                },
-                bar: {
-                    width: {
-                        ratio: 0.8
-                    }
-                },
-                axis: {
-                    x: {
-                        label: 'GPM',
-                        tick: {
-                            format: function(x) {
-                                return String(x * 10);
+            axis: {
+                x: {
+                    label: label,
+                    tick: {
+                        format: function(t) {
+                            t = Number(t)/scalef;
+                            var times = {"duration": 1, "first_blood_time":1};
+                            if (times[label]){
+                                return moment().startOf('day').seconds(t).format("H:mm:ss");
                             }
+                            return t.toFixed(0);
                         }
-                    },
-                    y: {
-                        label: 'Matches'
                     }
+                },
+                y: {
+                    label: 'Matches'
                 }
-            });
-            setTimeout(cb, 50);
             }
-        ]);
+        });
+    }
 };

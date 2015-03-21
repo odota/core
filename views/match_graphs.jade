@@ -1,36 +1,35 @@
 extend match
     
-block match_content 
-    .row
-        if match.parsed_data
-          .row
-            .col-md-12
-              h3 Radiant Advantage
-              #chart-diff
-          hr
-          .row
-            include ads/leaderboard_2
-          hr
-          .row
-            .col-md-12
-              h3 Gold
-              #chart-gold
-          hr
-          .row
-            include ads/leaderboard_3
-          hr
-          .row
-            .col-md-12
-              h3 XP
-              #chart-xp
-              hr
-              h3 LH
-              #chart-lh
-              hr
-              h3 Income Sources
-              #chart-gold-breakdown
-        else
-          h1 This match has no parsed data
+block match_content
+  .row.match-top
+    .col-md-12
+      .alert.alert-success.text-center Click on an entry in the legend to select/deselect.  Alt-click to show only that entry.
+  .row
+    .col-md-12
+      h2 Radiant Advantage
+      #chart-diff
+  hr
+  .row
+    include ads/leaderboard_2
+  hr
+  .row
+    .col-md-12
+      h2 Gold
+      #chart-gold
+  hr
+  .row
+    include ads/leaderboard_3
+  hr
+  .row
+    .col-md-12
+      h2 XP
+      #chart-xp
+      hr
+      h2 LH
+      #chart-lh
+      hr
+      h2 Income Sources
+      #chart-gold-breakdown
           
 append footer_assets
   script.
