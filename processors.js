@@ -218,6 +218,7 @@ function runParser(job, cb) {
             e.slot = name_to_slot[e.unit];
             //time, key, only, so we lose the original prefix (stored in unit)
             populate(e);
+            console.log(e);
         },
         //"chat_hero_kill": populate,
         "stuns": populate,

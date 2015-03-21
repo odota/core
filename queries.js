@@ -338,6 +338,11 @@ function generateGraphData(match) {
 }
 
 function fillPlayerNames(players, cb) {
+    //todo
+    //make hash of account_ids to players
+    //use $in query to get these players from db
+    //loop through results and join with players by hash
+    //iterate back through original array to get back players in order
     async.mapSeries(players, function(player, cb) {
         db.players.findOne({
             account_id: player.account_id
@@ -666,7 +671,6 @@ function fillPlayerMatches(player, options, cb) {
         });
         //console.timeEnd('filter');
         //console.time('agg');
-        //todo we're currently displaying in the cal-heatmap only balanced mode matches.  do we want to do all?
         player.aggData_all = aggregator(matches, {
             "start_time": 1
         });
@@ -708,16 +712,6 @@ function fillPlayerMatches(player, options, cb) {
             match_id: {
                 $in: match_ids
             }
-            /*
-            players: {
-                $elemMatch: {
-                    account_id: account_id,
-                    hero_id: Number(options.hero_id) || {
-                        $ne: null
-                    }
-                }
-            }
-            */
         }, {
             fields: {
                 "players.account_id": 1,

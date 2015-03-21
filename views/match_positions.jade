@@ -29,8 +29,8 @@ block match_content
                         =player.hero_id
                     //td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
                     td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
-                    td.activate(data-index=ind, data-type="obs") #{p.item_uses.ward_observer || "-"}
-                    td.activate(data-index=ind, data-type="sen") #{p.item_uses.ward_sentry || "-"}
+                    td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
+                    td.activate(data-index=ind, data-type="sen") #{p.sen_log.lenth || "-"}
 
 append footer_assets
   script.
