@@ -822,8 +822,7 @@ module.exports = {
     fillPlayerNames: fillPlayerNames,
     getRatingData: getRatingData,
     getSets: getSets,
-    prepareMatch: prepareMatch,
-    advQuery: advQuery
+    prepareMatch: prepareMatch
 };
 //deprecated v4 functions
 function mergeMatchData(match) {
