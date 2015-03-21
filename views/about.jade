@@ -61,7 +61,7 @@ block content
               #collapseFive.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFive')
                 .panel-body
                   | There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. After that, the replay might not be available, which happens occasionally (particularly in the SEA region). Alternatively, our parser couldn&apos;t process the match. We&apos;re always looking for bugs and re-parsing matches when we can.  Finally, we can't parse matches older than 7 days as the replay has expired.
-            |                     
+            |                  
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeven', aria-expanded='false', aria-controls='collapseSeven')
@@ -105,8 +105,16 @@ block content
               |                         
               #collapseFifteen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFifteen')
                 .panel-body
-                  | YASP's main site and replay retriever are built with Node.js. We use MongoDB to store our data and Redis/Kue to manage our job queue. On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables. The parser is written in Java, using the clarity replay parsing library.The original project code was based on matchurls.
-            |                     
+                  | YASP's main site and replay retriever are built with Node.js. We use MongoDB to store our data and Redis/Kue to manage our job queue. On the client side we use libraries including c3, cal-heatmap, heatmap.js, and DataTables. The parser is written in Java, using the clarity replay parsing library. The original project code was based on matchurls.
+            .list-group
+              h4.panel-title
+                a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeventeen', aria-expanded='false', aria-controls='collapseSeventeen')
+                  | How do I ask more questions?
+              |                         
+              #collapseSeventeen.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeventeen')
+                .panel-body
+                  | You can tweet us or <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank">fill this out</a>.
+            |    
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSixteen', aria-expanded='false', aria-controls='collapseSixteen')
