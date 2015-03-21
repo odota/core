@@ -12,6 +12,7 @@ var getData = utility.getData;
 function insertMatch(match, cb) {
     async.series([function(cb) {
             //put api data in db
+            match.parse_status = match.parse_status || 0;
             db.matches.update({
                 match_id: match.match_id
             }, {
@@ -71,10 +72,10 @@ function getReplayUrl(match, cb) {
     }, function(err, doc) {
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             match.expired = true;
+            //set status to 1 if this match doesn't have a parse status already
             match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 1;
             return cb(err);
         }
-        match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 0;
         if (!err && doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;
