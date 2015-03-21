@@ -2,14 +2,14 @@ extend player
 
 block playercontent
   .row
-    .col-md-4
+    .col-md-5
       form.form-inline(action="" method="GET")
         h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Hero Filter
         select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
           option(value="0") All Heroes
           each entry in constants.alpha_heroes
             option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
-    .col-md-8  
+    .col-md-7  
       h3
         .col-md-3.text-center
           a(href="#records")

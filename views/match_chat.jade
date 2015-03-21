@@ -4,13 +4,13 @@ block match_content
   .row
     .col-md-7
       h2 Chat
-      h3
-        small Positivity Score:
+      h3(title="An estimation of how \"positive\" all chat was.", style="display:inline-block")
+        p Positivity Score:
       .progress
         - var pct = (match.sentiment.comparative+1)/2
         .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)} (#{match.sentiment.words.length} keywords)
       //pre=JSON.stringify(match.sentiment, null, 2)
-      table.table.table-hover.table-responsive
+      table.table.table-hover.table-responsive.match-top
         tr
           th Hero
           th Time

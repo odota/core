@@ -1,13 +1,12 @@
 extend match
     
 block match_content
+  .row.match-top
+    .col-md-12
+      .alert.alert-success.text-center Click on an entry in the legend to select/deselect.  Alt-click to show only that entry.
   .row
     .col-md-12
-      h2 Graphs
-      .alert.alert-success Click on an entry in the legend to select/deselect.  Alt-click to show only that entry.
-  .row
-    .col-md-12
-      h3 Radiant Advantage
+      h2 Radiant Advantage
       #chart-diff
   hr
   .row
@@ -15,7 +14,7 @@ block match_content
   hr
   .row
     .col-md-12
-      h3 Gold
+      h2 Gold
       #chart-gold
   hr
   .row
@@ -23,13 +22,13 @@ block match_content
   hr
   .row
     .col-md-12
-      h3 XP
+      h2 XP
       #chart-xp
       hr
-      h3 LH
+      h2 LH
       #chart-lh
       hr
-      h3 Income Sources
+      h2 Income Sources
       #chart-gold-breakdown
           
 append footer_assets
