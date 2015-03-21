@@ -202,6 +202,7 @@ function getParseSchema() {
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
+                "largest_hero_hit": 0,
                 "times": [],
                 "gold": [],
                 "lh": [],

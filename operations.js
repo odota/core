@@ -55,64 +55,14 @@ function insertMatch(match, cb) {
         }
         else {
             //queue for parse if valid
+            if (match.request){
+                match.attempts = 1;
+            }
             queueReq("parse", match, function(err, job) {
                 cb(err, job);
             });
         }
     });
-    /*
-    //insert match into db
-    db.matches.update({
-        match_id: match.match_id
-    }, {
-        $set: match
-    }, {
-        upsert: true
-    }, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        //insert a player for each player in the match
-        async.eachSeries(match.players, function(p, cb) {
-            db.players.update({
-                account_id: p.account_id
-            }, {
-                $set: {
-                    account_id: p.account_id
-                }
-            }, {
-                upsert: true
-            }, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            if (err) {
-                return cb(err);
-            }
-            getReplayUrl(match, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                //update the match
-                db.matches.update({
-                    match_id: match.match_id
-                }, {
-                    $set: match
-                }, {
-                    upsert: true
-                }, function(err) {
-                    if (err || match.expired) {
-                        return cb(err);
-                    }
-                    //queue for parse if not expired
-                    queueReq("parse", match, function(err, job) {
-                        cb(err, job);
-                    });
-                });
-            });
-        });
-    });
-    */
 }
 
 function getReplayUrl(match, cb) {
@@ -169,7 +119,7 @@ function insertPlayer(player, cb) {
 
 function queueReq(type, payload, cb) {
     var job = generateJob(type, payload);
-    var kuejob = jobs.create(job.type, job).attempts(10).backoff({
+    var kuejob = jobs.create(job.type, job).attempts(payload.attempts || 10).backoff({
         delay: 60 * 1000,
         type: 'exponential'
     }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {

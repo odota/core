@@ -198,6 +198,10 @@ function runParser(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
+                //biggest hit
+                e.max = true;
+                e.type = "largest_hero_hit";
+                populate(e);
             }
             //reverse and count as damage taken
             var r = {
@@ -208,8 +212,6 @@ function runParser(job, cb) {
                 type: "damage_taken"
             };
             getSlotReverse(r);
-            //biggest hit
-            //sum damage taken/dealt?
         },
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
@@ -270,6 +272,7 @@ function runParser(job, cb) {
     };
 
     function postProcess() {
+        console.time("postprocess");
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
@@ -282,6 +285,7 @@ function runParser(job, cb) {
                 console.log(e);
             }
         }
+        console.timeEnd("postprocess");
         //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
@@ -373,7 +377,12 @@ function runParser(job, cb) {
         else {
             //we must use the full reference since this is a primitive type
             //use the value most of the time, but key when stuns since value only holds Integers in Java
-            parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+            if (e.max) {
+                parsed_data.players[e.slot][e.type] = Math.max(parsed_data.players[e.slot][e.type], e.value || Number(e.key));
+            }
+            else {
+                parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
+            }
         }
     }
 }
@@ -385,7 +394,9 @@ function processApi(job, cb) {
         if (err) {
             //couldn't get data from api
             job.log(JSON.stringify(err));
-            return cb(null, {error: err});
+            return cb(null, {
+                error: err
+            });
         }
         else if (data.response) {
             logger.info("summaries response");
@@ -403,14 +414,16 @@ function processApi(job, cb) {
             insertMatch(match, function(err, job2) {
                 if (err || !match.request) {
                     //error occured, or don't wait for parse
-                    return cb(err, {error: err});
+                    return cb(err, {
+                        error: err
+                    });
                 }
                 job.log("api: complete");
                 if (!job2) {
                     //got api data, but didn't queue for parse, probably expired
                     job.log("api: match expired");
                     job.progress(100, 100);
-                    cb(err);
+                    cb();
                 }
                 else {
                     job.log("parse: starting");
@@ -420,10 +433,13 @@ function processApi(job, cb) {
                         job.log(prog + "%");
                         job.progress(prog, 100);
                     });
+                    job2.on('failed', function(){
+                        cb("parse failed");
+                    });
                     job2.on('complete', function() {
                         job.log("parse: complete");
                         job.progress(100, 100);
-                        cb(err);
+                        cb();
                     });
                 }
             });

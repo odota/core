@@ -5,7 +5,7 @@ block content
     .form-group
       input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
     .form-group
-      #recaptcha(data-sitekey=rc_public)
+      .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
   .progress
     .progress-bar.progress-bar-info.progress-bar-striped.active#bar
   .row
@@ -15,6 +15,7 @@ block content
 
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
+  //script(src="https://www.google.com/recaptcha/api.js",async,defer)
   script(src="/socket.io/socket.io.js")
   script.
     var match_id;
@@ -30,7 +31,9 @@ append footer_assets
     });
     socket.on('complete', function(){
     //redir to match page?
-    window.location.assign("/matches/"+match_id);
+      window.location.assign("/matches/"+match_id);
+    });
+    socket.on('failed', function(){
     });
     function submit(response){
       var field = document.getElementById("match_id");

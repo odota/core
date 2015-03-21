@@ -24,6 +24,7 @@ block match_content
                     th: abbr(title="Neutral creeps killed") NK
                     th: abbr(title="Towers killed") TK
                     th: abbr(title="Couriers killed") CK
+                    th: abbr(title="Largest hero hit") HIT
                     each val, key in constants.runes
                       th=val.name
 
@@ -49,6 +50,7 @@ block match_content
                   td #{p.neutral_kills || "-"}
                   td #{p.tower_kills || "-"}
                   td #{p.courier_kills || "-"}
+                  td #{p.largest_hero_hit || "-"}
                   each val, key in constants.runes
                     td #{p.runes[key] || "-"}
                   
