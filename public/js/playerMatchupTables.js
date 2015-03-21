@@ -1,6 +1,4 @@
 var $ = jQuery = require('jquery');
-var utility = require('./utility');
-var formatSeconds = utility.formatSeconds;
 module.exports = function playerTables() {
     $('#teammates').dataTable({
         //"searching": false,

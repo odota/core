@@ -66,6 +66,7 @@ block playercontent
                 thead
                   tr
                     td Ability
+                    td Ability Name
                     td Casts
                     td Hits
                     td Hit%
@@ -74,11 +75,13 @@ block playercontent
                     if player.aggData.hero_hits.counts[key]
                       tr
                         - var ability = constants.abilities[key]
-                        td
-                          if ability
+                        if ability
+                          td
                             img.ability(src=ability.img, alt=key)
-                          else
-                            =key
+                          td= ability.dname
+                        else
+                          td=key
+                          td=key
                         td=val
                         td=player.aggData.hero_hits.counts[key]
                         td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
@@ -89,6 +92,7 @@ block playercontent
                 thead
                   tr
                     th Item
+                    th Item Name
                     th Avg
                     th #
                 tbody
@@ -97,6 +101,7 @@ block playercontent
                     if item
                       tr 
                         td: img.item(src=item.img, alt=key)
+                        td= item.dname
                         td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
                         td=player.aggData.purchase.counts[key]
       hr
