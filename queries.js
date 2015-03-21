@@ -88,7 +88,7 @@ function computeMatchData(match) {
         patchLegacy(match);
     }
     else {
-        //console.log("valid v5 data %s", match.parsed_data.version);
+        console.log("valid v5 data %s", match.parsed_data.version);
     }
     //add a parsedplayer property to each player, and compute more stats
     match.players.forEach(function(player, ind) {
@@ -691,20 +691,20 @@ function fillPlayerMatches(player, options, cb) {
             return cb(err);
         }
         console.timeEnd('db');
-        console.time('compute');
+        //console.time('compute');
         for (var i = 0; i < matches.length; i++) {
             computeMatchData(matches[i]);
         }
-        console.timeEnd('compute');
-        console.time('filter');
+        //console.timeEnd('compute');
+        //console.time('filter');
         var balanced = filter(matches, {
             "balanced": 1
         });
         var balanced_win_matches = filter(balanced, {
             "win": 1
         });
-        console.timeEnd('filter');
-        console.time('agg');
+        //console.timeEnd('filter');
+        //console.time('agg');
         //todo we're currently displaying in the cal-heatmap only balanced mode matches.  do we want to do all?
         player.aggData_all = aggregator(matches, {
             "start_time": 1
@@ -713,8 +713,8 @@ function fillPlayerMatches(player, options, cb) {
         player.aggData_win = aggregator(balanced_win_matches, {
             "hero_id": 1
         });
-        console.timeEnd('agg');
-        console.time('post');
+        //console.timeEnd('agg');
+        //console.time('post');
         var radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later when doing teammates/matchups
         for (var i = 0; i < matches.length; i++) {
             var m = matches[i];
@@ -737,7 +737,7 @@ function fillPlayerMatches(player, options, cb) {
             return b.match_id - a.match_id;
         });
         player.matches = matches;
-        console.timeEnd('post');
+        //console.timeEnd('post');
         //require('fs').writeFileSync("./output.json", JSON.stringify(player.aggData));
         console.time("db2");
         var match_ids = balanced.map(function(m) {
