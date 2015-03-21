@@ -350,7 +350,7 @@ function runParser(job, cb) {
     }
 
     function populate(e) {
-        if (typeof e.slot === "undefined") {
+        if (!parsed_data.players[e.slot]) {
             //couldn't associate with a player, probably attributed to a creep/tower/necro unit
             //console.log(e);
             return;
