@@ -1,5 +1,5 @@
 package yasp;
-import com.dota2.proto.Netmessages;
+import skadistats.clarity.wire.proto.Netmessages;
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,24 +11,22 @@ import skadistats.clarity.model.GameRulesStateType;
 import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.entities.Entities;
 import skadistats.clarity.processor.entities.UsesEntities;
-import skadistats.clarity.processor.reader.InputStreamProcessor;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.Runner;
-import com.dota2.proto.Usermessages.CUserMsg_SayText2;
-import com.dota2.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
-import com.dota2.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
-import com.dota2.proto.Demo.CDemoFileInfo;
-import com.dota2.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
+import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
+import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
+import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
+import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
-import java.io.FileInputStream;
 import com.google.gson.Gson;
 
 @UsesEntities

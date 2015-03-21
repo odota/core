@@ -1,7 +1,6 @@
 package yasp;
 import com.google.gson.Gson;
 import java.util.List;
-import java.util.ArrayList;
 
 public class EventStream{
     private Gson g;
