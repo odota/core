@@ -139,29 +139,30 @@ function computeMatchData(match) {
             }
             if (lanes.length) {
                 p.lane = mode(lanes);
+                var radiant = player.isRadiant;
                 var lane_roles = {
-                    "1": function(radiant) {
+                    "1": function() {
                         //bot
                         return radiant ? "Safe" : "Off";
                     },
-                    "2": function(radiant) {
+                    "2": function() {
                         //mid
                         return "Mid";
                     },
-                    "3": function(radiant) {
+                    "3": function() {
                         //top
                         return radiant ? "Off" : "Safe";
                     },
-                    "4": function(radiant) {
+                    "4": function() {
                         //rjung
                         return "Jungle";
                     },
-                    "5": function(radiant) {
+                    "5": function() {
                         //djung
                         return "Jungle";
                     }
                 };
-                p.lane_role = lane_roles[p.lane] ? lane_roles[p.lane](player.isRadiant) : undefined;
+                p.lane_role = lane_roles[p.lane] ? lane_roles[p.lane]() : undefined;
             }
             //compute hashes of purchase time sums and counts from logs
             p.purchase_time = {};
@@ -665,10 +666,12 @@ function fillPlayerMatches(player, options, cb) {
     db.matches.find({
         players: {
             $elemMatch: {
-                account_id: account_id,
+                /*
                 hero_id: Number(options.hero_id) || {
                     $ne: null
-                }
+                },
+                */
+                account_id: account_id
             }
         }
     }, {
@@ -699,6 +702,9 @@ function fillPlayerMatches(player, options, cb) {
         //console.time('filter');
         var balanced = filter(matches, {
             "balanced": 1
+        });
+        balanced = filter(balanced, {
+            "hero_id": options.hero_id
         });
         var balanced_win_matches = filter(balanced, {
             "win": 1
