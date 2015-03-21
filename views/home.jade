@@ -5,14 +5,15 @@ append head
   link(rel="import" href="bower_components/paper-fab/paper-fab.html")
   link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
   link(rel="import" href="bower_components/paper-fab-menu/paper-fab-menu.html")
-  link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+  block stylesheets
+    link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
 
 block unsticky_content
   body
     include navbar
     include home_content
-    include footer
-
+    include home_footer
+    
 append footer_assets
   script(src="/public/js/scroll.js")
   script(src="/public/js/animatedNavbar.js")

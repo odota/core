@@ -22,10 +22,3 @@ block sticky_content
         block content
     .sticky_footer_row
       include footer
-
-append footer_assets
-  style
-    include ../public/css/yasp.css
-  if (user && user.dark_theme)
-    style
-      include ../public/css/dark.css
