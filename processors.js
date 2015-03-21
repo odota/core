@@ -245,10 +245,11 @@ function runParser(job, cb) {
             if (e.x && e.y) {
                 e.type = "pos";
                 e.key = [e.x, e.y];
-                //posPopulate(e);
+                e.posData = true;
+                //populate(e);
                 if (e.time < 600) {
                     e.type = "lane_pos";
-                    posPopulate(e);
+                    populate(e);
                 }
                 /*
             //log all the positions for animation
@@ -259,13 +260,15 @@ function runParser(job, cb) {
         },
         "obs": function(e) {
             e.key = JSON.parse(e.key);
-            posPopulate(e);
+            e.posData = true;
+            populate(e);
             e.type = "obs_log";
             populate(e);
         },
         "sen": function(e) {
             e.key = JSON.parse(e.key);
-            posPopulate(e);
+            e.posData = true;
+            populate(e);
             e.type = "sen_log";
             populate(e);
         }
@@ -335,20 +338,6 @@ function runParser(job, cb) {
         getSlot(e);
     }
 
-    function posPopulate(e) {
-        var x = e.key[0];
-        var y = e.key[1];
-        //hash this location
-        var h = parsed_data.players[e.slot][e.type];
-        if (!h[x]) {
-            h[x] = {};
-        }
-        if (!h[x][y]) {
-            h[x][y] = 0;
-        }
-        h[x][y] += 1;
-    }
-
     function populate(e) {
         if (!parsed_data.players[e.slot]) {
             //couldn't associate with a player, probably attributed to a creep/tower/necro unit
@@ -359,6 +348,17 @@ function runParser(job, cb) {
         if (typeof t === "undefined") {
             //parse data player doesn't have a type for this event
             console.log(e);
+        }
+        else if (e.posData) {
+            var x = e.key[0];
+            var y = e.key[1];
+            if (!t[x]) {
+                t[x] = {};
+            }
+            if (!t[x][y]) {
+                t[x][y] = 0;
+            }
+            t[x][y] += 1;
         }
         else if (t.constructor === Array) {
             //determine whether we want the value only (interval) or the time and key (log)
@@ -433,7 +433,7 @@ function processApi(job, cb) {
                         job.log(prog + "%");
                         job.progress(prog, 100);
                     });
-                    job2.on('failed', function(){
+                    job2.on('failed', function() {
                         cb("parse failed");
                     });
                     job2.on('complete', function() {
