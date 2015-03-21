@@ -88,7 +88,7 @@ function computeMatchData(match) {
         patchLegacy(match);
     }
     else {
-        console.log("valid v5 data %s", match.parsed_data.version);
+        //console.log("valid v5 data %s", match.parsed_data.version);
     }
     //add a parsedplayer property to each player, and compute more stats
     match.players.forEach(function(player, ind) {
@@ -648,7 +648,7 @@ function filter(matches, type) {
                 filtered.push(matches[i]);
             }
         }
-        else if (type["hero_id"]) {
+        else if (Number(type["hero_id"])) {
             if (matches[i].players[0].hero_id === Number(type["hero_id"])) {
                 filtered.push(matches[i]);
             }
@@ -666,11 +666,6 @@ function fillPlayerMatches(player, options, cb) {
     db.matches.find({
         players: {
             $elemMatch: {
-                /*
-                hero_id: Number(options.hero_id) || {
-                    $ne: null
-                },
-                */
                 account_id: account_id
             }
         }
