@@ -5,9 +5,15 @@ var $records = $(".records"),
     $content = $("#content");
 $("#the_stats").empty();
 
-function makeDT() {
+function makeMatchupDT() {
     if (!$.fn.dataTable.isDataTable('#heroes')) {
-        playerTables();
+        playerMatchupTables();
+    }
+}
+
+function makeRecordsDT() {
+    if (!$.fn.dataTable.isDataTable('#builds')) {
+        playerRecordTables();
     }
 }
 
@@ -32,12 +38,13 @@ function getWards() {
 function getMatchups() {
     $content.empty();
     $content.append($matchups);
-    makeDT();
+    makeMatchupDT();
 }
 
 function getRecords() {
     $content.empty();
     $content.append($records);
+    makeRecordsDT();
 }
 
 function showSection() {
