@@ -2,6 +2,8 @@ extend layout
 
 block content
   h1 Match Requests
+  h1
+    small Input a Match ID then complete the Recaptcha
   .row.match-top
     .col-md-5
       form#request
@@ -29,12 +31,16 @@ append footer_assets
        grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
     var socket = io.connect();
+    socket.on('err', function(data){
+      $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
+    })
     socket.on('log', function(data){
-      document.getElementById("messages").innerHTML = "<div class='alert alert-danger' role='alert'>" + data + "</div>";
+      $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
+      $("#loading").css("display", "block");
     })
     socket.on('prog', function(prog){
       document.getElementById("bar").style.width = prog + "%";
-      document.getElementById("messages").innerHTML = prog + "%";
+      document.getElementById("bar").innerHTML = prog + "%";
       $("#loading").css("display", "block");
     });
     socket.on('complete', function(){
@@ -42,7 +48,7 @@ append footer_assets
       window.location.assign("/matches/"+match_id);
     });
     socket.on('failed', function(){
-      document.getElementById("messages").innerHTML = "<div class='alert alert-danger' role='alert'>Something went wrong!</div>";
+      $("#messages").append("<div class='alert alert-danger' role='alert'>Something went wrong!</div>");
       $("#loading").css("display", "none");
       document.getElementById("bar").style.width = "0%";
     });

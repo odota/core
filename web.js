@@ -54,38 +54,36 @@ io.sockets.on('connection', function(socket) {
                 body = JSON.parse(body);
             }
             catch (err) {
-                return socket.emit("log", err);
+                return socket.emit("err", err);
             }
             if (!body.success) {
-                socket.emit("log", "failed recaptcha");
+                socket.emit("err", "Recaptcha Failed!");
             }
             else {
                 var match_id = data.match_id;
                 match_id = Number(match_id);
-                socket.emit('prog', 100);
-                socket.emit('log', "received: " + match_id);
+                socket.emit('log', "Received request for " + match_id);
                 queueReq("api_details", {
                     match_id: match_id,
                     request: true,
                     priority: "high"
                 }, function(err, job) {
                     if (err) {
-                        return socket.emit('log', err);
+                        return socket.emit('err', err);
                     }
-                    socket.emit('log', "api: queued " + match_id);
+                    socket.emit('log', "Queued API request for " + match_id);
                     job.on('progress', function(prog) {
-                        socket.emit('log', prog + "%");
                         //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
                         socket.emit('prog', prog);
                     });
                     job.on('complete', function(result) {
                         console.log(result);
                         if (result && result.error) {
-                            socket.emit('log', JSON.stringify(result.error));
+                            socket.emit('err', JSON.stringify(result.error));
                             socket.emit("failed");
                         }
                         else {
-                            socket.emit('log', "request complete");
+                            socket.emit('log', "Request Complete!");
                             socket.emit('complete');
                         }
                     });
