@@ -18,10 +18,13 @@ var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
 var trackedPlayers = {};
+var activePlayers = {};
 var ratingPlayers = {};
+/*
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
+*/
 var retrievers = config.RETRIEVER_HOST;
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
@@ -93,6 +96,23 @@ function build(cb) {
                 cb(err, t);
             });
         },
+        "activePlayers": function(cb) {
+            db.players.find({
+                last_visited: {
+                    $ne: null
+                }
+            }, function(err, docs) {
+                if (err) {
+                    return cb(err);
+                }
+                var t = {};
+                docs.forEach(function(player) {
+                    t[player.account_id] = true;
+                });
+                //console.log(t);
+                cb(err, t);
+            });
+        },
         "retrievers": function(cb) {
             var r = {};
             var b = [];
@@ -130,6 +150,7 @@ function build(cb) {
         result.retrievers = result.retrievers.retrievers;
         trackedPlayers = result.trackedPlayers;
         ratingPlayers = result.ratingPlayers;
+        activePlayers = result.activePlayers;
         for (var key in result) {
             redis.set(key, JSON.stringify(result[key]));
         }
@@ -163,9 +184,13 @@ function startScan() {
 }
 var q = async.queue(function(match, cb) {
     var tracked = false;
+    var parse = false;
     async.each(match.players, function(p, cb) {
         if (p.account_id in trackedPlayers) {
             tracked = true;
+        }
+        if (p.account_id in activePlayers){
+            parse = true;
         }
         if (p.account_id in ratingPlayers && match.lobby_type === 7) {
             queueReq("mmr", {
@@ -184,14 +209,18 @@ var q = async.queue(function(match, cb) {
             redis.set("match_seq_num", match.match_seq_num);
         }
         if (tracked) {
+            match.parse_status = parse ? 0 : 3;
             insertMatch(match, function(err) {
                 if (err) {
                     return cb(err);
                 }
-                if (!match.expired) {
+                if (!match.expired && parse) {
                     queueReq("parse", match, function(err, job) {
                         cb(err, job);
                     });
+                }
+                else {
+                    cb(err);
                 }
             });
         }
