@@ -3,6 +3,8 @@ java -jar parser/target/stats-0.1.0.one-jar.jar < ../testfiles/766228935_legacy.
 #wget http://replay133.valve.net/570/1235641720_1996593833.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 #index out of bounds exception
 wget http://replay122.valve.net/570/1317849236_1002325006.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
+#crash
+wget http://replay123.valve.net/570/1336271164_1831063607.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 
  db.matches.find({
     'players.account_id': 88367253
@@ -20,6 +22,26 @@ wget http://replay122.valve.net/570/1317849236_1002325006.dem.bz2 -qO- | bunzip2
         "players.$": 1
     }
 ).explain()
+
+ db.matches.find({
+        players: {
+            $elemMatch: {
+                account_id: 88367253
+            }
+        }
+    }, {
+            "players.$": 1,
+            start_time: 1,
+            match_id: 1,
+            duration: 1,
+            cluster: 1,
+            radiant_win: 1,
+            parse_status: 1,
+            parsed_data: 1,
+            first_blood_time: 1,
+            lobby_type: 1,
+            game_mode: 1
+    }).explain()
 
 mongoexport --db dota --collection matches --query {match_id:1321352005} > output.json
 

@@ -318,7 +318,7 @@ function generateGraphData(match) {
         return b.gold_per_min - a.gold_per_min;
     });
     orderedPlayers.forEach(function(player) {
-        var hero = constants.heroes[player.hero_id];
+        var hero = constants.heroes[player.hero_id] || {};
         categories.push(hero.localized_name);
     });
     for (var key in constants.gold_reasons) {

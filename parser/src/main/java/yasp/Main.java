@@ -348,7 +348,7 @@ public class Main {
 					entry.key = Arrays.toString(pos);
 					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
 					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity.getProperty("m_iPlayerID");
+					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : -1;
 					//entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
 					es.output(entry);
 					seenEntities.add(handle);
@@ -365,7 +365,7 @@ public class Main {
 					entry.key = Arrays.toString(pos);
 					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
 					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity.getProperty("m_iPlayerID");
+					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : -1;
 					//entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
 					es.output(entry);
 					seenEntities.add(handle);
