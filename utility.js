@@ -65,12 +65,22 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "request_parse": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.match_id].join(),
+                type: type,
+                fileName: payload.fileName,
+                url: payload.url,
+                payload: payload
+            };
+        },
         "request": function() {
             payload.attempts = 1;
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
-                type: "request",
+                type: type,
                 payload: payload
             };
         },

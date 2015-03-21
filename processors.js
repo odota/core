@@ -13,6 +13,7 @@ var domain = require('domain');
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
 var progress = require('request-progress');
+var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
     console.time("parse");
@@ -412,39 +413,47 @@ function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            if (match.request) {
-                //only attempt parse once if request
-                match.attempts = 1;
-            }
-            insertMatch(match, function(err, job2) {
-                if (err || !match.request) {
-                    //error occured, or don't wait for parse (not a request)
+            insertMatch(match, function(err) {
+                if (err) {
+                    //error occured
                     return cb(err, {
                         error: err
                     });
                 }
-                job.log("api: complete");
-                if (!job2) {
-                    //got api data, but didn't queue for parse, probably expired
+                else if (match.expired) {
                     job.log("api: match expired");
                     job.progress(100, 100);
                     cb();
                 }
+                else if (match.request) {
+                    queueReq("request_parse", match, function(err, job2) {
+                        if (err) {
+                            return cb(err, {
+                                error: err
+                            });
+                        }
+                        //wait for parse to finish
+                        job.log("parse: starting");
+                        job.progress(0, 100);
+                        //request, parse and log the progress
+                        job2.on('progress', function(prog) {
+                            job.log(prog + "%");
+                            job.progress(prog, 100);
+                        });
+                        job2.on('failed', function() {
+                            cb("parse failed");
+                        });
+                        job2.on('complete', function() {
+                            job.log("parse: complete");
+                            job.progress(100, 100);
+                            cb();
+                        });
+                    });
+                }
                 else {
-                    job.log("parse: starting");
-                    job.progress(0, 100);
-                    //request, parse and log the progress
-                    job2.on('progress', function(prog) {
-                        job.log(prog + "%");
-                        job.progress(prog, 100);
-                    });
-                    job2.on('failed', function() {
-                        cb("parse failed");
-                    });
-                    job2.on('complete', function() {
-                        job.log("parse: complete");
-                        job.progress(100, 100);
-                        cb();
+                    //queue it and finish
+                    return queueReq("parse", match, function(err, job2) {
+                        cb(err, job2);
                     });
                 }
             });

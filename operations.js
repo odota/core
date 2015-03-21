@@ -51,14 +51,7 @@ function insertMatch(match, cb) {
                 upsert: true
             }, cb);
         }], function(err) {
-        if (err || match.expired) {
-            return cb(err);
-        }
-        else {
-            queueReq("parse", match, function(err, job) {
-                cb(err, job);
-            });
-        }
+        return cb(err);
     });
 }
 
