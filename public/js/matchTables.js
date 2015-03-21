@@ -7,9 +7,11 @@ var $ = jQuery = require('jquery');
 module.exports = function matchTable() {
     $(document).on('ready', function() {
         $('#table').dataTable({
+            /*
             "order": [
                 [0, "desc"]
             ],
+            */
             ajax: {
                 'url': '/api/matches',
                 'data': {
@@ -24,6 +26,7 @@ module.exports = function matchTable() {
                     }
                 }
             },
+            ordering: false,
             serverSide: true,
             processing: true,
             searching: false,

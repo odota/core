@@ -400,46 +400,6 @@ function getRatingData(account_id, cb) {
     });
 }
 
-function advQuery(select, options, cb) {
-    //currently api is using this
-    //custom query wants some fields back, with aggregation on those fields
-    //client options should include:
-    //filter: specific player/specific hero id
-    //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?)
-    //filter: specific hero was played by me, was on my team, was against me, was in the game
-    //filter: specific game modes
-    //filter: specific patches
-    //filter: specific regions
-    //filter: detect no stats recorded (algorithmically)
-    //filter: significant game modes only    
-    //client calls api, which processes a maximum number of matches (currently 10, parsed matches are really big and we dont want to spend massive bandwidth!)
-    //can we increase the limit depending on the options passed?  if a user requests just a field or two we can return more
-    //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
-    //select, a mongodb search hash
-    //options, a mongodb/monk options hash
-    //CONSTRAINT: each match can only have a SINGLE player matching the condition in order to make winrate defined and aggregations to work!
-    //therefore a specific player or hero MUST be defined if we want to aggregate!
-    //or we can do it anyway, and just not use the data since it only applies to the first hero
-    //check select.keys to see if user requested special conditions
-    //check options.fields.keys to see if user requested special fields, aggregate the selected fields
-    //we need to pass aggregator specific fields since not all fields may exist (since we projected)
-    //we can do indexes on the parsed data to enable mongo lookup, or post-process it in js
-    //fields (projection), limit, skip, sort (but sorts are probably best done in js)
-    //if selecting by account_id or hero_id, we project only that user in players array
-    //if (select["players.account_id"] || select["players.hero_id"]){options.fields["players.$"] = 1;}
-    db.matches.find(select, options, function(err, matches) {
-        if (err) {
-            return cb(err);
-        }
-        //filter and send through aggregator?
-        var results = {
-            aggData: null,
-            data: matches
-        };
-        cb(err, results);
-    });
-}
-
 function aggregator(matches, fields) {
     var types = {
         "start_time": function(key, m, p) {
