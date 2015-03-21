@@ -643,6 +643,7 @@ function fillPlayerMatches(player, options, cb) {
             cluster: 1,
             radiant_win: 1,
             parse_status: 1,
+            //todo project the parsed data to reduce result set size?
             parsed_data: 1,
             first_blood_time: 1,
             lobby_type: 1,
