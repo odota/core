@@ -161,7 +161,7 @@ function computeMatchData(match) {
                         return "Jungle";
                     }
                 };
-                p.lane_role = lane_roles[p.lane](player.isRadiant);
+                p.lane_role = lane_roles[p.lane] ? lane_roles[p.lane](player.isRadiant) : undefined;
             }
             //compute hashes of purchase time sums and counts from logs
             p.purchase_time = {};
