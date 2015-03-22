@@ -55,21 +55,6 @@ function runParser(job, cb) {
     //streams
     var inStream;
     var bz;
-    if (job.data.payload.fileName) {
-        inStream = fs.createReadStream(job.data.payload.fileName);
-    }
-    else {
-        inStream = progress(request.get({
-            url: job.data.payload.url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state) {
-            job.progress(state.percent, 100);
-        }).on('response', function(response) {
-            error = (response.statusCode !== 200) ? "download error" : error;
-        });
-        bz = spawn("bunzip2");
-    }
     var parser = spawn("java", ["-jar",
         "parser/target/stats-0.1.0.one-jar.jar"
     ], {
@@ -87,12 +72,23 @@ function runParser(job, cb) {
         }
     });
     d.run(function() {
-        if (bz) {
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
+        if (job.data.payload.fileName) {
+            inStream = fs.createReadStream(job.data.payload.fileName);
+            inStream.pipe(parser.stdin);
         }
         else {
-            inStream.pipe(parser.stdin);
+            inStream = progress(request.get({
+                url: job.data.payload.url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state) {
+                job.progress(state.percent, 100);
+            }).on('response', function(response) {
+                error = (response.statusCode !== 200) ? "download error" : error;
+            });
+            bz = spawn("bunzip2");
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
         }
         parser.stdout.pipe(outStream);
         outStream.on('root', preProcess);
