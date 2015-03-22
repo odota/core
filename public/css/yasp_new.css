@@ -198,6 +198,8 @@ img.grayscale {
 
 .alt {
   background: url("../images/dotawallpaper.jpg");
+  background-size: cover;
+  background-position: center;
 }
 
 .alt .lead {
