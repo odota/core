@@ -27,7 +27,23 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
-        parsed_matches_last_day: function(cb) {
+        queued_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 0,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        skipped_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 3,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        parsed_last_day: function(cb) {
             db.matches.count({
                 parse_status: 2,
                 start_time: {
