@@ -37,9 +37,9 @@ function prepareMatch(match_id, cb) {
                         }
                         computeMatchData(match);
                         renderMatch(match);
-                        //Add to cache if status is parsed
-                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
-                            redis.setex(key, 86400, JSON.stringify(match));
+                        //Add to cache if latest parse version
+                        if (match.parsed_data && match.parsed_data.version === constants.parser_version && config.NODE_ENV !== "development") {
+                            redis.setex(key, 3600, JSON.stringify(match));
                         }
                         return cb(err, match);
                     });

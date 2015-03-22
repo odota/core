@@ -107,7 +107,7 @@ function runParser(job, cb) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            console.log(e);
+            //console.log(e);
         },
         "hero_log": function(e) {
             //get hero by id
@@ -217,7 +217,7 @@ function runParser(job, cb) {
             e.slot = name_to_slot[e.unit];
             //time, key, only, so we lose the original prefix (stored in unit)
             populate(e);
-            console.log(e);
+            //console.log(e);
         },
         //"chat_hero_kill": populate,
         "stuns": populate,
