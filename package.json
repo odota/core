@@ -18,7 +18,7 @@
     "getmissing": "node runner.js getmissing",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",
-    "build": "mvn -q -f parser/pom.xml package",
+    "build": "mvn -q -f parser/pom.xml clean install -U",
     "postinstall": "npm run bower && npm run browserify && npm run constants"
   },
   "repository": {
