@@ -63,10 +63,9 @@ io.sockets.on('connection', function(socket) {
                 var match_id = data.match_id;
                 match_id = Number(match_id);
                 socket.emit('log', "Received request for " + match_id);
-                queueReq("api_details", {
+                queueReq("request", {
                     match_id: match_id,
-                    request: true,
-                    priority: "high"
+                    request: true
                 }, function(err, job) {
                     if (err) {
                         return socket.emit('err', err);

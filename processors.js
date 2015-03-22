@@ -18,9 +18,10 @@ var queueReq = operations.queueReq;
 function processParse(job, cb) {
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
+    var match_id = job.data.payload.match_id;
+    console.time("parse " + match_id);
     runParser(job, function(err, parsed_data) {
-        var match_id = job.data.payload.match_id || parsed_data.match_id;
-        console.time("parse " + match_id);
+        match_id = match_id || parsed_data.match_id;
         job.data.payload.match_id = match_id;
         job.data.payload.parsed_data = parsed_data;
         if (err && noRetry) {
@@ -423,7 +424,7 @@ function processApi(job, cb) {
                 else if (match.expired) {
                     job.log("api: match expired");
                     job.progress(100, 100);
-                    cb();
+                    return cb();
                 }
                 else if (match.request) {
                     queueReq("request_parse", match, function(err, job2) {
