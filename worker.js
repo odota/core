@@ -183,13 +183,13 @@ function startScan() {
     }
 }
 var q = async.queue(function(match, cb) {
-    var tracked = false;
+    var active = false;
     var parse = false;
     async.each(match.players, function(p, cb) {
-        if (p.account_id in trackedPlayers) {
-            tracked = true;
+        if (p.account_id in activePlayers) {
+            active = true;
         }
-        if (p.account_id in activePlayers){
+        if (p.account_id in trackedPlayers){
             parse = true;
         }
         if (p.account_id in ratingPlayers && match.lobby_type === 7) {
@@ -208,7 +208,7 @@ var q = async.queue(function(match, cb) {
         if (!err) {
             redis.set("match_seq_num", match.match_seq_num);
         }
-        if (tracked) {
+        if (active) {
             match.parse_status = parse ? 0 : 3;
             insertMatch(match, function(err) {
                 if (err) {
