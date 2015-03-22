@@ -338,11 +338,38 @@ function generateGraphData(match) {
 }
 
 function fillPlayerNames(players, cb) {
-    //todo
     //make hash of account_ids to players
     //use $in query to get these players from db
     //loop through results and join with players by hash
     //iterate back through original array to get back players in order
+    var player_hash = {};
+    players.forEach(function(p) {
+        player_hash[p.account_id] = p;
+    });
+    var player_ids = players.map(function(p) {
+        return p.account_id;
+    });
+    db.players.find({
+        account_id: {
+            $in: player_ids
+        }
+    }, function(err, docs) {
+        if (err) {
+            return cb(err);
+        }
+        docs.forEach(function(d) {
+            var player = player_hash[d.account_id];
+            for (var prop in d) {
+                player[prop] = d[prop];
+            }
+        });
+        players = players.map(function(p) {
+            return player_hash[p.account_id];
+        });
+        cb(err);
+    });
+    /*
+    //todo
     async.mapSeries(players, function(player, cb) {
         db.players.findOne({
             account_id: player.account_id
@@ -357,6 +384,7 @@ function fillPlayerNames(players, cb) {
     }, function(err) {
         cb(err);
     });
+    */
 }
 
 function getSets(cb) {

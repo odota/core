@@ -56,6 +56,7 @@ function runParser(job, cb) {
     var inStream;
     var bz;
     var parser = spawn("java", ["-jar",
+        "-Xmx64m",
         "parser/target/stats-0.1.0.one-jar.jar"
     ], {
         stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
