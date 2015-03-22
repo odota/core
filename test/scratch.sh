@@ -1,4 +1,4 @@
-#mvn -f parser/pom.xml package && java -jar parser/target/stats-0.1.0.one-jar.jar < ../testfiles/1193091757.dem > output.json
+mvn -f parser/pom.xml package && java -jar parser/target/stats-0.1.0.one-jar.jar < ../testfiles/1193091757.dem > output.json
 java -jar parser/target/stats-0.1.0.one-jar.jar < ../testfiles/766228935_legacy.dem > output.json
 #wget http://replay133.valve.net/570/1235641720_1996593833.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 #index out of bounds exception

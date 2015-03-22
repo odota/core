@@ -289,8 +289,8 @@ public class Main {
 	public void onTick(Context ctx){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
         time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : 0; 
-		Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 		if (time > nextInterval){
+		Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 		if (pr!=null){
 			if (!initialized) {
 				lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
@@ -305,16 +305,16 @@ public class Main {
 			}
 
 				for (int i = 0; i < numPlayers; i++) {
-									Integer hero = (Integer)pr.getState()[heroIdx+i];
-				if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
-					//hero_to_slot.put(hero, i);
-					slot_to_hero.put(i, hero);
-					Entry entry = new Entry(time);
-					entry.type="hero_log";
-					entry.slot=i;
-					entry.key=String.valueOf(hero);
-					es.output(entry);
-				}
+					Integer hero = (Integer)pr.getState()[heroIdx+i];
+					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
+						//hero_to_slot.put(hero, i);
+						slot_to_hero.put(i, hero);
+						Entry entry = new Entry(time);
+						entry.type="hero_log";
+						entry.slot=i;
+						entry.key=String.valueOf(hero);
+						es.output(entry);
+					}
 				
 					Entry entry = new Entry(time);
 					entry.type = "interval";
