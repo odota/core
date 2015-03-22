@@ -77,7 +77,7 @@ function runParser(job, cb) {
             inStream = fs.createReadStream(job.data.payload.fileName);
             inStream.pipe(parser.stdin);
         }
-        else {
+        else if (job.data.payload.url){
             inStream = progress(request.get({
                 url: job.data.payload.url,
                 encoding: null,
@@ -90,6 +90,9 @@ function runParser(job, cb) {
             bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
+        }
+        else{
+            throw new Error("no parse input");
         }
         parser.stdout.pipe(outStream);
         outStream.on('root', preProcess);

@@ -359,8 +359,10 @@ function fillPlayerNames(players, cb) {
         }
         docs.forEach(function(d) {
             var player = player_hash[d.account_id];
-            for (var prop in d) {
-                player[prop] = d[prop];
+            if (player && d) {
+                for (var prop in d) {
+                    player[prop] = d[prop];
+                }
             }
         });
         players = players.map(function(p) {
