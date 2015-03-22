@@ -261,6 +261,7 @@ function runParser(job, cb) {
             e.key = JSON.parse(e.key);
             e.posData = true;
             populate(e);
+            e.posData = false;
             e.type = "obs_log";
             populate(e);
         },
@@ -268,6 +269,7 @@ function runParser(job, cb) {
             e.key = JSON.parse(e.key);
             e.posData = true;
             populate(e);
+            e.posData = false;
             e.type = "sen_log";
             populate(e);
         }
