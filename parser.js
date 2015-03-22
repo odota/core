@@ -6,7 +6,7 @@ if (cluster.isMaster) {
     console.log("[PARSER] starting parser master");
     jobs.process('request_parse', processors.processParse);
     // Fork workers.
-    for (var i = 0; i < numCPUs; i++) {
+    for (var i = 0; i < 1; i++) {
         cluster.fork();
     }
     cluster.on('death', function(worker) {
@@ -15,5 +15,5 @@ if (cluster.isMaster) {
 }
 else {
     console.log("[PARSER] starting parser worker");
-    jobs.process('parse', processors.processParse);
+    jobs.process('parse', numCPUs, processors.processParse);
 }
