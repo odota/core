@@ -15,5 +15,5 @@ if (cluster.isMaster) {
 }
 else {
     console.log("[PARSER] starting parser worker");
-    jobs.process('parse', 4, processors.processParse);
+    jobs.process('parse', 2, processors.processParse);
 }
