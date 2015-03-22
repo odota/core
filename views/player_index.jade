@@ -117,7 +117,7 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
-      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? player.ratings : [])};
+      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? ratings : [])};
       $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
       $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
       var times = ratings.map(function(r){return new Date(r.time);});

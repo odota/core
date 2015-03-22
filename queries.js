@@ -369,7 +369,6 @@ function fillPlayerNames(players, cb) {
         cb(err);
     });
     /*
-    //todo
     async.mapSeries(players, function(player, cb) {
         db.players.findOne({
             account_id: player.account_id
@@ -664,20 +663,7 @@ function fillPlayerMatches(player, options, cb) {
             }
         }
     }, {
-        fields: {
-            "players.$": 1,
-            start_time: 1,
-            match_id: 1,
-            duration: 1,
-            cluster: 1,
-            radiant_win: 1,
-            parse_status: 1,
-            //todo project the parsed data to reduce result set size?
-            parsed_data: 1,
-            first_blood_time: 1,
-            lobby_type: 1,
-            game_mode: 1
-        }
+        fields: options.project
     }, function(err, matches) {
         if (err) {
             console.log(err);
@@ -694,7 +680,7 @@ function fillPlayerMatches(player, options, cb) {
             "balanced": 1
         });
         balanced = filter(balanced, {
-            "hero_id": options.hero_id
+            "hero_id": options.select.hero_id
         });
         var balanced_win_matches = filter(balanced, {
             "win": 1

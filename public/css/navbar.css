@@ -5,8 +5,8 @@ body {
   font-family:"Roboto Slab", Arial, sans-serif;
 }
 
-table tbody * {
-  font-family: Arial,sans-serif;
+table tbody *, table tfoot * {
+  font-family: Arial, sans-serif;
 }
 
 /* fix bs3 horizontal scrollbar bug */

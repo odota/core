@@ -3,7 +3,7 @@ var db = require('monk')(config.MONGO_URL);
 db.players = db.get('players');
 db.matches = db.get('matches');
 db.ratings = db.get('ratings');
-db.matches.index({'players.account_id':1,'players.hero_id':1});
+db.matches.index({'players.account_id':1});
 db.matches.index({
     'match_id': -1
 }, {
