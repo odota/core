@@ -3,7 +3,7 @@ var db = require('./db');
 var moment = require('moment');
 var selector = require('./selector');
 module.exports = function getStatus(cb) {
-    async.parallel({
+    async.series({
         matches: function(cb) {
             db.matches.count({}, cb);
         },
