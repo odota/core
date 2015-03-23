@@ -71,6 +71,7 @@ function generatePositionData(d, p) {
 
 function computeMatchData(match) {
     //for aggregation, want undefined fields for invalids, aggregator counts toward n unless undefined
+    //for display, want everything to be present to avoid template crash
     //v4 matches need patching, patching produces v5 data with some undefined fields
     if (!match.parsed_data || !match.parsed_data.version || match.parsed_data.version < 4) {
         //console.log("parse data too old, nulling");
@@ -173,6 +174,7 @@ function computeMatchData(match) {
         }
         player.parsedPlayer = p;
     });
+    match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
 }
 
 function renderMatch(match) {
@@ -256,7 +258,7 @@ function renderMatch(match) {
         "bg": -1,
         "feed": -1,
         "noob": -1,
-        "commended": 2,
+        "commend": 2,
         "ty": 1,
         "thanks": 1,
         "wp": 1,
@@ -274,6 +276,7 @@ function renderMatch(match) {
 }
 
 function generateGraphData(match) {
+    //todo this function shouldn't need || {} as renderMatch populates?
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -370,22 +373,6 @@ function fillPlayerNames(players, cb) {
         });
         cb(err);
     });
-    /*
-    async.mapSeries(players, function(player, cb) {
-        db.players.findOne({
-            account_id: player.account_id
-        }, function(err, dbPlayer) {
-            if (dbPlayer) {
-                for (var prop in dbPlayer) {
-                    player[prop] = dbPlayer[prop];
-                }
-            }
-            cb(err);
-        });
-    }, function(err) {
-        cb(err);
-    });
-    */
 }
 
 function getSets(cb) {
@@ -702,11 +689,10 @@ function fillPlayerMatches(player, options, cb) {
         for (var i = 0; i < matches.length; i++) {
             var m = matches[i];
             var p = m.players[0];
+            //map if player was on radiant for this match for efficient teammate check later
             radiantMap[m.match_id] = isRadiant(p);
-            m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
         }
-        //todo can replace the aggData_win with just a count of wins over the balanced matches?
-        //for "counts" fields such as lane, game mode, leaver status it might make sense to display a winrate for each value
+        //todo for "counts" fields such as lane, game mode, leaver status it might make sense to display a winrate for each value
         player.win = player.aggData_win.hero_id.n;
         player.lose = player.aggData.hero_id.n - player.aggData_win.hero_id.n;
         player.games = player.aggData.hero_id.n;

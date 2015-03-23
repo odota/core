@@ -18,6 +18,7 @@ import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
@@ -57,6 +58,11 @@ public class Main {
 		}
 		System.err.println(message.getClass().getName());
 		System.out.println(message.toString());
+	}
+	
+	@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
+	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
+		System.err.println(message);
 	}
 
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)

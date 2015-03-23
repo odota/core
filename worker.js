@@ -18,7 +18,7 @@ var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
 var trackedPlayers = {};
-var activePlayers = {};
+var userPlayers = {};
 var ratingPlayers = {};
 /*
 var seaport = require('seaport');
@@ -96,7 +96,7 @@ function build(cb) {
                 cb(err, t);
             });
         },
-        "activePlayers": function(cb) {
+        "userPlayers": function(cb) {
             db.players.find({
                 last_visited: {
                     $ne: null
@@ -148,12 +148,13 @@ function build(cb) {
         result.ratingPlayers = result.retrievers.ratingPlayers;
         result.bots = result.retrievers.bots;
         result.retrievers = result.retrievers.retrievers;
-        trackedPlayers = result.trackedPlayers;
-        ratingPlayers = result.ratingPlayers;
-        activePlayers = result.activePlayers;
         for (var key in result) {
             redis.set(key, JSON.stringify(result[key]));
         }
+        //set local vars, could get them from redis if necessary
+        trackedPlayers = result.trackedPlayers;
+        ratingPlayers = result.ratingPlayers;
+        userPlayers = result.userPlayers;
         cb();
     });
 }
@@ -184,7 +185,7 @@ function startScan() {
 }
 var q = async.queue(function(match, cb) {
     async.each(match.players, function(p, cb) {
-        if (p.account_id in activePlayers) {
+        if (p.account_id in userPlayers) {
             //skipped
             match.parse_status = 3;
         }

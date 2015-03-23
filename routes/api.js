@@ -1,7 +1,5 @@
 var express = require('express');
 var api = express.Router();
-var utility = require('../utility');
-var makeSort = utility.makeSort;
 var constants = require('../constants');
 var db = require('../db');
 var queries = require('../queries');
@@ -20,7 +18,9 @@ api.get('/matches', function(req, res, next) {
     limit = (!limit || limit > 10) ? 1 : limit;
     var select = req.query.select || {};
     //var sort = makeSort(req.query.order, req.query.columns);
-    var sort = {"match_id":-1};
+    var sort = {
+        "match_id": -1
+    };
     var project = req.query.project || {};
     if (select["players.account_id"]) {
         //convert the passed account id to number
@@ -39,10 +39,30 @@ api.get('/matches', function(req, res, next) {
         res.json(result);
     });
 });
-
+/*
+function makeSort(order, columns) {
+//Makes sort from a datatables call
+    var sort = {
+        match_id: -1
+    };
+    if (order && columns) {
+        sort = {};
+        order.forEach(function(s) {
+            var c = columns[Number(s.column)];
+            if (c) {
+                sort[c.data] = s.dir === 'desc' ? -1 : 1;
+            }
+        });
+    }
+    return sort;
+}
+*/
 function advQuery(select, options, cb) {
     //currently api is using this
-    //custom query wants some fields back, with aggregation on those fields
+    //matches page, want matches fitting criteria
+    //player matches page, want winrate, matches fitting criteria
+    //player trends page, want agregation on matches fitting criteria
+    //custom query wants some fields back, and some criteria, with aggregation on those fields
     //client options should include:
     //filter: specific player/specific hero id
     //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?)
@@ -57,9 +77,7 @@ function advQuery(select, options, cb) {
     //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
     //select, a mongodb search hash
     //options, a mongodb/monk options hash
-    //CONSTRAINT: each match can only have a SINGLE player matching the condition in order to make winrate defined and aggregations to work!
-    //therefore a specific player or hero MUST be defined if we want to aggregate!
-    //or we can do it anyway, and just not use the data since it only applies to the first hero
+    //CONSTRAINT: each match can only have a SINGLE player matching the condition in order to make winrate/aggregations meaningful!
     //check select.keys to see if user requested special conditions
     //check options.fields.keys to see if user requested special fields, aggregate the selected fields
     //we need to pass aggregator specific fields since not all fields may exist (since we projected)
@@ -79,5 +97,4 @@ function advQuery(select, options, cb) {
         cb(err, results);
     });
 }
-
 module.exports = api;

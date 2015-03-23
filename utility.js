@@ -160,24 +160,6 @@ function convert32to64(id) {
 function isRadiant(player) {
         return player.player_slot < 127;
     }
-    /*
-     * Makes sort from a datatables call
-     */
-function makeSort(order, columns) {
-    var sort = {
-        match_id: -1
-    };
-    if (order && columns) {
-        sort = {};
-        order.forEach(function(s) {
-            var c = columns[Number(s.column)];
-            if (c) {
-                sort[c.data] = s.dir === 'desc' ? -1 : 1;
-            }
-        });
-    }
-    return sort;
-}
 
 function mergeObjects(merge, val) {
     for (var attr in val) {
@@ -266,7 +248,6 @@ module.exports = {
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,
-    makeSort: makeSort,
     mergeObjects: mergeObjects,
     mode: mode,
     getParseSchema: getParseSchema
