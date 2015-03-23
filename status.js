@@ -29,11 +29,15 @@ module.exports = function getStatus(cb) {
         },
         queued_last_day: function(cb) {
             db.matches.count({
-                parse_status: 0,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
-            }, cb);
+            }, function(err, docs) {
+                var count = docs ? docs.filter(function(m) {
+                    m.parse_status === 0;
+                }) : 0;
+                cb(err, count);
+            });
         },
         skipped_last_day: function(cb) {
             db.matches.count({
@@ -41,7 +45,12 @@ module.exports = function getStatus(cb) {
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
-            }, cb);
+            }, function(err, docs) {
+                var count = docs ? docs.filter(function(m) {
+                    m.parse_status === 3;
+                }) : 0;
+                cb(err, count);
+            });
         },
         parsed_last_day: function(cb) {
             db.matches.count({
@@ -49,7 +58,12 @@ module.exports = function getStatus(cb) {
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
-            }, cb);
+            }, function(err, docs) {
+                var count = docs ? docs.filter(function(m) {
+                    m.parse_status === 2;
+                }) : 0;
+                cb(err, count);
+            });
         },
         unavailable_last_day: function(cb) {
             db.matches.count({
@@ -57,7 +71,12 @@ module.exports = function getStatus(cb) {
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
-            }, cb);
+            }, function(err, docs) {
+                var count = docs ? docs.filter(function(m) {
+                    m.parse_status === 1
+                }) : 0;
+                cb(err, count);
+            });
         },
         full_history: function(cb) {
             db.players.count({

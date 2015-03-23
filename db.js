@@ -17,8 +17,7 @@ db.matches.index({
     unique: true
 });
 db.matches.index({
-    'start_time': -1,
-    'parse_status': 1
+    'start_time': -1
 });
 db.players.index('account_id', {
     unique: true
@@ -35,6 +34,9 @@ db.players.index({
 db.players.index({
     'last_summaries_update': 1
 });
+db.players.index({
+    'cheese': -1
+});
 db.ratings.index({
     'match_id': -1,
     'account_id': 1,
@@ -42,7 +44,5 @@ db.ratings.index({
 }, {
     unique: true
 });
-db.players.index({
-    'cheese': -1
-});
+
 module.exports = db;
