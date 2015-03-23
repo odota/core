@@ -16,7 +16,7 @@ module.exports = function unparsed(done) {
                 cb(err);
             });
         }, function(err) {
-            done(err);
+            done(err, docs.length);
         });
     });
 };
