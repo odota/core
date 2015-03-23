@@ -20,6 +20,7 @@ module.exports = function getStatus(cb) {
         tracked_players: function(cb) {
             db.players.count(selector("tracked"), cb);
         },
+        /*
         matches_last_day: function(cb) {
             db.matches.find({
                 start_time: {
@@ -93,6 +94,46 @@ module.exports = function getStatus(cb) {
                 }).length : 0;
                 cb(err, count);
             });
+        },
+        */
+        matches_last_day: function(cb) {
+            db.matches.count({
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        queued_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 0,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        skipped_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 3,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        parsed_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 2,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
+        },
+        unavailable_last_day: function(cb) {
+            db.matches.count({
+                parse_status: 1,
+                start_time: {
+                    $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, cb);
         },
         full_history: function(cb) {
             db.players.count({
