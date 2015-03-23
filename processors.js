@@ -16,6 +16,16 @@ var progress = require('request-progress');
 var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
+    if (job.data.payload.expired) {
+        return cb(null, {
+            error: "match expired"
+        });
+    }
+    if (!job.data.payload.url && !job.data.payload.fileName) {
+        return cb(null, {
+            error: "no input"
+        });
+    }
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
     var match_id = job.data.payload.match_id;
@@ -49,9 +59,6 @@ function processParse(job, cb) {
 
 function runParser(job, cb) {
     logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
-    if (job.data.payload.expired) {
-        return cb("match expired");
-    }
     //streams
     var inStream;
     var bz;
@@ -77,7 +84,7 @@ function runParser(job, cb) {
             inStream = fs.createReadStream(job.data.payload.fileName);
             inStream.pipe(parser.stdin);
         }
-        else if (job.data.payload.url){
+        else if (job.data.payload.url) {
             inStream = progress(request.get({
                 url: job.data.payload.url,
                 encoding: null,
@@ -91,7 +98,7 @@ function runParser(job, cb) {
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
-        else{
+        else {
             throw new Error("no parse input");
         }
         parser.stdout.pipe(outStream);

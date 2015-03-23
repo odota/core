@@ -49,7 +49,7 @@ d.run(function() {
     build(function() {
         startScan();
         jobs.promote();
-        jobs.process('api', processors.processApi);
+        jobs.process('api', config.STEAM_API_KEY.split(",").length, processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
         setInterval(fullhistory, 17 * 60 * 1000, function() {});

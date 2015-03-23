@@ -28,7 +28,7 @@
   "dependencies": {
     "JSONStream": "^0.10.0",
     "async": "0.9.0",
-    "aws-sdk": "~2.1.17",
+    "aws-sdk": "~2.1.18",
     "big-number": "0.3.1",
     "body-parser": "1.12.2",
     "bower": "^1.3.12",
@@ -40,7 +40,7 @@
     "datatables": "~1.10.5",
     "dota2": "RJacksonm1/node-dota2",
     "dotenv": "~1.0.0",
-    "express": "~4.12.2",
+    "express": "~4.12.3",
     "express-session": "~1.10.4",
     "foreman": "~1.3.0",
     "heatmap.js": "howardc93/heatmap.js",
@@ -74,11 +74,11 @@
     "database-cleaner": "~0.9.1",
     "istanbul": "~0.3.8",
     "mocha": "~2.2.1",
-    "mongodb": "~1.4.34",
+    "mongodb": "~2.0.23",
     "nock": "~1.2.0",
     "nodemon": "^1.3.7",
     "supertest": "^0.15.0",
-    "watchify": "~2.4.0",
+    "watchify": "~2.5.0",
     "zombie": "~3.1.0"
   }
 }

@@ -9,16 +9,14 @@ module.exports = function unparsed(done) {
         if (err) {
             return done(err);
         }
-        var i = 0;
+        console.log(docs.length);
         async.eachSeries(docs, function(match, cb) {
             queueReq("parse", match, function(err, job) {
-                i += 1;
                 console.log("[UNPARSED] match %s, jobid %s", match.match_id, job.id);
                 cb(err);
             });
         }, function(err) {
-            console.log("added %s matches to parse queue", i);
-            done(err, i);
+            done(err);
         });
     });
 };

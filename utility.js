@@ -98,7 +98,7 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-        var delay = 1000;
+        var delay = 800;
         //select a random element if array
         var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
         var parse = urllib.parse(u, true);
@@ -106,7 +106,6 @@ function getData(url, cb) {
             var api_keys = config.STEAM_API_KEY.split(",");
             parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
             parse.search = null;
-            delay = 1000 / api_keys.length;
         }
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
