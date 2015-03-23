@@ -32,6 +32,10 @@ module.exports = function getStatus(cb) {
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
+            }, {
+                fields: {
+                    "parse_status": 1
+                }
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
                     return m.parse_status === 0;
@@ -41,9 +45,12 @@ module.exports = function getStatus(cb) {
         },
         skipped_last_day: function(cb) {
             db.matches.find({
-                parse_status: 3,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, {
+                fields: {
+                    "parse_status": 1
                 }
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
@@ -54,9 +61,12 @@ module.exports = function getStatus(cb) {
         },
         parsed_last_day: function(cb) {
             db.matches.find({
-                parse_status: 2,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
+                }
+            }, {
+                fields: {
+                    "parse_status": 1
                 }
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
@@ -67,9 +77,12 @@ module.exports = function getStatus(cb) {
         },
         unavailable_last_day: function(cb) {
             db.matches.find({
-                parse_status: 1,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
+                },
+            }, {
+                fields: {
+                    "parse_status": 1
                 }
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
