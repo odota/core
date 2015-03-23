@@ -3,7 +3,7 @@ var db = require('./db');
 var moment = require('moment');
 var selector = require('./selector');
 module.exports = function getStatus(cb) {
-    async.series({
+    async.parallel({
         matches: function(cb) {
             db.matches.count({}, cb);
         },
@@ -21,11 +21,14 @@ module.exports = function getStatus(cb) {
             db.players.count(selector("tracked"), cb);
         },
         matches_last_day: function(cb) {
-            db.matches.count({
+            db.matches.find({
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
-            }, cb);
+            }, function(err, docs){
+                var count = docs ? docs.length : 0;
+                cb(err, count);
+            });
         },
         queued_last_day: function(cb) {
             db.matches.find({

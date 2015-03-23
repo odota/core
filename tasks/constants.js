@@ -43,7 +43,7 @@ module.exports = function generateConstants(outputFile, done) {
         //significant items
         constants.big_items = {};
         for (var key in items) {
-            if (items[key].cost > 2000) {
+            if (items[key].cost > 1400) {
                 constants.big_items[key] = items[key];
             }
         }

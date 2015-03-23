@@ -6,13 +6,7 @@ module.exports = function(type) {
     };
     var opts = {
         "tracked": {
-            $or: [{
-                last_visited: active
-        }, {
-                contributor: {
-                    $gt: 0
-                }
-            }]
+            last_visited: active
         }
     };
     return opts[type];
