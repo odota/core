@@ -28,7 +28,7 @@ module.exports = function getStatus(cb) {
             }, cb);
         },
         queued_last_day: function(cb) {
-            db.matches.count({
+            db.matches.find({
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
                 }
@@ -40,7 +40,7 @@ module.exports = function getStatus(cb) {
             });
         },
         skipped_last_day: function(cb) {
-            db.matches.count({
+            db.matches.find({
                 parse_status: 3,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
@@ -53,7 +53,7 @@ module.exports = function getStatus(cb) {
             });
         },
         parsed_last_day: function(cb) {
-            db.matches.count({
+            db.matches.find({
                 parse_status: 2,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
@@ -66,7 +66,7 @@ module.exports = function getStatus(cb) {
             });
         },
         unavailable_last_day: function(cb) {
-            db.matches.count({
+            db.matches.find({
                 parse_status: 1,
                 start_time: {
                     $gt: Number(moment().subtract(1, 'day').format('X'))
