@@ -5,6 +5,8 @@ java -jar parser/target/stats-0.1.0.one-jar.jar < ../testfiles/766228935_legacy.
 wget http://replay122.valve.net/570/1317849236_1002325006.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 #crash
 wget http://replay123.valve.net/570/1336271164_1831063607.dem.bz2 -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
+#cyrillic
+wget https://github.com/yasp-dota/testfiles/raw/master/1232307498_cyrillic.dem -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 
  db.matches.find({
     'players.account_id': 88367253

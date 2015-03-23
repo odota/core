@@ -67,7 +67,7 @@ function getReplayUrl(match, cb) {
     }, function(err, doc) {
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             match.expired = true;
-            //set status to 1 if this match doesn't have a parse status already
+            //set status to 1 if this match doesn't have a nonzero parse status already
             match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 1;
             return cb(err);
         }

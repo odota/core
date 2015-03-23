@@ -705,6 +705,8 @@ function fillPlayerMatches(player, options, cb) {
             radiantMap[m.match_id] = isRadiant(p);
             m.player_win = (isRadiant(p) === m.radiant_win); //did the player win?
         }
+        //todo can replace the aggData_win with just a count of wins over the balanced matches?
+        //for "counts" fields such as lane, game mode, leaver status it might make sense to display a winrate for each value
         player.win = player.aggData_win.hero_id.n;
         player.lose = player.aggData.hero_id.n - player.aggData_win.hero_id.n;
         player.games = player.aggData.hero_id.n;

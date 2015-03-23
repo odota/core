@@ -183,14 +183,14 @@ function startScan() {
     }
 }
 var q = async.queue(function(match, cb) {
-    var active = false;
-    var parse = false;
     async.each(match.players, function(p, cb) {
         if (p.account_id in activePlayers) {
-            active = true;
+            //skipped
+            match.parse_status = 3;
         }
-        if (p.account_id in trackedPlayers){
-            parse = true;
+        if (p.account_id in trackedPlayers) {
+            //queued
+            match.parse_status = 0;
         }
         if (p.account_id in ratingPlayers && match.lobby_type === 7) {
             queueReq("mmr", {
@@ -205,27 +205,27 @@ var q = async.queue(function(match, cb) {
             cb();
         }
     }, function(err) {
-        if (!err) {
-            redis.set("match_seq_num", match.match_seq_num);
+        if (err) {
+            return cb(err);
         }
-        if (active) {
-            match.parse_status = parse ? 0 : 3;
+        if (match.parse_status === 0 || match.parse_status === 3) {
             insertMatch(match, function(err) {
                 if (err) {
-                    return cb(err);
+                    return cb(err, match);
                 }
-                if (!match.expired && parse) {
+                //queue parse
+                if (match.parse_status === 0) {
                     queueReq("parse", match, function(err, job) {
-                        cb(err, job);
+                        cb(err, match);
                     });
                 }
                 else {
-                    cb(err);
+                    return cb(err, match);
                 }
             });
         }
         else {
-            cb(err);
+            cb(err, match);
         }
     });
 });
@@ -244,7 +244,16 @@ function scanApi(seq_num) {
             next_seq_num = resp[resp.length - 1].match_seq_num + 1;
         }
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
-        q.push(resp);
+        q.push(resp, function(err, match) {
+            if (err) {
+                console.log("failed to insert match from scanApi");
+                process.exit(1);
+            }
+            else {
+                //set the redis progress
+                redis.set("match_seq_num", match.match_seq_num);
+            }
+        });
         //wait 100ms for each match less than 100
         var delay = (100 - resp.length) * 100;
         setTimeout(function() {

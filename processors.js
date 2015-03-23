@@ -16,16 +16,6 @@ var progress = require('request-progress');
 var queueReq = operations.queueReq;
 
 function processParse(job, cb) {
-    if (job.data.payload.expired) {
-        return cb(null, {
-            error: "match expired"
-        });
-    }
-    if (!job.data.payload.url && !job.data.payload.fileName) {
-        return cb(null, {
-            error: "no input"
-        });
-    }
     var attempts = job.toJSON().attempts.remaining;
     var noRetry = attempts <= 1;
     var match_id = job.data.payload.match_id;

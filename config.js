@@ -10,7 +10,8 @@ var defaults = {
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
-    "PORT": 5000, //this value must be set in .env to make nf use it!
+    "LANG": "en_US.UTF-8", //this value must be set in .env to make nf export it to upstart!
+    "PORT": 5000, //this value must be set in .env to make nf use it over a preset PORT env var!
     "RETRIEVER_PORT": 5100,
     "PARSER_PORT": 5200,
     "REGISTRY_PORT": 5300,
