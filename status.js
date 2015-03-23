@@ -35,7 +35,7 @@ module.exports = function getStatus(cb) {
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
                     m.parse_status === 0;
-                }) : 0;
+                }).length : 0;
                 cb(err, count);
             });
         },
@@ -48,7 +48,7 @@ module.exports = function getStatus(cb) {
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
                     m.parse_status === 3;
-                }) : 0;
+                }).length : 0;
                 cb(err, count);
             });
         },
@@ -61,7 +61,7 @@ module.exports = function getStatus(cb) {
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
                     m.parse_status === 2;
-                }) : 0;
+                }).length : 0;
                 cb(err, count);
             });
         },
@@ -73,8 +73,8 @@ module.exports = function getStatus(cb) {
                 }
             }, function(err, docs) {
                 var count = docs ? docs.filter(function(m) {
-                    m.parse_status === 1
-                }) : 0;
+                    m.parse_status === 1;
+                }).length : 0;
                 cb(err, count);
             });
         },
