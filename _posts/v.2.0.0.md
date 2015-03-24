@@ -2,6 +2,8 @@
 
 YASP is jumping a version number, releasing v2.0.0!
 
+<!--more-->
+
 Features
 ====
 * Manual name update. Relogging now updates your name from the Steam API.
