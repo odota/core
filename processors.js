@@ -224,8 +224,9 @@ function runParser(job, cb) {
         "runes": populate,
         "runes_bottled": populate,
         "interval": function(e) {
+            if (e.time >= 0){
             //if on minute, add to lh/gold/xp
-            if (e.time >= 0 && e.time % 60 === 0) {
+            if (e.time % 60 === 0) {
                 e.interval = true;
                 e.type = "times";
                 e.value = e.time;
@@ -251,12 +252,13 @@ function runParser(job, cb) {
                     e.type = "lane_pos";
                     populate(e);
                 }
-                /*
+            }
+            }
+            /*
             //log all the positions for animation
             e.type = "pos_log";
             populate(e);
             */
-            }
         },
         "obs": function(e) {
             e.key = JSON.parse(e.key);
