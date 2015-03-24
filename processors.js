@@ -225,7 +225,7 @@ function runParser(job, cb) {
         "runes_bottled": populate,
         "interval": function(e) {
             //if on minute, add to lh/gold/xp
-            if (e.time % 60 === 0) {
+            if (e.time >= 0 && e.time % 60 === 0) {
                 e.interval = true;
                 e.type = "times";
                 e.value = e.time;
