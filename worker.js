@@ -247,7 +247,7 @@ function scanApi(seq_num) {
         q.push(resp, function(err, match) {
             if (err) {
                 console.log("failed to insert match from scanApi");
-                process.exit(1);
+                throw err;
             }
             else {
                 //set the redis progress
