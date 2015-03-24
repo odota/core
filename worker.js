@@ -246,7 +246,7 @@ function scanApi(seq_num) {
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
         q.push(resp, function(err, match) {
             if (err) {
-                console.log("failed to insert match from scanApi");
+                console.log("failed to insert match from scanApi %s", match.match_id);
                 throw err;
             }
             else {
