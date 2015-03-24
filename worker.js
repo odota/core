@@ -248,7 +248,7 @@ function scanApi(seq_num) {
             if (err) {
                 console.log("failed to insert match from scanApi %s", match);
                 console.log(err);
-                throw err;
+                //throw err;
             }
             else {
                 //set the redis progress
