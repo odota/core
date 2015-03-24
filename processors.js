@@ -81,22 +81,32 @@ function runParser(job, cb) {
                 timeout: 30000
             })).on('progress', function(state) {
                 job.progress(state.percent, 100);
+                outStream.write(JSON.stringify({
+                    "type": "progress",
+                    "key": state.percent
+                }));
             }).on('response', function(response) {
-                error = (response.statusCode !== 200) ? "download error" : error;
+                if (response.statusCode !== 200) {
+                    error = "download error";
+                    outStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": error
+                    }));
+                }
             });
             bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
-            setInterval(function() {
-                //todo can we write directly to outStream, and if so, do we risk interleaving JSON?
-                outStream.write(JSON.stringify({type:"test"}));
-            }, 1);
         }
         else {
             throw new Error("no parse input");
         }
         parser.on('exit', function(code) {
             error = code;
+            outStream.write(JSON.stringify({
+                "type": "exit",
+                "key": code
+            }));
         });
         parser.stdout.pipe(outStream);
         outStream.on('root', preProcess);

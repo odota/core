@@ -98,6 +98,13 @@ function computeMatchData(match) {
                     k.key !== "npc_dota_hero_meepo";
                 });
             }
+            //filter interval data to only be >0
+            var intervals = ["lh", "gold", "xp", "times"];
+            intervals.forEach(function(key) {
+                p[key] = p[key].filter(function(el, i) {
+                    return p.times[i] >= 0;
+                });
+            });
             p.neutral_kills = 0;
             p.tower_kills = 0;
             p.courier_kills = 0;
