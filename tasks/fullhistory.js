@@ -5,7 +5,6 @@ var queueReq = require('../operations').queueReq;
 var getData = utility.getData;
 var urllib = require('url');
 var generateJob = utility.generateJob;
-var selector = require('../selector');
 var constants = require('../sources.json');
 module.exports = function getFullMatchHistory(heroes, done) {
     var heroArray = Object.keys(constants.heroes);
@@ -16,7 +15,11 @@ module.exports = function getFullMatchHistory(heroes, done) {
         done = heroes;
     }
     var match_ids = {};
-    db.players.find(selector("tracked"), {
+    db.players.find({
+        last_visited: {
+            $ne: null
+        }
+    }, {
         limit: 1,
         sort: {
             full_history_time: 1,

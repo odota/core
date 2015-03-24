@@ -65,11 +65,11 @@ block content
             .list-group
               h4.panel-title
                 a.collapsed.list-group-item(data-toggle='collapse', data-parent='#accordion', href='#collapseSeven', aria-expanded='false', aria-controls='collapseSeven')
-                  | I signed in a while ago and just came back.  Why am I missing matches?
+                  | I signed in a while ago and just came back.  Why haven't my matches been parsed?
               |                         
               #collapseSeven.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingSeven')
                 .panel-body
-                  | To keep the load reasonable, we untrack users (stop automatically parsing matches) after a period of inactivity.  Each visit to the YASP site while signed in resets this period.  You can either manually request those matches by ID or wait for the next full history scan to "fill" the gap.
+                  | To keep the load reasonable, we stop automatically parsing matches after a period of inactivity.  Each visit to the YASP site while signed in resets this period.
             |  
           .panel-left.col-sm-6
             .list-group
