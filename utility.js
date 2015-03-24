@@ -84,6 +84,14 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "fullhistory": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.account_id].join(),
+                type: type,
+                payload: payload
+            };
+        },
         "mmr": function() {
             payload.attempts = 1;
             return {
@@ -158,8 +166,8 @@ function convert32to64(id) {
 }
 
 function isRadiant(player) {
-        return player.player_slot < 127;
-    }
+    return player.player_slot < 127;
+}
 
 function mergeObjects(merge, val) {
     for (var attr in val) {

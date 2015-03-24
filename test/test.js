@@ -25,7 +25,6 @@ var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
 var updatenames = require('../tasks/updatenames');
-var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
@@ -250,6 +249,7 @@ describe("worker", function() {
             });
         });
     });
+    //todo add a test for full history
 });
 describe("tasks", function() {
     this.timeout(wait);
@@ -263,11 +263,6 @@ describe("tasks", function() {
         updatenames(function(err, num) {
             done(err);
         });
-    });
-    it('full history', function(done) {
-        fullhistory(function(err) {
-            done(err);
-        }, ["1"]);
     });
     it('constants', function(done) {
         //fake constants response

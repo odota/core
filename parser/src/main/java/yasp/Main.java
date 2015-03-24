@@ -301,50 +301,48 @@ public class Main {
 	@OnTickStart
 	public void onTick(Context ctx){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
-        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : 0; 
-		if (time > nextInterval){
-		Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
-		if (pr!=null){
-			if (!initialized) {
-				lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
-				xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
-				goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
-				heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
-				stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
-				handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
-				nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
-				steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-				initialized = true;
-			}
-
-				for (int i = 0; i < numPlayers; i++) {
-					Integer hero = (Integer)pr.getState()[heroIdx+i];
-					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
-						//hero_to_slot.put(hero, i);
-						slot_to_hero.put(i, hero);
+        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : -1; 
+		if (time >= nextInterval){
+			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
+			if (pr!=null){
+				if (!initialized) {
+					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
+					xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
+					goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
+					heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
+					stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
+					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
+					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
+					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+					initialized = true;
+				}
+					for (int i = 0; i < numPlayers; i++) {
+						Integer hero = (Integer)pr.getState()[heroIdx+i];
+						if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
+							//hero_to_slot.put(hero, i);
+							slot_to_hero.put(i, hero);
+							Entry entry = new Entry(time);
+							entry.type="hero_log";
+							entry.slot=i;
+							entry.key=String.valueOf(hero);
+							es.output(entry);
+						}
+					
 						Entry entry = new Entry(time);
-						entry.type="hero_log";
-						entry.slot=i;
-						entry.key=String.valueOf(hero);
+						entry.type = "interval";
+						entry.slot = i;
+						entry.gold=(Integer)pr.getState()[goldIdx+i];
+						entry.lh=(Integer)pr.getState()[lhIdx+i];
+						entry.xp=(Integer)pr.getState()[xpIdx+i];
+						int handle = (Integer)pr.getState()[handleIdx+i];
+						Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
+						if (e!=null){
+							entry.x=(Integer)e.getProperty("m_cellX");
+							entry.y=(Integer)e.getProperty("m_cellY");
+						}
 						es.output(entry);
 					}
-				
-					Entry entry = new Entry(time);
-					entry.type = "interval";
-					entry.slot = i;
-					entry.gold=(Integer)pr.getState()[goldIdx+i];
-					entry.lh=(Integer)pr.getState()[lhIdx+i];
-					entry.xp=(Integer)pr.getState()[xpIdx+i];
-					int handle = (Integer)pr.getState()[handleIdx+i];
-					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
-					if (e!=null){
-						entry.x=(Integer)e.getProperty("m_cellX");
-						entry.y=(Integer)e.getProperty("m_cellY");
-					}
-					es.output(entry);
 				}
-				nextInterval += INTERVAL;
-			}
 
 			//log any new wards placed
 			//todo deduplicate code
@@ -382,6 +380,7 @@ public class Main {
 					seenEntities.add(handle);
 				}
 			}
+			nextInterval += INTERVAL;
 		}
 	}
 

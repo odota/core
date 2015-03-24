@@ -13,7 +13,6 @@
     "bower": "bower install --allow-root",
     "unparsed": "node runner.js unparsed",
     "constants": "node runner.js constants",
-    "fullhistory": "node runner.js fullhistory",
     "updatenames": "node runner.js updatenames",
     "getmissing": "node runner.js getmissing",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",

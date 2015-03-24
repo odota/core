@@ -13,7 +13,6 @@ var async = require('async');
 var operations = require('./operations');
 var insertMatch = operations.insertMatch;
 var queueReq = operations.queueReq;
-var fullhistory = require('./tasks/fullhistory');
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
@@ -31,7 +30,6 @@ var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
 */
 var retrievers = config.RETRIEVER_HOST;
-
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -59,6 +57,7 @@ d.run(function() {
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
+        jobs.process('fullhistory', processors.processFullHistory);
         setInterval(updatenames, 30 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});
         //todo implement redis window check 
@@ -67,14 +66,35 @@ d.run(function() {
 });
 
 function fhScan() {
-    //fullhistory should continuously scan db, recursive call when complete
-    fullhistory(function(err) {
-        if (err) {
-            console.log(err);
+    db.players.find({
+        last_visited: {
+            $ne: null
         }
-        process.nextTick(function(){
-            fhScan();
+    }, {
+        sort: {
+            full_history_time: 1,
+            join_date: 1
+        }
+    }, function(err, players) {
+        if (err) {
+            return fhScan();
+        }
+        async.eachSeries(players, function(player, cb) {
+            //in the background, queue someone every interval
+            queueReq("fullhistory", player, function(err, job) {
+                setTimeout(function() {
+                    cb(err);
+                }, 10 * 60 * 1000);
+            });
+        }, function(err) {
+            if (err) {
+                console.log(err);
+            }
+            process.nextTick(function() {
+                fhScan();
+            });
         });
+        //todo queue (new?) players who sign in
     });
 }
 
