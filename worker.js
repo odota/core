@@ -21,11 +21,17 @@ var trackedPlayers = {};
 var userPlayers = {};
 var ratingPlayers = {};
 /*
+//could build our own solution with socket.io?
+//spin up a seaport and listen for workers to connect
+//generate the list from seaport query and http request each one on build
+//how do we know all the retrievers have checked in?
+//we don't, but the only downside is potentially missing some mmrs for 3 minutes
 var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
 */
 var retrievers = config.RETRIEVER_HOST;
+var api_keys = config.STEAM_API_KEY.split(",");
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -49,10 +55,10 @@ d.run(function() {
     build(function() {
         startScan();
         jobs.promote();
-        jobs.process('api', config.STEAM_API_KEY.split(",").length, processors.processApi);
+        jobs.process('api', api_keys.length, processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
-        setInterval(fullhistory, 17 * 60 * 1000, function() {});
+        setInterval(fullhistory, 10 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});
         //todo implement redis window check 

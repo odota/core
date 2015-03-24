@@ -19,6 +19,7 @@ var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
     /*
+    //server must support tcp!
     var constants = require('./constants.json');
     var seaport = require('seaport');
     var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);

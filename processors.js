@@ -87,13 +87,23 @@ function runParser(job, cb) {
             bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
+            setInterval(function() {
+                //todo can we write directly to outStream, and if so, do we risk interleaving JSON?
+                outStream.write(JSON.stringify({type:"test"}));
+            }, 1);
         }
         else {
             throw new Error("no parse input");
         }
+        parser.on('exit', function(code) {
+            error = code;
+        });
         parser.stdout.pipe(outStream);
         outStream.on('root', preProcess);
-        outStream.on('end', postProcess);
+        outStream.on('end', function() {
+            postProcess();
+            //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
+        });
     });
     //parse state
     var entries = [];
@@ -292,7 +302,6 @@ function runParser(job, cb) {
             }
         }
         //console.timeEnd("postprocess");
-        //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
 

@@ -72,7 +72,7 @@ io.sockets.on('connection', function(socket) {
                     }
                     socket.emit('log', "Queued API request for " + match_id);
                     job.on('progress', function(prog) {
-                        //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                        //todo kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
                         socket.emit('prog', prog);
                     });
                     job.on('complete', function(result) {

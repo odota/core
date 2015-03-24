@@ -40,6 +40,9 @@ matches.get('/:match_id/:info?', function(req, res, next) {
     var match = req.match;
     var info = matchPages[req.params.info] ? req.params.info : "index";
     console.timeEnd("match page");
+    if (req.query.json){
+        return res.json(match);
+    }
     res.render("match_" + info, {
         route: info,
         match: match,
