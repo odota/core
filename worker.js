@@ -52,7 +52,7 @@ d.run(function() {
         jobs.process('api', config.STEAM_API_KEY.split(",").length, processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
-        setInterval(fullhistory, 3 * 60 * 1000, function() {});
+        setInterval(fullhistory, 6 * 60 * 1000, function() {});
         setInterval(updatenames, 3 * 60 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});
         //todo implement redis window check 
