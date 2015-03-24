@@ -82,7 +82,7 @@ function computeMatchData(match) {
         patchLegacy(match);
     }
     else {
-        //console.log("valid v5 data %s", match.parsed_data.version);
+        //console.log("valid data %s", match.parsed_data.version);
     }
     //add a parsedplayer property to each player, and compute more stats
     match.players.forEach(function(player, ind) {
@@ -99,28 +99,48 @@ function computeMatchData(match) {
                 });
             }
             //filter interval data to only be >0
-            var intervals = ["lh", "gold", "xp", "times"];
-            intervals.forEach(function(key) {
-                p[key] = p[key].filter(function(el, i) {
-                    return p.times[i] >= 0;
+            if (p.times) {
+                var intervals = ["lh", "gold", "xp", "times"];
+                intervals.forEach(function(key) {
+                    p[key] = p[key].filter(function(el, i) {
+                        return p.times[i] >= 0;
+                    });
                 });
-            });
-            p.neutral_kills = 0;
-            p.tower_kills = 0;
-            p.courier_kills = 0;
-            for (var key in p.kills) {
-                if (key.indexOf("npc_dota_neutral") === 0) {
-                    p.neutral_kills += p.kills[key];
-                }
-                if (key.indexOf("_tower") !== -1) {
-                    p.tower_kills += p.kills[key];
-                }
-                if (key.indexOf("courier") !== -1) {
-                    p.courier_kills += p.kills[key];
+            }
+            if (p.kills) {
+                p.neutral_kills = 0;
+                p.tower_kills = 0;
+                p.courier_kills = 0;
+                for (var key in p.kills) {
+                    if (key.indexOf("npc_dota_neutral") === 0) {
+                        p.neutral_kills += p.kills[key];
+                    }
+                    if (key.indexOf("_tower") !== -1) {
+                        p.tower_kills += p.kills[key];
+                    }
+                    if (key.indexOf("courier") !== -1) {
+                        p.courier_kills += p.kills[key];
+                    }
                 }
             }
-            //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-            p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
+            if (p.chat) {
+                p.chat_message_count = p.chat.length;
+                //count ggs
+                p.gg_count = p.chat.filter(function(c) {
+                    return c.key.indexOf("gg") === 0;
+                }).length;
+            }
+            if (p.buyback_log) {
+                p.buyback_count = p.buyback_log.length;
+            }
+            if (p.item_uses) {
+                p.observer_uses = p.item_uses.ward_observer || 0;
+                p.sentry_uses = p.item_uses.ward_sentry || 0;
+            }
+            if (p.gold) {
+                //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+                p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
+            }
             //convert position hashes to heatmap array of x,y,value
             var d = {
                 "obs": true,
@@ -283,7 +303,6 @@ function renderMatch(match) {
 }
 
 function generateGraphData(match) {
-    //todo this function shouldn't need || {} as renderMatch populates?
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -336,7 +355,7 @@ function generateGraphData(match) {
         gold_reasons.push(reason);
         var col = [reason];
         orderedPlayers.forEach(function(player) {
-            var g = player.parsedPlayer.gold_reasons || {};
+            var g = player.parsedPlayer.gold_reasons;
             col.push(g[key] || 0);
         });
         columns.push(col);
@@ -545,34 +564,20 @@ function aggregator(matches, fields) {
         "neutral_kills": function(key, m, p) {
             agg(key, p.parsedPlayer.neutral_kills, m);
         },
-        //todo compute these values in computematchdata
         "chat_message_count": function(key, m, p) {
-            if (p.parsedPlayer.chat) {
-                agg(key, p.parsedPlayer.chat.length, m);
-            }
+            agg(key, p.parsedPlayer.chat_message_count, m);
         },
         "gg_count": function(key, m, p) {
-            //count ggs
-            if (p.parsedPlayer.chat) {
-                agg(key, p.parsedPlayer.chat.filter(function(c) {
-                    return c.key.indexOf("gg") === 0;
-                }).length, m);
-            }
+            agg(key, p.parsedPlayer.gg_count, m);
         },
         "buyback_count": function(key, m, p) {
-            if (p.parsedPlayer.buyback_log) {
-                agg(key, p.parsedPlayer.buyback_log.length, m);
-            }
+            agg(key, p.parsedPlayer.buyback_count, m);
         },
         "observer_uses": function(key, m, p) {
-            if (p.parsedPlayer.item_uses) {
-                agg(key, p.parsedPlayer.item_uses.ward_observer || 0, m);
-            }
+            agg(key, p.parsedPlayer.observer_uses, m);
         },
         "sentry_uses": function(key, m, p) {
-            if (p.parsedPlayer.item_uses) {
-                agg(key, p.parsedPlayer.item_uses.ward_sentry || 0, m);
-            }
+            agg(key, p.parsedPlayer.sentry_uses, m);
         }
     };
     var aggData = {};

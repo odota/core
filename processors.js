@@ -187,7 +187,11 @@ function runParser(job, cb) {
         "ability_trigger": getSlot,
         "item_uses": getSlot,
         "ability_uses": getSlot,
-        "clicks": getSlot,
+        "clicks": function(e){
+            //just 0 (other) the key for now since we dont know what the order_types are
+            e.key = 0;
+            getSlot(e);
+        },
         "kills": function(e) {
             getSlot(e);
             var logs = ["npc_dota_hero_", "_tower", "_rax", "_fort", "_roshan"];

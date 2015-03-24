@@ -60,14 +60,16 @@ public class Main {
 		System.out.println(message.toString());
 	}
 	
-	@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
+	//@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
 	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
 		Entry entry = new Entry(time);
 		entry.type = "clicks";
-		entry.slot = (Integer)message.getEntindex()-2; //weird offset of 2, does this map to slot now?
+		//todo need to get the entity by index, and figure out the owner entity, then figure out the player controlling
+		//assumes all clicks are made by the controlling player
+		entry.slot = (Integer)message.getEntindex()-2;
 		entry.key = String.valueOf(message.getOrderType());
+		//theres also target_index
 		es.output(entry);
-		//System.err.println(message);
 	}
 
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)

@@ -85,6 +85,17 @@ function advQuery(select, options, cb) {
     //fields (projection), limit, skip, sort (but sorts are probably best done in js)
     //if selecting by account_id or hero_id, we project only that user in players array
     //if (select["players.account_id"] || select["players.hero_id"]){options.fields["players.$"] = 1;}
+    /*
+    Enhance the /api/matches endpoint:
+Restrict projection per match to a very small set (to prevent bandwidth abuse)
+Set a limit on how many matches we will aggregate (max result set size)
+Set a limit on results returned at once to prevent bandwidth abuse
+Do aggregation on the results (Since aggData is relatively small)?
+Or we could just return winrate, count by iterating through the result set
+
+The problem with using datatables to interface with the api is that the query string suddenly gets a lot harder to build. 
+Maybe we can add jQuery helpers to construct the query and use it for both matches tab (lists matches, reports winrate fitting the advanced query conditions) and trends tabs (aggregates data fitting the advanced query conditions)
+*/
     db.matches.find(select, options, function(err, matches) {
         if (err) {
             return cb(err);
