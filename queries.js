@@ -98,15 +98,6 @@ function computeMatchData(match) {
                     k.key !== "npc_dota_hero_meepo";
                 });
             }
-            //filter interval data to only be >0
-            if (p.times) {
-                var intervals = ["lh", "gold", "xp", "times"];
-                intervals.forEach(function(key) {
-                    p[key] = p[key].filter(function(el, i) {
-                        return p.times[i] >= 0;
-                    });
-                });
-            }
             if (p.kills) {
                 p.neutral_kills = 0;
                 p.tower_kills = 0;
@@ -278,6 +269,15 @@ function renderMatch(match) {
             match.chat.push(c);
             match.chat_words.push(c.key);
         });
+        //filter interval data to only be >0
+        if (p.times) {
+            var intervals = ["lh", "gold", "xp", "times"];
+            intervals.forEach(function(key) {
+                p[key] = p[key].filter(function(el, i) {
+                    return p.times[i] >= 0;
+                });
+            });
+        }
     });
     match.chat_words = match.chat_words.join(' ');
     match.sentiment = sentiment(match.chat_words, {

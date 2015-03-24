@@ -20,3 +20,4 @@ Performance/backend
 ====
 * Parsing stream now injects progress, error, exit events into the parser event log
 * Improved full history processing algorithm
+* Using protobufjs for reduced build times

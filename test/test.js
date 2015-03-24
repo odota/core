@@ -265,16 +265,16 @@ describe("tasks", function() {
         });
     });
     it('full history', function(done) {
-        fullhistory(["1"], function(err) {
+        fullhistory(function(err) {
             done(err);
-        });
+        }, ["1"]);
     });
     it('constants', function(done) {
         //fake constants response
         nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
-        constants("./constants_test.json", function(err) {
+        constants(function(err) {
             done(err);
-        });
+        }, "./constants_test.json");
     });
 });
 describe("parser", function() {
@@ -583,14 +583,17 @@ describe("web", function() {
     });
 });
 describe("unit test", function() {
-    it('insertmatch', function(done){
-        operations.insertMatch({match_id: 2, start_time: new Date().getTime()/1000, players:[]}, function(err, job2){
+    it('insertmatch', function(done) {
+        operations.insertMatch({
+            match_id: 2,
+            start_time: new Date().getTime() / 1000,
+            players: []
+        }, function(err, job2) {
             done(err);
         });
     });
 });
-        //todo add test for socket request
-
+//todo add test for socket request
 //deprecated
 /*
 describe("GET /upload", function() {

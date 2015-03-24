@@ -250,7 +250,7 @@ function runParser(job, cb) {
         "runes_bottled": populate,
         "interval": function(e) {
             //if on minute, add to lh/gold/xp
-            if (e.time % 60 === 0) {
+            if (e.time >=0 && e.time % 60 === 0) {
                 e.interval = true;
                 e.type = "times";
                 e.value = e.time;
@@ -416,7 +416,7 @@ function runParser(job, cb) {
 function processApi(job, cb) {
     var payload = job.data.payload;
     job.log("api: starting");
-    getData(job.data.url, function(err, data) {
+    getData(job.data.url, function(err, body) {
         if (err) {
             //couldn't get data from api, non-retryable
             job.log(JSON.stringify(err));
@@ -424,15 +424,15 @@ function processApi(job, cb) {
                 error: err
             });
         }
-        else if (data.response) {
+        else if (body.response) {
             logger.info("summaries response");
-            async.mapSeries(data.response.players, insertPlayer, function(err) {
-                cb(err, data.response.players);
+            async.mapSeries(body.response.players, insertPlayer, function(err) {
+                cb(err, body.response.players);
             });
         }
         else if (payload.match_id) {
             logger.info("details response");
-            var match = data.result;
+            var match = body.result;
             //join payload with match
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];

@@ -17,7 +17,7 @@ To achieve the second goal, it's essential to get full match histories for users
 
 Starting now, we'll be getting full match histories for all users who sign into YASP.
 There may still be a delay (especially after we add lots of new users), but we'll eventually get to everyone.
-We now add matches of all players, active or active, to our database.
+We now add new matches of all users, active or not, to our database.
 However, we continue to only automatically parse the matches containing an active user.
 This conserves our resources by saving our parsing power for the matches that are most likely to be looked at.
 

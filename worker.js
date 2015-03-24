@@ -31,7 +31,7 @@ var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
 */
 var retrievers = config.RETRIEVER_HOST;
-var api_keys = config.STEAM_API_KEY.split(",");
+
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -54,17 +54,29 @@ d.run(function() {
     console.log("[WORKER] starting worker");
     build(function() {
         startScan();
+        fhScan();
         jobs.promote();
-        jobs.process('api', api_keys.length, processors.processApi);
+        jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
         jobs.process('request', processors.processApi);
-        //setInterval(fullhistory, 3 * 60 * 1000, function() {});
-        setInterval(updatenames, 1 * 60 * 1000, function() {});
+        setInterval(updatenames, 30 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});
         //todo implement redis window check 
         //setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
+
+function fhScan() {
+    //fullhistory should continuously scan db, recursive call when complete
+    fullhistory(function(err) {
+        if (err) {
+            console.log(err);
+        }
+        process.nextTick(function(){
+            fhScan();
+        });
+    });
+}
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {
