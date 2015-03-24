@@ -221,6 +221,7 @@ function getParseSchema() {
                 "obs": {},
                 "sen": {},
                 //"chat_hero_kill":{},
+                "clicks":{},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},

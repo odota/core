@@ -62,7 +62,12 @@ public class Main {
 	
 	@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
 	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
-		System.err.println(message);
+		Entry entry = new Entry(time);
+		entry.type = "clicks";
+		entry.slot = (Integer)message.getEntindex()-2; //weird offset of 2, does this map to slot now?
+		entry.key = String.valueOf(message.getOrderType());
+		es.output(entry);
+		//System.err.println(message);
 	}
 
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
