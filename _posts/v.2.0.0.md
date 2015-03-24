@@ -2,15 +2,19 @@
 
 YASP is jumping a version number, releasing v2.0.0!
 
-Features:
+Features
+====
+* Manual name update. Relogging now updates your name from the Steam API.
+* Advanced Querying.  More powerful options for aggregating and filtering matches.
 
-Manual name update. Relogging now updates your name from the Steam API.
-UI:
+UI
+====
 
-Bugfixes:
+Bugfixes
+====
+* Patched an issue with graphs/lane efficiency due to interval checks before time=0
 
-Patched an issue with graphs/lane efficiency due to interval checks before time=0
-Performance/backend:
-
-Parsing stream now injects progress, error, exit events into the parser event log
-Improved full history processing algorithm
+Performance/backend
+====
+* Parsing stream now injects progress, error, exit events into the parser event log
+* Improved full history processing algorithm
