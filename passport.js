@@ -5,6 +5,8 @@ var db = require('./db');
 var SteamStrategy = require('passport-steam').Strategy;
 var host = config.ROOT_URL;
 var utility = require('./utility');
+var operations = require('./operations');
+var queueReq = operations.queueReq;
 var convert64to32 = utility.convert64to32;
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -30,25 +32,6 @@ passport.use(new SteamStrategy({
     insert.account_id = steam32;
     insert.join_date = new Date();
     insert.last_summaries_update = new Date();
-    db.players.findOne({
-        account_id: steam32
-    }, function(err, doc) {
-        if (err) {
-            return done(err);
-        }
-        if (doc) {
-            //don't update join date if we have this in db already
-            delete insert["join_date"];
-        }
-        db.players.update({
-            account_id: steam32
-        }, {
-            $set: insert
-        }, {
-            upsert: true
-        }, function(err) {
-            done(err, insert);
-        });
-    });
+    done(null, insert);
 }));
 module.exports = passport;

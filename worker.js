@@ -52,7 +52,6 @@ d.run(function() {
     console.log("[WORKER] starting worker");
     build(function() {
         startScan();
-        fhScan();
         jobs.promote();
         jobs.process('api', processors.processApi);
         jobs.process('mmr', processors.processMmr);
@@ -65,7 +64,7 @@ d.run(function() {
     });
 });
 
-function fhScan() {
+function fhScan(cb) {
     db.players.find({
         last_visited: {
             $ne: null
@@ -77,24 +76,15 @@ function fhScan() {
         }
     }, function(err, players) {
         if (err) {
-            return fhScan();
+            return cb(err);
         }
         async.eachSeries(players, function(player, cb) {
-            //in the background, queue someone every interval
             queueReq("fullhistory", player, function(err, job) {
-                setTimeout(function() {
-                    cb(err);
-                }, 10 * 60 * 1000);
+                cb(err);
             });
         }, function(err) {
-            if (err) {
-                console.log(err);
-            }
-            process.nextTick(function() {
-                fhScan();
-            });
+            cb(err);
         });
-        //todo queue (new?) players who sign in
     });
 }
 

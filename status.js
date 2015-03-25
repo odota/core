@@ -19,7 +19,6 @@ module.exports = function getStatus(cb) {
         },
         tracked_players: function(cb) {
             redis.get("trackedPlayers", function(err, res) {
-                console.log(res);
                 res = res ? Object.keys(JSON.parse(res)).length: 0;
                 cb(err, res);
             });
