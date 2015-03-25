@@ -275,8 +275,9 @@ function scanApi(seq_num) {
         logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
         q.push(resp, function(err, match) {
             if (err) {
-                console.log("failed to insert match from scanApi");
-                process.exit(1);
+                console.log("failed to insert match from scanApi %s", match);
+                console.log(err);
+                //throw err;
             }
             else {
                 //set the redis progress
