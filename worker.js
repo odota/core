@@ -20,6 +20,9 @@ var trackedPlayers = {};
 var userPlayers = {};
 var ratingPlayers = {};
 var retrievers = config.RETRIEVER_HOST;
+var permanent = {
+    88367253: true
+};
 /*
 //could build our own solution with socket.io?
 //spin up a seaport and listen for workers to connect
@@ -145,7 +148,7 @@ function build(cb) {
             var r = {};
             var b = [];
             var ps = retrievers.split(",").map(function(r) {
-                return "http://" + r +"?key="+config.RETRIEVER_SECRET;
+                return "http://" + r + "?key=" + config.RETRIEVER_SECRET;
             });
             async.each(ps, function(url, cb) {
                 getData(url, function(err, body) {
@@ -217,7 +220,7 @@ var q = async.queue(function(match, cb) {
             //skipped
             match.parse_status = 3;
         }
-        if (p.account_id in trackedPlayers) {
+        if (p.account_id in trackedPlayers || p.account_id in permanent) {
             //queued
             match.parse_status = 0;
         }

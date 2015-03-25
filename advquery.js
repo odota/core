@@ -6,22 +6,12 @@ var aggregator = display.aggregator;
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 module.exports = function advQuery(select, options, cb) {
-    if (select["players.account_id"]) {
-        //convert the passed account id to number
-        select["players.account_id"] = Number(select["players.account_id"]);
-    }
-    if (select["players.account_id"] || select["players.hero_id"]) {
-        //if selecting by account_id or hero_id, we project only that user in players array
-        //todo add more cases where there's a single user to aggregate on
-        options.fields["players.$"] = 1;
-    }
     //todo implement more features
     //limit the number of results we will aggregate (20000)?
     //limit number of results to return (10)?
     //matches page, want matches fitting criteria
     //player matches page, want winrate, matches fitting criteria
     //player trends page, want agregation on matches fitting criteria
-    //custom query wants some fields back, and some criteria, with aggregation on those fields
     //client options should include:
     //filter: specific player/specific hero id
     //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?)
@@ -33,19 +23,28 @@ module.exports = function advQuery(select, options, cb) {
     //filter: significant game modes only    
     //client calls api, which processes a maximum number of matches (currently 10, parsed matches are really big and we dont want to spend massive bandwidth!)
     //can we increase the limit depending on the options passed?  if a user requests just a field or two we can return more
-    //use advquery function as a wrapper around db.matches.find to do processing that mongo can't
     //select, a mongodb search hash
     //options, a mongodb/monk options hash
     //options.advQuery.filter additional post-processing filters
     //CAREFUL! during aggregation not all fields may exist (since we projected)
-    //limit/skip are useful for datatables server-side ajax calls, but also prevent aggregation
+    //limit/skip are useful for datatables server-side ajax calls, but also prevent aggregation from working properly
     //aggData contains games/win/lose, useful for reporting winrate given a query
-    /*
-The problem with using datatables to interface with the api is that the query string suddenly gets a lot harder to build. 
-Maybe we can add jQuery helpers to construct the query, use same advquery UI for:
-matches tab (lists matches, reports winrate fitting the advanced query conditions)
-trends tabs (aggregates data fitting the advanced query conditions)
-*/
+    //The problem with using datatables to interface with the api is that the query string suddenly gets a lot harder to build. 
+    //Maybe we can add helpers to construct the query, use same advquery UI for:
+    //do we even need a "general" matches page anymore?
+    //matches tab (lists matches, reports winrate fitting the advanced query conditions)
+    //trends tabs (aggregates data fitting the advanced query conditions)
+    if (select["players.account_id"]) {
+        //convert the passed account id to number
+        //todo run this on api end?
+        select["players.account_id"] = Number(select["players.account_id"]);
+    }
+    if (select["players.account_id"] || select["players.hero_id"]) {
+        //if selecting by account_id or hero_id, we project only that user in players array
+        //todo add more cases where there's a single user to aggregate on
+        //better detection condition, what if elemmatch syntax?
+        options.fields["players.$"] = 1;
+    }
     console.time('db');
     db.matches.find(select, options, function(err, matches) {
         if (err) {
@@ -62,11 +61,6 @@ trends tabs (aggregates data fitting the advanced query conditions)
         var filtered = filter(matches, options.advQuery.filter);
         //console.timeEnd('filter');
         //console.time('agg');
-        /*
-        player.aggData_all = aggregator(matches, {
-            "start_time": 1
-        });
-        */
         var aggData = aggregator(filtered);
         //console.timeEnd('agg');
         //console.time('post');

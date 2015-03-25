@@ -12,8 +12,9 @@ api.get('/matches', function(req, res, next) {
     var draw = Number(req.query.draw);
     var select = req.query.select || {};
     //api limits the fields that will be returned per match
-    //we add the player data if a player selection field present?
-    //todo right now this just always includes all the players
+    //always project a player to prevent crash?  otherwise aggregators need to handle this case
+    //todo right now this just always includes 1 player
+    //this prevents crash on computematchdata, but costs extra bandwidth
     var project = {
         start_time: 1,
         match_id: 1,
@@ -21,7 +22,7 @@ api.get('/matches', function(req, res, next) {
         game_mode: 1,
         duration: 1,
         parse_status: 1,
-        players: 1
+        players: {$slice: 1 }
     };
     var start = Number(req.query.start);
     var limit = Number(req.query.length);
