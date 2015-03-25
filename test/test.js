@@ -184,7 +184,7 @@ before(function(done) {
                     return split2[0];
                 })
                 //throw some errors to test handling
-                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(2).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
                     result: {
                         error: "error"
                     }
@@ -219,6 +219,7 @@ describe("worker", function() {
         queueReq("api_details", {
             match_id: 870061127
         }, function(err, job) {
+            assert(!err);
             assert(job);
             processors.processApi(job, function(err) {
                 done(err);
@@ -231,6 +232,7 @@ describe("worker", function() {
             account_id: 88367253,
             url: "http://localhost:5100?account_id=88367253"
         }, function(err, job) {
+            assert(!err);
             assert(job);
             processors.processMmr(job, function(err) {
                 done(err);
@@ -243,13 +245,24 @@ describe("worker", function() {
                 account_id: 88367253
             }]
         }, function(err, job) {
+            assert(!err);
             assert(job);
             processors.processApi(job, function(err) {
                 done(err);
             });
         });
     });
-    //todo add a test for full history
+    it('process fullhistory request', function(done) {
+        queueReq("fullhistory", {
+            account_id: 88367253
+        }, function(err, job) {
+            assert(!err);
+            assert(job);
+            processors.processFullHistory(job, function(err) {
+                done(err);
+            });
+        });
+    });
 });
 describe("tasks", function() {
     this.timeout(wait);
@@ -269,7 +282,7 @@ describe("tasks", function() {
         nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
         constants(function(err) {
             done(err);
-        }, "./constants_test.json");
+        });
     });
 });
 describe("parser", function() {

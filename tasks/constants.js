@@ -2,7 +2,7 @@ var async = require('async');
 var utility = require('../utility');
 var getData = utility.getData;
 var fs = require('fs');
-module.exports = function generateConstants(done, outputFile) {
+module.exports = function generateConstants(done) {
     var constants = require('../sources.json');
     async.map(Object.keys(constants.sources), function(key, cb) {
         var val = constants.sources[key];
@@ -78,7 +78,7 @@ module.exports = function generateConstants(done, outputFile) {
                 constants.lanes[i].push(lane);
             }
         }
-        fs.writeFile(outputFile || './constants.json', JSON.stringify(constants, null, 2), function(err) {
+        fs.writeFile(process.env.NODE_ENV === "test" ? '/dev/null' : './constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
             }

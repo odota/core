@@ -1,29 +1,39 @@
 extend player
 
 block playercontent
-  if (user && user.account_id === player.account_id)
-    .row
-      .col-md-12
-        h3 Welcome!
+  .row
+    .col-md-6
+      h3 Summary
+      table.table.table-condensed
+        thead
+          tr
+            th Record
+            th Full History
+            th Name Update
+            th Last Visit
+        tbody
+          tr
+            td #{player.aggData.win}-#{player.aggData.lose} (#{(player.aggData.win/player.aggData.games*100).toFixed(2) || 0.00}%)
+            td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
+            td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
+            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
+    .col-md-6
+      if (user && user.account_id === player.account_id)
+        h3 Actions
         if (!user.full_history_time)
           .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
-      .col-md-3
         .checkbox
           label
             input.pref#dark(type="checkbox", checked=user.dark_theme)
             | Use Dark Theme
-      .col-md-3
         .checkbox
           label
             input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
             | Make MMR public
-      .col-md-3
         if (user.account_id in ratingPlayers)
           p: button.btn.btn-default(disabled) MMR Tracked
         else
           p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-      .col-md-3
-        p: a.btn.btn-primary(href="/request") Request by ID &raquo;
   .row
     .col-md-6
       h3 Recent Matches

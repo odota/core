@@ -1,23 +1,20 @@
 extend layout
 
 block content
-  h1 Match Requests
-  h1
-    small Input a Match ID then complete the Recaptcha
-  .row.match-top
-    .col-md-5
-      form#request
+  .row
+    .col-md-4
+      h2 Match Requests
+      div#request
         .form-group
           input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
         .form-group
           .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
-  .row
-    .col-md-12.text-center
-      h3 Progress
-      img(src="/public/images/loading.gif", style="display:none")#loading
-      .progress
-        .progress-bar.progress-bar-info.progress-bar-striped.active#bar
-      #messages
+      #progContainer(style="display:none")
+        h3 Progress
+        img(src="/public/images/loading.gif", style="display:none")#loading
+        .progress
+          .progress-bar.progress-bar-info.progress-bar-striped.active#bar
+        #messages
   .row
     include ads/leaderboard_2
 
@@ -28,10 +25,17 @@ append footer_assets
   script.
     var match_id;
     var onloadCallback = function() {
-       grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
+        grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
-    var socket = io.connect();
-    socket.on('err', function(data){
+    var socket;
+    
+    function submit(response){
+      var field = document.getElementById("match_id");
+      match_id = field.value;
+      field.value = "";
+      if (!socket){
+      socket = io.connect();
+          socket.on('err', function(data){
       $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
     })
     socket.on('log', function(data){
@@ -51,14 +55,16 @@ append footer_assets
       $("#messages").append("<div class='alert alert-danger' role='alert'>Something went wrong!</div>");
       $("#loading").css("display", "none");
       document.getElementById("bar").style.width = "0%";
+            $("#request").show('slow');
+            grecaptcha.reset();
     });
-    function submit(response){
-      var field = document.getElementById("match_id");
-      match_id = field.value;
-      field.value = "";
-      grecaptcha.reset();
+      }
+
       socket.emit('request', {
         match_id: match_id,
         response: response
       });
+      $("#request").hide('slow');
+      $("#messages").empty();
+      $("#progContainer").show('slow');
     }

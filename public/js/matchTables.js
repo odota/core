@@ -15,15 +15,7 @@ module.exports = function matchTable() {
             ajax: {
                 'url': '/api/matches',
                 'data': {
-                    "project": {
-                        start_time: 1,
-                        match_id: 1,
-                        cluster: 1,
-                        game_mode: 1,
-                        duration: 1,
-                        radiant_win: 1,
-                        parse_status: 1
-                    }
+                    "project": {}
                 }
             },
             ordering: false,
@@ -32,6 +24,7 @@ module.exports = function matchTable() {
             searching: false,
             info: false,
             stateSave: true,
+            //pagingType: "simple",
             columns: [{
                 data: 'match_id',
                 title: 'Match ID',

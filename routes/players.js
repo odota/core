@@ -26,28 +26,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return next(new Error("player not found"));
         }
         else {
-            var projection = {
-                "players.$": 1,
-                start_time: 1,
-                match_id: 1,
-                duration: 1,
-                cluster: 1,
-                radiant_win: 1,
-                parse_status: 1,
-                first_blood_time: 1,
-                lobby_type: 1,
-                game_mode: 1
-            };
-            if (req.params.info === "trends") {
-                projection.parsed_data = 1;
-            }
             async.series({
                 "player": function(cb) {
-                    queries.fillPlayerMatches(player, {
-                        select: {
-                            hero_id: req.query.hero_id
-                        },
-                        project: projection
+                    queries.fillPlayerData(player, {
+                        info: req.params.info,
+                        query: req.query
                     }, function(err) {
                         cb(err, player);
                     });

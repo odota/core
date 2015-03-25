@@ -522,6 +522,7 @@ function processMmr(job, cb) {
 function processFullHistory(job, cb) {
     var player = job.data.payload;
     var heroArray = Object.keys(constants.heroes);
+    heroArray = process.env.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};
     async.eachLimit(heroArray, api_keys.length, function(hero_id, cb) {
@@ -579,16 +580,10 @@ function processFullHistory(job, cb) {
                             return cb();
                         }
                         var match = body.result;
+                        //don't automatically parse full history reqs, mark them skipped
+                        match.parse_status = 3;
                         insertMatch(match, function(err) {
-                            if (err || match.expired) {
-                                return cb(err);
-                            }
-                            else {
-                                //queue it and finish
-                                return queueReq("parse", match, function(err, job2) {
-                                    cb(err);
-                                });
-                            }
+                            cb(err);
                         });
                     });
                 }, function(err) {

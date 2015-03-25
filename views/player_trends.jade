@@ -1,6 +1,7 @@
 extend player
 
 block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
   .row
     .col-md-5
       form.form-inline(action="" method="GET")
@@ -29,10 +30,12 @@ block playercontent
   #the_stats
     .records
       .row
-        .col-md-6.text-center
-            h3 Overall KDA: #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.games)).toFixed(2)}
-        .col-md-6.text-center
-            h3 Abandon Rate: #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.games)*100 || 0).toFixed(2)}%
+        .col-md-4.text-center
+          h3 Matches: #{player.matches.length}
+        .col-md-4.text-center
+            h3 Overall KDA: #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
+        .col-md-4.text-center
+            h3 Abandon Rate: #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
       hr
       .row
         .col-md-6
