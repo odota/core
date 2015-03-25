@@ -14,6 +14,7 @@
     "unparsed": "node runner.js unparsed",
     "constants": "node runner.js constants",
     "updatenames": "node runner.js updatenames",
+    "fullhistory": "node runner.js fullhistory",
     "getmissing": "node runner.js getmissing",
     "browserify": "browserify public/js/browser.js | uglifyjs > public/js/bundle.js",
     "watchify": "watchify public/js/browser.js -o public/js/bundle.js --debug --verbose",

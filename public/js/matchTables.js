@@ -22,7 +22,7 @@ module.exports = function matchTable() {
             serverSide: true,
             processing: true,
             searching: false,
-            info: false,
+            //info: false,
             stateSave: true,
             //pagingType: "simple",
             columns: [{

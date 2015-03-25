@@ -44,6 +44,12 @@ process.on('SIGINT', function() {
         process.exit(err || 1);
     });
 });
+process.on('SIGUSR2', function() {
+    clearActiveJobs(function(err) {
+        console.log(err);
+        process.kill(process.pid, 'SIGUSR2');
+    });
+});
 var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
@@ -66,30 +72,6 @@ d.run(function() {
         //setInterval(apiStatus, 2 * 60 * 1000);
     });
 });
-
-function fhScan(cb) {
-    db.players.find({
-        last_visited: {
-            $ne: null
-        }
-    }, {
-        sort: {
-            full_history_time: 1,
-            join_date: 1
-        }
-    }, function(err, players) {
-        if (err) {
-            return cb(err);
-        }
-        async.eachSeries(players, function(player, cb) {
-            queueReq("fullhistory", player, function(err, job) {
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    });
-}
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {

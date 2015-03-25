@@ -30,7 +30,8 @@ $('#matches').dataTable({
         $(row).addClass(cl);
     },
     "drawCallback": function() {
-        require('./tooltips')();
+        tooltips();
+        formatHtml();
     },
     stateSave: true,
     //searching: false,
