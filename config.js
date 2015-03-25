@@ -4,6 +4,9 @@ var defaults = {
     "STEAM_PASS": null,
     "RECAPTCHA_PUBLIC_KEY": null,
     "RECAPTCHA_SECRET_KEY": null,
+    "PAYPAL_ID": null,
+    "PAYPAL_SECRET": null,
+    "RETRIEVER_SECRET": null,
     "SESSION_SECRET": "somesecretvalue",
     "ROOT_URL": "http://localhost:5000",
     "START_SEQ_NUM": "AUTO",
@@ -25,8 +28,6 @@ var defaults = {
     "AWS_SECRET_ACCESS_KEY": false,
     "STEAM_GUARD_CODE": false,
     "UNTRACK_DAYS": 7,
-    "PAYPAL_ID": null,
-    "PAYPAL_SECRET": null,
     "GOAL": 5
 };
 /*

@@ -19,6 +19,7 @@ var domain = require('domain');
 var trackedPlayers = {};
 var userPlayers = {};
 var ratingPlayers = {};
+var retrievers = config.RETRIEVER_HOST;
 /*
 //could build our own solution with socket.io?
 //spin up a seaport and listen for workers to connect
@@ -29,7 +30,6 @@ var seaport = require('seaport');
 var server = seaport.createServer();
 server.listen(config.REGISTRY_PORT);
 */
-var retrievers = config.RETRIEVER_HOST;
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -145,7 +145,7 @@ function build(cb) {
             var r = {};
             var b = [];
             var ps = retrievers.split(",").map(function(r) {
-                return "http://" + r;
+                return "http://" + r +"?key="+config.RETRIEVER_SECRET;
             });
             async.each(ps, function(url, cb) {
                 getData(url, function(err, body) {
@@ -156,7 +156,7 @@ function build(cb) {
                         b.push(body.accounts[key]);
                     }
                     for (var key in body.accountToIdx) {
-                        r[key] = url + "?account_id=" + key;
+                        r[key] = url + "&account_id=" + key;
                     }
                     cb(err);
                 });

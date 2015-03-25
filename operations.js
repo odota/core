@@ -83,7 +83,7 @@ function getReplayUrl(match, cb) {
                 }
                 result = JSON.parse(result);
                 var urls = result.map(function(r) {
-                    return r + "?match_id=" + match.match_id;
+                    return r + "&match_id=" + match.match_id;
                 });
                 getData(urls, function(err, body) {
                     if (err || !body || !body.match) {

@@ -140,10 +140,13 @@ app.get('/', function(req, res, next) {
     if (!ready) {
         return next("retriever not ready");
     }
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+        //reject request if doesnt have key
+        return next("invalid key");
+    }
     res.locals.to = setTimeout(function() {
         next("retriever timeout");
     }, 25000);
-    //todo reject request if doesnt have key
     var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
     if (req.query.match_id) {
         getGCReplayUrl(r, req.query.match_id, function(err, data) {
