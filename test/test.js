@@ -94,8 +94,9 @@ before(function(done) {
                 "friends": 1
                 }]));
             redis.set("ratingPlayers", JSON.stringify({}));
-            redis.set("retrievers", JSON.stringify(["http://localhost:5100"]));
-            redis.set("parsers", JSON.stringify(["http://localhost:5200"]));
+            //todo use functions to prefill these rather than hardcoding
+            redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
+            redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
             cb();
             },
             function(cb) {
@@ -148,7 +149,8 @@ before(function(done) {
             //fake retriever response
             nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
                 var split = path.split("?");
-                return split[1];
+                split = split[1].split("&");
+                return split[split.length-1];
             }).get('account_id=88367253').reply(200, {
                 "accountId": 88367253,
                 "wins": 889,

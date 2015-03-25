@@ -28,7 +28,6 @@ module.exports = function processHtml() {
                     .end() //again go back to selected element
                     .text();
                 //todo support stuff like % symbols
-                //todo invert "winner" if a negative category
                 target[j] += Number(content) || 0;
             });
         });
