@@ -24,10 +24,6 @@ block playercontent
           .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
         .checkbox
           label
-            input.pref#dark(type="checkbox", checked=user.dark_theme)
-            | Use Dark Theme
-        .checkbox
-          label
             input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
             | Make MMR public
         if (user.account_id in ratingPlayers)
@@ -113,7 +109,6 @@ append footer_assets
     $(".pref").change(function() {
         $.post(
             "/preferences", {
-                dark_theme: $("#dark").is(":checked"),
                 publicmmr: $("#publicmmr").is(":checked")
             },
             function(data) {

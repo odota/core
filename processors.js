@@ -522,7 +522,7 @@ function processMmr(job, cb) {
 function processFullHistory(job, cb) {
     var player = job.data.payload;
     var heroArray = Object.keys(constants.heroes);
-    heroArray = process.env.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
+    heroArray = config.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};
     async.eachLimit(heroArray, api_keys.length, function(hero_id, cb) {
@@ -551,7 +551,9 @@ function processFullHistory(job, cb) {
                 arr.push(Number(key));
             }
             db.matches.find({
-                $in: arr
+                match_id: {
+                    $in: arr
+                }
             }, {
                 fields: {
                     "match_id": 1
@@ -574,6 +576,7 @@ function processFullHistory(job, cb) {
                     });
                     getData(container.url, function(err, body) {
                         if (err) {
+                            console.log(err);
                             //non-retryable error while getting a match?
                             //this shouldn't happen since all values are from api
                             //if it does, we just continue inserting matches

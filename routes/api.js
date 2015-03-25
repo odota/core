@@ -15,6 +15,7 @@ api.get('/matches', function(req, res, next) {
     //always project a player to prevent crash?  otherwise aggregators need to handle this case
     //todo right now this just always includes 1 player
     //this prevents crash on computematchdata, but costs extra bandwidth
+    //add an option to disable aggregation?  Then we don't need to project a player
     var project = {
         start_time: 1,
         match_id: 1,
@@ -22,32 +23,33 @@ api.get('/matches', function(req, res, next) {
         game_mode: 1,
         duration: 1,
         parse_status: 1,
-        players: {$slice: 1 }
+        players: {
+            $slice: 1
+        },
+        "players.account_id": 1
     };
     var start = Number(req.query.start);
     var limit = Number(req.query.length);
     //if limit is 0 or too big, reset it
-    //api limits the number of results it will return
-    //todo can we aggregate on large limit, but only return small limit?
-    //current implementation limits before aggregation
-    limit = (!limit || limit > 10) ? 1 : limit;
+    limit = (!limit || limit > 15000) ? 15000 : limit;
     //var sort = makeSort(req.query.order, req.query.columns);
     //api enforces sort by match_id
     var sort = {
         "match_id": -1
     };
-    advQuery(select, {
+    advQuery({
+        select: select,
+        project: project,
+        filter: {},
         limit: limit,
         skip: start,
-        sort: sort,
-        fields: project,
-        advQuery: {
-            filter: {}
-        }
+        sort: sort
     }, function(err, result) {
         if (err) {
             return next(err);
         }
+        result.recordsTotal = 15000;
+        result.recordsFiltered = result.data.length;
         result.draw = draw;
         res.json(result);
     });

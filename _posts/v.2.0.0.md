@@ -7,10 +7,12 @@ YASP is jumping a version number, releasing v2.0.0!
 Features
 ====
 * Manual name update. Relogging now updates your name from the Steam API.
-* Advanced Querying.  More powerful options for aggregating and filtering matches.
+* Advanced Querying. More powerful options for aggregating and filtering matches.
+* Faster full history. We get players' full histories when they sign in.
 
 UI
 ====
+* Defaulted dark theme
 
 Bugfixes
 ====
@@ -18,6 +20,6 @@ Bugfixes
 
 Performance/backend
 ====
-* Parsing stream now injects progress, error, exit events into the parser event log
+* Parser stream now injects progress, error, exit events into the parser event log
 * Improved full history processing algorithm
 * Using protobufjs for reduced build times

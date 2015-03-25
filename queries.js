@@ -304,7 +304,10 @@ function getRatingData(account_id, cb) {
 }
 
 function fillPlayerData(player, options, cb) {
-    var selection = {
+    //received from controller
+    //options.info, the tab the hero is on
+    //options.query, the querystring from the user
+    var select = {
         players: {
             $elemMatch: {
                 account_id: player.account_id,
@@ -314,7 +317,7 @@ function fillPlayerData(player, options, cb) {
             }
         }
     };
-    var projection = {
+    var project = {
         "players.$": 1,
         start_time: 1,
         match_id: 1,
@@ -326,26 +329,25 @@ function fillPlayerData(player, options, cb) {
         lobby_type: 1,
         game_mode: 1
     };
-    var advQueryOpts = {
-        filter: {}
-    };
+    var filter = {};
     if (options.info === "trends") {
-        projection.parsed_data = 1;
+        project.parsed_data = 1;
     }
     if (options.info !== "matches") {
         //todo use api/matches for matches tab?
         //we want all the matches if matches tab, not just balanced
-        advQueryOpts.filter.balanced = 1;
+        filter.balanced = 1;
     }
     /*
     if (options.query.hero_id) {
         //using post-process to filter specific hero from matches
-        advQueryOpts.filter.hero_id = options.query.hero_id;
+        filter.hero_id = options.query.hero_id;
     }
     */
-    advQuery(selection, {
-        advQuery: advQueryOpts,
-        fields: projection
+    advQuery({
+        select: select,
+        project: project,
+        filter: filter
     }, function(err, results) {
         if (err) {
             return cb(err);
