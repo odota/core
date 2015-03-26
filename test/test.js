@@ -20,7 +20,10 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var processors = require('../processors');
+var processApi = require('../processApi');
+var processFullHistory = require('../processFullHistory');
+var processParse = require('../processParse');
+var processMmr = require('../processMmr')
 var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
@@ -29,11 +32,13 @@ var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var wait = 60000;
+/*
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
     runScripts: false
 });
+*/
 var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
@@ -223,7 +228,7 @@ describe("worker", function() {
         }, function(err, job) {
             assert(!err);
             assert(job);
-            processors.processApi(job, function(err) {
+            processApi(job, function(err) {
                 done(err);
             });
         });
@@ -236,7 +241,7 @@ describe("worker", function() {
         }, function(err, job) {
             assert(!err);
             assert(job);
-            processors.processMmr(job, function(err) {
+            processMmr(job, function(err) {
                 done(err);
             });
         });
@@ -249,7 +254,7 @@ describe("worker", function() {
         }, function(err, job) {
             assert(!err);
             assert(job);
-            processors.processApi(job, function(err) {
+            processApi(job, function(err) {
                 done(err);
             });
         });
@@ -260,7 +265,7 @@ describe("worker", function() {
         }, function(err, job) {
             assert(!err);
             assert(job);
-            processors.processFullHistory(job, function(err) {
+            processFullHistory(job, function(err) {
                 done(err);
             });
         });
@@ -301,7 +306,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            processParse(job, function(err) {
                 //todo check the site to make sure templates work
                 done(err);
             });
@@ -315,7 +320,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -328,7 +333,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -341,7 +346,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -354,7 +359,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            processParse(job, function(err) {
                 assert(err);
                 done();
             });

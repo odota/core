@@ -307,12 +307,13 @@ function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
     //options.query, the querystring from the user 
-    //todo use the same query format as for /api/matches?)
+    //todo use the same query format as for /api/matches?
     //http://api.jquery.com/jQuery.param/
     //use jquery on the page to create the url string
     console.log(options.query);
     var select = {
         /*
+        //elemmatch query allows getting specific hero+specific player with mongo only
         players: {
             $elemMatch: {
                 account_id: player.account_id,
@@ -322,7 +323,9 @@ function fillPlayerData(player, options, cb) {
             }
         }
         */
-        //todo get account id from query?
+        //todo get account id from query, or lock to querying on a player's matches?
+        //could make it part of query, but disabled from editing?
+        //kinda breaks DRY to have id both in query and in url?
         "players.account_id": player.account_id
     };
     //we want parsed_data if trends
@@ -339,22 +342,22 @@ function fillPlayerData(player, options, cb) {
         parsed_data: 1
     } : null;
     var filter = {};
-    //todo get the filters from the query
     //should set filter.balanced unless query says not to
     if (options.query.balanced !== "0") {
         filter.balanced = 1;
     }
-    //todo main profile page "recent matches" should include all matches, but aggregations shouldn't
     options.query.hero_id = Number(options.query.hero_id);
     if (options.query.hero_id) {
-        //uses post-process to filter specific hero from matches
+        //getting only specific heroes played by this player
         filter.hero_id = options.query.hero_id;
     }
+    //todo main profile page "recent matches" should include all matches, but aggregations shouldn't
+    //use results.unfiltered?
     advQuery({
         select: select,
         project: project,
         filter: filter,
-        agg: null, //null does everything by default 
+        agg: null, //null aggs everything by default 
     }, function(err, results) {
         if (err) {
             return cb(err);

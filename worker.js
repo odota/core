@@ -1,6 +1,8 @@
 var utility = require('./utility');
 var config = require('./config');
-var processors = require('./processors');
+var processApi = require('./processApi');
+var processFullHistory = require('./processFullHistory');
+var processMmr = require('./processMmr');
 var getData = utility.getData;
 var db = require('./db');
 var r = require('./redis');
@@ -62,10 +64,10 @@ d.run(function() {
     build(function() {
         startScan();
         jobs.promote();
-        jobs.process('api', processors.processApi);
-        jobs.process('mmr', processors.processMmr);
-        jobs.process('request', processors.processApi);
-        jobs.process('fullhistory', processors.processFullHistory);
+        jobs.process('api', processApi);
+        jobs.process('mmr', processMmr);
+        jobs.process('request', processApi);
+        jobs.process('fullhistory', processFullHistory);
         setInterval(updatenames, 30 * 1000, function() {});
         setInterval(build, 3 * 60 * 1000, function() {});
         //todo implement redis window check 

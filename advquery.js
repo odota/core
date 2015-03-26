@@ -222,13 +222,15 @@ function filter(matches, filters) {
 function advQuery(options, cb) {
     //options passed:
     //select,the query to send to mongodb
-    //project
+    //project, the projection to send to mongodb, null to use default
     //filter,additional post-processing filters
     //agg, aggregations to do
     //limit
     //skip
     //sort
-    //page, the number of results to return at once
+    //length, the number of results to return in a page
+    //start, the position to start a page at
+    //usage
     //matches page, want matches fitting criteria
     //player matches page, want winrate, matches fitting criteria, also need to display player information
     //player trends page, want aggregation on matches fitting criteria
@@ -243,7 +245,6 @@ function advQuery(options, cb) {
     //filter: significant game modes only (balanced filter)
     //filter: win
     //filter kill differential, gold/xp differential?
-    //aggData contains games/win/lose, useful for reporting winrate given a query
     options.project = options.project || {
         start_time: 1,
         match_id: 1,
