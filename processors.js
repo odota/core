@@ -471,7 +471,7 @@ function processMmr(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             logger.info(err);
-            return cb(err, err);
+            return cb(null, {error:JSON.stringify(err)});
         }
         logger.info("mmr response");
         if (data.soloCompetitiveRank || data.competitiveRank) {
