@@ -200,15 +200,16 @@ function startScan() {
 }
 var q = async.queue(function(match, cb) {
     async.each(match.players, function(p, cb) {
-        if (p.account_id in userPlayers) {
-            //skipped
-            match.parse_status = 3;
-        }
         if (p.account_id in trackedPlayers || p.account_id in permanent) {
             //queued
             match.parse_status = 0;
         }
+        if (p.account_id in userPlayers && match.parse_status !== 0) {
+            //skipped, but only if not already queued
+            match.parse_status = 3;
+        }
         if (p.account_id in ratingPlayers && match.lobby_type === 7) {
+            //could possibly pick up MMR change for matches we don't add, this is probably ok
             queueReq("mmr", {
                 match_id: match.match_id,
                 account_id: p.account_id,
