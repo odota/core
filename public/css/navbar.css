@@ -126,7 +126,11 @@ a.list-group-item:hover, a.list-group-item:focus{
 }
 
 .navbar-brand:hover, .navbar-brand:focus {
-  background-color: #FFF;
+  background-color: #BBF0FD;
+}
+
+.navbar-brand:hover strong, .navbar-brand:focus strong {
+  color: #000;
 }
 
 #navbar .nav>li>a:hover, #navbar .nav>li>a:focus {
@@ -145,6 +149,6 @@ a.list-group-item:hover, a.list-group-item:focus{
 a:hover {
   color: #000;
 }
-footer a:hover {
+footer a:hover, .featurette.dark a:hover {
   color: #337ab7;
 }
