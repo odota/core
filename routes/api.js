@@ -25,8 +25,8 @@ api.get('/matches', function(req, res, next) {
     var limit = Number(req.query.length);
     //api doesn't allow sorting, sorting on unindexed fields is slow
     //advQuery uses JS to sort the output by match_id
-    //can't rely on the sort here though since advquery only gets one page of matches
-    //do a sort by id on mongo end
+    //can't rely on that sort though since advquery only gets one page of matches
+    //do a sort by id in mongo
     //var sort = makeSort(req.query.order, req.query.columns);
     var sort = {
         "match_id": -1

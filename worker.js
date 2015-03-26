@@ -224,18 +224,7 @@ var q = async.queue(function(match, cb) {
         }
         if (match.parse_status === 0 || match.parse_status === 3) {
             insertMatch(match, function(err) {
-                if (err) {
-                    return cb(err, match);
-                }
-                //queue parse
-                if (match.parse_status === 0) {
-                    queueReq("parse", match, function(err, job) {
-                        cb(err, match);
-                    });
-                }
-                else {
-                    return cb(err, match);
-                }
+                cb(err, match);
             });
         }
         else {

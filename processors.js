@@ -8,37 +8,43 @@ var request = require('request');
 var operations = require('./operations');
 var insertPlayer = operations.insertPlayer;
 var insertMatch = operations.insertMatch;
+var insertMatchProgress = operations.insertMatchProgress;
 var spawn = require('child_process').spawn;
 var domain = require('domain');
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
 var progress = require('request-progress');
-var queueReq = operations.queueReq;
 var urllib = require('url');
 var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
+var moment = require('moment');
 
 function processParse(job, cb) {
-    var attempts = job.toJSON().attempts.remaining;
-    var noRetry = attempts <= 1;
     var match_id = job.data.payload.match_id;
+    var match = job.data.payload;
     console.time("parse " + match_id);
+    if (match.start_time < moment().subtract(7, 'days').format('X') && config.NODE_ENV !== "test") {
+        //expired, even if we have url
+        //parseable if we have a filename
+        //skip this check in test
+        console.log("parse: replay expired");
+        job.data.payload.parse_status = 1;
+        updateDb();
+    }
     runParser(job, function(err, parsed_data) {
+        if (err) {
+            logger.info("match_id %s, error %s", match_id, err);
+            return cb(err);
+        }
         match_id = match_id || parsed_data.match_id;
         job.data.payload.match_id = match_id;
         job.data.payload.parsed_data = parsed_data;
-        if (err && noRetry) {
-            logger.info("match_id %s, error %s, not retrying", match_id, err);
-            job.data.payload.parse_status = 1;
-        }
-        else if (err) {
-            logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
-            return cb(err);
-        }
-        else {
-            job.data.payload.parse_status = 2;
-        }
+        job.data.payload.parse_status = 2;
+        updateDb();
+    });
+
+    function updateDb() {
         job.update();
         db.matches.update({
             match_id: match_id
@@ -48,7 +54,7 @@ function processParse(job, cb) {
             console.timeEnd("parse " + match_id);
             return cb(err, job.data.payload);
         });
-    });
+    }
 }
 
 function runParser(job, cb) {
@@ -60,7 +66,7 @@ function runParser(job, cb) {
         "-Xmx64m",
         "parser/target/stats-0.1.0.one-jar.jar"
     ], {
-        stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
+        stdio: ['pipe', 'pipe', 'pipe'], //ignore stderr
         encoding: 'utf8'
     });
     var outStream = JSONStream.parse();
@@ -74,10 +80,11 @@ function runParser(job, cb) {
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
             //in the meantime since one thread is spawning multiple children we can just kill the children?
-            if (bz){
+            console.log(err);
+            if (bz) {
                 bz.kill();
             }
-            if(parser){
+            if (parser) {
                 parser.kill();
             }
             cb(err.message || err);
@@ -115,6 +122,9 @@ function runParser(job, cb) {
         else {
             throw new Error("no parse input");
         }
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
+        });
         parser.on('exit', function(code) {
             error = code;
             outStream.write(JSON.stringify({
@@ -123,9 +133,9 @@ function runParser(job, cb) {
             }));
         });
         parser.stdout.pipe(outStream);
-        outStream.on('root', preProcess);
+        outStream.on('root', handleStream);
         outStream.on('end', function() {
-            postProcess();
+            processEventBuffer();
             //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         });
     });
@@ -136,12 +146,12 @@ function runParser(job, cb) {
     var game_zero = 0;
     var parsed_data = utility.getParseSchema();
     parsed_data.version = constants.parser_version;
-    var preTypes = {
+    var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            //console.log(e);
+            console.log(e);
         },
         "hero_log": function(e) {
             //get hero by id
@@ -155,12 +165,21 @@ function runParser(job, cb) {
         },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
+        },
+        "error": function(e) {
+            console.log(e);
+        },
+        "exit": function(e) {
+            console.log(e);
+        },
+        "progress": function(e) {
+            console.log(e);
         }
     };
 
-    function preProcess(e) {
-        if (preTypes[e.type]) {
-            preTypes[e.type](e);
+    function handleStream(e) {
+        if (streamTypes[e.type]) {
+            streamTypes[e.type](e);
         }
         else {
             entries.push(e);
@@ -317,7 +336,7 @@ function runParser(job, cb) {
         }
     };
 
-    function postProcess() {
+    function processEventBuffer() {
         //console.time("postprocess");
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
@@ -453,49 +472,9 @@ function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            insertMatch(match, function(err) {
-                if (err) {
-                    //error occured
-                    return cb(err, {
-                        error: err
-                    });
-                }
-                else if (match.expired) {
-                    job.log("api: match expired");
-                    job.progress(100, 100);
-                    return cb();
-                }
-                else if (match.request) {
-                    queueReq("request_parse", match, function(err, job2) {
-                        if (err) {
-                            return cb(err, {
-                                error: err
-                            });
-                        }
-                        //wait for parse to finish
-                        job.log("parse: starting");
-                        job.progress(0, 100);
-                        //request, parse and log the progress
-                        job2.on('progress', function(prog) {
-                            job.log(prog + "%");
-                            job.progress(prog, 100);
-                        });
-                        job2.on('failed', function() {
-                            cb("parse failed");
-                        });
-                        job2.on('complete', function() {
-                            job.log("parse: complete");
-                            job.progress(100, 100);
-                            cb();
-                        });
-                    });
-                }
-                else {
-                    //queue it and finish
-                    return queueReq("parse", match, function(err, job2) {
-                        cb(err, job2);
-                    });
-                }
+            job.log("api: complete");
+            insertMatchProgress(match, job, function(err) {
+                cb(err);
             });
         }
         else {

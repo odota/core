@@ -28,7 +28,7 @@
   "dependencies": {
     "JSONStream": "^0.10.0",
     "async": "0.9.0",
-    "aws-sdk": "~2.1.18",
+    "aws-sdk": "~2.1.19",
     "big-number": "0.3.1",
     "body-parser": "1.12.2",
     "bower": "^1.3.12",
@@ -49,7 +49,7 @@
     "jquery": "~2.1.3",
     "kue": "~0.8.12",
     "moment": "~2.9.0",
-    "monk": "1.0.0",
+    "monk": "1.0.1",
     "multer": "~0.1.8",
     "multiparty": "^4.1.1",
     "numeral": "~1.5.3",
@@ -60,7 +60,7 @@
     "poet": "~2.0.0",
     "qtip2": "~2.2.0",
     "redis": "0.12.1",
-    "request": "~2.53.0",
+    "request": "~2.54.0",
     "request-progress": "^0.3.1",
     "seaport": "^2.0.9",
     "sentiment": "^1.0.2",
@@ -72,13 +72,13 @@
   "devDependencies": {
     "coveralls": "2.11.2",
     "database-cleaner": "~0.9.1",
-    "istanbul": "~0.3.10",
+    "istanbul": "~0.3.11",
     "mocha": "~2.2.1",
-    "mongodb": "~1.4.34",
+    "mongodb": "~2.0.24",
     "nock": "~1.2.1",
     "nodemon": "^1.3.7",
     "supertest": "^0.15.0",
-    "watchify": "~2.6.0",
+    "watchify": "~2.6.1",
     "zombie": "~3.1.0"
   }
 }
