@@ -888,9 +888,14 @@ function getAssociatedHero(unit, heroes) {
 
 function patchLegacy(match) {
     mergeMatchData(match);
-    match.players.forEach(function(player, i) {
-        var hero = constants.heroes[player.hero_id];
-        var parsedHero = match.parsed_data.heroes[hero.name];
+    for (var i = 0;i<match.players.length;i++){
+        var player = match.players[i];
+        var hero_obj = constants.heroes[player.hero_id];
+        if (!hero_obj){
+            match.parsed_data = null;
+            return;
+        }
+        var parsedHero = match.parsed_data.heroes[hero_obj.name];
         var parseSlot = player.player_slot % (128 - 5);
         var parsedPlayer = match.parsed_data.players[parseSlot];
         //get the data from the old heroes hash
@@ -923,5 +928,5 @@ function patchLegacy(match) {
         });
         */
         //console.log('completed %s', match.match_id, parseSlot, i);
-    });
+    }
 }
