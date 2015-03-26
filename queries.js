@@ -305,9 +305,14 @@ function getRatingData(account_id, cb) {
 
 function fillPlayerData(player, options, cb) {
     //received from controller
-    //options.info, the tab the hero is on
-    //options.query, the querystring from the user
+    //options.info, the tab the player is on
+    //options.query, the querystring from the user 
+    //todo use the same query format as for /api/matches?)
+    //http://api.jquery.com/jQuery.param/
+    //use jquery on the page to create the url string
+    console.log(options.query);
     var select = {
+        /*
         players: {
             $elemMatch: {
                 account_id: player.account_id,
@@ -316,38 +321,40 @@ function fillPlayerData(player, options, cb) {
                 }
             }
         }
+        */
+        //todo get account id from query?
+        "players.account_id": player.account_id
     };
-    var project = {
-        "players.$": 1,
+    //we want parsed_data if trends
+    var project = (options.info === "trends") ? {
         start_time: 1,
         match_id: 1,
-        duration: 1,
         cluster: 1,
+        game_mode: 1,
+        duration: 1,
         radiant_win: 1,
         parse_status: 1,
         first_blood_time: 1,
         lobby_type: 1,
-        game_mode: 1
-    };
+        parsed_data: 1
+    } : null;
     var filter = {};
-    if (options.info === "trends") {
-        project.parsed_data = 1;
-    }
-    if (options.info !== "matches") {
-        //todo use api/matches for matches tab?
-        //we want all the matches if matches tab, not just balanced
+    //todo get the filters from the query
+    //should set filter.balanced unless query says not to
+    if (options.query.balanced !== "0") {
         filter.balanced = 1;
     }
-    /*
+    //todo main profile page "recent matches" should include all matches, but aggregations shouldn't
+    options.query.hero_id = Number(options.query.hero_id);
     if (options.query.hero_id) {
-        //using post-process to filter specific hero from matches
+        //uses post-process to filter specific hero from matches
         filter.hero_id = options.query.hero_id;
     }
-    */
     advQuery({
         select: select,
         project: project,
-        filter: filter
+        filter: filter,
+        agg: null, //null does everything by default 
     }, function(err, results) {
         if (err) {
             return cb(err);

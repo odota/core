@@ -1,6 +1,7 @@
 var express = require('express');
 var matches = express.Router();
 var queries = require('../queries');
+var config = require('../config');
 var matchPages = {
     index: {
         name: "Basic"
@@ -34,8 +35,8 @@ matches.get('/:match_id/:info?', function(req, res, next) {
         }
         console.timeEnd("match page");
         var info = matchPages[req.params.info] ? req.params.info : "index";
-        if (req.query.json) {
-            //return res.json(match);
+        if (req.query.json && config.NODE_ENV !== "production") {
+            return res.json(match);
         }
         res.render("match_" + info, {
             route: info,

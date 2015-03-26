@@ -11,36 +11,32 @@ api.get('/abilities', function(req, res) {
 api.get('/matches', function(req, res, next) {
     var draw = Number(req.query.draw);
     var select = req.query.select || {};
-    //api limits the fields that will be returned per match
-    //always project a player to prevent crash?  otherwise aggregators need to handle this case
-    //todo right now this just always includes 1 player
-    //this prevents crash on computematchdata, but costs extra bandwidth
-    //add an option to disable aggregation?  Then we don't need to project a player
-    var project = {
-        start_time: 1,
-        match_id: 1,
-        cluster: 1,
-        game_mode: 1,
-        duration: 1,
-        parse_status: 1,
-        players: {
-            $slice: 1
-        },
-        "players.account_id": 1
-    };
+    for (var key in select) {
+        //querystring contains string values, convert them all to number
+        select[key] = Number(select[key]);
+    }
+    //don't allow additional projection fields to be defined from api, enforce default in advquery
+    var project = null;
     var start = Number(req.query.start);
+    //todo possible to crash the server by attempting an invalid aggregation?  for now, don't allow aggregation
+    var agg = {};
+    //var agg = req.query.agg || {}; //by default, don't do aggregation on api requests
+    var filter = req.query.filter || {};
     var limit = Number(req.query.length);
-    //if limit is 0 or too big, reset it
-    limit = (!limit || limit > 15000) ? 15000 : limit;
+    //api doesn't allow sorting, sorting on unindexed fields is slow
+    //advQuery uses JS to sort the output by match_id
+    //can't rely on the sort here though since advquery only gets one page of matches
+    //do a sort by id on mongo end
     //var sort = makeSort(req.query.order, req.query.columns);
-    //api enforces sort by match_id
     var sort = {
         "match_id": -1
     };
+
     advQuery({
         select: select,
         project: project,
-        filter: {},
+        filter: filter,
+        agg: agg,
         limit: limit,
         skip: start,
         sort: sort
@@ -48,8 +44,6 @@ api.get('/matches', function(req, res, next) {
         if (err) {
             return next(err);
         }
-        result.recordsTotal = 15000;
-        result.recordsFiltered = result.data.length;
         result.draw = draw;
         res.json(result);
     });

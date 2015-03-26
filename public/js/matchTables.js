@@ -15,6 +15,7 @@ module.exports = function matchTable() {
             ajax: {
                 'url': '/api/matches',
                 'data': {
+                    "select": {},
                     "project": {}
                 }
             },

@@ -165,14 +165,11 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
-    queries.prepareMatch(1321352005, function(err, match) {
-        if (err) {
-            return next(err);
-        }
-        res.render('home', {
-            match: match,
-            home: true
-        });
+    //todo make a static example file with match data?
+    var match = {};
+    res.render('home', {
+        match: match,
+        home: true
     });
 });
 app.route('/preferences').post(function(req, res) {
@@ -222,11 +219,11 @@ app.route('/return').get(passport.authenticate('steam', {
         }, {
             upsert: true
         }, function(err) {
-            if (err){
+            if (err) {
                 return next(err);
             }
             queueReq("fullhistory", req.user, function(err, job) {
-                if (err){
+                if (err) {
                     return next(err);
                 }
                 res.redirect('/players/' + req.user.account_id);

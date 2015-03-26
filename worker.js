@@ -44,7 +44,7 @@ process.on('SIGINT', function() {
         process.exit(err || 1);
     });
 });
-process.on('SIGUSR2', function() {
+process.once('SIGUSR2', function() {
     clearActiveJobs(function(err) {
         console.log(err);
         process.kill(process.pid, 'SIGUSR2');
@@ -262,6 +262,7 @@ function scanApi(seq_num) {
             if (err) {
                 console.log("failed to insert match from scanApi %s", match);
                 console.log(err);
+                //todo log this to a file or something, we don't want to stop/crash just because an insert failed
                 //throw err;
             }
             else {

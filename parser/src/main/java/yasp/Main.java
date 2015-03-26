@@ -145,6 +145,37 @@ public class Main {
 		Entity ps = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 		Integer stunIdx = ps.getDtClass().getPropertyIndex("m_fStuns.0000");
 		Integer steamIdx = ps.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+		//slow data can be output to console, but not in replay?
+		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
+		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
+		
+		//can do all these stats over time?
+		//m_iKills.0000
+		//m_iAssists.0000
+		//m_iDeaths.0000
+		//m_iTowerKills.0000
+		//m_iRoshanKills.0000
+		//m_iNearbyCreepDeathCount.0000
+		//m_iMetaLevel.0000
+		//m_iMetaExperience.0000
+		//m_iMetaExperienceAwarded.0000
+		
+		//more endgame
+		//m_bVoiceChatBanned.0000
+		//m_bHasRandomed.0000
+		//m_bHasRepicked.0000
+		
+		//might want the max only
+		//m_iStreak.0000
+		//m_iLastHitStreak.0000
+		//m_iLastHitMultikill.0000
+		
+		//gem, rapier time?
+		//time dead
+		//m_iRespawnSeconds.0000
+		//gold fed?  unfortunately no direct link between gold gain event and corresponding kill
+
+		//System.err.println(ps);
 		//load endgame stats
 		for (int i = 0; i < numPlayers; i++) {
 			String stuns = String.valueOf(ps.getState()[stunIdx+i]);

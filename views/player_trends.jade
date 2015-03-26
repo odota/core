@@ -3,14 +3,19 @@ extend player
 block playercontent
   //pre #{JSON.stringify(player.aggData, null, 2)}
   .row
-    .col-md-5
+    .col-md-12
+      h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Filter
       form.form-inline(action="" method="GET")
-        h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Hero Filter
-        select.form-inline.form-control(name="hero_id" onchange="this.form.submit()")
+        input.form-control(name="account_id", value=player.account_id, onchange="this.form.submit()")
+        select.form-control(name="hero_id" onchange="this.form.submit()")
           option(value="0") All Heroes
           each entry in constants.alpha_heroes
             option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
-    .col-md-7  
+        select.form-control(name="balanced" onchange="this.form.submit()")
+          option(value="1",  selected=q.balanced==="1") Balanced Modes
+          option(value="0", selected=q.balanced==="0") Include Unbalanced Modes
+  .row
+    .col-md-12
       h3
         .col-md-3.text-center
           a(href="#records")
@@ -46,6 +51,7 @@ block playercontent
               th Avg
               th Record
               th Set
+              th N
             - var times={"duration":1,"first_blood_time":1}
             - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1} 
             each val, key in player.aggData
@@ -61,6 +67,7 @@ block playercontent
                 if key in times || key in display
                   td
                     a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
+                  td=val.n
         .col-md-6
           .row
             .col-md-12

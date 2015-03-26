@@ -70,6 +70,16 @@ function runParser(job, cb) {
     d.on('error', function exit(err) {
         if (!exited) {
             exited = true;
+            //todo graceful shutdown
+            //best is probably to have processparse running via cluster threads
+            //then we can just crash this thread and master can respawn a new worker
+            //in the meantime since one thread is spawning multiple children we can just kill the children?
+            if (bz){
+                bz.kill();
+            }
+            if(parser){
+                parser.kill();
+            }
             cb(err.message || err);
         }
     });
