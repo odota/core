@@ -228,6 +228,7 @@ function advQuery(options, cb) {
     //limit
     //skip
     //sort
+    //page, the number of results to return at once
     //matches page, want matches fitting criteria
     //player matches page, want winrate, matches fitting criteria, also need to display player information
     //player trends page, want aggregation on matches fitting criteria
@@ -242,9 +243,7 @@ function advQuery(options, cb) {
     //filter: significant game modes only (balanced filter)
     //filter: win
     //filter kill differential, gold/xp differential?
-    //limit/skip are useful for datatables server-side ajax calls, but also prevent aggregation from working properly
     //aggData contains games/win/lose, useful for reporting winrate given a query
-    //todo have this function return unfiltered data as well?  if so, we dont want to display it in api
     options.project = options.project || {
         start_time: 1,
         match_id: 1,
@@ -311,7 +310,9 @@ function advQuery(options, cb) {
         //console.timeEnd('post');
         var result = {
             aggData: aggData,
-            data: filtered
+            page: filtered.slice(options.start,options.start+options.length),
+            data: filtered,
+            unfiltered: matches
         };
         cb(err, result);
     });

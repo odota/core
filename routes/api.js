@@ -22,30 +22,42 @@ api.get('/matches', function(req, res, next) {
     var agg = {};
     //var agg = req.query.agg || {}; //by default, don't do aggregation on api requests
     var filter = req.query.filter || {};
-    var limit = Number(req.query.length);
-    //api doesn't allow sorting, sorting on unindexed fields is slow
-    //advQuery uses JS to sort the output by match_id
-    //can't rely on that sort though since advquery only gets one page of matches
-    //do a sort by id in mongo
-    //var sort = makeSort(req.query.order, req.query.columns);
+    var length = Number(req.query.length);
+    //limit/skip mess up aggregation if used, but are more efficient (less processing in JS)
+    //db sorting on unindexed fields is slow, advQuery uses JS to sort the output by match_id
+    //if using limit/skip though, can't rely on that sort though since advquery only gets one page of matches
+    //so need to do a sort in mongo
+    var limit = {};
+    var skip = {};
+    var sort = {};
+    //var limit = Number(req.query.length);
+    //var skip = Number(req.query.start);
+    /*
     var sort = {
         "match_id": -1
     };
-
+    */
+    //var sort = makeSort(req.query.order, req.query.columns);
     advQuery({
         select: select,
         project: project,
         filter: filter,
         agg: agg,
         limit: limit,
-        skip: start,
-        sort: sort
+        skip: skip,
+        sort: sort,
+        length: length,
+        start: start
     }, function(err, result) {
         if (err) {
             return next(err);
         }
-        result.draw = draw;
-        res.json(result);
+        res.json({
+            draw: draw,
+            recordsTotal: result.unfiltered.length,
+            recordsFiltered: result.data.length,
+            data: result.page
+        });
     });
 });
 /*

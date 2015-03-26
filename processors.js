@@ -473,9 +473,16 @@ function processApi(job, cb) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
             job.log("api: complete");
-            insertMatchProgress(match, job, function(err) {
-                cb(err);
-            });
+            if (match.request) {
+                insertMatchProgress(match, job, function(err) {
+                    cb(err);
+                });
+            }
+            else {
+                insertMatch(match, function(err) {
+                    cb(err);
+                });
+            }
         }
         else {
             return cb("unknown response");
