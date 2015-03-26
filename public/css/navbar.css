@@ -20,11 +20,6 @@ h1,h2,h3,h4,.lead,.btn,.navbar a {
   letter-spacing:2px;
 }
 
-a:hover, a:focus {
-  text-decoration: none;
-  color:#BBF0FD;
-}
-
 #heatmap-table {
   height:500px;
 }
@@ -145,4 +140,11 @@ a.list-group-item:hover, a.list-group-item:focus{
 .navbar-fixed-top.opaque{ 
   background-color: rgb(37, 41, 42);
   transition: background-color 1s ease 0s;
+}
+
+a:hover {
+  color: #000;
+}
+footer a:hover {
+  color: #337ab7;
 }
