@@ -269,6 +269,7 @@ function advQuery(options, cb) {
         if (mongoable[key]) {
             //todo we might not want to project only this player if we're doing a with/against query?
             //could we also compute teammates/matchups directly as well?
+            //todo 20000 matches@100kb each is 2gb, can JS handle this in memory?
             options.project["players.$"] = 1;
             mongo_select[key] = Number(options.select[key]);
         }
@@ -296,7 +297,7 @@ function advQuery(options, cb) {
     options.project["players.hero_healing"] = 1;
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
-    var max = 20000;
+    var max = 15000;
     options.limit = (!options.limit || options.limit > max) ? max : options.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
@@ -327,7 +328,6 @@ function advQuery(options, cb) {
             delete matches[i].players[0].ability_upgrades;
         }
         //console.timeEnd('compute');
-        //sorting before filter so unfiltered is sorted too
         matches = sort(matches, options.js_sort);
         var filtered = filter(matches, js_select);
         var aggData = aggregator(filtered, options.js_agg);
@@ -344,6 +344,7 @@ function advQuery(options, cb) {
             aggData: aggData,
             page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
             data: filtered,
+            //todo filter function mutates matches!  unfiltered doesnt work
             unfiltered: matches
         };
         cb(err, result);
