@@ -13,7 +13,10 @@ block playercontent
             option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
         select.form-control(name="balanced" onchange="this.form.submit()")
           option(value="1",  selected=q.balanced==="1") Balanced Modes
-          option(value="0", selected=q.balanced==="0") Include All Modes
+          option(value="0", selected=q.balanced==="0") All Modes
+        select.form-control(name="win" onchange="this.form.submit()")
+          option(value="0",  selected=q.win==="0") Wins and Losses
+          option(value="1", selected=q.win==="1") Wins
   .row
     .col-md-12
       h3

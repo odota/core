@@ -243,7 +243,7 @@ function sort(matches, sorts) {
 function advQuery(options, cb) {
     //usage
     //matches page, want matches fitting query (serverside datatables)
-    //player matches page, want winrate, matches fitting query, also need to display player[0] information (render in jade)
+    //player matches page, want winrate, matches fitting query, also need to display player[0] information (render in jade, but this is slow!)
     //player trends page, want aggregation on matches fitting criteria (render in jade)
     //project, the projection to send to mongodb, null to use default
     options.project = options.project || {
@@ -266,6 +266,7 @@ function advQuery(options, cb) {
     };
     for (var key in options.select) {
         if (mongoable[key]) {
+            //todo we might not want to project only this player if we're doing a with/against query?
             options.project["players.$"] = 1;
             mongo_select[key] = Number(options.select[key]);
         }
@@ -278,9 +279,19 @@ function advQuery(options, cb) {
         options.project.players = {
             $slice: 1
         };
-        //just project account id otherwise we return the entire player
-        options.project["players.account_id"] = 1;
     }
+    options.project["players.account_id"] = 1;
+    options.project["players.hero_id"] = 1;
+    options.project["players.kills"] = 1;
+    options.project["players.deaths"] = 1;
+    options.project["players.assists"] = 1;
+    options.project["players.last_hits"] = 1;
+    options.project["players.denies"] = 1;
+    options.project["players.gold_per_min"] = 1;
+    options.project["players.xp_per_min"] = 1;
+    options.project["players.hero_damage"] = 1;
+    options.project["players.tower_damage"] = 1;
+    options.project["players.hero_healing"] = 1;
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
     var max = 20000;
@@ -301,6 +312,7 @@ function advQuery(options, cb) {
     console.log(options);
     console.time('db');
     db.matches.find(mongo_select, monk_options, function(err, matches) {
+        console.log(matches[1000]);
         if (err) {
             console.log(err);
             return cb(err);
@@ -309,6 +321,8 @@ function advQuery(options, cb) {
         //console.time('compute');
         for (var i = 0; i < matches.length; i++) {
             computeMatchData(matches[i]);
+            //reduce load time by deleting ability upgrades
+            delete matches[i].players[0].ability_upgrades;
         }
         //console.timeEnd('compute');
         //sorting before filter so unfiltered is sorted too
