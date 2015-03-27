@@ -191,14 +191,15 @@ function aggregator(matches, fields) {
 function filter(matches, filters) {
     //todo implement more filters
     //filter: specific player/specific hero id
-    //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?  or could just do in js)
+    //filter: specific player was also in the game (do in js)
     //filter: specific hero was played by me, on my team, was against me, was in the game
     //filter: specific game modes
     //filter: specific patches
     //filter: specific regions
     //filter: no stats recorded (need to implement filter to detect)
     //filter: significant game modes only (balanced filter)
-    //filter kill differential, gold/xp differential?
+    //filter kill differential
+    //filter gold/xp differential?
     console.log(filters);
     //accept a hash of filters, run all the filters in the hash in series
     var filtered = [];
@@ -267,6 +268,7 @@ function advQuery(options, cb) {
     for (var key in options.select) {
         if (mongoable[key]) {
             //todo we might not want to project only this player if we're doing a with/against query?
+            //could we also compute teammates/matchups directly as well?
             options.project["players.$"] = 1;
             mongo_select[key] = Number(options.select[key]);
         }
