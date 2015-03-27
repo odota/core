@@ -6,14 +6,14 @@ block playercontent
     .col-md-12
       h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Filter
       form.form-inline(action="" method="GET")
-        input.form-control(name="account_id", value=player.account_id, onchange="this.form.submit()")
+        input.form-control(name="players.account_id", value=player.account_id, onchange="this.form.submit()")
         select.form-control(name="hero_id" onchange="this.form.submit()")
           option(value="0") All Heroes
           each entry in constants.alpha_heroes
             option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
         select.form-control(name="balanced" onchange="this.form.submit()")
           option(value="1",  selected=q.balanced==="1") Balanced Modes
-          option(value="0", selected=q.balanced==="0") Include Unbalanced Modes
+          option(value="0", selected=q.balanced==="0") Include All Modes
   .row
     .col-md-12
       h3

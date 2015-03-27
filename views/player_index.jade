@@ -43,7 +43,7 @@ block playercontent
            th Duration
            th Played
            th: abbr(title=constants.tooltips.status) Status
-        each match in player.matches.slice(0,15)
+        each match in player.unfiltered.slice(0,15)
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]

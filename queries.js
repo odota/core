@@ -135,28 +135,14 @@ function getRatingData(account_id, cb) {
 function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
-    //options.query, the querystring from the user 
-    //todo use the same query format as for /api/matches?
-    //http://api.jquery.com/jQuery.param/
-    //use jquery on the page to create the url string
-    console.log(options.query);
-    var select = {
-        /*
-        //elemmatch query allows getting specific hero+specific player with mongo only
-        players: {
-            $elemMatch: {
-                account_id: player.account_id,
-                hero_id: Number(options.query.hero_id) || {
-                    $ne: null
-                }
-            }
-        }
-        */
-        //todo get account id from query, or lock to querying on a player's matches?
-        //could make it part of query, but disabled from editing?
-        //kinda breaks DRY to have id both in query and in url?
-        "players.account_id": player.account_id
-    };
+    //options.query, the querystring from the user, this is advQuery.options.select
+    //we want to do this player, balanced modes only by default
+    if (!("players.account_id" in options.query)){
+        options.query["players.account_id"] = player.account_id;
+    }
+    if (!("balanced" in options.query)){
+        options.query.balanced = 1;
+    }
     //we want parsed_data if trends
     var project = (options.info === "trends") ? {
         start_time: 1,
@@ -170,29 +156,21 @@ function fillPlayerData(player, options, cb) {
         lobby_type: 1,
         parsed_data: 1
     } : null;
-    var filter = {};
-    //should set filter.balanced unless query says not to
-    if (options.query.balanced !== "0") {
-        filter.balanced = 1;
-    }
-    options.query.hero_id = Number(options.query.hero_id);
-    if (options.query.hero_id) {
-        //getting only specific heroes played by this player
-        filter.hero_id = options.query.hero_id;
-    }
-    //todo main profile page "recent matches" should include all matches, but aggregations shouldn't
-    //use results.unfiltered?
     advQuery({
-        select: select,
+        select: options.query,
         project: project,
-        filter: filter,
-        agg: null, //null aggs everything by default 
+        agg: null, //null aggs everything by default
+        js_sort: {
+            match_id: -1
+        }
     }, function(err, results) {
         if (err) {
             return cb(err);
         }
         player.aggData = results.aggData;
         player.matches = results.data;
+        //unfiltered for recent matches display
+        player.unfiltered = results.unfiltered;
         player.obs = player.aggData.obs.counts;
         player.sen = player.aggData.sen.counts;
         var d = {
@@ -220,7 +198,7 @@ function fillPlayerData(player, options, cb) {
 }
 
 function computeMatchups(player, match_ids, cb) {
-    console.time("db2");
+    console.time("matchups");
     db.matches.find({
         match_id: {
             $in: match_ids
@@ -239,7 +217,7 @@ function computeMatchups(player, match_ids, cb) {
         if (err) {
             return cb(err);
         }
-        console.timeEnd("db2");
+        console.timeEnd("matchups");
         //compute stats that require iteration through all players in a match
         var teammates = {};
         player.heroes = {};

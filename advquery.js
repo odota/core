@@ -189,22 +189,32 @@ function aggregator(matches, fields) {
 }
 
 function filter(matches, filters) {
+    //todo implement more filters
+    //filter: specific player/specific hero id
+    //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?  or could just do in js)
+    //filter: specific hero was played by me, on my team, was against me, was in the game
+    //filter: specific game modes
+    //filter: specific patches
+    //filter: specific regions
+    //filter: no stats recorded (need to implement filter to detect)
+    //filter: significant game modes only (balanced filter)
+    //filter kill differential, gold/xp differential?
     console.log(filters);
     //accept a hash of filters, run all the filters in the hash in series
     var filtered = [];
     for (var key in filters) {
         for (var i = 0; i < matches.length; i++) {
-            if (key === "balanced") {
+            if (key === "balanced" && filters[key]) {
                 if (constants.modes[matches[i].game_mode].balanced && constants.lobbies[matches[i].lobby_type].balanced) {
                     filtered.push(matches[i]);
                 }
             }
-            else if (key === "win") {
+            else if (key === "win" && filters[key]) {
                 if (isRadiant(matches[i].players[0]) === matches[i].radiant_win) {
                     filtered.push(matches[i]);
                 }
             }
-            else if (key === "hero_id") {
+            else if (key === "hero_id" && Number(filters["hero_id"])) {
                 if (matches[i].players[0].hero_id === Number(filters["hero_id"])) {
                     filtered.push(matches[i]);
                 }
@@ -219,32 +229,23 @@ function filter(matches, filters) {
     return matches;
 }
 
+function sort(matches, sorts) {
+    //todo do multiple sorts in series
+    //todo implement more sort types
+    if (sorts.match_id) {
+        matches.sort(function(a, b) {
+            return (a.match_id - b.match_id) * sorts.match_id;
+        });
+    }
+    return matches;
+}
+
 function advQuery(options, cb) {
-    //options passed:
-    //select,the query to send to mongodb
-    //project, the projection to send to mongodb, null to use default
-    //filter,additional post-processing filters
-    //agg, aggregations to do
-    //limit
-    //skip
-    //sort
-    //length, the number of results to return in a page
-    //start, the position to start a page at
     //usage
-    //matches page, want matches fitting criteria
-    //player matches page, want winrate, matches fitting criteria, also need to display player information
-    //player trends page, want aggregation on matches fitting criteria
-    //todo implement more features
-    //filter: specific player/specific hero id
-    //filter: specific player was also in the game (use players.account_id with $and, but which player gets returned by projection?  or could just do in js)
-    //filter: specific hero was played by me, on my team, was against me, was in the game
-    //filter: specific game modes
-    //filter: specific patches
-    //filter: specific regions
-    //filter: no stats recorded (need to implement filter to detect)
-    //filter: significant game modes only (balanced filter)
-    //filter: win
-    //filter kill differential, gold/xp differential?
+    //matches page, want matches fitting query (serverside datatables)
+    //player matches page, want winrate, matches fitting query, also need to display player[0] information (render in jade)
+    //player trends page, want aggregation on matches fitting criteria (render in jade)
+    //project, the projection to send to mongodb, null to use default
     options.project = options.project || {
         start_time: 1,
         match_id: 1,
@@ -256,30 +257,50 @@ function advQuery(options, cb) {
         first_blood_time: 1,
         lobby_type: 1
     };
-    console.log(options.select);
-    if (options.select["players.account_id"] || options.select["players.hero_id"]) {
-        //if selecting by account_id or hero_id, we project only that user in players array
-        options.project["players.$"] = 1;
+    //select,the query received, build the mongo query and the filter based on this
+    var mongo_select = {};
+    var js_select = {};
+    var mongoable = {
+        "players.account_id": 1,
+        "players.hero_id": 1
+    };
+    for (var key in options.select) {
+        if (mongoable[key]) {
+            options.project["players.$"] = 1;
+            mongo_select[key] = Number(options.select[key]);
+        }
+        else {
+            js_select[key] = Number(options.select[key]);
+        }
     }
-    else {
-        //otherwise, always project a player to prevent computematchdata crash
+    if (!options.project["players.$"]) {
+        //always project a player to prevent computematchdata crash
         options.project.players = {
             $slice: 1
         };
+        //just project account id otherwise we return the entire player
         options.project["players.account_id"] = 1;
     }
-    //cap the number of matches to analyze
+    //limit, pass to mongodb
+    //cap the number of matches to return in mongo
     var max = 20000;
     options.limit = (!options.limit || options.limit > max) ? max : options.limit;
+    //skip, pass to mongodb
+    //sort, pass to mongodb
+    //js_agg, aggregations to do with js
+    //js_limit, the number of results to return in a page, filtered by js
+    //js_start, the position to start a page at, seleced by js
+    //js_sort, post-process sorter that processes with js
     //build the monk hash
-    var monk = {
+    var monk_options = {
         limit: options.limit,
         skip: options.skip,
         sort: options.sort,
         fields: options.project
     };
+    console.log(options);
     console.time('db');
-    db.matches.find(options.select, monk, function(err, matches) {
+    db.matches.find(mongo_select, monk_options, function(err, matches) {
         if (err) {
             console.log(err);
             return cb(err);
@@ -290,13 +311,11 @@ function advQuery(options, cb) {
             computeMatchData(matches[i]);
         }
         //console.timeEnd('compute');
-        //console.time('filter');
-        var filtered = filter(matches, options.filter);
-        //console.timeEnd('filter');
-        //console.time('agg');
-        var aggData = aggregator(filtered, options.agg);
-        //console.timeEnd('agg');
-        //console.time('post');
+        //sorting before filter so unfiltered is sorted too
+        matches = sort(matches, options.js_sort);
+        var filtered = filter(matches, js_select);
+        var aggData = aggregator(filtered, options.js_agg);
+        //count win/lose/games
         aggData.win = 0;
         aggData.lose = 0;
         aggData.games = 0;
@@ -305,13 +324,9 @@ function advQuery(options, cb) {
             aggData.games += 1;
             m.player_win ? aggData.win += 1 : aggData.lose += 1;
         }
-        filtered.sort(function(a, b) {
-            return b.match_id - a.match_id;
-        });
-        //console.timeEnd('post');
         var result = {
             aggData: aggData,
-            page: filtered.slice(options.start,options.start+options.length),
+            page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
             data: filtered,
             unfiltered: matches
         };

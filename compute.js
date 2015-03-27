@@ -49,7 +49,7 @@ function computeMatchData(match) {
                 //mapping 0 to 0, 128 to 5, etc.
                 var parseSlot = player.player_slot % (128 - 5);
                 p = match.parsed_data.players[parseSlot];
-                //removeF meepo/meepo kills
+                //remove meepo/meepo kills
                 if (player.hero_id === 82) {
                     p.kills_log = p.kills_log.filter(function(k) {
                         k.key !== "npc_dota_hero_meepo";

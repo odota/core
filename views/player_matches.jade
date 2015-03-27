@@ -3,6 +3,7 @@ extend player
 block playercontent
   h3 Matches
   table.table#matches
+  //-
     thead
       tr
        th Match ID
@@ -47,8 +48,10 @@ block playercontent
         td=match.players[0].xp_per_min
         td=match.players[0].hero_damage
         td=match.players[0].tower_damage
-        td=match.players[0].hero_healing  
+        td=match.players[0].hero_healing 
+    
   
 append footer_assets
   script.
+    var matches = !{JSON.stringify(player.matches)}
     playerMatches(matches);
