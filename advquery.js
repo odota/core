@@ -202,40 +202,50 @@ function filter(matches, filters) {
     //filter gold/xp differential?
     console.log(filters);
     //accept a hash of filters, run all the filters in the hash in series
+    var conditions = {
+        balanced: function(m) {
+            return constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced;
+        },
+        win: function(m) {
+            return isRadiant(m.players[0]) === m.radiant_win;
+        },
+        hero_id: function(m) {
+            return m.players[0].hero_id;
+        }
+    };
     var filtered = [];
-    for (var key in filters) {
-        for (var i = 0; i < matches.length; i++) {
-            if (key === "balanced" && filters[key]) {
-                if (constants.modes[matches[i].game_mode].balanced && constants.lobbies[matches[i].lobby_type].balanced) {
-                    filtered.push(matches[i]);
-                }
-            }
-            else if (key === "win" && filters[key]) {
-                if (isRadiant(matches[i].players[0]) === matches[i].radiant_win) {
-                    filtered.push(matches[i]);
-                }
-            }
-            else if (key === "hero_id" && Number(filters["hero_id"])) {
-                if (matches[i].players[0].hero_id === Number(filters["hero_id"])) {
-                    filtered.push(matches[i]);
-                }
-            }
-            else {
-                filtered.push(matches[i]);
+    for (var i = 0; i < matches.length; i++) {
+        var include = true;
+        //verify the match passes each filter test
+        for (var key in filters) {
+            //skip the filter if the condition evaluates to 0
+            if (filters[key] && filters[key] !== Number(conditions[key](matches[i]))) {
+                //failed the test
+                include = false;
             }
         }
-        matches = filtered.slice(0);
-        filtered = [];
+        //if we passed, push it
+        if (include) {
+            filtered.push(matches[i]);
+        }
     }
-    return matches;
+    return filtered;
 }
 
 function sort(matches, sorts) {
-    //todo do multiple sorts in series
     //todo implement more sort types
-    if (sorts.match_id) {
+    //dir 1 ascending, -1 descending
+    var sortFuncs = {
+        match_id: function(a, b, dir) {
+            return (a.match_id - b.match_id) * dir;
+        },
+        duration: function(a, b, dir) {
+            return (a.duration - b.duration) * dir;
+        }
+    };
+    for (var key in sorts) {
         matches.sort(function(a, b) {
-            return (a.match_id - b.match_id) * sorts.match_id;
+            return sortFuncs[key](a, b, sorts[key]);
         });
     }
     return matches;
@@ -244,10 +254,10 @@ function sort(matches, sorts) {
 function advQuery(options, cb) {
     //usage
     //matches page, want matches fitting query (serverside datatables)
-    //player matches page, want winrate, matches fitting query, also need to display player[0] information (render in jade, but this is slow!)
+    //player matches page, want winrate, matches fitting query, also need to display player[0] information (can render in jade, but this is slow!)
     //player trends page, want aggregation on matches fitting criteria (render in jade)
     //project, the projection to send to mongodb, null to use default
-    options.project = options.project || {
+    var default_project = {
         start_time: 1,
         match_id: 1,
         cluster: 1,
@@ -256,20 +266,23 @@ function advQuery(options, cb) {
         radiant_win: 1,
         parse_status: 1,
         first_blood_time: 1,
-        lobby_type: 1
+        lobby_type: 1,
+        //todo only request parsed data if necessary (trends?)
+        parsed_data: 1
     };
+    for (var key in options.project) {
+        default_project[key] = options.project[key];
+    }
+    options.project = default_project;
     //select,the query received, build the mongo query and the filter based on this
     var mongo_select = {};
     var js_select = {};
-    var mongoable = {
+    var mongoAble = {
         "players.account_id": 1,
         "players.hero_id": 1
     };
     for (var key in options.select) {
-        if (mongoable[key]) {
-            //todo we might not want to project only this player if we're doing a with/against query?
-            //could we also compute teammates/matchups directly as well?
-            //todo 20000 matches@100kb each is 2gb, can JS handle this in memory?
+        if (mongoAble[key]) {
             options.project["players.$"] = 1;
             mongo_select[key] = Number(options.select[key]);
         }
@@ -283,18 +296,6 @@ function advQuery(options, cb) {
             $slice: 1
         };
     }
-    options.project["players.account_id"] = 1;
-    options.project["players.hero_id"] = 1;
-    options.project["players.kills"] = 1;
-    options.project["players.deaths"] = 1;
-    options.project["players.assists"] = 1;
-    options.project["players.last_hits"] = 1;
-    options.project["players.denies"] = 1;
-    options.project["players.gold_per_min"] = 1;
-    options.project["players.xp_per_min"] = 1;
-    options.project["players.hero_damage"] = 1;
-    options.project["players.tower_damage"] = 1;
-    options.project["players.hero_healing"] = 1;
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
     var max = 15000;
@@ -314,21 +315,27 @@ function advQuery(options, cb) {
     };
     console.log(options);
     console.time('db');
-    db.matches.find(mongo_select, monk_options, function(err, matches) {
-        console.log(matches[1000]);
-        if (err) {
-            console.log(err);
-            return cb(err);
-        }
+    var matches = [];
+    //20000 matches@100kb each is 2gb, JS will have trouble handling large numbers of matches with parsed data in memory
+    //stream the query results, exclude extra data from the matches array we build
+    db.matches.find(mongo_select, monk_options).each(function(m) {
+        computeMatchData(m);
+        //reduce memory use by removing parsed_data and players.ability_upgrades
+        delete m.parsed_data;
+        delete m.players[0].ability_upgrades;
+        //copy to matches array
+        matches.push(m);
+    }).error(function(err) {
+        console.log(err);
+        return cb(err);
+    }).success(function() {
         console.timeEnd('db');
-        //console.time('compute');
-        for (var i = 0; i < matches.length; i++) {
-            computeMatchData(matches[i]);
-            //reduce load time by deleting ability upgrades
-            delete matches[i].players[0].ability_upgrades;
-        }
-        //console.timeEnd('compute');
+        console.time('compute');
         matches = sort(matches, options.js_sort);
+        //report unfiltered count
+        var unfiltered_count = matches.length;
+        //make array of unfiltered "recent matches" for display
+        var display_matches = matches.slice(0, 15);
         var filtered = filter(matches, js_select);
         var aggData = aggregator(filtered, options.js_agg);
         //count win/lose/games
@@ -344,10 +351,11 @@ function advQuery(options, cb) {
             aggData: aggData,
             page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
             data: filtered,
-            //todo filter function mutates matches!  unfiltered doesnt work
-            unfiltered: matches
+            unfiltered_count: unfiltered_count,
+            display_matches: display_matches
         };
-        cb(err, result);
+        console.timeEnd('compute');
+        cb(null, result);
     });
 }
 module.exports = advQuery;

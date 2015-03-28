@@ -106,7 +106,6 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-        var delay = 800;
         //select a random element if array
         var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
         var parse = urllib.parse(u, true);
@@ -117,6 +116,11 @@ function getData(url, cb) {
         }
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
+        var delay = 1000;
+        //no delay on sequential api reqs
+        if (target.indexOf("/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/") !== -1) {
+            delay = 0;
+        }
         return setTimeout(function() {
             request({
                 url: target,

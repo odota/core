@@ -32,6 +32,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
                         info: req.params.info,
                         query: req.query
                     }, function(err) {
+                        if (err) {
+                            return cb(err);
+                        }
                         cb(err, player);
                     });
                 },

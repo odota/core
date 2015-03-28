@@ -26,12 +26,13 @@ api.get('/matches', function(req, res, next) {
         if (err) {
             return next(err);
         }
-        res.json({
+        var result = {
             draw: draw,
-            recordsTotal: result.unfiltered.length,
+            recordsTotal: result.unfiltered_count,
             recordsFiltered: result.data.length,
             data: result.page
-        });
+        };
+        res.json(result);
     });
 });
 

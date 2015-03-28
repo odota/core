@@ -179,6 +179,7 @@ function startScan() {
         var container = generateJob("api_history", {});
         getData(container.url, function(err, data) {
             if (err) {
+                console.log("failed to get sequence number from webapi");
                 return startScan();
             }
             scanApi(data.result.matches[0].match_seq_num);
@@ -190,9 +191,11 @@ function startScan() {
     else {
         redis.get("match_seq_num", function(err, result) {
             if (!err && result) {
+                result=Number(result);
                 scanApi(result);
             }
             else {
+                console.log("no sequence number in redis!");
                 return startScan();
             }
         });
@@ -241,6 +244,7 @@ function scanApi(seq_num) {
         start_at_match_seq_num: seq_num
     });
     getData(container.url, function(err, data) {
+        //todo no delay on sequential match requests
         if (err) {
             return scanApi(seq_num);
         }

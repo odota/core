@@ -19,7 +19,7 @@ module.exports = function getStatus(cb) {
         },
         tracked_players: function(cb) {
             redis.get("trackedPlayers", function(err, res) {
-                res = res ? Object.keys(JSON.parse(res)).length: 0;
+                res = res ? Object.keys(JSON.parse(res)).length : 0;
                 cb(err, res);
             });
         },
@@ -75,33 +75,58 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        match_seq_num: function(cb) {
+            redis.get("match_seq_num", function(err, result){
+                result=Number(result);
+                cb(err, result);
+            });
+        },
         last_added: function(cb) {
-            db.matches.find({}, {
-                sort: {
-                    match_seq_num: -1
-                },
-                fields: {
-                    match_id: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            redis.get("match_seq_num", function(err, result) {
+                result=Number(result);
+                if (err) {
+                    return cb(err);
+                }
+                db.matches.find({
+                    match_seq_num: {
+                        $lt: result
+                    }
+                }, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 10
+                }, cb);
+            });
         },
         last_parsed: function(cb) {
-            db.matches.find({
-                parse_status: 2
-            }, {
-                sort: {
-                    match_seq_num: -1
-                },
-                fields: {
-                    match_id: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            redis.get("match_seq_num", function(err, result) {
+                result=Number(result);
+                if (err) {
+                    return cb(err);
+                }
+                db.matches.find({
+                    match_seq_num: {
+                        $lt: result
+                    },
+                    parse_status: 2
+                }, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 10
+                }, cb);
+            });
         }
     }, cb);
 };

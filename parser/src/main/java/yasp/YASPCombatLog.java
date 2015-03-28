@@ -160,14 +160,6 @@ public class YASPCombatLog{
             return event.getProperty(timestampRawIdx);
         }
 
-        public boolean isAttackerHero() {
-            return event.getProperty(attackerHeroIdx);
-        }
-
-        public boolean isTargetHero() {
-            return event.getProperty(targetHeroIdx);
-        }
-
         public boolean isAbilityToggleOn() {
             return event.getProperty(abilityToggleOnIdx);
         }
@@ -181,6 +173,20 @@ public class YASPCombatLog{
         }
         
         //yasp
+        
+        public boolean isTargetHero() {
+            if (targetHeroIdx==null) {
+                return true;
+            }
+            return event.getProperty(targetHeroIdx);
+        }
+        public boolean isAttackerHero() {
+            if (attackerHeroIdx==null){
+                return true;
+            }
+            return event.getProperty(attackerHeroIdx);
+        }
+        
         private String translate(String in) {
             if (in!=null){
                 if (in.startsWith("item_")){

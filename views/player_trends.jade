@@ -71,9 +71,19 @@ block playercontent
                   td
                     a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
                   td=val.n
+          h3 Leaver Status
+          table.table
+            each val, key in player.aggData.leaver_status.counts
+              tr
+                td=constants.leaver_status[key]
+                td=val
+          h3 Modes
+          table.table
+            each val, key in player.aggData.game_mode.counts
+              tr
+                td=constants.modes[key].name
+                td=val
         .col-md-6
-          .row
-            .col-md-12
               h3 Skill Accuracy
               table.table#accuracy
                 thead
@@ -98,8 +108,6 @@ block playercontent
                         td=val
                         td=player.aggData.hero_hits.counts[key]
                         td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
-          .row
-            .col-md-12
               h3 Build Times (#{player.aggData.purchase.n} games)
               table.table#builds
                 thead
@@ -117,29 +125,12 @@ block playercontent
                         td= item.dname
                         td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
                         td=player.aggData.purchase.counts[key]
-      hr
-      .row
-        .col-md-4
-          h3 Laning
-          table.table
-            each val, key in player.aggData.lane_role.counts
-              tr
-                td=key
-                td=val
-        .col-md-4
-          h3 Leaver Status
-          table.table
-            each val, key in player.aggData.leaver_status.counts
-              tr
-                td=constants.leaver_status[key]
-                td=val
-        .col-md-4
-          h3 Modes
-          table.table
-            each val, key in player.aggData.game_mode.counts
-              tr
-                td=constants.modes[key].name
-                td=val
+              h3 Laning
+              table.table
+                each val, key in player.aggData.lane_role.counts
+                  tr
+                    td=key
+                    td=val
     .row
       .charts
         .row
@@ -183,16 +174,15 @@ block playercontent
                 th Games
                 th Win%       
             each teammate in player.teammates
-              if (teammate.account_id !== constants.anonymous_account_id && teammate.account_id !== player.account_id)
-                tr
-                  td
-                    img.user(src=teammate.avatar)
-                    a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-                  td= teammate.games
-                  td
-                   - var pct = ~~(100*teammate.win/teammate.games)
-                   .progress
-                     .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+              tr
+                td
+                  img.user(src=teammate.avatar)
+                  a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+                td= teammate.games
+                td
+                 - var pct = ~~(100*teammate.win/teammate.games)
+                 .progress
+                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
 
         .col-md-6
           h3 Matchups
@@ -207,27 +197,27 @@ block playercontent
                 th Win% With
                 th Against
                 th Win% Against
-            each hero in constants.heroes
+            each h in player.heroes_arr
+              - var hero = constants.heroes[h.hero_id]
               tr
                 td.hero
                   img(src=hero.img, title=hero.localized_name)
                 td=hero.localized_name
-                - var h = player.heroes[hero.id]
-                td #{h ? h.games : 0}
+                td=h.games
                 td
-                 - var pct = h ? ~~(100*h.win/h.games) : 0
-                 .progress
-                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-                td #{h ? h.with_games : 0}
+                  - var pct = h ? ~~(100*h.win/h.games) : 0
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                td=h.with_games
                 td
-                 - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
-                 .progress
-                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-                td #{h ? h.against_games : 0}
+                  - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                td=h.against_games
                 td
-                 - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
-                 .progress
-                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+                  - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
                 
 append footer_assets
   script.

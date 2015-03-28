@@ -55,6 +55,7 @@ function computeMatchData(match) {
                         k.key !== "npc_dota_hero_meepo";
                     });
                 }
+                //console.log(parseSlot, match.parsed_data);
                 if (p.kills) {
                     p.neutral_kills = 0;
                     p.tower_kills = 0;
