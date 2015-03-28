@@ -18,6 +18,7 @@ api.get('/matches', function(req, res, next) {
     var js_skip = Number(req.query.start);
     advQuery({
         select: select,
+        project: {},
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,

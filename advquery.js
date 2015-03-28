@@ -190,25 +190,38 @@ function aggregator(matches, fields) {
 
 function filter(matches, filters) {
     //todo implement more filters
-    //filter: specific player/specific hero id
-    //filter: specific player was also in the game (do in js)
-    //filter: specific hero was played by me, on my team, was against me, was in the game
+    //filter: specific player in game (mongo players.account_id)
+    //filter: specific hero id (mongo players.hero_id, or js)
+    //filter: specific player was ALSO in the game (mongo $all with elemmatch, maybe, or players.account_id and js filter)
+    //filter: specific hero was played:
+    //by me (mongo players.account_id, then js hero_id filter)
+    //on my team
+    //was against me
+    //was in the game
+    //if we want to do these in js, maybe have to go backwards?
+    //do a query for players.account_id with all players, with limited fields (account_id, hero_id, player_slot) and run filter on that result set
+    //then use $in to grab the full data for those matches?
+    //easy filters
     //filter: specific game modes
     //filter: specific patches
     //filter: specific regions
-    //filter: no stats recorded (need to implement filter to detect)
-    //filter: significant game modes only (balanced filter)
+    //harder filters
+    //filter: no stats recorded (need to implement custom filter to detect)
     //filter kill differential
     //filter gold/xp differential?
-    console.log(filters);
+    //NOTE: for some reason, trying to project all players with no select condition is slow
     //accept a hash of filters, run all the filters in the hash in series
+    console.log(filters);
     var conditions = {
+        //filter: significant game modes only (balanced filter)
         balanced: function(m) {
             return constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced;
         },
+        //filter player won
         win: function(m) {
             return isRadiant(m.players[0]) === m.radiant_win;
         },
+        //filter player played specific hero
         hero_id: function(m) {
             return m.players[0].hero_id;
         }
@@ -256,7 +269,6 @@ function advQuery(options, cb) {
     //matches page, want matches fitting query (serverside datatables)
     //player matches page, want winrate, matches fitting query, also need to display player[0] information (can render in jade, but this is slow!)
     //player trends page, want aggregation on matches fitting criteria (render in jade)
-    //project, the projection to send to mongodb, null to use default
     var default_project = {
         start_time: 1,
         match_id: 1,
@@ -270,10 +282,10 @@ function advQuery(options, cb) {
         //todo only request parsed data if necessary (trends?)
         parsed_data: 1
     };
-    for (var key in options.project) {
-        default_project[key] = options.project[key];
+    //project, the projection to send to mongodb, add default fields to those supplied
+    for (var key in default_project) {
+        options.project[key] = default_project[key];
     }
-    options.project = default_project;
     //select,the query received, build the mongo query and the filter based on this
     var mongo_select = {};
     var js_select = {};
@@ -316,7 +328,7 @@ function advQuery(options, cb) {
     console.log(options);
     console.time('db');
     var matches = [];
-    //20000 matches@100kb each is 2gb, JS will have trouble handling large numbers of matches with parsed data in memory
+    //20000 matches@100kb each is 2gb, js will have trouble handling large numbers of matches with parsed data in memory
     //stream the query results, exclude extra data from the matches array we build
     db.matches.find(mongo_select, monk_options).each(function(m) {
         computeMatchData(m);

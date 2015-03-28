@@ -145,7 +145,7 @@ function fillPlayerData(player, options, cb) {
     }
     advQuery({
         select: options.query,
-        project: null,
+        project: {},
         agg: null, //null aggs everything by default
         js_sort: {
             match_id: -1
