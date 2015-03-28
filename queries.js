@@ -135,16 +135,17 @@ function getRatingData(account_id, cb) {
 function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
-    //options.query, the querystring from the user, this is advQuery.options.select
-    //we want to do this player, balanced modes only by default
-    if (!("players.account_id" in options.query)) {
-        options.query["players.account_id"] = player.account_id;
-    }
-    if (!("balanced" in options.query)) {
-        options.query.balanced = 1;
+    //options.query, the querystring from the user, apply these options to select
+    //defaults: this player, balanced modes only
+    var select = {
+        "players.account_id": player.account_id,
+        "balanced": 1
+    };
+    for (var key in options.query) {
+        select[key] = options.query[key];
     }
     advQuery({
-        select: options.query,
+        select: select,
         project: {},
         agg: null, //null aggs everything by default
         js_sort: {
@@ -168,133 +169,34 @@ function fillPlayerData(player, options, cb) {
         };
         generatePositionData(d, player);
         player.posData = [d];
-        //get ready to compute matchups
-        var match_ids = player.matches.map(function(m) {
-            return m.match_id;
-        });
-        var radiantMap = {}; //map whether the this player was on radiant for a particular match for efficient lookup later when doing teammates/matchups
-        for (var i = 0; i < player.matches.length; i++) {
-            var m = player.matches[i];
-            var p = m.players[0];
-            //map if player was on radiant for this match for efficient teammate check later
-            radiantMap[m.match_id] = isRadiant(p);
-        }
-        player.radiantMap = radiantMap;
-        //do the query for teammates/hero matchups
-        computeMatchups(player, match_ids, function(err) {
-            if (err){
-                return cb(err);
-            }
-            console.time('teammate_lookup');
-            fillPlayerNames(player.teammates, function(err) {
-                console.timeEnd('teammate_lookup');
-                cb(err, player);
-            });
-        });
-    });
-}
-
-function computeMatchups(player, match_ids, cb) {
-    console.time("matchup db");
-    db.matches.find({
-        match_id: {
-            $in: match_ids
-        }
-    }, {
-        fields: {
-            "players.account_id": 1,
-            "players.hero_id": 1,
-            "players.player_slot": 1,
-            match_id: 1,
-            radiant_win: 1,
-            game_mode: 1,
-            lobby_type: 1
-        }
-    }, function(err, docs) {
-        if (err) {
-            return cb(err);
-        }
-        console.timeEnd("matchup db");
-        console.time("matchup iterate");
-        //compute stats that require iteration through all players in a match
-        var teammates = {};
-        var heroes = {};
-        for (var hero_id in constants.heroes) {
-            var obj = {
-                hero_id: hero_id,
-                games: 0,
-                win: 0,
-                with_games: 0,
-                with_win: 0,
-                against_games: 0,
-                against_win: 0
-            };
-            heroes[hero_id] = obj;
-        }
-        for (var i = 0; i < docs.length; i++) {
-            var match = docs[i];
-            var playerRadiant = player.radiantMap[match.match_id];
-            var player_win = (playerRadiant === match.radiant_win);
-            for (var j = 0; j < match.players.length; j++) {
-                var tm = match.players[j];
-                var tm_hero = tm.hero_id;
-                if (isRadiant(tm) === playerRadiant) {
-                    //count teammate players
-                    if (!teammates[tm.account_id]) {
-                        teammates[tm.account_id] = {
-                            account_id: tm.account_id,
-                            win: 0,
-                            games: 0
-                        };
-                    }
-                    teammates[tm.account_id].games += 1;
-                    teammates[tm.account_id].win += player_win ? 1 : 0;
-                    //count teammate heroes
-                    if (tm_hero in heroes) {
-                        if (tm.account_id === player.account_id) {
-                            //console.log("self %s", tm_hero);
-                            heroes[tm_hero].games += 1;
-                            heroes[tm_hero].win += player_win ? 1 : 0;
-                        }
-                        else {
-                            //console.log("teammate %s", tm_hero);
-                            heroes[tm_hero].with_games += 1;
-                            heroes[tm_hero].with_win += player_win ? 1 : 0;
-                        }
-                    }
-                }
-                else {
-                    //count enemy heroes
-                    if (tm_hero in heroes) {
-                        //console.log("opp %s", tm_hero);
-                        heroes[tm_hero].against_games += 1;
-                        heroes[tm_hero].against_win += player_win ? 1 : 0;
-                    }
-                }
-            }
-        }
+        //get teammates, heroes, convert hashes to arrays and sort them
         player.heroes_arr = [];
-        for (var id in heroes) {
-            var hc = heroes[id];
-            player.heroes_arr.push(hc);
+        var matchups = player.aggData.matchups;
+        for (var id in matchups) {
+            var h = matchups[id];
+            player.heroes_arr.push(h);
         }
         player.heroes_arr.sort(function(a, b) {
             return b.games - a.games;
         });
         player.teammates = [];
+        var teammates = player.aggData.teammates;
         for (var id in teammates) {
-            var count = teammates[id];
+            var tm = teammates[id];
             id = Number(id);
-            //don't include if anonymous, the player himself, or if less than 3 games with
-            if (id !== constants.anonymous_account_id && id !== player.account_id && count.games >= 3) {
-                player.teammates.push(count);
+            //don't include if anonymous, the player himself, or if less than 3 games
+            if (id !== constants.anonymous_account_id && id !== player.account_id && tm.games >= 3) {
+                player.teammates.push(tm);
             }
         }
         player.teammates.sort(function(a, b) {
             return b.games - a.games;
         });
-        console.timeEnd("matchup iterate");
-        cb(err);
+        console.time('teammate_lookup');
+        fillPlayerNames(player.teammates, function(err) {
+            console.timeEnd('teammate_lookup');
+            cb(err, player);
+        });
     });
 }
 module.exports = {

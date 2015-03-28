@@ -117,10 +117,6 @@ function getData(url, cb) {
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
         var delay = 1000;
-        //no delay on sequential api reqs
-        if (target.indexOf("/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/") !== -1) {
-            delay = 0;
-        }
         return setTimeout(function() {
             request({
                 url: target,

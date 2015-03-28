@@ -126,7 +126,7 @@ function runParser(job, cb) {
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             processEventBuffer();
-            //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
+            //fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
         });
     });
     //parse state
