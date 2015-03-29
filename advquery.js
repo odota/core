@@ -268,21 +268,14 @@ function aggregator(matches, fields) {
 
 function filter(matches, filters) {
     //todo implement more filters
-    //MONGO: filters
-    //filter: specific player in game (mongo players.account_id)
-    //filter: specific hero id (mongo players.hero_id)
-    //JS: filters
-    //hero was played by me
     //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
     //filter: player was in the game (mongo $all with elemmatch, or js filter)
     //hero on my team
     //hero was against me
     //hero was in the game
-    //EASY: filters
-    //filter: specific game modes
-    //filter: specific patches
-    //filter: specific regions
     //HARD: filters
+    //filter: specific regions (hard because there are multiple ids per region)
+    //filter: endgame item
     //filter: no stats recorded (need to implement custom filter to detect)
     //filter kill differential
     //filter max gold/xp advantage
@@ -291,16 +284,34 @@ function filter(matches, filters) {
     console.log(filters);
     var conditions = {
         //filter: significant game modes only (balanced filter)
-        balanced: function(m) {
-            return constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced;
+        balanced: function(m, key) {
+            return Number(constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced) === key;
         },
         //filter: player won
-        win: function(m) {
-            return isRadiant(m.players[0]) === m.radiant_win;
+        win: function(m, key) {
+            if (isNaN(key)){
+                return true;
+            }
+            return Number(m.player_win) === key;
         },
-        //filter: player played specific hero
-        hero_id: function(m) {
-            return m.players[0].hero_id;
+        patch: function(m, key) {
+            if (isNaN(key)){
+                return true;
+            }
+            return m.patch === key;
+        },
+        game_mode: function(m, key) {
+            if (isNaN(key)){
+                return true;
+            }
+            return m.game_mode === key;
+        },
+        hero_id: function(m, key) {
+            if (isNaN(key)){
+                //all heroes pass
+                return true;
+            }
+            return m.players[0].hero_id === key;
         }
     };
     var filtered = [];
@@ -308,8 +319,7 @@ function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            //skip the filter if the condition evaluates to 0 (ex, we don't to directly match hero_id if 0)
-            if (filters[key] && filters[key] !== Number(conditions[key](matches[i]))) {
+            if (!conditions[key](matches[i], filters[key])) {
                 //failed a test
                 include = false;
             }

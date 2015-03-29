@@ -7,7 +7,7 @@ sentry
 servers
 *.dem
 *.bz2
-output*.json
+output*
 coverage
 *bundle.js
 constants*.json

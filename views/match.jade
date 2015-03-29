@@ -21,6 +21,7 @@ block content
             td Duration
             td Result
             td Played
+            td Patch
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
             td= constants.parse_status[match.parse_status]
@@ -29,6 +30,7 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
+            td=constants.patches[match.patch].id
   .row
       .col-md-10
         ul.nav.nav-tabs

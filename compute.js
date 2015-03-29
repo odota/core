@@ -28,6 +28,16 @@ function generatePositionData(d, p) {
 
 function computeMatchData(match) {
     patchLegacy(match);
+    match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
+    var date = new Date(match.start_time * 1000);
+    for (var i = 0; i < constants.patches.length; i++) {
+        var pd = new Date(constants.patches[i].date);
+        //stop when patch date is less than the start time
+        if (pd < date) {
+            break;
+        }
+    }
+    match.patch = i;
     //add a parsedplayer property to each player, and compute more stats
     match.players.forEach(function(player, ind) {
         player.isRadiant = isRadiant(player);
@@ -137,7 +147,6 @@ function computeMatchData(match) {
         }
         player.parsedPlayer = p;
     });
-    match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
 }
 
 function mergeMatchData(match) {
