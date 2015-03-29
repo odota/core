@@ -206,8 +206,9 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 0,
+        "version": 6,
         "match_id": 0,
+        "teamfights": null,
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
@@ -242,7 +243,7 @@ function getParseSchema() {
                 "runes": {},
                 "runes_bottled": {},
                 "killed_by": {},
-                //"modifier_applied": {},
+                "modifier_applied": {},
                 //"modifier_lost": {},
                 //"ability_trigger": {}
                 "healing": {}

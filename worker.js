@@ -9,22 +9,11 @@ var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 var kue = r.kue;
-var logger = utility.logger;
-var generateJob = utility.generateJob;
 var async = require('async');
-var operations = require('./operations');
-var insertMatch = operations.insertMatch;
-var queueReq = operations.queueReq;
 var updatenames = require('./tasks/updatenames');
 var selector = require('./selector');
 var domain = require('domain');
-var trackedPlayers = {};
-var userPlayers = {};
-var ratingPlayers = {};
 var retrievers = config.RETRIEVER_HOST;
-var permanent = {
-    88367253: true
-};
 /*
 //could build our own solution with socket.io?
 //spin up a seaport and listen for workers to connect
@@ -62,7 +51,6 @@ d.on('error', function(err) {
 d.run(function() {
     console.log("[WORKER] starting worker");
     build(function() {
-        startScan();
         jobs.promote();
         jobs.process('api', processApi);
         jobs.process('mmr', processMmr);
@@ -96,200 +84,97 @@ function clearActiveJobs(cb) {
 }
 
 function build(cb) {
-    console.log("rebuilding sets");
-    async.series({
-        "trackedPlayers": function(cb) {
-            db.players.find(selector("tracked"), function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
-                var t = {};
-                docs.forEach(function(player) {
-                    t[player.account_id] = true;
-                });
-                //console.log(t);
-                cb(err, t);
-            });
-        },
-        "userPlayers": function(cb) {
-            db.players.find({
-                last_visited: {
-                    $ne: null
-                }
-            }, function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
-                var t = {};
-                docs.forEach(function(player) {
-                    t[player.account_id] = true;
-                });
-                //console.log(t);
-                cb(err, t);
-            });
-        },
-        "retrievers": function(cb) {
-            var r = {};
-            var b = [];
-            var ps = retrievers.split(",").map(function(r) {
-                return "http://" + r + "?key=" + config.RETRIEVER_SECRET;
-            });
-            async.each(ps, function(url, cb) {
-                getData(url, function(err, body) {
+        console.log("rebuilding sets");
+        async.series({
+            "trackedPlayers": function(cb) {
+                db.players.find(selector("tracked"), function(err, docs) {
                     if (err) {
                         return cb(err);
                     }
-                    for (var key in body.accounts) {
-                        b.push(body.accounts[key]);
-                    }
-                    for (var key in body.accountToIdx) {
-                        r[key] = url + "&account_id=" + key;
-                    }
-                    cb(err);
+                    var t = {};
+                    docs.forEach(function(player) {
+                        t[player.account_id] = true;
+                    });
+                    //console.log(t);
+                    cb(err, t);
                 });
-            }, function(err) {
-                var result = {
-                    ratingPlayers: r,
-                    bots: b,
-                    retrievers: ps
-                };
-                cb(err, result);
-            });
-        }
-    }, function(err, result) {
-        if (err) {
-            return build(cb);
-        }
-        result.ratingPlayers = result.retrievers.ratingPlayers;
-        result.bots = result.retrievers.bots;
-        result.retrievers = result.retrievers.retrievers;
-        for (var key in result) {
-            redis.set(key, JSON.stringify(result[key]));
-        }
-        //set local vars, could get them from redis if necessary
-        trackedPlayers = result.trackedPlayers;
-        ratingPlayers = result.ratingPlayers;
-        userPlayers = result.userPlayers;
-        cb();
-    });
-}
-
-function startScan() {
-    if (config.START_SEQ_NUM === "AUTO") {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
+            },
+            "userPlayers": function(cb) {
+                db.players.find({
+                    last_visited: {
+                        $ne: null
+                    }
+                }, function(err, docs) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    var t = {};
+                    docs.forEach(function(player) {
+                        t[player.account_id] = true;
+                    });
+                    //console.log(t);
+                    cb(err, t);
+                });
+            },
+            "retrievers": function(cb) {
+                var r = {};
+                var b = [];
+                var ps = retrievers.split(",").map(function(r) {
+                    return "http://" + r + "?key=" + config.RETRIEVER_SECRET;
+                });
+                async.each(ps, function(url, cb) {
+                    getData(url, function(err, body) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        for (var key in body.accounts) {
+                            b.push(body.accounts[key]);
+                        }
+                        for (var key in body.accountToIdx) {
+                            r[key] = url + "&account_id=" + key;
+                        }
+                        cb(err);
+                    });
+                }, function(err) {
+                    var result = {
+                        ratingPlayers: r,
+                        bots: b,
+                        retrievers: ps
+                    };
+                    cb(err, result);
+                });
+            }
+        }, function(err, result) {
             if (err) {
-                console.log("failed to get sequence number from webapi");
-                return startScan();
+                return build(cb);
             }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
-    else if (config.START_SEQ_NUM) {
-        scanApi(config.START_SEQ_NUM);
-    }
-    else {
-        redis.get("match_seq_num", function(err, result) {
-            if (!err && result) {
-                result=Number(result);
-                scanApi(result);
+            result.ratingPlayers = result.retrievers.ratingPlayers;
+            result.bots = result.retrievers.bots;
+            result.retrievers = result.retrievers.retrievers;
+            for (var key in result) {
+                redis.set(key, JSON.stringify(result[key]));
             }
-            else {
-                console.log("no sequence number in redis!");
-                return startScan();
-            }
-        });
-    }
-}
-var q = async.queue(function(match, cb) {
-    async.each(match.players, function(p, cb) {
-        if (p.account_id in trackedPlayers || p.account_id in permanent) {
-            //queued
-            match.parse_status = 0;
-        }
-        if (p.account_id in userPlayers && match.parse_status !== 0) {
-            //skipped, but only if not already queued
-            match.parse_status = 3;
-        }
-        if (p.account_id in ratingPlayers && match.lobby_type === 7) {
-            //could possibly pick up MMR change for matches we don't add, this is probably ok
-            queueReq("mmr", {
-                match_id: match.match_id,
-                account_id: p.account_id,
-                url: ratingPlayers[p.account_id]
-            }, function(err) {
-                cb(err);
-            });
-        }
-        else {
             cb();
-        }
-    }, function(err) {
-        if (err) {
-            return cb(err);
-        }
-        if (match.parse_status === 0 || match.parse_status === 3) {
-            insertMatch(match, function(err) {
-                cb(err, match);
-            });
-        }
-        else {
-            cb(err, match);
-        }
-    });
-});
-
-function scanApi(seq_num) {
-    var container = generateJob("api_sequence", {
-        start_at_match_seq_num: seq_num
-    });
-    getData(container.url, function(err, data) {
-        //todo no delay on sequential match requests
-        if (err) {
-            return scanApi(seq_num);
-        }
-        var resp = data.result.matches;
-        var next_seq_num = seq_num;
-        if (resp.length) {
-            next_seq_num = resp[resp.length - 1].match_seq_num + 1;
-        }
-        logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
-        q.push(resp, function(err, match) {
-            if (err) {
-                console.log("failed to insert match from scanApi %s", match);
-                console.log(err);
-                //todo log this to a file or something, we don't want to stop/crash just because an insert failed
-                //throw err;
+        });
+    }
+    /*
+    function apiStatus() {
+        db.matches.findOne({}, {
+            fields: {
+                _id: 1
+            },
+            sort: {
+                match_seq_num: -1
+            }
+        }, function(err, match) {
+            var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
+            console.log(elapsed);
+            if (elapsed > 15 * 60 * 1000) {
+                redis.set("apiDown", 1);
             }
             else {
-                //set the redis progress
-                redis.set("match_seq_num", match.match_seq_num);
+                redis.set("apiDown", 0);
             }
         });
-        //wait 100ms for each match less than 100
-        var delay = (100 - resp.length) * 100;
-        setTimeout(function() {
-            scanApi(next_seq_num);
-        }, delay);
-    });
-}
-
-function apiStatus() {
-    db.matches.findOne({}, {
-        fields: {
-            _id: 1
-        },
-        sort: {
-            match_seq_num: -1
-        }
-    }, function(err, match) {
-        var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
-        console.log(elapsed);
-        if (elapsed > 15 * 60 * 1000) {
-            redis.set("apiDown", 1);
-        }
-        else {
-            redis.set("apiDown", 0);
-        }
-    });
-}
+    }
+    */

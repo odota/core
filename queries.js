@@ -4,8 +4,6 @@ var redis = require('./redis').client;
 var constants = require('./constants.json');
 var config = require("./config");
 var compute = require('./compute');
-var utility = require('./utility');
-var isRadiant = utility.isRadiant;
 var advQuery = require('./advquery');
 var generatePositionData = compute.generatePositionData;
 var computeMatchData = compute.computeMatchData;
@@ -39,8 +37,9 @@ function prepareMatch(match_id, cb) {
                         }
                         computeMatchData(match);
                         renderMatch(match);
-                        //Add to cache if latest parse version
-                        if (match.parsed_data && match.parsed_data.version === constants.parser_version && config.NODE_ENV !== "development") {
+                        //Add to cache if match is parsed
+                        //todo this prevents reparses from showing immediately
+                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
                             redis.setex(key, 3600, JSON.stringify(match));
                         }
                         return cb(err, match);
@@ -113,6 +112,11 @@ function getSets(cb) {
         "trackedPlayers": function(cb) {
             redis.get("trackedPlayers", function(err, tps) {
                 cb(err, JSON.parse(tps || "{}"));
+            });
+        },
+        "userPlayers": function(cb) {
+            redis.get("userPlayers", function(err, ups) {
+                cb(err, JSON.parse(ups || "{}"));
             });
         }
     }, function(err, results) {

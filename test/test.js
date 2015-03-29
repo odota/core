@@ -155,7 +155,7 @@ before(function(done) {
             nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
                 var split = path.split("?");
                 split = split[1].split("&");
-                return split[split.length-1];
+                return split[split.length - 1];
             }).get('account_id=88367253').reply(200, {
                 "accountId": 88367253,
                 "wins": 889,
@@ -292,6 +292,7 @@ describe("tasks", function() {
         });
     });
 });
+require('../parser');
 describe("parser", function() {
     this.timeout(wait);
     it('parse replay (download)', function(done) {
@@ -306,6 +307,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
+            job.parser_host = "localhost:5200";
             processParse(job, function(err) {
                 //todo check the site to make sure templates work
                 done(err);
@@ -320,6 +322,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
+            job.parser_host = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -333,6 +336,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
+            job.parser_host = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -346,6 +350,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
+            job.parser_host = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -359,6 +364,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
+            job.parser_host = "localhost:5200";
             processParse(job, function(err) {
                 assert(err);
                 done();

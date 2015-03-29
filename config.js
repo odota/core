@@ -23,6 +23,7 @@ var defaults = {
     "REPLAY_DIR": "./replays/",
     "REGISTRY_HOST": "localhost",
     "RETRIEVER_HOST": "localhost:5100",
+    "PARSER_HOST": "localhost:5200",
     "AWS_S3_BUCKET": false,
     "AWS_ACCESS_KEY_ID": false,
     "AWS_SECRET_ACCESS_KEY": false,

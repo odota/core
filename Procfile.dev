@@ -1,4 +1,6 @@
 web: nodemon web.js
 retriever: nodemon retriever.js
-parser: nodemon parser.js
+parser: nodemon parseServer.js
 worker: nodemon worker.js
+parseManager: nodemon parser.js
+scanner: nodemon scanner.js

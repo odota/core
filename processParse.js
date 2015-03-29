@@ -10,6 +10,7 @@ var constants = require('./constants.json');
 var progress = require('request-progress');
 var config = require('./config');
 var moment = require('moment');
+var urllib = require('url');
 module.exports = function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
@@ -49,17 +50,10 @@ module.exports = function processParse(job, cb) {
 
 function runParser(job, cb) {
     logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
-    //streams
     var inStream;
     var bz;
-    var parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-        stdio: ['pipe', 'pipe', 'pipe'], //ignore stderr
-        encoding: 'utf8'
-    });
-    var outStream = JSONStream.parse();
+    var parser;
+    var outStream;
     var exited;
     var error = "incomplete";
     var d = domain.create();
@@ -69,7 +63,8 @@ function runParser(job, cb) {
             //todo graceful shutdown
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
-            //in the meantime since one thread is spawning multiple children we can just kill the children?
+            //we need to use kue's pause to stop processing jobs, then crash the thread
+            //there is an API change in 0.9
             console.log(err);
             if (bz) {
                 bz.kill();
@@ -81,27 +76,42 @@ function runParser(job, cb) {
         }
     });
     d.run(function() {
-        if (job.data.payload.fileName) {
-            inStream = fs.createReadStream(job.data.payload.fileName);
+        var url = job.data.payload.url;
+        var fileName = job.data.payload.fileName;
+        var target = "http://"+job.parser_host+"?url="+url+"&fileName="+(fileName ? fileName : "");
+        console.log(target);
+        inStream = request(target);
+        outStream = JSONStream.parse();
+        inStream.pipe(outStream);
+        /*
+        parser = spawn("java", ["-jar",
+        "-Xmx64m",
+        "parser/target/stats-0.1.0.one-jar.jar"
+    ], {
+            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        //todo read from req.query instead of job.data.payload
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
         }
-        else if (job.data.payload.url) {
+        else if (url) {
             inStream = progress(request.get({
-                url: job.data.payload.url,
+                url: url,
                 encoding: null,
                 timeout: 30000
             })).on('progress', function(state) {
-                job.progress(state.percent, 100);
                 outStream.write(JSON.stringify({
                     "type": "progress",
                     "key": state.percent
                 }));
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
-                    error = "download error";
                     outStream.write(JSON.stringify({
                         "type": "error",
-                        "key": error
+                        "key": response.statusCode
                     }));
                 }
             });
@@ -116,13 +126,13 @@ function runParser(job, cb) {
             console.log(data.toString());
         });
         parser.on('exit', function(code) {
-            error = code;
             outStream.write(JSON.stringify({
                 "type": "exit",
                 "key": code
             }));
         });
-        parser.stdout.pipe(outStream);
+        */
+        //parser.stdout.pipe(outStream);
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             processEventBuffer();
@@ -135,7 +145,6 @@ function runParser(job, cb) {
     var hero_to_slot = {};
     var game_zero = 0;
     var parsed_data = utility.getParseSchema();
-    parsed_data.version = constants.parser_version;
     var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
@@ -157,12 +166,15 @@ function runParser(job, cb) {
             parsed_data.match_id = e.value;
         },
         "error": function(e) {
+            error = e.key;
             console.log(e);
         },
         "exit": function(e) {
+            error = e.key;
             console.log(e);
         },
         "progress": function(e) {
+            job.progress(e.key, 100);
             console.log(e);
         }
     };
@@ -300,13 +312,13 @@ function runParser(job, cb) {
                         e.type = "lane_pos";
                         populate(e);
                     }
-                }
-            }
-            /*
+                    /*
             //log all the positions for animation
             e.type = "pos_log";
             populate(e);
             */
+                }
+            }
         },
         "obs": function(e) {
             e.key = JSON.parse(e.key);
@@ -397,7 +409,7 @@ function runParser(job, cb) {
         }
         var t = parsed_data.players[e.slot][e.type];
         if (typeof t === "undefined") {
-            //parse data player doesn't have a type for this event
+            //parsed_data.players[0] doesn't have a type for this event
             console.log(e);
         }
         else if (e.posData) {
