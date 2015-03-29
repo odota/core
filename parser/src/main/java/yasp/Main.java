@@ -215,7 +215,7 @@ public class Main {
 			entry.key = cle.getInflictorName(); //the buff
 			//todo do something with buff target
 			//String unit2 = cle.getTargetNameCompiled(); //target of buff
-			//log.output(entry);
+			es.output(entry);
 			break;
 		case 3:
 			//lose buff/debuff

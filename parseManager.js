@@ -4,15 +4,16 @@ var cluster = require('cluster');
 var config = require('./config');
 //var capacity = require('os').cpus().length;
 if (cluster.isMaster) {
-    console.log("[PARSER] starting parser master");
+    console.log("[PARSEMANAGER] starting master");
     jobs.process('request_parse', processParse);
     var ps = config.PARSER_HOST.split(",");
     var urls = {};
     var parsers = [];
-    var power = 2;
-    //build array from PARSER_HOST based on each worker's power
+    var power = 4;
+    //todo workers may differ in CPU cores
+    //build array from PARSER_HOST based on each worker's core count
     ps.forEach(function(p) {
-        for (var i = 0; i < power.length; i++) {
+        for (var i = 0; i < power; i++) {
             parsers.push(p);
         }
     });
@@ -22,7 +23,7 @@ if (cluster.isMaster) {
     for (var i = 0; i < capacity; i++) {
         //give each worker its own parser_host
         cluster.fork({
-            parser_host: parsers[0]
+            parser_host: parsers[i]
         });
     }
     // handle unwanted worker exits
@@ -45,7 +46,7 @@ if (cluster.isMaster) {
     });
 }
 else {
-    console.log("[PARSER] starting parser worker");
+    console.log("[PARSEMANAGER] starting worker");
     process.send({
         id: cluster.worker.id,
         url: process.env.parser_host

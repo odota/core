@@ -63,8 +63,7 @@ function runParser(job, cb) {
             //todo graceful shutdown
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread
-            //there is an API change in 0.9
+            //we need to use kue's pause to stop processing jobs, then crash the thread, there is an API change in 0.9
             console.log(err);
             if (bz) {
                 bz.kill();
@@ -78,7 +77,7 @@ function runParser(job, cb) {
     d.run(function() {
         var url = job.data.payload.url;
         var fileName = job.data.payload.fileName;
-        var target = "http://"+job.parser_host+"?url="+url+"&fileName="+(fileName ? fileName : "");
+        var target = "http://" + job.parser_host + "?url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log(target);
         inStream = request(target);
         outStream = JSONStream.parse();
@@ -92,7 +91,6 @@ function runParser(job, cb) {
             stdio: ['pipe', 'pipe', 'pipe'],
             encoding: 'utf8'
         });
-        //todo read from req.query instead of job.data.payload
         if (fileName) {
             inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
@@ -131,8 +129,8 @@ function runParser(job, cb) {
                 "key": code
             }));
         });
+        parser.stdout.pipe(outStream);
         */
-        //parser.stdout.pipe(outStream);
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             processEventBuffer();
