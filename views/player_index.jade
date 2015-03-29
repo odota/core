@@ -1,5 +1,8 @@
 extend player
 
+include mixins/hero_table
+include mixins/teammate_table
+
 block playercontent
   .row
     .col-md-6
@@ -43,46 +46,14 @@ block playercontent
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
     .col-md-6
-        h3 Heroes
-        table.table
-          thead
-            tr
-              th Hero
-              th Games
-              th Win%
-          each h in player.heroes_arr.slice(0,15)
-            - var hero = constants.heroes[h.hero_id]
-            tr
-              td.hero
-                img(src=hero.img, title=hero.localized_name)
-              td= h.games
-              td
-               - var pct = h ? ~~(100*h.win/h.games) : 0
-               .progress
-                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+      +hero_table(player.heroes_arr.slice(0,15), false)
   hr
   .row
     include ads/leaderboard_2
   hr
   .row
     .col-md-6
-      h3 Teammates
-      table.table#teammates
-        thead
-          tr
-            th Name
-            th Games
-            th Win%      
-        each teammate in player.teammates.slice(0,15)
-          tr
-            td
-              img.user(src=teammate.avatar)
-              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-            td= teammate.games
-            td
-             - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
-             .progress
-               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+      +teammate_table(player.teammates.slice(0,15))
     .col-md-6
       h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo:

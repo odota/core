@@ -1,31 +1,13 @@
 extend player
 
+include mixins/hero_table
+include mixins/teammate_table
+
 block playercontent
   //pre #{JSON.stringify(player.aggData, null, 2)}
   .row
     .col-md-12
-      h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Filter
-      form.form-inline(action="" method="GET")
-        //input.form-control(name="players.account_id", value=q["players.account_id"], onchange="this.form.submit()")
-        select.form-control(name="hero_id" onchange="this.form.submit()")
-          option(value="all") All Heroes
-          each entry in constants.alpha_heroes
-            option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
-        select.form-control(name="win" onchange="this.form.submit()")
-          option(value="all",  selected=q.win==="all") All Results
-          option(value="1", selected=q.win==="1") Wins
-          option(value="0", selected=q.win==="0") Losses
-        select.form-control(name="patch" onchange="this.form.submit()")
-          option(value="all") All Patches
-          each entry, i in constants.patches
-            option(value=i, selected=(Number(q.patch)===i))=entry.id
-        select.form-control(name="game_mode" onchange="this.form.submit()")
-          option(value="all") All Modes
-          each entry in constants.modes
-            option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
-        select.form-control(name="balanced" onchange="this.form.submit()")
-          option(value="1",  selected=q.balanced==="1") Balanced Modes
-          option(value="0", selected=q.balanced==="0") All Modes
+      include query
   .row
     .col-md-12
       h3
@@ -175,58 +157,9 @@ block playercontent
     .matchups
       .row
         .col-md-6
-          h3 Teammates
-          table.table#teammates
-            thead
-              tr
-                th Name
-                th Games
-                th Win%       
-            each teammate in player.teammates
-              tr
-                td
-                  img.user(src=teammate.avatar)
-                  a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-                td= teammate.games
-                td
-                 - var pct = ~~(100*teammate.win/teammate.games)
-                 .progress
-                   .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-
+          +teammate_table(player.teammates)
         .col-md-6
-          h3 Matchups
-          table.table#heroes
-            thead
-              tr
-                th Hero
-                th Hero Name
-                th As
-                th Win% As
-                th With
-                th Win% With
-                th Against
-                th Win% Against
-            each h in player.heroes_arr
-              - var hero = constants.heroes[h.hero_id]
-              tr
-                td.hero
-                  img(src=hero.img, title=hero.localized_name)
-                td=hero.localized_name
-                td=h.games
-                td
-                  - var pct = h ? ~~(100*h.win/h.games) : 0
-                  .progress
-                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-                td=h.with_games
-                td
-                  - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
-                  .progress
-                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
-                td=h.against_games
-                td
-                  - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
-                  .progress
-                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+          +hero_table(player.heroes_arr, true)
                 
 append footer_assets
   script.

@@ -22,6 +22,9 @@ function aggregator(matches, fields) {
                             //console.log("self %s", tm_hero);
                             matchups[tm_hero].games += 1;
                             matchups[tm_hero].win += player_win ? 1 : 0;
+                            if (m.start_time>matchups[tm_hero].last_played){
+                                matchups[tm_hero].last_played=m.start_time;
+                            }
                         }
                         else {
                             //console.log("teammate %s", tm_hero);
@@ -47,9 +50,13 @@ function aggregator(matches, fields) {
                     if (!teammates[tm.account_id]) {
                         teammates[tm.account_id] = {
                             account_id: tm.account_id,
+                            last_played: 0,
                             win: 0,
                             games: 0
                         };
+                    }
+                    if (m.start_time > teammates[tm.account_id].last_played){
+                        teammates[tm.account_id].last_played=m.start_time;
                     }
                     teammates[tm.account_id].games += 1;
                     teammates[tm.account_id].win += m.player_win ? 1 : 0;
@@ -219,6 +226,7 @@ function aggregator(matches, fields) {
     for (var hero_id in constants.heroes) {
         var obj = {
             hero_id: hero_id,
+            last_played: 0,
             games: 0,
             win: 0,
             with_games: 0,
