@@ -50,14 +50,14 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    build(function() {
+    buildSets(function() {
         jobs.promote();
         jobs.process('api', processApi);
         jobs.process('mmr', processMmr);
         jobs.process('request', processApi);
         jobs.process('fullhistory', processFullHistory);
         setInterval(updatenames, 30 * 1000, function() {});
-        setInterval(build, 3 * 60 * 1000, function() {});
+        setInterval(buildSets, 3 * 60 * 1000, function() {});
         //todo implement redis window check 
         //setInterval(apiStatus, 2 * 60 * 1000);
     });
@@ -83,7 +83,7 @@ function clearActiveJobs(cb) {
     });
 }
 
-function build(cb) {
+function buildSets(cb) {
         console.log("rebuilding sets");
         async.series({
             "trackedPlayers": function(cb) {
@@ -116,6 +116,28 @@ function build(cb) {
                     cb(err, t);
                 });
             },
+            /*
+            "parsers": function(cb) {
+                var parsers = [];
+                var ps = config.PARSER_HOST.split(",").map(function(p) {
+                    return "http://" + p + "?key=" + config.RETRIEVER_SECRET;
+                });
+                //build array from PARSER_HOST based on each worker's core count
+                async.each(ps, function(url, cb) {
+                    getData(url, function(err, body) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        for (var i = 0; i < body.capacity; i++) {
+                            parsers.push(url);
+                        }
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err, parsers);
+                });
+            },
+            */
             "retrievers": function(cb) {
                 var r = {};
                 var b = [];
@@ -146,8 +168,9 @@ function build(cb) {
             }
         }, function(err, result) {
             if (err) {
-                return build(cb);
+                return buildSets(cb);
             }
+            //separate out retriever data into separate keys
             result.ratingPlayers = result.retrievers.ratingPlayers;
             result.bots = result.retrievers.bots;
             result.retrievers = result.retrievers.retrievers;

@@ -77,7 +77,7 @@ function runParser(job, cb) {
     d.run(function() {
         var url = job.data.payload.url;
         var fileName = job.data.payload.fileName;
-        var target = "http://" + job.parser_host + "?url=" + url + "&fileName=" + (fileName ? fileName : "");
+        var target = job.parser_url + "?url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log(target);
         inStream = request(target);
         outStream = JSONStream.parse();

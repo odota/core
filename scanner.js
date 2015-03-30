@@ -34,14 +34,11 @@ function startScan() {
     }
     else {
         redis.get("match_seq_num", function(err, result) {
-            if (!err && result) {
-                result = Number(result);
-                scanApi(result);
-            }
-            else {
-                console.log("no sequence number in redis!");
+            if (err || !result) {
                 return startScan();
             }
+            result = Number(result);
+            scanApi(result);
         });
     }
 }

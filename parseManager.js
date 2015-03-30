@@ -1,59 +1,86 @@
 var processParse = require('./processParse');
-var jobs = require('./redis').jobs;
+var r = require('./redis');
+var redis = r.client;
+var jobs = r.jobs;
 var cluster = require('cluster');
 var config = require('./config');
-//var capacity = require('os').cpus().length;
-if (cluster.isMaster) {
-    console.log("[PARSEMANAGER] starting master");
-    jobs.process('request_parse', processParse);
-    var ps = config.PARSER_HOST.split(",");
-    var urls = {};
-    var parsers = [];
-    var power = 4;
-    //todo workers may differ in CPU cores
-    //build array from PARSER_HOST based on each worker's core count
-    ps.forEach(function(p) {
-        for (var i = 0; i < power; i++) {
-            parsers.push(p);
-        }
-    });
-    //length of this array is capacity
-    var capacity = parsers.length;
-    // Fork workers.
-    for (var i = 0; i < capacity; i++) {
-        //give each worker its own parser_host
-        cluster.fork({
-            parser_host: parsers[i]
+var async = require('async');
+var utility = require('./utility');
+var getData = utility.getData;
+start();
+
+function start() {
+    if (cluster.isMaster) {
+        console.log("[PARSEMANAGER] starting master");
+        //handle requests locally on yasp-core
+        jobs.process('request_parse', processParse);
+        var parsers = [];
+        var ps = config.PARSER_HOST.split(",").map(function(p) {
+            return "http://" + p + "?key=" + config.RETRIEVER_SECRET;
+        });
+        //build array from PARSER_HOST based on each worker's core count
+        async.each(ps, function(url, cb) {
+            getData(url, function(err, body) {
+                if (err) {
+                    return cb(err);
+                }
+                for (var i = 0; i < body.capacity; i++) {
+                    parsers.push(url);
+                }
+                cb(err);
+            });
+        }, function(err) {
+            /*
+        redis.get("retrievers", function(err, result) {
+            if (err || !result) {
+                console.log("no retrievers in redis!");
+                return start();
+            }
+            var parsers = JSON.parse(result);
+            */
+            if (err) {
+                return start();
+            }
+            var urls = {};
+            //length of this array is capacity
+            var capacity = parsers.length;
+            // Fork workers.
+            for (var i = 0; i < capacity; i++) {
+                //give each worker its own parser_host
+                cluster.fork({
+                    PARSER_URL: parsers[i]
+                });
+            }
+            // handle unwanted worker exits
+            cluster.on("exit", function(worker, code) {
+                if (code != 0) {
+                    console.log("Worker crashed! Spawning a replacement.");
+                    //fork a new worker with the same url as the one that crashed
+                    //lookup by worker id
+                    cluster.fork({
+                        PARSER_URL: urls[worker.id]
+                    });
+                }
+            });
+            Object.keys(cluster.workers).forEach(function(id) {
+                cluster.workers[id].on('message', function(msg) {
+                    console.log(msg);
+                    //a new worker is running, keep track of what url it's using
+                    urls[msg.id] = msg.url;
+                });
+            });
         });
     }
-    // handle unwanted worker exits
-    cluster.on("exit", function(worker, code) {
-        if (code != 0) {
-            console.log("Worker crashed! Spawning a replacement.");
-            //fork a new worker with the same parser_host as the one that crashed
-            //lookup by worker id
-            cluster.fork({
-                parser_host: urls[worker.id]
-            });
-        }
-    });
-    Object.keys(cluster.workers).forEach(function(id) {
-        cluster.workers[id].on('message', function(msg) {
-            console.log(msg);
-            //a new worker is running, keep track of what parser_host it's using
-            urls[msg.id] = msg.url;
+    else {
+        console.log("[PARSEMANAGER] starting worker");
+        process.send({
+            id: cluster.worker.id,
+            url: process.env.PARSER_URL
         });
-    });
-}
-else {
-    console.log("[PARSEMANAGER] starting worker");
-    process.send({
-        id: cluster.worker.id,
-        url: process.env.parser_host
-    });
-    //insert into job the parser_host this worker should use, from process.env.parser_host
-    jobs.process('parse', function(job, cb) {
-        job.parser_host = process.env.parser_host;
-        processParse(job, cb);
-    });
+        //insert into job the parser this worker should use
+        jobs.process('parse', function(job, cb) {
+            job.parser_url = process.env.PARSER_URL;
+            processParse(job, cb);
+        });
+    }
 }
