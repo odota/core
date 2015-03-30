@@ -7,7 +7,7 @@ block blogcontent
 
 		.panel-body.blog-preview
 			!= post.content
-
+			hr
 			.tags
 				each tag in post.tags
 					a(href=tagUrl(tag))
