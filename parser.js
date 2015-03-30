@@ -23,9 +23,16 @@ var server = app.listen(port, function() {
 */
 });
 app.get('/', function(req, res, next) {
-    console.log(process.memoryUsage());
+    var fileName = req.query.fileName;
+    var url = req.query.url;
     var inStream;
     var bz;
+    var outStream = res;
+    if (!fileName && !url) {
+        return outStream.json({
+            capacity: capacity
+        });
+    }
     var parser = spawn("java", ["-jar",
         "-Xmx64m",
         "parser/target/stats-0.1.0.one-jar.jar"
@@ -34,9 +41,6 @@ app.get('/', function(req, res, next) {
         stdio: ['pipe', 'pipe', 'pipe'],
         encoding: 'utf8'
     });
-    var fileName = req.query.fileName;
-    var url = req.query.url;
-    var outStream = res;
     if (fileName) {
         inStream = fs.createReadStream(fileName);
         inStream.pipe(parser.stdin);
@@ -62,11 +66,6 @@ app.get('/', function(req, res, next) {
         bz = spawn("bunzip2");
         inStream.pipe(bz.stdin);
         bz.stdout.pipe(parser.stdin);
-    }
-    else {
-        outStream.json({
-            capacity: capacity
-        });
     }
     parser.stderr.on('data', function(data) {
         console.log(data.toString());

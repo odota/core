@@ -35,7 +35,11 @@ I want to parse my own replays!
 ====
 * You'll probably need to download the replays and run them through the parser (it uses stdin/stdout streams).
 * This just emits a raw event log of JSON objects.  You'll have to figure out what you want to do with that data.
-* We aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
+* In YASP, we aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
+
+I want to run my own YASP!
+====
+* You can run your own instance of YASP, and then add your account_id to the "permanent" list to keep yourself tracked.
 
 Lessons and Rules
 ====
