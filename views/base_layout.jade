@@ -32,9 +32,9 @@ html
     block stylesheets
       style
         include ../public/css/yasp.css
-      //if (user && user.dark_theme)
-      style
-        include ../public/css/dark.css
+      if (!(user && user.light_theme))
+        style
+          include ../public/css/dark.css
     
     block head
     block unsticky_content

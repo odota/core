@@ -24,8 +24,6 @@ block playercontent
           a(href="#charts")
             button.btn.btn-dark#charts Charts
   hr 
-  .row
-    .col-md-12#content
   #the_stats
     .records
       .row
@@ -156,9 +154,10 @@ block playercontent
               img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .matchups
       .row
-        .col-md-6
+        .col-md-12
           +teammate_table(player.teammates)
-        .col-md-6
+      .row
+        .col-md-12
           +hero_table(player.heroes_arr, true)
                 
 append footer_assets
@@ -190,7 +189,16 @@ append footer_assets
         data: points,
         };
     }
+    
+    $(".activate").on('click', function() {
+      heatmap.setData(posData[0][$(this).attr('id')]);
+      heatmap.repaint();
+    })
 
+    playerTrendsTables();
+    generateActivity(aggData);
+    generateHistograms(aggData);
+    
   script
     include ../public/js/playerTrends.js
     
