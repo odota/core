@@ -22,8 +22,8 @@ function aggregator(matches, fields) {
                             //console.log("self %s", tm_hero);
                             matchups[tm_hero].games += 1;
                             matchups[tm_hero].win += player_win ? 1 : 0;
-                            if (m.start_time>matchups[tm_hero].last_played){
-                                matchups[tm_hero].last_played=m.start_time;
+                            if (m.start_time > matchups[tm_hero].last_played) {
+                                matchups[tm_hero].last_played = m.start_time;
                             }
                         }
                         else {
@@ -55,8 +55,8 @@ function aggregator(matches, fields) {
                             games: 0
                         };
                     }
-                    if (m.start_time > teammates[tm.account_id].last_played){
-                        teammates[tm.account_id].last_played=m.start_time;
+                    if (m.start_time > teammates[tm.account_id].last_played) {
+                        teammates[tm.account_id].last_played = m.start_time;
                     }
                     teammates[tm.account_id].games += 1;
                     teammates[tm.account_id].win += m.player_win ? 1 : 0;
@@ -287,7 +287,6 @@ function filter(matches, filters) {
     //filter: no stats recorded (need to implement custom filter to detect)
     //filter kill differential
     //filter max gold/xp advantage
-    //NOTE: for some reason, trying to project all players with no select condition is slow, so we make it invariant that a single player is projected
     //accept a hash of filters, run all the filters in the hash in series
     console.log(filters);
     var conditions = {
@@ -297,25 +296,25 @@ function filter(matches, filters) {
         },
         //filter: player won
         win: function(m, key) {
-            if (isNaN(key)){
+            if (isNaN(key)) {
                 return true;
             }
             return Number(m.player_win) === key;
         },
         patch: function(m, key) {
-            if (isNaN(key)){
+            if (isNaN(key)) {
                 return true;
             }
             return m.patch === key;
         },
         game_mode: function(m, key) {
-            if (isNaN(key)){
+            if (isNaN(key)) {
                 return true;
             }
             return m.game_mode === key;
         },
         hero_id: function(m, key) {
-            if (isNaN(key)){
+            if (isNaN(key)) {
                 //all heroes pass
                 return true;
             }
@@ -399,6 +398,7 @@ function advQuery(options, cb) {
         }
     }
     if (!options.project["players.$"]) {
+        //NOTE: for some reason, trying to project all players with no select condition is slow, so we make it invariant that a single player is projected
         //always project a player to prevent computematchdata/aggregation crash
         options.project.players = {
             $slice: 1
