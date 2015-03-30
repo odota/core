@@ -308,7 +308,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_url = "localhost:5200";
+            job.parser_url = "http://localhost:5200";
             processParse(job, function(err) {
                 //todo check the site to make sure templates work
                 done(err);
@@ -323,7 +323,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_url = "localhost:5200";
+            job.parser_url = "http://localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -337,7 +337,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_url = "localhost:5200";
+            job.parser_url = "http://localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -351,7 +351,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_url = "localhost:5200";
+            job.parser_url = "http://localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -365,7 +365,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_url = "localhost:5200";
+            job.parser_url = "http://localhost:5200";
             processParse(job, function(err) {
                 assert(err);
                 done();
