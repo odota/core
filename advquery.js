@@ -277,10 +277,10 @@ function aggregator(matches, fields) {
 function filter(matches, filters) {
     //todo implement more filters
     //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
-    //filter: player was in the game (mongo $all with elemmatch, or js filter)
-    //hero on my team
-    //hero was against me
-    //hero was in the game
+    //filter: with_account_id: player id was in the game
+    //teammate_hero_id
+    //agains_hero_id
+    //with_hero_id
     //HARD: filters
     //filter: specific regions (hard because there are multiple ids per region)
     //filter: endgame item

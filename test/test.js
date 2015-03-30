@@ -23,7 +23,7 @@ var Zombie = require('zombie');
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processParse = require('../processParse');
-var processMmr = require('../processMmr')
+var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
@@ -292,6 +292,7 @@ describe("tasks", function() {
         });
     });
 });
+//launch the parse worker
 require('../parser');
 describe("parser", function() {
     this.timeout(wait);
@@ -307,7 +308,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_host = "localhost:5200";
+            job.parser_url = "localhost:5200";
             processParse(job, function(err) {
                 //todo check the site to make sure templates work
                 done(err);
@@ -322,7 +323,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_host = "localhost:5200";
+            job.parser_url = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -336,7 +337,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_host = "localhost:5200";
+            job.parser_url = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -350,7 +351,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_host = "localhost:5200";
+            job.parser_url = "localhost:5200";
             processParse(job, function(err) {
                 done(err);
             });
@@ -364,7 +365,7 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            job.parser_host = "localhost:5200";
+            job.parser_url = "localhost:5200";
             processParse(job, function(err) {
                 assert(err);
                 done();
