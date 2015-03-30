@@ -1,9 +1,11 @@
 extend layout
 
 block content
-  h1 Matches
-  table.table#table
-  include ads/leaderboard_2
+  .row
+    .col-md-12
+      h1 Matches
+      table.table#table
+      include ads/leaderboard_2
   
 append footer_assets
   include assets/datatables

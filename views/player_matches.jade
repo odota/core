@@ -1,54 +1,59 @@
 extend player
 
 block playercontent
-  h3 Matches
-  table.table#matches
-  //-
-    thead
-      tr
-       th Match ID
-       th Hero
-       th Hero Name
-       th Result
-       th Game Mode
-       th Duration
-       th Region
-       th Played
-       th K
-       th D
-       th A
-       th LH
-       th DN
-       th GPM
-       th XPM
-       th HD
-       th TD
-       th HH
-    each match in player.matches
-      tr(class= match.player_win ? "success" : "danger")
-        td: a(href='/matches/#{match.match_id}')= match.match_id
-        - var hero = constants.heroes[match.players[0].hero_id]
-        td.hero 
-          if hero
-            img(src=hero.img, title=hero.localized_name)
-          else
-            =match.players[0].hero_id
-        td= hero ? hero.localized_name : "unknown hero"
-        td= match.player_win ? "Won" : "Lost"
-        td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
-        td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-        td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
-        td= moment.unix(match.start_time + match.duration).fromNow()
-        td=match.players[0].kills
-        td=match.players[0].deaths
-        td=match.players[0].assists
-        td=match.players[0].last_hits
-        td=match.players[0].denies
-        td=match.players[0].gold_per_min
-        td=match.players[0].xp_per_min
-        td=match.players[0].hero_damage
-        td=match.players[0].tower_damage
-        td=match.players[0].hero_healing 
+  .row
+     .col-md-12
+       include query
+  .row
+    .col-md-12
+      h3 Matches
+      table.table#matches
+      //-
+        thead
+          tr
+           th Match ID
+           th Hero
+           th Hero Name
+           th Result
+           th Game Mode
+           th Duration
+           th Region
+           th Played
+           th K
+           th D
+           th A
+           th LH
+           th DN
+           th GPM
+           th XPM
+           th HD
+           th TD
+           th HH
+        each match in player.matches
+          tr(class= match.player_win ? "success" : "danger")
+            td: a(href='/matches/#{match.match_id}')= match.match_id
+            - var hero = constants.heroes[match.players[0].hero_id]
+            td.hero 
+              if hero
+                img(src=hero.img, title=hero.localized_name)
+              else
+                =match.players[0].hero_id
+            td= hero ? hero.localized_name : "unknown hero"
+            td= match.player_win ? "Won" : "Lost"
+            td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
+            td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
+            td= moment.unix(match.start_time + match.duration).fromNow()
+            td=match.players[0].kills
+            td=match.players[0].deaths
+            td=match.players[0].assists
+            td=match.players[0].last_hits
+            td=match.players[0].denies
+            td=match.players[0].gold_per_min
+            td=match.players[0].xp_per_min
+            td=match.players[0].hero_damage
+            td=match.players[0].tower_damage
+            td=match.players[0].hero_healing 
     
   
 append footer_assets

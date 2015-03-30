@@ -1,22 +1,43 @@
 h3(style="display:inline-block; vertical-align:sub; margin-right: .5em") Filter
 form.form-inline(action="" method="GET")
   //input.form-control(name="players.account_id", value=q["players.account_id"], onchange="this.form.submit()")
+  input.form-control(name="with_account_id", value=q["with_account_id"] || "all", onchange="this.form.submit()")
+  
   select.form-control(name="hero_id" onchange="this.form.submit()")
-    option(value="all") All Heroes
+    option(value="all") I Played Any Hero
     each entry in constants.alpha_heroes
       option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
+      
+  select.form-control(name="with_hero_id" onchange="this.form.submit()")
+    option(value="all") Any Hero In Match
+    each entry in constants.alpha_heroes
+      option(value=entry.id, selected=(Number(q.with_hero_id)===entry.id))=entry.localized_name
+      
+  select.form-control(name="teammate_hero_id" onchange="this.form.submit()")
+    option(value="all") Any Hero As Teammate
+    each entry in constants.alpha_heroes
+      option(value=entry.id, selected=(Number(q.teammate_hero_id)===entry.id))=entry.localized_name
+      
+  select.form-control(name="against_hero_id" onchange="this.form.submit()")
+    option(value="all") Any Hero As Enemy
+    each entry in constants.alpha_heroes
+      option(value=entry.id, selected=(Number(q.against_hero_id)===entry.id))=entry.localized_name
+      
   select.form-control(name="win" onchange="this.form.submit()")
     option(value="all",  selected=q.win==="all") All Results
     option(value="1", selected=q.win==="1") Wins
     option(value="0", selected=q.win==="0") Losses
+    
   select.form-control(name="patch" onchange="this.form.submit()")
     option(value="all") All Patches
     each entry, i in constants.patches
       option(value=i, selected=(Number(q.patch)===i))=entry.id
+      
   select.form-control(name="game_mode" onchange="this.form.submit()")
     option(value="all") All Modes
     each entry in constants.modes
       option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
+      
   select.form-control(name="balanced" onchange="this.form.submit()")
     option(value="1",  selected=q.balanced==="1") Balanced Modes
-    option(value="0", selected=q.balanced==="0") All Mo
+    option(value="0", selected=q.balanced==="0") All Modes

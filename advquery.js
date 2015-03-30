@@ -278,17 +278,12 @@ function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     console.log(filters);
     //todo implement more filters
-    //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
-    //with_account_id: player id was also in the game
-    //teammate_hero_id
-    //against_hero_id
-    //with_hero_id
-    //HARDER:
-    //filter: specific regions (hard because there are multiple ids per region)
+    //filter: specific regions (tricky because there are multiple ids per region)
     //filter: endgame item
     //filter: no stats recorded (need to implement custom filter to detect)
     //filter kill differential
     //filter max gold/xp advantage
+    //more filters from parse data
     var conditions = {
         //filter: significant game modes only (balanced filter)
         balanced: function(m, key) {
@@ -296,29 +291,41 @@ function filter(matches, filters) {
         },
         //filter: player won
         win: function(m, key) {
-            if (isNaN(key)) {
-                return true;
-            }
             return Number(m.player_win) === key;
         },
         patch: function(m, key) {
-            if (isNaN(key)) {
-                return true;
-            }
             return m.patch === key;
         },
         game_mode: function(m, key) {
-            if (isNaN(key)) {
-                return true;
-            }
             return m.game_mode === key;
         },
         hero_id: function(m, key) {
-            if (isNaN(key)) {
-                //all heroes pass
-                return true;
-            }
             return m.players[0].hero_id === key;
+        },
+        //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
+        //with_account_id: player id was also in the game
+        with_account_id: function(m, key) {
+            return m.all_players.some(function(p) {
+                return p.account_id === key;
+            });
+        },
+        //teammate_hero_id
+        teammate_hero_id: function(m, key) {
+            return m.all_players.some(function(p) {
+                return (p.hero_id === key && isRadiant(p) === m.player_radiant);
+            });
+        },
+        //against_hero_id
+        against_hero_id: function(m, key) {
+            return m.all_players.some(function(p) {
+                return (p.hero_id === key && isRadiant(p) !== m.player_radiant);
+            });
+        },
+        //with_hero_id
+        with_hero_id: function(m, key) {
+            return m.all_players.some(function(p) {
+                return p.hero_id === key;
+            });
         }
     };
     var filtered = [];
@@ -326,7 +333,8 @@ function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            if (!conditions[key](matches[i], filters[key])) {
+            //don't run the test if the value is NaN
+            if (!isNaN(filters[key]) && !conditions[key](matches[i], filters[key])) {
                 //failed a test
                 include = false;
             }
@@ -409,14 +417,21 @@ function advQuery(options, cb) {
     //some aggregations/filters require hero_id and player_id of all 10 players in a game
     var fullPlayerData = {
         "teammates": 1,
-        "matchups": 1
+        "matchups": 1,
+        "with_account_id": 1,
+        "teammate_hero_id": 1,
+        "against_hero_id": 1,
+        "with_hero_id": 1
     };
-    //todo check js_select also since some filters require full player data
-    //can we disregard if the key is NaN?
     //if js_agg is null, we need the full data since we're aggregating everything
-    var bGetFullPlayerData = (!options.js_agg) ? true : Object.keys(options.js_agg).some(function(key) {
-        return (key in fullPlayerData);
-    });
+    var bGetFullPlayerData = Boolean(!options.js_agg);
+    for (var key in options.js_agg) {
+        //disregard if the key is NaN
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData && !isNaN(options.js_agg[key]));
+    }
+    for (var key in options.js_select) {
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData && !isNaN(options.js_select[key]));
+    }
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
     var max = 15000;
