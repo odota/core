@@ -24,8 +24,6 @@ block playercontent
           a(href="#charts")
             button.btn.btn-dark#charts Charts
   hr 
-  .row
-    .col-md-12#content
   #the_stats
     .records
       .row
@@ -190,7 +188,17 @@ append footer_assets
         data: points,
         };
     }
+    
+    $(".activate").on('click', function() {
+      heatmap.setData(posData[0][$(this).attr('id')]);
+      heatmap.repaint();
+    })
 
+    playerMatchupTables();
+    playerRecordTables();
+    generateActivity(aggData);
+    generateHistograms(aggData);
+    
   script
     include ../public/js/playerTrends.js
     
