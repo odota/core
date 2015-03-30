@@ -347,7 +347,6 @@ public class Main {
 		//time dead
 		//or check entity health value
 		//m_iRespawnSeconds.0000
-		//gold fed?  unfortunately no direct link between gold gain event and corresponding kill
 					initialized = true;
 				}
 					for (int i = 0; i < numPlayers; i++) {

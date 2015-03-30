@@ -12,8 +12,6 @@ start();
 function start() {
     if (cluster.isMaster) {
         console.log("[PARSEMANAGER] starting master");
-        //handle requests locally on yasp-core
-        jobs.process('request_parse', processParse);
         var parsers = [];
         var ps = config.PARSER_HOST.split(",").map(function(p) {
             return "http://" + p + "?key=" + config.RETRIEVER_SECRET;
@@ -41,6 +39,11 @@ function start() {
             if (err) {
                 return start();
             }
+            //handle requests using first parse worker
+            jobs.process('request_parse', function(job, cb) {
+                job.parser_url = parsers[0];
+                processParse(job, cb);
+            });
             var urls = {};
             //length of this array is capacity
             var capacity = parsers.length;
