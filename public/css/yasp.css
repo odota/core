@@ -211,3 +211,7 @@ td>img.user {
 .charts button {
     margin-right: .5em;
 }
+
+.player-color {
+    border-left: 10px solid;
+}
