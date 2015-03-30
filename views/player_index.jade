@@ -20,7 +20,7 @@ block playercontent
             | Make MMR public
         .checkbox
           label
-            input.pref#dark(type="checkbox", checked=user.light_theme)
+            input.pref#theme(type="checkbox", checked=user.light_theme)
             | Use Light Theme
   .row
     .col-md-6
@@ -69,7 +69,7 @@ append footer_assets
     $(".pref").change(function() {
         $.post(
             "/preferences", {
-                light_theme: $("#dark").is(":checked"),
+                light_theme: $("#theme").is(":checked"),
                 publicmmr: $("#publicmmr").is(":checked")
             },
             function(data) {
