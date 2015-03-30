@@ -133,7 +133,7 @@ function generateGraphData(match) {
     }
     var time = ["time"].concat(match.parsed_data.players[0].times);
     var data = {
-        difference: [time, goldDifference, xpDifference],
+        difference: [time, xpDifference, goldDifference],
         gold: [time],
         xp: [time],
         lh: [time]
@@ -173,5 +173,4 @@ function generateGraphData(match) {
     data.gold_reasons = gold_reasons;
     return data;
 }
-
 module.exports = renderMatch;

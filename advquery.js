@@ -275,20 +275,20 @@ function aggregator(matches, fields) {
 }
 
 function filter(matches, filters) {
+    //accept a hash of filters, run all the filters in the hash in series
+    console.log(filters);
     //todo implement more filters
     //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
     //with_account_id: player id was also in the game
     //teammate_hero_id
     //against_hero_id
     //with_hero_id
-    //HARD: filters
+    //HARDER:
     //filter: specific regions (hard because there are multiple ids per region)
     //filter: endgame item
     //filter: no stats recorded (need to implement custom filter to detect)
     //filter kill differential
     //filter max gold/xp advantage
-    //accept a hash of filters, run all the filters in the hash in series
-    console.log(filters);
     var conditions = {
         //filter: significant game modes only (balanced filter)
         balanced: function(m, key) {
@@ -412,6 +412,7 @@ function advQuery(options, cb) {
         "matchups": 1
     };
     //todo check js_select also since some filters require full player data
+    //can we disregard if the key is NaN?
     //if js_agg is null, we need the full data since we're aggregating everything
     var bGetFullPlayerData = (!options.js_agg) ? true : Object.keys(options.js_agg).some(function(key) {
         return (key in fullPlayerData);
@@ -423,7 +424,7 @@ function advQuery(options, cb) {
     //skip, pass to mongodb
     //sort, pass to mongodb
     //js_limit, the number of results to return in a page, filtered by js
-    //js_start, the position to start a page at, seleced by js
+    //js_start, the position to start a page at, selected by js
     //js_sort, post-process sorter that processes with js
     //build the monk hash
     var monk_options = {
