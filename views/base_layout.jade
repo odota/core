@@ -32,7 +32,7 @@ html
     block stylesheets
       style
         include ../public/css/yasp.css
-      if (user && !user.light_theme)
+      if (!(user && user.light_theme))
         style
           include ../public/css/dark.css
     
