@@ -27,7 +27,7 @@ api.get('/matches', function(req, res, next) {
         if (err) {
             return next(err);
         }
-        var result = {
+        result = {
             draw: draw,
             recordsTotal: result.unfiltered_count,
             recordsFiltered: result.data.length,
