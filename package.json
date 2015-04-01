@@ -1,6 +1,6 @@
 {
   "name": "yasp",
-  "description": "Yet Another (Dota) Stats Page",
+  "description": "YASP: Another (Dota) Stats Page",
   "version": "2.0.0",
   "scripts": {
     "start": "npm run retriever",
