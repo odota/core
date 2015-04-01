@@ -23,8 +23,8 @@ button.btn.btn-xs.btn-dark(data-toggle="collapse" data-target="#filter_collapse"
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
         .form-group
-          label Also Included Player
-          select.form-control(name="with_account_id", multiple)#with_account_id
+          label Match Included
+          select.form-control(name="with_account_id" multiple)#with_account_id
             option(value="all") Any Player
             each tm in player.teammates
               option(value=tm.account_id, selected=(q.with_account_id && typeof q.with_account_id==="object" ? q.with_account_id.indexOf(tm.account_id.toString())!==-1 : Number(q.with_account_id)===tm.account_id)) #{tm.personaname} (#{tm.account_id})
