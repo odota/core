@@ -148,9 +148,14 @@ function fillPlayerData(player, options, cb) {
     for (var key in options.query) {
         select[key] = options.query[key];
     }
+    //only request parsed data if necessary (trends)
+    var project = {};
+    if (options.info === "trends") {
+        project.parsed_data = 1;
+    }
     advQuery({
         select: select,
-        project: {},
+        project: project,
         agg: null, //null aggs everything by default
         js_sort: {
             match_id: -1

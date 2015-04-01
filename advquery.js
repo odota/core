@@ -379,8 +379,6 @@ function sort(matches, sorts) {
 
 function advQuery(options, cb) {
     var default_project = {
-        //todo only request parsed data if necessary (trends)
-        //parsed_data: 1,
         start_time: 1,
         match_id: 1,
         cluster: 1,
