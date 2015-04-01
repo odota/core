@@ -91,6 +91,7 @@ function start() {
 
 function getParser(job, cb) {
         job.parser_url = process.env.PARSER_URL;
+        cb();
     }
     /*
     function getParser(job, cb) {

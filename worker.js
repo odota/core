@@ -50,6 +50,7 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
+    //todo build step should safely generate an initial set of parsers/retrievers/trackedplayers/seqnum etc to avoid race condition
     buildSets(function() {
         jobs.promote();
         jobs.process('api', processApi);

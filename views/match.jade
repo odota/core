@@ -30,7 +30,7 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-            td=constants.patches[match.patch].id
+            td= constants.patches[match.patch] ? constants.patches[match.patch].id : match.patch
   .row
     .col-md-4.col-md-offset-4.text-center
       .meter_wrapper
