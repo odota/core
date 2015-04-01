@@ -20,7 +20,7 @@
     "postinstall": "npm run bower && npm run browserify && npm run constants",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "yasp-parser": "sudo nf export -j Procfile.parser -o /etc/init/ && sudo restart foreman",
-    "yasp-core": "npm run buildSets && sudo nf export -j Procfile.prod -o /etc/init/ && sudo restart foreman"
+    "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ && sudo restart foreman"
   },
   "repository": {
     "type": "git",
