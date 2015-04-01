@@ -72,7 +72,7 @@ io.sockets.on('connection', function(socket) {
                     }
                     socket.emit('log', "Queued API request for " + match_id);
                     job.on('progress', function(prog) {
-                        //kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                        //todo kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
                         socket.emit('prog', prog);
                     });
                     job.on('complete', function(result) {
@@ -165,14 +165,11 @@ app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.route('/').get(function(req, res, next) {
-    queries.prepareMatch(1321352005, function(err, match) {
-        if (err){
-            return next(err);
-        }
-        res.render('home', {
-            match: match,
-            home: true
-        });
+    //todo make a static example file with match data?
+    var match = {};
+    res.render('home', {
+        match: match,
+        home: true
     });
 });
 app.route('/preferences').post(function(req, res) {
@@ -204,8 +201,35 @@ app.route('/login').get(passport.authenticate('steam', {
 }));
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
-}), function(req, res) {
-    res.redirect('/players/' + req.user.account_id);
+}), function(req, res, next) {
+    db.players.findOne({
+        account_id: req.user.account_id
+    }, function(err, doc) {
+        if (err) {
+            return next(err);
+        }
+        if (doc) {
+            //don't update join date if we have this in db already
+            delete req.user["join_date"];
+        }
+        db.players.update({
+            account_id: req.user.account_id
+        }, {
+            $set: req.user
+        }, {
+            upsert: true
+        }, function(err) {
+            if (err) {
+                return next(err);
+            }
+            queueReq("fullhistory", req.user, function(err, job) {
+                if (err) {
+                    return next(err);
+                }
+                res.redirect('/players/' + req.user.account_id);
+            });
+        });
+    });
 });
 app.route('/logout').get(function(req, res) {
     req.logout();

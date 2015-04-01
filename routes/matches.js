@@ -1,6 +1,7 @@
 var express = require('express');
 var matches = express.Router();
 var queries = require('../queries');
+var config = require('../config');
 var matchPages = {
     index: {
         name: "Basic"
@@ -26,25 +27,23 @@ matches.get('/', function(req, res) {
         title: "Matches - YASP"
     });
 });
-matches.param('match_id', function(req, res, next, match_id) {
+matches.get('/:match_id/:info?', function(req, res, next) {
     console.time("match page");
-    queries.prepareMatch(match_id, function(err, match) {
+    queries.prepareMatch(req.params.match_id, function(err, match) {
         if (err) {
             return next(err);
         }
-        req.match = match;
-        next();
-    });
-});
-matches.get('/:match_id/:info?', function(req, res, next) {
-    var match = req.match;
-    var info = matchPages[req.params.info] ? req.params.info : "index";
-    console.timeEnd("match page");
-    res.render("match_" + info, {
-        route: info,
-        match: match,
-        tabs: matchPages,
-        title: "Match " + match.match_id + " - YASP"
+        console.timeEnd("match page");
+        var info = matchPages[req.params.info] ? req.params.info : "index";
+        if (req.query.json && config.NODE_ENV !== "production") {
+            return res.json(match);
+        }
+        res.render("match_" + info, {
+            route: info,
+            match: match,
+            tabs: matchPages,
+            title: "Match " + match.match_id + " - YASP"
+        });
     });
 });
 module.exports = matches;

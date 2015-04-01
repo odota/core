@@ -12,6 +12,7 @@ var getData = utility.getData;
 function insertMatch(match, cb) {
     async.series([function(cb) {
             //put api data in db
+            //set to queued, unless we specified something earlier (like skipped)
             match.parse_status = match.parse_status || 0;
             db.matches.update({
                 match_id: match.match_id
@@ -36,28 +37,77 @@ function insertMatch(match, cb) {
                     cb(err);
                 });
             }, cb);
-            },
-            function(cb) {
-            //get replay url from retriever, if queued for parse
-            if (match.parse_status === 0) {
-                getReplayUrl(match, function(err) {
+            }], function decideParse(err) {
+        if (err) {
+            //error occured
+            return cb(err);
+        }
+        else if (match.parse_status !== 0) {
+            //not parsing this match (skipped or expired)
+            //this isn't a error, although we want to report that back to user if it was a request
+            cb(err);
+        }
+        else {
+            //get the replay url
+            getReplayUrl(match, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                db.matches.update({
+                    match_id: match.match_id
+                }, {
+                    $set: match
+                }, {
+                    upsert: true
+                }, function(err) {
                     if (err) {
                         return cb(err);
                     }
-                    db.matches.update({
-                        match_id: match.match_id
-                    }, {
-                        $set: match
-                    }, {
-                        upsert: true
-                    }, cb);
+                    if (match.request) {
+                        return queueReq("request_parse", match, function(err, job2) {
+                            cb(err, job2);
+                        });
+                    }
+                    else {
+                        //queue it and finish
+                        return queueReq("parse", match, function(err, job2) {
+                            cb(err, job2);
+                        });
+                    }
                 });
-            }
-            else {
+            });
+        }
+    });
+}
+
+function insertMatchProgress(match, job, cb) {
+    insertMatch(match, function(err, job2) {
+        if (err) {
+            return cb(err);
+        }
+        if (!job2) {
+            job.log("not queued for parse");
+            job.progress(100, 100);
+            cb(err);
+        }
+        else {
+            //wait for parse to finish
+            job.log("parse: starting");
+            job.progress(0, 100);
+            //request, parse and log the progress
+            job2.on('progress', function(prog) {
+                job.log(prog + "%");
+                job.progress(prog, 100);
+            });
+            job2.on('failed', function() {
+                cb("parse failed");
+            });
+            job2.on('complete', function() {
+                job.log("parse: complete");
+                job.progress(100, 100);
                 cb();
-            }
-            }], function(err) {
-        return cb(err);
+            });
+        }
     });
 }
 
@@ -66,9 +116,10 @@ function getReplayUrl(match, cb) {
         match_id: match.match_id
     }, function(err, doc) {
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
-            match.expired = true;
-            //set status to 1 if this match doesn't have a nonzero parse status already
-            match.parse_status = (doc && doc.parse_status) ? doc.parse_status : 1;
+            console.log("replay expired");
+            //set status to 1 if this match isn't parsed already
+            //this ensures we don't mark formerly parsed matches as unavailable on reparses
+            match.parse_status = (doc.parse_status === 2) ? doc.parse_status : 1;
             return cb(err);
         }
         if (!err && doc && doc.url) {
@@ -82,8 +133,9 @@ function getReplayUrl(match, cb) {
                     return cb(err);
                 }
                 result = JSON.parse(result);
+                //make array of retriever urls and use a random one on each retry
                 var urls = result.map(function(r) {
-                    return r + "?match_id=" + match.match_id;
+                    return r + "&match_id=" + match.match_id;
                 });
                 getData(urls, function(err, body) {
                     if (err || !body || !body.match) {
@@ -115,7 +167,7 @@ function insertPlayer(player, cb) {
 
 function queueReq(type, payload, cb) {
     var job = generateJob(type, payload);
-    var kuejob = jobs.create(job.type, job).attempts(payload.attempts || 10).backoff({
+    var kuejob = jobs.create(job.type, job).attempts(payload.attempts || 15).backoff({
         delay: 60 * 1000,
         type: 'exponential'
     }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
@@ -126,5 +178,6 @@ function queueReq(type, payload, cb) {
 module.exports = {
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
+    insertMatchProgress: insertMatchProgress,
     queueReq: queueReq
 };

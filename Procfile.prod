@@ -1,3 +1,6 @@
 web: node web.js
-worker: node worker.js
+retriever: node retriever.js
 parser: node parser.js
+worker: node worker.js
+parseManager: node parseManager.js
+scanner: node scanner.js

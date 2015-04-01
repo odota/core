@@ -19,6 +19,7 @@ var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
     /*
+    //server must support tcp!
     var constants = require('./constants.json');
     var seaport = require('seaport');
     var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
@@ -32,7 +33,7 @@ var server = app.listen(port, function() {
 while (a.length < users.length) a.push(a.length + 0);
 async.map(a, function(i, cb) {
     var Steam = new steam.SteamClient();
-    Steam.Dota2 = new dota2.Dota2Client(Steam, false);
+    Steam.Dota2 = new dota2.Dota2Client(Steam, true);
     Steam.EFriendRelationship = {
         None: 0,
         Blocked: 1,
@@ -106,16 +107,19 @@ async.map(a, function(i, cb) {
 });
 
 function getPlayerProfile(idx, account_id, cb) {
+    account_id = Number(account_id);
     var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
     steamObj[idx].profiles += 1;
     Dota2.profileRequest(account_id, false, function(accountId, profileData) {
+        console.log(accountId, profileData);
         var error = profileData.result === 1 ? null : profileData.result;
         cb(error, profileData.gameAccountClient);
     });
 }
 
 function getGCReplayUrl(idx, match_id, cb) {
+    match_id = Number(match_id);
     var Dota2 = steamObj[idx].Dota2;
     console.log("[DOTA] requesting replay %s, numusers: %s", match_id, users.length);
     replayRequests += 1;
@@ -136,10 +140,13 @@ app.get('/', function(req, res, next) {
     if (!ready) {
         return next("retriever not ready");
     }
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+        //reject request if doesnt have key
+        return next("invalid key");
+    }
     res.locals.to = setTimeout(function() {
         next("retriever timeout");
     }, 25000);
-    //todo reject request if doesnt have key
     var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
     if (req.query.match_id) {
         getGCReplayUrl(r, req.query.match_id, function(err, data) {

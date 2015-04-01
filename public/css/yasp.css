@@ -203,6 +203,18 @@ td>img.user {
   border-color: #848484;
 }
 
+.btn-yasp {
+  color: #000;
+  background-color: #BBF0FD;
+  border-color: #BBF0FD;
+}
+
+.btn-yasp:hover, .btn-yasp:focus {
+  color: #fff;
+  background-color: #31b0d5;
+  border-color: #269abc;
+}
+
 .wards button {
     display: block;
     margin: 10em auto;
@@ -214,4 +226,25 @@ td>img.user {
 
 .player-color {
     border-left: 10px solid;
+}
+
+.blog-panel hr {
+    border-color: #000;
+}
+
+.blog-panel h1, .blog-panel h2, .blog-panel h3 {
+    color: black;
+}
+
+.blog-panel .panel-body a {
+    color: black;
+    text-decoration: underline;
+}
+
+option {
+    color: black;
+}
+
+.select2-search-choice *, .select2-drop * {
+    color: black;
 }

@@ -1,30 +1,27 @@
 extend player
 
+include mixins/hero_table
+include mixins/teammate_table
+
 block playercontent
-  if (user && user.account_id === player.account_id)
-    .row
-      .col-md-6
-        h3 Welcome!
-        ul
-          li Just joined?  We probably don't have your old matches yet.
-          li Play a game and come back, or request a match by ID.
-          li Keep using YASP and we'll get your full match history.
-      .col-md-6
+  .row
+    .col-md-6
+      if (user && user.account_id === player.account_id)
         h3 Actions
-        .checkbox
-          label
-            input.pref#dark(type="checkbox", checked=user.dark_theme)
-            | Use Dark Theme
+        if (!user.full_history_time)
+          .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
+        if (user.account_id in ratingPlayers)
+          p: button.btn.btn-default(disabled) MMR Tracked
+        else
+          p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
         .checkbox
           label
             input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
             | Make MMR public
-        p: a.btn.btn-success(href="/request") Request by ID &raquo;
-        if (user.account_id in ratingPlayers)
-          p: button.btn.btn-default(disabled) MMR Tracked
-        else
-          p: a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-
+        .checkbox
+          label
+            input.pref#theme(type="checkbox", checked=user.light_theme)
+            | Use Light Theme
   .row
     .col-md-6
       h3 Recent Matches
@@ -38,7 +35,7 @@ block playercontent
            th Duration
            th Played
            th: abbr(title=constants.tooltips.status) Status
-        each match in player.matches.slice(0,15)
+        each match in player.display_matches
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]
@@ -53,46 +50,14 @@ block playercontent
             td= moment.unix(match.start_time + match.duration).fromNow()
             td=constants.parse_status[match.parse_status]
     .col-md-6
-        h3 Heroes
-        table.table
-          thead
-            tr
-              th Hero
-              th Games
-              th Win%
-          each h in player.heroes_arr.slice(0,15)
-            - var hero = constants.heroes[h.hero_id]
-            tr
-              td.hero
-                img(src=hero.img, title=hero.localized_name)
-              td= h.games
-              td
-               - var pct = h ? ~~(100*h.win/h.games) : 0
-               .progress
-                 .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+      +hero_table(player.heroes_arr.slice(0,15), false)
   hr
   .row
     include ads/leaderboard_2
   hr
   .row
     .col-md-6
-      h3 Teammates
-      table.table#teammates
-        thead
-          tr
-            th Name
-            th Games
-            th Win%      
-        each teammate in player.teammates.slice(0,15)
-          tr
-            td
-              img.user(src=teammate.avatar)
-              a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-            td= teammate.games
-            td
-             - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
-             .progress
-               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+      +teammate_table(player.teammates.slice(0,15))
     .col-md-6
       h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo:
@@ -104,7 +69,7 @@ append footer_assets
     $(".pref").change(function() {
         $.post(
             "/preferences", {
-                dark_theme: $("#dark").is(":checked"),
+                light_theme: $("#theme").is(":checked"),
                 publicmmr: $("#publicmmr").is(":checked")
             },
             function(data) {

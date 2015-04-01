@@ -21,6 +21,7 @@ block content
             td Duration
             td Result
             td Played
+            td Patch
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
             td= constants.parse_status[match.parse_status]
@@ -29,15 +30,23 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow= match.start_time + match.duration
-  if match.parsed_data.version < constants.parser_version
-    .row
-      .col-md-12
-        .alert.alert-info This match has outdated parse data or is not yet parsed.  Some fields may not be available.
+            td=constants.patches[match.patch].id
+  .row
+    .col-md-4.col-md-offset-4.text-center
+      .meter_wrapper
+        h2
+          abbr(title="YASP's algorithmic analysis of data trends combined with advanced statistical aggregation calculates a 'throw' metric for each game.") 322 Level
+        - var tl = (Number(match.match_id)*0.5) % 100;
+        - var title = tl < 33 ? "Good job." : tl < 50 ? "Could have been cleaner." : tl < 80 ? "Almost threw." : "EG levels."
+        - var color = tl < 33 ? "#BBF0FD" : tl < 50 ? "#43B01E" : tl < 80 ? "#DA6B43" : "#C02121"
+        .meter.throw(title=title)
+          span(style="width: #{tl}%; background-color: #{color}")
+        small Learn more <a href="/post/throws">here.</a>
   .row
       .col-md-10
         ul.nav.nav-tabs
           each val, key in tabs
-            li(class= (route == key ? 'active' : ''))
+            li(class= (route === key ? 'active' : ''), style=(match.parse_status !==2 && key!=="index" ? 'display:none;' : ''))
                 a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
         .addthis_sharing_toolbox.pull-right

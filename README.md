@@ -10,20 +10,36 @@ YASP - YASP: Another Stats Page
 About
 ====
 * Parses replays of Dota 2 matches to provide additional statistics.
-* Runs as a Node.js/Express  web application.
+* Runs as a Node.js/Express web application.
 * Designed to scale to thousands of users.
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
+* YASP is constructed in a modular manner, and you may find certain parts of it to be useful for your own needs.
 
 Quickstart
 ====
 * Install dependencies: `sudo bash init.sh`
-* Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
-* Build `npm install && npm run build`
+* Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`
+* Build `npm run build`
 * Launch in dev mode: `npm run dev`
 
 Sample Data
 ====
 * Load the test players and matches: `mongo dota migrations/loader.js`
+
+I want to programmatically get replays!  
+====
+* You can fire up the retriever (supplying your own Steam credentials) and basically get a REST API for retrieving replay salts.  
+* If you have friends on that account you could extract their MMR as well.
+
+I want to parse my own replays!  
+====
+* You'll probably need to download the replays and run them through the parser (it uses stdin/stdout streams).
+* This just emits a raw event log of JSON objects.  You'll have to figure out what you want to do with that data.
+* In YASP, we aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
+
+I want to run my own YASP!
+====
+* You can run your own instance of YASP, and then add your account_id to the "permanent" list to keep yourself tracked.
 
 Lessons and Rules
 ====

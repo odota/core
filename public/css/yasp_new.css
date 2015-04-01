@@ -197,7 +197,7 @@ img.grayscale {
 /* use alt in navbar and header for different color */
 
 .alt {
-  background: url("../images/dotawallpaper.jpg");
+  background: url("../images/dotawallpaper.png");
   background-size: cover;
   background-position: center;
 }

@@ -20,21 +20,25 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var Zombie = require('zombie');
-var processors = require('../processors');
+var processApi = require('../processApi');
+var processFullHistory = require('../processFullHistory');
+var processParse = require('../processParse');
+var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
 var updatenames = require('../tasks/updatenames');
-var fullhistory = require('../tasks/fullhistory');
 var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var wait = 60000;
+/*
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,
     runScripts: false
 });
+*/
 var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
@@ -95,8 +99,9 @@ before(function(done) {
                 "friends": 1
                 }]));
             redis.set("ratingPlayers", JSON.stringify({}));
-            redis.set("retrievers", JSON.stringify(["http://localhost:5100"]));
-            redis.set("parsers", JSON.stringify(["http://localhost:5200"]));
+            //todo use functions to prefill these rather than hardcoding
+            redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
+            redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
             cb();
             },
             function(cb) {
@@ -149,7 +154,8 @@ before(function(done) {
             //fake retriever response
             nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
                 var split = path.split("?");
-                return split[1];
+                split = split[1].split("&");
+                return split[split.length - 1];
             }).get('account_id=88367253').reply(200, {
                 "accountId": 88367253,
                 "wins": 889,
@@ -185,7 +191,7 @@ before(function(done) {
                     return split2[0];
                 })
                 //throw some errors to test handling
-                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(2).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
                     result: {
                         error: "error"
                     }
@@ -220,8 +226,9 @@ describe("worker", function() {
         queueReq("api_details", {
             match_id: 870061127
         }, function(err, job) {
+            assert(!err);
             assert(job);
-            processors.processApi(job, function(err) {
+            processApi(job, function(err) {
                 done(err);
             });
         });
@@ -232,8 +239,9 @@ describe("worker", function() {
             account_id: 88367253,
             url: "http://localhost:5100?account_id=88367253"
         }, function(err, job) {
+            assert(!err);
             assert(job);
-            processors.processMmr(job, function(err) {
+            processMmr(job, function(err) {
                 done(err);
             });
         });
@@ -244,8 +252,20 @@ describe("worker", function() {
                 account_id: 88367253
             }]
         }, function(err, job) {
+            assert(!err);
             assert(job);
-            processors.processApi(job, function(err) {
+            processApi(job, function(err) {
+                done(err);
+            });
+        });
+    });
+    it('process fullhistory request', function(done) {
+        queueReq("fullhistory", {
+            account_id: 88367253
+        }, function(err, job) {
+            assert(!err);
+            assert(job);
+            processFullHistory(job, function(err) {
                 done(err);
             });
         });
@@ -264,19 +284,16 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('full history', function(done) {
-        fullhistory(["1"], function(err) {
-            done(err);
-        });
-    });
     it('constants', function(done) {
         //fake constants response
         nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
-        constants("./constants_test.json", function(err) {
+        constants(function(err) {
             done(err);
         });
     });
 });
+//launch the parse worker
+require('../parser');
 describe("parser", function() {
     this.timeout(wait);
     it('parse replay (download)', function(done) {
@@ -291,7 +308,8 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            job.parser_url = "http://localhost:5200";
+            processParse(job, function(err) {
                 //todo check the site to make sure templates work
                 done(err);
             });
@@ -305,7 +323,8 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            job.parser_url = "http://localhost:5200";
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -318,7 +337,8 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            job.parser_url = "http://localhost:5200";
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -331,7 +351,8 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            job.parser_url = "http://localhost:5200";
+            processParse(job, function(err) {
                 done(err);
             });
         });
@@ -344,7 +365,8 @@ describe("parser", function() {
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
-            processors.processParse(job, function(err) {
+            job.parser_url = "http://localhost:5200";
+            processParse(job, function(err) {
                 assert(err);
                 done();
             });
@@ -583,14 +605,17 @@ describe("web", function() {
     });
 });
 describe("unit test", function() {
-    it('insertmatch', function(done){
-        operations.insertMatch({match_id: 2, start_time: new Date().getTime()/1000, players:[]}, function(err, job2){
+    it('insertmatch', function(done) {
+        operations.insertMatch({
+            match_id: 2,
+            start_time: new Date().getTime() / 1000,
+            players: []
+        }, function(err, job2) {
             done(err);
         });
     });
 });
-        //todo add test for socket request
-
+//todo add test for socket request
 //deprecated
 /*
 describe("GET /upload", function() {

@@ -113,8 +113,6 @@
     "2": "Parsed",
     "3": "Skipped"
   },
-  "parser_version": 5,
-  "retriever_version": 2,
   "untracked_msg": "<h3><strong>Missing matches?</strong></h1><br> Welcome back!! We stopped tracking your matches because we haven't seen you in a while. :( This is necessary for us to handle the ever increasing load. Your matches from now on will be tracked as long as you remain active.<br><small>This message will disappear upon relogging in.</small>",
   "api_msg": "Valve's WebAPI is currently delayed.  Your matches will be processed when the service resumes.",
   "tooltips": {
@@ -146,7 +144,7 @@
     },
     "4": {
       "id": 4,
-      "name": "Co-Op with bots"
+      "name": "Co-Op with Bots"
     },
     "5": {
       "id": 5,
@@ -274,142 +272,142 @@
     }
   },
   "patches": [{
-    "name": "6.83c",
+    "id": "6.83c",
     "date": "2015-02-13T00:00:00Z"
   }, {
-    "name": "6.83b",
+    "id": "6.83b",
     "date": "2015-01-13T00:00:00Z"
   }, {
-    "name": "6.83",
+    "id": "6.83",
     "date": "2014-12-17T00:00:00Z"
   }, {
-    "name": "6.82c",
+    "id": "6.82c",
     "date": "2014-10-15T00:00:00Z"
   }, {
-    "name": "6.82b",
+    "id": "6.82b",
     "date": "2014-09-28T00:00:00Z"
   }, {
-    "name": "6.82",
+    "id": "6.82",
     "date": "2014-09-24T00:00:00Z"
   }, {
-    "name": "6.81d",
+    "id": "6.81d",
     "date": "2014-08-09T00:00:00Z"
   }, {
-    "name": "6.81c",
+    "id": "6.81c",
     "date": "2014-08-03T00:00:00Z"
   }, {
-    "name": "6.81b",
+    "id": "6.81b",
     "date": "2014-06-02T00:00:00Z"
   }, {
-    "name": "6.81",
+    "id": "6.81",
     "date": "2014-04-29T00:00:00Z"
   }, {
-    "name": "6.80c",
+    "id": "6.80c",
     "date": "2014-03-03T00:00:00Z"
   }, {
-    "name": "6.80b",
+    "id": "6.80b",
     "date": "2014-03-02T00:00:00Z"
   }, {
-    "name": "6.80",
+    "id": "6.80",
     "date": "2014-01-27T00:00:00Z"
   }, {
-    "name": "6.79e",
+    "id": "6.79e",
     "date": "2014-01-12T00:00:00Z"
   }, {
-    "name": "6.79d",
+    "id": "6.79d",
     "date": "2014-01-07T00:00:00Z"
   }, {
-    "name": "6.79c",
+    "id": "6.79c",
     "date": "2013-12-11T00:00:00Z"
   }, {
-    "name": "6.79b",
+    "id": "6.79b",
     "date": "2013-11-27T00:00:00Z"
   }, {
-    "name": "6.79",
+    "id": "6.79",
     "date": "2013-11-24T00:00:00Z"
   }, {
-    "name": "6.78c",
+    "id": "6.78c",
     "date": "2013-06-30T00:00:00Z"
   }, {
-    "name": "6.78b",
+    "id": "6.78b",
     "date": "2013-06-03T00:00:00Z"
   }, {
-    "name": "6.78",
+    "id": "6.78",
     "date": "2013-05-30T00:00:00Z"
   }, {
-    "name": "6.77c",
+    "id": "6.77c",
     "date": "2013-03-16T00:00:00Z"
   }, {
-    "name": "6.77b",
+    "id": "6.77b",
     "date": "2013-01-15T00:00:00Z"
   }, {
-    "name": "6.77",
+    "id": "6.77",
     "date": "2012-12-15T00:00:00Z"
   }, {
-    "name": "6.76c",
+    "id": "6.76c",
     "date": "2012-10-28T00:00:00Z"
   }, {
-    "name": "6.76b",
+    "id": "6.76b",
     "date": "2012-10-22T00:00:00Z"
   }, {
-    "name": "6.76",
+    "id": "6.76",
     "date": "2012-10-21T00:00:00Z"
   }, {
-    "name": "6.75b",
+    "id": "6.75b",
     "date": "2012-10-02T00:00:00Z"
   }, {
-    "name": "6.75",
+    "id": "6.75",
     "date": "2012-09-30T00:00:00Z"
   }, {
-    "name": "6.74c",
+    "id": "6.74c",
     "date": "2012-03-21T00:00:00Z"
   }, {
-    "name": "6.74b",
+    "id": "6.74b",
     "date": "2012-03-20T00:00:00Z"
   }, {
-    "name": "6.74",
+    "id": "6.74",
     "date": "2012-03-10T00:00:00Z"
   }, {
-    "name": "6.73c",
+    "id": "6.73c",
     "date": "2012-01-10T00:00:00Z"
   }, {
-    "name": "6.73b",
+    "id": "6.73b",
     "date": "2011-12-28T00:00:00Z"
   }, {
-    "name": "6.73",
+    "id": "6.73",
     "date": "2011-12-24T00:00:00Z"
   }, {
-    "name": "6.72f",
+    "id": "6.72f",
     "date": "2011-07-22T00:00:00Z"
   }, {
-    "name": "6.72e",
+    "id": "6.72e",
     "date": "2011-07-18T00:00:00Z"
   }, {
-    "name": "6.72d",
+    "id": "6.72d",
     "date": "2011-07-17T00:00:00Z"
   }, {
-    "name": "6.72c",
+    "id": "6.72c",
     "date": "2011-06-03T00:00:00Z"
   }, {
-    "name": "6.72b",
+    "id": "6.72b",
     "date": "2011-05-04T00:00:00Z"
   }, {
-    "name": "6.72",
+    "id": "6.72",
     "date": "2011-04-27T00:00:00Z"
   }, {
-    "name": "6.71b",
+    "id": "6.71b",
     "date": "2011-01-23T00:00:00Z"
   }, {
-    "name": "6.71",
+    "id": "6.71",
     "date": "2011-01-21T00:00:00Z"
   }, {
-    "name": "6.70c",
+    "id": "6.70c",
     "date": "2010-12-30T00:00:00Z"
   }, {
-    "name": "6.70b",
+    "id": "6.70b",
     "date": "2010-12-28T00:00:00Z"
   }, {
-    "name": "6.70",
+    "id": "6.70",
     "date": "2010-12-24T00:00:00Z"
   }],
   "ability_ids": {

@@ -1,0 +1,38 @@
+mixin hero_table(rows, full)
+  h3 Heroes
+  table.table#heroes
+    thead
+      tr
+        th Hero
+        th Hero Name
+        th As
+        th Win% As
+        if full
+          th With
+          th Win% With
+          th Against
+          th Win% Against
+        th Last
+    each h in rows
+      - var hero = constants.heroes[h.hero_id]
+      tr
+        td.hero
+          img(src=hero.img, title=hero.localized_name)
+        td=hero.localized_name
+        td=h.games
+        td
+          - var pct = h ? ~~(100*h.win/h.games) : 0
+          .progress
+            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+        if full
+          td=h.with_games
+          td
+            - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
+            .progress
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+          td=h.against_games
+          td
+            - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
+            .progress
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+        td= moment.unix(h.last_played).fromNow()

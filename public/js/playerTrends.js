@@ -1,68 +1,35 @@
-var $records = $(".records"),
-    $matchups = $(".matchups"),
-    $wards = $(".wards"),
-    $charts = $(".charts"),
-    $content = $("#content");
-$("#the_stats").empty();
+var sections = [$(".records"), $(".matchups"), $(".wards"), $(".charts"), $("#content")];
 
-var recordTables;
-var matchupTables;
-function makeMatchupDT() {
-    if (!$.fn.dataTable.isDataTable('#heroes')) {
-        matchupTables = playerMatchupTables();
-    }
-}
-
-function makeRecordsDT() {
-    if (!$.fn.dataTable.isDataTable('#builds')) {
-        recordTables = playerRecordTables();
-    }
-}
-
-function getCharts() {
-    $content.empty();
-    $content.append($charts);
-    generateHistograms(aggData);
-    if ($("#cal-heatmap").children().length < 1) {
-        generateActivity(aggData);
-    }
-}
-
-function getWards() {
-    $content.empty();
-    $content.append($wards);
-    $(".activate").on('click', function() {
-        heatmap.setData(posData[0][$(this).attr('id')]);
-        heatmap.repaint();
+function showSection(num) {
+    sections.forEach(function(sec, index) {
+        if (index === num) {
+            sec.show();
+        } else {
+            sec.hide();
+        }
     })
 }
 
+function getCharts() {
+    showSection(3);
+}
+
+function getWards() {
+    showSection(2);
+}
+
 function getMatchups() {
-    $content.empty();
-    $content.append($matchups);
-    if (matchupTables) { //Destroy and remake otherwise the events are bound...
-        matchupTables.forEach(function(table){
-            table.fnDestroy();
-        })
-    }
-    makeMatchupDT();
+    showSection(1);
 }
 
 function getRecords() {
-    $content.empty();
-    $content.append($records);
-    if (recordTables) {
-        recordTables.forEach(function(table){
-            table.fnDestroy();
-        })
-    }
-    makeRecordsDT();
+    showSection(0);
 }
 
-function showSection() {
+function getSection() {
     if (window.location.hash) {
         var hash = window.location.hash.substring(1);
-        console.log(hash);
+
         if (hash === "charts") {
             getCharts();
         }
@@ -80,12 +47,9 @@ function showSection() {
         getRecords();
     }
 }
-showSection();
-// window.onhashchange = function() {
-//     showSection();
-//     tooltips();
-//     formatHtml();
-// }
+
+getSection();
+
 $("#charts").click(function() {
     getCharts();
 });

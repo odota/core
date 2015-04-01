@@ -84,6 +84,14 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "fullhistory": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.account_id].join(),
+                type: type,
+                payload: payload
+            };
+        },
         "mmr": function() {
             payload.attempts = 1;
             return {
@@ -98,7 +106,6 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-        var delay = 800;
         //select a random element if array
         var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
         var parse = urllib.parse(u, true);
@@ -109,6 +116,7 @@ function getData(url, cb) {
         }
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
+        var delay = 1000;
         return setTimeout(function() {
             request({
                 url: target,
@@ -158,25 +166,7 @@ function convert32to64(id) {
 }
 
 function isRadiant(player) {
-        return player.player_slot < 127;
-    }
-    /*
-     * Makes sort from a datatables call
-     */
-function makeSort(order, columns) {
-    var sort = {
-        match_id: -1
-    };
-    if (order && columns) {
-        sort = {};
-        order.forEach(function(s) {
-            var c = columns[Number(s.column)];
-            if (c) {
-                sort[c.data] = s.dir === 'desc' ? -1 : 1;
-            }
-        });
-    }
-    return sort;
+    return player.player_slot < 127;
 }
 
 function mergeObjects(merge, val) {
@@ -216,8 +206,9 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 0,
+        "version": 6,
         "match_id": 0,
+        "teamfights": null,
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
@@ -239,6 +230,7 @@ function getParseSchema() {
                 "obs": {},
                 "sen": {},
                 //"chat_hero_kill":{},
+                //"clicks":{},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
@@ -251,7 +243,7 @@ function getParseSchema() {
                 "runes": {},
                 "runes_bottled": {},
                 "killed_by": {},
-                //"modifier_applied": {},
+                "modifier_applied": {},
                 //"modifier_lost": {},
                 //"ability_trigger": {}
                 "healing": {}
@@ -266,7 +258,6 @@ module.exports = {
     convert32to64: convert32to64,
     convert64to32: convert64to32,
     isRadiant: isRadiant,
-    makeSort: makeSort,
     mergeObjects: mergeObjects,
     mode: mode,
     getParseSchema: getParseSchema

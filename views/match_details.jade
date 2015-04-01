@@ -11,8 +11,8 @@ block match_content
                 thead
                   tr
                     th Hero
-                    th: abbr(title="Lane based on early game position") Lane
-                    th: abbr(title="Percentage of standard lane gold obtained") Efficiency
+                    th: abbr(title="Lane based on early game position") LANE
+                    th: abbr(title="Percentage of standard lane gold obtained") EFF
                     th: abbr(title="Town Portal Scrolls bought") TP
                     th: abbr(title="Observer Wards bought") OBS
                     th: abbr(title="Sentry Wards bought") SEN
@@ -25,6 +25,7 @@ block match_content
                     th: abbr(title="Towers killed") TK
                     th: abbr(title="Couriers killed") CK
                     th: abbr(title="Largest hero hit") HIT
+                    //th: abbr(title="Number of times the player clicked") CLICK
                     each val, key in constants.runes
                       th=val.name
 
@@ -51,6 +52,7 @@ block match_content
                 td #{p.tower_kills || "-"}
                 td #{p.courier_kills || "-"}
                 td #{p.largest_hero_hit || "-"}
+                //td #{p.clicks[0] || "-"}
                 each val, key in constants.runes
                   td #{p.runes[key] || "-"}
                 

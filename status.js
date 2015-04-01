@@ -1,7 +1,7 @@
 var async = require('async');
 var db = require('./db');
+var redis = require('./redis').client;
 var moment = require('moment');
-var selector = require('./selector');
 module.exports = function getStatus(cb) {
     async.series({
         matches: function(cb) {
@@ -18,84 +18,17 @@ module.exports = function getStatus(cb) {
             }, cb);
         },
         tracked_players: function(cb) {
-            db.players.count(selector("tracked"), cb);
-        },
-        /*
-        matches_last_day: function(cb) {
-            db.matches.find({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, function(err, docs){
-                var count = docs ? docs.length : 0;
-                cb(err, count);
+            redis.get("trackedPlayers", function(err, res) {
+                res = res ? Object.keys(JSON.parse(res)).length : 0;
+                cb(err, res);
             });
         },
-        queued_last_day: function(cb) {
-            db.matches.find({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, {
-                fields: {
-                    "parse_status": 1
-                }
-            }, function(err, docs) {
-                var count = docs ? docs.filter(function(m) {
-                    return m.parse_status === 0;
-                }).length : 0;
-                cb(err, count);
+        rating_players: function(cb) {
+            redis.get("ratingPlayers", function(err, res) {
+                res = res ? Object.keys(JSON.parse(res)).length : 0;
+                cb(err, res);
             });
         },
-        skipped_last_day: function(cb) {
-            db.matches.find({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, {
-                fields: {
-                    "parse_status": 1
-                }
-            }, function(err, docs) {
-                var count = docs ? docs.filter(function(m) {
-                    return m.parse_status === 3;
-                }).length : 0;
-                cb(err, count);
-            });
-        },
-        parsed_last_day: function(cb) {
-            db.matches.find({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, {
-                fields: {
-                    "parse_status": 1
-                }
-            }, function(err, docs) {
-                var count = docs ? docs.filter(function(m) {
-                    return m.parse_status === 2;
-                }).length : 0;
-                cb(err, count);
-            });
-        },
-        unavailable_last_day: function(cb) {
-            db.matches.find({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                },
-            }, {
-                fields: {
-                    "parse_status": 1
-                }
-            }, function(err, docs) {
-                var count = docs ? docs.filter(function(m) {
-                    return m.parse_status === 1;
-                }).length : 0;
-                cb(err, count);
-            });
-        },
-        */
         matches_last_day: function(cb) {
             db.matches.count({
                 start_time: {
@@ -142,38 +75,58 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
-        full_history_eligible: function(cb) {
-            var base = selector("tracked");
-            base.full_history_time = null;
-            db.players.count(base, cb);
+        match_seq_num: function(cb) {
+            redis.get("match_seq_num", function(err, result){
+                result=Number(result);
+                cb(err, result);
+            });
         },
         last_added: function(cb) {
-            db.matches.find({}, {
-                sort: {
-                    match_seq_num: -1
-                },
-                fields: {
-                    match_id: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            redis.get("match_seq_num", function(err, result) {
+                result=Number(result);
+                if (err) {
+                    return cb(err);
+                }
+                db.matches.find({
+                    match_seq_num: {
+                        $lt: result
+                    }
+                }, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 10
+                }, cb);
+            });
         },
         last_parsed: function(cb) {
-            db.matches.find({
-                parse_status: 2
-            }, {
-                sort: {
-                    match_seq_num: -1
-                },
-                fields: {
-                    match_id: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            redis.get("match_seq_num", function(err, result) {
+                result=Number(result);
+                if (err) {
+                    return cb(err);
+                }
+                db.matches.find({
+                    match_seq_num: {
+                        $lt: result
+                    },
+                    parse_status: 2
+                }, {
+                    sort: {
+                        match_seq_num: -1
+                    },
+                    fields: {
+                        match_id: 1,
+                        start_time: 1,
+                        duration: 1
+                    },
+                    limit: 10
+                }, cb);
+            });
         }
     }, cb);
 };

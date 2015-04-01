@@ -5,7 +5,7 @@ block content
     .col-md-1
       img(src='#{player.avatarmedium}').img-thumbnail
     .col-md-4
-      h1(style='font-weight: 700;')= player.personaname || player.account_id
+      h1= player.personaname || player.account_id
     .col-md-1
       if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")
@@ -20,20 +20,56 @@ block content
             th Last Visit
         tbody
           tr
-            td #{player.win}-#{player.lose} (#{(player.win/player.games*100).toFixed(2) || 0.00}%)
+            td #{player.aggData.win}-#{player.aggData.lose} <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
             td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
             td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
-            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
+            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs
         each val, key in tabs
           li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key == 'index' ? "" : key))= val.name
+        if player.profileurl
+          li
+            a(href=player.profileurl, target="_blank") Steam Profile
   block playercontent
   hr
   .row
     .col-md-12
       include ads/leaderboard_3
 append footer_assets
+  script.
+    $("#with_account_id").select2({
+     //tags: true
+    });
+    $("#teammate_hero_id").select2({
+      maximumSelectionLength: 4
+    });
+    $("#enemy_hero_id").select2({
+      maximumSelectionLength: 5
+    });
+  //-
+    $.fn.serializeObject = function() {
+      var o = {};
+      var a = this.serializeArray();
+      $.each(a, function() {
+          if (o[this.name] !== undefined) {
+              if (!o[this.name].push) {
+                  o[this.name] = [o[this.name]];
+              }
+              o[this.name].push(this.value || '');
+          } else {
+              o[this.name] = this.value || '';
+          }
+      });
+      return o;
+    };
+    
+    $(function() {
+        $('form').submit(function() {
+            console.log(JSON.stringify($('form').serializeObject()));
+            return false;
+        });
+    });
   include assets/datatables

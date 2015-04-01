@@ -4,7 +4,10 @@ var defaults = {
     "STEAM_PASS": null,
     "RECAPTCHA_PUBLIC_KEY": null,
     "RECAPTCHA_SECRET_KEY": null,
-    "SESSION_SECRET": "somesecretvalue",
+    "PAYPAL_ID": null,
+    "PAYPAL_SECRET": null,
+    "RETRIEVER_SECRET": "shared_secret_with_retriever",
+    "SESSION_SECRET": "secret to encrypt cookies with",
     "ROOT_URL": "http://localhost:5000",
     "START_SEQ_NUM": "AUTO",
     "KUE_USER": "user",
@@ -20,14 +23,14 @@ var defaults = {
     "REPLAY_DIR": "./replays/",
     "REGISTRY_HOST": "localhost",
     "RETRIEVER_HOST": "localhost:5100",
+    "PARSER_HOST": "localhost:5200",
+    "UNTRACK_DAYS": 7,
+    "GOAL": 5,
+    //the following are deprecated
     "AWS_S3_BUCKET": false,
     "AWS_ACCESS_KEY_ID": false,
     "AWS_SECRET_ACCESS_KEY": false,
-    "STEAM_GUARD_CODE": false,
-    "UNTRACK_DAYS": 7,
-    "PAYPAL_ID": null,
-    "PAYPAL_SECRET": null,
-    "GOAL": 5
+    "STEAM_GUARD_CODE": false
 };
 /*
 var dotenv = require('dotenv');

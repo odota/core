@@ -1,40 +1,41 @@
 var utility = require('./utility');
-var async = require('async');
 var db = require('./db');
 var logger = utility.logger;
 var fs = require('fs');
-var getData = utility.getData;
 var request = require('request');
-var operations = require('./operations');
-var insertPlayer = operations.insertPlayer;
-var insertMatch = operations.insertMatch;
 var spawn = require('child_process').spawn;
 var domain = require('domain');
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
 var progress = require('request-progress');
-var queueReq = operations.queueReq;
-
-function processParse(job, cb) {
-    var attempts = job.toJSON().attempts.remaining;
-    var noRetry = attempts <= 1;
+var config = require('./config');
+var moment = require('moment');
+var urllib = require('url');
+module.exports = function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
+    var match = job.data.payload;
     console.time("parse " + match_id);
+    if (match.start_time < moment().subtract(7, 'days').format('X') && config.NODE_ENV !== "test") {
+        //expired, even if we have url
+        //parseable if we have a filename
+        //skip this check in test
+        console.log("parse: replay expired");
+        job.data.payload.parse_status = 1;
+        updateDb();
+    }
     runParser(job, function(err, parsed_data) {
+        if (err) {
+            logger.info("match_id %s, error %s", match_id, err);
+            return cb(err);
+        }
         match_id = match_id || parsed_data.match_id;
         job.data.payload.match_id = match_id;
         job.data.payload.parsed_data = parsed_data;
-        if (err && noRetry) {
-            logger.info("match_id %s, error %s, not retrying", match_id, err);
-            job.data.payload.parse_status = 1;
-        }
-        else if (err) {
-            logger.info("match_id %s, error %s, attempts %s", match_id, err, attempts);
-            return cb(err);
-        }
-        else {
-            job.data.payload.parse_status = 2;
-        }
+        job.data.payload.parse_status = 2;
+        updateDb();
+    });
+
+    function updateDb() {
         job.update();
         db.matches.update({
             match_id: match_id
@@ -44,45 +45,73 @@ function processParse(job, cb) {
             console.timeEnd("parse " + match_id);
             return cb(err, job.data.payload);
         });
-    });
-}
+    }
+};
 
 function runParser(job, cb) {
     logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
-    //streams
     var inStream;
     var bz;
-    var parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-        stdio: ['pipe', 'pipe', 'ignore'], //ignore stderr
-        encoding: 'utf8'
-    });
-    var outStream = JSONStream.parse();
+    var parser;
+    var outStream;
     var exited;
     var error = "incomplete";
     var d = domain.create();
     d.on('error', function exit(err) {
         if (!exited) {
             exited = true;
+            //todo graceful shutdown
+            //best is probably to have processparse running via cluster threads
+            //then we can just crash this thread and master can respawn a new worker
+            //we need to use kue's pause to stop processing jobs, then crash the thread, there is an API change in 0.9
+            console.log(err);
+            if (bz) {
+                bz.kill();
+            }
+            if (parser) {
+                parser.kill();
+            }
             cb(err.message || err);
         }
     });
     d.run(function() {
-        if (job.data.payload.fileName) {
-            inStream = fs.createReadStream(job.data.payload.fileName);
+        var url = job.data.payload.url;
+        var fileName = job.data.payload.fileName;
+        var target = job.parser_url + "?url=" + url + "&fileName=" + (fileName ? fileName : "");
+        console.log(target);
+        inStream = request(target);
+        outStream = JSONStream.parse();
+        inStream.pipe(outStream);
+        /*
+        parser = spawn("java", ["-jar",
+        "-Xmx64m",
+        "parser/target/stats-0.1.0.one-jar.jar"
+    ], {
+            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
         }
-        else if (job.data.payload.url) {
+        else if (url) {
             inStream = progress(request.get({
-                url: job.data.payload.url,
+                url: url,
                 encoding: null,
                 timeout: 30000
             })).on('progress', function(state) {
-                job.progress(state.percent, 100);
+                outStream.write(JSON.stringify({
+                    "type": "progress",
+                    "key": state.percent
+                }));
             }).on('response', function(response) {
-                error = (response.statusCode !== 200) ? "download error" : error;
+                if (response.statusCode !== 200) {
+                    outStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": response.statusCode
+                    }));
+                }
             });
             bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
@@ -91,9 +120,22 @@ function runParser(job, cb) {
         else {
             throw new Error("no parse input");
         }
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
+        });
+        parser.on('exit', function(code) {
+            outStream.write(JSON.stringify({
+                "type": "exit",
+                "key": code
+            }));
+        });
         parser.stdout.pipe(outStream);
-        outStream.on('root', preProcess);
-        outStream.on('end', postProcess);
+        */
+        outStream.on('root', handleStream);
+        outStream.on('end', function() {
+            processEventBuffer();
+            //fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+        });
     });
     //parse state
     var entries = [];
@@ -101,13 +143,12 @@ function runParser(job, cb) {
     var hero_to_slot = {};
     var game_zero = 0;
     var parsed_data = utility.getParseSchema();
-    parsed_data.version = constants.parser_version;
-    var preTypes = {
+    var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            //console.log(e);
+            console.log(e);
         },
         "hero_log": function(e) {
             //get hero by id
@@ -121,12 +162,24 @@ function runParser(job, cb) {
         },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
+        },
+        "error": function(e) {
+            error = e.key;
+            console.log(e);
+        },
+        "exit": function(e) {
+            error = e.key;
+            console.log(e);
+        },
+        "progress": function(e) {
+            job.progress(e.key, 100);
+            console.log(e);
         }
     };
 
-    function preProcess(e) {
-        if (preTypes[e.type]) {
-            preTypes[e.type](e);
+    function handleStream(e) {
+        if (streamTypes[e.type]) {
+            streamTypes[e.type](e);
         }
         else {
             entries.push(e);
@@ -167,6 +220,11 @@ function runParser(job, cb) {
         "ability_trigger": getSlot,
         "item_uses": getSlot,
         "ability_uses": getSlot,
+        "clicks": function(e) {
+            //just 0 (other) the key for now since we dont know what the order_types are
+            e.key = 0;
+            getSlot(e);
+        },
         "kills": function(e) {
             getSlot(e);
             var logs = ["npc_dota_hero_", "_tower", "_rax", "_fort", "_roshan"];
@@ -224,41 +282,41 @@ function runParser(job, cb) {
         "runes": populate,
         "runes_bottled": populate,
         "interval": function(e) {
-            if (e.time >= 0){
-            //if on minute, add to lh/gold/xp
-            if (e.time % 60 === 0) {
-                e.interval = true;
-                e.type = "times";
-                e.value = e.time;
-                populate(e);
-                e.type = "gold";
-                e.value = e.gold;
-                populate(e);
-                e.type = "xp";
-                e.value = e.xp;
-                populate(e);
-                e.type = "lh";
-                e.value = e.lh;
-                populate(e);
-            }
-            e.interval = false;
-            //add to positions
-            if (e.x && e.y) {
-                e.type = "pos";
-                e.key = [e.x, e.y];
-                e.posData = true;
-                //populate(e);
-                if (e.time < 600) {
-                    e.type = "lane_pos";
+            if (e.time >= 0) {
+                //if on minute, add to lh/gold/xp
+                if (e.time % 60 === 0) {
+                    e.interval = true;
+                    e.type = "times";
+                    e.value = e.time;
+                    populate(e);
+                    e.type = "gold";
+                    e.value = e.gold;
+                    populate(e);
+                    e.type = "xp";
+                    e.value = e.xp;
+                    populate(e);
+                    e.type = "lh";
+                    e.value = e.lh;
                     populate(e);
                 }
-            }
-            }
-            /*
+                e.interval = false;
+                //add to positions
+                if (e.x && e.y) {
+                    e.type = "pos";
+                    e.key = [e.x, e.y];
+                    e.posData = true;
+                    //populate(e);
+                    if (e.time < 600) {
+                        e.type = "lane_pos";
+                        populate(e);
+                    }
+                    /*
             //log all the positions for animation
             e.type = "pos_log";
             populate(e);
             */
+                }
+            }
         },
         "obs": function(e) {
             e.key = JSON.parse(e.key);
@@ -278,7 +336,7 @@ function runParser(job, cb) {
         }
     };
 
-    function postProcess() {
+    function processEventBuffer() {
         //console.time("postprocess");
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
@@ -293,7 +351,6 @@ function runParser(job, cb) {
             }
         }
         //console.timeEnd("postprocess");
-        //fs.writeFileSync("./output.json", JSON.stringify(parsed_data));
         cb(error, parsed_data);
     }
 
@@ -350,7 +407,7 @@ function runParser(job, cb) {
         }
         var t = parsed_data.players[e.slot][e.type];
         if (typeof t === "undefined") {
-            //parse data player doesn't have a type for this event
+            //parsed_data.players[0] doesn't have a type for this event
             console.log(e);
         }
         else if (e.posData) {
@@ -390,108 +447,3 @@ function runParser(job, cb) {
         }
     }
 }
-
-function processApi(job, cb) {
-    var payload = job.data.payload;
-    job.log("api: starting");
-    getData(job.data.url, function(err, data) {
-        if (err) {
-            //couldn't get data from api, non-retryable
-            job.log(JSON.stringify(err));
-            return cb(null, {
-                error: err
-            });
-        }
-        else if (data.response) {
-            logger.info("summaries response");
-            async.mapSeries(data.response.players, insertPlayer, function(err) {
-                cb(err, data.response.players);
-            });
-        }
-        else if (payload.match_id) {
-            logger.info("details response");
-            var match = data.result;
-            //join payload with match
-            for (var prop in payload) {
-                match[prop] = (prop in match) ? match[prop] : payload[prop];
-            }
-            insertMatch(match, function(err) {
-                if (err) {
-                    //error occured
-                    return cb(err, {
-                        error: err
-                    });
-                }
-                else if (match.expired) {
-                    job.log("api: match expired");
-                    job.progress(100, 100);
-                    return cb();
-                }
-                else if (match.request) {
-                    queueReq("request_parse", match, function(err, job2) {
-                        if (err) {
-                            return cb(err, {
-                                error: err
-                            });
-                        }
-                        //wait for parse to finish
-                        job.log("parse: starting");
-                        job.progress(0, 100);
-                        //request, parse and log the progress
-                        job2.on('progress', function(prog) {
-                            job.log(prog + "%");
-                            job.progress(prog, 100);
-                        });
-                        job2.on('failed', function() {
-                            cb("parse failed");
-                        });
-                        job2.on('complete', function() {
-                            job.log("parse: complete");
-                            job.progress(100, 100);
-                            cb();
-                        });
-                    });
-                }
-                else {
-                    //queue it and finish
-                    return queueReq("parse", match, function(err, job2) {
-                        cb(err, job2);
-                    });
-                }
-            });
-        }
-        else {
-            return cb("unknown response");
-        }
-    });
-}
-
-function processMmr(job, cb) {
-    var payload = job.data.payload;
-    getData(job.data.url, function(err, data) {
-        if (err) {
-            logger.info(err);
-            return cb(null, {error:JSON.stringify(err)});
-        }
-        logger.info("mmr response");
-        if (data.soloCompetitiveRank || data.competitiveRank) {
-            db.ratings.insert({
-                match_id: payload.match_id,
-                account_id: payload.account_id,
-                soloCompetitiveRank: data.soloCompetitiveRank,
-                competitiveRank: data.competitiveRank,
-                time: new Date()
-            }, function(err) {
-                cb(err);
-            });
-        }
-        else {
-            cb(null);
-        }
-    });
-}
-module.exports = {
-    processParse: processParse,
-    processApi: processApi,
-    processMmr: processMmr
-};

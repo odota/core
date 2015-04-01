@@ -18,6 +18,7 @@ import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
@@ -57,6 +58,18 @@ public class Main {
 		}
 		System.err.println(message.getClass().getName());
 		System.out.println(message.toString());
+	}
+	
+	//@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
+	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
+		Entry entry = new Entry(time);
+		entry.type = "clicks";
+		//todo need to get the entity by index, and figure out the owner entity, then figure out the player controlling
+		//assumes all clicks are made by the controlling player
+		entry.slot = (Integer)message.getEntindex()-2;
+		entry.key = String.valueOf(message.getOrderType());
+		//theres also target_index
+		es.output(entry);
 	}
 
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
@@ -130,19 +143,21 @@ public class Main {
 	@OnMessage(CDemoFileInfo.class)
 	public void onFileInfo(Context ctx, CDemoFileInfo message){
 		Entity ps = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
-		Integer stunIdx = ps.getDtClass().getPropertyIndex("m_fStuns.0000");
-		Integer steamIdx = ps.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+		//System.err.println(ps);
 		//load endgame stats
 		for (int i = 0; i < numPlayers; i++) {
-			String stuns = String.valueOf(ps.getState()[stunIdx+i]);
 			Long steamid = (Long)ps.getState()[steamIdx+i];
 			steamid_to_slot.put(steamid, i);
+			if (stunIdx!=null){
+			String stuns = String.valueOf(ps.getState()[stunIdx+i]);
 			Entry entry = new Entry();
 			entry.slot=i;
 			entry.type="stuns";
 			entry.key=stuns;
 			es.output(entry);
+			}
 		}
+
 		//load epilogue
 		CDemoFileInfo info = message;
 		List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
@@ -200,7 +215,7 @@ public class Main {
 			entry.key = cle.getInflictorName(); //the buff
 			//todo do something with buff target
 			//String unit2 = cle.getTargetNameCompiled(); //target of buff
-			//log.output(entry);
+			es.output(entry);
 			break;
 		case 3:
 			//lose buff/debuff
@@ -288,50 +303,79 @@ public class Main {
 	@OnTickStart
 	public void onTick(Context ctx){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
-        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : 0; 
-		if (time > nextInterval){
-		Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
-		if (pr!=null){
-			if (!initialized) {
-				lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
-				xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
-				goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
-				heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
-				stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
-				handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
-				nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
-				steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-				initialized = true;
-			}
-
-				for (int i = 0; i < numPlayers; i++) {
-					Integer hero = (Integer)pr.getState()[heroIdx+i];
-					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
-						//hero_to_slot.put(hero, i);
-						slot_to_hero.put(i, hero);
+        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : -1; 
+		if (time >= nextInterval){
+			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
+			if (pr!=null){
+				if (!initialized) {
+					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
+					xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
+					goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
+					heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
+					stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
+					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
+					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
+					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+		Integer stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
+		Integer steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+		//slow data can be output to console, but not in replay?
+		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
+		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
+		
+		//can do all these stats over time?
+		//m_iKills.0000
+		//m_iAssists.0000
+		//m_iDeaths.0000
+		//m_iTowerKills.0000
+		//m_iRoshanKills.0000
+		//m_iNearbyCreepDeathCount.0000
+		//m_iMetaLevel.0000
+		//m_iMetaExperience.0000
+		//m_iMetaExperienceAwarded.0000
+		
+		//more endgame
+		//m_bVoiceChatBanned.0000
+		//m_bHasRandomed.0000
+		//m_bHasRepicked.0000
+		
+		//might want the max only
+		//m_iStreak.0000
+		//m_iLastHitStreak.0000
+		//m_iLastHitMultikill.0000
+		
+		//gem, rapier time?
+		//time dead
+		//or check entity health value
+		//m_iRespawnSeconds.0000
+					initialized = true;
+				}
+					for (int i = 0; i < numPlayers; i++) {
+						Integer hero = (Integer)pr.getState()[heroIdx+i];
+						if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
+							//hero_to_slot.put(hero, i);
+							slot_to_hero.put(i, hero);
+							Entry entry = new Entry(time);
+							entry.type="hero_log";
+							entry.slot=i;
+							entry.key=String.valueOf(hero);
+							es.output(entry);
+						}
+					
 						Entry entry = new Entry(time);
-						entry.type="hero_log";
-						entry.slot=i;
-						entry.key=String.valueOf(hero);
+						entry.type = "interval";
+						entry.slot = i;
+						entry.gold=(Integer)pr.getState()[goldIdx+i];
+						entry.lh=(Integer)pr.getState()[lhIdx+i];
+						entry.xp=(Integer)pr.getState()[xpIdx+i];
+						int handle = (Integer)pr.getState()[handleIdx+i];
+						Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
+						if (e!=null){
+							entry.x=(Integer)e.getProperty("m_cellX");
+							entry.y=(Integer)e.getProperty("m_cellY");
+						}
 						es.output(entry);
 					}
-				
-					Entry entry = new Entry(time);
-					entry.type = "interval";
-					entry.slot = i;
-					entry.gold=(Integer)pr.getState()[goldIdx+i];
-					entry.lh=(Integer)pr.getState()[lhIdx+i];
-					entry.xp=(Integer)pr.getState()[xpIdx+i];
-					int handle = (Integer)pr.getState()[handleIdx+i];
-					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
-					if (e!=null){
-						entry.x=(Integer)e.getProperty("m_cellX");
-						entry.y=(Integer)e.getProperty("m_cellY");
-					}
-					es.output(entry);
 				}
-				nextInterval += INTERVAL;
-			}
 
 			//log any new wards placed
 			//todo deduplicate code
@@ -369,6 +413,7 @@ public class Main {
 					seenEntities.add(handle);
 				}
 			}
+			nextInterval += INTERVAL;
 		}
 	}
 

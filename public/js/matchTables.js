@@ -7,31 +7,23 @@ var $ = jQuery = require('jquery');
 module.exports = function matchTable() {
     $(document).on('ready', function() {
         $('#table').dataTable({
-            /*
             "order": [
                 [0, "desc"]
             ],
-            */
             ajax: {
                 'url': '/api/matches',
                 'data': {
-                    "project": {
-                        start_time: 1,
-                        match_id: 1,
-                        cluster: 1,
-                        game_mode: 1,
-                        duration: 1,
-                        radiant_win: 1,
-                        parse_status: 1
-                    }
+                    "select": {},
+                    "project": {}
                 }
             },
-            ordering: false,
+            //ordering: false,
             serverSide: true,
             processing: true,
             searching: false,
-            info: false,
+            //info: false,
             stateSave: true,
+            //pagingType: "simple",
             columns: [{
                 data: 'match_id',
                 title: 'Match ID',
