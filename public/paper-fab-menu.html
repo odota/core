@@ -12,7 +12,7 @@
 <link rel="import" href="/bower_components/core-overlay/core-overlay.html">
 <link rel="import" href="/bower_components/paper-fab/paper-fab.html">
 
-<link rel="import" href="paper-fab-menu-item.html">
+<link rel="import" href="/bower_components/paper-fab-menu/paper-fab-menu-item.html">
 
 <!--
 `paper-fab-menu` creates a floating action button menu with paper elements. By default, the menu will be hide. Use `opened` or `toggle()` to show/hide the menu.
@@ -59,7 +59,7 @@
     <core-overlay id="overlay" layered backdrop transition="core-transition-fade" on-core-overlay-open="{{overlayOpenedChanged}}"></core-overlay>
     <div layout vertical center class="container" id="fam">
       <content id="content" select="paper-fab-menu-item"></content>
-      <paper-fab icon="menu" id="trigger" on-click="{{toggle}}", style="background-color:#BBF0FD;"></paper-fab>
+      <paper-fab icon="dashboard" id="trigger" on-click="{{toggle}}", style="background-color:#BBF0FD;"></paper-fab>
     </div>
 
   </template>
@@ -91,7 +91,7 @@
       * @type String
       * @default 'menu'
       */
-      icon: 'menu',
+      icon: 'dashboard',
 
       /**
       * Set the icon of main button to close floating menu
