@@ -7,6 +7,7 @@ var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
 
 function aggregator(matches, fields) {
+    var aggData = {};
     var types = {
         "matchups": function(key, m, p) {
             var matchups = aggData.matchups;
@@ -203,10 +204,9 @@ function aggregator(matches, fields) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
         }
     };
-    var aggData = {};
     fields = fields || types;
+    //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
-        //ensure aggData isn't null for each requested aggregation field
         aggData[key] = {
             sum: 0,
             min: Number.MAX_VALUE,
@@ -217,6 +217,7 @@ function aggregator(matches, fields) {
         };
     }
     //"special fields", win, lose, games, teammates, matchups
+    //overwrite standard agg object
     //count win/lose/games
     aggData.win = 0;
     aggData.lose = 0;
@@ -239,10 +240,10 @@ function aggregator(matches, fields) {
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         var p = m.players[0];
-        for (var type in fields) {
-            if (types[type]) {
+        for (var agg in fields) {
+            if (types[agg]) {
                 //execute the aggregation function on this match for each passed aggregation field
-                types[type](type, m, p);
+                types[agg](agg, m, p);
             }
         }
     }
@@ -285,7 +286,7 @@ function filter(matches, filters) {
     //filter max gold/xp advantage
     //more filters from parse data
     var conditions = {
-        //filter: significant game modes only (balanced filter)
+        //filter: balanced game modes only
         balanced: function(m, key) {
             return Number(constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced) === key;
         },
@@ -303,28 +304,39 @@ function filter(matches, filters) {
             return m.players[0].hero_id === key;
         },
         //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
+        //todo for these filters, if not an array, create array of one element
+        //ensure all array elements fit the condition
         //with_account_id: player id was also in the game
         with_account_id: function(m, key) {
-            return m.all_players.some(function(p) {
-                return p.account_id === key;
+            if (key.constructor !== Array) {
+                key = [key];
+            }
+            return key.every(function(k) {
+                return m.all_players.some(function(p) {
+                    return p.account_id === k;
+                });
             });
         },
         //teammate_hero_id
         teammate_hero_id: function(m, key) {
-            return m.all_players.some(function(p) {
-                return (p.hero_id === key && isRadiant(p) === m.player_radiant);
+            if (key.constructor !== Array) {
+                key = [key];
+            }
+            return key.every(function(k) {
+                return m.all_players.some(function(p) {
+                    return (p.hero_id === k && isRadiant(p) === m.player_radiant);
+                });
             });
         },
         //against_hero_id
         against_hero_id: function(m, key) {
-            return m.all_players.some(function(p) {
-                return (p.hero_id === key && isRadiant(p) !== m.player_radiant);
-            });
-        },
-        //with_hero_id
-        with_hero_id: function(m, key) {
-            return m.all_players.some(function(p) {
-                return p.hero_id === key;
+            if (key.constructor !== Array) {
+                key = [key];
+            }
+            return key.every(function(k) {
+                return m.all_players.some(function(p) {
+                    return (p.hero_id === k && isRadiant(p) !== m.player_radiant);
+                });
             });
         }
     };
@@ -333,8 +345,7 @@ function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            //don't run the test if the value is NaN
-            if (!isNaN(filters[key]) && !conditions[key](matches[i], filters[key])) {
+            if (!conditions[key](matches[i], filters[key])) {
                 //failed a test
                 include = false;
             }
@@ -367,10 +378,6 @@ function sort(matches, sorts) {
 }
 
 function advQuery(options, cb) {
-    //usage
-    //matches page, want matches fitting query (serverside datatables)
-    //player matches page, want winrate, matches fitting query, also need to display player[0] information (can render in jade, but this is slow!)
-    //player trends page, want aggregation on matches fitting criteria (render in jade)
     var default_project = {
         //todo only request parsed data if necessary (trends)
         parsed_data: 1,
@@ -389,20 +396,37 @@ function advQuery(options, cb) {
         options.project[key] = default_project[key];
     }
     //select,the query received, build the mongo query and the filter based on this
-    var mongo_select = {};
-    var js_select = {};
+    options.mongo_select = {};
+    options.js_select = {};
     var mongoAble = {
         "players.account_id": 1,
         "players.hero_id": 1
     };
     for (var key in options.select) {
-        if (mongoAble[key]) {
-            //only project the matching player
-            options.project["players.$"] = 1;
-            mongo_select[key] = Number(options.select[key]);
+        //select key could come in as array, number, or string
+        //if array, number each element and pass it on
+        //if Number, number it and pass it on
+        if (options.select[key] === "" || !Number(options.select[key])) {
+            //if NaN or empty string, ignore it
+            continue;
         }
         else {
-            js_select[key] = Number(options.select[key]);
+            if (options.select[key].constructor === Array) {
+                options.select[key] = options.select[key].map(function(e) {
+                    return Number(e);
+                });
+            }
+            else {
+                options.select[key] = Number(options.select[key]);
+            }
+            if (mongoAble[key]) {
+                //only project the matching player
+                options.project["players.$"] = 1;
+                options.mongo_select[key] = options.select[key];
+            }
+            else {
+                options.js_select[key] = options.select[key];
+            }
         }
     }
     if (!options.project["players.$"]) {
@@ -426,11 +450,10 @@ function advQuery(options, cb) {
     //if js_agg is null, we need the full data since we're aggregating everything
     var bGetFullPlayerData = Boolean(!options.js_agg);
     for (var key in options.js_agg) {
-        //disregard if the key is NaN
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData && !isNaN(options.js_agg[key]));
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
     }
     for (var key in options.js_select) {
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData && !isNaN(options.js_select[key]));
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
     }
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
@@ -453,7 +476,7 @@ function advQuery(options, cb) {
     //stream the query results, exclude extra data from the matches array we build
     var matches = [];
     console.time('db');
-    db.matches.find(mongo_select, monk_options).each(function(m) {
+    db.matches.find(options.mongo_select, monk_options).each(function(m) {
         computeMatchData(m);
         //reduce memory use by removing parsed_data and players.ability_upgrades
         delete m.parsed_data;
@@ -482,7 +505,7 @@ function advQuery(options, cb) {
             var unfiltered_count = matches.length;
             //make array of unfiltered "recent matches" for display
             var display_matches = matches.slice(0, 15);
-            var filtered = filter(matches, js_select);
+            var filtered = filter(matches, options.js_select);
             var aggData = aggregator(filtered, options.js_agg);
             var result = {
                 aggData: aggData,

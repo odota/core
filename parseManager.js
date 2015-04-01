@@ -29,27 +29,22 @@ function start() {
             });
         }, function(err) {
             /*
-        redis.get("retrievers", function(err, result) {
-            if (err || !result) {
-                console.log("no retrievers in redis!");
-                return start();
-            }
-            var parsers = JSON.parse(result);
+            redis.get("retrievers", function(err, result) {
+                if (err || !result) {
+                    console.log("no retrievers in redis!");
+                    return start();
+                }
+
+                var parsers = JSON.parse(result);
             */
             if (err) {
                 return start();
             }
-            //handle requests using first parse worker
-            jobs.process('request_parse', function(job, cb) {
-                job.parser_url = parsers[0];
-                processParse(job, cb);
-            });
             var urls = {};
             //length of this array is capacity
             var capacity = parsers.length;
             // Fork workers.
             for (var i = 0; i < capacity; i++) {
-                //give each worker its own parser_host
                 cluster.fork({
                     PARSER_URL: parsers[i]
                 });
@@ -81,9 +76,32 @@ function start() {
             url: process.env.PARSER_URL
         });
         //insert into job the parser this worker should use
+        jobs.process('request_parse', function(job, cb) {
+            getParser(job, function() {
+                processParse(job, cb);
+            });
+        });
         jobs.process('parse', function(job, cb) {
-            job.parser_url = process.env.PARSER_URL;
-            processParse(job, cb);
+            getParser(job, function() {
+                processParse(job, cb);
+            });
         });
     }
 }
+
+function getParser(job, cb) {
+        job.parser_url = process.env.PARSER_URL;
+    }
+    /*
+    function getParser(job, cb) {
+        redis.get("retrievers", function(err, result) {
+            if (err || !result) {
+                console.log("no retrievers in redis!");
+                return getParser(job, cb);
+            }
+            var parsers = JSON.parse(result);
+            job.parser_url = parsers[Math.floor(Math.random() * parsers.length)];
+            cb(err);
+        });
+    }
+    */

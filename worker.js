@@ -116,7 +116,6 @@ function buildSets(cb) {
                     cb(err, t);
                 });
             },
-            /*
             "parsers": function(cb) {
                 var parsers = [];
                 var ps = config.PARSER_HOST.split(",").map(function(p) {
@@ -137,7 +136,6 @@ function buildSets(cb) {
                     cb(err, parsers);
                 });
             },
-            */
             "retrievers": function(cb) {
                 var r = {};
                 var b = [];

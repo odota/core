@@ -12,6 +12,7 @@ global.c3 = require('c3');
 global.h337 = require('heatmap.js');
 global.$ = require('jquery');
 global.moment = require('moment');
+global.$.select2 = require('select2');
 document.addEventListener('DOMContentLoaded', function() {
     global.tooltips();
     global.formatHtml();

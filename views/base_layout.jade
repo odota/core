@@ -29,6 +29,14 @@ html
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')
     link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
     link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
+    //link(rel="stylesheet", href="//cdn.rawgit.com/t0m/select2-bootstrap-css/bootstrap3/select2-bootstrap.css")
+    style
+      include ../public/css/flaticon.css
     block stylesheets
       style
         include ../public/css/yasp.css
@@ -40,14 +48,6 @@ html
     block unsticky_content
     block sticky_content
     block footer_assets
-      //- Stylesheets
-      link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-      link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-
-      style
-        include ../public/css/flaticon.css
-
       script(src="/public/js/bundle.js")
       script(src="/public/js/ga.js")
       script(src="/bower_components/bootstrap/js/transition.js")

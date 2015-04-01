@@ -133,6 +133,7 @@ function getReplayUrl(match, cb) {
                     return cb(err);
                 }
                 result = JSON.parse(result);
+                //make array of retriever urls and use a random one on each retry
                 var urls = result.map(function(r) {
                     return r + "&match_id=" + match.match_id;
                 });
