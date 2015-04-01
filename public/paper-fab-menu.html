@@ -1,0 +1,187 @@
+<!--
+    @license
+    Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/core-icons/core-icons.html">
+<link rel="import" href="/bower_components/core-overlay/core-overlay.html">
+<link rel="import" href="/bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="paper-fab-menu-item.html">
+
+<!--
+`paper-fab-menu` creates a floating action button menu with paper elements. By default, the menu will be hide. Use `opened` or `toggle()` to show/hide the menu.
+
+  <paper-fab-menu icon="menu" closeIcon="close" duration="0.3">
+    <paper-fab-menu-item icon="info-outline" color="blue;" tooltip="Information"></paper-fab-menu-item>
+    <paper-fab-menu-item icon="alarm" color="purple;" tooltip="Alarm"></paper-fab-menu-item>
+    <paper-fab-menu-item icon="star-outline" color="green;" tooltip="Favorites"></paper-fab-menu-item>
+    <paper-fab-menu-item icon="list" color="orange;" tooltip="List"></paper-fab-menu-item>
+  </paper-fab-menu>
+
+@element paper-fab-menu
+@blurb `paper-fab-menu` creates a floating action button menu with paper elements.
+@status alpha
+@homepage http://cwdoh.github.io/paper-fab-menu
+-->
+
+<polymer-element name="paper-fab-menu" attributes="icon closeIcon duration">
+  <template>
+    <link rel="stylesheet" href="/bower_components/paper-fab-menu/paper-fab-menu.css">
+    <style>
+      paper-fab-menu #fam paper-fab-menu-item,
+      #fam content[select="paper-fab-menu-item"]::content * {
+        will-change: opacity, transform;
+        transition: opacity {{duration}}s, transform {{duration}}s, -moz-transform {{duration}}s, -webkit-transform {{duration}}s;
+        transition-delay: {{delay}}s;
+      }
+    </style>
+
+    <template repeat="{{items}}">
+      <style>
+        /* delay effect */
+        paper-fab-menu #fam paper-fab-menu-item:nth-child({{index}}),
+        #fam content[select="paper-fab-menu-item"]::content *:nth-child({{index}}) {
+          transition-delay: {{delay.default}}s;
+        }
+        paper-fab-menu #fam.show paper-fab-menu-item:nth-child({{index}}),
+        #fam.show content[select="paper-fab-menu-item"]::content *:nth-child({{index}}) {
+          transition-delay: {{delay.show}}s;
+        }
+      </style>
+    </template>
+
+    <core-overlay id="overlay" layered backdrop transition="core-transition-fade" on-core-overlay-open="{{overlayOpenedChanged}}"></core-overlay>
+    <div layout vertical center class="container" id="fam">
+      <content id="content" select="paper-fab-menu-item"></content>
+      <paper-fab icon="menu" id="trigger" on-click="{{toggle}}", style="background-color:#BBF0FD;"></paper-fab>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      /**
+      * Set opened to true to show the floating menu and to false to hide it.
+      *
+      * @attribute opened
+      * @type boolean
+      * @default false
+      */
+      opened: false,
+
+      /**
+      * Automactically set delay to each item. This will be deprecated at later version.
+      *
+      * @attribute items
+      * @type Array
+      * @default []
+      */
+      items: [],
+
+      /**
+      * Set the default icon of main button to show floating menu
+      *
+      * @attribute icon
+      * @type String
+      * @default 'menu'
+      */
+      icon: 'menu',
+
+      /**
+      * Set the icon of main button to close floating menu
+      *
+      * @attribute closeIcon
+      * @type String
+      * @default 'close'
+      */
+      closeIcon: 'close',
+
+      /**
+      * Set duration of total animation to show/hide menu. This will be seed value to determine delay and duration of each menu item.
+      *
+      * @attribute duration
+      * @type Float
+      * @default 0.3
+      */
+      duration: 0.3,
+
+      ready: function() {
+        var length = this.$.content.getDistributedNodes().length;
+        var duration = parseFloat(this.duration);
+        var delta = this.duration / length;
+        for (var index = 1 ; index <= length ; index ++) {
+          var factor = delta * index;
+          this.items.push({
+            index: index,
+            delay: {
+              default: factor,
+              show: duration - factor
+            }
+          });
+        }
+
+      },
+      overlayOpenedChanged: function() {
+        this.opened = this.$.overlay.opened;
+      },
+
+      /**
+       * The `paper-fab-menu-open` event is fired whenever menu
+       * is opened or closed.
+       *
+       * @event paper-fab-menu-open
+       * @param {Object} detail
+       */
+
+      openedChanged: function() {
+        this.update();
+        this.fire('paper-fab-menu-open', this.opened);
+      },
+
+      /**
+       * The `toggle` method will toggle the state of menu.
+       *
+       * @method toggle
+       */
+      toggle: function() {
+        this.opened = !this.opened;
+      },
+
+      /**
+       * The `open` method will show the menu.
+       *
+       * @method open
+       */
+      open: function() {
+        this.opened = true;
+        this.$.trigger.icon = this.closeIcon;
+        this.$.trigger.setAttribute("activate", "");
+
+        this.$.overlay.open();
+      },
+
+      /**
+       * The `close` method will hide the menu.
+       *
+       * @method close
+       */
+      close: function() {
+        this.opened = false;
+        this.$.trigger.icon = this.icon;
+        this.$.trigger.removeAttribute("activate");
+
+        this.$.overlay.close();
+      },
+      update: function() {
+        this.$.fam.classList.toggle('show', this.opened);
+        this[this.opened? 'open':'close']();
+      }
+    });
+  </script>
+</polymer-element>
