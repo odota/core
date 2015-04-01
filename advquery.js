@@ -304,7 +304,6 @@ function filter(matches, filters) {
             return m.players[0].hero_id === key;
         },
         //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
-        //todo for these filters, if not an array, create array of one element
         //ensure all array elements fit the condition
         //with_account_id: player id was also in the game
         with_account_id: function(m, key) {
@@ -345,10 +344,8 @@ function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            if (!conditions[key](matches[i], filters[key])) {
-                //failed a test
-                include = false;
-            }
+            //failed a test
+            include = include && conditions[key](matches[i], filters[key]);
         }
         //if we passed, push it
         if (include) {
@@ -401,27 +398,33 @@ function advQuery(options, cb) {
         "players.hero_id": 1
     };
     for (var key in options.select) {
-        //select key could come in as array, number, or string
-        //if array, number each element and pass it on
-        if (options.select[key].constructor === Array) {
-            options.select[key] = options.select[key].map(function(e) {
-                return Number(e);
-            });
-        }
-        else if (options.select[key] === "" || !Number(options.select[key])) {
-            //invalid number string, continue
+        if (options.select[key] === "" || options.select[key] === "all") {
+            options.select[key] = NaN;
             continue;
         }
         else {
-            options.select[key] = Number(options.select[key]);
-        }
-        if (mongoAble[key]) {
-            //only project the matching player
-            options.project["players.$"] = 1;
-            options.mongo_select[key] = options.select[key];
-        }
-        else {
-            options.js_select[key] = options.select[key];
+            //split each by comma
+            if (options.select[key].indexOf(",") !== -1) {
+                options.select[key] = options.select[key].split(",");
+            }
+            if (options.select[key].constructor === Array) {
+                //attempt to numberize each element
+                options.select[key] = options.select[key].map(function(e) {
+                    return Number(e);
+                });
+            }
+            else {
+                //number just this element
+                options.select[key] = Number(options.select[key]);
+            }
+            if (mongoAble[key]) {
+                //only project the matching player
+                options.project["players.$"] = 1;
+                options.mongo_select[key] = options.select[key];
+            }
+            else {
+                options.js_select[key] = options.select[key];
+            }
         }
     }
     if (!options.project["players.$"]) {
@@ -466,7 +469,7 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    //console.log(options);
+    console.log(options);
     //20000 matches@100kb each is 2gb, js will have trouble handling large numbers of matches with parsed data in memory
     //stream the query results, exclude extra data from the matches array we build
     var matches = [];

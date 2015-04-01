@@ -142,8 +142,8 @@ function fillPlayerData(player, options, cb) {
     //options.query, the querystring from the user, apply these options to select
     //defaults: this player, balanced modes only
     var select = {
-        "players.account_id": player.account_id,
-        "balanced": 1
+        "players.account_id": player.account_id.toString(),
+        "balanced": "1"
     };
     for (var key in options.query) {
         select[key] = options.query[key];
