@@ -9,6 +9,7 @@ YASP is jumping a version number to v2.0.0!
 * Manual name update. Relogging now updates your name from the Steam API.
 * Advanced Querying. More powerful options for aggregating and filtering matches.
   * This feature has long been requested. We hope you like it!
+* 322 Level. More info <a href="/post/throws" target="_blank">here</a>!
 
 ### UI
 * Defaulted dark theme
