@@ -469,7 +469,6 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    console.log(options);
     //20000 matches@100kb each is 2gb, js will have trouble handling large numbers of matches with parsed data in memory
     //stream the query results, exclude extra data from the matches array we build
     var matches = [];
