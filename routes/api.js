@@ -11,6 +11,7 @@ api.get('/abilities', function(req, res) {
 api.get('/matches', function(req, res, next) {
     var draw = Number(req.query.draw);
     var select = req.query.select || {};
+    var limit = Number(req.query.limit);
     var js_agg = req.query.agg || {};
     //support sort hash, or order+columns
     var js_sort = req.query.js_sort || makeSort(req.query.order, req.query.columns) || {};
@@ -20,9 +21,11 @@ api.get('/matches', function(req, res, next) {
         select: select,
         project: {},
         //api only works on the latest n matches by match id
+        //trying to sort after a players.account_id select is very slow
         sort: {
             "match_id": -1
         },
+        limit: limit,
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,

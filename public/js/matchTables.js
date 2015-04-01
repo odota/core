@@ -14,7 +14,8 @@ module.exports = function matchTable() {
                 'url': '/api/matches',
                 'data': {
                     "select": {},
-                    "project": {}
+                    "project": {},
+                    limit: 1000
                 }
             },
             //ordering: false,

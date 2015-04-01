@@ -15,7 +15,7 @@ About
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
 * YASP is constructed in a modular manner, and you may find certain parts of it to be useful for your own needs.
 
-Quickstart
+Quickstart (development mode, runs yasp-core, parser, retriever on one machine)
 ====
 * Install dependencies: `sudo bash init.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`

@@ -3,43 +3,17 @@ var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 var cluster = require('cluster');
-var config = require('./config');
-var async = require('async');
-var utility = require('./utility');
-var getData = utility.getData;
 start();
 
 function start() {
     if (cluster.isMaster) {
         console.log("[PARSEMANAGER] starting master");
-        var parsers = [];
-        var ps = config.PARSER_HOST.split(",").map(function(p) {
-            return "http://" + p + "?key=" + config.RETRIEVER_SECRET;
-        });
-        //build array from PARSER_HOST based on each worker's core count
-        async.each(ps, function(url, cb) {
-            getData(url, function(err, body) {
-                if (err) {
-                    return cb(err);
-                }
-                for (var i = 0; i < body.capacity; i++) {
-                    parsers.push(url);
-                }
-                cb(err);
-            });
-        }, function(err) {
-            /*
-            redis.get("retrievers", function(err, result) {
-                if (err || !result) {
-                    console.log("no retrievers in redis!");
-                    return start();
-                }
-
-                var parsers = JSON.parse(result);
-            */
-            if (err) {
+        redis.get("retrievers", function(err, result) {
+            if (err || !result) {
+                console.log("no retrievers in redis!");
                 return start();
             }
+            var parsers = JSON.parse(result);
             var urls = {};
             //length of this array is capacity
             var capacity = parsers.length;

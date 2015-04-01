@@ -27,7 +27,7 @@ var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
-var updatenames = require('../tasks/updatenames');
+var updateNames = require('../tasks/updateNames');
 var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
@@ -43,6 +43,8 @@ var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
 }
+//launch the parse worker
+require('../parser');
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -279,8 +281,8 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('updatenames', function(done) {
-        updatenames(function(err, num) {
+    it('updateNames', function(done) {
+        updateNames(function(err, num) {
             done(err);
         });
     });
@@ -292,8 +294,6 @@ describe("tasks", function() {
         });
     });
 });
-//launch the parse worker
-require('../parser');
 describe("parser", function() {
     this.timeout(wait);
     it('parse replay (download)', function(done) {
