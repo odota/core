@@ -15,10 +15,17 @@
 section.main
   a.arrow-wrap(href='#philosophy')
     span.arrow
-.fab
-  .fab-buttons
-    core-tooltip(noarrow='', position='left')
-      paper-fab.fab-button(icon='dashboard', touch-action='none')
+
+paper-fab-menu(icon='menu', closeicon='close', duration='0.3')
+    paper-fab-menu-item(icon='info-outline', color='blue;', tooltip='Information', link="#match_statistics")#test
+    paper-fab-menu-item(icon='alarm', color='purple;', tooltip='Alarm')
+    paper-fab-menu-item(icon='star-outline', color='green;', tooltip='Favorites')
+    paper-fab-menu-item(icon='list', color='orange;', tooltip='List')
+script.
+  document.querySelector("#test").addEventListener('click', function(e) {
+     window.location.href = e.target.getAttribute('link');
+  })
+  
 #philosophy
   .right-img
       .container
