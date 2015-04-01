@@ -468,7 +468,7 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    console.log(options);
+    //console.log(options);
     //20000 matches@100kb each is 2gb, js will have trouble handling large numbers of matches with parsed data in memory
     //stream the query results, exclude extra data from the matches array we build
     var matches = [];
@@ -491,10 +491,12 @@ function advQuery(options, cb) {
             var p = m.players[0];
             m.player_radiant = isRadiant(p);
         }
+        console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {
             if (err) {
                 return cb(err);
             }
+            console.timeEnd("fullplayerdata");
             console.time('compute');
             //sort first so the display matches are in the right order
             matches = sort(matches, options.js_sort);
@@ -525,7 +527,6 @@ function getFullPlayerData(matches, doAction, cb) {
     var match_ids = matches.map(function(m) {
         return m.match_id;
     });
-    console.time("fullplayerdata");
     db.matches.find({
         match_id: {
             $in: match_ids
@@ -541,7 +542,6 @@ function getFullPlayerData(matches, doAction, cb) {
         if (err) {
             return cb(err);
         }
-        console.timeEnd("fullplayerdata");
         //build hash of match_id to full player data
         var hash = {};
         for (var i = 0; i < docs.length; i++) {
