@@ -22,9 +22,6 @@ db.matches.index({
 db.matches.index({
     'start_time': -1
 });
-db.matches.index({
-    'parse_status': 1
-});
 db.players.index('account_id', {
     unique: true
 });
