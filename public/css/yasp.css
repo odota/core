@@ -220,8 +220,13 @@ td>img.user {
     border-color: #000;
 }
 
-.blog-panel h1, .blog-panel h2 {
+.blog-panel h1, .blog-panel h2, .blog-panel h3 {
     color: black;
+}
+
+.blog-panel .panel-body a {
+    color: black;
+    text-decoration: underline;
 }
 
 option {
