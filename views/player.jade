@@ -20,7 +20,7 @@ block content
             th Last Visit
         tbody
           tr
-            td #{player.aggData.win}-#{player.aggData.lose} <br> (#{(player.aggData.win/player.aggData.games*100).toFixed(2) || 0.00}%)
+            td #{player.aggData.win}-#{player.aggData.lose} <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
             td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
             td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
             td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
