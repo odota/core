@@ -380,7 +380,7 @@ function sort(matches, sorts) {
 function advQuery(options, cb) {
     var default_project = {
         //todo only request parsed data if necessary (trends)
-        parsed_data: 1,
+        //parsed_data: 1,
         start_time: 1,
         match_id: 1,
         cluster: 1,
@@ -454,7 +454,7 @@ function advQuery(options, cb) {
     }
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
-    var max = 15000;
+    var max = 10000;
     options.limit = (!options.limit || options.limit > max) ? max : options.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
