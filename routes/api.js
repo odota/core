@@ -19,6 +19,10 @@ api.get('/matches', function(req, res, next) {
     advQuery({
         select: select,
         project: {},
+        //api only works on the latest n matches by match id
+        sort: {
+            "match_id": -1
+        },
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,

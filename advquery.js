@@ -463,10 +463,7 @@ function advQuery(options, cb) {
     var monk_options = {
         limit: options.limit,
         skip: options.skip,
-        //only query on the latest matches by match id
-        sort: options.sort || {
-            "match_id": -1
-        },
+        sort: options.sort,
         fields: options.project
     };
     //console.log(options);
