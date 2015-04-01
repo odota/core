@@ -223,3 +223,11 @@ td>img.user {
 .blog-panel h1, .blog-panel h2 {
     color: black;
 }
+
+option {
+    color: black;
+}
+
+.select2-search-choice *, .select2-drop * {
+    color: black;
+}

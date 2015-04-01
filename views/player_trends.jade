@@ -8,6 +8,7 @@ block playercontent
   .row
     .col-md-12
       include query
+  hr
   .row
     .col-md-12
       h3
@@ -54,7 +55,7 @@ block playercontent
                   td.format-seconds(data-format-seconds=val.max)
                 else if key in display
                   td= key === "kda" ? KDA : key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-                  td=(val.sum/val.n).toFixed(2)
+                  td= val.n === 0 ? 0 : (val.sum/val.n).toFixed(2)
                   td=(val.max).toFixed(0)
                 if key in times || key in display
                   td
