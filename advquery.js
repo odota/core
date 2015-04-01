@@ -405,28 +405,25 @@ function advQuery(options, cb) {
     for (var key in options.select) {
         //select key could come in as array, number, or string
         //if array, number each element and pass it on
-        //if Number, number it and pass it on
-        if (options.select[key] === "" || !Number(options.select[key])) {
-            //if NaN or empty string, ignore it
+        if (options.select[key].constructor === Array) {
+            options.select[key] = options.select[key].map(function(e) {
+                return Number(e);
+            });
+        }
+        else if (options.select[key] === "" || !Number(options.select[key])) {
+            //invalid number string, continue
             continue;
         }
         else {
-            if (options.select[key].constructor === Array) {
-                options.select[key] = options.select[key].map(function(e) {
-                    return Number(e);
-                });
-            }
-            else {
-                options.select[key] = Number(options.select[key]);
-            }
-            if (mongoAble[key]) {
-                //only project the matching player
-                options.project["players.$"] = 1;
-                options.mongo_select[key] = options.select[key];
-            }
-            else {
-                options.js_select[key] = options.select[key];
-            }
+            options.select[key] = Number(options.select[key]);
+        }
+        if (mongoAble[key]) {
+            //only project the matching player
+            options.project["players.$"] = 1;
+            options.mongo_select[key] = options.select[key];
+        }
+        else {
+            options.js_select[key] = options.select[key];
         }
     }
     if (!options.project["players.$"]) {
