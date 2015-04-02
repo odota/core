@@ -36,6 +36,7 @@ api.get('/matches', function(req, res, next) {
         }
         result = {
             draw: draw,
+            aggData: result.aggData,
             recordsTotal: result.unfiltered_count,
             recordsFiltered: result.data.length,
             data: result.page

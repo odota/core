@@ -367,9 +367,11 @@ function sort(matches, sorts) {
         }
     };
     for (var key in sorts) {
-        matches.sort(function(a, b) {
-            return sortFuncs[key](a, b, sorts[key]);
-        });
+        if (key in sortFuncs) {
+            matches.sort(function(a, b) {
+                return sortFuncs[key](a, b, sorts[key]);
+            });
+        }
     }
     return matches;
 }

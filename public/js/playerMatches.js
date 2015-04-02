@@ -5,6 +5,23 @@ var heroes = constants.heroes;
 var modes = constants.modes;
 var regions = constants.regions;
 module.exports = function(matches) {
+    
+        $.fn.serializeObject = function() {
+      var o = {};
+      var a = this.serializeArray();
+      $.each(a, function() {
+          if (o[this.name] !== undefined) {
+              if (!o[this.name].push) {
+                  o[this.name] = [o[this.name]];
+              }
+              o[this.name].push(this.value || '');
+          } else {
+              o[this.name] = this.value || '';
+          }
+      });
+      return o;
+    };
+    
     /*
     $('#matches').dataTable({
         "order": [
@@ -19,21 +36,32 @@ module.exports = function(matches) {
             }]
     });
     */
-    $('#matches').dataTable({
+    var table = $('#matches')
+        .on('xhr.dt', function ( e, settings, json ) {
+        console.log(json);
+        var pct = (json.aggData.win/json.aggData.games*100).toFixed(2);
+        $("#winrate").text(pct+"%").width(pct+"%");
+    })
+    .DataTable({
         "order": [
                 [0, "desc"]
             ],
-        "data": matches,
-        /*
+        //"data": matches,
         serverSide: true,
         ajax: {
             'url': '/api/matches',
+            "data": function ( d ) {
+                d.select=$('form').serializeObject();
+                d.agg={"win":1, "lose": 1, "games": 1};
+            }
+            /*
             'data': {
                 "select": {},
                 "project": {}
             }
+            */
         },
-        */
+
         "rowCallback": function(row, data) {
             var cl = data.players[0].player_slot < 64 === data.radiant_win ? "success" : "danger";
             $(row).addClass(cl);
@@ -43,8 +71,8 @@ module.exports = function(matches) {
             formatHtml();
         },
         stateSave: true,
-        //searching: false,
-        //processing: true,
+        searching: false,
+        processing: true,
         columns: [{
                 data: 'match_id',
                 title: 'Match ID',
@@ -174,4 +202,13 @@ module.exports = function(matches) {
                 }
             }]
     });
-}
+        $('form').submit(function(e) {
+            //e.preventDefault();
+            //console.log(JSON.stringify($('form').serializeObject()));
+            //table.draw();
+            //return false;
+        });
+        $('.form-control').on('change', function(e){
+            table.draw();
+        });
+};

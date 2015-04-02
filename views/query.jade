@@ -3,11 +3,11 @@ button.btn.btn-xs.btn-dark(data-toggle="collapse" data-target="#filter_collapse"
 #filter_collapse.collapse.in
   form(action="" method="GET")
     //pre=JSON.stringify(q)
+
+    //label All Matches with Player
+    input.form-control(type="hidden" name="players.account_id", value=q["players.account_id"] || player.account_id, onchange="this.form.submit()" readonly)
+    
     //-
-      h4 Global
-      label All Matches with Player
-      input.form-control(name="players.account_id", value=q["players.account_id"] || player.account_id, onchange="this.form.submit()" disabled)
-      
       label All Matches with Hero
       select.form-control(name="players.hero_id" onchange="this.form.submit()" disabled)
         option(value="all") Any Hero
