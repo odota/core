@@ -62,6 +62,11 @@ app.get('/', function(req, res, next) {
                     "key": response.statusCode
                 }));
             }
+        }).on('error', function(err) {
+            outStream.write(JSON.stringify({
+                "type": "error",
+                "key": err
+            }));
         });
         bz = spawn("bunzip2");
         inStream.pipe(bz.stdin);
