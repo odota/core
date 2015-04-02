@@ -11,7 +11,7 @@ function start() {
         console.log("[PARSEMANAGER] starting master");
         //build sets to ensure parsers are up to date
         buildSets(function() {
-            redis.get("retrievers", function(err, result) {
+            redis.get("parsers", function(err, result) {
                 if (err || !result) {
                     console.log("no parsers in redis!");
                     return setTimeout(function() {
