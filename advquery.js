@@ -17,7 +17,7 @@ function aggregator(matches, fields) {
                 var tm_hero = tm.hero_id;
                 if (tm_hero in matchups) {
                     //don't count invalid heroes
-                    if (isRadiant(tm) === m.player_radiant) {
+                    if (isRadiant(tm) === isRadiant(p)) {
                         //count teammate heroes
                         if (tm.account_id === p.account_id) {
                             //console.log("self %s", tm_hero);
@@ -46,7 +46,7 @@ function aggregator(matches, fields) {
             var teammates = aggData.teammates;
             for (var j = 0; j < m.all_players.length; j++) {
                 var tm = m.all_players[j];
-                if (isRadiant(tm) === m.player_radiant) {
+                if (isRadiant(tm) === isRadiant(p)) {
                     //count teammate players
                     if (!teammates[tm.account_id]) {
                         teammates[tm.account_id] = {
@@ -323,7 +323,7 @@ function filter(matches, filters) {
             }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === m.player_radiant);
+                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
                 });
             });
         },
@@ -334,7 +334,7 @@ function filter(matches, filters) {
             }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== m.player_radiant);
+                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
                 });
             });
         }
@@ -435,6 +435,10 @@ function advQuery(options, cb) {
         options.project.players = {
             $slice: 1
         };
+        //since we're not selecting, we can mongodb sort
+        options.sort = {
+            match_id: -1
+        };
     }
     //js_agg, aggregations to do with js
     //do everything if null passed as fields
@@ -487,12 +491,6 @@ function advQuery(options, cb) {
         return cb(err);
     }).success(function() {
         console.timeEnd('db');
-        //add a player_radiant property to each match for efficient teammate lookup
-        for (var i = 0; i < matches.length; i++) {
-            var m = matches[i];
-            var p = m.players[0];
-            m.player_radiant = isRadiant(p);
-        }
         console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {
             if (err) {

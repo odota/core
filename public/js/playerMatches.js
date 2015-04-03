@@ -209,6 +209,6 @@ module.exports = function(matches) {
             //return false;
         });
         $('.form-control').on('change', function(e){
-            table.draw();
+            //table.draw();
         });
 };

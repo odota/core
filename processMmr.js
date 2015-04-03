@@ -7,7 +7,8 @@ module.exports = function processMmr(job, cb) {
     getData(job.data.url, function(err, data) {
         if (err) {
             logger.info(err);
-            return cb(err, err);
+            //don't clutter kue with failed mmr reqs
+            return cb(null, err);
         }
         logger.info("mmr response");
         if (data.soloCompetitiveRank || data.competitiveRank) {
