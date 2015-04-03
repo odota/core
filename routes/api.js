@@ -20,11 +20,12 @@ api.get('/matches', function(req, res, next) {
     advQuery({
         select: select,
         project: {},
-        //api only works on the latest n matches by match id
         //trying to sort after a players.account_id select is very slow
+        /*
         sort: {
             "match_id": -1
         },
+        */
         limit: limit,
         js_agg: js_agg,
         js_limit: js_limit,
