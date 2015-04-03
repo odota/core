@@ -134,6 +134,7 @@ function runParser(job, cb) {
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             processEventBuffer();
+            processTeamfights();
             //fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
         });
     });
@@ -142,11 +143,17 @@ function runParser(job, cb) {
     var name_to_slot = {};
     var hero_to_slot = {};
     var game_zero = 0;
+    var game_end = 0;
+    var inTeamfight = false;
+    var teamfights = [];
     var parsed_data = utility.getParseSchema();
     var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
+            }
+            if (e.key === "POST_GAME") {
+                game_end = e.time;
             }
             console.log(e);
         },
@@ -234,6 +241,22 @@ function runParser(job, cb) {
             if (pass) {
                 e.type = "kills_log";
                 populate(e);
+            }
+            var hero_kill = false;
+            var curr_teamfight = {};
+            if (hero_kill) {
+                //todo if hero kill, check teamfight state
+                //get the latest teamfight in the list
+                //curr_teamfight = teamfights[teamfights.length-1];
+                //curr_teamfight = {start:e.time-10, end:null, last_death:e.time};
+                //could be undefined, make a new one if so
+                if (e.time - curr_teamfight.last_death > 10) {
+                    //close it
+                    parsed_data.teamfights.push(curr_teamfight);
+                    //todo make a new curr_teamfight?
+                }
+                //extend the current
+                curr_teamfight.last_death = e.time;
             }
             //reverse and log killed by
             var r = {
@@ -352,6 +375,10 @@ function runParser(job, cb) {
         }
         //console.timeEnd("postprocess");
         cb(error, parsed_data);
+    }
+
+    function processTeamfights() {
+        //todo implement this function
     }
 
     function assocName(name) {

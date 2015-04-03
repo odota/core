@@ -208,7 +208,7 @@ function getParseSchema() {
     return {
         "version": 6,
         "match_id": 0,
-        "teamfights": null,
+        "teamfights": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "stuns": 0,
