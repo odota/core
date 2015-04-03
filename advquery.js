@@ -435,6 +435,10 @@ function advQuery(options, cb) {
         options.project.players = {
             $slice: 1
         };
+        //since we're not selecting, we can mongodb sort
+        options.sort = {
+            match_id: -1
+        };
     }
     //js_agg, aggregations to do with js
     //do everything if null passed as fields

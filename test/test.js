@@ -376,6 +376,9 @@ describe("parser", function() {
 describe("web", function() {
     var supertest = require('supertest');
     var app = require('../web');
+    before(function(done) {
+        done();
+    });
     //this.timeout(wait);
     it('/', function(done) {
         supertest(app).get('/')

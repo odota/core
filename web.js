@@ -23,6 +23,7 @@ var auth = require('http-auth');
 var path = require('path');
 var moment = require('moment');
 var bodyParser = require('body-parser');
+var queueReq = require('./operations').queueReq;
 var async = require('async');
 // Include the cluster module
 var cluster = require('cluster');
@@ -30,17 +31,26 @@ var cluster = require('cluster');
 var express = require('express');
 // Create a new Express application
 var app = express();
-// Code to run if we're in the master process
-if (cluster.isMaster) {
-    // Count the machine's CPUs
-    var cpuCount = require('os').cpus().length;
-    // Create a worker for each CPU
-    for (var i = 0; i < cpuCount; i += 1) {
-        cluster.fork();
-    }
-    // Code to run if we're in a worker process
+if (config.NODE_ENV === "test") {
+    //don't cluster in test env
+    configureApp(app);
 }
 else {
+    if (cluster.isMaster) {
+        // Count the machine's CPUs
+        var cpuCount = require('os').cpus().length;
+        // Create a worker for each CPU
+        for (var i = 0; i < cpuCount; i += 1) {
+            cluster.fork();
+        }
+        //configureApp(app);
+    }
+    else {
+        configureApp(app);
+    }
+}
+
+function configureApp(app) {
     var server = app.listen(config.PORT, function() {
         var host = server.address().address;
         var port = server.address().port;
@@ -54,7 +64,6 @@ else {
         });
     }, 5000);
     */
-    var queueReq = require('./operations').queueReq;
     io.sockets.on('connection', function(socket) {
         socket.on('request', function(data) {
             console.log(data);
