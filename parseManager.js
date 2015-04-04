@@ -23,11 +23,15 @@ function start() {
                 //length of this array is capacity
                 var capacity = parsers.length;
                 // Fork workers.
-                for (var i = 0; i < capacity; i++) {
+                for (var i = 1; i < capacity; i++) {
                     cluster.fork({
                         PARSER_URL: parsers[i]
                     });
                 }
+                jobs.process('request_parse', function(job, cb) {
+                    job.parser_url = parsers[0];
+                    processParse(job, cb);
+                });
                 // handle unwanted worker exits
                 cluster.on("exit", function(worker, code) {
                     if (code != 0) {
@@ -56,11 +60,6 @@ function start() {
             url: process.env.PARSER_URL
         });
         //insert into job the parser this worker should use
-        jobs.process('request_parse', function(job, cb) {
-            getParser(job, function() {
-                processParse(job, cb);
-            });
-        });
         jobs.process('parse', function(job, cb) {
             getParser(job, function() {
                 processParse(job, cb);
@@ -74,6 +73,7 @@ function getParser(job, cb) {
         cb();
     }
     /*
+    //select a random parser from redis at job run time?
     function getParser(job, cb) {
         redis.get("retrievers", function(err, result) {
             if (err || !result) {

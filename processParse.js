@@ -144,8 +144,10 @@ function runParser(job, cb) {
     var hero_to_slot = {};
     var game_zero = 0;
     var game_end = 0;
-    var inTeamfight = false;
+    var curr_teamfight;
     var teamfights = [];
+    var intervalState = {};
+    var teamfight_cooldown = 15;
     var parsed_data = utility.getParseSchema();
     var streamTypes = {
         "state": function(e) {
@@ -242,21 +244,27 @@ function runParser(job, cb) {
                 e.type = "kills_log";
                 populate(e);
             }
-            var hero_kill = false;
-            var curr_teamfight = {};
-            if (hero_kill) {
-                //todo if hero kill, check teamfight state
-                //get the latest teamfight in the list
-                //curr_teamfight = teamfights[teamfights.length-1];
-                //curr_teamfight = {start:e.time-10, end:null, last_death:e.time};
-                //could be undefined, make a new one if so
-                if (e.time - curr_teamfight.last_death > 10) {
-                    //close it
-                    parsed_data.teamfights.push(curr_teamfight);
-                    //todo make a new curr_teamfight?
-                }
-                //extend the current
+            if (e.key.indexOf("npc_dota_hero") !== -1) {
+                //if hero kill, check teamfight state
+                curr_teamfight = curr_teamfight || {
+                    start: e.time - teamfight_cooldown,
+                    end: null,
+                    last_death: e.time,
+                    deaths: 0,
+                    deaths_pos: [],
+                    players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
+                        return {
+                            ability_uses: {},
+                            item_uses: {},
+                            deaths: 0,
+                            buybacks: 0,
+                            damage: 0
+                        };
+                    })
+                };
+                //update the last_death time of the current fight
                 curr_teamfight.last_death = e.time;
+                curr_teamfight.deaths += 1;
             }
             //reverse and log killed by
             var r = {
@@ -305,6 +313,11 @@ function runParser(job, cb) {
         "runes": populate,
         "runes_bottled": populate,
         "interval": function(e) {
+            //store hero state at each interval for teamfight lookup
+            if (!intervalState[e.time]) {
+                intervalState[e.time] = {};
+            }
+            intervalState[e.time][e.slot] = e;
             if (e.time >= 0) {
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0) {
@@ -365,6 +378,15 @@ function runParser(job, cb) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
             e.time -= game_zero;
+            //check teamfight status
+            if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown) {
+                //close it
+                curr_teamfight.end = e.time;
+                //push a copy for post-processing
+                teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
+                //clear existing teamfight
+                curr_teamfight = null;
+            }
             if (types[e.type]) {
                 types[e.type](e);
             }
@@ -378,7 +400,44 @@ function runParser(job, cb) {
     }
 
     function processTeamfights() {
-        //todo implement this function
+        //fights that didnt end wont be pushed to teamfights array (endgame case)
+        /*
+Things we're interested in for each teamfight:
+Teamfight length
+Teamfight location (plot each hero death)
+For each hero:
+Gold/XP delta
+Skills used
+Items used
+Damage dealt
+Did the hero die?
+Did the hero buyback?
+*/
+        for (var i = 0; i < entries.length; i++) {
+            //loop over entries again
+            var e = entries[i];
+            //check each teamfight to see if this event should be processed as part of that teamfight
+            for (var j = 0; j < teamfights.length; j++) {
+                var tf = teamfights[j];
+                if (e.time >= tf.start && e.time <= tf.end) {
+                    //todo if a hero dies, add to deaths_pos array, lookup slot of this key by hero name (e.key), get position from intervalstate
+                    //todo start counting skills, items, damage, died, bought back
+                    //todo sum gold/xp combat log events, or start/end delta?
+                    //e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
+                }
+            }
+        }
+        //go through teamfights, add gold/xp deltas and push onto final array
+        teamfights.forEach(function(tf) {
+            tf.players.forEach(function(p, ind) {
+                //set gold/xp deltas here
+                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
+                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
+            });
+            //push element onto parsed_data.teamfights
+            parsed_data.teamfights.push(tf);
+        });
+        fs.writeFile("output_teamfights.json", JSON.stringify(parsed_data.teamfights));
     }
 
     function assocName(name) {
