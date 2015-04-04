@@ -13,8 +13,8 @@ var defaults = {
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
-    "LANG": "en_US.UTF-8", //this value must be set in .env to make nf export it to upstart!
-    "PORT": 5000, //this value must be set in .env to make nf use it over a preset PORT env var!
+    "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
+    "PORT": 5000, //this value must be set in .env to make nf set it in process.env over a preset PORT env var!
     "RETRIEVER_PORT": 5100,
     "PARSER_PORT": 5200,
     "REGISTRY_PORT": 5300,
@@ -49,8 +49,8 @@ for (var key in fileConfig) {
 }
 */
 //nf puts values in .env into process.env
-for (var key in process.env) {
-    defaults[key] = process.env[key];
+//ensure that process.env has all values in defaults, but prefer the process.env value
+for (var key in defaults) {
+    process.env[key] = process.env[key] || defaults[key];
 }
-//console.log(defaults)
-module.exports = defaults;
+module.exports = process.env;
