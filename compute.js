@@ -44,7 +44,8 @@ function computeMatchData(match) {
         var p = {};
         if (match.parsed_data) {
             //mapping 0 to 0, 128 to 5, etc.
-            var parseSlot = player.player_slot % (128 - 5);
+            //if we projected only one player, then use slot 0
+            var parseSlot = match.parsed_data.players.length === 1 ? 0 : player.player_slot % (128 - 5);
             p = match.parsed_data.players[parseSlot];
             //remove meepo/meepo kills
             if (player.hero_id === 82) {
@@ -68,13 +69,6 @@ function computeMatchData(match) {
                         p.courier_kills += p.kills[key];
                     }
                 }
-            }
-            if (p.chat) {
-                p.chat_message_count = p.chat.length;
-                //count ggs
-                p.gg_count = p.chat.filter(function(c) {
-                    return c.key.indexOf("gg") === 0;
-                }).length;
             }
             if (p.buyback_log) {
                 p.buyback_count = p.buyback_log.length;
@@ -197,7 +191,7 @@ function patchLegacy(match) {
         //console.log("parse data too old, nulling");
         match.parsed_data = null;
     }
-    else if (match.parsed_data && match.parsed_data.version === 4) {
+    else if (match.parsed_data && match.parsed_data.version < 5) {
         //console.log("patching v4 data");
         mergeMatchData(match);
         for (var i = 0; i < match.players.length; i++) {
@@ -225,12 +219,14 @@ function patchLegacy(match) {
             parsedPlayer.kills = parsedHero.kills;
             parsedPlayer.times = match.parsed_data.times;
             parsedPlayer.chat = [];
-            //fill the chat for each player
+            //fill the chat for each player, went back to old format in v7
             match.parsed_data.chat.forEach(function(c) {
                 c.key = c.text;
+                /*
                 if (c.slot === parseSlot) {
                     parsedPlayer.chat.push(c);
                 }
+                */
             });
             //remove recipes
             /*
@@ -243,8 +239,22 @@ function patchLegacy(match) {
             //console.log('completed %s', match.match_id, parseSlot, i);
         }
     }
+    else if (match.parsed_data && match.parsed_data.version < 7) {
+        //build the chat (v5, v6)
+        match.chat = [];
+        match.parsed_data.players.forEach(function(p, i) {
+            p.chat.forEach(function(c) {
+                c.slot = i;
+                match.chat.push(c);
+            });
+        });
+        //sort the chat messages by time
+        match.chat.sort(function(a, b) {
+            return a.time - b.time;
+        });
+    }
     else {
-        //console.log("valid data %s", match.parsed_data.version);
+        //console.log("valid data v%s", match.parsed_data.version);
         return;
     }
 }

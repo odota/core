@@ -209,11 +209,13 @@ function getParseSchema() {
         "version": 7,
         "match_id": 0,
         "teamfights": [],
+        "objectives": [],
+        "chat": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
+                "steam_id": "",
                 "stuns": 0,
-                "largest_hero_hit": 0,
-                "max_hero_hit": {},
+                "max_hero_hit": {value:0},
                 "times": [],
                 "gold": [],
                 "lh": [],
@@ -224,9 +226,7 @@ function getParseSchema() {
                 "hero_log": [],
                 "purchase_log": [],
                 "kills_log": [],
-                "objectives_log": [],
                 "buyback_log": [],
-                "chat": [],
                 //removed for taking up too much space
                 //"pos": {},
                 "lane_pos": {},

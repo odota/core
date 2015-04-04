@@ -11,9 +11,6 @@ function renderMatch(match) {
     match.players.forEach(function(p, i) {
         mergeObjects(p.parsedPlayer, schema.players[i]);
     });
-    //build the chat
-    match.chat = [];
-    match.chat_words = [];
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
@@ -72,11 +69,6 @@ function renderMatch(match) {
             return b.val - a.val;
         });
         p.damage_arr = v;
-        p.chat.forEach(function(c) {
-            c.slot = i;
-            match.chat.push(c);
-            match.chat_words.push(c.key);
-        });
         //filter interval data to only be >0
         if (p.times) {
             var intervals = ["lh", "gold", "xp", "times"];
@@ -87,7 +79,9 @@ function renderMatch(match) {
             });
         }
     });
-    match.chat_words = match.chat_words.join(' ');
+    match.chat_words = match.chat.map(function(c) {
+        return c.key;
+    }).join(' ');
     match.sentiment = sentiment(match.chat_words, {
         "report": -2,
         "bg": -1,
@@ -100,9 +94,6 @@ function renderMatch(match) {
         "end": -1,
         "garbage": -1,
         "trash": -1
-    });
-    match.chat.sort(function(a, b) {
-        return a.time - b.time;
     });
     match.graphData = generateGraphData(match);
     match.posData = match.players.map(function(p) {

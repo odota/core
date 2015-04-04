@@ -21,18 +21,18 @@ mixin hero_table(rows, full)
         td=hero.localized_name
         td=h.games
         td
-          - var pct = h ? ~~(100*h.win/h.games) : 0
+          - var pct = h ? 100*h.win/h.games : 0
           .progress
-            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
         if full
           td=h.with_games
           td
-            - var pct = h ? ~~(100*h.with_win/h.with_games) : 0
+            - var pct = h ? 100*h.with_win/h.with_games : 0
             .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
           td=h.against_games
           td
-            - var pct = h ? ~~(100*h.against_win/h.against_games) : 0
+            - var pct = h ? 100*h.against_win/h.against_games : 0
             .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
         td= moment.unix(h.last_played).fromNow()

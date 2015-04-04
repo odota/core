@@ -137,7 +137,7 @@ function runParser(job, cb) {
             console.time("postprocess");
             processEventBuffer();
             processTeamfights();
-            //fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            if (process.env.NODE_ENV!=="production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             console.timeEnd("postprocess");
         });
     });
@@ -201,6 +201,9 @@ function runParser(job, cb) {
         "epilogue": function() {
             error = false;
         },
+        "steam_id": function(e) {
+            populate(e);
+        },
         "hero_log": function(e) {
             populate(e);
         },
@@ -222,7 +225,7 @@ function runParser(job, cb) {
             getSlot(e);
             if (e.key.indexOf("recipe_") === -1) {
                 e.type = "purchase_log";
-                populate(e, parsed_data);
+                populate(e);
             }
         },
         "modifier_applied": getSlot,
@@ -243,8 +246,8 @@ function runParser(job, cb) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
             });
             if (pass) {
-                e.type = "objectives_log";
-                populate(e);
+                //push a copy to objectives
+                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
             if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
                 //log this hero kill
@@ -315,9 +318,7 @@ function runParser(job, cb) {
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
             e.slot = name_to_slot[e.unit];
-            //time, key, only, so we lose the original prefix (stored in unit)
-            populate(e);
-            //console.log(e);
+            parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
         //"chat_hero_kill": populate,
         "stuns": populate,
@@ -410,18 +411,6 @@ function runParser(job, cb) {
 
     function processTeamfights() {
         //fights that didnt end wont be pushed to teamfights array (endgame case)
-        /*
-Things we're interested in for each teamfight:
-Teamfight length
-Teamfight location (plot each hero death)
-For each hero:
-Gold/XP delta
-Skills used
-Items used
-Damage dealt
-Did the hero die?
-Did the hero buyback?
-*/
         //filter only fights where 2+ heroes died
         teamfights = teamfights.filter(function(tf) {
             return tf.deaths >= 2;
@@ -477,15 +466,18 @@ Did the hero buyback?
                             }
                         }
                     }
-                    else {
+                    else if (e.type === "ability_uses" || e.type === "item_uses") {
                         //count skills, items
                         populate(e, tf);
+                    }
+                    else {
+                        continue;
                     }
                 }
             }
         }
         parsed_data.teamfights = teamfights;
-        fs.writeFile("output_teamfights.json", JSON.stringify(parsed_data.teamfights));
+        //if (config.NODE_ENV!=="production") fs.writeFile("output_teamfights.json", JSON.stringify(parsed_data.teamfights));
     }
 
     function assocName(name) {
@@ -545,8 +537,7 @@ Did the hero buyback?
         var t = container.players[e.slot][e.type];
         if (typeof t === "undefined") {
             //parsed_data.players[0] doesn't have a type for this event
-            //false alarms a lot under teamfights since teamfights only track a subset of fields for each player
-            //console.log(e);
+            console.log(e);
             return;
         }
         else if (e.posData) {
@@ -580,6 +571,10 @@ Did the hero buyback?
             //add it to hash of counts
             e.value = e.value || 1;
             t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+        }
+        else if (typeof t === "string") {
+            //string, used for steam id
+            container.players[e.slot][e.type] = e.key;
         }
         else {
             //we must use the full reference since this is a primitive type

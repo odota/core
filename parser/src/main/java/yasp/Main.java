@@ -168,6 +168,13 @@ public class Main {
 			entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
 			es.output(entry);
 		}
+		for (int i = 0;i<players.size();i++) {
+			Entry entry = new Entry();
+			entry.type="steam_id";
+			entry.key = String.valueOf(players.get(i).getSteamid());
+			entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
+			es.output(entry);
+		}
 		if (true){
 			Entry entry = new Entry();
 			entry.type="match_id";

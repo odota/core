@@ -45,8 +45,9 @@ block playercontent
               th Record
               th Set
               th N
+              th Sum
             - var times={"duration":1,"first_blood_time":1}
-            - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1, "chat_message_count":1, "gg_count":1} 
+            - var display={"courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1} 
             each val, key in player.aggData
               tr
                 if key in times
@@ -61,6 +62,7 @@ block playercontent
                   td
                     a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
                   td=val.n
+                  td=val.sum
           h3 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts

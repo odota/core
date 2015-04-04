@@ -14,7 +14,7 @@ mixin teammate_table(rows)
           a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
         td= teammate.games
         td
-         - var pct = teammate ? ~~(100*teammate.win/teammate.games) : 0
+         - var pct = teammate ? 100*teammate.win/teammate.games : 0
          .progress
-           .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct}%
+           .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
         td= moment.unix(teammate.last_played).fromNow()

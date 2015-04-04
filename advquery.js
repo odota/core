@@ -5,6 +5,7 @@ var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
+var async = require('async');
 
 function aggregator(matches, fields) {
     var aggData = {};
@@ -130,6 +131,7 @@ function aggregator(matches, fields) {
         "isRadiant": function(key, m, p) {
             standardAgg(key, isRadiant(p), m);
         },
+        //following aggregations require parsed data
         "stuns": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.stuns, m);
         },
@@ -187,12 +189,6 @@ function aggregator(matches, fields) {
         },
         "neutral_kills": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.neutral_kills, m);
-        },
-        "chat_message_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.chat_message_count, m);
-        },
-        "gg_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.gg_count, m);
         },
         "buyback_count": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.buyback_count, m);
@@ -364,7 +360,33 @@ function sort(matches, sorts) {
         },
         duration: function(a, b, dir) {
             return (a.duration - b.duration) * dir;
-        }
+        },
+        kills: function(a, b, dir) {
+            return (a.players[0].kills - b.players[0].kills) * dir;
+        },
+        deaths: function(a, b, dir) {
+            return (a.players[0].deaths - b.players[0].deaths) * dir;
+        },
+        assists: function(a, b, dir) {
+            return (a.players[0].assists - b.players[0].assists) * dir;
+        },
+        last_hits: function(a, b, dir) {
+            return (a.players[0].last_hits - b.players[0].last_hits) * dir;
+        },
+        denies: function(a, b, dir) {
+            return (a.players[0].denies - b.players[0].denies) * dir;
+        },
+        gold_per_min: function(a, b, dir) {
+            return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
+        },
+        xp_per_min: function(a, b, dir) {
+                return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
+            }
+            //game mode
+            //hero
+            //hero damage
+            //tower damage
+            //hero healing
     };
     for (var key in sorts) {
         if (key in sortFuncs) {
@@ -388,10 +410,7 @@ function advQuery(options, cb) {
         first_blood_time: 1,
         lobby_type: 1
     };
-    //project, the projection to send to mongodb, add default fields to those supplied
-    for (var key in default_project) {
-        options.project[key] = default_project[key];
-    }
+    options.project = options.project || default_project;
     //select,the query received, build the mongo query and the filter based on this
     options.mongo_select = {};
     options.js_select = {};
@@ -442,7 +461,7 @@ function advQuery(options, cb) {
     }
     //js_agg, aggregations to do with js
     //do everything if null passed as fields
-    //some aggregations/filters require hero_id and player_id of all 10 players in a game
+    //some aggregations/selections require hero_id and player_id of all 10 players in a game
     var fullPlayerData = {
         "teammates": 1,
         "matchups": 1,
@@ -459,6 +478,10 @@ function advQuery(options, cb) {
     for (var key in options.js_select) {
         bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
     }
+    //determine if we're doing an aggregation/selection that requires parsed data
+    //var parsedPlayerData = {};
+    //todo this just gets the parsed data if js_agg is null (do everything), it won't work if specific aggregations are requested
+    var bGetParsedPlayerData = Boolean(!options.js_agg);
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
     var max = 10000;
@@ -475,21 +498,11 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    //20000 matches@100kb each is 2gb, js will have trouble handling large numbers of matches with parsed data in memory
-    //stream the query results, exclude extra data from the matches array we build
-    var matches = [];
     console.time('db');
-    db.matches.find(options.mongo_select, monk_options).each(function(m) {
-        computeMatchData(m);
-        //reduce memory use by removing parsed_data and players.ability_upgrades
-        delete m.parsed_data;
-        delete m.players[0].ability_upgrades;
-        //copy to matches array
-        matches.push(m);
-    }).error(function(err) {
-        console.log(err);
-        return cb(err);
-    }).success(function() {
+    db.matches.find(options.mongo_select, monk_options, function(err, matches) {
+        if (err) {
+            return cb(err);
+        }
         console.timeEnd('db');
         console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {
@@ -497,24 +510,31 @@ function advQuery(options, cb) {
                 return cb(err);
             }
             console.timeEnd("fullplayerdata");
-            console.time('compute');
-            //sort first so the display matches are in the right order
-            matches = sort(matches, options.js_sort);
-            //report unfiltered count
-            var unfiltered_count = matches.length;
-            //make array of unfiltered "recent matches" for display
-            var display_matches = matches.slice(0, 15);
-            var filtered = filter(matches, options.js_select);
-            var aggData = aggregator(filtered, options.js_agg);
-            var result = {
-                aggData: aggData,
-                page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
-                data: filtered,
-                unfiltered_count: unfiltered_count,
-                display_matches: display_matches
-            };
-            console.timeEnd('compute');
-            cb(err, result);
+            console.time("parsedplayerdata");
+            getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                console.timeEnd("parsedplayerdata");
+                console.time('compute');
+                matches.forEach(function(m) {
+                    //post-process the match to get additional stats
+                    computeMatchData(m);
+                    //reduce memory use by removing players.ability_upgrades
+                    delete m.players[0].ability_upgrades;
+                });
+                var filtered = filter(matches, options.js_select);
+                filtered = sort(filtered, options.js_sort);
+                var aggData = aggregator(filtered, options.js_agg);
+                var result = {
+                    aggData: aggData,
+                    page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                    data: filtered,
+                    unfiltered_count: matches.length
+                };
+                console.timeEnd('compute');
+                cb(err, result);
+            });
         });
     });
 }
@@ -553,5 +573,74 @@ function getFullPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
+}
+
+function getParsedPlayerData(matches, doAction, cb) {
+    if (!doAction) {
+        return cb();
+    }
+    //todo this currently does a query for each match in the set, so could be several thousand queries per page load. . .
+    //to get better, since we want a different position on each query
+    //parsed_data.players needs an identifier we can project on, such as steam_id
+    //also need index on parsed_data.players.steam_id
+    async.each(matches, function(m, cb) {
+        var player = m.players[0];
+        var parseSlot = player.player_slot % (128 - 5);
+        db.matches.findOne({
+            match_id: m.match_id
+        }, {
+            fields: {
+                "parsed_data": 1,
+                "parsed_data.version": 1,
+                "parsed_data.players": {
+                    $slice: [parseSlot, 1]
+                }
+            }
+        }, function(err, doc) {
+            if (err) {
+                return cb(err);
+            }
+            //console.log(doc.parsed_data);
+            m.parsed_data = doc.parsed_data;
+            cb(err);
+        });
+    }, function(err) {
+        cb(err);
+    });
+    /*
+    //better approach, but requires steam_id for each player, which is not present in v5 data, added to v7
+    //compute the steam64 for this player
+    //create array of ids to use for $in
+    var match_ids = matches.map(function(m) {
+        return m.match_id;
+    });
+    db.matches.find({
+        match_id: {
+            $in: match_ids
+        },
+        "parsed_data.players.steam_id": steam64
+    }, {
+        fields: {
+            "parsed_data": 1,
+            "parsed_data.version": 1,
+            "parsed_data.players.$": 1,
+            match_id: 1
+        }
+    }, function(err, docs) {
+        if (err) {
+            return cb(err);
+        }
+        //build hash of match_id to parsed_data
+        var hash = {};
+        for (var i = 0; i < docs.length; i++) {
+            hash[docs[i].match_id] = docs[i].parsed_data;
+        }
+        //iterate through given matches and populate parsed_data field
+        for (var j = 0; j < matches.length; j++) {
+            matches[j].parsed_data = hash[matches[j].match_id];
+        }
+        cb(err);
+    });
+    */
 }
 module.exports = advQuery;
