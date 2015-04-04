@@ -9,12 +9,10 @@
     margin: 0 auto;
     display: block;
 }
-
 .skyscraper {
     margin: 2em auto;
     display: block;
 }
-
 .match-top {
     margin-top: 1.5em;
 }
@@ -180,71 +178,66 @@ td>img.user {
     color: #FFF;
     text-shadow: 0px 0px 2px #000;
 }
-
 .progress_text {
     margin: 0 auto;
 }
-
 .progress {
     margin: 0 auto;
 }
-
 #messages {
     margin: 3em auto 20em;
 }
-
 #loading {
     height: 8em;
     margin: 0 auto;
 }
 .btn-dark {
-  color: #fff;
-  background-color: #848484;
-  border-color: #848484;
+    color: #fff;
+    background-color: #848484;
+    border-color: #848484;
 }
-
 .btn-yasp {
-  color: #000;
-  background-color: #BBF0FD;
-  border-color: #BBF0FD;
+    color: #000;
+    background-color: #BBF0FD;
+    border-color: #BBF0FD;
 }
-
-.btn-yasp:hover, .btn-yasp:focus {
-  color: #fff;
-  background-color: #31b0d5;
-  border-color: #269abc;
+.btn-yasp:hover,
+.btn-yasp:focus {
+    color: #fff;
+    background-color: #31b0d5;
+    border-color: #269abc;
 }
-
 .wards button {
     display: block;
     margin: 10em auto;
 }
-
 .charts button {
     margin-right: .5em;
 }
-
 .player-color {
     border-left: 10px solid;
 }
-
 .blog-panel hr {
     border-color: #000;
 }
-
-.blog-panel h1, .blog-panel h2, .blog-panel h3 {
+.blog-panel h1,
+.blog-panel h2,
+.blog-panel h3 {
     color: black;
 }
-
 .blog-panel .panel-body a {
     color: black;
     text-decoration: underline;
 }
-
 option {
     color: black;
 }
-
-.select2-search-choice *, .select2-drop * {
+.select2-search-choice *,
+.select2-drop * {
     color: black;
+}
+div .dataTables_processing {
+    /*set z-index for processing indicator*/
+    
+    z-index: 60000;
 }

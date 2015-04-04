@@ -5,44 +5,27 @@ var heroes = constants.heroes;
 var modes = constants.modes;
 var regions = constants.regions;
 module.exports = function(matches) {
-    
-        $.fn.serializeObject = function() {
-      var o = {};
-      var a = this.serializeArray();
-      $.each(a, function() {
-          if (o[this.name] !== undefined) {
-              if (!o[this.name].push) {
-                  o[this.name] = [o[this.name]];
-              }
-              o[this.name].push(this.value || '');
-          } else {
-              o[this.name] = this.value || '';
-          }
-      });
-      return o;
+    $.fn.serializeObject = function() {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            }
+            else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
     };
-    
-    /*
-    $('#matches').dataTable({
-        "order": [
-                [0, "desc"]
-            ],
-        "columnDefs": [{
-            "targets": [1],
-            "orderData": [2]
-            }, {
-            "targets": [2],
-            visible: false
-            }]
-    });
-    */
-    var table = $('#matches')
-        .on('xhr.dt', function ( e, settings, json ) {
+    var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
-        var pct = (json.aggData.win/json.aggData.games*100).toFixed(2);
-        $("#winrate").text(pct+"%").width(pct+"%");
-    })
-    .DataTable({
+        var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
+        $("#winrate").text(pct + "%").width(pct + "%");
+    }).dataTable({
         "order": [
                 [0, "desc"]
             ],
@@ -50,26 +33,24 @@ module.exports = function(matches) {
         serverSide: true,
         ajax: {
             'url': '/api/matches',
-            "data": function ( d ) {
-                d.select=$('form').serializeObject();
-                d.agg={"win":1, "lose": 1, "games": 1};
-            }
-            /*
-            'data': {
-                "select": {},
-                "project": {}
-            }
-            */
+            "data": function(d) {
+                    d.select = $('form').serializeObject();
+                    d.agg = {
+                        "win": 1,
+                        "lose": 1,
+                        "games": 1
+                    };
+                }
         },
-
+        "deferRender": true,
         "rowCallback": function(row, data) {
-            var cl = data.players[0].player_slot < 64 === data.radiant_win ? "success" : "danger";
-            $(row).addClass(cl);
+            $(row).addClass(data.player_win ? "success" : "danger");
         },
         "drawCallback": function() {
             tooltips();
             formatHtml();
         },
+        
         stateSave: true,
         searching: false,
         processing: true,
@@ -96,11 +77,10 @@ module.exports = function(matches) {
                 }
             },
             {
-                data: 'radiant_win',
+                data: 'player_win',
                 title: 'Result',
                 render: function(data, type, row) {
-                    row.player_win = data === row.players[0].player_slot < 64;
-                    return row.player_win ? "Won" : "Lost";
+                    return (data) ? "Won" : "Lost";
                 }
             },
             {
@@ -202,13 +182,13 @@ module.exports = function(matches) {
                 }
             }]
     });
-        $('form').submit(function(e) {
-            //e.preventDefault();
-            //console.log(JSON.stringify($('form').serializeObject()));
-            //table.draw();
-            //return false;
-        });
-        $('.form-control').on('change', function(e){
-            //table.draw();
-        });
+    $('form').submit(function(e) {
+        //e.preventDefault();
+        //console.log(JSON.stringify($('form').serializeObject()));
+        //table.draw();
+        //return false;
+    });
+    $('.form-control').on('change', function(e) {
+        //table.draw();
+    });
 };
