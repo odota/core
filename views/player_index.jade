@@ -24,7 +24,7 @@ block playercontent
             | Use Light Theme
   .row
     .col-md-6
-      h3 Recent Matches
+      h3 Matches
       table.table
         thead
           tr
@@ -35,7 +35,7 @@ block playercontent
            th Duration
            th Played
            th: abbr(title=constants.tooltips.status) Status
-        each match in player.display_matches
+        each match in player.matches
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]

@@ -1,0 +1,7 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12.table-responsive
+      h2 Teamfights
+      pre=JSON.stringify(match.parsed_data.teamfights)

@@ -24,7 +24,7 @@ block match_content
                     th: abbr(title="Neutral creeps killed") NK
                     th: abbr(title="Towers killed") TK
                     th: abbr(title="Couriers killed") CK
-                    th: abbr(title="Largest hero hit") HIT
+                    th: abbr(title="Biggest hero hit") HIT
                     //th: abbr(title="Number of times the player clicked") CLICK
                     each val, key in constants.runes
                       th=val.name
@@ -51,7 +51,7 @@ block match_content
                 td #{p.neutral_kills || "-"}
                 td #{p.tower_kills || "-"}
                 td #{p.courier_kills || "-"}
-                td #{p.largest_hero_hit || "-"}
+                td #{JSON.stringify(p.max_hero_hit) || "-"}
                 //td #{p.clicks[0] || "-"}
                 each val, key in constants.runes
                   td #{p.runes[key] || "-"}

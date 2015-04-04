@@ -137,8 +137,9 @@ function runParser(job, cb) {
             console.time("postprocess");
             processEventBuffer();
             processTeamfights();
-            if (process.env.NODE_ENV!=="production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             console.timeEnd("postprocess");
+            cb(error, parsed_data);
         });
     });
     //parse state
@@ -286,34 +287,36 @@ function runParser(job, cb) {
         "damage": function(e) {
             //count damage dealt
             getSlot(e);
-            //check if hero hit
-            if (e.target_hero && !e.target_illusion) {
-                var h = {
-                    time: e.time,
-                    key: e.inflictor,
-                    unit: e.unit,
-                    type: "hero_hits"
-                };
-                getSlot(h);
-                //biggest hit on a hero
-                e.max = true;
-                var m = {
-                    type: "max_hero_hit",
-                    inflictor: e.inflictor,
-                    key: e.key,
-                    value: e.value
-                };
-                populate(m);
-            }
             //reverse and count as damage taken
             var r = {
                 time: e.time,
-                key: e.unit,
                 unit: e.key,
+                key: e.unit,
                 value: e.value,
                 type: "damage_taken"
             };
             getSlotReverse(r);
+            //check if hero hit
+            if (e.target_hero && !e.target_illusion) {
+                var h = {
+                    time: e.time,
+                    unit: e.unit,
+                    key: e.inflictor,
+                    type: "hero_hits"
+                };
+                getSlot(h);
+                //biggest hit on a hero
+                var m = {
+                    type: "max_hero_hit",
+                    time: e.time,
+                    max: true,
+                    inflictor: e.inflictor,
+                    unit: e.unit,
+                    key: e.key,
+                    value: e.value
+                };
+                getSlot(m);
+            }
         },
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
@@ -406,7 +409,6 @@ function runParser(job, cb) {
                 console.log("no event handler for type %s", e.type);
             }
         }
-        cb(error, parsed_data);
     }
 
     function processTeamfights() {
@@ -477,7 +479,6 @@ function runParser(job, cb) {
             }
         }
         parsed_data.teamfights = teamfights;
-        //if (config.NODE_ENV!=="production") fs.writeFile("output_teamfights.json", JSON.stringify(parsed_data.teamfights));
     }
 
     function assocName(name) {
@@ -541,6 +542,7 @@ function runParser(job, cb) {
             return;
         }
         else if (e.posData) {
+            //fill 2d hash with x,y values
             var x = e.key[0];
             var y = e.key[1];
             if (!t[x]) {
@@ -552,10 +554,10 @@ function runParser(job, cb) {
             t[x][y] += 1;
         }
         else if (e.max) {
-            var curr = container.players[e.slot][e.type];
             //check if value is greater than what was stored
-            if (e.value > curr.value) {
-                curr = e;
+            if (e.value > t.value) {
+                t.value = e.value;
+                t.inflictor = e.inflictor;
             }
         }
         else if (t.constructor === Array) {

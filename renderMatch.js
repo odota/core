@@ -79,6 +79,7 @@ function renderMatch(match) {
             });
         }
     });
+    match.chat = match.parsed_data.chat;
     match.chat_words = match.chat.map(function(c) {
         return c.key;
     }).join(' ');

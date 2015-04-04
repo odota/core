@@ -18,6 +18,9 @@ var matchPages = {
     positions: {
         name: "Positions"
     },
+    teamfights: {
+        name: "Teamfights"
+    },
     chat: {
         name: "Chat"
     }

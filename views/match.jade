@@ -46,7 +46,7 @@ block content
       .col-md-10
         ul.nav.nav-tabs
           each val, key in tabs
-            li(class= (route === key ? 'active' : ''), style=(match.parse_status !==2 && key!=="index" ? 'display:none;' : ''))
+            li(class= (route === key ? 'active' : ''), style=(match.parsed_data || key==="index" ? '' : 'display:none;'))
                 a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
         .addthis_sharing_toolbox.pull-right
