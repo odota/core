@@ -241,15 +241,15 @@ function patchLegacy(match) {
     }
     else if (match.parsed_data && match.parsed_data.version < 7) {
         //build the chat (v5, v6)
-        match.chat = [];
+        match.parsed_data.chat = [];
         match.parsed_data.players.forEach(function(p, i) {
             p.chat.forEach(function(c) {
                 c.slot = i;
-                match.chat.push(c);
+                match.parsed_data.chat.push(c);
             });
         });
         //sort the chat messages by time
-        match.chat.sort(function(a, b) {
+        match.parsed_data.chat.sort(function(a, b) {
             return a.time - b.time;
         });
     }

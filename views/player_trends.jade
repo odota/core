@@ -138,13 +138,6 @@ block playercontent
             button.btn.btn-default.histogram(data-histogram="deaths") D
             button.btn.btn-default.histogram(data-histogram="assists") A
             #chart-histogram
-        .row
-          .col-md-12.table-responsive
-            h3 Activity
-            p
-              button.btn.btn-default#prev &laquo;
-              button.btn.btn-default#next &raquo;
-            #cal-heatmap
     .row
       .wards
         h3 Warding (#{player.aggData.obs.n || 0} games)
@@ -199,7 +192,6 @@ append footer_assets
     })
 
     playerTrendsTables();
-    generateActivity(aggData);
     generateHistograms(aggData);
     
   script

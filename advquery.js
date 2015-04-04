@@ -352,6 +352,7 @@ function filter(matches, filters) {
 }
 
 function sort(matches, sorts) {
+    console.log(sorts);
     //todo implement more sorts
     //dir 1 ascending, -1 descending
     var sortFuncs = {
@@ -361,25 +362,25 @@ function sort(matches, sorts) {
         duration: function(a, b, dir) {
             return (a.duration - b.duration) * dir;
         },
-        kills: function(a, b, dir) {
+        "players[0].kills": function(a, b, dir) {
             return (a.players[0].kills - b.players[0].kills) * dir;
         },
-        deaths: function(a, b, dir) {
+        "players[0].deaths": function(a, b, dir) {
             return (a.players[0].deaths - b.players[0].deaths) * dir;
         },
-        assists: function(a, b, dir) {
+        "players[0].assists": function(a, b, dir) {
             return (a.players[0].assists - b.players[0].assists) * dir;
         },
-        last_hits: function(a, b, dir) {
+        "players[0].last_hits": function(a, b, dir) {
             return (a.players[0].last_hits - b.players[0].last_hits) * dir;
         },
-        denies: function(a, b, dir) {
+        "players[0].denies": function(a, b, dir) {
             return (a.players[0].denies - b.players[0].denies) * dir;
         },
-        gold_per_min: function(a, b, dir) {
+        "players[0].gold_per_min": function(a, b, dir) {
             return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
         },
-        xp_per_min: function(a, b, dir) {
+        "players[0].xp_per_min": function(a, b, dir) {
                 return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
             }
             //game mode

@@ -7,7 +7,7 @@ module.exports = function generateActivity(data) {
         range: 13,
         domain: "month",
         subDomain: "day",
-        data: data.start_time.counts,
+        data: data,
         verticalOrientation: true,
         label: {
             position: "left"

@@ -6,7 +6,9 @@ var sentiment = require('sentiment');
 function renderMatch(match) {
     var schema = utility.getParseSchema();
     //make sure parsed_data has all fields
-    match.parsed_data = match.parsed_data || schema;
+    for (var key in schema) {
+        match.parsed_data[key] = match.parsed_data[key] || schema[key];
+    }
     //make sure each player's parsedplayer has all fields
     match.players.forEach(function(p, i) {
         mergeObjects(p.parsedPlayer, schema.players[i]);

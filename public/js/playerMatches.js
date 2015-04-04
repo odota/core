@@ -34,13 +34,13 @@ module.exports = function(matches) {
         ajax: {
             'url': '/api/matches',
             "data": function(d) {
-                    d.select = $('form').serializeObject();
-                    d.agg = {
-                        "win": 1,
-                        "lose": 1,
-                        "games": 1
-                    };
-                }
+                d.select = $('form').serializeObject();
+                d.agg = {
+                    "win": 1,
+                    "lose": 1,
+                    "games": 1
+                };
+            }
         },
         "deferRender": true,
         "rowCallback": function(row, data) {
@@ -50,7 +50,6 @@ module.exports = function(matches) {
             tooltips();
             formatHtml();
         },
-        
         stateSave: true,
         searching: false,
         processing: true,
@@ -179,6 +178,12 @@ module.exports = function(matches) {
                 title: 'HH',
                 render: function(data, type) {
                     return data;
+                }
+            }, {
+                data: 'parse_status',
+                title: 'Status',
+                render: function(data, type) {
+                    return constants.parse_status[data] ? constants.parse_status[data] : data;
                 }
             }]
     });

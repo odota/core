@@ -23,42 +23,80 @@ block playercontent
             input.pref#theme(type="checkbox", checked=user.light_theme)
             | Use Light Theme
   .row
-    .col-md-6
+     .col-md-12
+       include query
+  .row
+    .col-md-12
+      h3 Win%
+      .progress
+        .progress-bar.progress-bar-success#winrate
       h3 Matches
-      table.table
+      table.table#matches
+      //-
         thead
           tr
-           th ID
+           th Match ID
            th Hero
-           //th Result
-           th Mode
+           th Hero Name
+           th Result
+           th Game Mode
            th Duration
+           th Region
            th Played
-           th: abbr(title=constants.tooltips.status) Status
+           th K
+           th D
+           th A
+           th LH
+           th DN
+           th GPM
+           th XPM
+           th HD
+           th TD
+           th HH
         each match in player.matches
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]
-            td.hero
+            td.hero 
               if hero
                 img(src=hero.img, title=hero.localized_name)
               else
                 =match.players[0].hero_id
-            //td= match.player_win ? "Won" : "Lost"
+            td= hero ? hero.localized_name : "unknown hero"
+            td= match.player_win ? "Won" : "Lost"
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment.unix(match.start_time + match.duration).fromNow()
-            td=constants.parse_status[match.parse_status]
-    .col-md-6
-      +hero_table(player.heroes_arr.slice(0,15), false)
+            td=match.players[0].kills
+            td=match.players[0].deaths
+            td=match.players[0].assists
+            td=match.players[0].last_hits
+            td=match.players[0].denies
+            td=match.players[0].gold_per_min
+            td=match.players[0].xp_per_min
+            td=match.players[0].hero_damage
+            td=match.players[0].tower_damage
+            td=match.players[0].hero_healing 
+
   hr
   .row
     include ads/leaderboard_2
   hr
   .row
     .col-md-6
-      +teammate_table(player.teammates.slice(0,15))
+      +hero_table(player.heroes_arr, false)
     .col-md-6
+      +teammate_table(player.teammates)
+  hr
+  .row
+    .col-md-7.table-responsive
+      h3 Activity
+      p
+        button.btn.btn-default#prev &laquo;
+        button.btn.btn-default#next &raquo;
+      #cal-heatmap
+    .col-md-5
       h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo:
       h4#party Party:
@@ -66,6 +104,9 @@ block playercontent
 
 append footer_assets
   script.
+    playerMatches();
+    playerTrendsTables();
+    generateActivity(!{JSON.stringify(player.aggData.start_time.counts)});
     $(".pref").change(function() {
         $.post(
             "/preferences", {
