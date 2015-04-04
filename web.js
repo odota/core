@@ -39,11 +39,13 @@ else {
     if (cluster.isMaster) {
         // Count the machine's CPUs
         var cpuCount = require('os').cpus().length;
+        configureApp(app);
+        /*
         // Create a worker for each CPU
         for (var i = 0; i < cpuCount; i += 1) {
             cluster.fork();
         }
-        //configureApp(app);
+        */
     }
     else {
         configureApp(app);
