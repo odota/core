@@ -63,7 +63,8 @@ function runParser(job, cb) {
             //todo graceful shutdown
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread, there is an API change in 0.9
+            //we need to use kue's pause to stop processing jobs, then crash the thread
+            //there is an API change in 0.9, so wait for that?
             console.log(err);
             if (bz) {
                 bz.kill();
@@ -133,9 +134,11 @@ function runParser(job, cb) {
         */
         outStream.on('root', handleStream);
         outStream.on('end', function() {
+            console.time("postprocess");
             processEventBuffer();
             processTeamfights();
             //fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            console.timeEnd("postprocess");
         });
     });
     //parse state
@@ -182,7 +185,7 @@ function runParser(job, cb) {
         },
         "progress": function(e) {
             job.progress(e.key, 100);
-            console.log(e);
+            //console.log(e);
         }
     };
 
@@ -198,7 +201,9 @@ function runParser(job, cb) {
         "epilogue": function() {
             error = false;
         },
-        "hero_log": populate,
+        "hero_log": function(e) {
+            populate(e);
+        },
         "gold_reasons": function(e) {
             if (!constants.gold_reasons[e.key]) {
                 //new gold reason
@@ -217,10 +222,7 @@ function runParser(job, cb) {
             getSlot(e);
             if (e.key.indexOf("recipe_") === -1) {
                 e.type = "purchase_log";
-                populate(e);
-                //e.type = "purchase_time";
-                //e.value = e.time;
-                //populate(e);
+                populate(e, parsed_data);
             }
         },
         "modifier_applied": getSlot,
@@ -236,22 +238,25 @@ function runParser(job, cb) {
         },
         "kills": function(e) {
             getSlot(e);
-            var logs = ["npc_dota_hero_", "_tower", "_rax", "_fort", "_roshan"];
+            var logs = ["_tower", "_rax", "_fort", "_roshan"];
             var pass = logs.some(function(s) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
             });
             if (pass) {
-                e.type = "kills_log";
+                e.type = "objectives_log";
                 populate(e);
             }
-            if (e.key.indexOf("npc_dota_hero") !== -1) {
-                //if hero kill, check teamfight state
+            if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
+                //log this hero kill
+                e.type = "kills_log";
+                populate(e);
+                //check teamfight state
                 curr_teamfight = curr_teamfight || {
                     start: e.time - teamfight_cooldown,
                     end: null,
                     last_death: e.time,
                     deaths: 0,
-                    deaths_pos: [],
+                    deaths_pos: {},
                     players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
                         return {
                             ability_uses: {},
@@ -276,6 +281,7 @@ function runParser(job, cb) {
             getSlotReverse(r);
         },
         "damage": function(e) {
+            //count damage dealt
             getSlot(e);
             //check if hero hit
             if (e.target_hero && !e.target_illusion) {
@@ -286,10 +292,15 @@ function runParser(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
-                //biggest hit
+                //biggest hit on a hero
                 e.max = true;
-                e.type = "largest_hero_hit";
-                populate(e);
+                var m = {
+                    type: "max_hero_hit",
+                    inflictor: e.inflictor,
+                    key: e.key,
+                    value: e.value
+                };
+                populate(m);
             }
             //reverse and count as damage taken
             var r = {
@@ -318,6 +329,15 @@ function runParser(job, cb) {
                 intervalState[e.time] = {};
             }
             intervalState[e.time][e.slot] = e;
+            //check curr_teamfight status
+            if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown) {
+                //close it
+                curr_teamfight.end = e.time;
+                //push a copy for post-processing
+                teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
+                //clear existing teamfight
+                curr_teamfight = null;
+            }
             if (e.time >= 0) {
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0) {
@@ -373,29 +393,18 @@ function runParser(job, cb) {
     };
 
     function processEventBuffer() {
-        //console.time("postprocess");
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
             e.time -= game_zero;
-            //check teamfight status
-            if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown) {
-                //close it
-                curr_teamfight.end = e.time;
-                //push a copy for post-processing
-                teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
-                //clear existing teamfight
-                curr_teamfight = null;
-            }
             if (types[e.type]) {
                 types[e.type](e);
             }
             else {
                 //no event handler for this type
-                console.log(e);
+                console.log("no event handler for type %s", e.type);
             }
         }
-        //console.timeEnd("postprocess");
         cb(error, parsed_data);
     }
 
@@ -413,6 +422,19 @@ Damage dealt
 Did the hero die?
 Did the hero buyback?
 */
+        //filter only fights where 2+ heroes died
+        teamfights = teamfights.filter(function(tf) {
+            return tf.deaths >= 2;
+        });
+        //go through teamfights, add gold/xp deltas
+        teamfights.forEach(function(tf) {
+            tf.players.forEach(function(p, ind) {
+                //set gold/xp deltas here
+                //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
+                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
+                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
+            });
+        });
         for (var i = 0; i < entries.length; i++) {
             //loop over entries again
             var e = entries[i];
@@ -420,23 +442,49 @@ Did the hero buyback?
             for (var j = 0; j < teamfights.length; j++) {
                 var tf = teamfights[j];
                 if (e.time >= tf.start && e.time <= tf.end) {
-                    //todo if a hero dies, add to deaths_pos array, lookup slot of this key by hero name (e.key), get position from intervalstate
-                    //todo start counting skills, items, damage, died, bought back
-                    //todo sum gold/xp combat log events, or start/end delta?
-                    //e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
+                    //kills_log tracks only hero kills on non-illusions
+                    if (e.type === "kills_log") {
+                        //get slot of target
+                        e.slot = hero_to_slot[e.key];
+                        //0 is valid value, so check for undefined
+                        if (e.slot !== undefined) {
+                            //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
+                            var x = intervalState[e.time][e.slot].x;
+                            var y = intervalState[e.time][e.slot].y;
+                            var t = tf.deaths_pos;
+                            if (!t[x]) {
+                                t[x] = {};
+                            }
+                            if (!t[x][y]) {
+                                t[x][y] = 0;
+                            }
+                            t[x][y] += 1;
+                            //increment death count for this hero
+                            tf.players[e.slot].deaths += 1;
+                        }
+                    }
+                    else if (e.type === "buyback_log") {
+                        //bought back
+                        tf.players[e.slot].buybacks += 1;
+                    }
+                    else if (e.type === "damage") {
+                        //sum damage
+                        //check if damage dealt to hero and not illusion
+                        if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
+                            //check if the damage dealer could be assigned to a slot
+                            if (e.slot !== undefined) {
+                                tf.players[e.slot].damage += e.value;
+                            }
+                        }
+                    }
+                    else {
+                        //count skills, items
+                        populate(e, tf);
+                    }
                 }
             }
         }
-        //go through teamfights, add gold/xp deltas and push onto final array
-        teamfights.forEach(function(tf) {
-            tf.players.forEach(function(p, ind) {
-                //set gold/xp deltas here
-                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
-                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
-            });
-            //push element onto parsed_data.teamfights
-            parsed_data.teamfights.push(tf);
-        });
+        parsed_data.teamfights = teamfights;
         fs.writeFile("output_teamfights.json", JSON.stringify(parsed_data.teamfights));
     }
 
@@ -475,7 +523,8 @@ Did the hero buyback?
         //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
         //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
         e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
-        //use slot, then map value (could be undefined)
+        //use original slot in event, then map value (could be undefined)
+        //e.slot can be 0, so we check for existence in the object
         e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
         populate(e);
     }
@@ -485,16 +534,20 @@ Did the hero buyback?
         getSlot(e);
     }
 
-    function populate(e) {
-        if (!parsed_data.players[e.slot]) {
+    function populate(e, container) {
+        //use parsed_data by default if nothing passed in
+        container = container || parsed_data;
+        if (!container.players[e.slot]) {
             //couldn't associate with a player, probably attributed to a creep/tower/necro unit
             //console.log(e);
             return;
         }
-        var t = parsed_data.players[e.slot][e.type];
+        var t = container.players[e.slot][e.type];
         if (typeof t === "undefined") {
             //parsed_data.players[0] doesn't have a type for this event
-            console.log(e);
+            //false alarms a lot under teamfights since teamfights only track a subset of fields for each player
+            //console.log(e);
+            return;
         }
         else if (e.posData) {
             var x = e.key[0];
@@ -506,6 +559,13 @@ Did the hero buyback?
                 t[x][y] = 0;
             }
             t[x][y] += 1;
+        }
+        else if (e.max) {
+            var curr = container.players[e.slot][e.type];
+            //check if value is greater than what was stored
+            if (e.value > curr.value) {
+                curr = e;
+            }
         }
         else if (t.constructor === Array) {
             //determine whether we want the value only (interval) or the time and key (log)
@@ -524,12 +584,8 @@ Did the hero buyback?
         else {
             //we must use the full reference since this is a primitive type
             //use the value most of the time, but key when stuns since value only holds Integers in Java
-            if (e.max) {
-                parsed_data.players[e.slot][e.type] = Math.max(parsed_data.players[e.slot][e.type], e.value || Number(e.key));
-            }
-            else {
-                parsed_data.players[e.slot][e.type] = e.value || Number(e.key);
-            }
+            //replace the value directly
+            container.players[e.slot][e.type] = e.value || Number(e.key);
         }
     }
 }
