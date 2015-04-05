@@ -16,6 +16,7 @@ import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
+import skadistats.clarity.source.InputStreamSource;
 import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
@@ -426,7 +427,7 @@ public class Main {
 
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
-		new SimpleRunner().runWith(System.in, this);
+		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
 		//flush the log if it was buffered	
 		es.flush();
 		long tMatch = System.currentTimeMillis() - tStart;

@@ -556,8 +556,7 @@ function runParser(job, cb) {
         else if (e.max) {
             //check if value is greater than what was stored
             if (e.value > t.value) {
-                t.value = e.value;
-                t.inflictor = e.inflictor;
+                container.players[e.slot][e.type] = e;
             }
         }
         else if (t.constructor === Array) {
