@@ -126,17 +126,19 @@ function computeMatchData(match) {
                 p.lane_role = lane_roles[p.lane] ? lane_roles[p.lane]() : undefined;
             }
             //compute hashes of purchase time sums and counts from logs
-            p.purchase_time = {};
-            p.purchase_time_count = {};
-            for (var i = 0; i < p.purchase_log.length; i++) {
-                var k = p.purchase_log[i].key;
-                var time = p.purchase_log[i].time;
-                if (!p.purchase_time[k]) {
-                    p.purchase_time[k] = 0;
-                    p.purchase_time_count[k] = 0;
+            if (p.purchase_log) {
+                p.purchase_time = {};
+                p.purchase_time_count = {};
+                for (var i = 0; i < p.purchase_log.length; i++) {
+                    var k = p.purchase_log[i].key;
+                    var time = p.purchase_log[i].time;
+                    if (!p.purchase_time[k]) {
+                        p.purchase_time[k] = 0;
+                        p.purchase_time_count[k] = 0;
+                    }
+                    p.purchase_time[k] += time;
+                    p.purchase_time_count[k] += 1;
                 }
-                p.purchase_time[k] += time;
-                p.purchase_time_count[k] += 1;
             }
         }
         player.parsedPlayer = p;
@@ -192,42 +194,30 @@ function patchLegacy(match) {
         match.parsed_data = null;
     }
     else if (match.parsed_data && match.parsed_data.version < 5) {
-        //console.log("patching v4 data");
+        console.log("patching v4 data");
         mergeMatchData(match);
         for (var i = 0; i < match.players.length; i++) {
             var player = match.players[i];
-            var hero_obj = constants.heroes[player.hero_id];
-            if (!hero_obj) {
-                //we failed to get associate a hero with this player, just deprecate this data
-                match.parsed_data = null;
-                return;
-            }
-            var parsedHero = match.parsed_data.heroes[hero_obj.name];
             var parseSlot = player.player_slot % (128 - 5);
             var parsedPlayer = match.parsed_data.players[parseSlot];
-            //get the data from the old heroes hash
-            parsedPlayer.purchase = parsedHero.itembuys;
-            parsedPlayer.buyback_log = parsedPlayer.buybacks;
-            parsedPlayer.ability_uses = parsedHero.abilityuses;
-            parsedPlayer.item_uses = parsedHero.itemuses;
-            parsedPlayer.gold_reasons = parsedHero.gold_log;
-            parsedPlayer.xp_reasons = parsedHero.xp_log;
-            parsedPlayer.damage = parsedHero.damage;
-            parsedPlayer.hero_hits = parsedHero.hero_hits;
-            parsedPlayer.purchase_log = parsedHero.timeline;
-            parsedPlayer.kills_log = parsedHero.herokills;
-            parsedPlayer.kills = parsedHero.kills;
-            parsedPlayer.times = match.parsed_data.times;
-            parsedPlayer.chat = [];
-            //fill the chat for each player, went back to old format in v7
-            match.parsed_data.chat.forEach(function(c) {
-                c.key = c.text;
-                /*
-                if (c.slot === parseSlot) {
-                    parsedPlayer.chat.push(c);
-                }
-                */
-            });
+            //get data from old heroes object
+            var hero_obj = constants.heroes[player.hero_id];
+            if (hero_obj && match.parsed_data.heroes) {
+                var parsedHero = match.parsed_data.heroes[hero_obj.name];
+                //get the data from the old heroes hash
+                parsedPlayer.purchase = parsedHero.itembuys;
+                parsedPlayer.buyback_log = parsedPlayer.buybacks;
+                parsedPlayer.ability_uses = parsedHero.abilityuses;
+                parsedPlayer.item_uses = parsedHero.itemuses;
+                parsedPlayer.gold_reasons = parsedHero.gold_log;
+                parsedPlayer.xp_reasons = parsedHero.xp_log;
+                parsedPlayer.damage = parsedHero.damage;
+                parsedPlayer.hero_hits = parsedHero.hero_hits;
+                parsedPlayer.purchase_log = parsedHero.timeline;
+                parsedPlayer.kills_log = parsedHero.herokills;
+                parsedPlayer.kills = parsedHero.kills;
+                parsedPlayer.times = match.parsed_data.times;
+            }
             //remove recipes
             /*
             parsedPlayer.purchase_log.forEach(function(p,i){
@@ -238,9 +228,16 @@ function patchLegacy(match) {
             */
             //console.log('completed %s', match.match_id, parseSlot, i);
         }
+        //text is now stored under key
+        if (match.parsed_data.chat) {
+            match.parsed_data.chat.forEach(function(c) {
+                c.key = c.text;
+            });
+        }
     }
     else if (match.parsed_data && match.parsed_data.version < 7) {
-        //build the chat (v5, v6)
+        console.log("patching v6 data");
+        //build single chat from individual player chats
         match.parsed_data.chat = [];
         match.parsed_data.players.forEach(function(p, i) {
             p.chat.forEach(function(c) {

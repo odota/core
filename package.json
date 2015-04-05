@@ -61,7 +61,7 @@
     "poet": "~2.0.0",
     "qtip2": "~2.2.0",
     "redis": "0.12.1",
-    "request": "~2.54.0",
+    "request": "~2.55.0",
     "request-progress": "^0.3.1",
     "seaport": "^2.0.9",
     "select2": "^3.5.2-browserify",

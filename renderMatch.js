@@ -5,6 +5,8 @@ var sentiment = require('sentiment');
 
 function renderMatch(match) {
     var schema = utility.getParseSchema();
+    //make sure match.parsed_data is not null
+    match.parsed_data = match.parsed_data || schema;
     //make sure parsed_data has all fields
     for (var key in schema) {
         match.parsed_data[key] = match.parsed_data[key] || schema[key];

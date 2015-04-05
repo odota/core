@@ -137,8 +137,8 @@ function runParser(job, cb) {
             console.time("postprocess");
             processEventBuffer();
             processTeamfights();
-            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             console.timeEnd("postprocess");
+            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             cb(error, parsed_data);
         });
     });
