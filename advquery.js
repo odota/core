@@ -65,6 +65,10 @@ function aggregator(matches, fields) {
                 }
             }
         },
+        "time_result": function(key, m, p) {
+            var tr = aggData.time_result;
+            tr[m.start_time] = m.player_win;
+        },
         "win": function(key, m, p) {
             aggData[key] += (m.player_win) ? 1 : 0;
         },
@@ -110,8 +114,8 @@ function aggregator(matches, fields) {
         "denies": function(key, m, p) {
             standardAgg(key, p.denies, m);
         },
-        "total_gold": function(key, m, p){
-          standardAgg(key, ~~(p.gold_per_min*m.duration/60), m);
+        "total_gold": function(key, m, p) {
+            standardAgg(key, ~~(p.gold_per_min * m.duration / 60), m);
         },
         "gold_per_min": function(key, m, p) {
             standardAgg(key, p.gold_per_min, m);
@@ -203,6 +207,7 @@ function aggregator(matches, fields) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
         }
     };
+    //if null fields passed in, do all aggregations
     fields = fields || types;
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
@@ -223,6 +228,7 @@ function aggregator(matches, fields) {
     aggData.games = 0;
     aggData.teammates = {};
     aggData.matchups = {};
+    aggData.time_result = {};
     for (var hero_id in constants.heroes) {
         var obj = {
             hero_id: hero_id,
@@ -384,13 +390,22 @@ function sort(matches, sorts) {
             return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
         },
         "players[0].xp_per_min": function(a, b, dir) {
-                return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
+            return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
+        },
+        "players[0].hero_damage": function(a, b, dir) {
+            return (a.players[0].hero_damage - b.players[0].hero_damage) * dir;
+        },
+        "players[0].tower_damage": function(a, b, dir) {
+            return (a.players[0].tower_damage - b.players[0].tower_damage) * dir;
+        },
+        "players[0].hero_healing": function(a, b, dir) {
+                return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
             }
             //game mode
             //hero
-            //hero damage
-            //tower damage
-            //hero healing
+            //played
+            //result
+            //region
     };
     for (var key in sorts) {
         if (key in sortFuncs) {

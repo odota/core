@@ -96,6 +96,15 @@ block playercontent
         button.btn.btn-default#prev &laquo;
         button.btn.btn-default#next &raquo;
       #cal-heatmap
+      h3 Days
+      #cal-heatmap-days
+      h3 Hours
+      #cal-heatmap-hours
+      h3 Days
+      #chart-days
+      h3 Hours
+      #chart-hours
+      
     .col-md-5
       h3 Rating (#{player.publicmmr ? "public" : "private"})
       h4#solo Solo:
@@ -106,7 +115,8 @@ append footer_assets
   script.
     playerMatches();
     playerTrendsTables();
-    generateActivity(!{JSON.stringify(player.aggData.start_time.counts)});
+    var time_result = !{JSON.stringify(player.aggData.time_result)};
+    generateActivity(time_result);
     $(".pref").change(function() {
         $.post(
             "/preferences", {
