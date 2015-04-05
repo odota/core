@@ -1,9 +1,9 @@
-var moment = require('moment');
-module.exports = function() {
+function statusHandler() {
     /*
     var socket = io.connect();
     socket.on('stats', redraw);
 */
+//data is rendered out to status page
     redraw(data);
     function redraw(data) {
         for (var prop in data) {

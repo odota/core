@@ -125,6 +125,7 @@ function configureApp(app) {
     app.set('view engine', 'jade');
     app.locals.moment = moment;
     app.locals.constants = require('./constants.json');
+    app.locals.sources = require('./sources.json');
     app.use(compression());
     var basic = auth.basic({
         realm: "Kue"

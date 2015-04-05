@@ -1,26 +1,4 @@
-var $ = jQuery = require('jquery');
-var moment = require('moment');
-var constants = require('../../sources.json');
-var heroes = constants.heroes;
-var modes = constants.modes;
-var regions = constants.regions;
-module.exports = function(matches) {
-    $.fn.serializeObject = function() {
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function() {
-            if (o[this.name] !== undefined) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            }
-            else {
-                o[this.name] = this.value || '';
-            }
-        });
-        return o;
-    };
+function playerMatches(matches) {
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
@@ -64,7 +42,7 @@ module.exports = function(matches) {
                 title: 'Hero',
                 orderData: [2],
                 render: function(data, type) {
-                    return heroes[data] ? "<img src='" + heroes[data].img + "' title=\"" + heroes[data].localized_name + "\"/>" : data;
+                    return constants.heroes[data] ? "<img src='" + constants.heroes[data].img + "' title=\"" + constants.heroes[data].localized_name + "\"/>" : data;
                 }
             },
             {
@@ -72,7 +50,7 @@ module.exports = function(matches) {
                 title: 'Hero Name',
                 visible: false,
                 render: function(data, type) {
-                    return heroes[data] ? heroes[data].localized_name : data;
+                    return constants.heroes[data] ? constants.heroes[data].localized_name : data;
                 }
             },
             {
@@ -86,14 +64,14 @@ module.exports = function(matches) {
                 data: 'game_mode',
                 title: 'Game Mode',
                 render: function(data, type) {
-                    return modes[data] ? modes[data].name : data;
+                    return constants.modes[data] ? constants.modes[data].name : data;
                 }
             },
             {
                 data: 'cluster',
                 title: 'Region',
                 render: function(data, type) {
-                    return regions[data] ? regions[data] : data;
+                    return constants.regions[data] ? constants.regions[data] : data;
                 }
             },
             {

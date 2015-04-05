@@ -38,19 +38,3 @@ block content
   .row
     .col-md-12
       include ads/leaderboard_3
-append footer_assets
-  script.
-    $("#hero_id").select2({
-      maximumSelectionSize: 1
-    });
-    $("#with_account_id").select2({
-     tags: !{JSON.stringify(player.teammates.map(function(t){return {id:t.account_id, text:t.personaname+"-"+t.account_id};}))},
-     maximumSelectionSize: 10
-    });
-    $("#teammate_hero_id").select2({
-      maximumSelectionSize: 5
-    });
-    $("#enemy_hero_id").select2({
-      maximumSelectionSize: 5
-    });
-  include assets/datatables

@@ -1,5 +1,3 @@
-var numeral = require('numeral');
-
 function format(input) {
     input = Number(input);
     //console.log(input, isNaN(input));
@@ -23,9 +21,3 @@ function formatSeconds(input) {
     time += minutes + ":" + seconds;
     return time;
 }
-
-module.exports = {
-    format: format,
-    pad: pad,
-    formatSeconds: formatSeconds
-};

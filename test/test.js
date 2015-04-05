@@ -19,7 +19,6 @@ var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var Zombie = require('zombie');
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processParse = require('../processParse');
@@ -33,6 +32,7 @@ var operations = require('../operations');
 var queueReq = operations.queueReq;
 var wait = 60000;
 /*
+var Zombie = require('zombie');
 Zombie.localhost('localhost', process.env.PORT);
 var browser = new Zombie({
     maxWait: wait,

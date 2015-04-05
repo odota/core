@@ -1,6 +1,4 @@
-var CalHeatMap = require('cal-heatmap');
-var moment = require('moment');
-module.exports = function generateActivity(data) {
+function generateActivity(data) {
     var cal = new CalHeatMap();
     cal.init({
         start: new Date(moment().subtract(1, 'year')),
@@ -26,4 +24,4 @@ module.exports = function generateActivity(data) {
         nextSelector: "#next",
         legendHorizontalPosition: "right"
     });
-};
+}

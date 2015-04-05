@@ -1,16 +1,11 @@
-var $ = jQuery = require('jquery');
-var utility = require('./utility');
-var formatSeconds = utility.formatSeconds;
-var format = utility.format;
-var moment = require('moment');
-module.exports = function processHtml() {
+function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
             Radiant: {},
             Dire: {}
         };
-        var negatives = {}
+        var negatives = {};
         var tbody = $(table).find('tbody');
         tbody.children().each(function(i, row) {
             row = $(row);
@@ -67,4 +62,4 @@ module.exports = function processHtml() {
     $('.format-seconds').each(function() {
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
-};
+}

@@ -1,6 +1,4 @@
-var c3 = require('c3');
-var moment = require('moment');
-module.exports = function generateHistograms(data) {
+function generateHistograms(data) {
     //need a param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
     //need a max to determine how many bins we should have
     //need a param to define the label on the x axis

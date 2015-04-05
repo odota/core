@@ -27,6 +27,7 @@ var matchPages = {
 };
 matches.get('/', function(req, res) {
     res.render('matches.jade', {
+        q: req.query,
         title: "Matches - YASP"
     });
 });

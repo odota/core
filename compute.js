@@ -194,7 +194,7 @@ function patchLegacy(match) {
         match.parsed_data = null;
     }
     else if (match.parsed_data && match.parsed_data.version < 5) {
-        console.log("patching v4 data");
+        //console.log("patching v4 data");
         mergeMatchData(match);
         for (var i = 0; i < match.players.length; i++) {
             var player = match.players[i];
@@ -236,7 +236,7 @@ function patchLegacy(match) {
         }
     }
     else if (match.parsed_data && match.parsed_data.version < 7) {
-        console.log("patching v6 data");
+        //console.log("patching v6 data");
         //build single chat from individual player chats
         match.parsed_data.chat = [];
         match.parsed_data.players.forEach(function(p, i) {

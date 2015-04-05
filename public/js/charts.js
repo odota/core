@@ -1,7 +1,4 @@
-var c3 = require('c3');
-var async = require('async');
-var moment = require('moment');
-module.exports = function generateCharts(data) {
+function generateCharts(data) {
     c3.generate({
         bindto: "#chart-gold-breakdown",
         data: {
@@ -57,7 +54,7 @@ module.exports = function generateCharts(data) {
         xLabel: 'Game Time (minutes)',
         yLabel: 'LH'
         }];
-    async.eachSeries(charts, function(chart, cb) {
+    charts.forEach(function(chart) {
         c3.generate({
             bindto: chart.bindTo,
             data: {
@@ -81,11 +78,12 @@ module.exports = function generateCharts(data) {
             },
             tooltip: {
                 contents: function(d, defaultTitleFormat, defaultValueFormat, color) {
-                    d.sort(function(a,b){return b.value-a.value});
-                    return this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat,color);
+                    d.sort(function(a, b) {
+                        return b.value - a.value
+                    });
+                    return this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color);
                 }
             }
         });
-        setTimeout(cb, 50);
     });
 };

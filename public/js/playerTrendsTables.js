@@ -1,7 +1,4 @@
-var $ = jQuery = require('jquery');
-var utility = require('./utility');
-var formatSeconds = utility.formatSeconds;
-module.exports = function playerTables() {
+function playerTrendsTables() {
     var accuracy = $('#accuracy').dataTable({
         "searching": true,
         "paging": true,

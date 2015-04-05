@@ -139,23 +139,23 @@ function getRatingData(account_id, cb) {
 function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
-    //options.query, the querystring from the user, apply these options to select
-    //defaults: this player, balanced modes only
-    var select = {
+    //options.query, the querystring from the user, pass these as select conditions
+    //defaults: this player, balanced modes only, put the defaults in options.query
+    var default_select = {
         "players.account_id": player.account_id.toString(),
         "balanced": "1"
     };
-    for (var key in options.query) {
-        select[key] = options.query[key];
+    for (var key in default_select) {
+        options.query[key] = options.query[key] || default_select[key];
     }
-    //null aggs everything by default, otherwise, we just want w/l/games
+    //null aggs everything by default (trends page), otherwise, we just want w/l/games
     var agg = (options.info === "trends") ? null : {
         win: 1,
         lose: 1,
         games: 1
     };
     advQuery({
-        select: select,
+        select: options.query,
         project: null, //just project default fields
         agg: agg,
         js_sort: {

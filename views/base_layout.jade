@@ -29,12 +29,6 @@ html
     link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')
     link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
     link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
-    //link(rel="stylesheet", href="//cdn.rawgit.com/t0m/select2-bootstrap-css/bootstrap3/select2-bootstrap.css")
     style
       include ../public/css/flaticon.css
     block stylesheets
@@ -48,8 +42,95 @@ html
     block unsticky_content
     block sticky_content
     block footer_assets
-      script(src="/public/js/bundle.js")
+      //external
+      //d3
+      script(type='text/javascript' src="//cdn.jsdelivr.net/d3js/3.5.5/d3.min.js")
+      //jquery
+      script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
+      //datatables
+      link(rel='stylesheet', href='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css')
+      script(type='text/javascript' src='//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js')
+      script(type='text/javascript' src='//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js')
+      //qtip2
+      script(type='text/javascript' src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.js')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+      //select2
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
+      script(type='text/javascript' src='//cdn.jsdelivr.net/select2/latest/select2.min.js')
+      //c3
+      script(type='text/javascript' src='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.js')
+      link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
+      //cal-heatmap
+      script(type='text/javascript' src='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.min.js')
+      link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+      //moment
+      script(type='text/javascript' src="//cdn.jsdelivr.net/momentjs/2.9.0/moment.min.js")
+      //numeral
+      script(type='text/javascript' src="//cdn.jsdelivr.net/numeraljs/1.5.0/numeral.min.js")
+      //heatmap.js
+      script(type='text/javascript', src='//cdn.rawgit.com/pa7/heatmap.js/develop/build/heatmap.min.js')
+      //ga
       script(src="/public/js/ga.js")
+      
+      //yasp client side constants
+      script.
+        var constants = !{JSON.stringify(sources)};
+        
+      //yasp utilities
+      script(src="/public/js/utility.js")
+      script(src="/public/js/tooltips.js")
+      script(src="/public/js/formatHtml.js")
+      
+      //yasp code
+      script(src="/public/js/activity.js")
+      script(src="/public/js/charts.js")
+      script(src="/public/js/map.js")
+      script(src="/public/js/playerMatches.js")
+      script(src="/public/js/playerTrendsTables.js")
+      script(src="/public/js/histograms.js")
+      script(src="/public/js/statusHandler.js")
+      
+      //yasp styling
       script(src="/bower_components/bootstrap/js/transition.js")
       script(src="/bower_components/bootstrap/js/collapse.js")
-      
+
+      script.
+        //by default, run formatting functions on all pages
+        document.addEventListener('DOMContentLoaded', function() {
+            tooltips();
+            formatHtml();
+        });
+        
+        //extend jquery to serialize form data to JSON
+        $.fn.serializeObject = function() {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function() {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                }
+                else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+
+        //query form code
+        $("#hero_id").select2({
+            maximumSelectionSize: 1
+        });
+        $("#with_account_id").select2({
+            tags: !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.personaname + "-" + t.account_id};})) : "[]"},
+            maximumSelectionSize: 10
+        });
+        $("#teammate_hero_id").select2({
+            maximumSelectionSize: 4
+        });
+        $("#enemy_hero_id").select2({
+            maximumSelectionSize: 5
+        });

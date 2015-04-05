@@ -110,6 +110,9 @@ function aggregator(matches, fields) {
         "denies": function(key, m, p) {
             standardAgg(key, p.denies, m);
         },
+        "total_gold": function(key, m, p){
+          standardAgg(key, ~~(p.gold_per_min*m.duration/60), m);
+        },
         "gold_per_min": function(key, m, p) {
             standardAgg(key, p.gold_per_min, m);
         },
@@ -319,7 +322,7 @@ function filter(matches, filters) {
             }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
+                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]) && p.account_id !== m.players[0].account_id);
                 });
             });
         },
@@ -421,8 +424,8 @@ function advQuery(options, cb) {
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
-            options.select[key] = NaN;
-            continue;
+            //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
+            delete options.select[key];
         }
         else {
             //split each by comma
@@ -499,6 +502,7 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
+    console.log(options);
     console.time('db');
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {
