@@ -24,38 +24,37 @@ block match_content
                     th: abbr(title="Neutral creeps killed") NK
                     th: abbr(title="Towers killed") TK
                     th: abbr(title="Couriers killed") CK
-                    th: abbr(title="Biggest hero hit") HIT
                     //th: abbr(title="Number of times the player clicked") CLICK
                     each val, key in constants.runes
                       th=val.name
 
-                tbody
-              tr(class = player.isRadiant ? "success" : "danger")
-                - var hero = constants.heroes[player.hero_id]
-                - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
-                td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
-                td #{(p.lane_efficiency*100).toFixed(2)}
-                td #{p.purchase.tpscroll || "-"}
-                td #{p.purchase.ward_observer*2 || "-"}
-                td #{p.purchase.ward_sentry*2 || "-"}
-                td #{p.purchase.smoke_of_deceit || "-"}
-                td #{p.purchase.dust*2 || "-"}
-                td #{p.purchase.gem || "-"}
-                td #{p.buyback_log.length || "-"}
-                td #{p.stuns.toFixed(2)}
-                td #{p.neutral_kills || "-"}
-                td #{p.tower_kills || "-"}
-                td #{p.courier_kills || "-"}
-                td #{JSON.stringify(p.max_hero_hit) || "-"}
-                //td #{p.clicks[0] || "-"}
-                each val, key in constants.runes
-                  td #{p.runes[key] || "-"}
-                
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
+                  td #{(p.lane_efficiency*100).toFixed(2)}
+                  td #{p.purchase.tpscroll || "-"}
+                  td #{p.purchase.ward_observer*2 || "-"}
+                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.smoke_of_deceit || "-"}
+                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.gem || "-"}
+                  td #{p.buyback_log.length || "-"}
+                  td #{p.stuns.toFixed(2)}
+                  td #{p.neutral_kills || "-"}
+                  td #{p.tower_kills || "-"}
+                  td #{p.courier_kills || "-"}
+                  //td #{p.clicks[0] || "-"}
+                  each val, key in constants.runes
+                    td #{p.runes[key] || "-"}
+                  
+        hr    
         h2 Performance
         .table-responsive
           table.table.table-hover
@@ -64,36 +63,51 @@ block match_content
                 thead
                   tr
                     th Hero
+                    th: abbr(title="Largest instance of damage on a hero") Biggest Hit
                     th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hero Hits)
                     th: abbr(title="Items used") Item Use
                     th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
-                tbody
-              tr(class = player.isRadiant ? "success" : "danger")
-                - var hero = constants.heroes[player.hero_id]
-                - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
-                td.table-img
-                  each ability in p.ability_uses_arr
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  td.table-img
+                    - var ability = constants.abilities[p.max_hero_hit.inflictor]
+                    - var hero = constants.hero_names[p.max_hero_hit.key]
                     div.img-text
-                      img.ability(src=ability.img, alt=ability.name)
-                      div #{ability.val}
-                      div (#{ability.hero_hits || 0})
-                td.table-img
-                  each item in p.item_uses_arr
-                    div.img-text
-                      img.item(src=item.img, alt=item.name)
-                      div #{item.val}
-                td.table-img
-                  each dmg in p.damage_arr
-                    div.img-text
-                      img.dmg(src=dmg.img, title=dmg.localized_name)
-                      div.format #{dmg.val}
-                      div (#{dmg.kills || 0})
-                      
+                      if ability
+                        span: img.ability(src=ability.img, alt=p.max_hero_hit.inflictor)
+                      else
+                        span: img.ability(src="/public/images/default_attack.png" ,title="Auto Attack")
+                      div (#{p.max_hero_hit.value})                      
+                    if hero
+                      span: img.hero(src=hero.img, title=hero.localized_name)
+                    else
+                      =p.max_hero_hit.key
+                    
+                  td.table-img
+                    each ability in p.ability_uses_arr
+                      div.img-text
+                        img.ability(src=ability.img, alt=ability.name)
+                        div #{ability.val}
+                        div (#{ability.hero_hits || 0})
+                  td.table-img
+                    each item in p.item_uses_arr
+                      div.img-text
+                        img.item(src=item.img, alt=item.name)
+                        div #{item.val}
+                  td.table-img
+                    each dmg in p.damage_arr
+                      div.img-text
+                        img.dmg(src=dmg.img, title=dmg.localized_name)
+                        div.format #{dmg.val}
+                        div (#{dmg.kills || 0})
+                        
         hr
         include ads/leaderboard_2
         hr
