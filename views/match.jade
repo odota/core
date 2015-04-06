@@ -32,17 +32,6 @@ block content
             td.fromNow= match.start_time + match.duration
             td= constants.patches[match.patch] ? constants.patches[match.patch].id : match.patch
   .row
-    .col-md-4.col-md-offset-4.text-center
-      .meter_wrapper
-        h2
-          abbr(title="YASP's algorithmic analysis of data trends combined with advanced statistical aggregation calculates a 'throw' metric for each game.") 322 Level
-        - var tl = (Number(match.match_id)*0.5) % 100;
-        - var title = tl < 33 ? "Good job." : tl < 50 ? "Could have been cleaner." : tl < 80 ? "Almost threw." : "EG levels."
-        - var color = tl < 33 ? "#BBF0FD" : tl < 50 ? "#43B01E" : tl < 80 ? "#DA6B43" : "#C02121"
-        .meter.throw(title=title)
-          span(style="width: #{tl}%; background-color: #{color}")
-        small Learn more <a href="/post/throws">here.</a>
-  .row
       .col-md-10
         ul.nav.nav-tabs
           each val, key in tabs
