@@ -109,22 +109,21 @@ var db = require("../db");
         "filterSet" : false
 }
 */
+//if deleting parsed_data, we should set parse_status to unavailable
+//v1, delete parsed_data (parsed_data.players contains players with lh, gold, xp, not much else, no heroes object)
+//db.matches.update({"parsed_data":{$exists:true}, "parsed_data.version":null},{$unset:{parsed_data:""},$set:{parse_status:1}},{multi:true})
 db.matches.find({
-    "parsed_data": {
-        $exists: true
-    },
-    "parsed_data.version": null
+    "parsed_data.version": 2
 }, {
     limit: 1
 }, function(err, docs) {
-    //if we're gonna null parsed_data, we should set parse_status to unavailable
-    //v6 is the current "hot set", we are adding matches with v6 data so we should run that migration AFTER we deploy v7 code
-    //v1, delete parsed_data
-    //v2, migration
+    //v2, migration, delete parsed_data.heroes
     //v3, migration, delete parsed_data.heroes
     //v4, migration, delete parsed_data.heroes
-    //v5, v6, migration, chat
-    //all versions, backfill steam_ids
+    //v5, migration, chat
+    //v6, migration, chat
+    //v2 through v6, backfill steam_ids
+    //v6 is the current "hot set", we are adding matches with v6 data so we should run that migration AFTER we deploy v7 code
     docs.forEach(function(doc) {
         console.log(doc.match_id);
     });

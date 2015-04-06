@@ -10,10 +10,8 @@ block playercontent
         h3 Actions
         if (!user.full_history_time)
           .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
-        if (user.account_id in ratingPlayers)
-          p: button.btn.btn-default(disabled) MMR Tracked
-        else
-          p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
+        if (!user.account_id in ratingPlayers)
+          p: a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
         .checkbox
           label
             input.pref#theme(type="checkbox", checked=user.light_theme)

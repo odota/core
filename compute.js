@@ -9,9 +9,6 @@ var sentiment = require('sentiment');
  * Computes additional match stats based on parsed_data
  **/
 function computeMatchData(match) {
-        //todo what if we encounter a match with invalid data, try/catch?
-        //v4,v5,v6 should be okay
-        //v3,v2,no version(v1) previously set to null
         match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
         var date = new Date(match.start_time * 1000);
         for (var i = 0; i < constants.patches.length; i++) {

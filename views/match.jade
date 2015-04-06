@@ -16,6 +16,7 @@ block content
           tr
             td
               abbr(title=constants.tooltips.status) Status
+            td Version
             td Game Mode
             td Region
             td Duration
@@ -25,6 +26,7 @@ block content
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
             td= constants.parse_status[match.parse_status]
+            td= match.parsed_data ? match.parsed_data.version : "N/A"
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
