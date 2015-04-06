@@ -25,6 +25,7 @@ var moment = require('moment');
 var bodyParser = require('body-parser');
 var queueReq = require('./operations').queueReq;
 var async = require('async');
+var queries = require('./queries');
 // Include the cluster module
 var cluster = require('cluster');
 // Include Express
@@ -189,6 +190,35 @@ function configureApp(app) {
     });
     app.use('/matches', require('./routes/matches'));
     app.use('/players', require('./routes/players'));
+    app.use('/ratings', function(req, res, next) {
+        db.ratings.distinct('account_id', {}, function(err, array) {
+            if (err) {
+                return next(err);
+            }
+            //get distinct ids in ratings
+            //get the most recent record for each
+            async.map(array, function(account_id, cb) {
+                db.ratings.findOne({
+                    account_id: account_id
+                }, {
+                    sort: {
+                        time: -1
+                    }
+                }, function(err, result) {
+                    cb(err, result);
+                });
+            }, function(err, ratings) {
+                if (err) {
+                    return next(err);
+                }
+                queries.fillPlayerNames(ratings, function(err) {
+                    res.render("ratings", {
+                        ratings: ratings
+                    });
+                });
+            });
+        });
+    });
     app.use('/api', require('./routes/api'));
     app.route('/').get(function(req, res, next) {
         //todo make a static example file with match data?

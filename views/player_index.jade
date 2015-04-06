@@ -16,10 +16,6 @@ block playercontent
           p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
         .checkbox
           label
-            input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
-            | Make MMR public
-        .checkbox
-          label
             input.pref#theme(type="checkbox", checked=user.light_theme)
             | Use Light Theme
   .row
@@ -106,7 +102,7 @@ block playercontent
       #chart-hours
       
     .col-md-5
-      h3 Rating (#{player.publicmmr ? "public" : "private"})
+      h3 Rating
       h4#solo Solo:
       h4#party Party:
       #ratings(style="margin-top:5em;")
@@ -121,7 +117,6 @@ append footer_assets
         $.post(
             "/preferences", {
                 light_theme: $("#theme").is(":checked"),
-                publicmmr: $("#publicmmr").is(":checked")
             },
             function(data) {
                 if (data.sync) {
@@ -133,7 +128,7 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
-      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? ratings : [])};
+      var ratings = !{JSON.stringify(ratings)};
       $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
       $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
       var times = ratings.map(function(r){return new Date(r.time);});

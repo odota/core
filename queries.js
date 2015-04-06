@@ -5,9 +5,10 @@ var constants = require('./constants.json');
 var config = require("./config");
 var compute = require('./compute');
 var advQuery = require('./advquery');
-var generatePositionData = compute.generatePositionData;
+var utility = require('./utility');
+var generatePositionData = utility.generatePositionData;
 var computeMatchData = compute.computeMatchData;
-var renderMatch = require('./renderMatch');
+var renderMatch = compute.renderMatch;
 //readies a match for display
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;

@@ -421,7 +421,7 @@ function runParser(job, cb) {
         teamfights.forEach(function(tf) {
             tf.players.forEach(function(p, ind) {
                 //set gold/xp deltas here
-                //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
+                //todo alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
                 p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
                 p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
             });

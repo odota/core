@@ -254,6 +254,29 @@ function getParseSchema() {
         })
     };
 }
+
+function generatePositionData(d, p) {
+    //d, a hash of keys to process
+    //p, a player containing keys with values as position hashes
+    //stores the resulting arrays in the keys of d
+    //64 is the offset of x and y values
+    //subtracting y from 127 inverts from bottom/left origin to top/left origin
+    for (var key in d) {
+        var t = [];
+        for (var x in p[key]) {
+            for (var y in p[key][x]) {
+                t.push({
+                    x: Number(x) - 64,
+                    y: 127 - (Number(y) - 64),
+                    value: p[key][x][y]
+                });
+            }
+        }
+        d[key] = t;
+    }
+    return d;
+}
+
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -263,5 +286,6 @@ module.exports = {
     isRadiant: isRadiant,
     mergeObjects: mergeObjects,
     mode: mode,
+    generatePositionData: generatePositionData,
     getParseSchema: getParseSchema
 };

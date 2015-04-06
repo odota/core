@@ -538,10 +538,10 @@ function advQuery(options, cb) {
                 console.timeEnd("parsedplayerdata");
                 console.time('compute');
                 matches.forEach(function(m) {
-                    //post-process the match to get additional stats
-                    computeMatchData(m);
                     //reduce memory use by removing players.ability_upgrades
                     delete m.players[0].ability_upgrades;
+                    //post-process the match to get additional stats
+                    computeMatchData(m);
                 });
                 var filtered = filter(matches, options.js_select);
                 filtered = sort(filtered, options.js_sort);
