@@ -51,97 +51,10 @@ module.exports = function processParse(job, cb) {
 function runParser(job, cb) {
     logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
-    var bz;
-    var parser;
     var outStream;
     var exited;
     var error = "incomplete";
     var d = domain.create();
-    d.on('error', function exit(err) {
-        if (!exited) {
-            exited = true;
-            //todo graceful shutdown
-            //best is probably to have processparse running via cluster threads
-            //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread
-            //there is an API change in 0.9, so wait for that?
-            console.log(err);
-            if (bz) {
-                bz.kill();
-            }
-            if (parser) {
-                parser.kill();
-            }
-            cb(err.message || err);
-        }
-    });
-    d.run(function() {
-        var url = job.data.payload.url;
-        var fileName = job.data.payload.fileName;
-        var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
-        console.log("target:%s", target);
-        inStream = request(target);
-        outStream = JSONStream.parse();
-        inStream.pipe(outStream);
-        /*
-        parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                outStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }));
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    outStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }));
-                }
-            });
-            bz = spawn("bunzip2");
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        else {
-            throw new Error("no parse input");
-        }
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parser.on('exit', function(code) {
-            outStream.write(JSON.stringify({
-                "type": "exit",
-                "key": code
-            }));
-        });
-        parser.stdout.pipe(outStream);
-        */
-        outStream.on('root', handleStream);
-        outStream.on('end', function() {
-            console.time("postprocess");
-            processEventBuffer();
-            processTeamfights();
-            console.timeEnd("postprocess");
-            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
-            cb(error, parsed_data);
-        });
-    });
     //parse state
     var entries = [];
     var name_to_slot = {};
@@ -153,6 +66,7 @@ function runParser(job, cb) {
     var intervalState = {};
     var teamfight_cooldown = 15;
     var parsed_data = utility.getParseSchema();
+    //event handlers
     var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
@@ -189,15 +103,6 @@ function runParser(job, cb) {
             //console.log(e);
         }
     };
-
-    function handleStream(e) {
-        if (streamTypes[e.type]) {
-            streamTypes[e.type](e);
-        }
-        else {
-            entries.push(e);
-        }
-    }
     var types = {
         "epilogue": function() {
             error = false;
@@ -395,6 +300,96 @@ function runParser(job, cb) {
             populate(e);
         }
     };
+    d.on('error', exit);
+    d.run(function() {
+        var url = job.data.payload.url;
+        var fileName = job.data.payload.fileName;
+        var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
+        console.log("target:%s", target);
+        inStream = request(target);
+        outStream = JSONStream.parse();
+        inStream.pipe(outStream);
+        /*
+        parser = spawn("java", ["-jar",
+        "-Xmx64m",
+        "parser/target/stats-0.1.0.one-jar.jar"
+    ], {
+            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
+            inStream.pipe(parser.stdin);
+        }
+        else if (url) {
+            inStream = progress(request.get({
+                url: url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state) {
+                outStream.write(JSON.stringify({
+                    "type": "progress",
+                    "key": state.percent
+                }));
+            }).on('response', function(response) {
+                if (response.statusCode !== 200) {
+                    outStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": response.statusCode
+                    }));
+                }
+            });
+            bz = spawn("bunzip2");
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        }
+        else {
+            throw new Error("no parse input");
+        }
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
+        });
+        parser.on('exit', function(code) {
+            outStream.write(JSON.stringify({
+                "type": "exit",
+                "key": code
+            }));
+        });
+        parser.stdout.pipe(outStream);
+        */
+        outStream.on('root', handleStream);
+        outStream.on('end', function() {
+            console.time("postprocess");
+            processEventBuffer();
+            processTeamfights();
+            console.timeEnd("postprocess");
+            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            exit(error);
+        });
+    });
+
+    function exit(err) {
+        if (!exited) {
+            exited = true;
+            //todo graceful shutdown
+            //best is probably to have processparse running via cluster threads
+            //then we can just crash this thread and master can respawn a new worker
+            //we need to use kue's pause to stop processing jobs, then crash the thread
+            //there is an API change in 0.9, so wait for that?
+            console.log(err);
+            cb(err.message || err, parsed_data);
+        }
+    }
+
+    function handleStream(e) {
+        if (streamTypes[e.type]) {
+            streamTypes[e.type](e);
+        }
+        else {
+            entries.push(e);
+        }
+    }
 
     function processEventBuffer() {
         for (var i = 0; i < entries.length; i++) {

@@ -1,4 +1,10 @@
+var utility = require('../utility');
+var constants = require('../constants');
+var mergeObjects = utility.mergeObjects;
+var db = require("../db");
+//stats
 /*
+//parsed_data without version
 > db.matches.find({"parsed_data":{$exists:true}, "parsed_data.version":null}).explain()
 {
         "cursor" : "BasicCursor",
@@ -16,23 +22,7 @@
         "server" : "yasp-core-hm-2:27017",
         "filterSet" : false
 }
-> db.matches.find({"parsed_data.version":1}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 0,
-        "nscannedObjects" : 5352318,
-        "nscanned" : 5352318,
-        "nscannedObjectsAllPlans" : 5352318,
-        "nscannedAllPlans" : 5352318,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 342524,
-        "nChunkSkips" : 0,
-        "millis" : 1055809,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
+//no v1 matches since we started versioning at 2
 > db.matches.find({"parsed_data.version":2}).explain()
 {
         "cursor" : "BasicCursor",
@@ -119,21 +109,27 @@
         "filterSet" : false
 }
 */
-var utility = require('./utility');
-var mergeObjects = utility.mergeObjects;
-var max = 0;
-db.matches.find().forEach(function(obj) {
-    var curr = Object.bsonsize(obj);
-    if (curr > 300000) {
-        print(obj.match_id, curr);
-    }
-    if (curr > max) {
-        max = curr;
-    }
+db.matches.find({
+    "parsed_data": {
+        $exists: true
+    },
+    "parsed_data.version": null
+}, {
+    limit: 1
+}, function(err, docs) {
+    //if we're gonna null parsed_data, we should set parse_status to unavailable
+    //v6 is the current "hot set", we are adding matches with v6 data so we should run that migration AFTER we deploy v7 code
+    //v1, delete parsed_data
+    //v2, migration
+    //v3, migration, delete parsed_data.heroes
+    //v4, migration, delete parsed_data.heroes
+    //v5, v6, migration, chat
+    //all versions, backfill steam_ids
+    docs.forEach(function(doc) {
+        console.log(doc.match_id);
+    });
 });
-print(max);
-//if we're gonna null parsed_data, we should set parse_status to unavailable
-//v6 is the current "hot set", we are adding matches with v6 data so we should run that migration AFTER we deploy v7 code
+
 function mergeMatchData(match) {
     var heroes = match.parsed_data.heroes;
     //loop through all units

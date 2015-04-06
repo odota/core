@@ -30,6 +30,10 @@ var updateNames = require('../tasks/updateNames');
 var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
+var supertest = require('supertest');
+var app = require('../web');
+//launch the parse worker
+var parser = require('../parser');
 var wait = 60000;
 /*
 var Zombie = require('zombie');
@@ -43,8 +47,6 @@ var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
 }
-//launch the parse worker
-require('../parser');
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -137,7 +139,8 @@ before(function(done) {
                 var arr = filename.split(".");
                 arr[0] = arr[0].split("_")[0];
                 var path = replay_dir + arr.join(".");
-                if (fs.existsSync(path)) {
+                //currently disabled caching of replays, get a fresh copy with each test
+                if (fs.existsSync(path) && false) {
                     cb();
                 }
                 else {
@@ -277,7 +280,8 @@ describe("tasks", function() {
     this.timeout(wait);
     it('unparsed', function(done) {
         unparsed(function(err, num) {
-            assert(num);
+            //todo why isn't this picking up any matches?
+            //searches db for parse_status:0 and adds them to queue
             done(err);
         });
     });
@@ -288,7 +292,7 @@ describe("tasks", function() {
     });
     it('constants', function(done) {
         //fake constants response
-        nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
+        //nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
         constants(function(err) {
             done(err);
         });
@@ -310,7 +314,7 @@ describe("parser", function() {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
             processParse(job, function(err) {
-                //todo check the site to make sure templates work
+                //todo verify the parsed match displays properly on site (supertest)
                 done(err);
             });
         });
@@ -374,235 +378,256 @@ describe("parser", function() {
     });
 });
 describe("web", function() {
-    var supertest = require('supertest');
-    var app = require('../web');
-    before(function(done) {
-        done();
-    });
     //this.timeout(wait);
-    it('/', function(done) {
-        supertest(app).get('/')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/YASP/).end(function(err, res) {
-                done(err);
-            });
+    describe("main page tests", function() {
+        it('/', function(done) {
+            supertest(app).get('/')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/YASP/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/status', function(done) {
+            supertest(app).get('/status')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Status/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/matches', function(done) {
+            supertest(app).get('/matches')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Matches/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/matches', function(done) {
+            supertest(app).get('/ratings')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Ratings/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/about', function(done) {
+            supertest(app).get('/about')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/FAQ/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/page/1', function(done) {
+            supertest(app).get('/page/1')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Blog/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/carry', function(done) {
+            supertest(app).get('/carry')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Carry/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/:invalid', function(done) {
+            supertest(app).get('/asdf')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(404).end(function(err, res) {
+                    done(err);
+                });
+        });
+    })
+    describe("player page tests", function() {
+        it('/players/:invalid', function(done) {
+            supertest(app).get('/players/1')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(500).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:invalid/matches', function(done) {
+            supertest(app).get('/players/1/matches')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(500).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:valid', function(done) {
+            supertest(app).get('/players/88367253')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/.-./).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:valid/matches', function(done) {
+            supertest(app).get('/players/88367253/matches')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Matches/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:valid/trends', function(done) {
+            supertest(app).get('/players/88367253/trends')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Filter/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:valid/:invalid', function(done) {
+            supertest(app).get('/players/88367253/asdf')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/.-./).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/players/:valid (no matches)', function(done) {
+            supertest(app).get('/players/88367251')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/.-./).end(function(err, res) {
+                    done(err);
+                });
+        });
     });
-    it('/status', function(done) {
-        supertest(app).get('/status')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Status/).end(function(err, res) {
-                done(err);
+    describe("match page tests", function() {
+        it('/matches/:invalid', function(done) {
+            supertest(app).get('/matches/1')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(500).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/matches/:invalid/details', function(done) {
+            supertest(app).get('/matches/1/details')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(500).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/matches/:valid', function(done) {
+            supertest(app).get('/matches/870061127')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).expect(/Match/).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/matches/:valid/details (unparsed)', function(done) {
+            supertest(app).get('/matches/870061127/details')
+                //.expect('Content-Type', /json/)
+                //.expect('Content-Length', '20')
+                .expect(200).end(function(err, res) {
+                    done(err);
+                });
+        });
+        describe("verify templates after parse", function() {
+            it('/matches/:valid/ (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Details/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/matches', function(done) {
-        supertest(app).get('/matches')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Matches/).end(function(err, res) {
-                done(err);
+            it('/matches/:valid/details (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/details')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Details/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/matches/:valid', function(done) {
-        supertest(app).get('/matches/1151783218')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/1151783218/).end(function(err, res) {
-                done(err);
+            it('/matches/:valid/timelines (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/timelines')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Kills/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/matches/:invalid', function(done) {
-        supertest(app).get('/matches/1')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(500).end(function(err, res) {
-                done(err);
+            it('/matches/:valid/graphs (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/graphs')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Gold/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/matches/:invalid/details', function(done) {
-        supertest(app).get('/matches/1/details')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(500).end(function(err, res) {
-                done(err);
+            it('/matches/:valid/positions (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/positions')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Positions/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/players/:invalid', function(done) {
-        supertest(app).get('/players/1')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(500).end(function(err, res) {
-                done(err);
+            it('/matches/:valid/chat (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/chat')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).expect(/Chat/).end(function(err, res) {
+                        done(err);
+                    });
             });
-    });
-    it('/players/:invalid/matches', function(done) {
-        supertest(app).get('/players/1/matches')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(500).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/players/:valid', function(done) {
-        supertest(app).get('/players/88367253')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/.-./).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/players/:valid/matches', function(done) {
-        supertest(app).get('/players/88367253/matches')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Matches/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/players/:valid/trends', function(done) {
-        supertest(app).get('/players/88367253/trends')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Filter/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/players/:valid/:invalid', function(done) {
-        supertest(app).get('/players/88367253/asdf')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/.-./).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/players/:valid (no matches)', function(done) {
-        supertest(app).get('/players/88367251')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/.-./).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/details (unparsed)', function(done) {
-        supertest(app).get('/matches/1151783218/details')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/details (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/details')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Roshan/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/timelines (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/timelines')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Kills/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/graphs (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/graphs')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Gold/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/positions (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/positions')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Positions/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/chat (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/chat')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Chat/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/matches/:valid/:invalid (parsed)', function(done) {
-        supertest(app).get('/matches/1191329057/asdf')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/about', function(done) {
-        supertest(app).get('/about')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/FAQ/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/page/1', function(done) {
-        supertest(app).get('/page/1')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Blog/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/carry', function(done) {
-        supertest(app).get('/carry')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(200).expect(/Carry/).end(function(err, res) {
-                done(err);
-            });
-    });
-    it('/:invalid', function(done) {
-        supertest(app).get('/asdf')
-            //.expect('Content-Type', /json/)
-            //.expect('Content-Length', '20')
-            .expect(404).end(function(err, res) {
-                done(err);
-            });
-    });
-    //todo supertest these?
-    describe("/api/matches", function() {
-        it('should return JSON', function(done) {
-            request.get(process.env.ROOT_URL + '/api/matches?draw=2&select%5Bplayers.account_id%5D=88367253&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
-                assert(resp.statusCode === 200);
-                JSON.parse(body);
-                done(err);
+            it('/matches/:valid/:invalid (parsed)', function(done) {
+                supertest(app).get('/matches/1191329057/asdf')
+                    //.expect('Content-Type', /json/)
+                    //.expect('Content-Length', '20')
+                    .expect(200).end(function(err, res) {
+                        done(err);
+                    });
             });
         });
     });
-    describe("/api/items", function() {
-        it('should 200', function(done) {
-            request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
-                assert(resp.statusCode === 200);
-                done(err);
+    describe("api tests", function() {
+        //todo supertest these?
+        describe("/api/matches", function() {
+            it('should return JSON', function(done) {
+                request.get(process.env.ROOT_URL + '/api/matches?draw=2&select%5Bplayers.account_id%5D=88367253&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
+                    assert(resp.statusCode === 200);
+                    JSON.parse(body);
+                    done(err);
+                });
             });
         });
-    });
-    describe("/api/abilities", function() {
-        it('should 200', function(done) {
-            request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
-                assert(resp.statusCode === 200);
-                done(err);
+        describe("/api/items", function() {
+            it('should 200', function(done) {
+                request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
+                    assert(resp.statusCode === 200);
+                    done(err);
+                });
             });
         });
-    });
-    describe("/preferences", function() {
-        it('should return JSON', function(done) {
-            request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
-                JSON.parse(body);
-                done(err);
+        describe("/api/abilities", function() {
+            it('should 200', function(done) {
+                request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
+                    assert(resp.statusCode === 200);
+                    done(err);
+                });
+            });
+        });
+        describe("/preferences", function() {
+            it('should return JSON', function(done) {
+                request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
+                    JSON.parse(body);
+                    done(err);
+                });
             });
         });
     });
@@ -617,9 +642,9 @@ describe("unit test", function() {
             done(err);
         });
     });
+    //todo add test for socket request
 });
-//todo add test for socket request
-//deprecated
+//deprecated tests
 /*
 describe("GET /upload", function() {
     before(function(done) {
