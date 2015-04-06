@@ -148,10 +148,10 @@ function runParser(job, cb) {
         "kills": function(e) {
             getSlot(e);
             var logs = ["_tower", "_rax", "_fort", "_roshan"];
-            var pass = logs.some(function(s) {
+            var isObjective = logs.some(function(s) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
             });
-            if (pass) {
+            if (isObjective) {
                 //push a copy to objectives
                 parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
@@ -226,6 +226,7 @@ function runParser(job, cb) {
         "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
             e.slot = name_to_slot[e.unit];
+            //push a copy to chat
             parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
         //"chat_hero_kill": populate,

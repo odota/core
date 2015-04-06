@@ -1,4 +1,48 @@
 function playerMatches(matches) {
+    //extend jquery to serialize form data to JSON
+    $.fn.serializeObject = function() {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            }
+            else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+    //todo get teammates from better source
+    var teammates = [];
+    //query form code
+    $("#hero_id").select2({
+        maximumSelectionSize: 1
+    });
+    $("#with_account_id").select2({
+        tags: teammates,
+        maximumSelectionSize: 10
+    });
+    $("#teammate_hero_id").select2({
+        maximumSelectionSize: 4
+    });
+    $("#enemy_hero_id").select2({
+        maximumSelectionSize: 5
+    });
+    $('form').submit(function(e) {
+        //updates the table on form submit without reload
+        //e.preventDefault();
+        //console.log(JSON.stringify($('form').serializeObject()));
+        //table.draw();
+        //return false;
+    });
+    $('.form-control').on('change', function(e) {
+        //updates the table on form change without reload
+        //table.draw();
+    });
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
@@ -164,14 +208,5 @@ function playerMatches(matches) {
                     return constants.parse_status[data] ? constants.parse_status[data] : data;
                 }
             }]
-    });
-    $('form').submit(function(e) {
-        //e.preventDefault();
-        //console.log(JSON.stringify($('form').serializeObject()));
-        //table.draw();
-        //return false;
-    });
-    $('.form-control').on('change', function(e) {
-        //table.draw();
     });
 };

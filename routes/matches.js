@@ -18,6 +18,9 @@ var matchPages = {
     positions: {
         name: "Positions"
     },
+    objectives: {
+        name: "Objectives"
+    },
     teamfights: {
         name: "Teamfights"
     },

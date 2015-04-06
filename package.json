@@ -14,8 +14,9 @@
     "fullhistory": "node runner.js fullhistory",
     "getmissing": "node runner.js getmissing",
     "bower": "bower install",
+    "grunt": "grunt",
     "build": "npm install && npm run maven",
-    "postinstall": "npm run bower && npm run constants",
+    "postinstall": "npm run bower && npm run constants && npm run grunt",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "yasp-parser": "sudo nf export -j Procfile.parser -o /etc/init/ && sudo restart foreman",
     "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ && sudo restart foreman"
@@ -60,6 +61,11 @@
   "devDependencies": {
     "coveralls": "2.11.2",
     "database-cleaner": "~0.9.1",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-cssmin": "^0.12.2",
+    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-uglify": "^0.8.1",
     "istanbul": "~0.3.13",
     "mocha": "~2.2.1",
     "mongodb": "~2.0.25",

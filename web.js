@@ -136,7 +136,9 @@ function configureApp(app) {
     app.use("/kue", auth.connect(basic));
     app.use("/kue", kue.app);
     app.use("/public", express.static(path.join(__dirname, '/public')));
+    //re-serve content from root for robots.txt
     app.use("/", express.static(path.join(__dirname, '/public')));
+    //TODO instead of serving this, we should probably bundle the bower_components into public/build
     app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
     app.use(session({
         store: new RedisStore({
@@ -183,13 +185,21 @@ function configureApp(app) {
     }).init().then(function() {
         // Ready to go!
     });
+    app.route('/').get(function(req, res, next) {
+        //TODO make a static example file with match data?
+        var match = {};
+        res.render('home', {
+            match: match,
+            home: true
+        });
+    });
+    app.use('/matches', require('./routes/matches'));
+    app.use('/players', require('./routes/players'));
     app.route('/request').get(function(req, res) {
         res.render('request', {
             rc_public: rc_public
         });
     });
-    app.use('/matches', require('./routes/matches'));
-    app.use('/players', require('./routes/players'));
     app.use('/ratings', function(req, res, next) {
         db.ratings.distinct('account_id', {}, function(err, array) {
             if (err) {
@@ -220,14 +230,6 @@ function configureApp(app) {
         });
     });
     app.use('/api', require('./routes/api'));
-    app.route('/').get(function(req, res, next) {
-        //todo make a static example file with match data?
-        var match = {};
-        res.render('home', {
-            match: match,
-            home: true
-        });
-    });
     app.route('/preferences').post(function(req, res) {
         if (req.user) {
             for (var key in req.body) {

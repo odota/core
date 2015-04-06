@@ -18,6 +18,16 @@
     "polymer": "Polymer/polymer#~0.5.5",
     "paper-fab-menu": "*",
     "core-elements": "Polymer/core-elements#~0.5.5",
-    "bootstrap": "3.3.2"
+    "bootstrap": "~3.3.4",
+    "c3": "~0.4.10",
+    "font-awesome": "~4.3.0",
+    "jquery": "~2.1.3",
+    "datatables": "~1.10.6",
+    "qtip2": "~2.2.1",
+    "select2": "~3.5.2",
+    "cal-heatmap": "~3.5.2",
+    "moment": "~2.9.0",
+    "numeral": "~1.5.3",
+    "heatmap.js.bower": "*"
   }
 }

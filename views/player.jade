@@ -38,3 +38,7 @@ block content
   .row
     .col-md-12
       include ads/leaderboard_3
+
+append footer_assets
+  script.
+    var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.personaname + "-" + t.account_id};})) : "[]"};

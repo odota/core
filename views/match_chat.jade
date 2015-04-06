@@ -2,14 +2,22 @@ extend match
   
 block match_content
   .row
-    .col-md-7
+    .col-md-8
       h2 Chat
-      h3(title="An estimation of how \"positive\" all chat was.", style="display:inline-block")
-        p Positivity Score:
-      .progress
-        - var pct = (match.sentiment.comparative+1)/2
-        .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)} (#{match.sentiment.words.length} keywords)
-      //pre=JSON.stringify(match.sentiment, null, 2)
+      .col-md-6
+        h4: abbr(title="An estimation of how \"positive\" all chat was.", style="display:inline-block") Positivity 
+          small (#{match.sentiment.score} score, #{match.sentiment.tokens.length} tokens)
+        .progress
+          - var pct = (match.sentiment.comparative+1)/2
+          .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)}
+      .col-md-3
+        h4 <i class="fa fa-smile-o"></i>
+        //p: pre=JSON.stringify(match.sentiment, null, 2)
+        p: pre=JSON.stringify(match.sentiment.positive, null, 2)
+      .col-md-3
+        h4 <i class="fa fa-frown-o"></i>
+        p: pre=JSON.stringify(match.sentiment.negative, null, 2)
+
       table.table.table-hover.table-responsive.match-top
         thead
           tr
@@ -29,7 +37,7 @@ block match_content
                   .player-color(style="border-left-color:#{slot_color}")=message.slot
               td.format-seconds(data-format-seconds=message.time)=message.time
               td=message.key
-    .col-md-5
+    .col-md-4
       include ads/skyscraper
     
 append footer_assets

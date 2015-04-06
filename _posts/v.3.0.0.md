@@ -12,11 +12,12 @@ YASP is proud to present our latest major release, v3.0.0!
 * Improved largest hit.  See what you hit with, and who you hit hard in each game!
 * General match querying (from Matches page)  Run advanced querying on the general match pool.  Wonder how well Terrorblade and Broodmother perform together?  Now you can find out!
 * Lifetime totals.  See how many heroes you've killed, and gold you've farmed.
+* More sentiment data.  See the keywords we used to determine positivity.
 
 ### UI
 * Reorganized player pages.  You can now do match querying directly from your home page.  Aggregations remain on the Trends tab.  The Activity calendar has been moved back to the main page.
 * Reordered items in navbar
-* 
+
 ### Bugfixes
 * Some matches may have been missing chat messages.  We've changed our storage format and should now capture chat events that we couldnt link to a player.
 
