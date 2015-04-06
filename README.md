@@ -9,14 +9,18 @@ YASP - YASP: Another Stats Page
 
 About
 ====
-* Parses replays of Dota 2 matches to provide additional statistics.
+* Open source Dota 2 analytics platform.
+* Advanced Querying: Supports flexible querying of matches by teammate, team composition, opponent composition, etc.
+* Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics, including item build times and ward placement.
+* Visualizations: Data is rendered into bar charts, histograms, heatmaps, and more.
+* Modular construction: You may find certain parts of YASP to be useful for your own needs.
 * Runs as a Node.js/Express web application.
 * Designed to scale to thousands of users.
 * Parser powered by [clarity](https://github.com/skadistats/clarity).  
-* YASP is constructed in a modular manner, and you may find certain parts of it to be useful for your own needs.
 
-Quickstart (development mode, runs yasp-core, parser, retriever on one machine)
+Quickstart
 ====
+* Development mode: Runs yasp-core, parser, retriever on one machine
 * Install dependencies: `sudo bash init.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`
 * Build `npm run build`
