@@ -16,6 +16,7 @@ import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
+import skadistats.clarity.source.InputStreamSource;
 import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
@@ -168,6 +169,13 @@ public class Main {
 			entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
 			es.output(entry);
 		}
+		for (int i = 0;i<players.size();i++) {
+			Entry entry = new Entry();
+			entry.type="steam_id";
+			entry.key = String.valueOf(players.get(i).getSteamid());
+			entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
+			es.output(entry);
+		}
 		if (true){
 			Entry entry = new Entry();
 			entry.type="match_id";
@@ -299,11 +307,23 @@ public class Main {
 		}
 	}
 
+boolean grpInit = false;
+Integer timeIdx;
 	@UsesEntities
 	@OnTickStart
 	public void onTick(Context ctx){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
-        time = grp != null ? Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime")) : -1; 
+		if (grp!=null){
+		if (!grpInit){
+			//we can get the match id/gamemode at the beginning of a match
+			//dota_gamerules_data.m_iGameMode = 22
+			//dota_gamerules_data.m_unMatchID64 = 1193091757
+			//System.err.println(grp);
+			timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
+			grpInit = true;
+		}
+        time = Math.round((float)grp.getState()[timeIdx]);
+		}
 		if (time >= nextInterval){
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 			if (pr!=null){
@@ -316,8 +336,8 @@ public class Main {
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		Integer stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
-		Integer steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
+		//Integer stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
+		//Integer steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
 		//slow data can be output to console, but not in replay?
 		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
 		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
@@ -391,6 +411,7 @@ public class Main {
 					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
 					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
 					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
+					//2 for radiant, 3 for dire
 					//entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
 					es.output(entry);
 					seenEntities.add(handle);
@@ -419,7 +440,7 @@ public class Main {
 
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
-		new SimpleRunner().runWith(System.in, this);
+		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
 		//flush the log if it was buffered	
 		es.flush();
 		long tMatch = System.currentTimeMillis() - tStart;
