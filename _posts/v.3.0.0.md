@@ -15,7 +15,7 @@ YASP is proud to present our latest major release, v3.0.0!
 * More sentiment data.  See the keywords we used to determine positivity.
 
 ### UI
-* Reorganized player pages.  You can now do match querying directly from your home page.  Aggregations remain on the Trends tab.  The Activity calendar has been moved back to the main page.
+* Reorganized player pages.  Merged Matches tab, so you can now do match querying directly from your home page.  Aggregations remain on the Trends tab.  The Activity calendar has been moved back to the main page.
 * Reordered items in navbar
 
 ### Bugfixes

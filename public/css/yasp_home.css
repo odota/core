@@ -100,9 +100,9 @@ img.grayscale {
     font: 20px;
 }
 .header {
-    height: calc(100% - 3em);
+    /*height: calc(100% - 3em);*/
     /* subtract an amount of space for your arrow element */
-    
+    height:700px;
     background-color: #333;
     width: 100%;
 }

@@ -1,8 +1,10 @@
+/*
 @media (min-width: 1200px) {
     .container {
         width: 1230px;
     }
 }
+*/
 /* ads */
 
 .leaderboard {
@@ -90,13 +92,7 @@ body {
 footer {
     color: rgb(199, 199, 199);
 }
-.sticky_footer_row {
-    display: table-row;
-    height: 1px;
-}
-.sticky_footer_row.expand {
-    height: auto;
-}
+
 td {
     vertical-align: middle !important;
 }
@@ -236,8 +232,8 @@ div .dataTables_processing {
     z-index: 60000;
 }
 .rating {
-    margin-left:5px;
-    margin-right:5px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 .navbar-default,
 footer {
@@ -246,3 +242,33 @@ footer {
 thead {
     background-color: #424242;
 }
+
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    /* Margin bottom by footer height */
+    
+    margin-bottom: 200px;
+}
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 200px;
+}
+
+/*
+.sticky_footer_row {
+    display: table-row;
+    height: 1px;
+}
+.sticky_footer_row.expand {
+    height: auto;
+}
+*/
