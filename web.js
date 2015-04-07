@@ -26,6 +26,7 @@ var bodyParser = require('body-parser');
 var queueReq = require('./operations').queueReq;
 var async = require('async');
 var queries = require('./queries');
+var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
 // Include Express
@@ -39,7 +40,6 @@ if (config.NODE_ENV === "test") {
 else {
     if (cluster.isMaster) {
         // Count the machine's CPUs
-        var cpuCount = require('os').cpus().length;
         configureApp(app);
         /*
         // Create a worker for each CPU
@@ -82,7 +82,8 @@ function configureApp(app) {
                 catch (err) {
                     return socket.emit("err", err);
                 }
-                if (!body.success) {
+                if (!body.success && config.NODE_ENV !== "test") {
+                    console.log('failed recaptcha');
                     socket.emit("err", "Recaptcha Failed!");
                 }
                 else {
@@ -98,19 +99,18 @@ function configureApp(app) {
                         }
                         socket.emit('log', "Queued API request for " + match_id);
                         job.on('progress', function(prog) {
-                            //todo kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                            //TODO: kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
                             socket.emit('prog', prog);
                         });
                         job.on('complete', function(result) {
                             console.log(result);
-                            if (result && result.error) {
-                                socket.emit('err', JSON.stringify(result.error));
-                                socket.emit("failed");
-                            }
-                            else {
-                                socket.emit('log', "Request Complete!");
-                                socket.emit('complete');
-                            }
+                            socket.emit('log', "Request Complete!");
+                            socket.emit('complete');
+                        });
+                        job.on('failed', function(result) {
+                            console.log(result);
+                            socket.emit('err', JSON.stringify(result.error));
+                            socket.emit("failed");
                         });
                     });
                 }

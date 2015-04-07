@@ -4,8 +4,6 @@ process.env.SESSION_SECRET = "testsecretvalue";
 process.env.KUE_USER = "user";
 process.env.KUE_PASS = "pass";
 process.env.PORT = 5000;
-process.env.RETRIEVER_HOST = "localhost:5100";
-process.env.REPLAY_DIR = "./replays_test/";
 process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
 process.env.STEAM_API_KEY = "fakekey";
@@ -31,10 +29,73 @@ var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
+var wait = 60000;
+//set up nock
+//fake retriever response
+nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+    var split = path.split("?");
+    split = split[1].split("&");
+    console.log(split[split.length - 1])
+    return split[split.length - 1];
+}).get('key=shared_secret_with_retriever').reply(200, {
+    "accounts": {
+        "76561198186929683": {
+            "steamID": "76561198186929683",
+            "replays": 6,
+            "profiles": 0,
+            "friends": 0
+        }
+    },
+    "accountToIdx": {
+        "26949": "76561198186929683"
+    }
+}).get('account_id=88367253').reply(200, {
+    "accountId": 88367253,
+    "wins": 889,
+    "xp": 52,
+    "level": 153,
+    "lowPriorityUntilDate": 0,
+    "preventVoiceUntilDate": 0,
+    "teaching": 6,
+    "leadership": 4,
+    "friendly": 10,
+    "forgiving": 5,
+    "lowPriorityGamesRemaining": 0,
+    "competitiveRank": 3228,
+    "calibrationGamesRemaining": 0,
+    "soloCompetitiveRank": 3958,
+    "soloCalibrationGamesRemaining": 0,
+    "recruitmentLevel": 0
+}).get('match_id=1151783218').reply(200, {
+    match: {
+        cluster: 1,
+        replaySalt: 1
+    }
+}).get('match_id=2').reply(200, {
+    match: {
+        cluster: 1,
+        replaySalt: 1
+    }
+});
+//fake api response
+nock('http://api.steampowered.com').filteringPath(function(path) {
+        var split = path.split("?");
+        var split2 = split[0].split(".com");
+        return split2[0];
+    })
+    //throw some errors to test handling
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+        result: {
+            error: "error"
+        }
+    }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
+console.log('starting web');
 var app = require('../web');
 //launch the parse worker
+console.log('starting parser');
 var parser = require('../parser');
-var wait = 60000;
+//launch the parse manager
+var parseManager = require('../parseManager');
 /*
 var Zombie = require('zombie');
 Zombie.localhost('localhost', process.env.PORT);
@@ -71,41 +132,6 @@ before(function(done) {
             },
             function(cb) {
             console.log("loading services into redis");
-            redis.set("bots", JSON.stringify([{
-                "steamID": "76561198174479859",
-                "attempts": 1,
-                "success": 1,
-                "friends": 0
-                }, {
-                "steamID": "76561198174456763",
-                "attempts": 0,
-                "success": 0,
-                "friends": 201
-                }, {
-                "steamID": "76561198174616549",
-                "attempts": 1,
-                "success": 1,
-                "friends": 250
-                }, {
-                "steamID": "76561198173905795",
-                "attempts": 0,
-                "success": 0,
-                "friends": 199
-                }, {
-                "steamID": "76561198152395299",
-                "attempts": 0,
-                "success": 0,
-                "friends": 10
-                }, {
-                "steamID": "76561198174715201",
-                "attempts": 2,
-                "success": 2,
-                "friends": 1
-                }]));
-            redis.set("ratingPlayers", JSON.stringify({}));
-            //todo use functions to prefill these rather than hardcoding
-            redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
-            redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
             cb();
             },
             function(cb) {
@@ -153,55 +179,6 @@ before(function(done) {
             async.each(files, dl, function(err) {
                 cb(err);
             });
-            },
-            function(cb) {
-            console.log("setting up nock");
-            //fake retriever response
-            nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-                var split = path.split("?");
-                split = split[1].split("&");
-                return split[split.length - 1];
-            }).get('account_id=88367253').reply(200, {
-                "accountId": 88367253,
-                "wins": 889,
-                "xp": 52,
-                "level": 153,
-                "lowPriorityUntilDate": 0,
-                "preventVoiceUntilDate": 0,
-                "teaching": 6,
-                "leadership": 4,
-                "friendly": 10,
-                "forgiving": 5,
-                "lowPriorityGamesRemaining": 0,
-                "competitiveRank": 3228,
-                "calibrationGamesRemaining": 0,
-                "soloCompetitiveRank": 3958,
-                "soloCalibrationGamesRemaining": 0,
-                "recruitmentLevel": 0
-            }).get('match_id=1151783218').reply(200, {
-                match: {
-                    cluster: 1,
-                    replaySalt: 1
-                }
-            }).get('match_id=2').reply(200, {
-                match: {
-                    cluster: 1,
-                    replaySalt: 1
-                }
-            });
-            //fake api response
-            nock('http://api.steampowered.com').filteringPath(function(path) {
-                    var split = path.split("?");
-                    var split2 = split[0].split(".com");
-                    return split2[0];
-                })
-                //throw some errors to test handling
-                .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
-                    result: {
-                        error: "error"
-                    }
-                }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
-            cb();
             }
         ], function(err) {
         done(err);
@@ -632,7 +609,9 @@ describe("web", function() {
         });
     });
 });
+var io = require('socket.io-client');
 describe("unit test", function() {
+    this.timeout(wait);
     it('insertmatch', function(done) {
         operations.insertMatch({
             match_id: 2,
@@ -642,7 +621,27 @@ describe("unit test", function() {
             done(err);
         });
     });
-    //todo add test for socket request
+    it('socket request', function(done) {
+        jobs.process('request', processApi);
+        //fake replay response
+        nock('http://replay1.valve.net').filteringPath(function(path) {
+            return '/';
+        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
+        var socket = io.connect('http://localhost:5000');
+        socket.on('connect', function() {
+            console.log('connected to server websocket');
+            socket.emit('request', {
+                match_id: 1193091757,
+                response: ""
+            });
+            socket.on('failed', function() {
+                done();
+            });
+            socket.on('complete', function() {
+                done();
+            });
+        });
+    });
 });
 //deprecated tests
 /*

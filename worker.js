@@ -49,7 +49,7 @@ d.run(function() {
     jobs.process('mmr', processMmr);
     jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
-    setInterval(updateNames, 30 * 1000, function() {});
+    setInterval(updateNames, 60 * 1000, function() {});
     setInterval(buildSets, 3 * 60 * 1000, function() {});
     //todo implement redis window check 
     //setInterval(apiStatus, 2 * 60 * 1000);
