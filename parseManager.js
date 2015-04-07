@@ -64,6 +64,7 @@ function start() {
         });
     }
     else {
+        /*
         console.log("[PARSEMANAGER] starting worker");
         process.send({
             id: cluster.worker.id,
@@ -75,19 +76,19 @@ function start() {
                 processParse(job, cb);
             });
         });
-    }
-}
-
 function getParserEnv(job, cb) {
     job.parser_url = process.env.PARSER_URL;
     cb();
+}
+*/
+    }
 }
 
 function getParserRandom(job, cb) {
     redis.get("parsers", function(err, result) {
         if (err || !result) {
             console.log("no parsers in redis!");
-            return getParserEnv(job, cb);
+            return getParserRandom(job, cb);
         }
         var parsers = JSON.parse(result);
         job.parser_url = parsers[Math.floor(Math.random() * parsers.length)];

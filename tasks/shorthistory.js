@@ -2,7 +2,7 @@ var db = require('../db');
 var async = require('async');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
-module.exports = function fullhistory(cb) {
+module.exports = function(cb) {
     db.players.find({
         last_visited: {
             $ne: null

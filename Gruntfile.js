@@ -18,13 +18,24 @@ module.exports = function(grunt) {
         },
         jshint: {
             all: []
-            //all: ['public/js/*.js','*.js']
+                //all: ['public/js/*.js','*.js']
+        },
+        watch: {
+            js: {
+                files: ['public/js/*.js'],
+                tasks: ['uglify'],
+            },
+            css: {
+                files: ['public/css/*.css'],
+                tasks: ['cssmin'],
+            }
         }
     });
-    // Load the plugin that provides the "uglify" task.
+    //load grunt tasks
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-watch');
     // Default task(s).
     grunt.registerTask('default', ['uglify', 'cssmin', 'jshint']);
 };

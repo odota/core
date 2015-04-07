@@ -3,22 +3,18 @@ var db = require('./db');
 var logger = utility.logger;
 var fs = require('fs');
 var request = require('request');
-var spawn = require('child_process').spawn;
 var domain = require('domain');
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
-var progress = require('request-progress');
 var config = require('./config');
 var moment = require('moment');
-var urllib = require('url');
 module.exports = function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
     console.time("parse " + match_id);
     if (match.start_time < moment().subtract(7, 'days').format('X') && config.NODE_ENV !== "test") {
-        //expired, even if we have url
-        //parseable if we have a filename
-        //skip this check in test
+        //expired, can't parse even if we have url, but parseable if we have a filename
+        //skip this check in test, but we have no url on socket request, so that request fails!
         console.log("parse: replay expired");
         job.data.payload.parse_status = 1;
         updateDb();

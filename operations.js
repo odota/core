@@ -63,6 +63,8 @@ function insertMatch(match, cb) {
                     if (err) {
                         return cb(err);
                     }
+                    //at this point we may not have a replay url (if the match was expired)
+                    //processparse needs to handle this case
                     if (match.request) {
                         return queueReq("request_parse", match, function(err, job2) {
                             cb(err, job2);
@@ -86,25 +88,21 @@ function insertMatchProgress(match, job, cb) {
             return cb(err);
         }
         if (!job2) {
-            job.log("not queued for parse");
-            job.progress(100, 100);
+            job.progress(100, 100, "not queued for parse");
             cb(err);
         }
         else {
             //wait for parse to finish
-            job.log("parse: starting");
-            job.progress(0, 100);
+            job.progress(0, 100, "parse: starting");
             //request, parse and log the progress
             job2.on('progress', function(prog) {
-                job.log(prog + "%");
-                job.progress(prog, 100);
+                job.progress(prog, 100, "parse: progress");
             });
             job2.on('failed', function() {
-                cb("parse failed");
+                cb("parse: failed");
             });
             job2.on('complete', function() {
-                job.log("parse: complete");
-                job.progress(100, 100);
+                job.progress(100, 100, "parse: complete");
                 cb();
             });
         }
@@ -116,7 +114,7 @@ function getReplayUrl(match, cb) {
         match_id: match.match_id
     }, function(err, doc) {
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
-            console.log("replay expired");
+            console.log("replay expired, not getting replay url");
             //set status to 1 if this match isn't parsed already
             //this ensures we don't mark formerly parsed matches as unavailable on reparses
             match.parse_status = (doc.parse_status === 2) ? doc.parse_status : 1;

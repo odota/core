@@ -10,11 +10,10 @@ var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(18, api_keys.length);
-
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
-    var heroArray = job.short_history ? ["0"] : Object.keys(constants.heroes);
-    heroArray = config.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
+    //if test or only want 500 of any hero, use the short array
+    var heroArray = job.short_history || config.NODE_ENV === "test" ? ["0"] : Object.keys(constants.heroes);
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};
     async.eachLimit(heroArray, parallelism, function(hero_id, cb) {

@@ -157,28 +157,6 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
-            },
-            function(cb) {
-            console.log("copying replays to test dir");
-
-            function dl(filename, cb) {
-                var arr = filename.split(".");
-                arr[0] = arr[0].split("_")[0];
-                var path = replay_dir + arr.join(".");
-                //currently disabled caching of replays, get a fresh copy with each test
-                if (fs.existsSync(path) && false) {
-                    cb();
-                }
-                else {
-                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('finish', function(err) {
-                        cb(err);
-                    });
-                }
-            }
-            var files = ['1151783218.dem.bz2', '1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
-            async.each(files, dl, function(err) {
-                cb(err);
-            });
             }
         ], function(err) {
         done(err);
@@ -277,15 +255,32 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
+    before(function(done) {
+        console.log('downloading replays');
+        function dl(filename, cb) {
+            var arr = filename.split(".");
+            arr[0] = arr[0].split("_")[0];
+            var path = replay_dir + arr.join(".");
+            //currently disabled caching of replays, get a fresh copy with each test
+            if (fs.existsSync(path) && false) {
+                cb();
+            }
+            else {
+                request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('finish', function(err) {
+                    cb(err);
+                });
+            }
+        }
+        var files = ['1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
+        async.each(files, dl, function(err) {
+            done(err);
+        });
+    });
     it('parse replay (download)', function(done) {
-        //fake replay response
-        nock('http://replay1.valve.net').filteringPath(function(path) {
-            return '/';
-        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
         var job = {
             match_id: 1151783218,
             start_time: moment().format('X'),
-            url: "http://replay1.valve.net"
+            url: "http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
