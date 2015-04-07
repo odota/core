@@ -1,93 +1,121 @@
-* {
+body {
     color: rgb(199, 199, 199);
+    background-color: #303030;
 }
-
-
 a {
     color: #BBF0FD;
 }
-
-a.navbar-brand strong, h1, h2 {
+a.navbar-brand strong,
+h1,
+h2 {
     color: #BBF0FD;
 }
-
-body {
-    background-color: #303030;
-}
-
 .table-hover>tbody>tr:hover {
     background-color: #616161;
 }
-
-.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+.nav-tabs>li.active>a,
+.nav-tabs>li.active>a:focus,
+.nav-tabs>li.active>a:hover {
     background-color: rgb(86, 86, 86);
 }
-.success, .table>tbody>tr.success>td, .table>tbody>tr.success>th, .table>tbody>tr>td.success, .table>tbody>tr>th.success, .table>tfoot>tr.success>td, .table>tfoot>tr.success>th, .table>tfoot>tr>td.success, .table>tfoot>tr>th.success, .table>thead>tr.success>td, .table>thead>tr.success>th, .table>thead>tr>td.success, .table>thead>tr>th.success {
+.success,
+.table>tbody>tr.success>td,
+.table>tbody>tr.success>th,
+.table>tbody>tr>td.success,
+.table>tbody>tr>th.success,
+.table>tfoot>tr.success>td,
+.table>tfoot>tr.success>th,
+.table>tfoot>tr>td.success,
+.table>tfoot>tr>th.success,
+.table>thead>tr.success>td,
+.table>thead>tr.success>th,
+.table>thead>tr>td.success,
+.table>thead>tr>th.success {
     background-color: #488446;
 }
-
-.table-hover>tbody>tr.success:hover>td, .table-hover>tbody>tr.success:hover>th, .table-hover>tbody>tr:hover>.success, .table-hover>tbody>tr>td.success:hover, .table-hover>tbody>tr>th.success:hover {
+.table-hover>tbody>tr.success:hover>td,
+.table-hover>tbody>tr.success:hover>th,
+.table-hover>tbody>tr:hover>.success,
+.table-hover>tbody>tr>td.success:hover,
+.table-hover>tbody>tr>th.success:hover {
     background-color: #1C8E18;
 }
-.danger, .table>tbody>tr.danger>td, .table>tbody>tr.danger>th, .table>tbody>tr>td.danger, .table>tbody>tr>th.danger, .table>tfoot>tr.danger>td, .table>tfoot>tr.danger>th, .table>tfoot>tr>td.danger, .table>tfoot>tr>th.danger, .table>thead>tr.danger>td, .table>thead>tr.danger>th, .table>thead>tr>td.danger, .table>thead>tr>th.danger {
+.danger,
+.table>tbody>tr.danger>td,
+.table>tbody>tr.danger>th,
+.table>tbody>tr>td.danger,
+.table>tbody>tr>th.danger,
+.table>tfoot>tr.danger>td,
+.table>tfoot>tr.danger>th,
+.table>tfoot>tr>td.danger,
+.table>tfoot>tr>th.danger,
+.table>thead>tr.danger>td,
+.table>thead>tr.danger>th,
+.table>thead>tr>td.danger,
+.table>thead>tr>th.danger {
     background-color: #712C2C;
 }
-
-.table-hover>tbody>tr.danger:hover>td, .table-hover>tbody>tr.danger:hover>th, .table-hover>tbody>tr:hover>.danger, .table-hover>tbody>tr>td.danger:hover, .table-hover>tbody>tr>th.danger:hover {
+.table-hover>tbody>tr.danger:hover>td,
+.table-hover>tbody>tr.danger:hover>th,
+.table-hover>tbody>tr:hover>.danger,
+.table-hover>tbody>tr>td.danger:hover,
+.table-hover>tbody>tr>th.danger:hover {
     background-color: #930808;
 }
-.navbar-default, footer {
-    background-color: #000;
-}
-
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+.table>tbody>tr>td,
+.table>tbody>tr>th,
+.table>tfoot>tr>td,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>thead>tr>th {
     border-color: #848484;
 }
-
-
-.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+.nav-tabs>li.active>a,
+.nav-tabs>li.active>a:focus,
+.nav-tabs>li.active>a:hover {
     background-color: rgb(199, 199, 199);
 }
-
 .alert-warning {
     color: #000000;
     background-color: #B5A449;
     border-color: #846F42;
 }
-
 .alert-warning strong {
     color: #000;
 }
-
-.c3 path, .c3 line {
+.c3 path,
+.c3 line {
     stroke: rgb(199, 199, 199) !important;
 }
-
-.c3-axis-y .tick, .c3-axis-x .tick, .c3-axis-x-label, .c3-axis-y-label, .c3-legend-item {
+.c3-axis-y .tick,
+.c3-axis-x .tick,
+.c3-axis-x-label,
+.c3-axis-y-label,
+.c3-legend-item {
     fill: rgb(199, 199, 199);
 }
-
+.c3 {
+    color: #000;
+}
 div.dataTables_processing {
     background: inherit !important;
-}
-
-thead {
-    background-color: #424242;
 }
 
 div.container.well.well-lg {
     background-color: rgb(63, 63, 63);
 }
-
 /*#accordion h4.panel-title > a,*/
 /*#accordion .panel-collapse {*/
 /*    background-color: black;*/
 /*}*/
 
-#accordion a, #accordion .panel-body, #accordion .panel-body li{
+#accordion a,
+#accordion .panel-body,
+#accordion .panel-body li {
     color: black;
 }
-
-.blog-preview p, .blog-preview li, .tag-key>p.lead {
+.blog-preview p,
+.blog-preview li,
+.tag-key>p.lead {
     color: black;
 }

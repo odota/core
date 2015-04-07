@@ -28,6 +28,7 @@
     "cal-heatmap": "~3.5.2",
     "moment": "~2.9.0",
     "numeral": "~1.5.3",
-    "heatmap.js.bower": "*"
+    "heatmap.js.bower": "*",
+    "datatables-bootstrap3-plugin": "~0.4.0"
   }
 }

@@ -1,11 +1,9 @@
-//google font
-link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
-
-//external, should be saved to bower_components
+//external, can mostly be managed through bower if we want to do that
+//or can use latest from jsdelivr to stay up to date
 //bootstrap
 link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')
 //font-awesome
-link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
+link(rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css")
 //jquery
 script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
 //datatables
@@ -20,7 +18,7 @@ link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css
 link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
 link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
 script(type='text/javascript' src='//cdn.jsdelivr.net/select2/latest/select2.min.js')
-//d3 (not needed in bower since c3 will include it)
+//d3 (not needed in bower since c3 will include it, but still needs to be included in bundle, since we can't just bundle *)
 script(type='text/javascript' src="//cdn.jsdelivr.net/d3js/latest/d3.min.js")
 //c3
 script(type='text/javascript' src='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.js')
@@ -39,32 +37,4 @@ script(type='text/javascript', src='//cdn.rawgit.com/pa7/heatmap.js/develop/buil
 //bootstrap js
 script(src="/bower_components/bootstrap/js/transition.js")
 script(src="/bower_components/bootstrap/js/collapse.js")
-
-//yasp utilities
-script(src="/public/js/utility.js")
-script(src="/public/js/tooltips.js")
-script(src="/public/js/formatHtml.js")
-
-//yasp code
-script(src="/public/js/activity.js")
-script(src="/public/js/charts.js")
-script(src="/public/js/map.js")
-script(src="/public/js/playerMatches.js")
-script(src="/public/js/playerTrendsTables.js")
-script(src="/public/js/histograms.js")
-script(src="/public/js/statusHandler.js")
-script(src="/public/js/query.js")
-script(src="/public/js/ga.js")
-
-//yasp css
-link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
-link(rel='stylesheet', type='text/css', href="/public/css/flaticon.css")
-//home uses a separate stylesheet
-if home
-  link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
-else
-  link(rel='stylesheet', type='text/css', href="/public/css/yasp.css")
-  if (!(user && user.light_theme))
-    link(rel='stylesheet', type='text/css', href="/public/css/dark.css")
-
   

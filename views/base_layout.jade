@@ -27,15 +27,43 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
 
-    //yasp client side constants
+    //yasp client side constants, could optimize bandwidth by not dumping everything
     script.
       var constants = !{JSON.stringify(sources)};
 
+    //TODO: external deps, do we want to bundle this css/js as well?
     include dependencies
-    
-    //compiled assets
-    //link(rel='stylesheet', href="/public/build/yasp.min.css")
-    //script(type='text/javascript', src="/public/build/yasp.min.js")
+  
+    //-
+      //yasp css
+      link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+      link(rel='stylesheet', type='text/css', href="/public/css/flaticon.css")
+      //home uses a separate stylesheet
+      if home
+        link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+      else
+        link(rel='stylesheet', type='text/css', href="/public/css/yasp.css")
+        if (!(user && user.light_theme))
+          link(rel='stylesheet', type='text/css', href="/public/css/dark.css")
+          
+      //yasp utilities
+      script(src="/public/js/utility.js")
+      script(src="/public/js/tooltips.js")
+      script(src="/public/js/formatHtml.js")
+      
+      //yasp code
+      script(src="/public/js/activity.js")
+      script(src="/public/js/charts.js")
+      script(src="/public/js/map.js")
+      script(src="/public/js/playerMatches.js")
+      script(src="/public/js/playerTrendsTables.js")
+      script(src="/public/js/histograms.js")
+      script(src="/public/js/statusHandler.js")
+      script(src="/public/js/ga.js")
+
+    //compiled assets, currently bundling public/js and public/css, i.e., the above
+    link(rel='stylesheet', href="/public/build/yasp.min.css")
+    script(type='text/javascript', src="/public/build/yasp.min.js")
 
     block head
     block unsticky_content

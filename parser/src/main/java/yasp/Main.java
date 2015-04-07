@@ -396,7 +396,6 @@ Integer timeIdx;
 						es.output(entry);
 					}
 				}
-
 			//log any new wards placed
 			//todo deduplicate code
 			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");

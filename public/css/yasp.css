@@ -13,6 +13,9 @@
     margin: 2em auto;
     display: block;
 }
+body {
+    font-family: 'Roboto Slab', sans-serif;
+}
 .match-top {
     margin-top: 1.5em;
 }
@@ -51,9 +54,6 @@ td.abilities img {
     height: 35px;
     width: 35px;
 }
-* {
-    font-family: 'Roboto Slab', sans-serif;
-}
 .navbar-default {
     background-color: #BBF0FD;
     border: none;
@@ -82,19 +82,13 @@ td.abilities img {
 .icon {
     width: 15px;
 }
-html,
 body {
     margin: 0;
     padding: 0;
     height: 100%;
 }
-body {
-    display: table;
-    height: 100%;
-    width: 100%;
-}
 footer {
-    background-color: #BBF0FD;
+    color: rgb(199, 199, 199);
 }
 .sticky_footer_row {
     display: table-row;
@@ -240,4 +234,11 @@ div .dataTables_processing {
     /*set z-index for processing indicator*/
     
     z-index: 60000;
+}
+.navbar-default,
+footer {
+    background-color: #000;
+}
+thead {
+    background-color: #424242;
 }
