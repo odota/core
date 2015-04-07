@@ -12,7 +12,7 @@ var api_keys = config.STEAM_API_KEY.split(",");
 
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
-    var heroArray = Object.keys(constants.heroes);
+    var heroArray = job.short_history ? ["0"] : Object.keys(constants.heroes);
     heroArray = config.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};

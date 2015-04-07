@@ -92,6 +92,15 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "shorthistory": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.account_id].join(),
+                type: type,
+                short_history: true,
+                payload: payload
+            };
+        },
         "mmr": function() {
             payload.attempts = 1;
             return {
@@ -109,16 +118,30 @@ function getData(url, cb) {
         //select a random element if array
         var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
         var parse = urllib.parse(u, true);
+        var proxy;
         if (parse.host === "api.steampowered.com") {
+            //choose an api key to use
             var api_keys = config.STEAM_API_KEY.split(",");
             parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
             parse.search = null;
+            /*
+            //choose a proxy to request through
+            var proxies = config.PROXY_URLS.split(",");
+            //add no proxy option
+            proxies.push(null);
+            proxy = proxies[Math.floor(Math.random() * proxies.length)];
+            console.log(proxies, proxy);
+            */
+            //choose a steam api host
+            var api_hosts = config.STEAM_API_HOST.split(",");
+            parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
         }
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
         var delay = 1000;
         return setTimeout(function() {
             request({
+                proxy: proxy,
                 url: target,
                 json: true,
                 timeout: 30000
@@ -215,7 +238,9 @@ function getParseSchema() {
             return {
                 "steam_id": "",
                 "stuns": 0,
-                "max_hero_hit": {value:0},
+                "max_hero_hit": {
+                    value: 0
+                },
                 "times": [],
                 "gold": [],
                 "lh": [],
@@ -276,7 +301,6 @@ function generatePositionData(d, p) {
     }
     return d;
 }
-
 module.exports = {
     logger: logger,
     generateJob: generateJob,

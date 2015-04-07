@@ -67,15 +67,21 @@ var q = async.queue(function(match, cb) {
         }
     }, function(err) {
         if (err) {
+            console.log("failed to insert match from scanApi %s", match);
+            console.log(err);
+            //todo log this to a file or something, we don't want to stop/crash just because an insert failed
+            //throw err;
             return cb(err);
         }
         if (match.parse_status === 0 || match.parse_status === 3) {
             insertMatch(match, function(err) {
-                cb(err, match);
+                //set the redis progress, do we want to update on matches we don't add to db?
+                redis.set("match_seq_num", match.match_seq_num);
+                cb(err);
             });
         }
         else {
-            cb(err, match);
+            cb(err);
         }
     });
 });
@@ -103,18 +109,7 @@ function scanApi(seq_num) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
-            q.push(resp, function(err, match) {
-                if (err) {
-                    console.log("failed to insert match from scanApi %s", match);
-                    console.log(err);
-                    //todo log this to a file or something, we don't want to stop/crash just because an insert failed
-                    //throw err;
-                }
-                else {
-                    //set the redis progress
-                    redis.set("match_seq_num", match.match_seq_num);
-                }
-            });
+            q.push(resp);
             //wait 100ms for each match less than 100
             var delay = (100 - resp.length) * 100;
             setTimeout(function() {
