@@ -32,7 +32,39 @@ html
       var constants = !{JSON.stringify(sources)};
 
     //TODO: external deps, do we want to bundle this css/js as well?
-    include dependencies
+    //can mostly be managed through bower if we want to do that, or can use latest from jsdelivr to stay up to date
+    //bootstrap
+    link(rel='stylesheet', href='//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.min.css')
+    script(type='text/javascript' src="//cdn.jsdelivr.net/bootstrap/latest/js/bootstrap.min.js")
+    //font-awesome
+    link(rel="stylesheet" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css")
+    //jquery
+    script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
+    //datatables (jquery)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/jquery.datatables/latest/js/jquery.dataTables.min.js')
+    link(rel='stylesheet', href='//cdn.jsdelivr.net/jquery.datatables/latest/plugins/bootstrap/3/dataTables.bootstrap.css')
+    script(type='text/javascript' src='//cdn.jsdelivr.net/jquery.datatables/latest/plugins/bootstrap/3/dataTables.bootstrap.js')
+    //qtip2 (jquery)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.js')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
+    //select2 (jquery)
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
+    script(type='text/javascript' src='//cdn.jsdelivr.net/select2/latest/select2.min.js')
+    //moment
+    script(type='text/javascript' src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js")
+    //numeral
+    script(type='text/javascript' src="//cdn.jsdelivr.net/numeraljs/latest/numeral.min.js")
+    //d3
+    script(type='text/javascript' src="//cdn.jsdelivr.net/d3js/latest/d3.min.js")
+    //cal-heatmap (d3)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.min.js')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+    //c3 (d3) (very outdated on jsdelivr)
+    script(type='text/javascript' src='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.js')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.css')
+    //heatmap.js (not on jsdelivr)
+    script(type='text/javascript', src='//cdn.rawgit.com/pa7/heatmap.js/develop/build/heatmap.min.js')
   
     //-
       //yasp css
