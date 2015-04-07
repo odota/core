@@ -9,7 +9,7 @@ var urllib = require('url');
 var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
-var parallelism = Math.min(30, api_keys.length);
+var parallelism = Math.min(20, api_keys.length);
 
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
