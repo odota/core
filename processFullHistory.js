@@ -9,6 +9,7 @@ var urllib = require('url');
 var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
+var parallelism = Math.min(30, api_keys.length);
 
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
@@ -16,7 +17,7 @@ module.exports = function processFullHistory(job, cb) {
     heroArray = config.NODE_ENV === "test" ? heroArray.slice(0, 1) : heroArray;
     //use steamapi via specific player history and specific hero id (up to 500 games per hero)
     player.match_ids = {};
-    async.eachLimit(heroArray, api_keys.length, function(hero_id, cb) {
+    async.eachLimit(heroArray, parallelism, function(hero_id, cb) {
         //make a request for every possible hero
         var container = generateJob("api_history", {
             account_id: player.account_id,
@@ -60,7 +61,7 @@ module.exports = function processFullHistory(job, cb) {
                     delete player.match_ids[match_id];
                 }
                 //iterate through keys, make api_details requests
-                async.eachLimit(Object.keys(player.match_ids), api_keys.length, function(match_id, cb) {
+                async.eachLimit(Object.keys(player.match_ids), parallelism, function(match_id, cb) {
                     //process api jobs directly with parallelism
                     var container = generateJob("api_details", {
                         match_id: Number(match_id)
