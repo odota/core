@@ -5,7 +5,7 @@
   "author": "Howard"
 }}}
 
-An overview of YASP and its development.
+An overview of YASP.
 
 <!--more-->
 
@@ -15,7 +15,7 @@ Sign in through Steam, and we'll start watching your matches and automatically p
 
 Note that probably only a few of your previous matches are listed.  It takes us some time to retrieve your full match history.
 
-We can get API data but cannot parse most full history matches, since most of the replays have expired.
+We can get basic match data but cannot parse matches where the replays have expired.
 
 Features
 ----
@@ -32,7 +32,23 @@ Features
   * Ability uses/hits
   * Gold/XP breakdown
   * Damage/Kills breakdown
-* Advanced Querying: Supports flexible querying of matches by teammate, team composition, opponent composition, etc.
+* Advanced Querying: Supports flexible querying of matches and aggregation by:
+  * player in game (account ID)
+  * team composition (heroes)
+  * opponent composition (heroes)
+  * Standard filters: patch, game mode, etc.
+* Aggregations:
+  * Count of matches, win rate
+  * Win rate by hour/day of week
+  * Hero Matchups (win rate when playing as, with, against a hero)
+  * Teammates (win rate playing with particular players)
+  * Histogram (number of matches across Duration, LHs, HD, TD, K, D, A)
+  * Max/N/Sum on multiple stat categories
+* Additional aggregations for parsed matches:
+  * Mean build times
+  * Skill accuracy
+  * Laning
+  * Ward map
 * Rating Tracking: Users can keep track of their MMR by adding a Steam account to their friends list.
 * Visualizations: Data is rendered into bar charts, histograms, heatmaps, and more.
 * Modular: You may find certain parts of YASP to be useful for your own needs.
@@ -111,30 +127,30 @@ Tech
 FAQ
 ----
 ###How is YASP different from existing sites?
-There are a few things YASP offers that we believe to be unique.
-We also believe in deduplication, so we try to focus on features that aren't already done by others.
-* Free public match replay parsing.  Other sites offer public match parsing for a fee, or free parsing of professional matches.
-* Open source.  We keep our code open source, so anyone can help contribute.
-* Better querying tools.  We offer a flexible and powerful querying tool so that users can filter/extract interesting stats from their own match data.
+There are a few things YASP offers that we believe to be unique.  We also believe in deduplication, so we try to focus on features that aren't already done by others.
+* Free public match replay parsing.  Other sites offer public match parsing for a price, or parse only professional matches for free.
+* Open source.  We keep our code open source, so anyone can help contribute, or use our code for their own data analysis.
+* Better querying.  We offer a flexible and powerful querying tool so that users can filter/extract interesting stats from their own match data.
 
 ###How do you make money?  Isn't replay parsing is supposed to be expensive?
-YASP is a side project of a group of college students.
-
-As such, we're not looking to make money off the site, although we do run ads to help pay for server costs.
+YASP is a side project of a group of college students.  As such, we're not looking to make money off the site.
 
 We take some cost-cutting measures such as only automatically parsing the replays of active users.
+Ads help subsidize server costs, and donations cover most of the rest (through selling Cheese).
+We pay any remaining costs ourselves out-of-pocket.
 
-We also sell Cheese to help support our rising hosting costs. Please consider a purchase if you've found the site helpful!
+Please consider donating if you've found the site helpful!
 
 ###Why can't I search for players/matches?
-To save on storage costs, YASP doesn't have every match ever played.  We only add the matches of users who sign into YASP.
+To save on storage costs, YASP doesn't have every match ever played.  We only add the matches of users who sign in.
 
 This means you can't arbitrarily search for a match, although if you request a specific match ID through the form, we'll add it.
 
-###Why doesn't (some match) have parsed data?  This site's not any better than other services!
+###Why doesn't (some match) have parsed data?  This site's not any better than (some other service)!
 There are several reasons why we wouldn't have parsed data for a match:
 * The replay isn't ready yet.  There is usually a delay after the match (~10 minutes) while we wait for Valve to make the replay downloadable. 
 * The replay might not be available.  This happens occasionally, particularly in the SEA region, and there's nothing we can do about it.  If you can't get the replay in the client, we can't get it either.
+* The match had no active YASP users.  We don't automatically parse these matches because they're unlikely to be looked at.
 * The parser crashed while trying to parse the match.  This might happen if something weird happened in the replay that our code didn't expect.
 * The replay is expired.  Valve deletes replays after 7 days, so we can't parse these matches.
 
@@ -144,21 +160,38 @@ Since we only parse the replays of active YASP users, we have only parsed a smal
 To keep the load reasonable, we stop automatically parsing matches after a period of inactivity.
 Each visit to the YASP site while signed in resets this period.
            
-###I just signed in.  Why do you only have five matches for me? Where is my full history?  Your site doesn't work!
-Because of our limited resources, we can only track the games of players who use our site.
-Upon logging into YASP, we will begin tracking all your games.
-We also add you to a queue to get your full history of games.
-This can take a while depending on how large the queue is. On average this probably takes a week.
-The Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
+###I just signed in.  Why do you only have five matches for me?  Your site doesn't work!
+When you first log in, the games we have are games where you played with a YASP user.  We begin watching your future games.
+We also add you to a queue to get your full history of games.  This can take a while depending on how large the queue is.
+
+Note: the Valve API limits results to a maximum of 500, so we can only get 500 games per hero per player.
 If you really wanted, you could request the remaining matches manually by ID.
-                  
+
 ###Can I use YASP code in my own project?
 YASP is licensed under the GNU GPLv3. 
 This means you can use YASP in your project if it is under the same license (free and open source).
 We also ask that you give us attribution in your project if you use our code.
 
 ###I want to develop a feature/I found a bug!  What do I do?
-YASP is open source! Start a thread on GitHub if you'd like to work on a feature or report a bug.
+Start a thread on GitHub if you'd like to work on a feature or report a bug.
 
 ###I can't code, but I still want to help!
 If you're not a developer, you can buy some Cheese.
+
+Developer Questions
+----
+###How do I programmatically get replays?
+* You can fire up the retriever (supplying your own Steam credentials) and basically get a REST API for retrieving replay salts.  
+* If you have friends on that account you could extract their MMR as well.
+
+###How do I use the parser?
+* You'll probably need to download the replays and pipe them through the parser (it uses stdin/stdout streams, so standard shell I/O redirection will work).
+* This just emits a raw event log of JSON objects.  You'll have to figure out what you want to do with that data.
+* In YASP, we aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
+
+###I've got a bunch of replay files.  Can I get them into YASP?
+* If you want to run a replay file through the YASP pipeline, your best bet is probably to use the Kue JSON API to POST a job.
+* We don't allow public access to this API for production YASP, but you could do it yourself on your own instance.
+
+###How can I run my own YASP for myself/friends?
+* You can run your own instance of YASP, and then add your account_id to the "permanent" list to make them immune to untracking.
