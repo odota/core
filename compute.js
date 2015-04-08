@@ -220,16 +220,19 @@ function renderMatch(match) {
         }).join(' ');
         match.sentiment = sentiment(match.chat_words, {
             "report": -2,
+            "commend": 2,
+            "noob": -2,
+            "ff": -1,
             "bg": -1,
             "feed": -1,
-            "noob": -1,
-            "commend": 2,
             "ty": 1,
             "thanks": 1,
             "wp": 1,
             "end": -1,
             "garbage": -1,
-            "trash": -1
+            "trash": -1,
+            "throw": -1,
+            "salt": -1
         });
         match.graphData = generateGraphData(match);
         match.posData = match.players.map(function(p) {

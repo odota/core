@@ -1,4 +1,4 @@
-function playerMatches(matches) {
+function playerMatches(teammates) {
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -16,14 +16,12 @@ function playerMatches(matches) {
         });
         return o;
     };
-    //todo get teammates from better source
-    var teammates = [];
     //query form code
     $("#hero_id").select2({
         maximumSelectionSize: 1
     });
     $("#with_account_id").select2({
-        tags: teammates,
+        tags: teammates || [],
         maximumSelectionSize: 10
     });
     $("#teammate_hero_id").select2({

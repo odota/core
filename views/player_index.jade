@@ -5,24 +5,6 @@ include mixins/teammate_table
 
 block playercontent
   .row
-    .col-md-6
-      if (user && user.account_id === player.account_id)
-        h3 Actions
-        if (!user.full_history_time)
-          .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
-        //if (!user.account_id in ratingPlayers)
-        p: a.btn.btn-success(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-        .checkbox
-          label
-            input.pref#theme(type="checkbox", checked=user.light_theme)
-            | Use Light Theme
-    .col-md-6
-      h3 Rating
-        small.rating#solo Solo:
-        small.rating#party Party:
-      #ratings
-
-  .row
      .col-md-12
        include query
   .row
@@ -97,63 +79,20 @@ block playercontent
         button.btn.btn-default#next &raquo;
       #cal-heatmap
       h3 Days
-      #cal-heatmap-days
-      h3 Hours
-      #cal-heatmap-hours
-      h3 Days
       #chart-days
       h3 Hours
       #chart-hours
+  .row
+    .col-md-12
+      h3 Rating
+        small.rating#solo Solo:
+        small.rating#party Party:
+      #ratings
 
 append footer_assets
   script.
-    playerMatches();
-    playerTrendsTables();
     var time_result = !{JSON.stringify(player.aggData.time_result)};
+    var ratings = !{JSON.stringify(ratings)};
+    playerMatches(teammates);
     generateActivity(time_result);
-    $(".pref").change(function() {
-        $.post(
-            "/preferences", {
-                light_theme: $("#theme").is(":checked"),
-            },
-            function(data) {
-                if (data.sync) {
-                    location.reload(true);
-                }
-                else {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                }
-                $(".sync").fadeOut(3000);
-            });
-    });
-      var ratings = !{JSON.stringify(ratings)};
-      $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
-      $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
-      var times = ratings.map(function(r){return new Date(r.time);});
-      var solo = ratings.map(function(r){return r.soloCompetitiveRank;});
-      var party = ratings.map(function(r){return r.competitiveRank;});
-      c3.generate({
-      bindto: "#ratings",
-      data: {
-          x: 'x',
-          columns: [
-          ['x'].concat(times),
-          ['Solo'].concat(solo),
-          ['Party'].concat(party)
-          ],
-          type:"line"
-      },
-      axis: {
-          x: {
-              type: 'timeseries',
-              label: 'Date',
-              tick: {
-                  format: '%Y-%m-%d',
-                  count: 10
-              }
-          },
-          y: {
-              label: 'Rating'
-          }
-      }
-      });
+    ratingsChart(ratings);

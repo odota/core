@@ -159,9 +159,9 @@ block playercontent
 append footer_assets
   script.
     var aggData = !{JSON.stringify(player.aggData)};
-  script.
     var posData = !{JSON.stringify(player.posData)};
     posData.forEach(function(d){
+    //TODO: refactor function that takes d, and applies scaleAndExtrema to each key
       d.obs = scaleAndExtrema(d.obs);
       d.sen = scaleAndExtrema(d.sen);
     })
@@ -169,8 +169,7 @@ append footer_assets
       container: document.getElementById('map'),
       radius: 30
     });
-    console.log("test")
-
+    //TODO: scaleAndExtrema should be refactored, also shared in match positions and match teamfights pages
     function scaleAndExtrema(points, max, shift){
         points.forEach(function(p){
           p.x*=(600/127);
@@ -185,16 +184,78 @@ append footer_assets
         data: points,
         };
     }
-    
+    playerMatches(teammates);
+    generateHistograms(aggData);
+    playerTrendsTables();
+
+    //TODO: heatmap switcher, can we just have two static heatmaps?
     $(".activate").on('click', function() {
       heatmap.setData(posData[0][$(this).attr('id')]);
       heatmap.repaint();
     })
-
-    playerTrendsTables();
-    generateHistograms(aggData);
     
-  script
-    include ../public/js/playerTrends.js
+    //magical albert nav
+    var sections = [$(".records"), $(".matchups"), $(".wards"), $(".charts"), $("#content")];
+    function showSection(num) {
+        sections.forEach(function(sec, index) {
+            if (index === num) {
+                sec.show();
+            } else {
+                sec.hide();
+            }
+        })
+    }
     
+    function getCharts() {
+        showSection(3);
+    }
+    
+    function getWards() {
+        showSection(2);
+    }
+    
+    function getMatchups() {
+        showSection(1);
+    }
+    
+    function getRecords() {
+        showSection(0);
+    }
+    
+    function getSection() {
+        if (window.location.hash) {
+            var hash = window.location.hash.substring(1);
+    
+            if (hash === "charts") {
+                getCharts();
+            }
+            else if (hash === "wards") {
+                getWards();
+            }
+            else if (hash === "matchups") {
+                getMatchups();
+            }
+            else {
+                getRecords();
+            }
+        }
+        else {
+            getRecords();
+        }
+    }
+    
+    getSection();
+    
+    $("#charts").click(function() {
+        getCharts();
+    });
+    $("#wards").click(function() {
+        getWards();
+    });
+    $("#records").click(function() {
+        getRecords();
+    });
+    $("#matchups").click(function() {
+        getMatchups();
+    });
 

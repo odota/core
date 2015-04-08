@@ -1,7 +1,7 @@
 extend layout
-    
+
 block content
-  .row.match-top
+  .row.match-top 
     .col-md-1
       img(src='#{player.avatarmedium}').img-thumbnail
     .col-md-4
@@ -24,6 +24,18 @@ block content
             td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
             td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
             td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
+  if (user && user.account_id === player.account_id)
+    .row
+      .col-md-12
+        if (!user.full_history_time)
+          .alert.alert-danger We're watching your games and parsing them from now on, but we don't have your old matches yet!  Check back later to see if we've gotten your full history.
+        if (!user.account_id in ratingPlayers)
+          .alert.alert-info Want to include your MMR on your profile and be eligible for the leaderboard? 
+            a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add a tracker.
+        .checkbox
+          label
+            input.pref#theme(type="checkbox", checked=user.light_theme)
+            | Use Light Theme
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs
@@ -38,7 +50,22 @@ block content
   .row
     .col-md-12
       include ads/leaderboard_3
-
+      
 append footer_assets
   script.
-    var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.personaname + "-" + t.account_id};})) : "[]"};
+    var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
+    $(".pref").change(function() {
+        $.post(
+            "/preferences", {
+                light_theme: $("#theme").is(":checked"),
+            },
+            function(data) {
+                if (data.sync) {
+                    location.reload(true);
+                }
+                else {
+                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                }
+                $(".sync").fadeOut(3000);
+            });
+    });

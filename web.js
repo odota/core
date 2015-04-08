@@ -99,7 +99,7 @@ function configureApp(app) {
                         }
                         socket.emit('log', "Queued API request for " + match_id);
                         job.on('progress', function(prog) {
-                            //TODO: kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                            //TODO: kue now allows emitting additional data so we can capture api start, api finish, match expired, parse start, parse finish
                             socket.emit('prog', prog);
                         });
                         job.on('complete', function(result) {

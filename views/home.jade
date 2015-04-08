@@ -1,10 +1,4 @@
 extend base_layout
-append head
-  script(src="/bower_components/webcomponentsjs/webcomponents.js")
-  // link(rel="import" href="bower_components/core-icons/core-icons.html")
-  // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
-  // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
-  link(rel="import" href="public/paper-fab-menu.html")
 
 block unsticky_content
   body
@@ -13,6 +7,7 @@ block unsticky_content
     include home_footer
     
 append footer_assets
+  //these scripts must go in the foot (can't be bundled) since they depend on content to be loaded
   script(src="/public/js/home/scroll.js")
   script(src="/public/js/home/animatedNavbar.js")
   script(src="/public/js/home/polymerFabs.js")

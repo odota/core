@@ -1,4 +1,4 @@
-module.exports = function generateTimeline(match) {
+function generateTimeline(match) {
     $(document).on('ready', function() {
         for (var player in match.parsed_data.heroes) {
             var items = []

@@ -26,6 +26,7 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
+    block head
 
     //yasp client side constants, could optimize bandwidth by not dumping everything
     script.
@@ -33,13 +34,13 @@ html
 
     //TODO: external deps, do we want to bundle this css/js as well?
     //can mostly be managed through bower if we want to do that, or can use latest from jsdelivr to stay up to date
-    //bootstrap
+    //jquery
+    script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
+    //bootstrap (jquery)
     link(rel='stylesheet', href='//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.min.css')
     script(type='text/javascript' src="//cdn.jsdelivr.net/bootstrap/latest/js/bootstrap.min.js")
     //font-awesome
     link(rel="stylesheet" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css")
-    //jquery
-    script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
     //datatables (jquery)
     script(type='text/javascript' src='//cdn.jsdelivr.net/jquery.datatables/latest/js/jquery.dataTables.min.js')
     link(rel='stylesheet', href='//cdn.jsdelivr.net/jquery.datatables/latest/plugins/bootstrap/3/dataTables.bootstrap.css')
@@ -65,7 +66,7 @@ html
     link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.css')
     //heatmap.js (not on jsdelivr)
     script(type='text/javascript', src='//cdn.rawgit.com/pa7/heatmap.js/develop/build/heatmap.min.js')
-  
+
     //-
       //yasp css
       link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
@@ -96,21 +97,21 @@ html
     //compiled assets, currently bundling public/js and public/css, i.e., the above
     link(rel='stylesheet', href="/public/build/yasp.min.css")
     script(type='text/javascript', src="/public/build/yasp.min.js")
+    
+    //TODO: home assets, are these bundlable?
+    script(src="/bower_components/webcomponentsjs/webcomponents.js")
+    // link(rel="import" href="bower_components/core-icons/core-icons.html")
+    // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
+    // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
+    link(rel="import" href="public/paper-fab-menu.html")
 
-    block head
+    //home extends unsticky
     block unsticky_content
+    //layout extends sticky
     block sticky_content
+    //stuff to include after page load
     block footer_assets
     script.
           //by default, run formatting functions on all pages at page end
           tooltips();
           formatHtml();
-    //-
-      style
-        include ../public/css/flaticon.css
-      block stylesheets
-        style
-          include ../public/css/yasp.css
-        if (!(user && user.light_theme))
-          style
-            include ../public/css/dark.css  

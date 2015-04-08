@@ -6,7 +6,7 @@ block match_content
       h2 Chat
       .col-md-6
         h4: abbr(title="An estimation of how \"positive\" all chat was.", style="display:inline-block") Positivity 
-          small (#{match.sentiment.score} net score, #{match.sentiment.tokens.length} tokens)
+          small (#{match.sentiment.score} net, #{match.sentiment.tokens.length} tokens)
         .progress
           - var pct = (match.sentiment.comparative+1)/2
           .progress-bar(class=pct>0.5 ? "progress-bar-success" : "progress-bar-danger", style="width:#{pct*100}%")  #{match.sentiment.comparative.toFixed(2)}
@@ -21,7 +21,7 @@ block match_content
       table.table.table-hover.table-responsive.match-top
         thead
           tr
-            th Hero
+            th Player
             th Time
             th Message
         tbody
@@ -30,11 +30,11 @@ block match_content
             - var hero = constants.heroes[p.hero_id]
             - var slot_color = constants.player_colors[p.player_slot]
             tr(class=p.isRadiant ? "success" : "danger")
-              if hero
-                td: img(src=hero.img, title=hero.localized_name, style="border-left-color:#{slot_color}").player-color
-              else
-                td
-                  .player-color(style="border-left-color:#{slot_color}")=message.slot
+              td 
+                if hero
+                  img(src=hero.img, title=hero.localized_name, style="border-left-color:#{slot_color}").player-color
+                else
+                  =message.unit
               td.format-seconds(data-format-seconds=message.time)=message.time
               td=message.key
     .col-md-4
