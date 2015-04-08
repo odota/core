@@ -9,15 +9,8 @@ YASP - YASP: Another Stats Page
 
 About
 ====
-* Open source Dota 2 analytics platform.
-* Advanced Querying: Supports flexible querying of matches by teammate, team composition, opponent composition, etc.
-* Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics, including item build times and ward placement.
-* Rating Tracking: Users can keep track of their MMR by adding a Steam account to their friends list.
-* Visualizations: Data is rendered into bar charts, histograms, heatmaps, and more.
-* Modular construction: You may find certain parts of YASP to be useful for your own needs.
-* Runs as a Node.js/Express web application.
-* Designed to scale to thousands of users.
-* Parser powered by [clarity](https://github.com/skadistats/clarity).  
+* Open Source Dota 2 analytics platform.
+* [About YASP](https://github.com/yasp-dota/yasp/blob/master/_posts/about.md)
 
 Quickstart
 ====
