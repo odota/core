@@ -8,12 +8,12 @@ YASP - YASP: Another Stats Page
 [![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 About
-====
+----
 * Open Source Dota 2 analytics platform.
 * [About YASP](https://github.com/yasp-dota/yasp/blob/master/_posts/about.md)
 
 Quickstart
-====
+----
 * Development mode: Runs yasp-core, parser, retriever on one machine
 * Install dependencies: `sudo bash init.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`
@@ -21,24 +21,23 @@ Quickstart
 * Launch in dev mode: `npm run dev`
 
 Sample Data
-====
+----
 * Load the test players and matches: `mongo dota migrations/loader.js`
 
-I want to programmatically get replays!  
-====
+Dev Qs
+----
+###I want to programmatically get replays!  
 * You can fire up the retriever (supplying your own Steam credentials) and basically get a REST API for retrieving replay salts.  
 * If you have friends on that account you could extract their MMR as well.
 
-I want to parse my own replays!  
-====
+###I want to parse my own replays!
 * You'll probably need to download the replays and run them through the parser (it uses stdin/stdout streams).
 * This just emits a raw event log of JSON objects.  You'll have to figure out what you want to do with that data.
 * In YASP, we aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
 
-I want to run my own YASP!
-====
+###I want to run my own YASP!
 * You can run your own instance of YASP, and then add your account_id to the "permanent" list to keep yourself tracked.
 
 Lessons and Rules
-====
+----
 * Never async.parallel database calls.
