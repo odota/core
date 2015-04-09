@@ -131,15 +131,19 @@ There are a few things YASP offers that we believe to be unique.  We also believ
 * Free public match replay parsing.  Other sites offer public match parsing for a price, or parse only professional matches for free.
 * Open source.  We keep our code open source, so anyone can help contribute, or use our code for their own data analysis.
 * Better querying.  We offer a flexible and powerful querying tool so that users can filter/extract interesting stats from their own match data.
+* Cool visualizations.  We generate nice visualizations of player match data, such as a calendar to see when you've played, and how well you play on certain hours/days.  We're also pretty responsive to requests for more.
 
-###How do you make money?  Isn't replay parsing is supposed to be expensive?
+###How do you make money?  Isn't replay parsing supposed to be expensive?
 YASP is a side project of a group of college students.  As such, we're not looking to make money off the site.
 
-We take some cost-cutting measures such as only automatically parsing the replays of active users.
-Ads help subsidize server costs, and donations cover most of the rest (through selling Cheese).
-We pay any remaining costs ourselves out-of-pocket.
+Here's how we're able to keep YASP running for free:
+* Modular, dynamically scalable architecture.  We've separated out YASP into components that we can scale individually with load.  We end up not paying as much for resources we don't need.
+* Reducing load.  For example, we only automatically parse the replays of active users, since those are the matches most likely to be looked at.
+* Ads. These help subsidize server costs.
+* Donations.  We sell Cheese to users who want to help support the site.
+* Volunteers.  We don't need to pay employees as all developers are volunteers.  Having to pay developers is a significant cost in a commercial enterprise.
 
-Please consider donating if you've found the site helpful!
+Anything that's left, we cover out-of-pocket!
 
 ###Why can't I search for players/matches?
 To save on storage costs, YASP doesn't have every match ever played.  We only add the matches of users who sign in.
