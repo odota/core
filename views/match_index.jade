@@ -47,7 +47,7 @@ block match_content
                  td= player.assists
                  td= player.last_hits
                  td= player.denies
-                 td.format= ~~(player.gold_per_min*match.duration/60)
+                 td.format= player.total_gold
                  td= player.gold_per_min
                  td= player.xp_per_min
                  td.format= player.hero_damage

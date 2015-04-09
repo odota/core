@@ -1,4 +1,4 @@
-function playerMatches(teammates) {
+function playerMatches(matches, teammates) {
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -43,8 +43,10 @@ function playerMatches(teammates) {
     });
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
+        //draw things with the returned data
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
         $("#winrate").text(pct + "%").width(pct + "%");
+        $("#count").text(json.aggData.games);
     }).dataTable({
         "order": [
                 [0, "desc"]
@@ -55,11 +57,8 @@ function playerMatches(teammates) {
             'url': '/api/matches',
             "data": function(d) {
                 d.select = $('form').serializeObject();
-                d.agg = {
-                    "win": 1,
-                    "lose": 1,
-                    "games": 1
-                };
+                //api enforces blank agg if null passed in, so this can be null or {}
+                d.agg = {};
             }
         },
         "deferRender": true,

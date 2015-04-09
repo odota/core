@@ -115,7 +115,7 @@ function aggregator(matches, fields) {
             standardAgg(key, p.denies, m);
         },
         "total_gold": function(key, m, p) {
-            standardAgg(key, ~~(p.gold_per_min * m.duration / 60), m);
+            standardAgg(key, p.total_gold, m);
         },
         "gold_per_min": function(key, m, p) {
             standardAgg(key, p.gold_per_min, m);
@@ -209,6 +209,10 @@ function aggregator(matches, fields) {
     };
     //if null fields passed in, do all aggregations
     fields = fields || types;
+    //we always want to do basic fields (win/lose/games)
+    fields.win = fields.win || 1;
+    fields.lose = fields.lose || 1;
+    fields.games = fields.games || 1;
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
         aggData[key] = {
@@ -220,15 +224,14 @@ function aggregator(matches, fields) {
             counts: {}
         };
     }
-    //"special fields", win, lose, games, teammates, matchups
-    //overwrite standard agg object
-    //count win/lose/games
+    //"special fields", overwrite standard agg object, always present regardless of aggregations requested
     aggData.win = 0;
     aggData.lose = 0;
     aggData.games = 0;
     aggData.teammates = {};
     aggData.matchups = {};
     aggData.time_result = {};
+    //prefill matchups with every hero
     for (var hero_id in constants.heroes) {
         var obj = {
             hero_id: hero_id,
@@ -245,10 +248,10 @@ function aggregator(matches, fields) {
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         var p = m.players[0];
-        for (var agg in fields) {
-            if (types[agg]) {
-                //execute the aggregation function on this match for each passed aggregation field
-                types[agg](agg, m, p);
+        for (var key in fields) {
+            //execute the aggregation function for each specified field
+            if (types[key]) {
+                types[key](key, m, p);
             }
         }
     }
@@ -499,7 +502,7 @@ function advQuery(options, cb) {
     }
     //determine if we're doing an aggregation/selection that requires parsed data
     //var parsedPlayerData = {};
-    //todo this just gets the parsed data if js_agg is null (do everything), it won't work if specific aggregations are requested
+    //this just gets the parsed data if js_agg is null (do everything)
     var bGetParsedPlayerData = Boolean(!options.js_agg);
     //limit, pass to mongodb
     //cap the number of matches to return in mongo

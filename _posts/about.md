@@ -39,7 +39,7 @@ Features
   * opponent composition (heroes)
   * Standard filters: patch, game mode, etc.
 * Aggregations:
-  * Match count, win rate, KDA
+  * Result count, win rate
   * Win rate by hour/day of week
   * Hero Matchups (win rate when playing as, with, against a hero)
   * Teammates (win rate playing with particular players)

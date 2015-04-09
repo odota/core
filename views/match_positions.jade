@@ -41,29 +41,7 @@ append footer_assets
         radius: 15
       });
       var posData = !{JSON.stringify(match.posData)}
-      console.log(posData);
-      posData.forEach(function(d){
-        d.lane_pos = scaleAndExtrema(d.lane_pos, 10, 0);
-        //d.pos = scaleAndExtrema(d.pos, 10, 0);
-        d.obs = scaleAndExtrema(d.obs, null, 5);
-        d.sen = scaleAndExtrema(d.sen, null, 5);
-      })
-      
-      function scaleAndExtrema(points, max, shift){
-          points.forEach(function(p){
-            p.x*=(600/127);
-            p.y*=(600/127);
-            p.value+=(shift || 0);
-          })
-          var vals = points.map(function(p){return p.value;});
-          var localMax = Math.max.apply(null, vals);
-          return {
-          min: 0,
-          max: max || localMax,
-          data: points,
-          };
-      }
-      
+      adjustHeatmapData(posData, 600/127, null, 0);
       $(".activate").on("mouseover", function(){
         var pData = posData[Number($(this).attr('data-index'))]
         var data = pData[$(this).attr('data-type')];

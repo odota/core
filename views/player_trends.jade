@@ -5,9 +5,14 @@ include mixins/teammate_table
 
 block playercontent
   //pre #{JSON.stringify(player.aggData, null, 2)}
+  //th KDA
+  //th Abandon
+  //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
+  //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
   .row
     .col-md-12
       include query
+  
   hr
   .row
     .col-md-12
@@ -26,9 +31,10 @@ block playercontent
             button.btn.btn-dark#charts Charts
   hr
   #the_stats
+    //stuff that doesnt need parsed data
     .records
       .row
-        .col-md-6
+        .col-md-12
           h3 Records
           table.table
             tr
@@ -54,7 +60,7 @@ block playercontent
                   td
                     a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
                   td=val.n
-                  td=val.sum
+                  td.format= val.sum
           h3 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts
@@ -67,124 +73,107 @@ block playercontent
               tr
                 td=constants.modes[key].name
                 td=val
-        .col-md-6
-              h3 Skill Accuracy
-              table.table#accuracy
-                thead
-                  tr
-                    td Ability
-                    td Ability Name
-                    td Casts
-                    td Hits
-                    td Hit%
-                tbody
-                  each val, key in player.aggData.ability_uses.counts
-                    if player.aggData.hero_hits.counts[key]
-                      tr
-                        - var ability = constants.abilities[key]
-                        if ability
-                          td
-                            img.ability(src=ability.img, alt=key)
-                          td= ability.dname
-                        else
-                          td=key
-                          td=key
-                        td=val
-                        td=player.aggData.hero_hits.counts[key]
-                        td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
-              h3 Build Times (#{player.aggData.purchase.n} games)
-              table.table#builds
-                thead
-                  tr
-                    th Item
-                    th Item Name
-                    th Avg
-                    th #
-                tbody
-                  each val, key in player.aggData.purchase_time.counts
-                    - var item = constants.big_items[key]
-                    if item
-                      tr 
-                        td: img.item(src=item.img, alt=key)
-                        td= item.dname
-                        td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
-                        td=player.aggData.purchase.counts[key]
-              h3 Laning
-              table.table
-                each val, key in player.aggData.lane_role.counts
-                  tr
-                    td=key
-                    td=val
-    .row
-      .charts
-        .row
-          .col-md-12.table-responsive
-            h3 Histogram
-            button.btn.btn-default.histogram(data-histogram="duration") Duration
-            button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
-            button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
-            button.btn.btn-default.histogram(data-histogram="hero_damage") HD
-            button.btn.btn-default.histogram(data-histogram="tower_damage") TD
-            button.btn.btn-default.histogram(data-histogram="hero_healing") HH
-            button.btn.btn-default.histogram(data-histogram="kills") K
-            button.btn.btn-default.histogram(data-histogram="deaths") D
-            button.btn.btn-default.histogram(data-histogram="assists") A
-            #chart-histogram
-    .row
-      .wards
-        h3 Warding (#{player.aggData.obs.n || 0} games)
-        .row
-          .col-md-4.text-center
-            button.btn.btn-lg.btn-warning.activate#obs Observers 
-            button.btn.btn-lg.btn-info.activate#sen Sentries
-          .col-md-8.table-responsive
-            #map.mapContainer(style="margin: 0 auto;")
-              img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    .matchups
+      .row
+        .col-md-12.table-responsive
+          h3 Histogram
+          button.btn.btn-default.histogram(data-histogram="duration") Duration
+          button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
+          button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
+          button.btn.btn-default.histogram(data-histogram="hero_damage") HD
+          button.btn.btn-default.histogram(data-histogram="tower_damage") TD
+          button.btn.btn-default.histogram(data-histogram="hero_healing") HH
+          button.btn.btn-default.histogram(data-histogram="kills") K
+          button.btn.btn-default.histogram(data-histogram="deaths") D
+          button.btn.btn-default.histogram(data-histogram="assists") A
+          #chart-histogram
       .row
         .col-md-12
           +teammate_table(player.teammates)
       .row
         .col-md-12
           +hero_table(player.heroes_arr, true)
-                
+        
+    //stuff that needs parsed data
+    .matchups
+      .row
+        .col-md-12
+          h3 Skill Accuracy
+          table.table#accuracy
+            thead
+              tr
+                td Ability
+                td Ability Name
+                td Casts
+                td Hits
+                td Hit%
+            tbody
+              each val, key in player.aggData.ability_uses.counts
+                if player.aggData.hero_hits.counts[key]
+                  tr
+                    - var ability = constants.abilities[key]
+                    if ability
+                      td
+                        img.ability(src=ability.img, alt=key)
+                      td= ability.dname
+                    else
+                      td=key
+                      td=key
+                    td=val
+                    td=player.aggData.hero_hits.counts[key]
+                    td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
+          h3 Build Times (#{player.aggData.purchase.n} games)
+          table.table#builds
+            thead
+              tr
+                th Item
+                th Item Name
+                th Avg
+                th #
+            tbody
+              each val, key in player.aggData.purchase_time.counts
+                - var item = constants.big_items[key]
+                if item
+                  tr 
+                    td: img.item(src=item.img, alt=key)
+                    td= item.dname
+                    td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
+                    td=player.aggData.purchase.counts[key]
+          h3 Laning
+          table.table
+            each val, key in player.aggData.lane_role.counts
+              tr
+                td=key
+                td=val
+
+    .wards
+      .row
+        .col-md-12
+          h3 Warding (#{player.aggData.obs.n || 0} games)
+          .row
+            .col-md-4.text-center
+              button.btn.btn-lg.btn-warning.activate#obs Observers 
+              button.btn.btn-lg.btn-info.activate#sen Sentries
+            .col-md-8.table-responsive
+              #map.mapContainer.mapContainer-small(style="margin: 0 auto;")
+                img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+
 append footer_assets
   script.
     var aggData = !{JSON.stringify(player.aggData)};
     var posData = !{JSON.stringify(player.posData)};
-    posData.forEach(function(d){
-    //TODO: refactor function to one that takes  array of posData, iterates through each d, applies scaleAndExtrema to each key
-      d.obs = scaleAndExtrema(d.obs);
-      d.sen = scaleAndExtrema(d.sen);
-    })
+    adjustHeatmapData(posData, 300/127);
     var heatmap = h337.create({
       container: document.getElementById('map'),
-      radius: 30
+      radius: 15
     });
-    //TODO: scaleAndExtrema should be refactored, also shared in match positions and match teamfights pages
-    function scaleAndExtrema(points, max, shift){
-        points.forEach(function(p){
-          p.x*=(600/127);
-          p.y*=(600/127);
-          p.value+=(shift || 0);
-        })
-        var vals = points.map(function(p){return p.value;});
-        var localMax = Math.max.apply(null, vals);
-        return {
-        min: 0,
-        max: max || localMax,
-        data: points,
-        };
-    }
-    playerMatches(teammates);
-    generateHistograms(aggData);
-    playerTrendsTables();
-
     //TODO: heatmap switcher, can we just have two static heatmaps?
     $(".activate").on('click', function() {
       heatmap.setData(posData[0][$(this).attr('id')]);
       heatmap.repaint();
-    })
+    });
+    playerMatches(teammates);
+    generateHistograms(aggData);
+    playerTrendsTables();
     
     //magical albert nav
     var sections = [$(".records"), $(".matchups"), $(".wards"), $(".charts"), $("#content")];
@@ -250,4 +239,3 @@ append footer_assets
     $("#matchups").click(function() {
         getMatchups();
     });
-

@@ -20,9 +20,10 @@ function computeMatchData(match) {
                 }
             }
             match.patch = i;
-            //add a parsedplayer property to each player, and compute more stats
+            //add a parsedplayer object to each player, and compute more stats
             match.players.forEach(function(player, ind) {
                 player.isRadiant = isRadiant(player);
+                player.total_gold = ~~(player.gold_per_min * match.duration / 60);
                 var p = {};
                 if (match.parsed_data) {
                     //mapping 0 to 0, 128 to 5, etc.
