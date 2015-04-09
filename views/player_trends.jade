@@ -24,17 +24,9 @@ block playercontent
         .col-md-3.text-center
           a(href="#charts")
             button.btn.btn-dark#charts Charts
-  hr 
+  hr
   #the_stats
     .records
-      .row
-        .col-md-4.text-center
-          h3 Matches: #{player.matches.length}
-        .col-md-4.text-center
-            h3 Overall KDA: #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
-        .col-md-4.text-center
-            h3 Abandon Rate: #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
-      hr
       .row
         .col-md-6
           h3 Records
@@ -161,7 +153,7 @@ append footer_assets
     var aggData = !{JSON.stringify(player.aggData)};
     var posData = !{JSON.stringify(player.posData)};
     posData.forEach(function(d){
-    //TODO: refactor function that takes d, and applies scaleAndExtrema to each key
+    //TODO: refactor function to one that takes  array of posData, iterates through each d, applies scaleAndExtrema to each key
       d.obs = scaleAndExtrema(d.obs);
       d.sen = scaleAndExtrema(d.sen);
     })
