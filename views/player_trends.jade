@@ -19,16 +19,13 @@ block playercontent
       h3
         .col-md-3.text-center
           a(href="#records")
-            button.btn.btn-dark#records Records
+            button.btn.btn-dark.click-nav#records Records
         .col-md-3.text-center
           a(href="#matchups")
-            button.btn.btn-dark#matchups Matchups
+            button.btn.btn-dark.click-nav#matchups Matchups
         .col-md-3.text-center
           a(href="#wards")
-            button.btn.btn-dark#wards Wards
-        .col-md-3.text-center
-          a(href="#charts")
-            button.btn.btn-dark#charts Charts
+            button.btn.btn-dark.click-nav#wards Wards
   hr
   #the_stats
     //stuff that doesnt need parsed data
@@ -86,12 +83,6 @@ block playercontent
           button.btn.btn-default.histogram(data-histogram="deaths") D
           button.btn.btn-default.histogram(data-histogram="assists") A
           #chart-histogram
-      .row
-        .col-md-12
-          +teammate_table(player.teammates)
-      .row
-        .col-md-12
-          +hero_table(player.heroes_arr, true)
         
     //stuff that needs parsed data
     .matchups
@@ -176,66 +167,20 @@ append footer_assets
     playerTrendsTables();
     
     //magical albert nav
-    var sections = [$(".records"), $(".matchups"), $(".wards"), $(".charts"), $("#content")];
-    function showSection(num) {
-        sections.forEach(function(sec, index) {
-            if (index === num) {
-                sec.show();
-            } else {
-                sec.hide();
-            }
-        })
-    }
-    
-    function getCharts() {
-        showSection(3);
-    }
-    
-    function getWards() {
-        showSection(2);
-    }
-    
-    function getMatchups() {
-        showSection(1);
-    }
-    
-    function getRecords() {
-        showSection(0);
-    }
-    
-    function getSection() {
-        if (window.location.hash) {
-            var hash = window.location.hash.substring(1);
-    
-            if (hash === "charts") {
-                getCharts();
-            }
-            else if (hash === "wards") {
-                getWards();
-            }
-            else if (hash === "matchups") {
-                getMatchups();
-            }
-            else {
-                getRecords();
-            }
-        }
-        else {
-            getRecords();
-        }
-    }
-    
-    getSection();
-    
-    $("#charts").click(function() {
-        getCharts();
+    //massively reduced by howard. . .
+      if (window.location.hash) {
+          var hash = window.location.hash.substring(1);
+          console.log(hash);
+          showSection(hash);
+      }
+      else{
+          showSection("records");
+      }
+    $(".click-nav").click(function(){
+      var id = $(this).attr("id");
+      showSection(id);
     });
-    $("#wards").click(function() {
-        getWards();
-    });
-    $("#records").click(function() {
-        getRecords();
-    });
-    $("#matchups").click(function() {
-        getMatchups();
-    });
+    function showSection(id){
+      $("."+id).show();
+      $("."+id).siblings().hide();
+    }

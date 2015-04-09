@@ -602,11 +602,14 @@ function getParsedPlayerData(matches, doAction, cb) {
     if (!doAction) {
         return cb();
     }
-    //todo this currently does a query for each match in the set, so could be several thousand queries per page load. . .
-    //to get better, since we want a different position on each query
-    //parsed_data.players needs an identifier we can project on, such as steam_id
-    //also need index on parsed_data.players.steam_id
-    async.each(matches, function(m, cb) {
+    var hash = {};
+    //we optimize by filtering matches for only those with parse_status===2
+    var parsed = matches.filter(function(m) {
+        return m.parse_status === 2;
+    });
+    //todo the following currently does a query for each match in the set, so could be a lot of queries
+    //since we want a different position on each query, we need to make them individually
+    async.each(parsed, function(m, cb) {
         var player = m.players[0];
         var parseSlot = player.player_slot % (128 - 5);
         db.matches.findOne({
@@ -617,24 +620,33 @@ function getParsedPlayerData(matches, doAction, cb) {
                 "parsed_data.version": 1,
                 "parsed_data.players": {
                     $slice: [parseSlot, 1]
-                }
+                },
+                match_id: 1
             }
         }, function(err, doc) {
             if (err) {
                 return cb(err);
             }
+            //build hash of match_id to parsed_data
+            hash[doc.match_id] = doc.parsed_data;
             //console.log(doc.parsed_data);
-            m.parsed_data = doc.parsed_data;
+            //m.parsed_data = doc.parsed_data;
             cb(err);
         });
     }, function(err) {
+        //iterate through given matches and populate parsed_data field
+        for (var j = 0; j < matches.length; j++) {
+            matches[j].parsed_data = hash[matches[j].match_id];
+        }
         cb(err);
     });
     /*
     //better approach, but requires steam_id for each player, which is not present in v5 data, added to v7
+    //parsed_data.players needs an identifier we can project on, such as steam_id
+    //also need index on parsed_data.players.steam_id
     //compute the steam64 for this player
     //create array of ids to use for $in
-    var match_ids = matches.map(function(m) {
+    var match_ids = parsed.map(function(m) {
         return m.match_id;
     });
     db.matches.find({
@@ -654,7 +666,6 @@ function getParsedPlayerData(matches, doAction, cb) {
             return cb(err);
         }
         //build hash of match_id to parsed_data
-        var hash = {};
         for (var i = 0; i < docs.length; i++) {
             hash[docs[i].match_id] = docs[i].parsed_data;
         }

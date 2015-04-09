@@ -1,7 +1,7 @@
 extend layout
 
 block content
-  pre=JSON.stringify(ratings)
+  //pre=JSON.stringify(ratings)
   h1 Ratings
   table.table#ratings
     thead
@@ -18,3 +18,7 @@ block content
         td= rating.soloCompetitiveRank
         td= rating.competitiveRank
         td= moment(rating.time).fromNow()
+
+append footer_assets
+  script.
+    $("#ratings").dataTable({order:[1, "desc"]});

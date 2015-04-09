@@ -1,5 +1,13 @@
 extend base_layout
 
+block head
+    //additional home assets
+    script(src="/bower_components/webcomponentsjs/webcomponents.js")
+    // link(rel="import" href="bower_components/core-icons/core-icons.html")
+    // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
+    // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
+    link(rel="import" href="/public/paper-fab-menu.html")
+
 block unsticky_content
   body
     include home_navbar

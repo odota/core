@@ -63,9 +63,9 @@ block playercontent
     include ads/leaderboard_2
   hr
   .row
-    .col-md-6
-      +hero_table(player.heroes_arr, false)
-    .col-md-6
+    .col-md-12
+      +hero_table(player.heroes_arr, true)
+    .col-md-12
       +teammate_table(player.teammates)
   hr
   .row

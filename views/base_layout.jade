@@ -26,7 +26,6 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-    block head
 
     //yasp client side constants, could optimize bandwidth by not dumping everything
     script.
@@ -97,21 +96,16 @@ html
     //compiled assets, currently bundling public/js and public/css, i.e., the above
     link(rel='stylesheet', href="/public/build/yasp.min.css")
     script(type='text/javascript', src="/public/build/yasp.min.js")
-    
-    //TODO: home assets, are these bundlable?
-    script(src="/bower_components/webcomponentsjs/webcomponents.js")
-    // link(rel="import" href="bower_components/core-icons/core-icons.html")
-    // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
-    // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
-    link(rel="import" href="/public/paper-fab-menu.html")
 
-    //home extends unsticky
-    block unsticky_content
-    //layout extends sticky
-    block sticky_content
-    //stuff to include after page load
-    block footer_assets
-    script.
-          //by default, run formatting functions on all pages at page end
-          tooltips();
-          formatHtml();
+    block head
+
+  //home extends unsticky
+  block unsticky_content
+  //layout extends sticky
+  block sticky_content
+  //stuff to include after page load
+  block footer_assets
+  script.
+    //by default, run formatting functions on all pages at page end
+    tooltips();
+    formatHtml();
