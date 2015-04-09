@@ -1,13 +1,12 @@
 extend base_layout
-append head
-  script(src="/bower_components/webcomponentsjs/webcomponents.js")
-  // link(rel="import" href="bower_components/core-icons/core-icons.html")
-  // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
-  // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
-  link(rel="import" href="public/paper-fab-menu.html")
-  
-block stylesheets
-  link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+
+block head
+    //additional home assets
+    script(src="/bower_components/webcomponentsjs/webcomponents.js")
+    // link(rel="import" href="bower_components/core-icons/core-icons.html")
+    // link(rel="import" href="bower_components/paper-fab/paper-fab.html")
+    // link(rel="import" href="bower_components/core-tooltip/core-tooltip.html")
+    link(rel="import" href="/public/paper-fab-menu.html")
 
 block unsticky_content
   body
@@ -16,9 +15,10 @@ block unsticky_content
     include home_footer
     
 append footer_assets
-  script(src="/public/js/scroll.js")
-  script(src="/public/js/animatedNavbar.js")
-  script(src="/public/js/polymerFabs.js")
+  //these scripts must go in the foot (can't be bundled) since they depend on content to be loaded
+  script(src="/public/js/home/scroll.js")
+  script(src="/public/js/home/animatedNavbar.js")
+  script(src="/public/js/home/polymerFabs.js")
   include fake_data
   script.
     c3.generate({

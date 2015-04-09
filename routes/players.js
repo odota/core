@@ -8,9 +8,6 @@ var playerPages = {
     index: {
         name: "Player"
     },
-    matches: {
-        name: "Matches"
-    },
     trends: {
         name: "Trends"
     }

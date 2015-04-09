@@ -1,7 +1,4 @@
-var pad = require('./utility').pad;
-var $ = jQuery = require('jquery');
-
-module.exports = function buildMap() {
+function buildMap() {
     $(document).on('ready', function() {
         var buildingData = [{
             id: "t4br",

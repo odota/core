@@ -1,0 +1,4 @@
+{
+  "verbose": true,
+  "ignore": ["public","views","node_modules"]
+}

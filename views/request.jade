@@ -2,8 +2,12 @@ extend layout
 
 block content
   .row
-    .col-md-4
-      h1 Match Requests
+    .col-md-5
+      h1 Match Requests 
+      ol
+        li Enter a match ID.
+        li Prove your humanity.
+        li We'll try to parse it for you!
       div#request
         .form-group
           input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
@@ -35,7 +39,7 @@ append footer_assets
       field.value = "";
       if (!socket){
       socket = io.connect();
-          socket.on('err', function(data){
+    socket.on('err', function(data){
       $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
     })
     socket.on('log', function(data){

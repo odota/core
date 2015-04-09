@@ -3,12 +3,12 @@ extend layout
 block content
   .row
     .col-md-12
-      h1 Matches
-      table.table#table
+      h1 All Matches
+      include query
+      table.table#matches
       include ads/leaderboard_2
   
 append footer_assets
-  include assets/datatables
   script.
-    matchTable();
+    playerMatches();
   style .leaderboard { margin-top: 1.5em;}

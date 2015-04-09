@@ -1,8 +1,4 @@
-var $ = jQuery = require('jquery');
-var qtip = require('qtip2');
-$.qtip = qtip;
-
-module.exports = function tooltips() {
+function tooltips() {
     $('.item').qtip({
         content: {
             text: function(event, api) {

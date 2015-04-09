@@ -1,14 +1,11 @@
 extend layout
-
-append head
-  link(rel='stylesheet', href='/public/css/error.css')
     
 block content
   .row
     .col-md-12
-      .image
-        h2
-          span 404
+      .image.error
+        h2.error
+          span.error 404
           br
           span= message? message : "Sorry, we couldn't find that!"
         img(src='http://fc08.deviantart.net/fs70/i/2013/049/e/c/dota_2_fan_art___apples_require_a_delicate_touch_by_jeffufu-d5vf65k.jpg')

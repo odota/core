@@ -18,12 +18,19 @@ var matchPages = {
     positions: {
         name: "Positions"
     },
+    objectives: {
+        name: "Objectives"
+    },
+    teamfights: {
+        name: "Teamfights"
+    },
     chat: {
         name: "Chat"
     }
 };
 matches.get('/', function(req, res) {
     res.render('matches.jade', {
+        q: req.query,
         title: "Matches - YASP"
     });
 });

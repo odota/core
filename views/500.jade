@@ -1,14 +1,11 @@
 extend layout
-
-append head
-  link(rel='stylesheet', href='/public/css/error.css')
   
 block content
   .row
     .col-md-12
-      .image
-        h2
-          span 500
+      .image.error
+        h2.error
+          span.error 500
           br
           span= message? message : "Woops! Looks like someone fed."
         img(src='http://fc05.deviantart.net/fs70/i/2014/062/0/b/sad_tidehunter_dota_2_by_katieracers-d78us2k.png')

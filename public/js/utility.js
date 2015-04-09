@@ -1,8 +1,5 @@
-var numeral = require('numeral');
-
 function format(input) {
     input = Number(input);
-    //console.log(input, isNaN(input));
     if (input === 0 || isNaN(input)) {
         return "-";
     }
@@ -16,16 +13,37 @@ function pad(n, width, z) {
 }
 
 function formatSeconds(input) {
-    var absTime = Math.abs(input);
-    var minutes = ~~(absTime / 60);
-    var seconds = pad(~~(absTime % 60), 2);
-    var time = ((input < 0) ? "-" : "");
-    time += minutes + ":" + seconds;
-    return time;
+        var absTime = Math.abs(input);
+        var minutes = ~~(absTime / 60);
+        var seconds = pad(~~(absTime % 60), 2);
+        var time = ((input < 0) ? "-" : "");
+        time += minutes + ":" + seconds;
+        return time;
+    }
+    //adjust each x/y coordinate by the provided scale factor
+    //if max is provided, use that, otherwise, use local max of data
+    //shift all values by the provided shift
+function adjustHeatmapData(posData, scalef, max, shift) {
+    posData.forEach(function(d) {
+        for (var key in d) {
+            d[key] = scaleAndExtrema(d[key], scalef, max, shift);
+        }
+    });
 }
 
-module.exports = {
-    format: format,
-    pad: pad,
-    formatSeconds: formatSeconds
-};
+function scaleAndExtrema(points, scalef, max, shift) {
+    points.forEach(function(p) {
+        p.x *= scalef;
+        p.y *= scalef;
+        p.value += (shift || 0);
+    });
+    var vals = points.map(function(p) {
+        return p.value;
+    });
+    var localMax = Math.max.apply(null, vals);
+    return {
+        min: 0,
+        max: max || localMax,
+        data: points,
+    };
+}

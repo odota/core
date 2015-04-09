@@ -19,10 +19,23 @@ function start() {
                     }, 10000);
                 }
                 var parsers = JSON.parse(result);
-                var urls = {};
                 //length of this array is capacity
                 var capacity = parsers.length;
-                // Fork workers.
+                //run one job.process for requests
+                jobs.process('request_parse', function(job, cb) {
+                    job.parser_url = parsers[0];
+                    processParse(job, cb);
+                });
+                //run one jobs.process with parallelism=capacity
+                jobs.process('parse', capacity, function(job, cb) {
+                    //RR or randomly select a parser for each job
+                    getParserRandom(job, function() {
+                        processParse(job, cb);
+                    });
+                });
+                /*
+                var urls = {};
+                // code to spawn a thread for each parsing core
                 for (var i = 0; i < capacity; i++) {
                     cluster.fork({
                         PARSER_URL: parsers[i]
@@ -46,43 +59,39 @@ function start() {
                         urls[msg.id] = msg.url;
                     });
                 });
+                */
             });
         });
     }
     else {
+        /*
         console.log("[PARSEMANAGER] starting worker");
         process.send({
             id: cluster.worker.id,
             url: process.env.PARSER_URL
         });
         //insert into job the parser this worker should use
-        jobs.process('request_parse', function(job, cb) {
-            getParser(job, function() {
-                processParse(job, cb);
-            });
-        });
         jobs.process('parse', function(job, cb) {
-            getParser(job, function() {
+            getParserEnv(job, function() {
                 processParse(job, cb);
             });
         });
+function getParserEnv(job, cb) {
+    job.parser_url = process.env.PARSER_URL;
+    cb();
+}
+*/
     }
 }
 
-function getParser(job, cb) {
-        job.parser_url = process.env.PARSER_URL;
+function getParserRandom(job, cb) {
+    redis.get("parsers", function(err, result) {
+        if (err || !result) {
+            console.log("no parsers in redis!");
+            return getParserRandom(job, cb);
+        }
+        var parsers = JSON.parse(result);
+        job.parser_url = parsers[Math.floor(Math.random() * parsers.length)];
         cb();
-    }
-    /*
-    function getParser(job, cb) {
-        redis.get("retrievers", function(err, result) {
-            if (err || !result) {
-                console.log("no retrievers in redis!");
-                return getParser(job, cb);
-            }
-            var parsers = JSON.parse(result);
-            job.parser_url = parsers[Math.floor(Math.random() * parsers.length)];
-            cb(err);
-        });
-    }
-    */
+    });
+}

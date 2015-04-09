@@ -1,16 +1,11 @@
-var $ = jQuery = require('jquery');
-var utility = require('./utility');
-var formatSeconds = utility.formatSeconds;
-var format = utility.format;
-var moment = require('moment');
-module.exports = function processHtml() {
+function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
             Radiant: {},
             Dire: {}
         };
-        var negatives = {}
+        var negatives = {};
         var tbody = $(table).find('tbody');
         tbody.children().each(function(i, row) {
             row = $(row);
@@ -59,12 +54,16 @@ module.exports = function processHtml() {
         $(table).append(tfoot);
     });
     $('.format').each(function() {
-        $(this).text(format($(this).text()));
+        var orig = $(this).text();
+        var result = format(orig);
+        //don't reformat since it's not a number
+        $(this).text(result).removeClass("format");
     });
     $('.fromNow').each(function() {
         $(this).text(moment.unix($(this).text()).fromNow());
     });
     $('.format-seconds').each(function() {
+        //format the data attribute rather than the text so we don't lose the original value if want to reformat (like when paging in datatables)
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
-};
+}

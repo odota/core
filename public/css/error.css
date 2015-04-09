@@ -1,9 +1,9 @@
-.image { 
+.error .image { 
     position: relative; 
     width: 100%; /* for IE 6 */
 } 
 
-.image img {
+.error .image img {
     display: block;
     margin-right: auto;
     margin-left: auto;
@@ -11,7 +11,7 @@
     height: 100%;
 }
 
-h2 { 
+.error h2 { 
     position: absolute; 
     top: 30%; 
     left: 10%;
@@ -19,7 +19,7 @@ h2 {
     margin-left: 1em;
 }
 
-h2 span { 
+.error h2 span { 
     color: white;
     font: bold 24px/45px Helvetica, Sans-Serif; 
     letter-spacing: -1px;  

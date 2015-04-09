@@ -92,6 +92,15 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "shorthistory": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.account_id].join(),
+                type: type,
+                short_history: true,
+                payload: payload
+            };
+        },
         "mmr": function() {
             payload.attempts = 1;
             return {
@@ -109,16 +118,30 @@ function getData(url, cb) {
         //select a random element if array
         var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
         var parse = urllib.parse(u, true);
+        var proxy;
         if (parse.host === "api.steampowered.com") {
+            //choose an api key to use
             var api_keys = config.STEAM_API_KEY.split(",");
             parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
             parse.search = null;
+            /*
+            //choose a proxy to request through
+            var proxies = config.PROXY_URLS.split(",");
+            //add no proxy option
+            proxies.push(null);
+            proxy = proxies[Math.floor(Math.random() * proxies.length)];
+            console.log(proxies, proxy);
+            */
+            //choose a steam api host
+            var api_hosts = config.STEAM_API_HOST.split(",");
+            parse.host = api_hosts[Math.floor(Math.random() * api_hosts.length)];
         }
         var target = urllib.format(parse);
         logger.info("getData: %s", target);
         var delay = 1000;
         return setTimeout(function() {
             request({
+                proxy: proxy,
                 url: target,
                 json: true,
                 timeout: 30000
@@ -206,13 +229,18 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 6,
+        "version": 7,
         "match_id": 0,
-        "teamfights": null,
+        "teamfights": [],
+        "objectives": [],
+        "chat": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
+                "steam_id": "",
                 "stuns": 0,
-                "largest_hero_hit": 0,
+                "max_hero_hit": {
+                    value: 0
+                },
                 "times": [],
                 "gold": [],
                 "lh": [],
@@ -224,7 +252,7 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
-                "chat": [],
+                //removed for taking up too much space
                 //"pos": {},
                 "lane_pos": {},
                 "obs": {},
@@ -251,6 +279,28 @@ function getParseSchema() {
         })
     };
 }
+
+function generatePositionData(d, p) {
+    //d, a hash of keys to process
+    //p, a player containing keys with values as position hashes
+    //stores the resulting arrays in the keys of d
+    //64 is the offset of x and y values
+    //subtracting y from 127 inverts from bottom/left origin to top/left origin
+    for (var key in d) {
+        var t = [];
+        for (var x in p[key]) {
+            for (var y in p[key][x]) {
+                t.push({
+                    x: Number(x) - 64,
+                    y: 127 - (Number(y) - 64),
+                    value: p[key][x][y]
+                });
+            }
+        }
+        d[key] = t;
+    }
+    return d;
+}
 module.exports = {
     logger: logger,
     generateJob: generateJob,
@@ -260,5 +310,6 @@ module.exports = {
     isRadiant: isRadiant,
     mergeObjects: mergeObjects,
     mode: mode,
+    generatePositionData: generatePositionData,
     getParseSchema: getParseSchema
 };

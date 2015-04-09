@@ -1,10 +1,5 @@
-var $ = jQuery = require('jquery');
-var moment = require('moment');
-var constants = require('../../sources.json');
-var heroes = constants.heroes;
-var modes = constants.modes;
-var regions = constants.regions;
-module.exports = function(matches) {
+function playerMatches(matches, teammates) {
+    //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
         var a = this.serializeArray();
@@ -21,10 +16,37 @@ module.exports = function(matches) {
         });
         return o;
     };
+    //query form code
+    $("#hero_id").select2({
+        maximumSelectionSize: 1
+    });
+    $("#with_account_id").select2({
+        tags: teammates || [],
+        maximumSelectionSize: 10
+    });
+    $("#teammate_hero_id").select2({
+        maximumSelectionSize: 4
+    });
+    $("#enemy_hero_id").select2({
+        maximumSelectionSize: 5
+    });
+    $('form').submit(function(e) {
+        //updates the table on form submit without reload
+        //e.preventDefault();
+        //console.log(JSON.stringify($('form').serializeObject()));
+        //table.draw();
+        //return false;
+    });
+    $('.form-control').on('change', function(e) {
+        //updates the table on form change without reload
+        //table.draw();
+    });
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
+        //draw things with the returned data
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
         $("#winrate").text(pct + "%").width(pct + "%");
+        $("#count").text(json.aggData.games);
     }).dataTable({
         "order": [
                 [0, "desc"]
@@ -34,13 +56,10 @@ module.exports = function(matches) {
         ajax: {
             'url': '/api/matches',
             "data": function(d) {
-                    d.select = $('form').serializeObject();
-                    d.agg = {
-                        "win": 1,
-                        "lose": 1,
-                        "games": 1
-                    };
-                }
+                d.select = $('form').serializeObject();
+                //api enforces blank agg if null passed in, so this can be null or {}
+                d.agg = {};
+            }
         },
         "deferRender": true,
         "rowCallback": function(row, data) {
@@ -50,7 +69,6 @@ module.exports = function(matches) {
             tooltips();
             formatHtml();
         },
-        
         stateSave: true,
         searching: false,
         processing: true,
@@ -65,7 +83,7 @@ module.exports = function(matches) {
                 title: 'Hero',
                 orderData: [2],
                 render: function(data, type) {
-                    return heroes[data] ? "<img src='" + heroes[data].img + "' title=\"" + heroes[data].localized_name + "\"/>" : data;
+                    return constants.heroes[data] ? "<img src='" + constants.heroes[data].img + "' title=\"" + constants.heroes[data].localized_name + "\"/>" : data;
                 }
             },
             {
@@ -73,7 +91,7 @@ module.exports = function(matches) {
                 title: 'Hero Name',
                 visible: false,
                 render: function(data, type) {
-                    return heroes[data] ? heroes[data].localized_name : data;
+                    return constants.heroes[data] ? constants.heroes[data].localized_name : data;
                 }
             },
             {
@@ -87,14 +105,14 @@ module.exports = function(matches) {
                 data: 'game_mode',
                 title: 'Game Mode',
                 render: function(data, type) {
-                    return modes[data] ? modes[data].name : data;
+                    return constants.modes[data] ? constants.modes[data].name : data;
                 }
             },
             {
                 data: 'cluster',
                 title: 'Region',
                 render: function(data, type) {
-                    return regions[data] ? regions[data] : data;
+                    return constants.regions[data] ? constants.regions[data] : data;
                 }
             },
             {
@@ -180,15 +198,12 @@ module.exports = function(matches) {
                 render: function(data, type) {
                     return data;
                 }
+            }, {
+                data: 'parse_status',
+                title: 'Status',
+                render: function(data, type) {
+                    return constants.parse_status[data] ? constants.parse_status[data] : data;
+                }
             }]
-    });
-    $('form').submit(function(e) {
-        //e.preventDefault();
-        //console.log(JSON.stringify($('form').serializeObject()));
-        //table.draw();
-        //return false;
-    });
-    $('.form-control').on('change', function(e) {
-        //table.draw();
     });
 };

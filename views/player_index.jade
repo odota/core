@@ -5,111 +5,92 @@ include mixins/teammate_table
 
 block playercontent
   .row
-    .col-md-6
-      if (user && user.account_id === player.account_id)
-        h3 Actions
-        if (!user.full_history_time)
-          .alert.alert-danger We don't have your old matches yet!  Check back later to see if we've gotten your full history.  In the meantime, play a game and we'll parse it for you!
-        if (user.account_id in ratingPlayers)
-          p: button.btn.btn-default(disabled) MMR Tracked
-        else
-          p: a.btn.btn-warning(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add MMR Tracker &raquo;
-        .checkbox
-          label
-            input.pref#publicmmr(type="checkbox", checked=user.publicmmr)
-            | Make MMR public
-        .checkbox
-          label
-            input.pref#theme(type="checkbox", checked=user.light_theme)
-            | Use Light Theme
+     .col-md-12
+       include query
   .row
-    .col-md-6
-      h3 Recent Matches
-      table.table
+    .col-md-12
+      h3 Matches
+      table.table#matches
+      //-
         thead
           tr
-           th ID
+           th Match ID
            th Hero
-           //th Result
-           th Mode
+           th Hero Name
+           th Result
+           th Game Mode
            th Duration
+           th Region
            th Played
-           th: abbr(title=constants.tooltips.status) Status
-        each match in player.display_matches
+           th K
+           th D
+           th A
+           th LH
+           th DN
+           th GPM
+           th XPM
+           th HD
+           th TD
+           th HH
+        each match in player.matches
           tr(class= match.player_win ? "success" : "danger")
             td: a(href='/matches/#{match.match_id}')= match.match_id
             - var hero = constants.heroes[match.players[0].hero_id]
-            td.hero
+            td.hero 
               if hero
                 img(src=hero.img, title=hero.localized_name)
               else
                 =match.players[0].hero_id
-            //td= match.player_win ? "Won" : "Lost"
+            td= hero ? hero.localized_name : "unknown hero"
+            td= match.player_win ? "Won" : "Lost"
             td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
             td= moment.unix(match.start_time + match.duration).fromNow()
-            td=constants.parse_status[match.parse_status]
-    .col-md-6
-      +hero_table(player.heroes_arr.slice(0,15), false)
+            td=match.players[0].kills
+            td=match.players[0].deaths
+            td=match.players[0].assists
+            td=match.players[0].last_hits
+            td=match.players[0].denies
+            td=match.players[0].gold_per_min
+            td=match.players[0].xp_per_min
+            td=match.players[0].hero_damage
+            td=match.players[0].tower_damage
+            td=match.players[0].hero_healing 
+
   hr
   .row
     include ads/leaderboard_2
   hr
   .row
-    .col-md-6
-      +teammate_table(player.teammates.slice(0,15))
-    .col-md-6
-      h3 Rating (#{player.publicmmr ? "public" : "private"})
-      h4#solo Solo:
-      h4#party Party:
-      #ratings(style="margin-top:5em;")
+    .col-md-12
+      +hero_table(player.heroes_arr, true)
+    .col-md-12
+      +teammate_table(player.teammates)
+  hr
+  .row
+    .col-md-12
+      h3 Activity
+      p
+        button.btn.btn-default#prev &laquo;
+        button.btn.btn-default#next &raquo;
+      #cal-heatmap
+      h3 Days
+      #chart-days
+      h3 Hours
+      #chart-hours
+  .row
+    .col-md-12
+      h3 Rating
+        small.rating#solo Solo:
+        small.rating#party Party:
+      #ratings
 
 append footer_assets
   script.
-    $(".pref").change(function() {
-        $.post(
-            "/preferences", {
-                light_theme: $("#theme").is(":checked"),
-                publicmmr: $("#publicmmr").is(":checked")
-            },
-            function(data) {
-                if (data.sync) {
-                    location.reload(true);
-                }
-                else {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                }
-                $(".sync").fadeOut(3000);
-            });
-    });
-      var ratings = !{JSON.stringify((player.publicmmr || (user && user.account_id === player.account_id)) ? ratings : [])};
-      $("#solo").append(ratings[0] ?  ratings[0].soloCompetitiveRank : "N/A");
-      $("#party").append(ratings[0] ?  ratings[0].competitiveRank : "N/A");
-      var times = ratings.map(function(r){return new Date(r.time);});
-      var solo = ratings.map(function(r){return r.soloCompetitiveRank;});
-      var party = ratings.map(function(r){return r.competitiveRank;});
-      c3.generate({
-      bindto: "#ratings",
-      data: {
-          x: 'x',
-          columns: [
-          ['x'].concat(times),
-          ['Solo'].concat(solo),
-          ['Party'].concat(party)
-          ],
-          type:"line"
-      },
-      axis: {
-          x: {
-              type: 'timeseries',
-              label: 'Date',
-              tick: {
-                  format: '%Y-%m-%d',
-                  count: 10
-              }
-          },
-          y: {
-              label: 'Rating'
-          }
-      }
-      });
+    var time_result = !{JSON.stringify(player.aggData.time_result)};
+    var ratings = !{JSON.stringify(ratings)};
+    playerMatches(teammates);
+    generateActivity(time_result);
+    ratingsChart(ratings);
+    playerTrendsTables();

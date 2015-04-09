@@ -25,6 +25,8 @@ var moment = require('moment');
 var bodyParser = require('body-parser');
 var queueReq = require('./operations').queueReq;
 var async = require('async');
+var queries = require('./queries');
+var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
 // Include Express
@@ -38,7 +40,6 @@ if (config.NODE_ENV === "test") {
 else {
     if (cluster.isMaster) {
         // Count the machine's CPUs
-        var cpuCount = require('os').cpus().length;
         configureApp(app);
         /*
         // Create a worker for each CPU
@@ -81,7 +82,8 @@ function configureApp(app) {
                 catch (err) {
                     return socket.emit("err", err);
                 }
-                if (!body.success) {
+                if (!body.success && config.NODE_ENV !== "test") {
+                    console.log('failed recaptcha');
                     socket.emit("err", "Recaptcha Failed!");
                 }
                 else {
@@ -97,19 +99,18 @@ function configureApp(app) {
                         }
                         socket.emit('log', "Queued API request for " + match_id);
                         job.on('progress', function(prog) {
-                            //todo kue 0.9 should allow emitting additional data so we can capture api start, api finish, match expired, parse start
+                            //TODO: kue now allows emitting additional data so we can capture api start, api finish, match expired, parse start, parse finish
                             socket.emit('prog', prog);
                         });
                         job.on('complete', function(result) {
                             console.log(result);
-                            if (result && result.error) {
-                                socket.emit('err', JSON.stringify(result.error));
-                                socket.emit("failed");
-                            }
-                            else {
-                                socket.emit('log', "Request Complete!");
-                                socket.emit('complete');
-                            }
+                            socket.emit('log', "Request Complete!");
+                            socket.emit('complete');
+                        });
+                        job.on('failed', function(result) {
+                            console.log(result);
+                            socket.emit('err', JSON.stringify(result.error));
+                            socket.emit("failed");
                         });
                     });
                 }
@@ -125,6 +126,7 @@ function configureApp(app) {
     app.set('view engine', 'jade');
     app.locals.moment = moment;
     app.locals.constants = require('./constants.json');
+    app.locals.sources = require('./sources.json');
     app.use(compression());
     var basic = auth.basic({
         realm: "Kue"
@@ -134,7 +136,9 @@ function configureApp(app) {
     app.use("/kue", auth.connect(basic));
     app.use("/kue", kue.app);
     app.use("/public", express.static(path.join(__dirname, '/public')));
+    //re-serve content from root for robots.txt
     app.use("/", express.static(path.join(__dirname, '/public')));
+    //TODO instead of serving this, we should probably bundle the bower_components into public/build
     app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
     app.use(session({
         store: new RedisStore({
@@ -181,22 +185,51 @@ function configureApp(app) {
     }).init().then(function() {
         // Ready to go!
     });
-    app.route('/request').get(function(req, res) {
-        res.render('request', {
-            rc_public: rc_public
-        });
-    });
-    app.use('/matches', require('./routes/matches'));
-    app.use('/players', require('./routes/players'));
-    app.use('/api', require('./routes/api'));
     app.route('/').get(function(req, res, next) {
-        //todo make a static example file with match data?
+        //TODO make a static example file with match data?
         var match = {};
         res.render('home', {
             match: match,
             home: true
         });
     });
+    app.use('/matches', require('./routes/matches'));
+    app.use('/players', require('./routes/players'));
+    app.route('/request').get(function(req, res) {
+        res.render('request', {
+            rc_public: rc_public
+        });
+    });
+    app.use('/ratings', function(req, res, next) {
+        db.ratings.distinct('account_id', {}, function(err, array) {
+            if (err) {
+                return next(err);
+            }
+            //get distinct ids in ratings
+            //get the most recent record for each
+            async.map(array, function(account_id, cb) {
+                db.ratings.findOne({
+                    account_id: account_id
+                }, {
+                    sort: {
+                        time: -1
+                    }
+                }, function(err, result) {
+                    cb(err, result);
+                });
+            }, function(err, ratings) {
+                if (err) {
+                    return next(err);
+                }
+                queries.fillPlayerNames(ratings, function(err) {
+                    res.render("ratings", {
+                        ratings: ratings
+                    });
+                });
+            });
+        });
+    });
+    app.use('/api', require('./routes/api'));
     app.route('/preferences').post(function(req, res) {
         if (req.user) {
             for (var key in req.body) {

@@ -1,8 +1,10 @@
+/*
 @media (min-width: 1200px) {
     .container {
         width: 1230px;
     }
 }
+*/
 /* ads */
 
 .leaderboard {
@@ -12,6 +14,9 @@
 .skyscraper {
     margin: 2em auto;
     display: block;
+}
+body {
+    font-family: 'Roboto Slab', sans-serif;
 }
 .match-top {
     margin-top: 1.5em;
@@ -51,9 +56,6 @@ td.abilities img {
     height: 35px;
     width: 35px;
 }
-* {
-    font-family: 'Roboto Slab', sans-serif;
-}
 .navbar-default {
     background-color: #BBF0FD;
     border: none;
@@ -82,27 +84,15 @@ td.abilities img {
 .icon {
     width: 15px;
 }
-html,
 body {
     margin: 0;
     padding: 0;
     height: 100%;
 }
-body {
-    display: table;
-    height: 100%;
-    width: 100%;
-}
 footer {
-    background-color: #BBF0FD;
+    color: rgb(199, 199, 199);
 }
-.sticky_footer_row {
-    display: table-row;
-    height: 1px;
-}
-.sticky_footer_row.expand {
-    height: auto;
-}
+
 td {
     vertical-align: middle !important;
 }
@@ -241,3 +231,44 @@ div .dataTables_processing {
     
     z-index: 60000;
 }
+.rating {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.navbar-default,
+footer {
+    background-color: #000;
+}
+thead {
+    background-color: #424242;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    /* Margin bottom by footer height */
+    
+    margin-bottom: 200px;
+}
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 200px;
+}
+
+/*
+.sticky_footer_row {
+    display: table-row;
+    height: 1px;
+}
+.sticky_footer_row.expand {
+    height: auto;
+}
+*/

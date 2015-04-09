@@ -89,6 +89,23 @@ public class Main {
 			entry.key=String.valueOf(player1);
 			//es.output(entry);
 		}
+		else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
+					//player who killed tower, but don't know which tower
+		}
+		else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
+					//team that killed roshan
+		}
+		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
+					//team that lost the barracks?
+		}
+		else if (type.equals("CHAT_MESSAGE_AEGIS")){
+					//player who picked up aegis?
+		}
+		//CHAT_MESSAGE_DENIED_AEGIS = 51;
+		//CHAT_MESSAGE_AEGIS_STOLEN = 53;
+		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
+					//team that used glyph
+		}
 		else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP") || type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
 			Entry entry = new Entry(time);
 			entry.type=type.equals("CHAT_MESSAGE_RUNE_PICKUP") ? "runes" : "runes_bottled";
@@ -100,12 +117,7 @@ public class Main {
 			//System.err.format("%s,%s%n", time, u);
 		}
 		else if (type.equals("CHAT_MESSAGE_RANDOM")){
-		}
-		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
-		}
-		else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
-		}
-		else if (type.equals("CHAT_MESSAGE_AEGIS")){
+			//playerresource hasrandomed probably better
 		}
 		else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
 		}
@@ -115,19 +127,12 @@ public class Main {
 		}
 		else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
 		}
-		else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
-		}
-		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
-		}
 		/*
 	CHAT_MESSAGE_COURIER_LOST = 10;
 	CHAT_MESSAGE_COURIER_RESPAWNED = 11;
-	CHAT_MESSAGE_GLYPH_USED = 12;
 	CHAT_MESSAGE_PAUSED = 34;
-	CHAT_MESSAGE_UNPAUSE_COUNTDOWN = 35;
 	CHAT_MESSAGE_UNPAUSED = 36;
-	CHAT_MESSAGE_DENIED_AEGIS = 51;
-	CHAT_MESSAGE_AEGIS_STOLEN = 53;
+
 	*/
 		else{
 			//System.err.format("%s %s\n", time, u);
@@ -396,9 +401,8 @@ Integer timeIdx;
 						es.output(entry);
 					}
 				}
-
 			//log any new wards placed
-			//todo deduplicate code
+			//TODO: deduplicate code
 			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");
 			while (obs.hasNext()){
 				Entity e = obs.next();

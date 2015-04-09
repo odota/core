@@ -26,30 +26,86 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-    link(rel='stylesheet', href='//maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css')
-    link(rel='stylesheet', type='text/css', href='http://fonts.googleapis.com/css?family=Roboto+Slab')
-    link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+
+    //yasp client side constants, could optimize bandwidth by not dumping everything
+    script.
+      var constants = !{JSON.stringify(sources)};
+
+    //TODO: external deps, do we want to bundle this css/js as well?
+    //can mostly be managed through bower if we want to do that, or can use latest from jsdelivr to stay up to date
+    //jquery
+    script(type='text/javascript' src="//cdn.jsdelivr.net/jquery/latest/jquery.min.js")
+    //bootstrap (jquery)
+    link(rel='stylesheet', href='//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.min.css')
+    script(type='text/javascript' src="//cdn.jsdelivr.net/bootstrap/latest/js/bootstrap.min.js")
+    //font-awesome
+    link(rel="stylesheet" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css")
+    //datatables (jquery)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/jquery.datatables/latest/js/jquery.dataTables.min.js')
+    link(rel='stylesheet', href='//cdn.jsdelivr.net/jquery.datatables/latest/plugins/bootstrap/3/dataTables.bootstrap.css')
+    script(type='text/javascript' src='//cdn.jsdelivr.net/jquery.datatables/latest/plugins/bootstrap/3/dataTables.bootstrap.js')
+    //qtip2 (jquery)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.js')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/qtip2/latest/jquery.qtip.min.css')
-    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.9/c3.min.css')
-    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+    //select2 (jquery)
     link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2.css')
     link(rel="stylesheet", href='//cdn.jsdelivr.net/select2/latest/select2-bootstrap.css')
-    //link(rel="stylesheet", href="//cdn.rawgit.com/t0m/select2-bootstrap-css/bootstrap3/select2-bootstrap.css")
-    style
-      include ../public/css/flaticon.css
-    block stylesheets
-      style
-        include ../public/css/yasp.css
-      if (!(user && user.light_theme))
-        style
-          include ../public/css/dark.css
-    
-    block head
-    block unsticky_content
-    block sticky_content
-    block footer_assets
-      script(src="/public/js/bundle.js")
-      script(src="/public/js/ga.js")
-      script(src="/bower_components/bootstrap/js/transition.js")
-      script(src="/bower_components/bootstrap/js/collapse.js")
+    script(type='text/javascript' src='//cdn.jsdelivr.net/select2/latest/select2.min.js')
+    //moment
+    script(type='text/javascript' src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js")
+    //numeral
+    script(type='text/javascript' src="//cdn.jsdelivr.net/numeraljs/latest/numeral.min.js")
+    //d3
+    script(type='text/javascript' src="//cdn.jsdelivr.net/d3js/latest/d3.min.js")
+    //cal-heatmap (d3)
+    script(type='text/javascript' src='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.min.js')
+    link(rel="stylesheet", href='//cdn.jsdelivr.net/cal-heatmap/latest/cal-heatmap.css')
+    //c3 (d3) (very outdated on jsdelivr)
+    script(type='text/javascript' src='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.js')
+    link(rel='stylesheet', href='//cdn.rawgit.com/masayuki0812/c3/0.4.10/c3.min.css')
+    //heatmap.js (not on jsdelivr)
+    script(type='text/javascript', src='//cdn.rawgit.com/pa7/heatmap.js/develop/build/heatmap.min.js')
+
+    //-
+      //yasp css
+      link(rel='stylesheet', type='text/css', href="/public/css/navbar.css")
+      link(rel='stylesheet', type='text/css', href="/public/css/flaticon.css")
+      //home uses a separate stylesheet
+      if home
+        link(rel='stylesheet', type='text/css', href="/public/css/yasp_new.css")
+      else
+        link(rel='stylesheet', type='text/css', href="/public/css/yasp.css")
+        if (!(user && user.light_theme))
+          link(rel='stylesheet', type='text/css', href="/public/css/dark.css")
+          
+      //yasp utilities
+      script(src="/public/js/utility.js")
+      script(src="/public/js/tooltips.js")
+      script(src="/public/js/formatHtml.js")
       
+      //yasp code
+      script(src="/public/js/activity.js")
+      script(src="/public/js/charts.js")
+      script(src="/public/js/map.js")
+      script(src="/public/js/playerMatches.js")
+      script(src="/public/js/playerTrendsTables.js")
+      script(src="/public/js/histograms.js")
+      script(src="/public/js/statusHandler.js")
+      script(src="/public/js/ga.js")
+
+    //compiled assets, currently bundling public/js and public/css, i.e., the above
+    link(rel='stylesheet', href="/public/build/yasp.min.css")
+    script(type='text/javascript', src="/public/build/yasp.min.js")
+
+    block head
+
+  //home extends unsticky
+  block unsticky_content
+  //layout extends sticky
+  block sticky_content
+  //stuff to include after page load
+  block footer_assets
+  script.
+    //by default, run formatting functions on all pages at page end
+    tooltips();
+    formatHtml();

@@ -1,5 +1,5 @@
 extend base_layout
-
+//only display banners on main pages (not home)
 block banners
   if banner_msg
    .alert.alert-success.text-center(role="alert") !{banner_msg}
@@ -12,6 +12,7 @@ block banners
   if !error
    include ads/leaderboard
 
+//
 block sticky_content
   body(style="margin-top:70px;")
     include navbar

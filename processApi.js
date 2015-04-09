@@ -8,11 +8,11 @@ var insertMatch = operations.insertMatch;
 var insertMatchProgress = operations.insertMatchProgress;
 module.exports = function processApi(job, cb) {
     var payload = job.data.payload;
-    job.log("api: starting");
+    job.progress(0, 100, "api: starting");
     getData(job.data.url, function(err, body) {
         if (err) {
             //couldn't get data from api, non-retryable
-            job.log(JSON.stringify(err));
+            //we don't want to retry, so cb with null err, but capture the error
             return cb(null, {
                 error: err
             });
@@ -30,7 +30,7 @@ module.exports = function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            job.log("api: complete");
+            job.progress(100, 100, "api: complete");
             if (match.request) {
                 insertMatchProgress(match, job, function(err) {
                     cb(err);
@@ -46,6 +46,4 @@ module.exports = function processApi(job, cb) {
             return cb("unknown response");
         }
     });
-}
-
-
+};

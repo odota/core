@@ -19,7 +19,7 @@ api.get('/matches', function(req, res, next) {
     var js_skip = Number(req.query.start);
     advQuery({
         select: select,
-        project: {},
+        project: null, //just project default fields
         //trying to sort after a players.account_id select is very slow
         /*
         sort: {

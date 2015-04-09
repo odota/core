@@ -63,6 +63,8 @@ app.get('/', function(req, res, next) {
                 }));
             }
         }).on('error', function(err) {
+            parser.kill();
+            bz.kill();
             outStream.write(JSON.stringify({
                 "type": "error",
                 "key": err

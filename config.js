@@ -26,6 +26,8 @@ var defaults = {
     "PARSER_HOST": "localhost:5200",
     "UNTRACK_DAYS": 7,
     "GOAL": 5,
+    "PROXY_URLS": "", //comma separated list of proxy urls to use
+    "STEAM_API_HOST":"api.steampowered.com",
     //the following are deprecated
     "AWS_S3_BUCKET": false,
     "AWS_ACCESS_KEY_ID": false,
