@@ -24,12 +24,15 @@ function computeMatchData(match) {
             match.players.forEach(function(player, ind) {
                 player.isRadiant = isRadiant(player);
                 player.total_gold = ~~(player.gold_per_min * match.duration / 60);
+                player.parseSlot = player.player_slot % (128 - 5);
                 var p = {};
                 if (match.parsed_data) {
                     //mapping 0 to 0, 128 to 5, etc.
                     //if we projected only one player, then use slot 0
-                    var parseSlot = match.parsed_data.players.length === 1 ? 0 : player.player_slot % (128 - 5);
-                    p = match.parsed_data.players[parseSlot];
+                    if (match.parsed_data.players.length === 1) {
+                        player.parseSlot = 0;
+                    }
+                    p = match.parsed_data.players[player.parseSlot];
                     if (p.kills_log) {
                         //remove meepo/meepo kills
                         if (player.hero_id === 82) {
@@ -238,6 +241,20 @@ function renderMatch(match) {
         match.graphData = generateGraphData(match);
         match.posData = match.players.map(function(p) {
             return p.parsedPlayer.posData;
+        });
+        //process teamfight data
+        match.parsed_data.teamfights.forEach(function(tf) {
+            //add player's hero_id to each teamfight participant
+            match.players.forEach(function(p) {
+                //index into the correct slot
+                var player = tf.players[p.parseSlot];
+                player.hero_id = p.hero_id;
+            });
+            var d = {"deaths_pos":1};
+            tf.posData = generatePositionData(d, tf);
+        });
+        match.tfPosData = match.parsed_data.teamfights.map(function(tf){
+            return tf.posData;
         });
     }
     /**

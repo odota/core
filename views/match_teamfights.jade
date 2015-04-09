@@ -4,4 +4,42 @@ block match_content
   .row
     .col-md-12
       h2 Teamfights
-      pre=JSON.stringify(match.parsed_data.teamfights)
+      //pre=JSON.stringify(match.parsed_data.teamfights)
+      each entry in match.parsed_data.teamfights
+        table.table.table-condensed
+          tr 
+            th Map
+            th Duration
+            th Radiant Gold Swing
+            th Radiant XP Swing
+          tr
+            td
+              #map.mapContainer.mapContainer-small
+                img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+            td: div.format-seconds(data-format-seconds=entry.end-entry.start)
+            td: div do sum here
+            td: div do sum here
+        table.table
+          tr
+            th Hero
+            th Ability Use
+            th Item Use
+            th Died
+            th Bought Back
+            th Damage
+            th Gold Change
+            th XP Change
+            tr
+              td=player.hero_id
+              td=player.ability_uses
+              td=player.item_uses
+              td=player.deaths
+              td=player.buybacks
+              td=player.damage
+              td=player.gold_delta
+              td=player.xp_delta
+
+append footer_assets
+  var posData = !{JSON.stringify(match.tfPosData)};
+  //initialize heatmaps
+  //adjust heatmap data (tf.posData)

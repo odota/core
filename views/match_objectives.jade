@@ -4,4 +4,14 @@ block match_content
   .row
     .col-md-12
       h2 Objectives
-      pre=JSON.stringify(match.parsed_data.objectives)
+      //pre=JSON.stringify(match.parsed_data.objectives)
+      table.table
+        tr
+          th Time
+          th Objective
+          th Taken By
+        each entry in match.parsed_data.objectives
+          tr
+            td.format-seconds(data-format-seconds=entry.time)
+            td=entry.key
+            td=entry.unit
