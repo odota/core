@@ -152,6 +152,7 @@ before(function(done) {
             console.log('downloading replays');
 
             function dl(filename, cb) {
+                console.log("downloading: %s", filename);
                 //keep only the match id segment as the filename
                 var arr = filename.split(".");
                 arr[0] = arr[0].split("_")[0];
@@ -161,7 +162,10 @@ before(function(done) {
                     cb();
                 }
                 else {
-                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('finish', function(err) {
+                    request({
+                        url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
+                        timeout: 15000
+                    }).pipe(fs.createWriteStream(path)).on('finish', function(err) {
                         if (err) {
                             console.log(err);
                             return dl(filename, cb);
