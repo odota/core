@@ -244,16 +244,28 @@ function renderMatch(match) {
         });
         //process teamfight data
         match.parsed_data.teamfights.forEach(function(tf) {
+            tf.radiant_gold_delta = 0;
+            tf.radiant_xp_delta = 0;
             //add player's hero_id to each teamfight participant
             match.players.forEach(function(p) {
                 //index into the correct slot
                 var player = tf.players[p.parseSlot];
                 player.hero_id = p.hero_id;
+                if (isRadiant(p)) {
+                    tf.radiant_gold_delta += player.gold_delta;
+                    tf.radiant_xp_delta += player.xp_delta;
+                }
+                else {
+                    tf.radiant_gold_delta -= player.gold_delta;
+                    tf.radiant_xp_delta -= player.xp_delta;
+                }
             });
-            var d = {"deaths_pos":1};
+            var d = {
+                "deaths_pos": 1
+            };
             tf.posData = generatePositionData(d, tf);
         });
-        match.tfPosData = match.parsed_data.teamfights.map(function(tf){
+        match.tfPosData = match.parsed_data.teamfights.map(function(tf) {
             return tf.posData;
         });
     }

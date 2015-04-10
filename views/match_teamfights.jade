@@ -9,16 +9,20 @@ block match_content
         table.table.table-condensed
           tr 
             th Map
+            th Start
             th Duration
+            th Deaths
             th Radiant Gold Swing
             th Radiant XP Swing
           tr
             td
               #map.mapContainer.mapContainer-small
                 img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-            td: div.format-seconds(data-format-seconds=entry.end-entry.start)
-            td: div do sum here
-            td: div do sum here
+            td.format-seconds(data-format-seconds=entry.start)
+            td.format-seconds(data-format-seconds=entry.end-entry.start)
+            td=entry.deaths
+            td=entry.radiant_gold_delta
+            td=entry.radiant_xp_delta
         table.table
           tr
             th Hero
@@ -29,17 +33,45 @@ block match_content
             th Damage
             th Gold Change
             th XP Change
-            tr
-              td=player.hero_id
-              td=player.ability_uses
-              td=player.item_uses
-              td=player.deaths
-              td=player.buybacks
-              td=player.damage
-              td=player.gold_delta
-              td=player.xp_delta
+            each player in entry.players
+              //color and fade based on team and participation
+              tr
+                - var hero = constants.heroes[player.hero_id]
+                td
+                  if hero
+                    img(src=hero.img, title=hero.localized_name)
+                  else
+                    =player.hero_id
+                td
+                  each val, key in player.ability_uses
+                    - var ability = constants.abilities[key]
+                    div.img-text
+                      img.ability(src=ability.img, alt=key)
+                      div #{val}
+                td
+                  each val, key in player.item_uses
+                    - var item = constants.items[key]
+                    div.img-text
+                      img.item(src=item.img, alt=key)
+                      div #{val}
+                td=player.deaths
+                td=player.buybacks
+                td=player.damage
+                td=player.gold_delta
+                td=player.xp_delta
 
 append footer_assets
-  var posData = !{JSON.stringify(match.tfPosData)};
-  //initialize heatmaps
-  //adjust heatmap data (tf.posData)
+  script.
+    var posData = !{JSON.stringify(match.tfPosData)};
+    adjustHeatmapData(posData, 300/127, 1);
+    //initialize heatmaps
+    //load one at a time, data is nth element of posData array
+    $(".mapContainer").each(function(i){
+        console.log(i, posData[i], $(this)[0]);
+        var heatmap = h337.create({
+          container: $(this)[0],
+          radius: 15,
+        });
+        heatmap.setData(posData[i].deaths_pos);
+        heatmap.repaint();
+    });
