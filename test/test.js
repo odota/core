@@ -91,19 +91,13 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
     }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
 console.log('starting web');
 var app = require('../web');
-//launch the parse worker
 console.log('starting parser');
 var parser = require('../parser');
-//launch the parse manager
+console.log('starting parseManager');
 var parseManager = require('../parseManager');
-/*
-var Zombie = require('zombie');
-Zombie.localhost('localhost', process.env.PORT);
-var browser = new Zombie({
-    maxWait: wait,
-    runScripts: false
-});
-*/
+//stuff we don't run in test
+//scanner
+//worker
 var replay_dir = process.env.REPLAY_DIR;
 if (!fs.existsSync(replay_dir)) {
     fs.mkdir(replay_dir);
@@ -131,10 +125,6 @@ before(function(done) {
             });
             },
             function(cb) {
-            console.log("loading services into redis");
-            cb();
-            },
-            function(cb) {
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
                 db.matches.insert(m, function(err) {
@@ -157,7 +147,34 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
+            },
+            function(cb) {
+            console.log('downloading replays');
+
+            function dl(filename, cb) {
+                //keep only the match id segment as the filename
+                var arr = filename.split(".");
+                arr[0] = arr[0].split("_")[0];
+                var path = replay_dir + arr.join(".");
+                //currently disabled caching of replays, get a fresh copy with each test
+                if (fs.existsSync(path) && false) {
+                    cb();
+                }
+                else {
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('error', function(err) {
+                        console.log(err);
+                        //detect errors and retry?
+                        return dl(filename, cb);
+                    }).on('finish', function(err) {
+                        cb(err);
+                    });
+                }
             }
+            var files = ['1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
+            async.each(files, dl, function(err) {
+                cb(err);
+            });
+    }
         ], function(err) {
         done(err);
     });
@@ -255,27 +272,6 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    before(function(done) {
-        console.log('downloading replays');
-        function dl(filename, cb) {
-            var arr = filename.split(".");
-            arr[0] = arr[0].split("_")[0];
-            var path = replay_dir + arr.join(".");
-            //currently disabled caching of replays, get a fresh copy with each test
-            if (fs.existsSync(path) && false) {
-                cb();
-            }
-            else {
-                request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('finish', function(err) {
-                    cb(err);
-                });
-            }
-        }
-        var files = ['1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
-        async.each(files, dl, function(err) {
-            done(err);
-        });
-    });
     it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,
