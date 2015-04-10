@@ -161,12 +161,14 @@ before(function(done) {
                     cb();
                 }
                 else {
-                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('error', function(err) {
-                        console.log(err);
-                        //detect errors and retry?
-                        return dl(filename, cb);
-                    }).on('finish', function(err) {
-                        cb(err);
+                    request('http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename).pipe(fs.createWriteStream(path)).on('finish', function(err) {
+                        if (err) {
+                            console.log(err);
+                            return dl(filename, cb);
+                        }
+                        else {
+                            cb(err);
+                        }
                     });
                 }
             }
@@ -174,8 +176,7 @@ before(function(done) {
             async.each(files, dl, function(err) {
                 cb(err);
             });
-    }
-        ], function(err) {
+        }], function(err) {
         done(err);
     });
 });
