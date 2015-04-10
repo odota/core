@@ -29,6 +29,7 @@
     "moment": "~2.9.0",
     "numeral": "~1.5.3",
     "heatmap.js.bower": "*",
-    "datatables-bootstrap3-plugin": "~0.4.0"
+    "datatables-bootstrap3-plugin": "~0.4.0",
+    "dota2-minimap-hero-sprites": "bontscho/dota2-minimap-hero-sprites"
   }
 }

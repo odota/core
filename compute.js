@@ -260,10 +260,12 @@ function renderMatch(match) {
                     tf.radiant_xp_delta -= player.xp_delta;
                 }
             });
+            /*
             var d = {
                 "deaths_pos": 1
             };
             tf.posData = generatePositionData(d, tf);
+            */
         });
         match.tfPosData = match.parsed_data.teamfights.map(function(tf) {
             return tf.posData;

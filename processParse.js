@@ -161,7 +161,7 @@ function runParser(job, cb) {
                     end: null,
                     last_death: e.time,
                     deaths: 0,
-                    deaths_pos: {},
+                    deaths_log: [],
                     players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
                         return {
                             ability_uses: {},
@@ -431,9 +431,11 @@ function runParser(job, cb) {
                         e.slot = hero_to_slot[e.key];
                         //0 is valid value, so check for undefined
                         if (e.slot !== undefined) {
-                            //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
+                            //if a hero dies, add to deaths_log, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
+                            tf.deaths_log.push({unit:e.key, x:x, y:y});
+                            /*
                             var t = tf.deaths_pos;
                             if (!t[x]) {
                                 t[x] = {};
@@ -442,6 +444,7 @@ function runParser(job, cb) {
                                 t[x][y] = 0;
                             }
                             t[x][y] += 1;
+                            */
                             //increment death count for this hero
                             tf.players[e.slot].deaths += 1;
                         }

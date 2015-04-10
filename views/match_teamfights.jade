@@ -16,8 +16,12 @@ block match_content
             th Radiant XP Swing
           tr
             td
-              #map.mapContainer.mapContainer-small
+              #map.mapContainer
                 img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+                //place sprite icons
+                each death in entry.deaths_log
+                  //unit, x, y
+                  i(class="d2mh "+death.unit style="position: absolute; top: "+(127-(death.y-64))/1.27+"%; left: "+(death.x-64)/1.27+"%;")
             td.format-seconds(data-format-seconds=entry.start)
             td.format-seconds(data-format-seconds=entry.end-entry.start)
             td=entry.deaths
@@ -61,6 +65,7 @@ block match_content
                 td=player.xp_delta
 
 append footer_assets
+//-
   script.
     var posData = !{JSON.stringify(match.tfPosData)};
     adjustHeatmapData(posData, 300/127, 1);
