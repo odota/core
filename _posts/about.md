@@ -89,7 +89,7 @@ Dev Team
 ###Howard Chung:
 [howardchung.net](http://howardchung.net)
 [/u/suuuncon](http://reddit.com/user/suuuncon)
-[YASP](/players/88367253)
+[YASP](http://yasp.co/players/88367253)
 
 Howard's a software engineer (Duke University '15) and casual Dota 2 player.
 He loves playing Nature's Prophet, Terrorblade, and Lycan, so he's probably that guy you hate in your pubs.
