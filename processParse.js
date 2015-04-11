@@ -1,51 +1,59 @@
-var utility = require('./utility');
 var db = require('./db');
-var logger = utility.logger;
+var config = require('./config');
+var moment = require('moment');
+var getReplayUrl = require('./getReplayUrl');
 var fs = require('fs');
 var request = require('request');
 var domain = require('domain');
 var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
-var config = require('./config');
-var moment = require('moment');
+var utility = require('./utility');
 module.exports = function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
     console.time("parse " + match_id);
-    if (match.start_time < moment().subtract(7, 'days').format('X') && config.NODE_ENV !== "test") {
-        //expired, can't parse even if we have url, but parseable if we have a filename
-        //skip this check in test, but we have no url on socket request, so that request fails!
-        console.log("parse: replay expired");
-        job.data.payload.parse_status = 1;
-        updateDb();
-    }
-    runParser(job, function(err, parsed_data) {
+    //get the replay url, update db
+    getReplayUrl(match, function(err) {
         if (err) {
-            logger.info("match_id %s, error %s", match_id, err);
             return cb(err);
         }
-        match_id = match_id || parsed_data.match_id;
-        job.data.payload.match_id = match_id;
-        job.data.payload.parsed_data = parsed_data;
-        job.data.payload.parse_status = 2;
-        updateDb();
-    });
-
-    function updateDb() {
-        job.update();
-        db.matches.update({
-            match_id: match_id
-        }, {
-            $set: job.data.payload,
-        }, function(err) {
-            console.timeEnd("parse " + match_id);
-            return cb(err, job.data.payload);
+        console.log('parse: got replay url');
+        //match object now contains replay url, also persisted to db
+        if (match.start_time < moment().subtract(7, 'days').format('X') && config.NODE_ENV !== "test") {
+            //expired, can't parse even if we have url, but parseable if we have a filename
+            //skip this check in test, but we have no url on socket request, so that request fails!
+            console.log("parse: replay expired");
+            job.data.payload.parse_status = 1;
+            updateDb();
+        }
+        runParse(job, function(err, parsed_data) {
+            if (err) {
+                console.log("match_id %s, error %s", match_id, err);
+                return cb(err);
+            }
+            match_id = match_id || parsed_data.match_id;
+            job.data.payload.match_id = match_id;
+            job.data.payload.parsed_data = parsed_data;
+            job.data.payload.parse_status = 2;
+            updateDb();
         });
-    }
+
+        function updateDb() {
+            job.update();
+            db.matches.update({
+                match_id: match_id
+            }, {
+                $set: job.data.payload,
+            }, function(err) {
+                console.timeEnd("parse " + match_id);
+                return cb(err, job.data.payload);
+            });
+        }
+    });
 };
 
-function runParser(job, cb) {
-    logger.info("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
+function runParse(job, cb) {
+    console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
     var exited;
@@ -56,7 +64,6 @@ function runParser(job, cb) {
     var name_to_slot = {};
     var hero_to_slot = {};
     var game_zero = 0;
-    var game_end = 0;
     var curr_teamfight;
     var teamfights = [];
     var intervalState = {};
@@ -67,9 +74,6 @@ function runParser(job, cb) {
         "state": function(e) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
-            }
-            if (e.key === "POST_GAME") {
-                game_end = e.time;
             }
             console.log(e);
         },

@@ -42,6 +42,8 @@ function startScan() {
         });
     }
 }
+//TODO: this could be converted into an insert type kue job to allow parallel scanners?
+//reason to have queue is to have a "buffer" of matches so that scanning continues when insertion slows down
 var q = async.queue(function(match, cb) {
     async.each(match.players, function(p, cb) {
         if (p.account_id in trackedPlayers || p.account_id in permanent) {
@@ -69,11 +71,11 @@ var q = async.queue(function(match, cb) {
         if (err) {
             console.log("failed to insert match from scanApi %s", match);
             console.log(err);
-            //todo log this to a file or something, we don't want to stop/crash just because an insert failed
+            //TODO: log this to a file or something, we don't want to stop/crash just because an insert failed
             //throw err;
             return cb(err);
         }
-        if (match.parse_status === 0 || match.parse_status === 3) {
+        else if (match.parse_status === 0 || match.parse_status === 3) {
             insertMatch(match, function(err) {
                 //set the redis progress
                 redis.set("match_seq_num", match.match_seq_num);
