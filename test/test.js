@@ -29,6 +29,7 @@ var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
+var domain = require('domain');
 var wait = 60000;
 //set up nock
 //fake retriever response
@@ -162,17 +163,19 @@ before(function(done) {
                     cb();
                 }
                 else {
-                    request({
-                        url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
-                        timeout: 15000
-                    }).pipe(fs.createWriteStream(path)).on('finish', function(err) {
-                        if (err) {
-                            console.log(err);
-                            return dl(filename, cb);
-                        }
-                        else {
+                    var d = domain.create();
+                    d.on('error', function(err) {
+                        console.log(err);
+                        console.log("error downloading, retrying");
+                        dl(filename, cb);
+                    });
+                    d.run(function() {
+                        request({
+                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
+                            timeout: 15000
+                        }).pipe(fs.createWriteStream(path)).on('finish', function(err) {
                             cb(err);
-                        }
+                        });
                     });
                 }
             }
@@ -286,7 +289,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function(){
+            job.on("complete", function() {
                 done();
             });
         });
@@ -300,7 +303,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function(){
+            job.on("complete", function() {
                 done();
             });
         });
@@ -314,7 +317,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function(){
+            job.on("complete", function() {
                 done();
             });
         });
@@ -328,7 +331,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function(){
+            job.on("complete", function() {
                 done();
             });
         });
@@ -342,7 +345,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            job.on("failed attempt", function(){
+            job.on("failed attempt", function() {
                 done();
             });
         });
