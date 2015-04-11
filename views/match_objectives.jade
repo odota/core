@@ -9,9 +9,19 @@ block match_content
         tr
           th Time
           th Objective
-          th Taken By
+          th Unit
+          th Slot
+          th Team
         each entry in match.parsed_data.objectives
+          //tr(class=entry.key.indexOf("goodguys")!==-1 ? "success" : entry.key.indexOf("badguys")!==-1 ? "danger" : "")
           tr
             td.format-seconds(data-format-seconds=entry.time)
-            td=entry.key
-            td=entry.unit
+            td=entry.subtype
+            - var hero = constants.hero_names[entry.unit]
+            td
+              if hero
+                img(src=hero.img, alt=entry.unit)
+              else
+                =entry.unit
+            td=entry.slot
+            td=entry.team

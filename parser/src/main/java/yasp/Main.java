@@ -78,46 +78,67 @@ public class Main {
 		CDOTAUserMsg_ChatEvent u = message;
 		Integer player1=(Integer)u.getPlayerid1();
 		Integer player2=(Integer)u.getPlayerid2();
-		String value = String.valueOf(u.getValue());
+		Integer value = (Integer)u.getValue();
 		String type = String.valueOf(u.getType());
+		Entry entry = new Entry(time);
+		entry.type = "chat_event";
+		entry.subtype = type;
 		if (type.equals("CHAT_MESSAGE_HERO_KILL")){
-			Entry entry = new Entry(time);
-			entry.type = "chat_hero_kill";
 			//player2 killed player 1
 			//subsequent players assisted
+			//still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
 			entry.slot=player2;
 			entry.key=String.valueOf(player1);
-			//es.output(entry);
+			es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
-					//player who killed tower, but don't know which tower
+			entry.team = value;
+			entry.slot = player1;
+			es.output(entry);
+			//value (2/3 radiant/dire killed tower)
+			//player1 = slot of player who killed tower (-1 if nonplayer)
+			//player/unit killed tower, but don't know which tower
 		}
 		else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
-					//team that killed roshan
+			entry.team = player1;
+			//player1 = team that killed roshan?
+			es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
-					//team that lost the barracks?
+			//value id of barracks based on power of 2?
+			/*
+			Barracks can always be deduced They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged, so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
+			*/
+			entry.slot = player1;
+			//player1 = slot of player who killed barracks (-1 if nonplayer)
+			es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_AEGIS")){
-					//player who picked up aegis?
+			entry.slot = player1;
+			//player1 = slot who picked up/denied/stole aegis
+			es.output(entry);
 		}
 		//CHAT_MESSAGE_DENIED_AEGIS = 51;
 		//CHAT_MESSAGE_AEGIS_STOLEN = 53;
 		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
-					//team that used glyph
+			entry.team = player1;
+			//player1 = team that used glyph (2/3)
+			es.output(entry);
 		}
+		else if (type.equals("CHAT_MESSAGE_PAUSED")){
+			entry.slot = player1;
+			//player1 = slot that paused
+			es.output(entry);
+		}
+		//CHAT_MESSAGE_UNPAUSED = 36;
 		else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP") || type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
-			Entry entry = new Entry(time);
-			entry.type=type.equals("CHAT_MESSAGE_RUNE_PICKUP") ? "runes" : "runes_bottled";
 			entry.slot=player1;
-			entry.key=value;
+			entry.key=String.valueOf(value);
 			es.output(entry);
 		}             
 		else if (type.equals("CHAT_MESSAGE_BUYBACK")){
+			//currently using combat log buyback
 			//System.err.format("%s,%s%n", time, u);
-		}
-		else if (type.equals("CHAT_MESSAGE_RANDOM")){
-			//playerresource hasrandomed probably better
 		}
 		else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
 		}
@@ -130,14 +151,15 @@ public class Main {
 		/*
 	CHAT_MESSAGE_COURIER_LOST = 10;
 	CHAT_MESSAGE_COURIER_RESPAWNED = 11;
-	CHAT_MESSAGE_PAUSED = 34;
-	CHAT_MESSAGE_UNPAUSED = 36;
-
 	*/
 		else{
 			//System.err.format("%s %s\n", time, u);
 		}
 	}
+	
+	//TODO: overhead events, maybe can count crits/misses, etc.
+	//CDOTAUserMsg_OverheadEvent
+	
 	@OnMessage(CUserMsg_SayText2.class)
 	public void onAllChat(Context ctx, CUserMsg_SayText2 message) {
 		Entry entry = new Entry(time);
@@ -204,8 +226,9 @@ public class Main {
 		switch(cle.getType()) {
 		case 0:
 			//damage
-			entry.unit = cle.getAttackerNameCompiled();
+			entry.unit = cle.getSourceName(); //source of damage (a hero)
 			entry.key = cle.getTargetNameCompiled();
+			entry.target_source = cle.getTargetSourceName();
 			entry.target_hero = cle.isTargetHero();
 			entry.inflictor = cle.getInflictorName();
 			entry.target_illusion = cle.isTargetIllusion();
@@ -215,7 +238,7 @@ public class Main {
 			break;
 		case 1:
 			//healing
-			entry.unit = cle.getAttackerNameCompiled();
+			entry.unit = cle.getSourceName(); //source of healing (a hero)
 			entry.key = cle.getTargetNameCompiled();
 			entry.value = cle.getValue();
 			entry.type = "healing";
@@ -224,44 +247,45 @@ public class Main {
 		case 2:
 			//gain buff/debuff
 			entry.type = "modifier_applied";
-			entry.unit = cle.getAttackerNameCompiled(); //source of buff
+			entry.unit = cle.getAttackerName(); //unit that buffed (can we use source to get the hero directly responsible?)
 			entry.key = cle.getInflictorName(); //the buff
-			//todo do something with buff target
 			//String unit2 = cle.getTargetNameCompiled(); //target of buff
 			es.output(entry);
 			break;
 		case 3:
 			//lose buff/debuff
 			entry.type = "modifier_lost";
-			//todo do something with modifier lost events
+			//TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
 			// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
 			break;
 		case 4:
 			//kill
-			entry.unit = cle.getAttackerNameCompiled();
+			entry.unit = cle.getSourceName(); //source of damage (a hero)
 			entry.key = cle.getTargetNameCompiled();
+			entry.target_source = cle.getTargetSourceName();
+			entry.target_hero = cle.isTargetHero();
 			entry.target_illusion = cle.isTargetIllusion();
 			entry.type = "kills";
 			es.output(entry);
 			break;
 		case 5:
 			//ability use
-			entry.unit = cle.getAttackerNameCompiled();
+			entry.unit = cle.getAttackerName();
 			entry.key = cle.getInflictorName();
 			entry.type = "ability_uses";
 			es.output(entry);
 			break;
 		case 6:
 			//item use
-			entry.unit = cle.getAttackerNameCompiled();
+			entry.unit = cle.getAttackerName();
 			entry.key = cle.getInflictorName();
 			entry.type = "item_uses";
 			es.output(entry);
 			break;
 		case 8:
 			//gold gain/loss
+			entry.unit = cle.getTargetName();
 			entry.key = String.valueOf(cle.getGoldReason());
-			entry.unit = cle.getTargetNameCompiled();
 			entry.value = cle.getValue();
 			entry.type = "gold_reasons";
 			es.output(entry);
@@ -269,23 +293,24 @@ public class Main {
 		case 9:
 			//state
 			//System.err.println(cle.getValue());
+			//if the value is out of bounds, just make it to the value itself
 			String state =  GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue()-1);
-			entry.type = "state";
 			entry.key = state;
 			entry.value = Integer.valueOf(time);
+			entry.type = "state";
 			es.output(entry);
 			break;
 		case 10:
 			//xp gain
-			entry.unit = cle.getTargetNameCompiled();
-			entry.value = cle.getValue();
+			entry.unit = cle.getTargetName();
 			entry.key = String.valueOf(cle.getXpReason());
+			entry.value = cle.getValue();
 			entry.type = "xp_reasons";
 			es.output(entry);
 			break;
 		case 11:
 			//purchase
-			entry.unit = cle.getTargetNameCompiled();
+			entry.unit = cle.getTargetName();
 			entry.key = cle.getValueName();
 			entry.type = "purchase";
 			es.output(entry);
@@ -298,9 +323,9 @@ public class Main {
 			break;
 		case 13:
 			entry.type = "ability_trigger";
-			entry.unit = cle.getAttackerNameCompiled(); //triggered?
+			entry.unit = cle.getAttackerName(); //unit triggered on?
 			entry.key = cle.getInflictorName();
-			//entry.unit = cle.getTargetNameCompiled(); //triggerer?
+			//entry.unit = cle.getTargetNameCompiled(); //triggering unit?
 			//log.output(entry);
 			break;
 		default:
@@ -324,6 +349,7 @@ Integer timeIdx;
 			//dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
 			//System.err.println(grp);
+			//this should be game clock time (pauses don't increment it?)
 			timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
 			grpInit = true;
 		}
@@ -341,13 +367,12 @@ Integer timeIdx;
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		//Integer stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
 		//Integer steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		//slow data can be output to console, but not in replay?
+		//slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
 		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
 		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
 		
-		//can do all these stats over time?
+		//can do all these stats with each playerresource interval?
 		//m_iKills.0000
 		//m_iAssists.0000
 		//m_iDeaths.0000
@@ -358,7 +383,7 @@ Integer timeIdx;
 		//m_iMetaExperience.0000
 		//m_iMetaExperienceAwarded.0000
 		
-		//more endgame
+		//booleans to check at endgame
 		//m_bVoiceChatBanned.0000
 		//m_bHasRandomed.0000
 		//m_bHasRepicked.0000
@@ -369,9 +394,11 @@ Integer timeIdx;
 		//m_iLastHitMultikill.0000
 		
 		//gem, rapier time?
+		//TODO :not sure how to get
+		
 		//time dead
-		//or check entity health value
 		//m_iRespawnSeconds.0000
+		//count number of intervals where this value is >0?
 					initialized = true;
 				}
 					for (int i = 0; i < numPlayers; i++) {
@@ -415,8 +442,8 @@ Integer timeIdx;
 					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
 					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
 					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//2 for radiant, 3 for dire
-					//entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
+					//2/3 radiant/dire
+					//entry.team = e.getProperty("m_iTeamNum");
 					es.output(entry);
 					seenEntities.add(handle);
 				}
@@ -433,7 +460,7 @@ Integer timeIdx;
 					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
 					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
 					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//entry.unit = String.valueOf(e.getProperty("m_iTeamNum"));
+					//entry.team = e.getProperty("m_iTeamNum");
 					es.output(entry);
 					seenEntities.add(handle);
 				}

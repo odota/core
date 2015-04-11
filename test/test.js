@@ -286,9 +286,8 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            processParse(job, function(err) {
-                //todo verify the parsed match displays properly on site (supertest)
-                done(err);
+            job.on("complete", function(){
+                done();
             });
         });
     });
@@ -301,8 +300,8 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            processParse(job, function(err) {
-                done(err);
+            job.on("complete", function(){
+                done();
             });
         });
     });
@@ -315,8 +314,8 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            processParse(job, function(err) {
-                done(err);
+            job.on("complete", function(){
+                done();
             });
         });
     });
@@ -329,8 +328,8 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            processParse(job, function(err) {
-                done(err);
+            job.on("complete", function(){
+                done();
             });
         });
     });
@@ -343,8 +342,7 @@ describe("parser", function() {
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
-            processParse(job, function(err) {
-                assert(err);
+            job.on("failed attempt", function(){
                 done();
             });
         });

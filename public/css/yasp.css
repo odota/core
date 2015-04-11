@@ -38,16 +38,16 @@ h3 img {
     font-size: 10px;
 }
 .ability {
-    width: 30px
+    height: 30px
 }
 .item {
-    width: 35px;
+    height: 25px;
 }
 .kill {
-    width: 40px;
+    height: 30px;
 }
 .dmg {
-    width: 40px;
+    height: 25px;
 }
 td.abilities {
     padding: 8px 1px !important;

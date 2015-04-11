@@ -19,9 +19,10 @@ block match_content
               #map.mapContainer
                 img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
                 //place sprite icons
-                each death in entry.deaths_log
+                each death in entry.posData
                   //unit, x, y
-                  i(class="d2mh "+death.unit style="position: absolute; top: "+(127-(death.y-64))/1.27+"%; left: "+(death.x-64)/1.27+"%;")
+                  //i(class="d2mh "+death.unit style="position: absolute; top: "+(127-(death.y-64))/1.27+"%; left: "+(death.x-64)/1.27+"%;")
+                  i(class="d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
             td.format-seconds(data-format-seconds=entry.start)
             td.format-seconds(data-format-seconds=entry.end-entry.start)
             td=entry.deaths

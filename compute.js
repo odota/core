@@ -244,6 +244,7 @@ function renderMatch(match) {
         });
         //process teamfight data
         match.parsed_data.teamfights.forEach(function(tf) {
+            tf.posData  =  [];
             tf.radiant_gold_delta = 0;
             tf.radiant_xp_delta = 0;
             //add player's hero_id to each teamfight participant
@@ -259,17 +260,21 @@ function renderMatch(match) {
                     tf.radiant_gold_delta -= player.gold_delta;
                     tf.radiant_xp_delta -= player.xp_delta;
                 }
+                //convert 2d hash to array
+                player.posData = generatePositionData({deaths_pos:1}, player);
+                //console.log(player);
+                //add player hero id to each death, push into teamfight death position array
+                player.posData.deaths_pos.forEach(function(pt){
+                    pt.hero_id = player.hero_id;
+                    tf.posData.push(pt);
+                });
             });
-            /*
-            var d = {
-                "deaths_pos": 1
-            };
-            tf.posData = generatePositionData(d, tf);
-            */
         });
+        /*
         match.tfPosData = match.parsed_data.teamfights.map(function(tf) {
             return tf.posData;
         });
+        */
     }
     /**
      * Generates data for c3 charts in a match

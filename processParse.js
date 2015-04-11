@@ -141,8 +141,41 @@ function runParser(job, cb) {
             e.key = 0;
             getSlot(e);
         },
+        "chat_event": function(e) {
+            if (e.subtype === "CHAT_MESSAGE_RUNE_PICKUP") {
+                //player
+                e.type = "runes";
+                populate(e);
+            }
+            else if (e.subtype === "CHAT_MESSAGE_HERO_KILL") {
+                //player, assisting players
+            }
+            else if (e.subtype === "CHAT_MESSAGE_GLYPH_USED") {
+                //team glyph
+            }
+            else if (e.subtype === "CHAT_MESSAGE_PAUSED") {
+                //player paused
+            }
+            else if (e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
+                //objective
+                //tower (player/team)
+                //barracks (player)
+                //aegis (player)
+                //roshan (team)
+                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+            }
+            else {
+                //ignore rune bottling events
+                if (e.subtype === "CHAT_MESSAGE_RUNE_BOTTLE") {}
+                else {
+                    console.log(e);
+                }
+            }
+        },
         "kills": function(e) {
             getSlot(e);
+            /*
+            //logging objectives via combat log
             var logs = ["_tower", "_rax", "_fort", "_roshan"];
             var isObjective = logs.some(function(s) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
@@ -151,7 +184,8 @@ function runParser(job, cb) {
                 //push a copy to objectives
                 parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
-            if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
+            */
+            if (e.target_hero && !e.target_illusion) {
                 //log this hero kill
                 e.type = "kills_log";
                 populate(e);
@@ -161,9 +195,9 @@ function runParser(job, cb) {
                     end: null,
                     last_death: e.time,
                     deaths: 0,
-                    deaths_log: [],
                     players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
                         return {
+                            deaths_pos: {},
                             ability_uses: {},
                             item_uses: {},
                             deaths: 0,
@@ -177,18 +211,20 @@ function runParser(job, cb) {
                 curr_teamfight.deaths += 1;
             }
             //reverse and log killed by
+            //if the damaged unit isn't a hero, it won't be counted (no slot)
+            //the key is a source, so it should be a hero
             var r = {
                 time: e.time,
-                key: e.unit,
                 unit: e.key,
+                key: e.unit,
                 type: "killed_by"
             };
-            getSlotReverse(r);
+            getSlot(r);
         },
         "damage": function(e) {
             //count damage dealt
             getSlot(e);
-            //reverse and count as damage taken
+            //reverse and count as damage taken (see comment for reversed kill)
             var r = {
                 time: e.time,
                 unit: e.key,
@@ -196,7 +232,7 @@ function runParser(job, cb) {
                 value: e.value,
                 type: "damage_taken"
             };
-            getSlotReverse(r);
+            getSlot(r);
             //check if hero hit
             if (e.target_hero && !e.target_illusion) {
                 var h = {
@@ -225,10 +261,7 @@ function runParser(job, cb) {
             //push a copy to chat
             parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
-        //"chat_hero_kill": populate,
         "stuns": populate,
-        "runes": populate,
-        "runes_bottled": populate,
         "interval": function(e) {
             //store hero state at each interval for teamfight lookup
             if (!intervalState[e.time]) {
@@ -267,6 +300,7 @@ function runParser(job, cb) {
                     e.type = "pos";
                     e.key = [e.x, e.y];
                     e.posData = true;
+                    //not currently storing pos data
                     //populate(e);
                     if (e.time < 600) {
                         e.type = "lane_pos";
@@ -369,7 +403,7 @@ function runParser(job, cb) {
     function exit(err) {
         if (!exited) {
             exited = true;
-            //todo graceful shutdown
+            //TODO: graceful shutdown
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
             //we need to use kue's pause to stop processing jobs, then crash the thread
@@ -404,122 +438,112 @@ function runParser(job, cb) {
     }
 
     function processTeamfights() {
-        //fights that didnt end wont be pushed to teamfights array (endgame case)
-        //filter only fights where 2+ heroes died
-        teamfights = teamfights.filter(function(tf) {
-            return tf.deaths >= 2;
-        });
-        //go through teamfights, add gold/xp deltas
-        teamfights.forEach(function(tf) {
-            tf.players.forEach(function(p, ind) {
-                //set gold/xp deltas here
-                //todo alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
-                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
-                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
+            //fights that didnt end wont be pushed to teamfights array (endgame case)
+            //filter only fights where 3+ heroes died
+            teamfights = teamfights.filter(function(tf) {
+                return tf.deaths >= 3;
             });
-        });
-        for (var i = 0; i < entries.length; i++) {
-            //loop over entries again
-            var e = entries[i];
-            //check each teamfight to see if this event should be processed as part of that teamfight
-            for (var j = 0; j < teamfights.length; j++) {
-                var tf = teamfights[j];
-                if (e.time >= tf.start && e.time <= tf.end) {
-                    //kills_log tracks only hero kills on non-illusions
-                    if (e.type === "kills_log") {
-                        //get slot of target
-                        e.slot = hero_to_slot[e.key];
-                        //0 is valid value, so check for undefined
-                        if (e.slot !== undefined) {
-                            //if a hero dies, add to deaths_log, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
-                            var x = intervalState[e.time][e.slot].x;
-                            var y = intervalState[e.time][e.slot].y;
-                            tf.deaths_log.push({unit:e.key, x:x, y:y});
-                            /*
-                            var t = tf.deaths_pos;
-                            if (!t[x]) {
-                                t[x] = {};
-                            }
-                            if (!t[x][y]) {
-                                t[x][y] = 0;
-                            }
-                            t[x][y] += 1;
-                            */
-                            //increment death count for this hero
-                            tf.players[e.slot].deaths += 1;
-                        }
-                    }
-                    else if (e.type === "buyback_log") {
-                        //bought back
-                        tf.players[e.slot].buybacks += 1;
-                    }
-                    else if (e.type === "damage") {
-                        //sum damage
-                        //check if damage dealt to hero and not illusion
-                        if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
-                            //check if the damage dealer could be assigned to a slot
+            //go through teamfights, add gold/xp deltas
+            teamfights.forEach(function(tf) {
+                tf.players.forEach(function(p, ind) {
+                    //set gold/xp deltas here
+                    //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
+                    p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
+                    p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
+                });
+            });
+            for (var i = 0; i < entries.length; i++) {
+                //loop over entries again
+                var e = entries[i];
+                //check each teamfight to see if this event should be processed as part of that teamfight
+                for (var j = 0; j < teamfights.length; j++) {
+                    var tf = teamfights[j];
+                    if (e.time >= tf.start && e.time <= tf.end) {
+                        //kills_log tracks only hero kills on non-illusions
+                        if (e.type === "kills_log") {
+                            //get slot of target
+                            e.slot = hero_to_slot[e.key];
+                            //0 is valid value, so check for undefined
                             if (e.slot !== undefined) {
-                                tf.players[e.slot].damage += e.value;
+                                //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
+                                var x = intervalState[e.time][e.slot].x;
+                                var y = intervalState[e.time][e.slot].y;
+                                e.type = "deaths_pos";
+                                e.key = [x, y];
+                                e.posData = true;
+                                populate(e, tf);
+                                //increment death count for this hero
+                                tf.players[e.slot].deaths += 1;
                             }
                         }
-                    }
-                    else if (e.type === "ability_uses" || e.type === "item_uses") {
-                        //count skills, items
-                        populate(e, tf);
-                    }
-                    else {
-                        continue;
+                        else if (e.type === "buyback_log") {
+                            //bought back
+                            tf.players[e.slot].buybacks += 1;
+                        }
+                        else if (e.type === "damage") {
+                            //sum damage
+                            //check if damage dealt to hero and not illusion
+                            if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
+                                //check if the damage dealer could be assigned to a slot
+                                if (e.slot !== undefined) {
+                                    tf.players[e.slot].damage += e.value;
+                                }
+                            }
+                        }
+                        else if (e.type === "ability_uses" || e.type === "item_uses") {
+                            //count skills, items
+                            populate(e, tf);
+                        }
+                        else {
+                            continue;
+                        }
                     }
                 }
             }
+            parsed_data.teamfights = teamfights;
         }
-        parsed_data.teamfights = teamfights;
-    }
-
-    function assocName(name) {
-        //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
-        if (!name) {
-            return;
-        }
-        else if (name in hero_to_slot) {
-            return name;
-        }
-        else if (name.indexOf("illusion_") === 0) {
-            //associate illusions with the heroes they are illusions of
-            var s = name.slice("illusion_".length);
-            return s;
-        }
-        else if (name.indexOf("npc_dota_") === 0) {
-            //try to get the hero this minion is associated with
-            //split by _
-            var split = name.split("_");
-            //get the third element
-            var identifiers = [split[2], split[2] + "_" + split[3]];
-            for (var i = 0; i < identifiers.length; i++) {
-                var id = identifiers[i];
-                //append to npc_dota_hero_, see if matches
-                var attempt = "npc_dota_hero_" + id;
-                if (attempt in hero_to_slot) {
-                    return attempt;
+        /*
+        //don't need this function with source/targetSource
+            function assocName(name) {
+                //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
+                if (!name) {
+                    return;
                 }
+                else if (name in hero_to_slot) {
+                    return name;
+                }
+                else if (name.indexOf("illusion_") === 0) {
+                    //associate illusions with the heroes they are illusions of
+                    var s = name.slice("illusion_".length);
+                    return s;
+                }
+                else if (name.indexOf("npc_dota_") === 0) {
+                    //try to get the hero this minion is associated with
+                    //split by _
+                    var split = name.split("_");
+                    //get the third element
+                    var identifiers = [split[2], split[2] + "_" + split[3]];
+                    for (var i = 0; i < identifiers.length; i++) {
+                        var id = identifiers[i];
+                        //append to npc_dota_hero_, see if matches
+                        var attempt = "npc_dota_hero_" + id;
+                        if (attempt in hero_to_slot) {
+                            return attempt;
+                        }
+                    }
+                }
+                return name;
             }
-        }
-        return name;
-    }
-
+        */
     function getSlot(e) {
-        //on a reversed field, key should be merged since the unit was damaged/killed by the key or a minion
-        //otherwise, unit should be merged since the damage/kill was done by the unit or a minion
-        e.reverse ? e.key = assocName(e.key) : e.unit = assocName(e.unit);
-        //use original slot in event, then map value (could be undefined)
+        //with replay outputting sourceName and targetSourceName, merging/associating no longer necessary
+        //e.unit should be populated with a valid hero for kill/damage
+        //e.unit will be populated with the killed/damaged unit for killed/damaged (this may not be a hero, in that case e.slot will be undefined)
+        //e.unit = assocName(e.unit);
+        //if slot in event, use that, otherwise map value (could be undefined)
         //e.slot can be 0, so we check for existence in the object
         e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
         populate(e);
-    }
-
-    function getSlotReverse(e) {
-        e.reverse = true;
-        getSlot(e);
     }
 
     function populate(e, container) {

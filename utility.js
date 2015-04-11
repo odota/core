@@ -257,7 +257,8 @@ function getParseSchema() {
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},
-                //"chat_hero_kill":{},
+                //individual chat event counts?
+                //"CHAT_MESSAGE_HERO_KILL":{},
                 //"clicks":{},
                 "purchase": {},
                 "gold_reasons": {},
@@ -269,7 +270,6 @@ function getParseSchema() {
                 "damage": {},
                 "damage_taken": {},
                 "runes": {},
-                "runes_bottled": {},
                 "killed_by": {},
                 "modifier_applied": {},
                 //"modifier_lost": {},
