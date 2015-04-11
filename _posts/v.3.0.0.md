@@ -1,4 +1,4 @@
-{{{ "title": "v3.0.0", "tags": ["release"], "date": "5-1-2015", "author": "Howard" }}}
+{{{ "title": "v3.0.0", "tags": ["release"], "date": "4-20-2015", "author": "Howard" }}}
 
 YASP is proud to present our latest major release, v3.0.0!
 
