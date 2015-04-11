@@ -152,11 +152,11 @@ before(function(done) {
             console.log('downloading replays');
 
             function dl(filename, cb) {
-                console.log("downloading: %s", filename);
                 //keep only the match id segment as the filename
                 var arr = filename.split(".");
                 arr[0] = arr[0].split("_")[0];
                 var path = replay_dir + arr.join(".");
+                console.log("downloading: %s", filename, path);
                 //currently disabled caching of replays, get a fresh copy with each test
                 if (fs.existsSync(path) && false) {
                     cb();
@@ -178,7 +178,7 @@ before(function(done) {
                     });
                 }
             }
-            var files = ['1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
+            var files = ['1151783218.dem.bz2','1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
             async.each(files, dl, function(err) {
                 cb(err);
             });
