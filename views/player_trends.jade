@@ -118,7 +118,7 @@ block playercontent
               tr
                 th Item
                 th Item Name
-                th Avg
+                th.time Avg
                 th #
             tbody
               each val, key in player.aggData.purchase_time.counts
@@ -127,7 +127,7 @@ block playercontent
                   tr 
                     td: img.item(src=item.img, alt=key)
                     td= item.dname
-                    td.format-seconds(data-format-seconds=val/player.aggData.purchase_time_count.counts[key])=val/player.aggData.purchase_time_count.counts[key]
+                    td=val/player.aggData.purchase_time_count.counts[key]
                     td=player.aggData.purchase.counts[key]
           h3 Laning
           table.table

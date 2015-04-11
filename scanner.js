@@ -75,12 +75,14 @@ var q = async.queue(function(match, cb) {
         }
         if (match.parse_status === 0 || match.parse_status === 3) {
             insertMatch(match, function(err) {
-                //set the redis progress, do we want to update on matches we don't add to db?
+                //set the redis progress
                 redis.set("match_seq_num", match.match_seq_num);
                 cb(err);
             });
         }
         else {
+            //set the redis progress
+            redis.set("match_seq_num", match.match_seq_num);
             cb(err);
         }
     });

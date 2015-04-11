@@ -60,4 +60,6 @@ append footer_assets
   script(src="/socket.io/socket.io.js")
   script.
     var data = !{JSON.stringify(result)}
-    statusHandler();
+    //var socket = io.connect();
+    //socket.on('stats', statusHandler);
+    statusHandler(data);

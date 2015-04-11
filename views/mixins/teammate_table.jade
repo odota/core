@@ -6,7 +6,7 @@ mixin teammate_table(rows)
         th Name
         th Games
         th Win%
-        th Last
+        th.last_played Last
     each teammate in rows
       tr
         td
@@ -17,4 +17,4 @@ mixin teammate_table(rows)
          - var pct = teammate ? 100*teammate.win/teammate.games : 0
          .progress
            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
-        td= moment.unix(teammate.last_played).fromNow()
+        td=teammate.last_played

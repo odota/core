@@ -12,7 +12,7 @@ mixin hero_table(rows, full)
           th Win% With
           th Against
           th Win% Against
-        th Last
+        th.last_played Last
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
@@ -35,4 +35,4 @@ mixin hero_table(rows, full)
             - var pct = h ? 100*h.against_win/h.against_games : 0
             .progress
               .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
-        td= moment.unix(h.last_played).fromNow()
+        td=h.last_played

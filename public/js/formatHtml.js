@@ -60,7 +60,7 @@ function formatHtml() {
         $(this).text(result).removeClass("format");
     });
     $('.fromNow').each(function() {
-        $(this).text(moment.unix($(this).text()).fromNow());
+        $(this).text(moment.unix($(this).attr('data-time')).fromNow());
     });
     $('.format-seconds').each(function() {
         //format the data attribute rather than the text so we don't lose the original value if want to reformat (like when paging in datatables)

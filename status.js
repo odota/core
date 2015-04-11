@@ -76,14 +76,14 @@ module.exports = function getStatus(cb) {
             }, cb);
         },
         match_seq_num: function(cb) {
-            redis.get("match_seq_num", function(err, result){
-                result=Number(result);
+            redis.get("match_seq_num", function(err, result) {
+                result = Number(result);
                 cb(err, result);
             });
         },
         last_added: function(cb) {
             redis.get("match_seq_num", function(err, result) {
-                result=Number(result);
+                result = Number(result);
                 if (err) {
                     return cb(err);
                 }
@@ -106,7 +106,7 @@ module.exports = function getStatus(cb) {
         },
         last_parsed: function(cb) {
             redis.get("match_seq_num", function(err, result) {
-                result=Number(result);
+                result = Number(result);
                 if (err) {
                     return cb(err);
                 }

@@ -27,28 +27,37 @@ function playerTrendsTables() {
             tooltips();
             formatHtml();
         },
-        "columns": [{}, {}, {
+        "columnDefs": [{
+            "targets": 0,
+            "orderData": [1]
+            }, {
+            "targets": [1],
+            visible: false
+            }, {
+            targets: "time",
             render: function(data, type) {
                 if (type === "display") {
                     return formatSeconds(data);
                 }
                 return data;
             }
-        }, {}],
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-            }, {
-            "targets": [1],
-            visible: false
-            }]
+        }]
     });
     var teammates = $('#teammates').dataTable({
         //"searching": false,
         "paging": true,
         "order": [
             [1, "desc"]
-        ]
+        ],
+        "columnDefs": [{
+            targets: "last_played",
+            render: function(data, type) {
+                if (type === "display") {
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
     });
     var heroes = $('#heroes').dataTable({
         //"searching": false,
@@ -60,13 +69,24 @@ function playerTrendsTables() {
             tooltips();
             formatHtml();
         },
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-        }, {
-            "targets": [1],
-            visible: false
+        "columnDefs": [
+            {
+                "targets": "last_played",
+                render: function(data, type) {
+                    if (type === "display") {
+                        return moment.unix(data).fromNow();
+                    }
+                    return data;
+                }
+        },
+            {
+                "targets": 0,
+                "orderData": [1]
+        },
+            {
+                "targets": [1],
+                visible: false
         }]
     });
     return [accuracy, builds, teammates, heroes];
-};
+}
