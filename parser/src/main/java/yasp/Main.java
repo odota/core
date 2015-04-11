@@ -341,7 +341,7 @@ boolean grpInit = false;
 Integer timeIdx;
 	@UsesEntities
 	@OnTickStart
-	public void onTick(Context ctx){
+	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
 		if (!grpInit){

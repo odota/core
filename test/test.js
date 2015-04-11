@@ -30,14 +30,10 @@ var queueReq = operations.queueReq;
 var supertest = require('supertest');
 var domain = require('domain');
 var wait = 60000;
-//set up nock
 //fake retriever response
 nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-    var split = path.split("?");
-    split = split[1].split("&");
-    //console.log(split[split.length - 1])
-    return split[split.length - 1];
-}).get('key=shared_secret_with_retriever').reply(200, {
+    return '/';
+}).get('/').reply(200, {
     "accounts": {
         "76561198186929683": {
             "steamID": "76561198186929683",
@@ -48,33 +44,6 @@ nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
     },
     "accountToIdx": {
         "26949": "76561198186929683"
-    }
-}).get('account_id=88367253').reply(200, {
-    "accountId": 88367253,
-    "wins": 889,
-    "xp": 52,
-    "level": 153,
-    "lowPriorityUntilDate": 0,
-    "preventVoiceUntilDate": 0,
-    "teaching": 6,
-    "leadership": 4,
-    "friendly": 10,
-    "forgiving": 5,
-    "lowPriorityGamesRemaining": 0,
-    "competitiveRank": 3228,
-    "calibrationGamesRemaining": 0,
-    "soloCompetitiveRank": 3958,
-    "soloCalibrationGamesRemaining": 0,
-    "recruitmentLevel": 0
-}).get('match_id=1151783218').reply(200, {
-    match: {
-        cluster: 1,
-        replaySalt: 1
-    }
-}).get('match_id=2').reply(200, {
-    match: {
-        cluster: 1,
-        replaySalt: 1
     }
 });
 //fake api response
@@ -178,7 +147,7 @@ before(function(done) {
                     });
                 }
             }
-            var files = ['1151783218.dem.bz2','1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
+            var files = ['1151783218.dem.bz2', '1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
             async.each(files, dl, function(err) {
                 cb(err);
             });
@@ -218,6 +187,27 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
+        //fake mmr response
+        nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+            return '/';
+        }).get('account_id=88367253').reply(200, {
+            "accountId": 88367253,
+            "wins": 889,
+            "xp": 52,
+            "level": 153,
+            "lowPriorityUntilDate": 0,
+            "preventVoiceUntilDate": 0,
+            "teaching": 6,
+            "leadership": 4,
+            "friendly": 10,
+            "forgiving": 5,
+            "lowPriorityGamesRemaining": 0,
+            "competitiveRank": 3228,
+            "calibrationGamesRemaining": 0,
+            "soloCompetitiveRank": 3958,
+            "soloCalibrationGamesRemaining": 0,
+            "recruitmentLevel": 0
+        });
         queueReq("mmr", {
             match_id: 870061127,
             account_id: 88367253,
@@ -279,11 +269,23 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
+    //fake replay url response
+    nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+        return '/';
+    }).get('/').times(10).reply(200, {
+        match: {
+            cluster: 1,
+            replaySalt: 1
+        }
+    });
+    //fake replay
+    nock("http://replay1.valve.net").filteringPath(function(path) {
+        return '/';
+    }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2')
     it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,
             start_time: moment().format('X'),
-            url: "http://cdn.rawgit.com/yasp-dota/testfiles/master/1151783218.dem.bz2"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -478,7 +480,7 @@ describe("web", function() {
     });
     describe("match page tests", function() {
         it('/matches/:invalid', function(done) {
-            supertest(app).get('/matches/1')
+            supertest(app).get('/matches/4294967295')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(500).end(function(err, res) {
@@ -486,7 +488,7 @@ describe("web", function() {
                 });
         });
         it('/matches/:invalid/details', function(done) {
-            supertest(app).get('/matches/1/details')
+            supertest(app).get('/matches/4294967295/details')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(500).end(function(err, res) {

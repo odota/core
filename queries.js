@@ -29,7 +29,7 @@ function prepareMatch(match_id, cb) {
                 match_id: Number(match_id)
             }, function(err, match) {
                 if (err || !match) {
-                    return cb(new Error("match not found"));
+                    return cb("match not found");
                 }
                 else {
                     fillPlayerNames(match.players, function(err) {

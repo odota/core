@@ -61,7 +61,7 @@ public class YASPCombatLog{
     }
 
     @OnTickEnd
-    public void onTickEnd(Context ctx) {
+    public void onTickEnd(Context ctx, boolean synthetic) {
         Event<OnYASPCombatLogEntry> ev = ctx.createEvent(OnYASPCombatLogEntry.class, Entry.class);
         for (Entry e : logEntries) {
             ev.raise(e);
