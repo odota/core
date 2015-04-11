@@ -19,7 +19,6 @@ var moment = require('moment');
 var assert = require('assert');
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
-var processParse = require('../processParse');
 var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
@@ -36,7 +35,7 @@ var wait = 60000;
 nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
     var split = path.split("?");
     split = split[1].split("&");
-    console.log(split[split.length - 1])
+    //console.log(split[split.length - 1])
     return split[split.length - 1];
 }).get('key=shared_secret_with_retriever').reply(200, {
     "accounts": {
@@ -628,7 +627,7 @@ describe("unit test", function() {
         socket.on('connect', function() {
             console.log('connected to server websocket');
             socket.emit('request', {
-                match_id: 1193091757,
+                match_id: 1151783218,
                 response: ""
             });
             socket.on('failed', function() {
