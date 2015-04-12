@@ -269,19 +269,22 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    //fake replay url response
-    nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-        return '/';
-    }).get('/').times(10).reply(200, {
-        match: {
-            cluster: 1,
-            replaySalt: 1
-        }
+    before(function(done) {
+        //fake replay url response
+        nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+            return '/';
+        }).get('/').times(10).reply(200, {
+            match: {
+                cluster: 1,
+                replaySalt: 1
+            }
+        });
+        //fake replay
+        nock("http://replay1.valve.net").filteringPath(function(path) {
+            return '/';
+        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
+        done();
     });
-    //fake replay
-    nock("http://replay1.valve.net").filteringPath(function(path) {
-        return '/';
-    }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2')
     it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,

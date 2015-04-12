@@ -32,22 +32,73 @@ function prepareMatch(match_id, cb) {
                     return cb("match not found");
                 }
                 else {
-                    fillPlayerNames(match.players, function(err) {
+                    fillPlayerRatingsMatch(match, function(err) {
                         if (err) {
                             return cb(err);
                         }
-                        computeMatchData(match);
-                        renderMatch(match);
-                        //Add to cache if match is parsed
-                        //todo this prevents reparses from showing immediately
-                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
-                            redis.setex(key, 3600, JSON.stringify(match));
-                        }
-                        return cb(err, match);
+                        fillPlayerNames(match.players, function(err) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            computeMatchData(match);
+                            renderMatch(match);
+                            //Add to cache if match is parsed
+                            //TODO: this prevents reparses from showing immediately
+                            if (match.parse_status === 2 && config.NODE_ENV !== "development") {
+                                redis.setex(key, 3600, JSON.stringify(match));
+                            }
+                            return cb(err, match);
+                        });
                     });
                 }
             });
         }
+    });
+}
+
+function fillPlayerRatingsMatch(match, cb) {
+    //for each player, get the first rating where match_id is lte this match
+    async.each(match.players, function(p, cb) {
+        db.ratings.findOne({
+            account_id: p.account_id,
+            match_id: {
+                $lte: match.match_id
+            }
+        }, {
+            sort: {
+                time: -1
+            }
+        }, function(err, doc) {
+            if (err || !doc) {
+                return cb(err);
+            }
+            p.soloCompetitiveRank = doc.soloCompetitiveRank;
+            p.competitiveRank = doc.competitiveRank;
+            cb(err);
+        });
+    }, function(err) {
+        cb(err);
+    });
+}
+
+function fillPlayerRatingsCurrent(players, cb) {
+    async.each(players, function(p, cb) {
+        db.ratings.findOne({
+            account_id: p.account_id
+        }, {
+            sort: {
+                time: -1
+            }
+        }, function(err, doc) {
+            if (err || !doc) {
+                return cb(err);
+            }
+            p.soloCompetitiveRank = doc.soloCompetitiveRank;
+            p.competitiveRank = doc.competitiveRank;
+            cb(err);
+        });
+    }, function(err) {
+        cb(err);
     });
 }
 
@@ -209,6 +260,8 @@ function fillPlayerData(player, options, cb) {
 module.exports = {
     fillPlayerData: fillPlayerData,
     fillPlayerNames: fillPlayerNames,
+    fillPlayerRatingsCurrent: fillPlayerRatingsCurrent,
+    fillPlayerRatingsMatch: fillPlayerRatingsMatch,
     getRatingData: getRatingData,
     getSets: getSets,
     prepareMatch: prepareMatch

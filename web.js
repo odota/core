@@ -221,6 +221,9 @@ function configureApp(app) {
                 if (err) {
                     return next(err);
                 }
+                ratings.sort(function(a,b){
+                    return b.soloCompetitiveRank-a.soloCompetitiveRank;
+                });
                 queries.fillPlayerNames(ratings, function(err) {
                     res.render("ratings", {
                         ratings: ratings
