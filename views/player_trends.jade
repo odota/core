@@ -16,20 +16,13 @@ block playercontent
   hr
   .row
     .col-md-12
-      h3
-        .col-md-3.text-center
-          a(href="#records")
-            button.btn.btn-dark.click-nav#records Records
-        .col-md-3.text-center
-          a(href="#matchups")
-            button.btn.btn-dark.click-nav#matchups Matchups
-        .col-md-3.text-center
-          a(href="#wards")
-            button.btn.btn-dark.click-nav#wards Wards
+      .btn-group.btn-group-lg.btn-group-justified
+          a.btn.btn-success.click-nav(href="#basic") Basic
+          a.btn.btn-danger.click-nav(href="#advanced") Advanced
   hr
   #the_stats
     //stuff that doesnt need parsed data
-    .records
+    .basic
       .row
         .col-md-12
           h3 Records
@@ -39,31 +32,37 @@ block playercontent
               th Avg
               th Record
               th Set
-              th N
               th Sum
+              th N
             - var times={"duration":1,"first_blood_time":1}
-            - var display={"total_gold":1, "courier_kills":1, "tower_kills":1, "neutral_kills":1, "kda":1,"observer_uses":1, "sentry_uses":1, "gold_per_min":1,"xp_per_min":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1, "stuns":1, "buyback_count":1} 
+            - var display={"total_gold":1, "kda":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1} 
+            - var permin={"gold_per_min":1,"xp_per_min":1}
+            - var advanced={"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
+            //TODO: separate parsed records from the others?
+            //TODO: separate category for per min records?
             each val, key in player.aggData
               tr
                 if key in times
                   td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                   td.format-seconds(data-format-seconds=val.sum/val.n)
                   td.format-seconds(data-format-seconds=val.max)
-                else if key in display
-                  td= key === "kda" ? KDA : key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+                else if key in display || key in permin || key in advanced
+                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                   td= val.n === 0 ? 0 : (val.sum/val.n).toFixed(2)
                   td=(val.max).toFixed(0)
-                if key in times || key in display
+                if key in times || key in display || key in permin || key in advanced
                   td
                     a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
-                  td=val.n
                   td.format= val.sum
+                  td=val.n
+                  
           h3 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts
               tr
                 td=constants.leaver_status[key]
                 td=val
+
           h3 Modes
           table.table
             each val, key in player.aggData.game_mode.counts
@@ -73,22 +72,41 @@ block playercontent
       .row
         .col-md-12.table-responsive
           h3 Histogram
-          button.btn.btn-default.histogram(data-histogram="duration") Duration
-          button.btn.btn-default.histogram(data-histogram="first_blood_time") FB
-          button.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
-          button.btn.btn-default.histogram(data-histogram="hero_damage") HD
-          button.btn.btn-default.histogram(data-histogram="tower_damage") TD
-          button.btn.btn-default.histogram(data-histogram="hero_healing") HH
-          button.btn.btn-default.histogram(data-histogram="kills") K
-          button.btn.btn-default.histogram(data-histogram="deaths") D
-          button.btn.btn-default.histogram(data-histogram="assists") A
+          a.btn.btn-default.histogram(data-histogram="duration") Duration
+          a.btn.btn-default.histogram(data-histogram="first_blood_time") FB
+          a.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
+          a.btn.btn-default.histogram(data-histogram="hero_damage") HD
+          a.btn.btn-default.histogram(data-histogram="tower_damage") TD
+          a.btn.btn-default.histogram(data-histogram="hero_healing") HH
+          a.btn.btn-default.histogram(data-histogram="kills") K
+          a.btn.btn-default.histogram(data-histogram="deaths") D
+          a.btn.btn-default.histogram(data-histogram="assists") A
           #chart-histogram
         
     //stuff that needs parsed data
-    .matchups
+    .advanced
+      h3
+        small Data is only available for parsed matches.
       .row
-        .col-md-12
-          h3 Skill Accuracy
+        .col-md-8
+          h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
+          table.table#builds
+            thead
+              tr
+                th Item
+                th Item Name
+                th.time Avg
+                th #
+            tbody
+              each val, key in player.aggData.purchase_time.counts
+                - var item = constants.big_items[key]
+                if item
+                  tr 
+                    td: img.item(src=item.img, alt=key)
+                    td= item.dname
+                    td=val/player.aggData.purchase_time_count.counts[key]
+                    td=player.aggData.purchase.counts[key]
+          h3 Skill Accuracy <span class="label label-primary">#{player.aggData.hero_hits.n} games</span>
           table.table#accuracy
             thead
               tr
@@ -112,41 +130,21 @@ block playercontent
                     td=val
                     td=player.aggData.hero_hits.counts[key]
                     td=(player.aggData.hero_hits.counts[key]/val*100 || 0).toFixed(2)
-          h3 Build Times (#{player.aggData.purchase.n} games)
-          table.table#builds
-            thead
-              tr
-                th Item
-                th Item Name
-                th.time Avg
-                th #
-            tbody
-              each val, key in player.aggData.purchase_time.counts
-                - var item = constants.big_items[key]
-                if item
-                  tr 
-                    td: img.item(src=item.img, alt=key)
-                    td= item.dname
-                    td=val/player.aggData.purchase_time_count.counts[key]
-                    td=player.aggData.purchase.counts[key]
-          h3 Laning
+        .col-md-4
+          h3 Laning <span class="label label-danger">#{player.aggData.lane_role.n} games</span>
           table.table
             each val, key in player.aggData.lane_role.counts
               tr
                 td=key
                 td=val
 
-    .wards
-      .row
-        .col-md-12
-          h3 Warding (#{player.aggData.obs.n || 0} games)
-          .row
-            .col-md-4.text-center
-              button.btn.btn-lg.btn-warning.activate#obs Observers 
-              button.btn.btn-lg.btn-info.activate#sen Sentries
-            .col-md-8.table-responsive
-              #map.mapContainer.mapContainer-small(style="margin: 0 auto;")
-                img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+          h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>
+          #map.mapContainer.mapContainer-small
+            img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+
+          h3 Sentries <span class="label label-info">#{player.aggData.sen.n} games</span>
+          #map2.mapContainer.mapContainer-small
+            img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 
 append footer_assets
   script.
@@ -157,27 +155,27 @@ append footer_assets
       container: document.getElementById('map'),
       radius: 15
     });
-    //TODO: heatmap switcher, can we just have two static heatmaps?
-    $(".activate").on('click', function() {
-      heatmap.setData(posData[0][$(this).attr('id')]);
-      heatmap.repaint();
+    var heatmap2 = h337.create({
+      container: document.getElementById('map2'),
+      radius: 15
     });
+    heatmap.setData(posData[0]["obs"]);
+    heatmap2.setData(posData[0]["sen"]);
+
     playerMatches(teammates);
     generateHistograms(aggData);
     playerTrendsTables();
     
-    //magical albert nav
-    //massively reduced by howard. . .
+    //magical albert nav, massively reduced by howard
       if (window.location.hash) {
           var hash = window.location.hash.substring(1);
-          console.log(hash);
           showSection(hash);
       }
       else{
           showSection("records");
       }
     $(".click-nav").click(function(){
-      var id = $(this).attr("id");
+      var id = $(this).attr("href").slice(1);
       showSection(id);
     });
     function showSection(id){

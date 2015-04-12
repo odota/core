@@ -14,7 +14,7 @@ function playerTrendsTables() {
             "orderData": [1]
             }, {
             "targets": [1],
-            visible: false
+            //visible: false
             }]
     });
     var builds = $('#builds').dataTable({
@@ -32,7 +32,7 @@ function playerTrendsTables() {
             "orderData": [1]
             }, {
             "targets": [1],
-            visible: false
+            //visible: false
             }, {
             targets: "time",
             render: function(data, type) {
