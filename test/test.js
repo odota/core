@@ -187,26 +187,29 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
-        //fake mmr response
-        nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-            return '/';
-        }).get('account_id=88367253').reply(200, {
-            "accountId": 88367253,
-            "wins": 889,
-            "xp": 52,
-            "level": 153,
-            "lowPriorityUntilDate": 0,
-            "preventVoiceUntilDate": 0,
-            "teaching": 6,
-            "leadership": 4,
-            "friendly": 10,
-            "forgiving": 5,
-            "lowPriorityGamesRemaining": 0,
-            "competitiveRank": 3228,
-            "calibrationGamesRemaining": 0,
-            "soloCompetitiveRank": 3958,
-            "soloCalibrationGamesRemaining": 0,
-            "recruitmentLevel": 0
+        before(function(done) {
+            //fake mmr response
+            nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+                return '/';
+            }).get('/').reply(200, {
+                "accountId": 88367253,
+                "wins": 889,
+                "xp": 52,
+                "level": 153,
+                "lowPriorityUntilDate": 0,
+                "preventVoiceUntilDate": 0,
+                "teaching": 6,
+                "leadership": 4,
+                "friendly": 10,
+                "forgiving": 5,
+                "lowPriorityGamesRemaining": 0,
+                "competitiveRank": 3228,
+                "calibrationGamesRemaining": 0,
+                "soloCompetitiveRank": 3958,
+                "soloCalibrationGamesRemaining": 0,
+                "recruitmentLevel": 0
+            });
+            done();
         });
         queueReq("mmr", {
             match_id: 870061127,
