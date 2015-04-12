@@ -55,7 +55,7 @@ Features
 * Modular: You may find certain parts of YASP to be useful for your own needs.
 * Scalable: Designed to scale to thousands of users.
 * Free: YASP has no "premium" features--everything is free for everyone!
-* Open Source: Welcoming contributions from the Dota 2 developer community
+* Open Source: YASP encourages contributions from the Dota 2 developer community.
 
 Story
 ----

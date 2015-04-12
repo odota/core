@@ -32,32 +32,63 @@ var domain = require('domain');
 var wait = 60000;
 //fake retriever response
 nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-    return '/';
-}).get('/').reply(200, {
-    "accounts": {
-        "76561198186929683": {
-            "steamID": "76561198186929683",
-            "replays": 6,
-            "profiles": 0,
-            "friends": 0
+        return '/';
+    }).get('/').reply(200, {
+        "accounts": {
+            "76561198186929683": {
+                "steamID": "76561198186929683",
+                "replays": 6,
+                "profiles": 0,
+                "friends": 0
+            }
+        },
+        "accountToIdx": {
+            "26949": "76561198186929683"
         }
-    },
-    "accountToIdx": {
-        "26949": "76561198186929683"
-    }
-});
+    })
+    //fake mmr response
+    .get('/?account_id=88367253').reply(200, {
+        "accountId": 88367253,
+        "wins": 889,
+        "xp": 52,
+        "level": 153,
+        "lowPriorityUntilDate": 0,
+        "preventVoiceUntilDate": 0,
+        "teaching": 6,
+        "leadership": 4,
+        "friendly": 10,
+        "forgiving": 5,
+        "lowPriorityGamesRemaining": 0,
+        "competitiveRank": 3228,
+        "calibrationGamesRemaining": 0,
+        "soloCompetitiveRank": 3958,
+        "soloCalibrationGamesRemaining": 0,
+        "recruitmentLevel": 0
+    });
 //fake api response
 nock('http://api.steampowered.com').filteringPath(function(path) {
         var split = path.split("?");
         var split2 = split[0].split(".com");
         return split2[0];
     })
-    //throw some errors to test handling
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {}).get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api).get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+    //500 error
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {})
+    //fake match details
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api)
+    //fake player summaries
+    .get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api)
+    //non-retryable error
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
         result: {
             error: "error"
         }
-    }).get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api).get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2).get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
+    })
+    //fake full history
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api)
+    //fake full history page 2
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2)
+    //fake heroes list
+    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
 console.log('starting web');
 var app = require('../web');
 console.log('starting parser');
@@ -187,34 +218,10 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
-        before(function(done) {
-            //fake mmr response
-            nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-                return '/';
-            }).get('/').reply(200, {
-                "accountId": 88367253,
-                "wins": 889,
-                "xp": 52,
-                "level": 153,
-                "lowPriorityUntilDate": 0,
-                "preventVoiceUntilDate": 0,
-                "teaching": 6,
-                "leadership": 4,
-                "friendly": 10,
-                "forgiving": 5,
-                "lowPriorityGamesRemaining": 0,
-                "competitiveRank": 3228,
-                "calibrationGamesRemaining": 0,
-                "soloCompetitiveRank": 3958,
-                "soloCalibrationGamesRemaining": 0,
-                "recruitmentLevel": 0
-            });
-            done();
-        });
         queueReq("mmr", {
             match_id: 870061127,
             account_id: 88367253,
-            url: "http://localhost:5100?account_id=88367253"
+            url: "http://localhost:5100/?account_id=88367253"
         }, function(err, job) {
             assert(!err);
             assert(job);
