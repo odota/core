@@ -17,26 +17,28 @@ module.exports = function processParse(job, cb) {
         if (err) {
             return cb(err);
         }
-        console.log('parse: got replay url');
-        //match object now contains replay url, also persisted to db
+        //match object should now contain replay url, also persisted to db
+        //or it's expired, and we won't need it
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //test fail: we have no url on socket request, so that request fails!
+            //test fail: we have no url in db and replay is expired on socket request, so that request fails!
             console.log("parse: replay expired");
             job.data.payload.parse_status = 1;
             updateDb();
         }
-        runParse(job, function(err, parsed_data) {
-            if (err) {
-                console.log("match_id %s, error %s", match_id, err);
-                return cb(err);
-            }
-            match_id = match_id || parsed_data.match_id;
-            job.data.payload.match_id = match_id;
-            job.data.payload.parsed_data = parsed_data;
-            job.data.payload.parse_status = 2;
-            updateDb();
-        });
+        else {
+            runParse(job, function(err, parsed_data) {
+                if (err) {
+                    console.log("match_id %s, error %s", match_id, err);
+                    return cb(err);
+                }
+                match_id = match_id || parsed_data.match_id;
+                job.data.payload.match_id = match_id;
+                job.data.payload.parsed_data = parsed_data;
+                job.data.payload.parse_status = 2;
+                updateDb();
+            });
+        }
 
         function updateDb() {
             job.update();

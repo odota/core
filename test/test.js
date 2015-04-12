@@ -31,9 +31,13 @@ var supertest = require('supertest');
 var domain = require('domain');
 var wait = 60000;
 //fake retriever response
-nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
-        return '/';
-    }).get('/').reply(200, {
+nock("http://" + process.env.RETRIEVER_HOST)
+    /*
+    .filteringPath(function(path) {
+            return '/';
+        })
+        */
+    .get('/?key=shared_secret_with_retriever').reply(200, {
         "accounts": {
             "76561198186929683": {
                 "steamID": "76561198186929683",
