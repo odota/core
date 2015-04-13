@@ -243,6 +243,10 @@ thead {
     background-color: #424242;
 }
 
+.dark {
+    color: #000;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 

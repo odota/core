@@ -1,8 +1,16 @@
 module.exports = function(grunt) {
     // Project configuration.
+    grunt.config('env', grunt.option('env') || process.env.GRUNT_ENV || 'development');
+    
+    var isDev = grunt.config('env') !== 'production';
+    
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         uglify: {
+            options: {
+              beautify: isDev,
+              mangle: isDev
+            },
             build: {
                 files: {
                     'public/build/yasp.min.js': ["public/js/*.js"]
@@ -13,7 +21,7 @@ module.exports = function(grunt) {
             build: {
                 files: [{
                     'public/build/yasp.min.css': ['public/css/*.css']
-    }]
+                }]
             }
         },
         jshint: {
@@ -37,5 +45,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     // Default task(s).
-    grunt.registerTask('default', ['uglify', 'cssmin', 'jshint']);
+    
+    grunt.registerTask('default',  ['uglify', 'cssmin', 'jshint']);
 };
