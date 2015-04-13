@@ -16,7 +16,7 @@
     "shorthistory": "node runner.js shorthistory",
     "getmissing": "node runner.js getmissing",
     "bower": "bower install",
-    "grunt": "grunt",
+    "grunt": "grunt --env=production",
     "watch": "grunt watch",
     "build": "npm install && npm run maven",
     "postinstall": "npm run bower && npm run constants && npm run grunt",

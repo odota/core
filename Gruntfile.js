@@ -9,7 +9,7 @@ module.exports = function(grunt) {
         uglify: {
             options: {
               beautify: isDev,
-              mangle: isDev
+              mangle: !isDev
             },
             build: {
                 files: {
