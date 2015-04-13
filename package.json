@@ -2,6 +2,7 @@
   "name": "yasp",
   "description": "YASP: Another (Dota) Stats Page",
   "version": "3.0.0",
+  "main": "web.js",
   "scripts": {
     "start": "npm run retriever",
     "retriever": "nf -j Procfile.retriever start",

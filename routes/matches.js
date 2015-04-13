@@ -45,7 +45,7 @@ matches.get('/:match_id/:info?', function(req, res, next) {
         if (req.query.json && config.NODE_ENV !== "production") {
             return res.json(match);
         }
-        res.render("match_" + info, {
+        res.render("match/match_" + info, {
             route: info,
             match: match,
             tabs: matchPages,

@@ -69,7 +69,7 @@ block match_content
                          if item
                            img.item(src=item.img, alt=constants.item_ids[val])
       hr
-      include ads/leaderboard_2
+      include /ads/leaderboard_2
       hr
       h2 Skill Builds
       .table-responsive
@@ -103,7 +103,7 @@ block match_content
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-6
-      include ads/skyscraper
+      include /ads/skyscraper
       
 append footer_assets
   script.

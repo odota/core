@@ -2,12 +2,6 @@ var config = require('./config');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var request = require('request');
-var paypal_id = config.PAYPAL_ID;
-var paypal_secret = config.PAYPAL_SECRET;
-var root_url = config.ROOT_URL;
-var goal = Number(config.GOAL);
-var PAYMENT_SESSIONS = ["cheeseAmount", "cheeseTotal", "payerId", "paymentId"];
-var paypal = require('paypal-rest-sdk');
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;
@@ -26,7 +20,8 @@ var bodyParser = require('body-parser');
 var queueReq = require('./operations').queueReq;
 var async = require('async');
 var queries = require('./queries');
-var cpuCount = require('os').cpus().length;
+var goal = Number(config.GOAL);
+//var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
 // Include Express
@@ -117,16 +112,12 @@ function configureApp(app) {
             });
         });
     });
-    paypal.configure({
-        'mode': config.NODE_ENV === "production" ? 'live' : 'sandbox', //sandbox or live
-        'client_id': paypal_id,
-        'client_secret': paypal_secret
-    });
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'jade');
     app.locals.moment = moment;
     app.locals.constants = require('./constants.json');
     app.locals.sources = require('./sources.json');
+    app.locals.basedir = __dirname + '/views';
     app.use(compression());
     var basic = auth.basic({
         realm: "Kue"
@@ -179,7 +170,7 @@ function configureApp(app) {
         });
     });
     var Poet = require('poet');
-    var poet = Poet(app);
+    var poet = new Poet(app);
     poet.watch(function() {
         // watcher reloaded
     }).init().then(function() {
@@ -193,8 +184,6 @@ function configureApp(app) {
             home: true
         });
     });
-    app.use('/matches', require('./routes/matches'));
-    app.use('/players', require('./routes/players'));
     app.route('/request').get(function(req, res) {
         res.render('request', {
             rc_public: rc_public
@@ -221,10 +210,13 @@ function configureApp(app) {
                 if (err) {
                     return next(err);
                 }
-                ratings.sort(function(a,b){
-                    return b.soloCompetitiveRank-a.soloCompetitiveRank;
+                ratings.sort(function(a, b) {
+                    return b.soloCompetitiveRank - a.soloCompetitiveRank;
                 });
                 queries.fillPlayerNames(ratings, function(err) {
+                    if (err) {
+                        return next(err);
+                    }
                     res.render("ratings", {
                         ratings: ratings
                     });
@@ -232,7 +224,6 @@ function configureApp(app) {
             });
         });
     });
-    app.use('/api', require('./routes/api'));
     app.route('/preferences').post(function(req, res) {
         if (req.user) {
             for (var key in req.body) {
@@ -257,50 +248,6 @@ function configureApp(app) {
             });
         }
     });
-    app.route('/login').get(passport.authenticate('steam', {
-        failureRedirect: '/'
-    }));
-    app.route('/return').get(passport.authenticate('steam', {
-        failureRedirect: '/'
-    }), function(req, res, next) {
-        db.players.findOne({
-            account_id: req.user.account_id
-        }, function(err, doc) {
-            if (err) {
-                return next(err);
-            }
-            if (doc) {
-                //don't update join date if we have this in db already
-                delete req.user["join_date"];
-            }
-            db.players.update({
-                account_id: req.user.account_id
-            }, {
-                $set: req.user
-            }, {
-                upsert: true
-            }, function(err) {
-                if (err) {
-                    return next(err);
-                }
-                queueReq("fullhistory", req.user, function(err, job) {
-                    if (err) {
-                        return next(err);
-                    }
-                    res.redirect('/players/' + req.user.account_id);
-                });
-            });
-        });
-    });
-    app.route('/logout').get(function(req, res) {
-        req.logout();
-        req.session.destroy(function() {
-            res.redirect('/');
-        });
-    });
-    /*
-    app.use('/upload', require("./routes/upload"));
-    */
     app.route('/status').get(function(req, res, next) {
         status(function(err, result) {
             if (err) {
@@ -314,142 +261,11 @@ function configureApp(app) {
     app.route('/about').get(function(req, res) {
         res.render("about");
     });
-    app.route('/carry').get(function(req, res, next) {
-        db.players.find({}, {
-            sort: {
-                cheese: -1
-            },
-            limit: 50
-        }, function(err, results) {
-            if (err) return next(err);
-            res.render("carry", {
-                users: results
-            });
-        });
-    }).post(function(req, res, next) {
-        var num = req.body.num;
-        if (!isNaN(num)) {
-            var payment = {
-                "intent": "sale",
-                "payer": {
-                    "payment_method": "paypal"
-                },
-                "redirect_urls": {
-                    "return_url": root_url + "/confirm",
-                    "cancel_url": root_url + "/cancel"
-                },
-                "transactions": [{
-                    "amount": {
-                        "total": num,
-                        "currency": "USD"
-                    },
-                    "description": "Buying CHEESE x" + num
-            }]
-            };
-            paypal.payment.create(payment, function(err, payment) {
-                if (err) {
-                    return next(err)
-                }
-                else {
-                    req.session.paymentId = payment.id;
-                    req.session.cheeseAmount = num;
-                    var redirectUrl;
-                    for (var i = 0; i < payment.links.length; i++) {
-                        var link = payment.links[i];
-                        if (link.method === 'REDIRECT') {
-                            redirectUrl = link.href;
-                        }
-                    }
-                    res.redirect(redirectUrl);
-                }
-            });
-        }
-    });
-    app.route('/confirm').get(function(req, res, next) {
-        var cheeseAmount = req.session.cheeseAmount;
-        req.session.payerId = req.query.PayerID;
-        if (cheeseAmount) {
-            res.render("confirm", {
-                cheeseAmount: cheeseAmount
-            });
-        }
-        else {
-            clearPaymentSessions(req);
-            res.render("cancel");
-        }
-    }).post(function(req, res, next) {
-        var paymentId = req.session.paymentId;
-        var cheeseAmount = req.session.cheeseAmount;
-        var payerId = req.session.payerId;
-        var details = {
-            "payer_id": payerId
-        };
-        paypal.payment.execute(paymentId, details, function(err, payment) {
-            if (err) {
-                clearPaymentSessions(req);
-                next(err);
-            }
-            else {
-                redis.incrby("cheese_goal", cheeseAmount, function(err, val) {
-                    if (!err && val == cheeseAmount) {
-                        // cheeseAmount is string, val is number, just let JS cast
-                        // this condition indicates the key is new
-                        redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
-                    }
-                    if (req.user && payment.transactions[0]) {
-                        var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total)
-                        db.players.update({
-                            account_id: req.user.account_id
-                        }, {
-                            $set: {
-                                "cheese": cheeseTotal
-                            }
-                        }, function(err, num) {
-                            req.session.cheeseTotal = cheeseTotal;
-                            res.redirect("/thanks");
-                        });
-                    }
-                    else {
-                        res.redirect("/thanks");
-                    }
-                })
-            }
-        });
-    });
-    app.route('/thanks').get(function(req, res) {
-        var cheeseCount = req.session.cheeseAmount;
-        var cheeseTotal = req.session.cheeseTotal;
-        clearPaymentSessions(req);
-        res.render("thanks", {
-            cheese: cheeseCount,
-            total: cheeseTotal
-        });
-    });
-    app.route('/cancel').get(function(req, res) {
-        clearPaymentSessions(req);
-        res.render("cancel");
-    });
-    app.use(function(req, res, next) {
-        var err = new Error("Not Found");
-        err.status = 404;
-        return next(err);
-    });
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        console.log(err);
-        if (config.NODE_ENV !== "development") {
-            return res.render(err.status === 404 ? '404' : '500', {
-                error: err
-            });
-        }
-        //default express handler
-        next(err);
-    });
-
-    function clearPaymentSessions(req) {
-        PAYMENT_SESSIONS.forEach(function(s) {
-            req.session[s] = null;
-        });
-    }
+    app.use('/matches', require('./routes/matches'));
+    app.use('/players', require('./routes/players'));
+    app.use('/api', require('./routes/api'));
+    app.use('/', require('./routes/auth'));
+    app.use('/', require('./routes/donate'));
+    app.use('/', require('./routes/error'));
 }
 module.exports = app;

@@ -1,8 +1,5 @@
 extend player
 
-include mixins/hero_table
-include mixins/teammate_table
-
 block playercontent
   //pre #{JSON.stringify(player.aggData, null, 2)}
   //th KDA
@@ -11,7 +8,7 @@ block playercontent
   //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
   .row
     .col-md-12
-      include query
+      include /query
   
   hr
   .row

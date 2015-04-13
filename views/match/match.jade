@@ -1,4 +1,4 @@
-extend layout
+extend /layout
 
 append head
     - var desc = (constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode) + " - " + (constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster) + " - " + (match.radiant_win ? "Radiant Victory " : "Dire Victory") + " - Length: " + moment().startOf('day').seconds(match.duration).format("H:mm:ss")
@@ -46,7 +46,7 @@ block content
     hr
     .row
       .col-md-12
-        include ads/leaderboard_3
+        include /ads/leaderboard_3
       
 append footer_assets
   script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")

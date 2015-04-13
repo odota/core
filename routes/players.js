@@ -50,7 +50,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     return next(err);
                 }
                 console.timeEnd("player " + account_id);
-                res.render("player_" + info, {
+                res.render("player/player_" + info, {
                     q: req.query,
                     route: info,
                     tabs: playerPages,

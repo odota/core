@@ -1,12 +1,12 @@
 extend player
 
-include mixins/hero_table
-include mixins/teammate_table
+include /mixins/hero_table
+include /mixins/teammate_table
 
 block playercontent
   .row
      .col-md-12
-       include query
+       include /query
   .row
     .col-md-12
       h3 Matches
@@ -60,7 +60,7 @@ block playercontent
 
   hr
   .row
-    include ads/leaderboard_2
+    include /ads/leaderboard_2
   hr
   .row
     .col-md-12
