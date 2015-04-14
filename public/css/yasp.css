@@ -15,12 +15,18 @@
     margin: 2em auto;
     display: block;
 }
-body {
+html, body {
     font-family: 'Roboto Slab', sans-serif;
     margin: 0;
     padding: 0;
     height: 100%;
+    width: 100%;
 }
+
+body.frame {
+    display: table;
+}
+
 .match-top {
     margin-top: 1.5em;
 }
@@ -118,6 +124,8 @@ td>img.user {
     background-color: yellow;
     padding: 3px 11px;
 }
+
+/* Cheese Goal Bar */
 .meter_wrapper {
     margin-bottom: 1em;
 }
@@ -233,23 +241,12 @@ div .dataTables_processing {
     margin-left: 5px;
     margin-right: 5px;
 }
-.navbar-default {
-    background-color: #000;
-}
-thead {
-    background-color: #424242;
-}
 
 .dark {
     color: #000;
 }
 
-html,
-body {
-  height: 100%;
-  width: 100%;
-  font-family: "Roboto Slab", Arial, sans-serif;
-}
+/* Use sans-serif on tables*/
 table tbody *,
 table tfoot * {
   font-family: Arial, sans-serif;
@@ -320,16 +317,6 @@ table tfoot * {
 
 /* Sticky footer styles
 -------------------------------------------------- */
-
-html {
-    position: relative;
-    min-height: 100%;
-}
-body {
-    /* Margin bottom by footer height */
-    
-    margin-bottom: 200px;
-}
 
 .sticky_footer_row {
     display: table-row;
