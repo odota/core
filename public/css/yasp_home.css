@@ -234,12 +234,12 @@ img.grayscale {
 }
 .bright {
     background: #dbdbdb url('../images/pt_topo.png') repeat center center fixed;
-    color: #777;
+    color: #777 !important;
 }
 .featurette {
     background: #222334;
     padding: 50px 0;
-    color: #ffffff;
+    color: #ffffff !important;
 }
 .featurette-item {
     margin-bottom: 15px;
