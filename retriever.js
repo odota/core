@@ -21,11 +21,11 @@ var server = app.listen(port, function() {
 });
 //create array of numbers from 0 to n
 while (a.length < users.length) a.push(a.length + 0);
-async.eachSeries(a, function(i, cb) {
+async.each(a, function(i, cb) {
     var dotaReady = false;
     var relationshipReady = false;
     var Steam = new steam.SteamClient();
-    Steam.Dota2 = new dota2.Dota2Client(Steam, true);
+    Steam.Dota2 = new dota2.Dota2Client(Steam, false);
     Steam.EFriendRelationship = {
         None: 0,
         Blocked: 1,
@@ -71,7 +71,7 @@ async.eachSeries(a, function(i, cb) {
         //console.log(Steam.EFriendRelationship);
         console.log("searching for pending friend requests...");
         //friends is a object with key steam id and value relationship
-        console.log(Steam.friends);
+        //console.log(Steam.friends);
         for (var prop in Steam.friends) {
             //iterate through friends and accept requests/populate hash
             var steamID = prop;
