@@ -10,7 +10,7 @@ block content
   .row.match-top
     .col-md-6
       h1 Match #{match.match_id}
-    .col-md-6
+    .col-md-6.table-responsive
       table.table.table-condensed
         thead
           tr
@@ -34,7 +34,7 @@ block content
             td.fromNow(data-time=match.start_time + match.duration)
             td= constants.patches[match.patch] ? constants.patches[match.patch].id : match.patch
   .row
-      .col-md-10
+      .col-md-10.table-responsive
         ul.nav.nav-tabs
           each val, key in tabs
             li(class= (route === key ? 'active' : ''), style=(match.parsed_data || key==="index" ? '' : 'display:none;'))
