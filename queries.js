@@ -57,6 +57,7 @@ function prepareMatch(match_id, cb) {
 }
 
 function fillPlayerRatingsMatch(match, cb) {
+    //joins the players in a match with their rating at the time
     //for each player, get the first rating where match_id is lte this match
     async.each(match.players, function(p, cb) {
         db.ratings.findOne({
@@ -80,8 +81,9 @@ function fillPlayerRatingsMatch(match, cb) {
         cb(err);
     });
 }
-
+/*
 function fillPlayerRatingsCurrent(players, cb) {
+//joins an array of players with their current rating
     async.each(players, function(p, cb) {
         db.ratings.findOne({
             account_id: p.account_id
@@ -101,6 +103,7 @@ function fillPlayerRatingsCurrent(players, cb) {
         cb(err);
     });
 }
+*/
 
 function fillPlayerNames(players, cb) {
     //make hash of account_ids to players
@@ -260,8 +263,6 @@ function fillPlayerData(player, options, cb) {
 module.exports = {
     fillPlayerData: fillPlayerData,
     fillPlayerNames: fillPlayerNames,
-    fillPlayerRatingsCurrent: fillPlayerRatingsCurrent,
-    fillPlayerRatingsMatch: fillPlayerRatingsMatch,
     getRatingData: getRatingData,
     getSets: getSets,
     prepareMatch: prepareMatch
