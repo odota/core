@@ -234,12 +234,19 @@ img.grayscale {
 }
 .bright {
     background: #dbdbdb url('../images/pt_topo.png') repeat center center fixed;
+    color: #777;
+}
+.bright h1, .bright h2 {
     color: #777 !important;
 }
 .featurette {
     background: #222334;
     padding: 50px 0;
-    color: #ffffff !important;
+    color: #ffffff;
+}
+
+.featurette h1, .featurette h2 {
+    color: #fff !important;
 }
 .featurette-item {
     margin-bottom: 15px;
@@ -258,7 +265,7 @@ img.grayscale {
 .featurette-item > i:hover {
     font-size: 68px;
 }
-#stats-table {
+#stats-table tbody, #heatmap-table tbody {
     color: black;
 }
 #stats-table tfoot,
@@ -269,14 +276,15 @@ img.grayscale {
 .callout {
     color: #ffffff;
     padding-top: 7%;
-    /*height: 100%;*/
-    
     width: 100%;
     background: url('../images/header.jpg') no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+}
+.callout h1, .callout h2{
+    color: #ffffff;
 }
 .gallery {
     padding: 50px 0;
