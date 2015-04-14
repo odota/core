@@ -18,17 +18,6 @@ var port = config.PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-    /*
-    //server must support tcp!
-    var constants = require('./constants.json');
-    var seaport = require('seaport');
-    var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
-    ports.register('retriever@' + constants.retriever_version + '.0.0', {
-        host: host,
-        port: port,
-        url: process.env.RETRIEVER_URL
-    });
-*/
 });
 //create array of numbers from 0 to n
 while (a.length < users.length) a.push(a.length + 0);
