@@ -30,8 +30,11 @@ var server = app.listen(port, function() {
     });
 */
 });
+//create array of numbers from 0 to n
 while (a.length < users.length) a.push(a.length + 0);
-async.map(a, function(i, cb) {
+async.eachSeries(a, function(i, cb) {
+    var dotaReady = false;
+    var relationshipReady = false;
     var Steam = new steam.SteamClient();
     Steam.Dota2 = new dota2.Dota2Client(Steam, true);
     Steam.EFriendRelationship = {
@@ -75,9 +78,6 @@ async.map(a, function(i, cb) {
         Steam.profiles = 0;
         Steam.Dota2.launch();
     });
-    Steam.Dota2.on("ready", function() {
-        console.log("Dota 2 ready");
-    });
     Steam.on("relationships", function() {
         //console.log(Steam.EFriendRelationship);
         console.log("searching for pending friend requests...");
@@ -100,9 +100,24 @@ async.map(a, function(i, cb) {
         console.log(e);
     });
     Steam.once("relationships", function() {
-        cb();
+        console.log("relationships obtained");
+        relationshipReady = true;
+        allDone();
     });
+    Steam.Dota2.once("ready", function() {
+        console.log("Dota 2 ready");
+        dotaReady = true;
+        allDone();
+    });
+
+    function allDone() {
+        if (dotaReady && relationshipReady) {
+            console.log("acct %s ready", i);
+            cb();
+        }
+    }
 }, function() {
+    //all accounts ready!
     ready = true;
 });
 
