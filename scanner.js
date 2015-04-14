@@ -69,7 +69,7 @@ var q = async.queue(function(match, cb) {
         }
     }, function(err) {
         if (err) {
-            console.log("failed to insert match from scanApi %s", match);
+            console.log("failed to insert match from scanApi %s", JSON.stringify(match));
             console.log(err);
             //TODO: log this to a file or something, we don't want to stop/crash just because an insert failed
             //throw err;
