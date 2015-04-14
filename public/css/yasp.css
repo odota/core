@@ -95,6 +95,8 @@ td.abilities img {
 }
 footer {
     background-color: #BBF0FD;
+    width: 100%;
+    padding: 1.3em 0 0 1em;
 }
 
 td {
@@ -240,10 +242,6 @@ div .dataTables_processing {
 .rating {
     margin-left: 5px;
     margin-right: 5px;
-}
-
-.dark {
-    color: #000;
 }
 
 /* Use sans-serif on tables*/
