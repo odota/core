@@ -21,14 +21,14 @@ block playercontent
     //stuff that doesnt need parsed data
     .basic
       .row
-        .col-md-12
+        .col-md-6
           h3 Records
           table.table
             tr
               th Stat
-              th Avg
               th Record
               th Set
+              th Avg
               th Sum
               th N
             - var times={"duration":1,"first_blood_time":1}
@@ -39,20 +39,15 @@ block playercontent
             //TODO: separate category for per min records?
             each val, key in player.aggData
               tr
-                if key in times
-                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-                  td.format-seconds(data-format-seconds=val.sum/val.n)
-                  td.format-seconds(data-format-seconds=val.max)
-                else if key in display || key in permin || key in advanced
-                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-                  td= val.n === 0 ? 0 : (val.sum/val.n).toFixed(2)
-                  td=(val.max).toFixed(0)
                 if key in times || key in display || key in permin || key in advanced
-                  td
-                    a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#")=val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"
+                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{(val.max).toFixed(0)+" "}
+                  td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
+                  - var avg = val.n === 0 ? 0 : val.sum/val.n
+                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg)=avg.toFixed(2)
                   td.format= val.sum
                   td=val.n
-                  
+        .col-md-6   
           h3 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts
@@ -83,7 +78,7 @@ block playercontent
     //stuff that needs parsed data
     .advanced
       h3
-        small Data is only available for parsed matches.
+        small The following data is only available for parsed matches.
       .row
         .col-md-8
           h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
@@ -169,7 +164,7 @@ append footer_assets
           showSection(hash);
       }
       else{
-          showSection("records");
+          showSection("basic");
       }
     $(".click-nav").click(function(){
       var id = $(this).attr("href").slice(1);

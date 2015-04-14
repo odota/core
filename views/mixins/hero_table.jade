@@ -6,12 +6,12 @@ mixin hero_table(rows, full)
         th Hero
         th Hero Name
         th As
-        th Win% As
+        th Win%
         if full
-          th With
-          th Win% With
-          th Against
-          th Win% Against
+          th Teammate
+          th Win% 
+          th Enemy
+          th Win%
         th.last_played Last
     each h in rows
       - var hero = constants.heroes[h.hero_id]
