@@ -13,15 +13,20 @@ module.exports = function(grunt) {
             },
             build: {
                 files: {
-                    'public/build/yasp.min.js': ["public/js/*.js"]
+                    'public/build/yasp.min.js': ["public/js/*.js"],
                 }
             }
         },
         cssmin: {
-            build: {
-                files: [{
-                    'public/build/yasp.min.css': ['public/css/*.css']
-                }]
+            dark: {
+                files: {
+                    'public/build/yasp-dark.min.css': ['public/css/flaticon.css', 'public/css/font.css', 'public/css/navbar.css', 'public/css/yasp_home.css', 'public/css/yasp.css', 'public/css/dark.css']
+                }
+            },
+            light: {
+                files: {
+                    'public/build/yasp.min.css': ['public/css/flaticon.css', 'public/css/font.css', 'public/css/navbar.css', 'public/css/yasp_home.css', 'public/css/yasp.css'],
+                }
             }
         },
         jshint: {

@@ -97,7 +97,10 @@ html
       script(src="/public/js/ga.js")
 
     //compiled assets, currently bundling public/js and public/css, i.e., the above
-    link(rel='stylesheet', href="/public/build/yasp.min.css")
+    if (user && user.light_theme)
+      link(rel='stylesheet', href="/public/build/yasp.min.css")
+    else
+      link(rel='stylesheet', href="/public/build/yasp-dark.min.css")
     script(type='text/javascript', src="/public/build/yasp.min.js")
 
     block head

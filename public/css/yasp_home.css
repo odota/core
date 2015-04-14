@@ -290,6 +290,11 @@ img.grayscale {
     color: rgb(124, 124, 124);
 }
 
+footer a:hover,
+.featurette.dark a:hover {
+  color: #337ab7;
+}
+
 /*duplicated footer styles*/
 /*
 footer {
