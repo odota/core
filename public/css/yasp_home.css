@@ -262,14 +262,17 @@ img.grayscale {
     vertical-align: middle;
     text-align: center;
 }
+.featurette.dark .well h3 {
+    color: #000;
+}
 .featurette-item > i:hover {
     font-size: 68px;
 }
-#stats-table tbody, #heatmap-table tbody {
+#match_statistics tbody, #positions tbody {
     color: black;
 }
-#stats-table tfoot,
-#stats-table thead {
+#match_statistics tfoot,
+#match_statistics thead {
     color: white;
     background-color: transparent;
 }

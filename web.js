@@ -19,6 +19,7 @@ var moment = require('moment');
 var bodyParser = require('body-parser');
 var queueReq = require('./operations').queueReq;
 var async = require('async');
+var fs = require('fs');
 var queries = require('./queries');
 var goal = Number(config.GOAL);
 //var cpuCount = require('os').cpus().length;
@@ -28,11 +29,11 @@ var cluster = require('cluster');
 var express = require('express');
 // Create a new Express application
 var app = express();
+var example_match = JSON.parse(fs.readFileSync('./matches/1320573244.json'));
 if (config.NODE_ENV === "test") {
     //don't cluster in test env
     configureApp(app);
-}
-else {
+} else {
     if (cluster.isMaster) {
         // Count the machine's CPUs
         configureApp(app);
@@ -178,9 +179,8 @@ function configureApp(app) {
     });
     app.route('/').get(function(req, res, next) {
         //TODO make a static example file with match data?
-        var match = {};
         res.render('home', {
-            match: match,
+            match: example_match,
             home: true
         });
     });
