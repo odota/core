@@ -23,7 +23,11 @@ db.matches.index({
     unique: true
 });
 db.matches.index({
-    'start_time': -1
+    'start_time': -1,
+    'parse_status': 1
+});
+db.matches.index({
+    'parse_status': 1
 });
 db.players.index('account_id', {
     unique: true
@@ -33,9 +37,6 @@ db.players.index({
 });
 db.players.index({
     'full_history_time': 1
-});
-db.players.index({
-    'contributor': 1
 });
 db.players.index({
     'last_summaries_update': 1

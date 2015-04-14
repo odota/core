@@ -15,4 +15,4 @@ parser/target
 /bin/
 Thumbs.db
 streamtest.js
-build
+public/build
