@@ -520,7 +520,7 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    console.log(options);
+    //console.log(options);
     console.time('db');
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {
