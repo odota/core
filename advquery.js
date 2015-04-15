@@ -461,8 +461,22 @@ function advQuery(options, cb) {
                 options.select[key] = Number(options.select[key]);
             }
             if (mongoAble[key]) {
-                //only project the matching player
-                options.project["players.$"] = 1;
+                //only project the fields we need
+                //options.project["players.$"] = 1;
+                options.project.players = 1;
+                options.project["players.account_id"] = 1;
+                options.project["players.hero_id"] = 1;
+                options.project["players.kills"] = 1;
+                options.project["players.deaths"] = 1;
+                options.project["players.assists"] = 1;
+                options.project["players.gold_per_min"] = 1;
+                options.project["players.xp_per_min"] = 1;
+                options.project["players.hero_damage"] = 1;
+                options.project["players.tower_damage"] = 1;
+                options.project["players.hero_healing"] = 1;
+                options.project["players.player_slot"] = 1;
+                options.project["players.last_hits"] = 1;
+                options.project["players.denies"] = 1;
                 options.mongo_select[key] = options.select[key];
             }
             else {
@@ -470,12 +484,13 @@ function advQuery(options, cb) {
             }
         }
     }
-    if (!options.project["players.$"]) {
-        //NOTE: for some reason, trying to project all players with no select condition is slow, so we make it invariant that a single player is projected
+    if (!Object.keys(options.mongo_select).length) {
+        //NOTE: for some reason, trying to project all players with no select condition is slow, so we project a single player
         //always project a player to prevent computematchdata/aggregation crash
         options.project.players = {
             $slice: 1
         };
+        //options.project["players"] = 1;
         //since we're not selecting, we can mongodb sort
         options.sort = {
             match_id: -1
@@ -483,6 +498,8 @@ function advQuery(options, cb) {
     }
     //js_agg, aggregations to do with js
     //do everything if null passed as fields
+    var bGetFullPlayerData = false;
+    /*
     //some aggregations/selections require hero_id and player_id of all 10 players in a game
     var fullPlayerData = {
         "teammates": 1,
@@ -500,6 +517,7 @@ function advQuery(options, cb) {
     for (var key in options.js_select) {
         bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
     }
+    */
     //determine if we're doing an aggregation/selection that requires parsed data
     //var parsedPlayerData = {};
     //this just gets the parsed data if js_agg is null (do everything)
@@ -541,8 +559,15 @@ function advQuery(options, cb) {
                 console.timeEnd("parsedplayerdata");
                 console.time('compute');
                 matches.forEach(function(m) {
-                    //reduce memory use by removing players.ability_upgrades
-                    delete m.players[0].ability_upgrades;
+                    //get all_players and primary player
+                    m.all_players = m.players.slice(0);
+                    //use the mongodb select criteria to filter the player list
+                    if (Object.keys(options.mongo_select).length) {
+                        m.players = m.players.filter(function(p) {
+                            return p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"];
+                        });
+                    }
+                    //console.log(m.players.length, m.all_players.length);
                     //post-process the match to get additional stats
                     computeMatchData(m);
                 });
