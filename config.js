@@ -27,30 +27,28 @@ var defaults = {
     "UNTRACK_DAYS": 7,
     "GOAL": 5,
     "PROXY_URLS": "", //comma separated list of proxy urls to use
-    "STEAM_API_HOST":"api.steampowered.com",
+    "STEAM_API_HOST": "api.steampowered.com",
     //the following are deprecated
     "AWS_S3_BUCKET": false,
     "AWS_ACCESS_KEY_ID": false,
     "AWS_SECRET_ACCESS_KEY": false,
     "STEAM_GUARD_CODE": false
 };
-/*
+//nf puts values in .env into process.env
+//use dotenv to read .env and overwrite defaults if running a task (code not run by nf)
 var dotenv = require('dotenv');
 var fs = require('fs');
-
-var fileConfig = {};
 try {
+    var fileConfig = {};
     var file = fs.readFileSync('./.env');
     fileConfig = dotenv.parse(file); // passing in a buffer
+    for (var key in fileConfig) {
+        defaults[key] = fileConfig[key];
+    }
 }
 catch (e) {
     console.log(e);
 }
-for (var key in fileConfig) {
-    defaults[key] = fileConfig[key];
-}
-*/
-//nf puts values in .env into process.env
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults) {
     process.env[key] = process.env[key] || defaults[key];

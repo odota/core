@@ -7,6 +7,8 @@ var getData = utility.getData;
 var selector = require('../selector');
 var redis = r.client;
 var retrievers = config.RETRIEVER_HOST;
+var parsers = config.PARSER_HOST;
+var secret = config.RETRIEVER_SECRET;
 module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
@@ -43,9 +45,9 @@ module.exports = function buildSets(cb) {
             });
         },
         "parsers": function(cb) {
-            var parsers = [];
-            var ps = config.PARSER_HOST.split(",").map(function(p) {
-                return "http://" + p + "?key=" + config.RETRIEVER_SECRET;
+            var parser_urls = [];
+            var ps = parsers.split(",").map(function(p) {
+                return "http://" + p + "?key=" + secret;
             });
             //build array from PARSER_HOST based on each worker's core count
             async.each(ps, function(url, cb) {
@@ -54,20 +56,20 @@ module.exports = function buildSets(cb) {
                         return cb(err);
                     }
                     for (var i = 0; i < body.capacity; i++) {
-                        parsers.push(url);
+                        parser_urls.push(url);
                     }
                     cb(err);
                 });
             }, function(err) {
-                redis.set("parsers", JSON.stringify(parsers));
-                cb(err, parsers);
+                redis.set("parsers", JSON.stringify(parser_urls));
+                cb(err, parser_urls);
             });
         },
         "retrievers": function(cb) {
             var r = {};
             var b = [];
             var ps = retrievers.split(",").map(function(r) {
-                return "http://" + r + "?key=" + config.RETRIEVER_SECRET;
+                return "http://" + r + "?key=" + secret;
             });
             async.each(ps, function(url, cb) {
                 getData(url, function(err, body) {
