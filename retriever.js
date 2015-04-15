@@ -20,6 +20,7 @@ var server = app.listen(port, function() {
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });
 //create array of numbers from 0 to n
+var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
 async.each(a, function(i, cb) {
     var dotaReady = false;
@@ -89,19 +90,20 @@ async.each(a, function(i, cb) {
         console.log(e);
     });
     Steam.once("relationships", function() {
-        console.log("relationships obtained");
+        //console.log("relationships obtained");
         relationshipReady = true;
         allDone();
     });
     Steam.Dota2.once("ready", function() {
-        console.log("Dota 2 ready");
+        //console.log("Dota 2 ready");
         dotaReady = true;
         allDone();
     });
 
     function allDone() {
         if (dotaReady && relationshipReady) {
-            console.log("acct %s ready", i);
+            count += 1;
+            console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
         }
     }
@@ -140,7 +142,7 @@ function selfDestruct() {
     process.exit(0);
 }
 app.get('/', function(req, res, next) {
-    console.log(process.memoryUsage());
+    //console.log(process.memoryUsage());
     if (!ready) {
         return next("retriever not ready");
     }
