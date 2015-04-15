@@ -209,10 +209,13 @@ function aggregator(matches, fields) {
     };
     //if null fields passed in, do all aggregations
     fields = fields || types;
-    //we always want to do basic fields (win/lose/games)
+    //we always want to do basic fields
     fields.win = fields.win || 1;
     fields.lose = fields.lose || 1;
     fields.games = fields.games || 1;
+    fields.teammates = fields.teammates || 1;
+    fields.matchups = fields.matchups || 1;
+    fields.time_result = fields.time_result || 1;
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
         aggData[key] = {
@@ -522,6 +525,7 @@ function advQuery(options, cb) {
     //var parsedPlayerData = {};
     //this just gets the parsed data if js_agg is null (do everything)
     var bGetParsedPlayerData = Boolean(!options.js_agg);
+    console.log(bGetParsedPlayerData);
     //limit, pass to mongodb
     //cap the number of matches to return in mongo
     var max = 10000;
@@ -545,6 +549,17 @@ function advQuery(options, cb) {
             return cb(err);
         }
         console.timeEnd('db');
+        matches.forEach(function(m) {
+            //get all_players and primary player
+            m.all_players = m.players.slice(0);
+            //use the mongodb select criteria to filter the player list
+            if (Object.keys(options.mongo_select).length) {
+                m.players = m.players.filter(function(p) {
+                    return p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"];
+                });
+            }
+            //console.log(m.players.length, m.all_players.length);  
+        });
         console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {
             if (err) {
@@ -559,15 +574,6 @@ function advQuery(options, cb) {
                 console.timeEnd("parsedplayerdata");
                 console.time('compute');
                 matches.forEach(function(m) {
-                    //get all_players and primary player
-                    m.all_players = m.players.slice(0);
-                    //use the mongodb select criteria to filter the player list
-                    if (Object.keys(options.mongo_select).length) {
-                        m.players = m.players.filter(function(p) {
-                            return p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"];
-                        });
-                    }
-                    //console.log(m.players.length, m.all_players.length);
                     //post-process the match to get additional stats
                     computeMatchData(m);
                 });
@@ -632,8 +638,11 @@ function getParsedPlayerData(matches, doAction, cb) {
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
-    //todo the following currently does a query for each match in the set, so could be a lot of queries
+    //first player in first match's players has the account id we want
+    var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
+    //the following does a query for each match in the set, so could be a lot of queries
     //since we want a different position on each query, we need to make them individually
+    /*
     async.each(parsed, function(m, cb) {
         var player = m.players[0];
         var parseSlot = player.player_slot % (128 - 5);
@@ -665,12 +674,13 @@ function getParsedPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-    /*
+    */
     //better approach, but requires steam_id for each player, which is not present in v5 data, added to v7
     //parsed_data.players needs an identifier we can project on, such as steam_id
     //also need index on parsed_data.players.steam_id
     //compute the steam64 for this player
     //create array of ids to use for $in
+    console.log(steam64);
     var match_ids = parsed.map(function(m) {
         return m.match_id;
     });
@@ -700,6 +710,5 @@ function getParsedPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-    */
 }
 module.exports = advQuery;

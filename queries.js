@@ -57,54 +57,53 @@ function prepareMatch(match_id, cb) {
 }
 
 function fillPlayerRatingsMatch(match, cb) {
-    //joins the players in a match with their rating at the time
-    //for each player, get the first rating where match_id is lte this match
-    async.each(match.players, function(p, cb) {
-        db.ratings.findOne({
-            account_id: p.account_id,
-            match_id: {
-                $lte: match.match_id
-            }
-        }, {
-            sort: {
-                time: -1
-            }
-        }, function(err, doc) {
-            if (err || !doc) {
-                return cb(err);
-            }
-            p.soloCompetitiveRank = doc.soloCompetitiveRank;
-            p.competitiveRank = doc.competitiveRank;
+        //joins the players in a match with their rating at the time
+        //for each player, get the first rating where match_id is lte this match
+        async.each(match.players, function(p, cb) {
+            db.ratings.findOne({
+                account_id: p.account_id,
+                match_id: {
+                    $lte: match.match_id
+                }
+            }, {
+                sort: {
+                    time: -1
+                }
+            }, function(err, doc) {
+                if (err || !doc) {
+                    return cb(err);
+                }
+                p.soloCompetitiveRank = doc.soloCompetitiveRank;
+                p.competitiveRank = doc.competitiveRank;
+                cb(err);
+            });
+        }, function(err) {
             cb(err);
         });
-    }, function(err) {
-        cb(err);
-    });
-}
-/*
-function fillPlayerRatingsCurrent(players, cb) {
-//joins an array of players with their current rating
-    async.each(players, function(p, cb) {
-        db.ratings.findOne({
-            account_id: p.account_id
-        }, {
-            sort: {
-                time: -1
-            }
-        }, function(err, doc) {
-            if (err || !doc) {
-                return cb(err);
-            }
-            p.soloCompetitiveRank = doc.soloCompetitiveRank;
-            p.competitiveRank = doc.competitiveRank;
+    }
+    /*
+    function fillPlayerRatingsCurrent(players, cb) {
+    //joins an array of players with their current rating
+        async.each(players, function(p, cb) {
+            db.ratings.findOne({
+                account_id: p.account_id
+            }, {
+                sort: {
+                    time: -1
+                }
+            }, function(err, doc) {
+                if (err || !doc) {
+                    return cb(err);
+                }
+                p.soloCompetitiveRank = doc.soloCompetitiveRank;
+                p.competitiveRank = doc.competitiveRank;
+                cb(err);
+            });
+        }, function(err) {
             cb(err);
         });
-    }, function(err) {
-        cb(err);
-    });
-}
-*/
-
+    }
+    */
 function fillPlayerNames(players, cb) {
     //make hash of account_ids to players
     //use $in query to get these players from db
@@ -208,7 +207,7 @@ function fillPlayerData(player, options, cb) {
     advQuery({
         select: options.query,
         project: null, //just project default fields
-        agg: agg,
+        js_agg: agg,
         js_sort: {
             match_id: -1
         }
@@ -216,20 +215,20 @@ function fillPlayerData(player, options, cb) {
         if (err) {
             return cb(err);
         }
-        player.aggData = results.aggData;
-        //for recent matches table
-        player.display_matches = results.display_matches;
         player.matches = results.data;
-        //generally position data function is used to generate heatmap data for each player in a natch
-        //we use it here to generate a single heatmap for aggregated counts
-        player.obs = player.aggData.obs.counts;
-        player.sen = player.aggData.sen.counts;
-        var d = {
-            "obs": true,
-            "sen": true
-        };
-        generatePositionData(d, player);
-        player.posData = [d];
+        player.aggData = results.aggData;
+        if (player.aggData.obs) {
+            //generally position data function is used to generate heatmap data for each player in a natch
+            //we use it here to generate a single heatmap for aggregated counts
+            player.obs = player.aggData.obs.counts;
+            player.sen = player.aggData.sen.counts;
+            var d = {
+                "obs": true,
+                "sen": true
+            };
+            generatePositionData(d, player);
+            player.posData = [d];
+        }
         //get teammates, heroes, convert hashes to arrays and sort them
         player.heroes_arr = [];
         var matchups = player.aggData.matchups;
