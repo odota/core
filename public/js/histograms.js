@@ -67,11 +67,11 @@ function createHistogram(counts, win_counts, label) {
         else if (label === "hour") {
             bucket = moment(key, 'X').hour();
         }
-        console.log(label, key, bucket)
+        //console.log(label, key, bucket)
         hash[bucket].win += win_counts[key];
         hash[bucket].games += counts[key];
     }
-    console.log(hash);
+    //console.log(hash);
     //each histogram needs array of magnitudes for heights
     var data = ["Matches"];
     for (var key in hash) {

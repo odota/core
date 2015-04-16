@@ -117,15 +117,17 @@ db.matches.find({
         $ne: null
     },
     //run these after v7 code is deployed, one version at a time
-    "parsed_data.version": 2
+    "parsed_data.version": 6
 }, {
-    limit: 1
+    limit: 0
 }, function(err, docs) {
     if (err) {
         console.log(err);
         process.exit(1);
     }
     async.each(docs, function(match, cb) {
+        //delete _id
+        delete match["_id"];
         //backfill steam_ids
         //iterate through match.players
         match.players.forEach(function(player, i) {
@@ -170,7 +172,9 @@ db.matches.find({
             cb(err);
         });
     }, function(err) {
-        console.log(err);
+        if (err) {
+            console.log(err);
+        }
         process.exit(0);
     });
 });
