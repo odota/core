@@ -54,6 +54,8 @@ block content
 append footer_assets
   script.
     var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
+    playerMatches(teammates);
+    playerTrendsTables();
     $(".pref").change(function() {
         $.post(
             "/preferences", {

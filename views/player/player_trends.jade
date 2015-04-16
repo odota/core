@@ -14,14 +14,16 @@ block playercontent
   .row
     .col-md-12
       .btn-group.btn-group-lg.btn-group-justified
-          a.btn.btn-success.click-nav(href="#basic") Basic
-          a.btn.btn-danger.click-nav(href="#advanced") Advanced
+        a.btn.btn-success.click-nav(href="#records") Records
+        a.btn.btn-primary.click-nav(href="#counts") Counts
+        a.btn.btn-info.click-nav(href="#activity") Activity
+        a.btn.btn-warning.click-nav(href="#histogram") Histogram
+        a.btn.btn-danger.click-nav(href="#advanced") Advanced
   hr
   #the_stats
-    //stuff that doesnt need parsed data
-    .basic
+    .records
       .row
-        .col-md-6
+        .col-md-12
           h3 Records
           table.table
             tr
@@ -47,37 +49,50 @@ block playercontent
                   td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg)=avg.toFixed(2)
                   td.format= val.sum
                   td=val.n
-        .col-md-6   
+    .counts
+      .row
+        .col-md-4
           h3 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts
               tr
                 td=constants.leaver_status[key]
                 td=val
-
+        .col-md-4
           h3 Modes
           table.table
             each val, key in player.aggData.game_mode.counts
               tr
                 td=constants.modes[key].name
                 td=val
+        .col-md-4
+          h3 Lobbies
+          table.table
+            each val, key in player.aggData.lobby_type.counts
+              tr
+                td=constants.lobbies[key].name
+                td=val
+    .activity
       .row
-        .col-md-12.table-responsive
-          h3 Histogram
-          a.btn.btn-default.histogram(data-histogram="duration") Duration
-          a.btn.btn-default.histogram(data-histogram="first_blood_time") FB
-          a.btn.btn-default.histogram(data-histogram="gold_per_min") GPM
-          a.btn.btn-default.histogram(data-histogram="hero_damage") HD
-          a.btn.btn-default.histogram(data-histogram="tower_damage") TD
-          a.btn.btn-default.histogram(data-histogram="hero_healing") HH
-          a.btn.btn-default.histogram(data-histogram="kills") K
-          a.btn.btn-default.histogram(data-histogram="deaths") D
-          a.btn.btn-default.histogram(data-histogram="assists") A
-          #chart-histogram
-        
+        .col-md-12
+          h3 Activity
+          p
+            button.btn.btn-default#prev &laquo;
+            button.btn.btn-default#next &raquo;
+          #cal-heatmap
+          
+    .histogram
+      .row
+        .col-md-12
+          h3 Histograms
+          - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1}
+          each val, key in histograms
+            h3=key
+            div.histogram-chart(id="chart-histogram-"+key, data-histogram-source=(key==="day" || key==="hour") ? "start_time" : key, data-histogram=key)
+            
     //stuff that needs parsed data
     .advanced
-      h3
+      h3 Advanced<br>
         small The following data is only available for parsed matches.
       .row
         .col-md-8
@@ -141,6 +156,17 @@ block playercontent
 append footer_assets
   script.
     var aggData = !{JSON.stringify(player.aggData)};
+    //console.log(aggData);
+    $(".histogram-chart").each(function() {
+        var key = $(this).attr('data-histogram');
+        var source = $(this).attr('data-histogram-source');
+        var counts = aggData[source].counts;
+        var win_counts = aggData[source].win_counts;
+        createHistogram(counts, win_counts, key);
+    });
+    
+    createCalHeatmap(aggData.start_time.counts);
+    
     var posData = !{JSON.stringify(player.posData)};
     adjustHeatmapData(posData, 300/127);
     var heatmap = h337.create({
@@ -153,10 +179,6 @@ append footer_assets
     });
     heatmap.setData(posData[0]["obs"]);
     heatmap2.setData(posData[0]["sen"]);
-
-    playerMatches(teammates);
-    generateHistograms(aggData);
-    playerTrendsTables();
     
     //magical albert nav, massively reduced by howard
       if (window.location.hash) {
@@ -164,13 +186,13 @@ append footer_assets
           showSection(hash);
       }
       else{
-          showSection("basic");
+          showSection("records");
       }
     $(".click-nav").click(function(){
       var id = $(this).attr("href").slice(1);
       showSection(id);
     });
     function showSection(id){
-      $("."+id).show();
-      $("."+id).siblings().hide();
+      $("."+id).show('slow');
+      $("."+id).siblings().hide('slow');
     }

@@ -6,6 +6,7 @@ var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
 var async = require('async');
+var moment = require('moment');
 
 function aggregator(matches, fields) {
     var aggData = {};
@@ -65,10 +66,6 @@ function aggregator(matches, fields) {
                 }
             }
         },
-        "time_result": function(key, m, p) {
-            var tr = aggData.time_result;
-            tr[m.start_time] = m.player_win;
-        },
         "win": function(key, m, p) {
             aggData[key] += (m.player_win) ? 1 : 0;
         },
@@ -98,6 +95,9 @@ function aggregator(matches, fields) {
         },
         "hero_id": function(key, m, p) {
             standardAgg(key, p.hero_id, m);
+        },
+        "level": function(key, m, p) {
+            standardAgg(key, p.level, m);
         },
         "kills": function(key, m, p) {
             standardAgg(key, p.kills, m);
@@ -210,12 +210,13 @@ function aggregator(matches, fields) {
     //if null fields passed in, do all aggregations
     fields = fields || types;
     //we always want to do basic fields
+    //ensure that fields has that key
+    //can't just set directly to 1 since we might overwrite the aggregator function
     fields.win = fields.win || 1;
     fields.lose = fields.lose || 1;
     fields.games = fields.games || 1;
     fields.teammates = fields.teammates || 1;
     fields.matchups = fields.matchups || 1;
-    fields.time_result = fields.time_result || 1;
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
         aggData[key] = {
@@ -224,7 +225,8 @@ function aggregator(matches, fields) {
             max: 0,
             max_match: null,
             n: 0,
-            counts: {}
+            counts: {},
+            win_counts: {}
         };
     }
     //"special fields", overwrite standard agg object, always present regardless of aggregations requested
@@ -233,7 +235,6 @@ function aggregator(matches, fields) {
     aggData.games = 0;
     aggData.teammates = {};
     aggData.matchups = {};
-    aggData.time_result = {};
     //prefill matchups with every hero
     for (var hero_id in constants.heroes) {
         var obj = {
@@ -261,26 +262,30 @@ function aggregator(matches, fields) {
     return aggData;
 
     function standardAgg(key, value, match) {
-        var m = aggData[key];
+        var aggObj = aggData[key];
         if (typeof value === "undefined") {
             return;
         }
-        m.n += 1;
+        aggObj.n += 1;
         if (typeof value === "object") {
-            mergeObjects(m.counts, value);
+            mergeObjects(aggObj.counts, value);
         }
         else {
-            if (!m.counts[value]) {
-                m.counts[value] = 0;
+            if (!aggObj.counts[value]) {
+                aggObj.counts[value] = 0;
+                aggObj.win_counts[value] = 0;
             }
-            m.counts[value] += 1;
-            m.sum += (value || 0);
-            if (value < m.min) {
-                m.min = value;
+            aggObj.counts[value] += 1;
+            if (match.player_win){
+                aggObj.win_counts[value] +=1;
             }
-            if (value > m.max) {
-                m.max = value;
-                m.max_match = match;
+            aggObj.sum += (value || 0);
+            if (value < aggObj.min) {
+                aggObj.min = value;
+            }
+            if (value > aggObj.max) {
+                aggObj.max = value;
+                aggObj.max_match = match;
             }
         }
     }
@@ -377,6 +382,9 @@ function sort(matches, sorts) {
         duration: function(a, b, dir) {
             return (a.duration - b.duration) * dir;
         },
+        game_mode: function(a, b, dir) {
+            return (a.game_mode - b.game_mode) * dir;
+        },
         "players[0].kills": function(a, b, dir) {
             return (a.players[0].kills - b.players[0].kills) * dir;
         },
@@ -385,6 +393,9 @@ function sort(matches, sorts) {
         },
         "players[0].assists": function(a, b, dir) {
             return (a.players[0].assists - b.players[0].assists) * dir;
+        },
+        "players[0].level": function(a, b, dir) {
+            return (a.players[0].level - b.players[0].level) * dir;
         },
         "players[0].last_hits": function(a, b, dir) {
             return (a.players[0].last_hits - b.players[0].last_hits) * dir;
@@ -408,10 +419,11 @@ function sort(matches, sorts) {
                 return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
             }
             //game mode
-            //hero
+            //hero (sort alpha?)
             //played
             //result
             //region
+            //parse status
     };
     for (var key in sorts) {
         if (key in sortFuncs) {
@@ -464,22 +476,7 @@ function advQuery(options, cb) {
                 options.select[key] = Number(options.select[key]);
             }
             if (mongoAble[key]) {
-                //only project the fields we need
                 //options.project["players.$"] = 1;
-                options.project.players = 1;
-                options.project["players.account_id"] = 1;
-                options.project["players.hero_id"] = 1;
-                options.project["players.kills"] = 1;
-                options.project["players.deaths"] = 1;
-                options.project["players.assists"] = 1;
-                options.project["players.gold_per_min"] = 1;
-                options.project["players.xp_per_min"] = 1;
-                options.project["players.hero_damage"] = 1;
-                options.project["players.tower_damage"] = 1;
-                options.project["players.hero_healing"] = 1;
-                options.project["players.player_slot"] = 1;
-                options.project["players.last_hits"] = 1;
-                options.project["players.denies"] = 1;
                 options.mongo_select[key] = options.select[key];
             }
             else {
@@ -499,6 +496,23 @@ function advQuery(options, cb) {
             match_id: -1
         };
     }
+    //only project the fields we need
+    options.project.players = 1;
+    options.project["players.account_id"] = 1;
+    options.project["players.hero_id"] = 1;
+    options.project["players.level"] = 1;
+    options.project["players.kills"] = 1;
+    options.project["players.deaths"] = 1;
+    options.project["players.assists"] = 1;
+    options.project["players.gold_per_min"] = 1;
+    options.project["players.xp_per_min"] = 1;
+    options.project["players.hero_damage"] = 1;
+    options.project["players.tower_damage"] = 1;
+    options.project["players.hero_healing"] = 1;
+    options.project["players.player_slot"] = 1;
+    options.project["players.last_hits"] = 1;
+    options.project["players.denies"] = 1;
+    options.project["players.leaver_status"] = 1;
     //js_agg, aggregations to do with js
     //do everything if null passed as fields
     var bGetFullPlayerData = false;
