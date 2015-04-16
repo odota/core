@@ -276,8 +276,8 @@ function aggregator(matches, fields) {
                 aggObj.win_counts[value] = 0;
             }
             aggObj.counts[value] += 1;
-            if (match.player_win){
-                aggObj.win_counts[value] +=1;
+            if (match.player_win) {
+                aggObj.win_counts[value] += 1;
             }
             aggObj.sum += (value || 0);
             if (value < aggObj.min) {
@@ -477,6 +477,7 @@ function advQuery(options, cb) {
             }
             if (mongoAble[key]) {
                 //options.project["players.$"] = 1;
+                options.project.players = 1;
                 options.mongo_select[key] = options.select[key];
             }
             else {
@@ -485,19 +486,18 @@ function advQuery(options, cb) {
         }
     }
     if (!Object.keys(options.mongo_select).length) {
-        //NOTE: for some reason, trying to project all players with no select condition is slow, so we project a single player
-        //always project a player to prevent computematchdata/aggregation crash
+        //we don't have a "primary" player, so just return the first
         options.project.players = {
             $slice: 1
         };
-        //options.project["players"] = 1;
-        //since we're not selecting, we can mongodb sort
+        
+        //since we're not selecting, we can mongodb sort without massive slowdown
         options.sort = {
             match_id: -1
         };
     }
+    //options.project.players = 1;
     //only project the fields we need
-    options.project.players = 1;
     options.project["players.account_id"] = 1;
     options.project["players.hero_id"] = 1;
     options.project["players.level"] = 1;
@@ -566,13 +566,16 @@ function advQuery(options, cb) {
         matches.forEach(function(m) {
             //get all_players and primary player
             m.all_players = m.players.slice(0);
+            //console.log(m.players.length, m.all_players.length);
             //use the mongodb select criteria to filter the player list
             if (Object.keys(options.mongo_select).length) {
                 m.players = m.players.filter(function(p) {
                     return p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"];
                 });
             }
-            //console.log(m.players.length, m.all_players.length);  
+            else {
+                m.players = m.players.slice(0, 1);
+            }
         });
         console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {

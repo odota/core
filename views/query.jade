@@ -6,11 +6,12 @@ button.btn.btn-xs.btn-dark(data-toggle="collapse" data-target="#filter_collapse"
 
     //display on general match query page only
     .row(style=player?"display:none;":"")
-      h4 Global
+      h4 Global 
+        small Query the full match set
       .col-md-6
         .form-group
           label All Matches with Player (Account ID)
-          input.form-control(name="players.account_id", value=q["players.account_id"])
+          input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"])
       .col-md-6
         .form-group
           label All Matches with Hero
@@ -19,7 +20,8 @@ button.btn.btn-xs.btn-dark(data-toggle="collapse" data-target="#filter_collapse"
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id))=entry.localized_name
     .row
-      h4 Local
+      h4 Local 
+        small Filter the matches in this result set
       .col-md-6
         .form-group
           label Hero
