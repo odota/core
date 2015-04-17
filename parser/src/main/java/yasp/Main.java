@@ -114,7 +114,7 @@ public class Main {
 			entry.key = String.valueOf(value);
 			es.output(entry);
 		}
-		else if (type.equals("CHAT_MESSAGE_AEGIS") || type.equals("CHAT_MESSAGE_AEGIS_STOLEN"){
+		else if (type.equals("CHAT_MESSAGE_AEGIS") || type.equals("CHAT_MESSAGE_AEGIS_STOLEN")){
 			entry.slot = player1;
 			//player1 = slot who picked up/denied/stole aegis
 			es.output(entry);
