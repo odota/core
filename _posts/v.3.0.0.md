@@ -6,7 +6,7 @@ YASP is proud to present our latest major release, v3.0.0!
 
 ### Features
 * Teamfights.  Get a breakdown on the teamfights that occurred during a match!
-* Objectives.  See when towers, Roshan, barracks, and the Ancient fell.
+* Objectives.  See when towers, Roshan, and barracks fell.
 * MMR Leaderboard.  See who the top YASP players are!
 * Winrate by hour/day.  See when you play at your best!
 * Improved histograms.  See winrate per bucket for categories such as Duration/K/D/A!

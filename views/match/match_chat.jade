@@ -25,8 +25,9 @@ block match_content
             th Time
             th Message
         tbody
-          each message in match.chat
-            - var p = match.players[message.slot] || {}
+          each entry in match.chat
+            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+            - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
             - var slot_color = constants.player_colors[p.player_slot]
             tr(class=p.isRadiant ? "success" : "danger")
@@ -34,9 +35,9 @@ block match_content
                 if hero
                   img(src=hero.img, title=hero.localized_name, style="border-left-color:#{slot_color}").player-color
                 else
-                  =message.unit
-              td.format-seconds(data-format-seconds=message.time)=message.time
-              td=message.key
+                  =entry.unit
+              td.format-seconds(data-format-seconds=entry.time)=entry.time
+              td=entry.key
     .col-md-4
       include /ads/skyscraper
     
