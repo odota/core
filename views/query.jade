@@ -3,9 +3,7 @@ button.btn.btn-xs.btn-dark(data-toggle="collapse" data-target="#filter_collapse"
 #filter_collapse.collapse.in
   form(action="" method="GET")
     //pre=JSON.stringify(q)
-
-    //display on general match query page only
-    .row(style=player?"display:none;":"")
+    .row(style=player ? "display:none;" : "display:none;")
       h4 Global 
         small Query the full match set
       .col-md-6

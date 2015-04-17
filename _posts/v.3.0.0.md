@@ -11,7 +11,6 @@ YASP is proud to present our latest major release, v3.0.0!
 * Winrate by hour/day.  See when you play at your best!
 * Improved histograms.  See winrate per bucket for categories such as Duration/K/D/A!
 * Improved largest hit.  See what you hit with, and who you hit hard in each game!
-* General match querying (from Matches page)  Run advanced querying on the general match pool.  Wonder how well Terrorblade and Broodmother perform together?  Now you can find out!
 * Lifetime totals.  See how many heroes you've killed, and gold you've farmed.
 * More sentiment data.  See the keywords we used to determine positivity.
 

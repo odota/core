@@ -10,6 +10,7 @@ block match_content
           th Time
           th Objective
           th Unit
+          th Key
           th Slot
           th Team
         each entry in match.parsed_data.objectives
@@ -23,5 +24,6 @@ block match_content
                 img(src=hero.img, alt=entry.unit)
               else
                 =entry.unit
+            td=entry.key
             td=entry.slot
             td=entry.team

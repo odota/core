@@ -109,8 +109,7 @@ public class Main {
 			/*
 			Barracks can always be deduced They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged, so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
 			*/
-			entry.slot = player1;
-			//player1 = slot of player who killed barracks (-1 if nonplayer)
+			entry.key = String.valueOf(value);
 			es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_AEGIS")){

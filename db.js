@@ -6,9 +6,11 @@ db.ratings = db.get('ratings');
 db.matches.index({
     'players.account_id': 1
 });
+/*
 db.matches.index({
     'players.hero_id': 1
 });
+*/
 db.matches.index({
     'parsed_data.players.steam_id': 1
 });
