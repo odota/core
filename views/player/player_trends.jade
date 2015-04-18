@@ -86,13 +86,18 @@ block playercontent
         .col-md-12
           h3 Histograms
           - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1}
+          script.
+            var histogramData = {};
           each val, key in histograms
             h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
               if player.aggData[key]
                 - var avg = player.aggData[key].sum/player.aggData[key].n
                 small Avg: 
                 small(class=(key in times ? "format-seconds" : ""),data-format-seconds=avg) #{(avg).toFixed(2)}
-            div.histogram-chart(id="chart-histogram-"+key, data-histogram-source=(key==="day" || key==="hour") ? "start_time" : key, data-histogram=key)
+            - var source = (key==="day" || key==="hour") ? "start_time" : key
+            script.
+              histogramData["#{key}"] = !{JSON.stringify(player.aggData[source])};
+            div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
             
     //stuff that needs parsed data
     .advanced
@@ -159,17 +164,14 @@ block playercontent
 
 append footer_assets
   script.
-    var aggData = !{JSON.stringify(player.aggData)};
-    //console.log(aggData);
     $(".histogram-chart").each(function() {
         var key = $(this).attr('data-histogram');
-        var source = $(this).attr('data-histogram-source');
-        var counts = aggData[source].counts;
-        var win_counts = aggData[source].win_counts;
+        var counts = histogramData[key].counts;
+        var win_counts = histogramData[key].win_counts;
         createHistogram(counts, win_counts, key);
     });
     
-    createCalHeatmap(aggData.start_time.counts);
+    createCalHeatmap(!{JSON.stringify(player.aggData.start_time.counts)});
     
     var posData = !{JSON.stringify(player.posData)};
     adjustHeatmapData(posData, 300/127);

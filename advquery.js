@@ -5,8 +5,6 @@ var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
-var async = require('async');
-var moment = require('moment');
 
 function aggregator(matches, fields) {
     var aggData = {};
@@ -209,45 +207,41 @@ function aggregator(matches, fields) {
     };
     //if null fields passed in, do all aggregations
     fields = fields || types;
-    //we always want to do basic fields
-    //ensure that fields has that key
-    //can't just set directly to 1 since we might overwrite the aggregator function
-    fields.win = fields.win || 1;
-    fields.lose = fields.lose || 1;
-    fields.games = fields.games || 1;
-    fields.teammates = fields.teammates || 1;
-    fields.matchups = fields.matchups || 1;
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
-        aggData[key] = {
-            sum: 0,
-            min: Number.MAX_VALUE,
-            max: 0,
-            max_match: null,
-            n: 0,
-            counts: {},
-            win_counts: {}
-        };
-    }
-    //"special fields", overwrite standard agg object, always present regardless of aggregations requested
-    aggData.win = 0;
-    aggData.lose = 0;
-    aggData.games = 0;
-    aggData.teammates = {};
-    aggData.matchups = {};
-    //prefill matchups with every hero
-    for (var hero_id in constants.heroes) {
-        var obj = {
-            hero_id: hero_id,
-            last_played: 0,
-            games: 0,
-            win: 0,
-            with_games: 0,
-            with_win: 0,
-            against_games: 0,
-            against_win: 0
-        };
-        aggData.matchups[hero_id] = obj;
+        if (key === "win" || key === "lose" || key === "games") {
+            aggData[key] = 0;
+        }
+        else if (key === "teammates" || key === "matchups") {
+            aggData[key] = {};
+            if (key === "matchups") {
+                //prefill matchups with every hero
+                for (var hero_id in constants.heroes) {
+                    var obj = {
+                        hero_id: hero_id,
+                        last_played: 0,
+                        games: 0,
+                        win: 0,
+                        with_games: 0,
+                        with_win: 0,
+                        against_games: 0,
+                        against_win: 0
+                    };
+                    aggData.matchups[hero_id] = obj;
+                }
+            }
+        }
+        else {
+            aggData[key] = {
+                sum: 0,
+                min: Number.MAX_VALUE,
+                max: 0,
+                max_match: null,
+                n: 0,
+                counts: {},
+                win_counts: {}
+            };
+        }
     }
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
@@ -453,7 +447,7 @@ function advQuery(options, cb) {
     options.js_select = {};
     var mongoAble = {
         "players.account_id": 1
-        //"players.hero_id": 1
+            //"players.hero_id": 1
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
@@ -490,7 +484,6 @@ function advQuery(options, cb) {
         options.project.players = {
             $slice: 1
         };
-        
         //since we're not selecting, we can mongodb sort without massive slowdown
         options.sort = {
             match_id: -1
