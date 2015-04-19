@@ -2,30 +2,33 @@ extend match
 
 block match_content
   .row
-    .col-md-12
+    .col-md-8
       h2 Objectives
       //pre=JSON.stringify(match.parsed_data.objectives)
       table.table
-        tr
-          th Time
-          th Objective
-          //th Unit
-          th Type
-          th Taken By
-          //th Team
-        each entry in match.parsed_data.objectives
-          - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
-          - var p = match.players[adjSlot] || {}
-          - var hero = constants.heroes[p.hero_id]
-          - var slot_color = constants.player_colors[p.player_slot]
-          - var team = entry.team===2 || entry.key<64 || p.isRadiant ? "success" : "danger"
-          tr(class=team)
-            td.format-seconds(data-format-seconds=entry.time)
-            td=entry.subtype.split("_")[2]
-            td=constants.barracks_value[entry.key]
-            td
-              if hero
-                img(src=hero.img, alt=entry.unit)
-              else
-                =team==="success" ? "The Radiant" : "The Dire"
-            //td=entry.team
+        thead
+          tr
+            th Time
+            th Objective
+            th Taken By
+            th Notes
+            
+        tbody
+          each entry in match.parsed_data.objectives
+            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+            - var objective = constants.objectives[entry.subtype] || entry.subtype
+            - var p = match.players[adjSlot] || {}
+            - var hero = constants.heroes[p.hero_id]
+            - var slot_color = constants.player_colors[p.player_slot]
+            - var team = entry.team===2 || entry.key<64 || p.isRadiant ? "success" : "danger"
+            tr(class=team)
+              td.format-seconds(data-format-seconds=entry.time)
+              td= objective
+              td
+                if hero
+                  img(src=hero.img, alt=entry.unit)
+                else
+                  =team==="success" ? "The Radiant" : "The Dire"
+              td=constants.barracks_value[entry.key]
+    .col-md-4
+      include /ads/skyscraper
