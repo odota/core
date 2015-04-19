@@ -61,13 +61,19 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
       .col-md-12.text-center
         h1 Features
         h2 Detailed Game Play Breakdowns
-      .col-md-8.col-md-offset-2.bottom-padding
-          hr
-      .col-md-12.text-center.bottom-padding
+      .row
+        .col-md-8.col-md-offset-2.bottom-padding
+            hr
+      .row
+        h3 Purchases
+        .col-md-12.text-center
+          include match/timelines_purchases_table.jade
+        .col-md-12.text-center.bottom-padding
+        h3 Performance
         include match/details_performance_table
-      .col-md-8.col-md-offset-2.text-center
-        h3 View detailed skill/item usage and damage distributions. Also see <a href="/matches/#{match_id}/timelines" target="_blank">timelines of item purchases and of kills</a>,
-          | <a href="/matches/#{match_id}/details" target="_blank">gold and xp breakdowns from the game</a>, and more.
+        .col-md-8.col-md-offset-2.text-center
+          h3 View detailed timelines of item purchases and skill/item usage. Also see <a href="/matches/#{match_id}/timelines" target="_blank">kills</a>,
+            | <a href="/matches/#{match_id}/details" target="_blank">gold and xp breakdowns</a>, and more.
 .featurette.dark
   .container
     .vert
@@ -116,14 +122,13 @@ append footer_assets
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),
-        radius: 15
+        radius: 1
       });
       var posData = !{JSON.stringify(match.posData)}
       adjustHeatmapData(posData, 600/127, null, 0);
       $(".activate").on("mouseover", function(){
         var pData = posData[Number($(this).attr('data-index'))]
         var data = pData[$(this).attr('data-type')];
-        console.log(data);
         heatmap.setData(data);
         heatmap.repaint();
       })
