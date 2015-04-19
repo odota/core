@@ -41,7 +41,8 @@ block content
                 a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
         .addthis_sharing_toolbox.pull-right
-  block match_content
+  .match
+    block match_content
   if route !== "index"
     hr
     .row
