@@ -94,6 +94,7 @@ function playerMatches(matches, teammates) {
                     return constants.heroes[data] ? constants.heroes[data].localized_name : data;
                 }
             },
+            /*
             {
                 data: 'player_win',
                 title: 'Result',
@@ -101,6 +102,7 @@ function playerMatches(matches, teammates) {
                     return (data) ? "Won" : "Lost";
                 }
             },
+            */
             {
                 data: 'game_mode',
                 title: 'Game Mode',
@@ -108,6 +110,7 @@ function playerMatches(matches, teammates) {
                     return constants.modes[data] ? constants.modes[data].name : data;
                 }
             },
+            /*
             {
                 data: 'cluster',
                 title: 'Region',
@@ -115,6 +118,7 @@ function playerMatches(matches, teammates) {
                     return constants.regions[data] ? constants.regions[data] : data;
                 }
             },
+            */
             {
                 data: 'duration',
                 title: 'Duration',
