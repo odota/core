@@ -316,6 +316,15 @@ table tfoot * {
   padding-bottom: 5%;
 }
 
+.inline-header {
+    display: inline-block;
+    margin-right: .5em;
+}
+
+.toggle-button {
+    display: inline;
+    vertical-align: super;
+}
 /* Sticky footer styles
 -------------------------------------------------- */
 
