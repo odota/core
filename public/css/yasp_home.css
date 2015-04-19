@@ -262,7 +262,7 @@ img.grayscale {
     vertical-align: middle;
     text-align: center;
 }
-.featurette.dark .well h3 {
+.featurette.dark .well {
     color: #000;
 }
 .featurette-item > i:hover {
