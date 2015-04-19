@@ -325,6 +325,10 @@ table tfoot * {
     display: inline;
     vertical-align: super;
 }
+
+#match_statistics tbody, #positions tbody {
+    color: black;
+}
 /* Sticky footer styles
 -------------------------------------------------- */
 

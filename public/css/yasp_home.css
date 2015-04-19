@@ -268,9 +268,7 @@ img.grayscale {
 .featurette-item > i:hover {
     font-size: 68px;
 }
-#match_statistics tbody, #positions tbody {
-    color: rgb(199, 199, 199);
-}
+
 #match_statistics tfoot,
 #match_statistics thead {
     color: white;

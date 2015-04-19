@@ -130,3 +130,7 @@ div.container.well.well-lg {
 #about-top .panel-body a {
     color: #337ab7;
 }
+
+#match_statistics tbody, #positions tbody {
+    color: rgb(199, 199, 199);
+}
