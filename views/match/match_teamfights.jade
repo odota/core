@@ -27,7 +27,8 @@ block match_content
               td=entry.radiant_xp_delta
               td
                 i.fa
-      h3 Death Map
+      h3.inline-header Death Map
+      button.btn.btn-xs.btn-dark.toggle-button#show_all Show All Deaths
       #map.mapContainer(style="width: 300px; height:300px")
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .icons
@@ -93,4 +94,7 @@ append footer_assets
       $("#header").show();
     })
     
+    $("#show_all").click(function(event) {
+      all_icons.show();
+    });
     $("table tr[target='0']").trigger("click");
