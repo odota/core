@@ -1,10 +1,11 @@
 extend match
 
 block match_content
-  h2 
-    abbr(title="3 or more deaths within a 30 second span") Teamfights
-    small   Click a fight to display its information
   .row
+    .col-md-12
+      h2 
+        abbr(title="3 or more deaths within a 30 second span") Teamfights
+        small   Click a fight to display its information
     .col-md-4
       //pre=JSON.stringify(match.parsed_data.teamfights)
       h3
