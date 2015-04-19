@@ -66,8 +66,8 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
       .col-md-12.text-center.bottom-padding
         include match/details_performance_table
       .col-md-8.col-md-offset-2.text-center
-        h3 View detailed skill/item usage and damage distributions. Also see <a href="http://yasp.co/matches/1239495484/details">gold and xp breakdowns from the game</a>, 
-          | <a href="http://yasp.co/matches/1239495484/timelines">timelines of item purchases and of kills</a>, and more.
+        h3 View detailed skill/item usage and damage distributions. Also see <a href="/matches/#{match_id}/details" target="_blank">gold and xp breakdowns from the game</a>, 
+          | <a href="/matches/#{match_id}/timelines" target="_blank">timelines of item purchases and of kills</a>, and more.
 .featurette.dark
   .container
     .vert
@@ -80,7 +80,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
             h3 Gold
             #chart-gold
         .col-md-8.col-md-offset-2.text-center.bottom-padding
-          h3 See <a href="/matches/1239495484/graphs">charts</a> of how gold, XP, last hits, and income changed over the game.
+          h3 See <a href="/matches/#{match_id}/graphs" target="_blank">charts</a> of how gold, XP, last hits, and income changed over the game.
 #positions.blurb.bright
   .container
     .col-md-12.text-center
@@ -98,7 +98,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
       .col-md-12.text-center.bottom-padding
         h2 And more to come!
         h3 We are constantly developing and improving YASP. <br>
-           | <a href="https://github.com/yasp-dota/yasp/issues"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls">build it yourself!</a>
+           | <a href="https://github.com/yasp-dota/yasp/issues" target="_blank"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls" target="_blank">build it yourself!</a>
         br
         hr
         br

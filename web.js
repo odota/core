@@ -29,7 +29,8 @@ var cluster = require('cluster');
 var express = require('express');
 // Create a new Express application
 var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/1320573244.json'));
+var example_match_id = "1408333834";
+var example_match = JSON.parse(fs.readFileSync('./matches/' + example_match_id + '.json'));
 /*
 if (config.NODE_ENV === "test") {
     //don't cluster in test env
@@ -177,6 +178,7 @@ poet.watch(function() {
 app.route('/').get(function(req, res, next) {
     res.render('home', {
         match: example_match,
+        match_id: example_match_id,
         home: true
     });
 });
