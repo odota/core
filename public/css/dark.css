@@ -127,6 +127,6 @@ div.container.well.well-lg {
     color: black;
 }
 
-#about-top a {
+#about-top .panel-body a {
     color: #337ab7;
 }

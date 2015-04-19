@@ -17,5 +17,5 @@ block content
               if j >= i*questions.length/2 && j < (i+1)*questions.length/2
                 .list-group
                   h4.panel-title
-                    .list-group-item !{q.title}
-                  .panel-body !{q.content}
+                    a.list-group-item(data-toggle="collapse", href="##{j}", aria-expanded="false") !{q.title}
+                  .panel-body(id=j).collapse !{q.content}
