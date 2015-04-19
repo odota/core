@@ -18,22 +18,15 @@ var port = config.PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-    /*
-    //server must support tcp!
-    var constants = require('./constants.json');
-    var seaport = require('seaport');
-    var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
-    ports.register('retriever@' + constants.retriever_version + '.0.0', {
-        host: host,
-        port: port,
-        url: process.env.RETRIEVER_URL
-    });
-*/
 });
+//create array of numbers from 0 to n
+var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
-async.map(a, function(i, cb) {
+async.each(a, function(i, cb) {
+    var dotaReady = false;
+    var relationshipReady = false;
     var Steam = new steam.SteamClient();
-    Steam.Dota2 = new dota2.Dota2Client(Steam, true);
+    Steam.Dota2 = new dota2.Dota2Client(Steam, false);
     Steam.EFriendRelationship = {
         None: 0,
         Blocked: 1,
@@ -75,14 +68,11 @@ async.map(a, function(i, cb) {
         Steam.profiles = 0;
         Steam.Dota2.launch();
     });
-    Steam.Dota2.on("ready", function() {
-        console.log("Dota 2 ready");
-    });
     Steam.on("relationships", function() {
         //console.log(Steam.EFriendRelationship);
         console.log("searching for pending friend requests...");
         //friends is a object with key steam id and value relationship
-        console.log(Steam.friends);
+        //console.log(Steam.friends);
         for (var prop in Steam.friends) {
             //iterate through friends and accept requests/populate hash
             var steamID = prop;
@@ -100,9 +90,25 @@ async.map(a, function(i, cb) {
         console.log(e);
     });
     Steam.once("relationships", function() {
-        cb();
+        //console.log("relationships obtained");
+        relationshipReady = true;
+        allDone();
     });
+    Steam.Dota2.once("ready", function() {
+        //console.log("Dota 2 ready");
+        dotaReady = true;
+        allDone();
+    });
+
+    function allDone() {
+        if (dotaReady && relationshipReady) {
+            count += 1;
+            console.log("acct %s ready, %s/%s", i, count, users.length);
+            cb();
+        }
+    }
 }, function() {
+    //all accounts ready!
     ready = true;
 });
 
@@ -136,7 +142,7 @@ function selfDestruct() {
     process.exit(0);
 }
 app.get('/', function(req, res, next) {
-    console.log(process.memoryUsage());
+    //console.log(process.memoryUsage());
     if (!ready) {
         return next("retriever not ready");
     }

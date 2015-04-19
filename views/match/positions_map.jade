@@ -1,0 +1,31 @@
+.row
+    .col-md-7
+      h2 Map 
+        small Hover over a cell to generate a map.
+      #map.table-responsive
+        img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+    .col-md-5
+      h2 Positions
+      .table-responsive
+          table.table.table-hover
+            thead
+              tr
+                th Hero
+                //th Exploration
+                th Lane
+                th Observer
+                th Sentry
+            tbody
+              each player, ind in match.players
+                - var hero = constants.heroes[player.hero_id]
+                - var p = player.parsedPlayer
+                tr(class = player.isRadiant ? "success" : "danger")
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                  //td.activate(data-index=ind, data-type="pos") #{(p.explore*100).toFixed(2)}%
+                  td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
+                  td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
+                  td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}

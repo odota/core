@@ -12,11 +12,11 @@ api.get('/matches', function(req, res, next) {
     var draw = Number(req.query.draw);
     var select = req.query.select || {};
     var limit = Number(req.query.limit);
-    var js_agg = req.query.agg || {};
+    var js_agg = req.query.agg || {"win":1,"games":1};
     //support sort hash, or order+columns
     var js_sort = req.query.js_sort || makeSort(req.query.order, req.query.columns) || {};
-    var js_limit = Number(req.query.length);
-    var js_skip = Number(req.query.start);
+    var js_limit = Number(req.query.length) || 1;
+    var js_skip = Number(req.query.start) || 0;
     advQuery({
         select: select,
         project: null, //just project default fields

@@ -107,19 +107,19 @@ public class Main {
 		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
 			//value id of barracks based on power of 2?
 			/*
-			Barracks can always be deduced They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged, so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
+			Barracks can always be deduced 
+			They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
+			so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
 			*/
-			entry.slot = player1;
-			//player1 = slot of player who killed barracks (-1 if nonplayer)
+			entry.key = String.valueOf(value);
 			es.output(entry);
 		}
-		else if (type.equals("CHAT_MESSAGE_AEGIS")){
+		else if (type.equals("CHAT_MESSAGE_AEGIS") || type.equals("CHAT_MESSAGE_AEGIS_STOLEN")){
 			entry.slot = player1;
 			//player1 = slot who picked up/denied/stole aegis
 			es.output(entry);
 		}
 		//CHAT_MESSAGE_DENIED_AEGIS = 51;
-		//CHAT_MESSAGE_AEGIS_STOLEN = 53;
 		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
 			entry.team = player1;
 			//player1 = team that used glyph (2/3)

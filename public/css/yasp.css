@@ -15,9 +15,18 @@
     margin: 2em auto;
     display: block;
 }
-body {
+html, body {
     font-family: 'Roboto Slab', sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
 }
+
+body.frame {
+    display: table;
+}
+
 .match-top {
     margin-top: 1.5em;
 }
@@ -84,13 +93,10 @@ td.abilities img {
 .icon {
     width: 15px;
 }
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
 footer {
-    color: rgb(199, 199, 199);
+    background-color: #BBF0FD;
+    width: 100%;
+    padding: 1.3em 0 0 1em;
 }
 
 td {
@@ -120,6 +126,8 @@ td>img.user {
     background-color: yellow;
     padding: 3px 11px;
 }
+
+/* Cheese Goal Bar */
 .meter_wrapper {
     margin-bottom: 1em;
 }
@@ -217,7 +225,6 @@ td>img.user {
 }
 .blog-panel .panel-body a {
     color: black;
-    text-decoration: underline;
 }
 option {
     color: black;
@@ -235,35 +242,79 @@ div .dataTables_processing {
     margin-left: 5px;
     margin-right: 5px;
 }
-.navbar-default,
-footer {
-    background-color: #000;
+
+/* Use sans-serif on tables*/
+table tbody *,
+table tfoot * {
+  font-family: Arial, sans-serif;
 }
-thead {
-    background-color: #424242;
+#heatmap-table {
+  height: 500px;
+}
+
+/* Blog */
+#panel-chart {
+  padding: 10px;
+}
+.panel-body {
+  background-color: #f5f5f5;
+}
+.panel-title {
+  text-transform: none;
+  font-size: 15px;
+  letter-spacing: 0px;
+}
+.blog-preview {
+  background-color: #fff;
+}
+.blog-heading {
+  font-size: 20px !important;
+  color: #337ab7;
+}
+.blog-panel {
+  margin-bottom: 30px;
+}
+.blog-date {
+  color: #777;
+  margin-bottom: 0px;
+}
+.label-info {
+  margin-right: 5px;
+}
+.tag-header {
+  margin-bottom: 10px;
+}
+.tag-list {
+  background-color: #5BC0DE;
+  border-radius: 4px;
+  color: #fff;
+  padding: 2px 5px;
+  margin-left: -10px;
+}
+.tag-list:hover,
+.tag-list:focus,
+.tags a span:hover,
+.tags a span:focus {
+  color: #BBF0FD;
+}
+.tag-key a:hover,
+.tag-key a:focus {
+  color: #BBF0FD;
+  background-color: #f5f5f5 !important;
+}
+.theme-blue {
+  color: #BBF0FD;
+}
+.panel-chart {
+  color: blue;
+}
+.bottom-padding {
+  padding-bottom: 5%;
 }
 
 /* Sticky footer styles
 -------------------------------------------------- */
 
-html {
-    position: relative;
-    min-height: 100%;
-}
-body {
-    /* Margin bottom by footer height */
-    
-    margin-bottom: 200px;
-}
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    /* Set the fixed height of the footer here */
-    height: 200px;
-}
-
-/*
 .sticky_footer_row {
     display: table-row;
     height: 1px;
@@ -271,4 +322,3 @@ body {
 .sticky_footer_row.expand {
     height: auto;
 }
-*/

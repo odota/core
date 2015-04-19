@@ -9,19 +9,23 @@ block match_content
         tr
           th Time
           th Objective
-          th Unit
-          th Slot
-          th Team
+          //th Unit
+          th Type
+          th Taken By
+          //th Team
         each entry in match.parsed_data.objectives
-          //tr(class=entry.key.indexOf("goodguys")!==-1 ? "success" : entry.key.indexOf("badguys")!==-1 ? "danger" : "")
-          tr
+          - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+          - var p = match.players[adjSlot] || {}
+          - var hero = constants.heroes[p.hero_id]
+          - var slot_color = constants.player_colors[p.player_slot]
+          - var team = entry.team===2 || entry.key<64 || p.isRadiant ? "success" : "danger"
+          tr(class=team)
             td.format-seconds(data-format-seconds=entry.time)
-            td=entry.subtype
-            - var hero = constants.hero_names[entry.unit]
+            td=entry.subtype.split("_")[2]
+            td=constants.barracks_value[entry.key]
             td
               if hero
                 img(src=hero.img, alt=entry.unit)
               else
-                =entry.unit
-            td=entry.slot
-            td=entry.team
+                =team==="success" ? "The Radiant" : "The Dire"
+            //td=entry.team
