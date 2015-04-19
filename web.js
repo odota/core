@@ -179,6 +179,7 @@ app.route('/').get(function(req, res, next) {
     res.render('home', {
         match: example_match,
         match_id: example_match_id,
+        truncate: [1, 2, 5, 6], // if tables should be truncated, pass in an array of which players to display
         home: true
     });
 });
