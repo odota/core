@@ -2,44 +2,17 @@ extend match
 
 block match_content
         .row
+          h2 Purchases
           .col-md-12.table-responsive
-            h2 Purchases
-            table.table.table-hover
-              each player, ind in match.players
-                - var hero = constants.heroes[player.hero_id]
-                - var p = player.parsedPlayer
-                if !(ind%5)
-                  thead
-                    tr
-                      th Hero
-                      - var bucket = 300
-                      - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                        th= i/60+"'"
-                tr(class = player.isRadiant ? "success" : "danger")
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id              
-                  - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-                    td
-                      each entry in p.purchase_log || []
-                        if entry.time < i && entry.time >= i-bucket
-                          - var item = constants.items[entry.key]                 
-                          if item
-                            div.img-text
-                              img.item(src=item.img, alt=entry.key)
-                              div.format-seconds(data-format-seconds=entry.time)=entry.time
-                          else
-                            =entry.key
+            include timelines_purchases_table
         hr
         .row
          .col-md-12
            include /ads/leaderboard_2
         hr
         .row
+          h2 Kills
           .col-md-12.table-responsive
-            h2 Kills
             table.table.table-hover
               thead
                 tr

@@ -16,34 +16,3 @@ append footer_assets
   script(src="/public/js/home/scroll.js")
   script(src="/public/js/home/animatedNavbar.js")
   script(src="/public/js/home/polymerFabs.js")
-  script.
-    c3.generate({
-          bindto: "#chart-gold",
-          data: {
-              x: 'time',
-              columns: graphData.gold,
-              type: "spline"
-          },
-          axis: {
-              x: {
-                  type: 'timeseries',
-                  tick: {
-                      format: function(x) {
-                          return moment().startOf('day').seconds(x).format("H:mm");
-                      }
-                  },
-                  label: "Game Time (minutes)"
-              },
-              y: {
-                  label: "Gold"
-              }
-          }
-      });
-    var heatmap = h337.create({
-        container: document.getElementById('map'),
-          radius: 40
-      });
-      $(".mapHero").on("mouseover", function(){
-        heatmap.setData({data: data[Number($(this).attr('id'))].map(function(p){return {x:p[0]*(500/127),y:p[1]*(500/127)}})});
-        heatmap.repaint();
-      })

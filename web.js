@@ -29,7 +29,7 @@ var cluster = require('cluster');
 var express = require('express');
 // Create a new Express application
 var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/1320573244.json'));
+var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
 /*
 if (config.NODE_ENV === "test") {
     //don't cluster in test env
@@ -177,6 +177,7 @@ poet.watch(function() {
 app.route('/').get(function(req, res, next) {
     res.render('home', {
         match: example_match,
+        truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
         home: true
     });
 });
