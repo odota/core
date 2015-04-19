@@ -1,7 +1,7 @@
 {{{
   "title": "How is YASP different from existing sites?",
   "tags": ["faq"],
-  "date": "2-2-2015",
+  "date": "2-2-2015 12:01 AM",
   "author": "Admin"
 }}}
 

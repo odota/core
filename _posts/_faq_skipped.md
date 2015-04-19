@@ -1,7 +1,7 @@
 {{{
   "title": "Why doesn't [some match] have parsed data?",
   "tags": ["faq"],
-  "date": "2-2-2015",
+  "date": "2-2-2015 12:06 AM",
   "author": "Admin"
 }}}
 

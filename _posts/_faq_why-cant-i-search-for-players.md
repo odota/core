@@ -1,7 +1,7 @@
 {{{
   "title": "Why can't I search for players/matches?",
   "tags": ["faq"],
-  "date": "2-2-2015",
+  "date": "2-2-2015 12:04 AM",
   "author": "Admin"
 }}}
 

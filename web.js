@@ -256,7 +256,7 @@ app.route('/status').get(function(req, res, next) {
 });
 app.route('/faq').get(function(req, res) {
     res.render("faq", {
-        questions: poet.helpers.postsWithTag("faq")
+        questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
 app.use('/matches', require('./routes/matches'));

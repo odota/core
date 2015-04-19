@@ -1,7 +1,7 @@
 {{{
   "title": "I can't code, but I still want to help!",
   "tags": ["faq"],
-  "date": "2-2-2015",
+  "date": "2-2-2015 12:09 AM",
   "author": "Admin"
 }}}
 

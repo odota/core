@@ -14,7 +14,7 @@ block content
         each i in [0, 1]
           .col-sm-6
             each q, j in questions
-              if j > i*questions.length/2 && j < (i+1)*questions.length/2
+              if j >= i*questions.length/2 && j < (i+1)*questions.length/2
                 .list-group
                   h4.panel-title
                     .list-group-item !{q.title}

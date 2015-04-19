@@ -1,7 +1,7 @@
 {{{
   "title": "Can I use YASP code in my own project?",
   "tags": ["faq"],
-  "date": "2-2-2015",
+  "date": "2-2-2015 12:07 AM",
   "author": "Admin"
 }}}
 
