@@ -7,7 +7,61 @@ YASP - YASP: Another Stats Page
 [![devDependency Status](https://david-dm.org/yasp-dota/yasp/dev-status.svg)](https://david-dm.org/yasp-dota/yasp#info=devDependencies)
 [![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-* [About](https://github.com/yasp-dota/yasp/blob/master/_posts/about.md)
+How To Use
+----
+Sign in through Steam, and we'll start watching your matches and automatically parse the replays.
+
+Note that probably only a few of your previous matches are listed.  It takes us some time to retrieve your full match history.
+
+We can get basic match data but cannot parse matches where the replays have expired.
+
+Features
+----
+* Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics.
+  * Item build times
+  * Consumables bought
+  * Runes picked up
+  * Ward placement map
+  * LHs per min table
+  * Radiant advantage/Gold/XP/LH graphs per min
+  * Laning position heatmap
+  * Teamfight summary
+  * Objective times
+  * Ability uses/hits
+  * Gold/XP breakdown
+  * Damage/Kills breakdown
+  * Largest hit on a hero
+* Advanced Querying: Supports flexible querying and aggregation with the following criteria:
+  * player(s) in game (account ID)
+  * team composition (heroes)
+  * opponent composition (heroes)
+  * Standard filters: patch, game mode, etc.
+* Aggregations:
+  * Result count, win rate
+  * Win rate by hour/day of week
+  * Hero Matchups (win rate when playing as, with, against a hero)
+  * Teammates (win rate playing with particular players)
+  * Histogram (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
+  * Max/N/Sum on multiple stat categories
+* Additional aggregations for parsed matches:
+  * Mean build times
+  * Skill accuracy
+  * Laning
+  * Ward Map
+* Rating Tracking: Users can keep track of their MMR by adding a Steam account to their friends list.
+* Visualizations: Data is rendered into timeseries graphs, bar charts, histograms, heatmaps, and more.
+* Modular: You may find certain parts of YASP to be useful for your own needs.
+* Scalable: Designed to scale to thousands of users.
+* Free: YASP has no "premium" features--everything is free for everyone!
+* Open Source: YASP encourages contributions from the Dota 2 developer community.
+
+Tech
+----
+* Web: Node.js/Express
+* Storage: MongoDB/Redis
+* Queue Management: Kue
+* Client: Bootstrap, c3, datatables, cal-heatmap, select2, heatmap.js, qtip2
+* Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Quickstart
 ----
