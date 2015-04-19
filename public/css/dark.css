@@ -116,7 +116,7 @@ div.container.well.well-lg {
 /*    background-color: black;*/
 /*}*/
 
-#accordion a,
+#accordion .panel-title,
 #accordion .panel-body,
 #accordion .panel-body li {
     color: black;
@@ -125,4 +125,8 @@ div.container.well.well-lg {
 .blog-preview li,
 .tag-key>p.lead {
     color: black;
+}
+
+#about-top .panel-body a {
+    color: #337ab7;
 }

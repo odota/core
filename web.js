@@ -254,8 +254,10 @@ app.route('/status').get(function(req, res, next) {
         });
     });
 });
-app.route('/about').get(function(req, res) {
-    res.render("about");
+app.route('/faq').get(function(req, res) {
+    res.render("faq", {
+        questions: poet.helpers.postsWithTag("faq").reverse()
+    });
 });
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
