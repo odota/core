@@ -27,6 +27,7 @@ h1.home {
 #philosophy {
     background: url("../images/dota-blackwhite-copy.png") white no-repeat right;
     padding: 5em 0;
+    color: black;
 }
 .main {
     width: 100%;
