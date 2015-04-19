@@ -15,6 +15,10 @@
     margin: 2em auto;
     display: block;
 }
+.margin-bottom {
+    margin-bottom: 1.5em;
+}
+
 html, body {
     font-family: 'Roboto Slab', sans-serif;
     margin: 0;
