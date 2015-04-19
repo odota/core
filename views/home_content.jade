@@ -72,8 +72,8 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
         h3 Performance
         include match/details_performance_table
         .col-md-8.col-md-offset-2.text-center
-          h3 View detailed timelines of item purchases and skill/item usage. Also see <a href="/matches/#{match_id}/timelines" target="_blank">kills</a>,
-            | <a href="/matches/#{match_id}/details" target="_blank">gold and xp breakdowns</a>, and more.
+          h3 View detailed timelines of item purchases and skill/item usage. Also see <a href="/matches/#{match.match_id}/timelines" target="_blank">timelines of kills</a>,
+            | <a href="/matches/#{match.match_id}/details" target="_blank">gold and xp breakdowns</a>, and more.
 .featurette.dark
   .container
     .vert
@@ -86,7 +86,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
             h3 Gold
             #chart-gold
         .col-md-8.col-md-offset-2.text-center.bottom-padding
-          h3 See <a href="/matches/#{match_id}/graphs" target="_blank">charts</a> of how gold, XP, last hits, and income changed over the game.
+          h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, last hits, and income changed over the game.
 #positions.blurb.bright
   .container
     .col-md-12.text-center
@@ -122,7 +122,7 @@ append footer_assets
   script.
     var heatmap = h337.create({
         container: document.getElementById('map'),
-        radius: 1
+        radius: 15
       });
       var posData = !{JSON.stringify(match.posData)}
       adjustHeatmapData(posData, 600/127, null, 0);

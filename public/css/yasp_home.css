@@ -269,7 +269,7 @@ img.grayscale {
     font-size: 68px;
 }
 #match_statistics tbody, #positions tbody {
-    color: black;
+    color: rgb(199, 199, 199);
 }
 #match_statistics tfoot,
 #match_statistics thead {
