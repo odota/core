@@ -404,8 +404,8 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/about', function(done) {
-            supertest(app).get('/about')
+        it('/faq', function(done) {
+            supertest(app).get('/faq')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(200).expect(/FAQ/).end(function(err, res) {
