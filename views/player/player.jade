@@ -29,7 +29,7 @@ block content
       .col-md-12
         if (!user.full_history_time)
           .alert.alert-danger We're watching your games and parsing them from now on, but we don't have your old matches yet!  Check back later to see if we've gotten your full history.
-        if (!user.account_id in ratingPlayers)
+        if (!ratingPlayers[user.account_id])
           .alert.alert-info Want to include your MMR on your profile and be eligible for the leaderboard? 
             a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add a tracker.
         .checkbox
