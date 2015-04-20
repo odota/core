@@ -102,7 +102,10 @@ io.sockets.on('connection', function(socket) {
                     job.on('complete', function(result) {
                         console.log(result);
                         socket.emit('log', "Request Complete!");
-                        socket.emit('complete');
+                        redis.del("match:" + match_id, function(err, resp) {
+                            if (err) console.log(err);
+                            socket.emit('complete');  
+                        });
                     });
                     job.on('failed', function(result) {
                         console.log(result);
