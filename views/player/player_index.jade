@@ -65,11 +65,11 @@ block playercontent
   .row
     .col-md-12
       +hero_table(player.heroes_arr, true)
-    .col-md-12
-      +teammate_table(player.teammates)
   hr
   .row
-    .col-md-12
+    .col-md-6
+      +teammate_table(player.teammates)
+    .col-md-6.match
       h3 Rating
         small.rating#solo Solo:
         small.rating#party Party:

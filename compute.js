@@ -252,6 +252,8 @@ function renderMatch(match) {
                 //index into the correct slot
                 var player = tf.players[p.parseSlot];
                 player.hero_id = p.hero_id;
+                player.player_slot=p.player_slot;
+                player.isRadiant = isRadiant(p);
                 if (isRadiant(p)) {
                     tf.radiant_gold_delta += player.gold_delta;
                     tf.radiant_xp_delta += player.xp_delta;

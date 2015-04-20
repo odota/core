@@ -1,4 +1,4 @@
-function playerMatches(matches, teammates) {
+function playerMatches(teammates) {
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};

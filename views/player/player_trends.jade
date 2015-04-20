@@ -17,14 +17,15 @@ block playercontent
         a.btn.btn-success.click-nav(href="#records") Records
         a.btn.btn-primary.click-nav(href="#counts") Counts
         a.btn.btn-info.click-nav(href="#activity") Activity
-        a.btn.btn-warning.click-nav(href="#histogram") Histogram
-        a.btn.btn-danger.click-nav(href="#advanced") Advanced
+        a.btn.btn-warning.click-nav(href="#histogram") Histograms
+        a.btn.btn-danger.click-nav(href="#advanced")
+          abbr(title="Data from parsed matches") Advanced
   hr
   #the_stats
     .records
       .row
         .col-md-12
-          h3 Records
+          h2 Records
           table.table
             tr
               th Stat
@@ -52,21 +53,21 @@ block playercontent
     .counts
       .row
         .col-md-4
-          h3 Leaver Status
+          h2 Leaver Status
           table.table
             each val, key in player.aggData.leaver_status.counts
               tr
                 td=constants.leaver_status[key]
                 td=val
         .col-md-4
-          h3 Modes
+          h2 Modes
           table.table
             each val, key in player.aggData.game_mode.counts
               tr
                 td=constants.modes[key].name
                 td=val
         .col-md-4
-          h3 Lobbies
+          h2 Lobbies
           table.table
             each val, key in player.aggData.lobby_type.counts
               tr
@@ -75,16 +76,16 @@ block playercontent
     .activity
       .row
         .col-md-12
-          h3 Activity
+          h2 Activity
           p
             button.btn.btn-default#prev &laquo;
             button.btn.btn-default#next &raquo;
           #cal-heatmap
           
-    .histogram
+    .histogram.match
       .row
         .col-md-12
-          h3 Histograms
+          h2 Histograms
           - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1}
           script.
             var histogramData = {};
@@ -98,10 +99,9 @@ block playercontent
             script.
               histogramData["#{key}"] = !{JSON.stringify(player.aggData[source])};
             div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
-            
     //stuff that needs parsed data
     .advanced
-      h3 Advanced<br>
+      h2 Advanced<br>
         small The following data is only available for parsed matches.
       .row
         .col-md-8
@@ -149,10 +149,18 @@ block playercontent
         .col-md-4
           h3 Laning <span class="label label-danger">#{player.aggData.lane_role.n} games</span>
           table.table
+            tr
+              th Lane
+              th Matches
+              th Win%
             each val, key in player.aggData.lane_role.counts
               tr
                 td=key
                 td=val
+                td
+                  - var pct = 100*player.aggData.lane_role.win_counts[key]/val
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
           h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>
           #map.mapContainer.mapContainer-small

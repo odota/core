@@ -2,7 +2,7 @@ extend layout
 
 block content
   .row
-    .col-md-5
+    .col-md-8
       h1 Match Requests 
       ol
         li Enter a match ID.
@@ -19,7 +19,9 @@ block content
         .progress
           .progress-bar.progress-bar-info.progress-bar-striped.active#bar
         #messages
-  .row
+    .col-md-4
+      include /ads/skyscraper
+  .row.margin-bottom
     include ads/leaderboard_2
 
 append footer_assets

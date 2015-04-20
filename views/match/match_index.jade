@@ -3,8 +3,9 @@ extend match
 block match_content
   .row
     .col-md-12
-      h2= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-      .table-responsive
+      h2.inline-header= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+      button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#index", aria-expanded="true") Toggle Table
+      #index.table-responsive.collapse.in
           table.table.table-hover.summable
             thead
               tr
@@ -71,8 +72,9 @@ block match_content
       hr
       include /ads/leaderboard_2
       hr
-      h2 Skill Builds
-      .table-responsive
+      h2.inline-header Skill Builds
+      button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
+      #skills.table-responsive.collapse.in
           table.table.table-hover
             thead
               tr
@@ -97,9 +99,9 @@ block match_content
                           else
                             =ability.ability
   hr
-  .row      
-    h2 Buildings
+  .row.margin-bottom
     .col-md-6
+      h2 Buildings
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
     .col-md-6

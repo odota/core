@@ -42,19 +42,19 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
           .icon-circle
             img.circle-margin(src='../public/images/tools2.png')
           h4 Open source.
-          p All of YASP's code is open source and available on Github for contributors to improve and modify.     
+          p All of YASP's code is open source and available on GitHub for contributors to improve and modify.     
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/barchart.png')
           h4 Go beyond the API.
-          p Free replay parsing that provides Dota 2 match stats unavailable through the API or game client.     
+          p YASP parses replays to provide statistics unavailable through the API or game client.
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/present.png')
           h4 Free of charge.
-          p YASP is supported by volunteer developers and community contributions, making it free for users.
+          p YASP is supported by volunteer developers and community contributions, making it completely free for users.
 
 #match_statistics.callout
     .container.bottom-padding
@@ -65,14 +65,14 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
         .col-md-8.col-md-offset-2.bottom-padding
             hr
       .row
-        h3 Purchases
         .col-md-12.text-center
-          include match/timelines_purchases_table.jade
+          h3 Performance
+          include match/details_performance_table
         .col-md-12.text-center.bottom-padding
-        h3 Performance
-        include match/details_performance_table
+          h3 Purchases
+          include match/timelines_purchases_table.jade
         .col-md-8.col-md-offset-2.text-center
-          h3 View detailed timelines of item purchases and skill/item usage. Also see <a href="/matches/#{match.match_id}/timelines" target="_blank">timelines of kills</a>,
+          h3 View detailed skill/item usage and timelines of item purchases. Also see <a href="/matches/#{match.match_id}/timelines" target="_blank">timelines of kills</a>,
             | <a href="/matches/#{match.match_id}/details" target="_blank">gold and xp breakdowns</a>, and more.
 .featurette.dark
   .container

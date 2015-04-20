@@ -3,23 +3,27 @@ extend layout
 block content
   //pre=JSON.stringify(ratings)
   h1 Ratings
-  table.table#ratings
-    thead
-      tr
-        th Rank
-        th Name
-        th Solo
-        //th Party
-        //th Updated
-    each rating, i in ratings
-      tr
-        td=i+1
-        td
-          img.user(src=rating.avatar)
-          a(href='/players/#{rating.account_id}')=rating.personaname || rating.account_id
-        td= rating.soloCompetitiveRank
-        //td= rating.competitiveRank
-        //td= moment(rating.time).format('X')
-
+  .margin-bottom
+    table.table#ratings
+      thead
+        tr
+          th Rank
+          th Name
+          th Solo
+          //th Party
+          //th Updated
+      each rating, i in ratings
+        tr
+          td=i+1
+          td
+            img.user(src=rating.avatar)
+            a(href='/players/#{rating.account_id}')=rating.personaname || rating.account_id
+          td= rating.soloCompetitiveRank
+          //td= rating.competitiveRank
+          //td= moment(rating.time).format('X')
+  .margin-bottom
+    include ads/leaderboard_2
+  
 append footer_assets
+  script $("#ratings").dataTable();
 

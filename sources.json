@@ -14,6 +14,12 @@
     "5": "Never Connected",
     "6": "Never Connected (Timeout)"
   },
+  "objectives": {
+    "CHAT_MESSAGE_TOWER_KILL": "Tower",
+    "CHAT_MESSAGE_BARRACKS_KILL": "Barracks",
+    "CHAT_MESSAGE_ROSHAN_KILL": "Roshan",
+    "CHAT_MESSAGE_AEGIS": "Picked up the Aegis"
+  },
   "barracks_value": {
     "1": "Dire Bot Melee",
     "2": "Dire Bot Ranged",

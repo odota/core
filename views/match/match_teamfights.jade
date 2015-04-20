@@ -3,81 +3,105 @@ extend match
 block match_content
   .row
     .col-md-12
-      h2 Teamfights
+      h2 Teamfights 
+        small  where 3+ heroes died
+    .col-md-4
       //pre=JSON.stringify(match.parsed_data.teamfights)
-      each entry in match.parsed_data.teamfights
-        table.table.table-condensed
-          tr 
-            th Map
-            th Start
-            th Duration
-            th Deaths
-            th Radiant Gold Swing
-            th Radiant XP Swing
-          tr
-            td
-              #map.mapContainer
-                img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-                //place sprite icons
-                each death in entry.posData
-                  //unit, x, y
-                  //i(class="d2mh "+death.unit style="position: absolute; top: "+(127-(death.y-64))/1.27+"%; left: "+(death.x-64)/1.27+"%;")
-                  i(class="d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
-            td.format-seconds(data-format-seconds=entry.start)
-            td.format-seconds(data-format-seconds=entry.end-entry.start)
-            td=entry.deaths
-            td=entry.radiant_gold_delta
-            td=entry.radiant_xp_delta
-        table.table
-          tr
-            th Hero
-            th Ability Use
-            th Item Use
-            th Died
-            th Bought Back
-            th Damage
-            th Gold Change
-            th XP Change
-            each player in entry.players
-              //color and fade based on team and participation
-              tr
-                - var hero = constants.heroes[player.hero_id]
-                td
-                  if hero
-                    img(src=hero.img, title=hero.localized_name)
-                  else
-                    =player.hero_id
-                td
-                  each val, key in player.ability_uses
-                    - var ability = constants.abilities[key]
-                    div.img-text
-                      img.ability(src=ability.img, alt=key)
-                      div #{val}
-                td
-                  each val, key in player.item_uses
-                    - var item = constants.items[key]
-                    div.img-text
-                      img.item(src=item.img, alt=key)
-                      div #{val}
-                td=player.deaths
-                td=player.buybacks
-                td=player.damage
-                td=player.gold_delta
-                td=player.xp_delta
-
+      h3
+        abbr(title="Rows are colored by winner, determined by gold swing.") Fights
+        small   Click a row to display
+      table.table.table-condensed.table-hover#teamfights
+        thead
+          th Start
+          th Length
+          th Deaths
+          th: abbr(title="Net gold advantage for Radiant") Gold Swing
+          th: abbr(title="Net XP advantage for Radiant") XP Swing
+          th
+        tbody
+          each entry, ind in match.parsed_data.teamfights
+            tr(target=ind, class=entry.radiant_gold_delta > 0 ? "success" : "danger")
+              td.format-seconds(data-format-seconds=entry.start)
+              td.format-seconds(data-format-seconds=entry.end-entry.start)
+              td=entry.deaths
+              td=entry.radiant_gold_delta
+              td=entry.radiant_xp_delta
+              td
+                i.fa
+      h3.inline-header Death Map
+      button.btn.btn-xs.btn-dark.toggle-button#show_all Show All Deaths
+      #map.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+        .icons
+          each entry, ind in match.parsed_data.teamfights
+            each death in entry.posData
+              i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
+    .col-md-8
+      h3
+        abbr(title="Heroes in uncolored rows did not participate in the fight.") Details
+      .table-responsive
+        table.table.table-hover
+          thead#header
+            tr
+              th
+              th Hero
+              th Ability Use
+              th Item Use
+              th Died
+              th Bought Back
+              th Damage
+              th Gold Change
+              th XP Change
+            each entry, ind in match.parsed_data.teamfights
+              tbody(id=ind)
+                each player, num in entry.players
+                  //color and fade based on team and participation
+                  tr(class= player.deaths > 0 || player.damage > 0 ? (player.isRadiant ? "success" : "danger") : "")
+                    td
+                      if player.deaths
+                        div(style="font-size:30px;") !{"&#128128;"}
+                    - var hero = constants.heroes[player.hero_id]
+                    td
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        =player.hero_id
+                    td
+                      each val, key in player.ability_uses
+                        - var ability = constants.abilities[key]
+                        div.img-text
+                          img.ability(src=ability.img, alt=key)
+                          div #{val}
+                    td
+                      each val, key in player.item_uses
+                        - var item = constants.items[key]
+                        div.img-text
+                          img.item(src=item.img, alt=key)
+                          div #{val}
+                    td=player.deaths
+                    td=player.buybacks
+                    td=player.damage
+                    td=player.gold_delta
+                    td=player.xp_delta
 append footer_assets
-//-
   script.
-    var posData = !{JSON.stringify(match.tfPosData)};
-    adjustHeatmapData(posData, 300/127, 1);
-    //initialize heatmaps
-    //load one at a time, data is nth element of posData array
-    $(".mapContainer").each(function(i){
-        console.log(i, posData[i], $(this)[0]);
-        var heatmap = h337.create({
-          container: $(this)[0],
-          radius: 15,
-        });
-        heatmap.setData(posData[i].deaths_pos);
-        heatmap.repaint();
+    var all_icons = $("#map i");
+    $("#teamfights tr").click(function(event) {
+      var show =$(this).attr("target");
+      $(this).addClass("glow");
+      $(this).siblings().removeClass("glow");
+      $(this).siblings().find("i").removeClass("fa-eye");
+      $(this).find("i").addClass("fa-eye");
+      var table = $("#" + show);
+      var icons = $("i[fight='" + show + "']")
+      table.show();
+      table.siblings().hide();
+      all_icons.hide();
+      icons.show();
+      $("#header").show();
+    })
+    
+    $("#show_all").click(function(event) {
+      all_icons.show();
     });
+    $("table tr[target='0']").trigger("click");

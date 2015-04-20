@@ -3,8 +3,9 @@ extend match
 block match_content
   .row
     .col-md-12
-        h2 Details
-        .table-responsive
+        h2.inline-header Details
+        button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#details", aria-expanded="true") Toggle Table
+        #details.table-responsive.collapse.in
           table.table.table-hover.summable
             each player, i in match.players
               if !(i%10)
@@ -54,11 +55,12 @@ block match_content
                   each val, key in constants.runes
                     td #{p.runes[key] || "-"}
                   
-        hr    
-        h2 Performance
-        include details_performance_table
         hr
         include /ads/leaderboard_2
+        hr
+        h2.inline-header Performance
+        button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#performance", aria-expanded="true") Toggle Table
+        include details_performance_table
         hr
         .row
           .col-md-8.table-responsive
