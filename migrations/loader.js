@@ -1,6 +1,7 @@
 var testdata = require("../test/test.json");
 var matches = testdata.matches;
 var players = testdata.players;
+/*
 var ratings = [{
     "match_id": 1238535235,
     "account_id": 88367253,
@@ -33,9 +34,8 @@ var ratings = [{
     "soloCompetitiveRank": 3940,
     "time": ISODate("2015-02-28T08:07:18Z")
 }]
+*/
 db.players.drop();
 db.matches.drop();
-db.ratings.drop();
 db.players.insert(players);
 db.matches.insert(matches);
-db.ratings.insert(ratings);
