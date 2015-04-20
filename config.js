@@ -9,7 +9,7 @@ var defaults = {
     "RETRIEVER_SECRET": "shared_secret_with_retriever",
     "SESSION_SECRET": "secret to encrypt cookies with",
     "ROOT_URL": "http://localhost:5000",
-    "START_SEQ_NUM": "AUTO",
+    "START_SEQ_NUM": "", //auto, use current number, defined, use sequence number, else, use redis number
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",

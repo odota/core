@@ -200,20 +200,21 @@ app.use('/ratings', function(req, res, next) {
                 sort: {
                     time: -1
                 }
-            }, function(err, result) {
-                cb(err, result);
+            }, function(err, rating) {
+                cb(err, rating);
             });
         }, function(err, ratings) {
             if (err) {
                 return next(err);
             }
-            ratings.sort(function(a, b) {
-                return b.soloCompetitiveRank - a.soloCompetitiveRank;
-            });
+            //get player name for each
             queries.fillPlayerNames(ratings, function(err) {
                 if (err) {
                     return next(err);
                 }
+                ratings.sort(function(a, b) {
+                    return b.soloCompetitiveRank - a.soloCompetitiveRank;
+                });
                 res.render("ratings", {
                     ratings: ratings
                 });
@@ -281,5 +282,4 @@ app.use(function(err, req, res, next) {
     //default express handler
     next(err);
 });
-
 module.exports = app;
