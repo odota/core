@@ -75,14 +75,18 @@ io.sockets.on('connection', function(socket) {
             catch (err) {
                 return socket.emit("err", err);
             }
+            var match_id = data.match_id;
+            match_id = Number(match_id);
+            socket.emit('log', "Received request for " + match_id);
             if (!body.success && config.NODE_ENV !== "test") {
                 console.log('failed recaptcha');
                 socket.emit("err", "Recaptcha Failed!");
             }
+            else if (!match_id) {
+                console.log("invalid match id");
+                socket.emit("err", "Invalid Match ID!");
+            }
             else {
-                var match_id = data.match_id;
-                match_id = Number(match_id);
-                socket.emit('log', "Received request for " + match_id);
                 queueReq("request", {
                     match_id: match_id,
                     request: true
@@ -103,7 +107,6 @@ io.sockets.on('connection', function(socket) {
                     job.on('failed', function(result) {
                         console.log(result);
                         socket.emit('err', JSON.stringify(result.error));
-                        socket.emit("failed");
                     });
                 });
             }

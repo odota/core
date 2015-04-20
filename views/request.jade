@@ -43,11 +43,16 @@ append footer_assets
       socket = io.connect();
     socket.on('err', function(data){
       $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-    })
+      $("#messages").append("<div class='alert alert-danger' role='alert'>Something went wrong!</div>");
+      $("#loading").css("display", "none");
+      document.getElementById("bar").style.width = "0%";
+      $("#request").show('slow');
+      grecaptcha.reset();
+    });
     socket.on('log', function(data){
       $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
       $("#loading").css("display", "block");
-    })
+    });
     socket.on('prog', function(prog){
       document.getElementById("bar").style.width = prog + "%";
       document.getElementById("bar").innerHTML = prog + "%";
@@ -57,15 +62,6 @@ append footer_assets
       //redir to match page?
       window.location.assign("/matches/"+match_id);
     });
-    socket.on('failed', function(){
-      $("#messages").append("<div class='alert alert-danger' role='alert'>Something went wrong!</div>");
-      $("#loading").css("display", "none");
-      document.getElementById("bar").style.width = "0%";
-            $("#request").show('slow');
-            grecaptcha.reset();
-    });
-      }
-
       socket.emit('request', {
         match_id: match_id,
         response: response
@@ -73,4 +69,5 @@ append footer_assets
       $("#request").hide('slow');
       $("#messages").empty();
       $("#progContainer").show('slow');
+    }
     }
