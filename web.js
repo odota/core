@@ -103,6 +103,7 @@ io.sockets.on('connection', function(socket) {
                         console.log(result);
                         socket.emit('log', "Request Complete!");
                         redis.del("match:" + match_id, function(err, resp) {
+                            if (err) console.log(err);
                             socket.emit('complete');  
                         });
                     });
