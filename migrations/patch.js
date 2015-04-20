@@ -120,63 +120,54 @@ db.matches.find({
     "parsed_data.version": 6
 }, {
     limit: 0
-}, function(err, docs) {
-    if (err) {
-        console.log(err);
-        process.exit(1);
-    }
-    async.each(docs, function(match, cb) {
-        //delete _id
-        delete match["_id"];
-        //backfill steam_ids
-        //iterate through match.players
-        match.players.forEach(function(player, i) {
-            //get parseSlot for each
-            var parseSlot = player.player_slot % (128 - 5);
-            var p = match.parsed_data.players[parseSlot];
-            //compute steam64
-            var steam64 = utility.convert32to64(player.account_id);
-            //store as string under steam_id
-            p.steam_id = steam64.toString();
-        });
-        //v2, migration
-        if (match.parsed_data.version === 2) {
-            v4(match);
-        }
-        //v3, migration
-        if (match.parsed_data.version === 3) {
-            v4(match);
-        }
-        //v4, migration
-        if (match.parsed_data.version === 4) {
-            v4(match);
-        }
-        //v5, migration
-        else if (match.parsed_data.version === 5) {
-            v6(match);
-        }
-        //v6, migration
-        else if (match.parsed_data.version === 6) {
-            v6(match);
-        }
-        else {
-            console.log(match.parsed_data.version);
-        }
-        //persist the saved match to db
-        db.matches.update({
-            match_id: match.match_id
-        }, {
-            $set: match
-        }, function(err) {
-            console.log(match.match_id);
-            cb(err);
-        });
-    }, function(err) {
-        if (err) {
-            console.log(err);
-        }
-        process.exit(0);
+}).each(function(match) {
+    //delete _id
+    delete match["_id"];
+    //backfill steam_ids
+    //iterate through match.players
+    match.players.forEach(function(player, i) {
+        //get parseSlot for each
+        var parseSlot = player.player_slot % (128 - 5);
+        var p = match.parsed_data.players[parseSlot];
+        //compute steam64
+        var steam64 = utility.convert32to64(player.account_id);
+        //store as string under steam_id
+        p.steam_id = steam64.toString();
     });
+    //v2, migration
+    if (match.parsed_data.version === 2) {
+        v4(match);
+    }
+    //v3, migration
+    if (match.parsed_data.version === 3) {
+        v4(match);
+    }
+    //v4, migration
+    if (match.parsed_data.version === 4) {
+        v4(match);
+    }
+    //v5, migration
+    else if (match.parsed_data.version === 5) {
+        v6(match);
+    }
+    //v6, migration
+    else if (match.parsed_data.version === 6) {
+        v6(match);
+    }
+    else {
+        console.log(match.parsed_data.version);
+    }
+    //persist the saved match to db
+    db.matches.update({
+        match_id: match.match_id
+    }, {
+        $set: match
+    }, function(err) {
+        console.log(match.match_id, err);
+    });
+}).error(function(err) {
+    console.log(err);
+    process.exit(1);
 });
 
 function v4(match) {
