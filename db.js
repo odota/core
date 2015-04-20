@@ -15,6 +15,9 @@ db.matches.index({
     'parsed_data.players.steam_id': 1
 });
 db.matches.index({
+    'parsed_data.version': 1
+})
+db.matches.index({
     'match_id': -1
 }, {
     unique: true
@@ -47,8 +50,8 @@ db.players.index({
     'cheese': -1
 });
 db.ratings.index({
-    'match_id': -1,
     'account_id': 1,
+    'match_id': -1,
     'time': -1
 }, {
     unique: true
