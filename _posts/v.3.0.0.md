@@ -27,6 +27,6 @@ YASP is proud to present our latest major release, v3.0.0!
 * Modified process for retrieving parsed data from DB.  Should lead to better load times.
 * DB data migration.  Converted data from old formats to avoid doing it on-the-fly.
 
-Again, thanks a lot for all your support! Please consider some [cheese](http://yasp.co/carry) or get the word about about YASP!
+Again, thanks a lot for all your support! Please consider some [cheese](http://yasp.co/carry) or help spread the word out about YASP!
 
 -Howard and Albert (The YASP Team!)
