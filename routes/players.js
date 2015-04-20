@@ -50,7 +50,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     route: info,
                     tabs: playerPages,
                     player: result.player,
-                    ratings: player.ratings.reverse() || [],
+                    ratings: player.ratings ? player.ratings.reverse() : [],
                     trackedPlayers: result.sets.trackedPlayers,
                     bots: result.sets.bots,
                     ratingPlayers: result.sets.ratingPlayers,
