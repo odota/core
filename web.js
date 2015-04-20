@@ -265,5 +265,21 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
-app.use('/', require('./routes/error'));
+app.use(function(req, res, next) {
+    var err = new Error("Not Found");
+    err.status = 404;
+    return next(err);
+});
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    console.log(err);
+    if (config.NODE_ENV !== "development") {
+        return res.render('error/' + (err.status === 404 ? '404' : '500'), {
+            error: err
+        });
+    }
+    //default express handler
+    next(err);
+});
+
 module.exports = app;
