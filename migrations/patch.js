@@ -3,6 +3,7 @@ var constants = require('../constants');
 var mergeObjects = utility.mergeObjects;
 var db = require("../db");
 var async = require('async');
+var version = Number(process.argv[2]);
 //stats
 /*
 //parsed_data without version, these are v1 matches since we started versioning at 2
@@ -117,7 +118,7 @@ db.matches.find({
         $ne: null
     },
     //run these after v7 code is deployed, one version at a time
-    "parsed_data.version": 6
+    "parsed_data.version": version
 }, {
     limit: 0
 }).each(function(match) {

@@ -42,53 +42,6 @@ function startScan() {
         });
     }
 }
-//TODO: this could be converted into an insert type kue job to allow parallel scanners?
-//reason to have queue is to have a "buffer" of matches so that scanning continues when insertion slows down
-var q = async.queue(function(match, cb) {
-    async.each(match.players, function(p, cb) {
-        if (p.account_id in trackedPlayers || p.account_id in permanent) {
-            //queued
-            match.parse_status = 0;
-        }
-        if (p.account_id in userPlayers && match.parse_status !== 0) {
-            //skipped, but only if not already queued
-            match.parse_status = 3;
-        }
-        if (p.account_id in ratingPlayers && match.lobby_type === 7) {
-            //could possibly pick up MMR change for matches we don't add, this is probably ok
-            queueReq("mmr", {
-                match_id: match.match_id,
-                account_id: p.account_id,
-                url: ratingPlayers[p.account_id]
-            }, function(err) {
-                cb(err);
-            });
-        }
-        else {
-            cb();
-        }
-    }, function(err) {
-        if (err) {
-            console.log("failed to insert match from scanApi %s", JSON.stringify(match));
-            console.log(err);
-            //TODO: log this to a file or something, we don't want to stop/crash just because an insert failed
-            //throw err;
-            return cb(err);
-        }
-        else if (match.parse_status === 0 || match.parse_status === 3) {
-            insertMatch(match, function(err) {
-                //set the redis progress
-                redis.set("match_seq_num", match.match_seq_num);
-                cb(err);
-            });
-        }
-        else {
-            //set the redis progress
-            redis.set("match_seq_num", match.match_seq_num);
-            cb(err);
-        }
-    });
-});
 
 function scanApi(seq_num) {
     var container = generateJob("api_sequence", {
@@ -107,18 +60,66 @@ function scanApi(seq_num) {
             if (err) {
                 return scanApi(seq_num);
             }
-            var resp = data.result.matches;
+            var resp = data.result.matches || [];
             var next_seq_num = seq_num;
             if (resp.length) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
-            logger.info("[API] seq_num:%s, matches:%s, queue:%s", seq_num, resp.length, q.length());
-            q.push(resp);
-            //wait 100ms for each match less than 100
-            var delay = (100 - resp.length) * 100;
-            setTimeout(function() {
-                scanApi(next_seq_num);
-            }, delay);
+            logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
+            async.each(resp, function(match, cb) {
+                async.each(match.players, function(p, cb) {
+                    if (p.account_id in trackedPlayers || p.account_id in permanent) {
+                        //queued
+                        match.parse_status = 0;
+                    }
+                    if (p.account_id in userPlayers && match.parse_status !== 0) {
+                        //skipped, but only if not already queued
+                        match.parse_status = 3;
+                    }
+                    if (p.account_id in ratingPlayers && match.lobby_type === 7) {
+                        //could possibly pick up MMR change for matches we don't add, this is probably ok
+                        queueReq("mmr", {
+                            match_id: match.match_id,
+                            account_id: p.account_id,
+                            url: ratingPlayers[p.account_id]
+                        }, function(err) {
+                            cb(err);
+                        });
+                    }
+                    else {
+                        cb();
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.log("failed to insert match from scanApi %s", JSON.stringify(match));
+                        return cb(err);
+                    }
+                    else if (match.parse_status === 0 || match.parse_status === 3) {
+                        insertMatch(match, function(err) {
+                            cb(err);
+                        });
+                    }
+                    else {
+                        //don't insert this match
+                        cb(err);
+                    }
+                });
+            }, function(err) {
+                if (err) {
+                    //something bad happened, retry this page
+                    return scanApi(seq_num);
+                }
+                else {
+                    //completed inserting matches
+                    //mark progress
+                    redis.set("match_seq_num", next_seq_num);
+                    //wait 100ms for each match less than 100
+                    var delay = (100 - resp.length) * 100;
+                    setTimeout(function() {
+                        scanApi(next_seq_num);
+                    }, delay);
+                }
+            });
         });
     });
 }
