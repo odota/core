@@ -70,7 +70,10 @@ block match_content
                       each val, key in player.ability_uses
                         - var ability = constants.abilities[key]
                         div.img-text
-                          img.ability(src=ability.img, alt=key)
+                          if ability
+                            img.ability(src=ability.img, alt=key)
+                          else
+                            //=key
                           div #{val}
                     td
                       each val, key in player.item_uses
