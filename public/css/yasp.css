@@ -54,6 +54,7 @@ h3 img {
     height: 30px
 }
 .item {
+    margin: 1px;
     height: 25px;
 }
 .kill {
