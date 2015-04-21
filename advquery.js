@@ -279,7 +279,7 @@ function aggregator(matches, fields) {
             }
             if (value > aggObj.max) {
                 aggObj.max = value;
-                aggObj.max_match = match;
+                aggObj.max_match = {match_id:match.match_id, start_time: match.start_time, hero_id: match.players[0].hero_id};
             }
         }
     }
