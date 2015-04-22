@@ -1,9 +1,13 @@
 var db = require('../db');
 var async = require('async');
 var queueReq = require('../operations').queueReq;
+var moment = require('moment');
 module.exports = function unparsed(done) {
     db.matches.find({
-        parse_status: 0
+        "start_time": {
+            $gt: moment().subtract(7, 'days').format('X')
+        },
+        "parse_status": 0
     }, function(err, docs) {
         if (err) {
             return done(err);

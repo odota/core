@@ -53,7 +53,12 @@ function playerTrendsTables() {
             targets: "last_played",
             render: function(data, type) {
                 if (type === "display") {
-                    return moment.unix(data).fromNow();
+                    if (!Number(data)) {
+                        return "never";
+                    }
+                    else {
+                        return moment.unix(data).fromNow();
+                    }
                 }
                 return data;
             }
@@ -74,7 +79,12 @@ function playerTrendsTables() {
                 "targets": "last_played",
                 render: function(data, type) {
                     if (type === "display") {
-                        return moment.unix(data).fromNow();
+                        if (!Number(data)) {
+                            return "never";
+                        }
+                        else {
+                            return moment.unix(data).fromNow();
+                        }
                     }
                     return data;
                 }

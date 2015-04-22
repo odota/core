@@ -4,112 +4,6 @@ var mergeObjects = utility.mergeObjects;
 var db = require("../db");
 var async = require('async');
 var version = Number(process.argv[2]);
-//stats
-/*
-//parsed_data without version, these are v1 matches since we started versioning at 2
-> db.matches.find({"parsed_data":{$exists:true}, "parsed_data.version":null}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 12423,
-        "nscannedObjects" : 5274692,
-        "nscanned" : 5274692,
-        "nscannedObjectsAllPlans" : 5274692,
-        "nscannedAllPlans" : 5274692,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 343982,
-        "nChunkSkips" : 0,
-        "millis" : 1035388,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-> db.matches.find({"parsed_data.version":2}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 2811,
-        "nscannedObjects" : 5369397,
-        "nscanned" : 5369397,
-        "nscannedObjectsAllPlans" : 5369397,
-        "nscannedAllPlans" : 5369397,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 334682,
-        "nChunkSkips" : 0,
-        "millis" : 1260866,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-> db.matches.find({"parsed_data.version":3}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 9884,
-        "nscannedObjects" : 5398809,
-        "nscanned" : 5398809,
-        "nscannedObjectsAllPlans" : 5398809,
-        "nscannedAllPlans" : 5398809,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 382519,
-        "nChunkSkips" : 0,
-        "millis" : 988975,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-> db.matches.find({"parsed_data.version":4}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 57240,
-        "nscannedObjects" : 5406783,
-        "nscanned" : 5406783,
-        "nscannedObjectsAllPlans" : 5406783,
-        "nscannedAllPlans" : 5406783,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 356328,
-        "nChunkSkips" : 0,
-        "millis" : 1008631,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-> db.matches.find({"parsed_data.version":5}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 77982,
-        "nscannedObjects" : 5413117,
-        "nscanned" : 5413117,
-        "nscannedObjectsAllPlans" : 5413117,
-        "nscannedAllPlans" : 5413117,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 376859,
-        "nChunkSkips" : 0,
-        "millis" : 1000451,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-> db.matches.find({"parsed_data.version":6}).explain()
-{
-        "cursor" : "BasicCursor",
-        "isMultiKey" : false,
-        "n" : 21541,
-        "nscannedObjects" : 5418010,
-        "nscanned" : 5418010,
-        "nscannedObjectsAllPlans" : 5418010,
-        "nscannedAllPlans" : 5418010,
-        "scanAndOrder" : false,
-        "indexOnly" : false,
-        "nYields" : 366490,
-        "nChunkSkips" : 0,
-        "millis" : 1016677,
-        "server" : "yasp-core-hm-2:27017",
-        "filterSet" : false
-}
-*/
 //if deleting parsed_data, we should set parse_status to unavailable
 //v1, delete parsed_data (parsed_data.players contains players with lh, gold, xp, not much else, no heroes object)
 //db.matches.update({"parsed_data":{$exists:true}, "parsed_data.version":null},{$unset:{parsed_data:""},$set:{parse_status:1}},{multi:true})
@@ -156,7 +50,7 @@ db.matches.find({
         v6(match);
     }
     else {
-        console.log(match.parsed_data.version);
+        console.log("found version %s", match.parsed_data.version);
     }
     //persist the saved match to db
     db.matches.update({
@@ -169,6 +63,8 @@ db.matches.find({
 }).error(function(err) {
     console.log(err);
     process.exit(1);
+}).success(function() {
+    console.log('done!');
 });
 
 function v4(match) {

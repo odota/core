@@ -65,8 +65,7 @@ Tech
 
 Quickstart
 ----
-* Development mode: Runs yasp-core, parser, retriever on one machine
-* Install dependencies: `sudo bash init.sh`
+* Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`
 * Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`
 * Build `npm run build`
 * Launch in dev mode: `npm run dev`
