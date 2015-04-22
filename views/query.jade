@@ -48,8 +48,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           label Result
           select.form-control(name="win")
             option(value="all") All Results
-            option(value="1", selected=q.win==="1") Wins
-            option(value="0", selected=q.win==="0") Losses
+            option(value="1", selected=q.win) Wins
+            option(value="0", selected=(q.win===0)) Losses
         
         .form-group
           label Patch
@@ -66,10 +66,10 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
               option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
         .form-group  
           label 
-            abbr(title="Balanced Modes excludes match types different from 'normal Dota,' such as  1 v 1 Mid, Diretide, and Ability Draft") Match Type
-          select.form-control(name="balanced")
-            option(value="1",  selected=q.balanced==="1") Balanced Modes
-            option(value="all", selected=q.balanced==="all") All Modes
+            abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
+          select.form-control(name="significant")
+            option(value="1",  selected=Boolean(Number(q.significant))) Significant Matches
+            option(value="all", selected=!Boolean(Number(q.significant))) All Matches
     .row
       .col-md-12.text-center
         button.btn.btn-yasp(type="submit") Do the Thing

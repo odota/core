@@ -132,7 +132,7 @@ function fillPlayerData(player, options, cb) {
     //defaults: this player, balanced modes only, put the defaults in options.query
     var default_select = {
         "players.account_id": player.account_id.toString(),
-        "balanced": "1"
+        "significant": "1"
     };
     for (var key in default_select) {
         options.query[key] = options.query[key] || default_select[key];

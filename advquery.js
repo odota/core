@@ -296,8 +296,9 @@ function filter(matches, filters) {
     //filter max gold/xp advantage
     //more filters from parse data
     var conditions = {
-        //filter: balanced game modes only
-        balanced: function(m, key) {
+        //filter: significant, remove unbalanced game modes/lobbies
+        //TODO detect no stats recorded?
+        significant: function(m, key) {
             return Number(constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced) === key;
         },
         //filter: player won
