@@ -44,13 +44,14 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 if (err) {
                     return next(err);
                 }
+                player.ratings = player.ratings ? player.ratings.reverse() : [];
                 console.timeEnd("player " + account_id);
                 res.render("player/player_" + info, {
                     q: req.query,
                     route: info,
                     tabs: playerPages,
                     player: result.player,
-                    ratings: player.ratings ? player.ratings.reverse() : [],
+                    ratings: player.ratings,
                     trackedPlayers: result.sets.trackedPlayers,
                     bots: result.sets.bots,
                     ratingPlayers: result.sets.ratingPlayers,
