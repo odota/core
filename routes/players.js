@@ -4,6 +4,7 @@ var async = require('async');
 var db = require("../db");
 var queries = require("../queries");
 var constants = require("../constants.json");
+var config = require('../config');
 var playerPages = {
     index: {
         name: "Player"
@@ -46,6 +47,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 }
                 player.ratings = player.ratings ? player.ratings.reverse() : [];
                 console.timeEnd("player " + account_id);
+                if (req.query.json && config.NODE_ENV !== "production") {
+                    return res.json(player);
+                }
                 res.render("player/player_" + info, {
                     q: req.query,
                     route: info,

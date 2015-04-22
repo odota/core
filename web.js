@@ -201,20 +201,14 @@ app.use('/ratings', function(req, res, next) {
         if (err) {
             return next(err);
         }
-        //get player name for each
-        queries.fillPlayerNames(docs, function(err) {
-            if (err) {
-                return next(err);
-            }
-            docs.forEach(function(d) {
-                d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
-            });
-            docs.sort(function(a, b) {
-                return b.soloCompetitiveRank - a.soloCompetitiveRank;
-            });
-            res.render("ratings", {
-                ratings: docs
-            });
+        docs.forEach(function(d) {
+            d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
+        });
+        docs.sort(function(a, b) {
+            return b.soloCompetitiveRank - a.soloCompetitiveRank;
+        });
+        res.render("ratings", {
+            ratings: docs
         });
     });
 });
