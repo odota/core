@@ -15,9 +15,9 @@
     "shorthistory": "node runner.js shorthistory",
     "getmissing": "node runner.js getmissing",
     "bower": "bower install",
-    "grunt": "grunt --env=production",
-    "watch": "grunt watch",
-    "build": "npm install && npm run bower && npm run constants && npm run grunt && npm run maven",
+    "webpack": "webpack -p",
+    "watch": "webpack watch",
+    "build": "npm install && npm run bower && npm run constants && npm run webpack && npm run maven",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "yasp-parser": "sudo nf export -j Procfile.parser -o /etc/init/ && sudo restart foreman",
     "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ && sudo restart foreman"
@@ -74,6 +74,7 @@
     "mongodb": "~2.0.27",
     "nock": "~1.6.0",
     "nodemon": "^1.3.7",
-    "supertest": "^0.15.0"
+    "supertest": "^0.15.0",
+    "webpack": "^1.8.9"
   }
 }
