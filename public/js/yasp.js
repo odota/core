@@ -3,23 +3,25 @@ window.$ = require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');
 require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
 require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
-require('../../node_modules/qtip2/jquery.qtip.css');
-require('../../node_modules/qtip2/jquery.qtip.js');
+require('../../node_modules/qTip2/dist/jquery.qtip.css');
+require('../../node_modules/qTip2/dist/jquery.qtip.js');
 require('../../node_modules/select2/select2.css');
 require('../../node_modules/select2/select2-bootstrap.css');
 require('../../node_modules/select2/select2.js');
 require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../node_modules/bootstrap/dist/js/bootstrap.js');
-window.moment = require('../../node_modules/moment/moment.js');
-window.numeral = require('../../node_modules/numeral/numeral.js');
-//window.d3 = require('../../bower_components/d3/d3.js');
-require('../../node_modules/c3/c3.css');
-window.c3 = require('../../node_modules/c3/c3.js');
-require('../../bower_components/cal-heatmap/cal-heatmap.css');
-window.CalHeatMap = require('../../node_modules/cal-heatmap/cal-heatmap.js');
-window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
+require("../../node_modules/webcomponents.js/webcomponents.js");
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
+require('../../node_modules/c3/c3.css');
+window.c3 = require('../../node_modules/c3/c3.js');
+require('../../node_modules/cal-heatmap/cal-heatmap.css');
+window.CalHeatMap = require('../../node_modules/cal-heatmap/cal-heatmap.js');
+window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
+window.moment = require('../../node_modules/moment/moment.js');
+window.numeral = require('../../node_modules/numeral/numeral.js');
+
+
 //yasp
 require('../css/flaticon.css');
 require('../css/font.css');

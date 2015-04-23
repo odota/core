@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "JSONStream": "^0.10.0",
+    "Polymer": "Polymer/polymer",
     "async": "0.9.0",
     "aws-sdk": "~2.1.23",
     "big-number": "0.3.1",
@@ -42,7 +43,7 @@
     "datatables": "^1.10.6",
     "datatables-bootstrap3-plugin": "^0.4.0",
     "dota2": "yasp-dota/node-dota2",
-    "dota2-minimap-hero-sprites": "bontscho/dota2-minimap-hero-sprites",
+    "dota2-minimap-hero-sprites": "yasp-dota/dota2-minimap-hero-sprites",
     "dotenv": "~1.1.0",
     "express": "~4.12.3",
     "express-session": "~1.11.1",
@@ -61,7 +62,7 @@
     "passport-steam": "0.1.4",
     "paypal-rest-sdk": "~1.5",
     "poet": "~2.0.0",
-    "qtip2": "^2.2.0",
+    "qTip2": "yasp-dota/qtip2",
     "redis": "0.12.1",
     "request": "~2.55.0",
     "request-progress": "^0.3.1",
@@ -71,6 +72,7 @@
     "socket.io": "^1.3.5",
     "socket.io-client": "^1.3.5",
     "steam": "0.6.8",
+    "webcomponents.js": "^0.6.1",
     "winston": "1.0.0"
   },
   "devDependencies": {

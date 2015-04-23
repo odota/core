@@ -131,10 +131,6 @@ var basic = auth.basic({
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
-//re-serve content from root for robots.txt
-app.use("/", express.static(path.join(__dirname, '/public')));
-//TODO instead of serving this, we should probably bundle the bower_components into public/build
-app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
@@ -179,6 +175,10 @@ poet.watch(function() {
     // watcher reloaded
 }).init().then(function() {
     // Ready to go!
+});
+app.get('/robots.txt', function (req, res) {
+    res.type('text/plain');
+    res.send("User-agent: *\nDisallow: /matches");
 });
 app.route('/').get(function(req, res, next) {
     res.render('home', {
