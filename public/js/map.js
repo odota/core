@@ -1,4 +1,4 @@
-function buildMap() {
+module.exports = function buildMap() {
     $(document).on('ready', function() {
         var buildingData = [{
             id: "t4br",

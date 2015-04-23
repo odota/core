@@ -69,23 +69,3 @@ block content
           span.glyphicon.glyphicon-wrench.big
           p.text-left All of YASP's code is open source and available for contributors to improve and modify.
           p: a.btn.btn-warning(href="https://github.com/yasp-dota/yasp") Examine the source &raquo;
-
-append footer_assets
-   script.
-    $(".pref").change(function() {
-        $.post(
-            "/preferences", {
-                dark_theme: $("#dark").is(":checked"),
-                publicmmr: $("#publicmmr").is(":checked")
-            },
-            function(data) {
-                if (data.sync) {
-                    location.reload(true);
-                }
-                else {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                }
-                $(".sync").fadeOut(3000);
-            });
-    });
-   include mmr_script.jade

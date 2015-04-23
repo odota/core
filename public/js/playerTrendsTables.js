@@ -1,4 +1,4 @@
-function playerTrendsTables() {
+module.exports = function playerTrendsTables() {
     var accuracy = $('#accuracy').dataTable({
         "searching": true,
         "paging": true,

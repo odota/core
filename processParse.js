@@ -18,12 +18,10 @@ module.exports = function processParse(job, cb) {
             return cb(err);
         }
         //match object should now contain replay url, also persisted to db
-        //or it's expired, and we won't need it
-        if (match.start_time < moment().subtract(7, 'days').format('X')) {
+        if (match.parse_status === 1) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //test fail: we have no url in db and replay is expired on socket request, so that request fails!
+            //TODO improve current socket test: we have no url in db and replay is expired on socket request, so that request fails!
             console.log("parse: replay expired");
-            job.data.payload.parse_status = 1;
             updateDb();
         }
         else {
