@@ -67,6 +67,10 @@ function scanApi(seq_num) {
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
             async.each(resp, function(match, cb) {
+                if (match.league_id){
+                    //parse tournament games
+                    match.parse_status = 0;
+                }
                 async.each(match.players, function(p, cb) {
                     if (p.account_id in trackedPlayers || p.account_id in permanent) {
                         //queued

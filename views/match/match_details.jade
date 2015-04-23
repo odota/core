@@ -104,3 +104,67 @@ block match_content
                         =player.hero_id
                       each val, key in constants.xp_reasons
                         td #{p.xp_reasons[key] || "-"}
+                        
+        hr
+        .row
+          .col-md-12
+            h2.inline-header Kill/Death
+            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
+            #kills.table-responsive.collapse.in
+              table.table.table-hover
+                thead
+                  tr
+                    th Hero
+                    each player, ind in match.players.slice(match.players.length/2, match.players.length)
+                      th(class = player.isRadiant ? "success" : "danger")
+                        - var hero = constants.heroes[player.hero_id]
+                        if hero
+                          img(src=hero.img, title=hero.localized_name)
+                        else
+                          =player.hero_id      
+                tbody
+                  each player, ind in match.players.slice(0,match.players.length/2)
+                    - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
+                    tr
+                      td.hero(class = player.isRadiant ? "success" : "danger")
+                        if hero
+                          img(src=hero.img, title=hero.localized_name)
+                        else
+                          =player.hero_id      
+                        each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
+                          - var hero1 = constants.heroes[player.hero_id]
+                          - var hero2 = constants.heroes[player2.hero_id]
+                          td.lead <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
+                          
+        hr
+        .row
+          .col-md-12
+            h2.inline-header Damage/Taken
+            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
+            #kills.table-responsive.collapse.in
+              table.table.table-hover
+                thead
+                  tr
+                    th Hero
+                    each player, ind in match.players.slice(match.players.length/2, match.players.length)
+                      th(class = player.isRadiant ? "success" : "danger")
+                        - var hero = constants.heroes[player.hero_id]
+                        if hero
+                          img(src=hero.img, title=hero.localized_name)
+                        else
+                          =player.hero_id      
+                tbody
+                  each player, ind in match.players.slice(0,match.players.length/2)
+                    - var hero = constants.heroes[player.hero_id]
+                    - var p = player.parsedPlayer
+                    tr
+                      td.hero(class = player.isRadiant ? "success" : "danger")
+                        if hero
+                          img(src=hero.img, title=hero.localized_name)
+                        else
+                          =player.hero_id      
+                        each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
+                          - var hero1 = constants.heroes[player.hero_id]
+                          - var hero2 = constants.heroes[player2.hero_id]
+                          td.lead <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              

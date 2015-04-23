@@ -212,6 +212,18 @@ app.use('/ratings', function(req, res, next) {
         });
     });
 });
+app.use('/professional', function(req, res, next) {
+    db.matches.find({
+        "league_id":{$gt:0}
+    }, function(err, docs) {
+        if (err) {
+            return next(err);
+        }
+        res.render("professional", {
+            matches: docs
+        });
+    });
+});
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {
