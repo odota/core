@@ -14,10 +14,9 @@
     "fullhistory": "node runner.js fullhistory",
     "shorthistory": "node runner.js shorthistory",
     "getmissing": "node runner.js getmissing",
-    "bower": "bower install",
     "webpack": "webpack -p",
     "watch": "webpack --watch",
-    "build": "npm install && npm run bower && npm run constants && npm run webpack && npm run maven",
+    "build": "npm install && npm run constants && npm run webpack && npm run maven",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "yasp-parser": "sudo nf export -j Procfile.parser -o /etc/init/ && sudo restart foreman",
     "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ && sudo restart foreman"
