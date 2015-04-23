@@ -14,42 +14,18 @@ block playercontent
   .row
     .col-md-12
       .btn-group.btn-group-lg.btn-group-justified
-        a.btn.btn-success.click-nav(href="#records") Records
-        a.btn.btn-primary.click-nav(href="#counts") Counts
         a.btn.btn-info.click-nav(href="#activity") Activity
-        a.btn.btn-warning.click-nav(href="#histogram") Histograms
+        a.btn.btn-primary.click-nav(href="#counts") Counts
+        a.btn.btn-warning.click-nav(href="#histograms") Histograms
         a.btn.btn-danger.click-nav(href="#advanced")
           abbr(title="Data from parsed matches") Advanced
   hr
   #the_stats
-    .records
+    .activity
       .row
         .col-md-12
-          h2 Records
-          table.table
-            tr
-              th Stat
-              th Record
-              th Set
-              th Avg
-              th Sum
-              th N
-            - var times={"duration":1,"first_blood_time":1}
-            - var display={"total_gold":1, "kda":1, "hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"last_hits":1,"denies":1} 
-            - var permin={"gold_per_min":1,"xp_per_min":1}
-            - var advanced={"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
-            //TODO: separate parsed records from the others?
-            //TODO: separate category for per min records?
-            each val, key in player.aggData
-              tr
-                if key in times || key in display || key in permin || key in advanced
-                  td= key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{(val.max).toFixed(0)+" "}
-                  td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
-                  - var avg = val.n === 0 ? 0 : val.sum/val.n
-                  td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg)=avg.toFixed(2)
-                  td.format= val.sum
-                  td=val.n
+          h2 Activity
+          #cal-heatmap
     .counts
       .row
         .col-md-4
@@ -73,32 +49,35 @@ block playercontent
               tr
                 td=constants.lobbies[key].name
                 td=val
-    .activity
-      .row
-        .col-md-12
-          h2 Activity
-          p
-            button.btn.btn-default#prev &laquo;
-            button.btn.btn-default#next &raquo;
-          #cal-heatmap
           
-    .histogram.match
+    .histograms.match
       .row
         .col-md-12
           h2 Histograms
-          - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1}
+          - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1,"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
+          - var times={"duration":1,"first_blood_time":1}
+          - var permin={"gold_per_min":1,"xp_per_min":1}
+          - var advanced={"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
           script.
             var histogramData = {};
           each val, key in histograms
             h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
               if player.aggData[key]
-                - var avg = player.aggData[key].sum/player.aggData[key].n
+                - var val = player.aggData[key]
+                small #{val.n} games, 
                 small Avg: 
-                small(class=(key in times ? "format-seconds" : ""),data-format-seconds=avg) #{(avg).toFixed(2)}
+                - var avg = player.aggData[key].sum/player.aggData[key].n
+                small(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{(avg).toFixed(2)}, 
+                small Record: 
+                small(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max} 
+                  a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") (#{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}), 
+                small Total: 
+                small.format= val.sum
             - var source = (key==="day" || key==="hour") ? "start_time" : key
             script.
               histogramData["#{key}"] = !{JSON.stringify(player.aggData[source])};
             div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
+            
     //stuff that needs parsed data
     .advanced
       h2 Advanced<br>
@@ -200,7 +179,7 @@ append footer_assets
           showSection(hash);
       }
       else{
-          showSection("records");
+          showSection("activity");
       }
     $(".click-nav").click(function(){
       var id = $(this).attr("href").slice(1);

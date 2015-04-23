@@ -60,6 +60,25 @@ window.adjustHeatmapData = function adjustHeatmapData(posData, scalef, max, shif
         };
     }
 }
+
+
+window.format = function format(input) {
+    input = Number(input);
+    if (input === 0 || isNaN(input)) {
+        return "-";
+    }
+    return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
+}
+
+window.formatSeconds = function formatSeconds(input) {
+    var absTime = Math.abs(input);
+    var minutes = ~~(absTime / 60);
+    var seconds = pad(~~(absTime % 60), 2);
+    var time = ((input < 0) ? "-" : "");
+    time += minutes + ":" + seconds;
+    return time;
+}
+
 window.tooltips = require('./tooltips.js');
 window.formatHtml = require("./formatHtml.js");
 window.createHistogram = require('./histograms.js');

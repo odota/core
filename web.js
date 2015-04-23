@@ -176,7 +176,7 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
-app.get('/robots.txt', function (req, res) {
+app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /matches");
 });
@@ -184,14 +184,17 @@ app.route('/').get(function(req, res, next) {
     res.render('home', {
         match: example_match,
         truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
-        home: true
+        home: true,
+        rc_public: rc_public
     });
 });
+
 app.route('/request').get(function(req, res) {
     res.render('request', {
         rc_public: rc_public
     });
 });
+
 app.use('/ratings', function(req, res, next) {
     db.players.find({
         "ratings": {
@@ -214,7 +217,9 @@ app.use('/ratings', function(req, res, next) {
 });
 app.use('/professional', function(req, res, next) {
     db.matches.find({
-        "leagueid":{$gt:0}
+        "leagueid": {
+            $gt: 0
+        }
     }, function(err, docs) {
         if (err) {
             return next(err);

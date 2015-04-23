@@ -118,8 +118,8 @@ function computeColor(color, d, source) {
         var pct = source[d.index] && source[d.index].win ? source[d.index].win / source[d.index].games : 0;
         //0 is red and 120 is green, scale by pct
         //we probably want to scale so 0.4- is 0 and 0.6+ is 1
-        var min = 0.4;
-        var max = 0.6;
+        var min = 0.3;
+        var max = 0.7;
         var range = (max - min);
         var clamp = Math.max(min, Math.min(pct, max));
         pct = (clamp - min) / range;

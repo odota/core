@@ -60,7 +60,7 @@ function scanApi(seq_num) {
             if (err) {
                 return scanApi(seq_num);
             }
-            var resp = data.result.matches || [];
+            var resp = data.result && data.result.matches ? data.result.matches : [];
             var next_seq_num = seq_num;
             if (resp.length) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;

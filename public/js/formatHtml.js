@@ -67,20 +67,3 @@ module.exports = function formatHtml() {
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
 }
-
-function format(input) {
-    input = Number(input);
-    if (input === 0 || isNaN(input)) {
-        return "-";
-    }
-    return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
-}
-
-function formatSeconds(input) {
-    var absTime = Math.abs(input);
-    var minutes = ~~(absTime / 60);
-    var seconds = pad(~~(absTime % 60), 2);
-    var time = ((input < 0) ? "-" : "");
-    time += minutes + ":" + seconds;
-    return time;
-}
