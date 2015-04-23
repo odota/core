@@ -7,11 +7,6 @@ module.exports = {
         filename: '[name].min.js',
         path: './public/build'
     },
-    externals: [
-        {
-            $: "jquery"
-        }
-        ],
     module: {
         loaders: [
             {
