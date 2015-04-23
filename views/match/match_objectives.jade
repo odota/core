@@ -26,7 +26,7 @@ block match_content
               td= objective
               td
                 if hero
-                  img(src=hero.img, alt=entry.unit)
+                  img(src=hero.img, title=hero.localized_name)
                 else
                   =team==="success" ? "The Radiant" : "The Dire"
               td=constants.barracks_value[entry.key]

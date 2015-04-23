@@ -1,4 +1,4 @@
-function generateCharts(data) {
+module.exports = function generateCharts(data) {
     c3.generate({
         bindto: "#chart-gold-breakdown",
         data: {

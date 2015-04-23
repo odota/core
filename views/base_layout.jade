@@ -87,19 +87,15 @@ html
       script(src="/public/js/histograms.js")
       script(src="/public/js/statusHandler.js")
       script(src="/public/js/ga.js")
-
-    link(rel="stylesheet", href="/bower_components/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css")
-    link(rel='stylesheet', href="public/build/external.min.css")
-    if (user && user.light_theme)
-      link(rel='stylesheet', href="/public/build/yasp.min.css")
-    else
-      link(rel='stylesheet', href="/public/build/yasp-dark.min.css")
+      //hero icons
+      link(rel="stylesheet", href="/bower_components/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css")
       
-    //yasp client side constants, could optimize bandwidth by not dumping everything
     script.
       var constants = !{JSON.stringify(sources)};
-    script(src="/public/build/external.min.js")
     script(src="/public/build/yasp.min.js")
+    if !(user && user.light_theme)
+      link(rel='stylesheet', href="/public/css/dark.css")
+      
     block head
 
   //home extends unsticky

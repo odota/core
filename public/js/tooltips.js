@@ -1,4 +1,4 @@
-function tooltips() {
+module.exports = function tooltips() {
     $('.item').qtip({
         content: {
             text: function(event, api) {

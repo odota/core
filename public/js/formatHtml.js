@@ -1,4 +1,4 @@
-function formatHtml() {
+module.exports = function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
@@ -45,7 +45,7 @@ function formatHtml() {
                 //invert if a negative category
                 greaterThan = negatives[index] ? sum[index] < sums[other][index] : greaterThan;
                 if (greaterThan) {
-                    td.addClass((key === "Radiant") ? 'success': 'danger');
+                    td.addClass((key === "Radiant") ? 'success' : 'danger');
                 }
                 tr.append(td);
             }
@@ -66,4 +66,21 @@ function formatHtml() {
         //format the data attribute rather than the text so we don't lose the original value if want to reformat (like when paging in datatables)
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
+}
+
+function format(input) {
+    input = Number(input);
+    if (input === 0 || isNaN(input)) {
+        return "-";
+    }
+    return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
+}
+
+function formatSeconds(input) {
+    var absTime = Math.abs(input);
+    var minutes = ~~(absTime / 60);
+    var seconds = pad(~~(absTime % 60), 2);
+    var time = ((input < 0) ? "-" : "");
+    time += minutes + ":" + seconds;
+    return time;
 }
