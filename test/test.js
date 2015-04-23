@@ -176,14 +176,15 @@ before(function(done) {
                         var failed = false;
                         request({
                             url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
-                            timeout: 5000
+                            timeout: 3000
                         }).pipe(fs.createWriteStream(path)).on('error', function(err) {
                             console.log(err);
-                            console.log('retrying dl');
+                            console.log('retrying dl %s', filename);
                             failed = true;
                             dl(filename, cb);
                         }).on('finish', function() {
                             if (!failed) {
+                                console.log("completed %s", filename);
                                 cb();
                             }
                         });
