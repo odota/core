@@ -32,23 +32,18 @@ function prepareMatch(match_id, cb) {
                     return cb("match not found");
                 }
                 else {
-                    fillPlayerRatingsMatch(match, function(err) {
+                    fillPlayerNames(match.players, function(err) {
                         if (err) {
                             return cb(err);
                         }
-                        fillPlayerNames(match.players, function(err) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            computeMatchData(match);
-                            renderMatch(match);
-                            //Add to cache if match is parsed
-                            //TODO: this prevents reparses from showing immediately
-                            if (match.parse_status === 2 && config.NODE_ENV !== "development") {
-                                redis.setex(key, 3600, JSON.stringify(match));
-                            }
-                            return cb(err, match);
-                        });
+                        computeMatchData(match);
+                        renderMatch(match);
+                        //Add to cache if match is parsed
+                        //TODO: this prevents reparses from showing immediately
+                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
+                            redis.setex(key, 3600, JSON.stringify(match));
+                        }
+                        return cb(err, match);
                     });
                 }
             });
@@ -56,54 +51,6 @@ function prepareMatch(match_id, cb) {
     });
 }
 
-function fillPlayerRatingsMatch(match, cb) {
-        //joins the players in a match with their rating at the time
-        //for each player, get the first rating where match_id is lte this match
-        async.each(match.players, function(p, cb) {
-            db.ratings.findOne({
-                account_id: p.account_id,
-                match_id: {
-                    $lte: match.match_id
-                }
-            }, {
-                sort: {
-                    time: -1
-                }
-            }, function(err, doc) {
-                if (err || !doc) {
-                    return cb(err);
-                }
-                p.soloCompetitiveRank = doc.soloCompetitiveRank;
-                p.competitiveRank = doc.competitiveRank;
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }
-    /*
-    function fillPlayerRatingsCurrent(players, cb) {
-    //joins an array of players with their current rating
-        async.each(players, function(p, cb) {
-            db.ratings.findOne({
-                account_id: p.account_id
-            }, {
-                sort: {
-                    time: -1
-                }
-            }, function(err, doc) {
-                if (err || !doc) {
-                    return cb(err);
-                }
-                p.soloCompetitiveRank = doc.soloCompetitiveRank;
-                p.competitiveRank = doc.competitiveRank;
-                cb(err);
-            });
-        }, function(err) {
-            cb(err);
-        });
-    }
-    */
 function fillPlayerNames(players, cb) {
     //make hash of account_ids to players
     //use $in query to get these players from db
@@ -178,18 +125,6 @@ function getSets(cb) {
     });
 }
 
-function getRatingData(account_id, cb) {
-    db.ratings.find({
-        account_id: account_id
-    }, {
-        sort: {
-            time: -1
-        }
-    }, function(err, docs) {
-        cb(err, docs);
-    });
-}
-
 function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
@@ -197,13 +132,19 @@ function fillPlayerData(player, options, cb) {
     //defaults: this player, balanced modes only, put the defaults in options.query
     var default_select = {
         "players.account_id": player.account_id.toString(),
-        "balanced": "1"
+        "significant": "1"
     };
     for (var key in default_select) {
         options.query[key] = options.query[key] || default_select[key];
     }
     //null aggs everything by default (trends page), otherwise, we don't want parsed_data
-    var js_agg = (options.info === "trends") ? null : {"win":1,"lose":1,"games":1,"matchups":1,"teammates":1};
+    var js_agg = (options.info === "trends") ? null : {
+        "win": 1,
+        "lose": 1,
+        "games": 1,
+        "matchups": 1,
+        "teammates": 1
+    };
     advQuery({
         select: options.query,
         project: null, //just project default fields
@@ -262,7 +203,6 @@ function fillPlayerData(player, options, cb) {
 module.exports = {
     fillPlayerData: fillPlayerData,
     fillPlayerNames: fillPlayerNames,
-    getRatingData: getRatingData,
     getSets: getSets,
     prepareMatch: prepareMatch
 };

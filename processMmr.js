@@ -12,12 +12,18 @@ module.exports = function processMmr(job, cb) {
         }
         logger.info("mmr response");
         if (data.soloCompetitiveRank || data.competitiveRank) {
-            db.ratings.insert({
-                match_id: payload.match_id,
-                account_id: payload.account_id,
-                soloCompetitiveRank: data.soloCompetitiveRank,
-                competitiveRank: data.competitiveRank,
-                time: new Date()
+            db.players.update({
+                account_id: payload.account_id
+            }, {
+                 $push: {
+                    ratings:{
+                        match_id: payload.match_id,
+                        account_id: payload.account_id,
+                        soloCompetitiveRank: data.soloCompetitiveRank,
+                        competitiveRank: data.competitiveRank,
+                        time: new Date()
+                    }
+                }
             }, function(err) {
                 cb(err);
             });

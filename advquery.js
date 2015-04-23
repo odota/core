@@ -279,7 +279,11 @@ function aggregator(matches, fields) {
             }
             if (value > aggObj.max) {
                 aggObj.max = value;
-                aggObj.max_match = match;
+                aggObj.max_match = {
+                    match_id: match.match_id,
+                    start_time: match.start_time,
+                    hero_id: match.players[0].hero_id
+                };
             }
         }
     }
@@ -296,8 +300,9 @@ function filter(matches, filters) {
     //filter max gold/xp advantage
     //more filters from parse data
     var conditions = {
-        //filter: balanced game modes only
-        balanced: function(m, key) {
+        //filter: significant, remove unbalanced game modes/lobbies
+        //TODO detect no stats recorded?
+        significant: function(m, key) {
             return Number(constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced) === key;
         },
         //filter: player won
@@ -354,8 +359,10 @@ function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            //failed a test
-            include = include && conditions[key](matches[i], filters[key]);
+            if (conditions[key]) {
+                //failed a test
+                include = include && conditions[key](matches[i], filters[key]);
+            }
         }
         //if we passed, push it
         if (include) {

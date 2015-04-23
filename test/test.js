@@ -173,11 +173,19 @@ before(function(done) {
                         dl(filename, cb);
                     });
                     d.run(function() {
+                        var failed = false;
                         request({
                             url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
-                            timeout: 15000
-                        }).pipe(fs.createWriteStream(path)).on('finish', function(err) {
-                            cb(err);
+                            timeout: 5000
+                        }).pipe(fs.createWriteStream(path)).on('error', function(err) {
+                            console.log(err);
+                            console.log('retrying dl');
+                            failed = true;
+                            dl(filename, cb);
+                        }).on('finish', function() {
+                            if (!failed) {
+                                cb();
+                            }
                         });
                     });
                 }

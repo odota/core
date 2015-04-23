@@ -102,7 +102,10 @@ io.sockets.on('connection', function(socket) {
                     job.on('complete', function(result) {
                         console.log(result);
                         socket.emit('log', "Request Complete!");
-                        socket.emit('complete');
+                        redis.del("match:" + match_id, function(err, resp) {
+                            if (err) console.log(err);
+                            socket.emit('complete');
+                        });
                     });
                     job.on('failed', function(result) {
                         console.log(result);
@@ -190,38 +193,22 @@ app.route('/request').get(function(req, res) {
     });
 });
 app.use('/ratings', function(req, res, next) {
-    db.ratings.distinct('account_id', {}, function(err, array) {
+    db.players.find({
+        "ratings": {
+            $ne: null
+        }
+    }, function(err, docs) {
         if (err) {
             return next(err);
         }
-        //get distinct ids in ratings
-        //get the most recent record for each
-        async.map(array, function(account_id, cb) {
-            db.ratings.findOne({
-                account_id: account_id
-            }, {
-                sort: {
-                    time: -1
-                }
-            }, function(err, rating) {
-                cb(err, rating);
-            });
-        }, function(err, ratings) {
-            if (err) {
-                return next(err);
-            }
-            //get player name for each
-            queries.fillPlayerNames(ratings, function(err) {
-                if (err) {
-                    return next(err);
-                }
-                ratings.sort(function(a, b) {
-                    return b.soloCompetitiveRank - a.soloCompetitiveRank;
-                });
-                res.render("ratings", {
-                    ratings: ratings
-                });
-            });
+        docs.forEach(function(d) {
+            d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
+        });
+        docs.sort(function(a, b) {
+            return b.soloCompetitiveRank - a.soloCompetitiveRank;
+        });
+        res.render("ratings", {
+            ratings: docs
         });
     });
 });
