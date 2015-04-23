@@ -1,26 +1,25 @@
 //external
 window.$ = require('jquery');
-require('../../bower_components/datatables/media/js/jquery.dataTables.js');
-require('../../bower_components/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
-require('../../bower_components/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
-require('../../bower_components/qtip2/jquery.qtip.css');
-require('../../bower_components/qtip2/jquery.qtip.js');
-require('../../bower_components/select2/select2.css');
-require('../../bower_components/select2/select2-bootstrap.css');
-require('../../bower_components/select2/select2.js');
-require('../../bower_components/bootstrap/dist/css/bootstrap.css');
-require('../../bower_components/bootstrap/dist/js/bootstrap.js');
-window.moment = require('../../bower_components/moment/moment.js');
-window.numeral = require('../../bower_components/numeral/numeral.js');
+require('../../node_modules/datatables/media/js/jquery.dataTables.js');
+require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
+require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
+require('../../node_modules/qtip2/jquery.qtip.css');
+require('../../node_modules/qtip2/jquery.qtip.js');
+require('../../node_modules/select2/select2.css');
+require('../../node_modules/select2/select2-bootstrap.css');
+require('../../node_modules/select2/select2.js');
+require('../../node_modules/bootstrap/dist/css/bootstrap.css');
+require('../../node_modules/bootstrap/dist/js/bootstrap.js');
+window.moment = require('../../node_modules/moment/moment.js');
+window.numeral = require('../../node_modules/numeral/numeral.js');
 //window.d3 = require('../../bower_components/d3/d3.js');
-require('../../bower_components/c3/c3.css');
-window.c3 = require('../../bower_components/c3/c3.js');
+require('../../node_modules/c3/c3.css');
+window.c3 = require('../../node_modules/c3/c3.js');
 require('../../bower_components/cal-heatmap/cal-heatmap.css');
-window.CalHeatMap = require('../../bower_components/cal-heatmap/cal-heatmap.js');
-window.h337 = require('../../bower_components/heatmap.js/build/heatmap.js');
-require('../../bower_components/font-awesome/css/font-awesome.css');
-require('../../bower_components/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
-
+window.CalHeatMap = require('../../node_modules/cal-heatmap/cal-heatmap.js');
+window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
+require('../../node_modules/font-awesome/css/font-awesome.css');
+require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 //yasp
 require('../css/flaticon.css');
 require('../css/font.css');
