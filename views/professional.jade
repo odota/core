@@ -1,4 +1,13 @@
 extend layout
 
 block content
-  pre=JSON.stringify(matches)
+  //pre=JSON.stringify(matches)
+  .row
+    .col-md-12
+      table.table
+        each match in matches
+          tr
+            td=match.match_id
+            td=match.dire_name
+            td=match.radiant_name
+            td=match.leagueid

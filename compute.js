@@ -37,7 +37,7 @@ function computeMatchData(match) {
                         //remove meepo/meepo kills
                         if (player.hero_id === 82) {
                             p.kills_log = p.kills_log.filter(function(k) {
-                                k.key !== "npc_dota_hero_meepo";
+                                return k.key !== "npc_dota_hero_meepo";
                             });
                         }
                     }

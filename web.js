@@ -214,7 +214,7 @@ app.use('/ratings', function(req, res, next) {
 });
 app.use('/professional', function(req, res, next) {
     db.matches.find({
-        "league_id":{$gt:0}
+        "leagueid":{$gt:0}
     }, function(err, docs) {
         if (err) {
             return next(err);
