@@ -1,5 +1,7 @@
-web: node web.js
-parser: node parser.js
-worker: node worker.js
-parseManager: node parseManager.js
-scanner: node scanner.js
+web: node index.js
+retriever: node index.js
+parser: node index.js
+worker: node index.js
+parseManager: node index.js
+scanner: node index.js
+proxy: node index.js

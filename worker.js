@@ -8,16 +8,6 @@ var async = require('async');
 var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
 var domain = require('domain');
-/*
-//could build our own solution with socket.io?
-//spin up a seaport and listen for workers to connect
-//generate the list from seaport query and http request each one on build
-//how do we know all the retrievers have checked in?
-//we don't, but the only downside is potentially missing some mmrs for 3 minutes
-var seaport = require('seaport');
-var server = seaport.createServer();
-server.listen(config.REGISTRY_PORT);
-*/
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
