@@ -1,2 +1,4 @@
 var config = require('./config');
-require("./"+(config.ROLE || config.FOREMAN_WORKER_NAME.split(".")[0])+".js");
+var role = config.ROLE || config.FOREMAN_WORKER_NAME.split(".")[0];
+console.log(role);
+require("./"+role+".js");

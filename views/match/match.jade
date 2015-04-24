@@ -1,9 +1,7 @@
 extend /layout
 
 append head
-    - var desc = (constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode) + " - " + (constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster) + " - " + (match.radiant_win ? "Radiant Victory " : "Dire Victory") + " - Length: " + moment().startOf('day').seconds(match.duration).format("H:mm:ss")
     meta(property="og:title", content="Match #{match.match_id}")
-    meta(name="description", content="#{desc}")
     | <!-- This page generated at #{moment(Date.now()).format('MMMM Do YYYY, h:mm:ss a')} -->
     
 block content
@@ -27,8 +25,8 @@ block content
           tr(class = match.radiant_win ? "success" : "danger")
             td= constants.parse_status[match.parse_status]
             td= match.parsed_data ? match.parsed_data.version : "N/A"
-            td= constants.modes[match.game_mode] ? constants.modes[match.game_mode].name : match.game_mode
-            td= constants.regions[match.cluster] ? constants.regions[match.cluster] : match.cluster
+            td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
+            td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow(data-time=match.start_time + match.duration)

@@ -26,7 +26,7 @@ var defaults = {
     "GOAL": 5,
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com",
-    "ROLE": "web", //for specifying a node type
+    "ROLE": "", //for specifying a node type
     //the following are deprecated
     "AWS_S3_BUCKET": false,
     "AWS_ACCESS_KEY_ID": false,

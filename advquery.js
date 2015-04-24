@@ -448,7 +448,10 @@ function advQuery(options, cb) {
         radiant_win: 1,
         parse_status: 1,
         first_blood_time: 1,
-        lobby_type: 1
+        lobby_type: 1,
+        leagueid: 1,
+        radiant_name: 1,
+        dire_name: 1
     };
     options.project = options.project || default_project;
     //select,the query received, build the mongo query and the filter based on this
@@ -465,26 +468,33 @@ function advQuery(options, cb) {
             delete options.select[key];
         }
         else {
-            //split each by comma
-            if (options.select[key].indexOf(",") !== -1) {
-                options.select[key] = options.select[key].split(",");
-            }
-            if (options.select[key].constructor === Array) {
-                //attempt to numberize each element
-                options.select[key] = options.select[key].map(function(e) {
-                    return Number(e);
-                });
-            }
-            else {
-                //number just this element
-                options.select[key] = Number(options.select[key]);
-            }
             if (mongoAble[key]) {
                 //options.project["players.$"] = 1;
                 //options.project.players = 1;
-                options.mongo_select[key] = options.select[key];
+                if (options.select[key] === "gtzero") {
+                    options.mongo_select[key] = {
+                        $gt: 0
+                    };
+                }
+                else {
+                    options.mongo_select[key] = Number(options.select[key]);
+                }
             }
             else {
+                //split each by comma
+                if (options.select[key].indexOf(",") !== -1) {
+                    options.select[key] = options.select[key].split(",");
+                }
+                if (options.select[key].constructor === Array) {
+                    //attempt to numberize each element
+                    options.select[key] = options.select[key].map(function(e) {
+                        return Number(e);
+                    });
+                }
+                else {
+                    //number just this element
+                    options.select[key] = Number(options.select[key]);
+                }
                 options.js_select[key] = options.select[key];
             }
         }
@@ -561,7 +571,7 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    //console.log(options);
+    console.log(options);
     console.time('db');
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {

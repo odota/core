@@ -77,5 +77,5 @@ block playercontent
 
 append footer_assets
   script.
-    var ratings = !{JSON.stringify(ratings)};
+    var ratings = !{JSON.stringify(player.ratings || [])};
     ratingsChart(ratings);

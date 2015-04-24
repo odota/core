@@ -188,13 +188,11 @@ app.route('/').get(function(req, res, next) {
         rc_public: rc_public
     });
 });
-
 app.route('/request').get(function(req, res) {
     res.render('request', {
         rc_public: rc_public
     });
 });
-
 app.use('/ratings', function(req, res, next) {
     db.players.find({
         "ratings": {
@@ -215,17 +213,29 @@ app.use('/ratings', function(req, res, next) {
         });
     });
 });
-app.use('/professional', function(req, res, next) {
-    db.matches.find({
-        "leagueid": {
-            $gt: 0
+var advQuery = require('./advquery');
+app.use('/professional/:info?', function(req, res, next) {
+    advQuery({
+        select: {
+            "leagueid": "gtzero"
+        },
+        project: null, //just project default fields
+        js_agg: null,
+        js_sort: {
+            match_id: -1
         }
-    }, function(err, docs) {
+    }, function(err, results) {
         if (err) {
             return next(err);
         }
+        //TODO dedup matches for display purposes
+        //do same aggregations as for player
         res.render("professional", {
-            matches: docs
+            q: req.query,
+            //route: info,
+            //tabs: playerPages,
+            matches: results.data,
+            //aggData: results.aggData
         });
     });
 });

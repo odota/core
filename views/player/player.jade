@@ -1,41 +1,42 @@
 extend /layout
 
 block content
-  .row.match-top 
-    .col-md-1
-      img(src='#{player.avatarmedium}').img-thumbnail
-    .col-md-4
-      h1= player.personaname || player.account_id
-    .col-md-1
-      if player.cheese
-        i.flaticon-1.medium-cheese(style="display:inline-block")
-        div.text-right x#{player.cheese}
-    .col-md-6
-      table.table.table-condensed
-        thead
-          tr
-            th Record
-            th Full History
-            th Name Update
-            th Last Visit
-        tbody
-          tr
-            td <span class="green">#{player.aggData.win}</span>-<span class="red">#{player.aggData.lose}</span> <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
-            td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
-            td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
-            td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
-  if (user && user.account_id === player.account_id)
-    .row
-      .col-md-12
-        if (!user.full_history_time)
-          .alert.alert-danger We're watching your games and parsing them from now on, but we don't have your old matches yet!  Check back later to see if we've gotten your full history.
-        if (!ratingPlayers[user.account_id])
-          .alert.alert-info Want to include your MMR on your profile and be eligible for the leaderboard? 
-            a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add a tracker.
-        .checkbox
-          label
-            input.pref#theme(type="checkbox", checked=user.light_theme)
-            | Use Light Theme
+  if player.account_id
+    .row.match-top 
+      .col-md-1
+        img(src='#{player.avatarmedium}').img-thumbnail
+      .col-md-4
+        h1= player.personaname || player.account_id
+      .col-md-1
+        if player.cheese
+          i.flaticon-1.medium-cheese(style="display:inline-block")
+          div.text-right x#{player.cheese}
+      .col-md-6
+        table.table.table-condensed
+          thead
+            tr
+              th Record
+              th Full History
+              th Name Update
+              th Last Visit
+          tbody
+            tr
+              td <span class="green">#{player.aggData.win}</span>-<span class="red">#{player.aggData.lose}</span> <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
+              td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
+              td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
+              td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
+    if (user && user.account_id === player.account_id)
+      .row
+        .col-md-12
+          if (!user.full_history_time)
+            .alert.alert-danger We're watching your games and parsing them from now on, but we don't have your old matches yet!  Check back later to see if we've gotten your full history.
+          if (!ratingPlayers[user.account_id])
+            .alert.alert-info Want to include your MMR on your profile and be eligible for the leaderboard? 
+              a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add a tracker.
+          .checkbox
+            label
+              input.pref#theme(type="checkbox", checked=user.light_theme)
+              | Use Light Theme
   .row(style="margin-top:1em;")
     .col-md-12
       ul.nav.nav-tabs
