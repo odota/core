@@ -145,7 +145,7 @@
     "status": "Queued: Replay is being downloaded/processed<br>Parsed: Replay has been obtained and processed<br>Unavailable: Replay has expired and no additional stats could be obtained<br>Skipped: We didn't automatically parse this match due to user inactivity."
   },
   "anonymous_account_id": 4294967295,
-  "lobbies": {
+  "lobby_type": {
     "-1": {
       "id": -1,
       "name": "Invalid"
@@ -192,7 +192,7 @@
       "name": "Solo Mid 1v1"
     }
   },
-  "modes": {
+  "game_mode": {
     "0": {
       "id": 0,
       "name": "Unknown",
@@ -999,7 +999,7 @@
     "5654": "winter_wyvern_winters_curse",
     "wisp_spirits_out": "wisp_spirits_in"
   },
-  "regions": {
+  "cluster": {
     "111": "US West",
     "112": "US West",
     "113": "US West",

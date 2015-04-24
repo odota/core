@@ -168,6 +168,7 @@ function aggregator(matches, fields) {
         "purchase_time_count": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.purchase_time_count, m);
         },
+        //lifetime item purchases
         "purchase": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.purchase, m);
         },
@@ -180,6 +181,7 @@ function aggregator(matches, fields) {
         "xp_reasons": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.xp_reasons, m);
         },
+        //lifetime skill accuracy
         "ability_uses": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.ability_uses, m);
         },
@@ -303,7 +305,7 @@ function filter(matches, filters) {
         //filter: significant, remove unbalanced game modes/lobbies
         //TODO detect no stats recorded?
         significant: function(m, key) {
-            return Number(constants.modes[m.game_mode].balanced && constants.lobbies[m.lobby_type].balanced) === key;
+            return Number(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced) === key;
         },
         //filter: player won
         win: function(m, key) {
@@ -453,8 +455,9 @@ function advQuery(options, cb) {
     options.mongo_select = {};
     options.js_select = {};
     var mongoAble = {
-        "players.account_id": 1
-            //"players.hero_id": 1
+        "players.account_id": 1,
+        "leagueid": 1,
+        "players.hero_id": 1
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
@@ -478,7 +481,7 @@ function advQuery(options, cb) {
             }
             if (mongoAble[key]) {
                 //options.project["players.$"] = 1;
-                options.project.players = 1;
+                //options.project.players = 1;
                 options.mongo_select[key] = options.select[key];
             }
             else {
@@ -486,6 +489,7 @@ function advQuery(options, cb) {
             }
         }
     }
+    /*
     if (!Object.keys(options.mongo_select).length) {
         //we don't have a "primary" player, so just return the first
         options.project.players = {
@@ -496,7 +500,8 @@ function advQuery(options, cb) {
             match_id: -1
         };
     }
-    //options.project.players = 1;
+    */
+    options.project.players = 1;
     //only project the fields we need
     options.project["players.account_id"] = 1;
     options.project["players.hero_id"] = 1;
@@ -563,20 +568,22 @@ function advQuery(options, cb) {
             return cb(err);
         }
         console.timeEnd('db');
+        var expanded_matches = [];
         matches.forEach(function(m) {
             //get all_players and primary player
             m.all_players = m.players.slice(0);
             //console.log(m.players.length, m.all_players.length);
             //use the mongodb select criteria to filter the player list
-            if (Object.keys(options.mongo_select).length) {
-                m.players = m.players.filter(function(p) {
-                    return p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"];
-                });
-            }
-            else {
-                m.players = m.players.slice(0, 1);
-            }
+            //create a new match with this primary player
+            //all players for tournament games, otherwise player matching select criteria
+            m.players.forEach(function(p) {
+                if (options.select["leagueid"] || p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"]) {
+                    m.players = [p];
+                    expanded_matches.push(JSON.parse(JSON.stringify(m)));
+                }
+            });
         });
+        matches = expanded_matches;
         console.time("fullplayerdata");
         getFullPlayerData(matches, bGetFullPlayerData, function(err) {
             if (err) {

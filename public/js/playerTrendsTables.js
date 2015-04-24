@@ -1,6 +1,6 @@
 module.exports = function playerTrendsTables() {
     var accuracy = $('#accuracy').dataTable({
-        "searching": true,
+        //"searching": false,
         "paging": true,
         "order": [
             [2, "desc"]

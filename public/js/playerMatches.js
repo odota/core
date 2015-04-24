@@ -107,7 +107,7 @@ module.exports = function playerMatches(teammates) {
                 data: 'game_mode',
                 title: 'Game Mode',
                 render: function(data, type) {
-                    return constants.modes[data] ? constants.modes[data].name : data;
+                    return constants.game_mode[data] ? constants.game_mode[data].name : data;
                 }
             },
             /*
@@ -115,7 +115,7 @@ module.exports = function playerMatches(teammates) {
                 data: 'cluster',
                 title: 'Region',
                 render: function(data, type) {
-                    return constants.regions[data] ? constants.regions[data] : data;
+                    return constants.cluster[data] ? constants.cluster[data] : data;
                 }
             },
             */

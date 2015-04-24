@@ -1,0 +1,17 @@
+extend player
+
+block playercontent
+  .row
+    .col-md-12
+      include /query
+  
+  hr
+  .row
+    .col-md-12
+      h2 Activity
+      #cal-heatmap
+    
+
+append footer_assets
+  script.
+    createCalHeatmap(!{JSON.stringify(player.aggData.start_time.counts)});

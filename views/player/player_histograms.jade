@@ -1,0 +1,57 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
+  //th KDA
+  //th Abandon
+  //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
+  //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
+  .row
+    .col-md-12
+      include /query
+  
+  hr
+  .histograms.match
+    .row
+      .col-md-12
+        h2 Histograms
+        - var histograms = {"day":1,"hour":1,"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kills":1,"deaths":1,"assists":1,"level":1,"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
+        - var times={"duration":1,"first_blood_time":1}
+        - var permin={"gold_per_min":1,"xp_per_min":1}
+        - var advanced={"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1, "buyback_count":1,"observer_uses":1, "sentry_uses":1}
+        script.
+          var histogramData = {};
+        each val, key in histograms
+          .row
+            .col-md-4
+              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+            .col-md-6.col-md-offset-2
+              if player.aggData[key]
+                - var avg = player.aggData[key].sum/player.aggData[key].n
+                - var val = player.aggData[key]
+                table.table.table-condensed
+                  tr
+                    th Games
+                    th Avg
+                    th Record
+                    th Set
+                    th Sum
+                  tr
+                    td #{val.n}
+                    td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{(avg).toFixed(2)}
+                    td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
+                    td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
+                    td #{val.sum}
+          - var source = (key==="day" || key==="hour") ? "start_time" : key
+          script.
+            histogramData["#{key}"] = !{JSON.stringify(player.aggData[source])};
+          div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
+          
+append footer_assets
+  script.
+    $(".histogram-chart").each(function() {
+        var key = $(this).attr('data-histogram');
+        var counts = histogramData[key].counts;
+        var win_counts = histogramData[key].win_counts;
+        createHistogram(counts, win_counts, key);
+    });

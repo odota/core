@@ -9,8 +9,17 @@ var playerPages = {
     index: {
         name: "Player"
     },
-    trends: {
-        name: "Trends"
+    histograms: {
+        name: "Histograms"
+    },
+    activity: {
+        name: "Activity"
+    },
+    counts: {
+        name: "Counts"
+    },
+    advanced: {
+        name: "Advanced"
     }
 };
 players.get('/:account_id/:info?', function(req, res, next) {

@@ -137,7 +137,8 @@ function fillPlayerData(player, options, cb) {
     for (var key in default_select) {
         options.query[key] = options.query[key] || default_select[key];
     }
-    //null aggs everything by default (trends page), otherwise, we don't want parsed_data
+    /*
+    //null aggs everything by default
     var js_agg = (options.info === "trends") ? null : {
         "win": 1,
         "lose": 1,
@@ -145,6 +146,8 @@ function fillPlayerData(player, options, cb) {
         "matchups": 1,
         "teammates": 1
     };
+    */
+    var js_agg = null;
     advQuery({
         select: options.query,
         project: null, //just project default fields

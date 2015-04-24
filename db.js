@@ -32,7 +32,8 @@ db.matches.index({
     'parse_status': 1
 });
 db.matches.index({
-    'leagueid': 1
+    'leagueid': 1,
+    'match_id': -1
 });
 db.players.index('account_id', {
     unique: true
