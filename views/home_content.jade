@@ -8,11 +8,13 @@
     if !user
       a.btn.btn-default.btn-lg(href='/login')
         img(src='http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_border.png')
-        h4 Parse my matches!
+        h4 Start parsing my matches
     else
-      h3 
-        a.btn.btn-default.btn-lg(href='/players/' + user.account_id) #{user.personaname}
-    h3: a(href="/request") Or parse a single match
+      a.btn.btn-default.btn-lg(href='/players/' + user.account_id) 
+        h4 #{user.personaname}
+    div &nbsp;
+    a.btn.btn-default.btn-lg(href="/request")
+      h4 parse a match by id
     
 section.main
   a.arrow-wrap(href='#philosophy')

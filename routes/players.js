@@ -46,7 +46,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                         req.query[key] = req.query[key] || default_select[key];
                     }
                     fillPlayerData(player, {
-                        info: req.params.info,
+                        info: info,
                         query: req.query
                     }, function(err) {
                         if (err) {
@@ -87,17 +87,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
 function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
+    if (options.info==="index"){
+        //index is loaded completely via ajax
+        return cb(null, player);
+    }
     //options.query, the querystring from the user, pass these as select conditions
-    /*
-    //null aggs everything by default
-    var js_agg = (options.info === "trends") ? null : {
-        "win": 1,
-        "lose": 1,
-        "games": 1,
-        "matchups": 1,
-        "teammates": 1
-    };
-    */
     advQuery({
         select: options.query,
         project: null, //just project default fields
@@ -123,34 +117,7 @@ function fillPlayerData(player, options, cb) {
             utility.generatePositionData(d, player);
             player.posData = [d];
         }
-        //get teammates, heroes, convert hashes to arrays and sort them
-        player.heroes_arr = [];
-        var matchups = player.aggData.matchups;
-        for (var id in matchups) {
-            var h = matchups[id];
-            player.heroes_arr.push(h);
-        }
-        player.heroes_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        player.teammates = [];
-        var teammates = player.aggData.teammates;
-        for (var id in teammates) {
-            var tm = teammates[id];
-            id = Number(id);
-            //don't include if anonymous, the player himself, or if less than 3 games
-            if (id !== constants.anonymous_account_id && id !== player.account_id && tm.games >= 3) {
-                player.teammates.push(tm);
-            }
-        }
-        player.teammates.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        console.time('teammate_lookup');
-        queries.fillPlayerNames(player.teammates, function(err) {
-            console.timeEnd('teammate_lookup');
-            cb(err, player);
-        });
+        cb(err, player);
     });
 }
 module.exports = players;

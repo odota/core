@@ -48,6 +48,9 @@ function prepareMatch(match_id, cb) {
 }
 
 function fillPlayerNames(players, cb) {
+    if (!players){
+        return cb();
+    }
     //make hash of account_ids to players
     //use $in query to get these players from db
     //loop through results and join with players by hash

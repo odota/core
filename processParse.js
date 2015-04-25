@@ -116,6 +116,7 @@ function runParse(job, cb) {
         "gold_reasons": function(e) {
             if (!constants.gold_reasons[e.key]) {
                 //new gold reason
+                //reason 8=cheat?
                 console.log(e);
             }
             getSlot(e);

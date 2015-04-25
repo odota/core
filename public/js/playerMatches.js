@@ -1,4 +1,4 @@
-module.exports = function playerMatches(teammates) {
+module.exports = function playerMatches() {
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -23,7 +23,7 @@ module.exports = function playerMatches(teammates) {
     });
     $("#with_account_id").select2({
         //placeholder: "Included: Any Player",
-        tags: teammates || [],
+        tags: [],
         maximumSelectionSize: 10
     });
     $("#teammate_hero_id").select2({
@@ -48,9 +48,82 @@ module.exports = function playerMatches(teammates) {
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
         //draw things with the returned data
+        //teammates for select2
+        //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
+        //teammate table
+        //hero table
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
         $("#winrate").text(pct + "%").width(pct + "%");
-        $("#count").text(json.aggData.games);
+        $("#record").text(json.aggData.win + "-" + json.aggData.lose);
+        var teammates = $('#teammates').dataTable({
+            //"searching": false,
+            "paging": true,
+            data: json.aggData.teammates,
+            "order": [
+            [1, "desc"]
+        ],
+            "columns": [{
+                data: "account_id"
+            }, {
+                data: "games"
+            }, {
+                data: "win"
+            }, {
+                data: "last_played",
+                render: function(data, type) {
+                    if (type === "display") {
+                        if (!Number(data)) {
+                            return "never";
+                        }
+                        else {
+                            return moment.unix(data).fromNow();
+                        }
+                    }
+                    return data;
+                }
+        }]
+        });
+        var heroes = $('#heroes').dataTable({
+            //"searching": false,
+            "paging": true,
+            data: json.aggData.matchups,
+            "drawCallback": function() {
+                tooltips();
+                formatHtml();
+            },
+
+            "order": [
+            [2, "desc"]
+        ],
+            "columns": [{
+                data: "hero_id"
+            }, {
+                data: "games"
+            }, {
+                data: "win"
+            }, {
+                data: "with_games"
+            },{
+                data: "with_win"
+            },{
+                data: "against_games"
+            },{
+                data: "against_win"
+            },{
+                data: "last_played",
+                render: function(data, type) {
+                    if (type === "display") {
+                        if (!Number(data)) {
+                            return "never";
+                        }
+                        else {
+                            return moment.unix(data).fromNow();
+                        }
+                    }
+                    return data;
+                }
+        }]
+        });
     }).dataTable({
         "order": [
                 [0, "desc"]
@@ -62,7 +135,13 @@ module.exports = function playerMatches(teammates) {
             "data": function(d) {
                 d.select = $('form').serializeObject();
                 //api enforces blank agg if null passed in, so this can be null or {}
-                d.agg = {};
+                d.js_agg = {
+                    "win": 1,
+                    "lose": 1,
+                    "games": 1,
+                    "matchups": 1,
+                    "teammates": 1
+                };
             }
         },
         "deferRender": true,

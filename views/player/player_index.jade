@@ -8,6 +8,17 @@ block playercontent
      .col-md-12
        include /query
   .row
+    .col-md-12
+      table.table
+        tr
+          th Record
+          th Win%
+        tr
+          td#record
+          td
+            .progress
+              .progress-bar.progress-bar-success#winrate
+  .row
     .col-md-12.table-responsive
       h3 Matches
       table.table#matches
@@ -64,11 +75,13 @@ block playercontent
   hr
   .row
     .col-md-12
-      +hero_table(player.heroes_arr, true)
+      table.table#heroes
+      //+hero_table(player.heroes_arr, true)
   hr
   .row
     .col-md-6
-      +teammate_table(player.teammates)
+      table.table#teammates
+      //+teammate_table(player.teammates)
     .col-md-6.match
       h3 Rating
         small.rating#solo Solo:

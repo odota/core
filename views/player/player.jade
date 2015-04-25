@@ -15,13 +15,13 @@ block content
         table.table.table-condensed
           thead
             tr
-              th Record
+              //th Record
               th Full History
               th Name Update
               th Last Visit
           tbody
             tr
-              td <span class="green">#{player.aggData.win}</span>-<span class="red">#{player.aggData.lose}</span> <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
+              //td <span class="green">#{player.aggData.win}</span>-<span class="red">#{player.aggData.lose}</span> <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
               td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
               td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
               td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")} <br> (#{(player.account_id in trackedPlayers) ? "tracked" : "untracked"})
@@ -54,8 +54,7 @@ block content
       
 append footer_assets
   script.
-    var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
-    playerMatches(teammates);
+    playerMatches();
     playerTrendsTables();
     $(".pref").change(function() {
         $.post(
