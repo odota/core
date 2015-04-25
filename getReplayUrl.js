@@ -8,6 +8,9 @@ module.exports = function getReplayUrl(match, cb) {
     db.matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
+        if (match.url) { //if there's already a url, for custom jobs!
+            return cb(err);
+        }
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             console.log("replay expired, not getting replay url");
             //set status to 1 if this match isn't parsed already

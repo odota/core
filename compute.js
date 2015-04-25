@@ -141,6 +141,8 @@ function computeMatchData(match) {
      **/
 function renderMatch(match) {
         var schema = utility.getParseSchema();
+        //fill in version 0 if not present
+        schema.version = 0;
         //make sure match.parsed_data is not null
         match.parsed_data = match.parsed_data || schema;
         //make sure parsed_data has all fields
