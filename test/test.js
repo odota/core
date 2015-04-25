@@ -452,35 +452,11 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/players/:invalid/matches', function(done) {
-            supertest(app).get('/players/1/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(500).end(function(err, res) {
-                    done(err);
-                });
-        });
         it('/players/:valid', function(done) {
             supertest(app).get('/players/88367253')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(200).expect(/.-./).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid/matches', function(done) {
-            supertest(app).get('/players/88367253/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Matches/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid/trends', function(done) {
-            supertest(app).get('/players/88367253/trends')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Filter/).end(function(err, res) {
                     done(err);
                 });
         });
