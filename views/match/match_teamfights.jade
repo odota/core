@@ -43,12 +43,14 @@ block match_content
         table.table.table-hover
           thead#header
             tr
-              th
+              th(style="font-size:30px;") !{"&#128128;"}
+              th(style="font-size:30px;") !{"&#128176;"}
               th Hero
               th Ability Use
               th Item Use
-              th Died
-              th Bought Back
+              th Kills
+              //th Deaths
+              //th Buybacks
               th Damage
               th Gold Change
               th XP Change
@@ -60,6 +62,9 @@ block match_content
                     td
                       if player.deaths
                         div(style="font-size:30px;") !{"&#128128;"}
+                    td
+                      if player.buybacks
+                       div(style="font-size:30px;") !{"&#128176;"}
                     - var hero = constants.heroes[player.hero_id]
                     td
                       if hero
@@ -79,10 +84,22 @@ block match_content
                       each val, key in player.item_uses
                         - var item = constants.items[key]
                         div.img-text
-                          img.item(src=item.img, alt=key)
-                          div #{val}
-                    td=player.deaths
-                    td=player.buybacks
+                          if item
+                            img.item(src=item.img, alt=key)
+                            div #{val}
+                          else
+                            =key
+                    td
+                      each val, key in player.kills
+                        - var hero = constants.hero_names[key]
+                        div.img-text
+                          if hero
+                            img.dmg(src=hero.img, title=key)
+                            div #{val}
+                          else
+                            //=key
+                    //td=player.deaths
+                    //td=player.buybacks
                     td=player.damage
                     td=player.gold_delta
                     td=player.xp_delta

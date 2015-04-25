@@ -204,6 +204,7 @@ function runParse(job, cb) {
                             deaths_pos: {},
                             ability_uses: {},
                             item_uses: {},
+                            kills: {},
                             deaths: 0,
                             buybacks: 0,
                             damage: 0
@@ -465,6 +466,9 @@ function runParse(job, cb) {
                     if (e.time >= tf.start && e.time <= tf.end) {
                         //kills_log tracks only hero kills on non-illusions
                         if (e.type === "kills_log") {
+                            //count toward kills
+                            e.type = "kills";
+                            populate(e, tf);
                             //get slot of target
                             e.slot = hero_to_slot[e.key];
                             //0 is valid value, so check for undefined

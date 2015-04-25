@@ -1,7 +1,7 @@
 h3.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
-  form(action="" method="GET")
+  form#query(action="" method="GET")
     //pre=JSON.stringify(q)
     .row(style=player ? "display:none;" : "display:none;")
       h4 Global 
@@ -24,34 +24,39 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .col-md-6
         .form-group
           label Hero
-          select.form-control(name="hero_id" multiple placeholder="Any Hero")#hero_id
+          select.form-control(name="hero_id", multiple, placeholder="Played Any Hero")#hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
         .form-group
           label The Players Included (Account ID)
-          input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Any Player", value=q.with_account_id )#with_account_id
+          input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Included: Any Player", value=q.with_account_id )#with_account_id
           //-
+            //disabled due to passing teammates to select2
             each tm in player.teammates
               option(value=tm.account_id, selected=(q.with_account_id && typeof q.with_account_id==="object" ? q.with_account_id.indexOf(tm.account_id.toString())!==-1 : Number(q.with_account_id)===tm.account_id)) #{tm.personaname} (#{tm.account_id})
         .form-group
           label The Team Included
-          select.form-control(name="teammate_hero_id" multiple placeholder="Any Hero")#teammate_hero_id
+          select.form-control(name="teammate_hero_id" multiple, placeholder="Team: Any Hero")#teammate_hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q.teammate_hero_id && typeof q.teammate_hero_id==="object" ? q.teammate_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.teammate_hero_id)===entry.id))=entry.localized_name
-            
         .form-group
           label The Enemies Included
-          select.form-control(name="against_hero_id" multiple placeholder="Any Hero")#enemy_hero_id
+          select.form-control(name="against_hero_id" multiple, placeholder="Enemy: Any Hero")#enemy_hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q.against_hero_id && typeof q.against_hero_id==="object" ? q.against_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.against_hero_id)===entry.id))=entry.localized_name
-      .col-md-6
+        .form-group  
+          label Faction
+          select.form-control(name="isRadiant")
+            option(value="all") All Factions
+            option(value="1", selected=q.radiant) Radiant
+            option(value="0", selected=(q["isRadiant"]===0)) Dire
         .form-group  
           label Result
           select.form-control(name="win")
             option(value="all") All Results
             option(value="1", selected=q.win) Wins
-            option(value="0", selected=(q.win===0)) Losses
-        
+            option(value="0", selected=(q["win"]===0)) Losses
+      .col-md-6
         .form-group
           label Patch
           select.form-control(name="patch")
@@ -72,24 +77,24 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="all") All Lobbies
             each entry in constants.lobby_type
               option(value=entry.id, selected=(Number(q.lobby_type)===entry.id))=entry.name
-        //-
-          .form-group
-            label League
-            select.form-control(name="leagueid")
-              option(value="all") All Leagues
-              option(value="gtzero") All Professional Games
-              each entry in constants.leagueid
-                option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
-              
-        .form-group  
-          label 
-            abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
+        .form-group
+          label League
+          select.form-control(name="leagueid")
+            option(value="all") All Leagues
+            option(value="gtzero") All Pro Games
+            //each entry in constants.leagueid
+              //option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
+        .form-group
+          label Significant
           select.form-control(name="significant")
             option(value="1",  selected=Boolean(Number(q.significant))) Significant Matches
             option(value="all", selected=!Boolean(Number(q.significant))) All Matches
+
     .row
       .col-md-12.text-center
         button.btn.btn-yasp(type="submit") Do the Thing
+        p: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant?
+
 
 //-
   h3 Results

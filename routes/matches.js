@@ -28,12 +28,6 @@ var matchPages = {
         name: "Chat"
     }
 };
-matches.get('/', function(req, res) {
-    res.render('matches.jade', {
-        q: req.query,
-        title: "Matches - YASP"
-    });
-});
 matches.get('/:match_id/:info?', function(req, res, next) {
     console.time("match page");
     queries.prepareMatch(req.params.match_id, function(err, match) {

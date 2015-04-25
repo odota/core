@@ -145,6 +145,12 @@ app.use('/ratings', function(req, res, next) {
         });
     });
 });
+app.use('/all/:info?', function(req, res) {
+    res.render('matches.jade', {
+        q: req.query,
+        title: "Matches - YASP"
+    });
+});
 var advQuery = require('./advquery');
 app.use('/professional/:info?', function(req, res, next) {
     advQuery({

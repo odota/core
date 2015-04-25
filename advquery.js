@@ -296,14 +296,7 @@ function aggregator(matches, fields) {
 
 function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
-    console.log(filters);
-    //todo implement more filters
-    //filter: specific regions (tricky because there are multiple ids per region)
-    //filter: endgame item
-    //filter: no stats recorded (need to implement custom filter to detect)
-    //filter kill differential
-    //filter max gold/xp advantage
-    //more filters from parse data
+    //console.log(filters);
     var conditions = {
         //filter: significant, remove unbalanced game modes/lobbies
         //TODO detect no stats recorded?
@@ -322,6 +315,9 @@ function filter(matches, filters) {
         },
         hero_id: function(m, key) {
             return m.players[0].hero_id === key;
+        },
+        isRadiant: function(m, key) {
+            return Number(m.players[0].isRadiant) === key;
         },
         //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
         //ensure all array elements fit the condition
@@ -349,15 +345,22 @@ function filter(matches, filters) {
         },
         //against_hero_id
         against_hero_id: function(m, key) {
-            if (key.constructor !== Array) {
-                key = [key];
-            }
-            return key.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
+                if (key.constructor !== Array) {
+                    key = [key];
+                }
+                return key.every(function(k) {
+                    return m.all_players.some(function(p) {
+                        return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
+                    });
                 });
-            });
-        }
+            }
+            //TODO implement more filters
+            //filter: specific regions (tricky because there are multiple ids per region)
+            //filter: endgame item
+            //filter: no stats recorded (need to implement custom filter to detect)
+            //filter kill differential
+            //filter max gold/xp advantage
+            //more filters from parse data
     };
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
@@ -378,8 +381,7 @@ function filter(matches, filters) {
 }
 
 function sort(matches, sorts) {
-    console.log(sorts);
-    //todo implement more sorts
+    //console.log(sorts);
     //dir 1 ascending, -1 descending
     var sortFuncs = {
         match_id: function(a, b, dir) {
@@ -424,9 +426,10 @@ function sort(matches, sorts) {
         "players[0].hero_healing": function(a, b, dir) {
                 return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
             }
+            //TODO implement more sorts
             //game mode
             //hero (sort alpha?)
-            //played
+            //played time
             //result
             //region
             //parse status
@@ -590,7 +593,15 @@ function advQuery(options, cb) {
             //create a new match with this primary player
             //all players for tournament games, otherwise player matching select criteria
             m.players.forEach(function(p) {
-                if (options.mongo_select["leagueid"] || p.account_id === options.mongo_select["players.account_id"] || p.hero_id === options.mongo_select["players.hero_id"]) {
+                var pass = true;
+                //check mongo query, if starting with player
+                for (var key in options.mongo_select) {
+                    var split = key.split(".");
+                    if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
+                        pass = false;
+                    }
+                }
+                if (pass) {
                     m.players = [p];
                     expanded_matches.push(JSON.parse(JSON.stringify(m)));
                 }
