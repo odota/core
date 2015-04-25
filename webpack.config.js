@@ -4,7 +4,9 @@ module.exports = {
         'yasp': './public/js/yasp.js'
     },
     output: {
-        filename: './public/build/[name].min.js',
+        filename: '[name].min.js',
+        path: './public/build/',
+        publicPath: "/public/build/"
     },
     module: {
         loaders: [
@@ -14,11 +16,11 @@ module.exports = {
             },
             {
                 test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader?limit=10000&minetype=application/font-woff&name=public/build/[hash].[ext]"
+                loader: "url-loader?limit=10000&minetype=application/font-woff&name=[hash].[ext]"
             },
             {
                 test: /\.(ttf|eot|svg|jpg|gif|png)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "file-loader?name=public/build/[hash].[ext]"
+                loader: "file-loader?name=[hash].[ext]"
                 }
         ]
     },

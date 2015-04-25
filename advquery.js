@@ -590,7 +590,7 @@ function advQuery(options, cb) {
             //create a new match with this primary player
             //all players for tournament games, otherwise player matching select criteria
             m.players.forEach(function(p) {
-                if (options.select["leagueid"] || p.account_id === options.select["players.account_id"] || p.hero_id === options.select["players.hero_id"]) {
+                if (options.mongo_select["leagueid"] || p.account_id === options.mongo_select["players.account_id"] || p.hero_id === options.mongo_select["players.hero_id"]) {
                     m.players = [p];
                     expanded_matches.push(JSON.parse(JSON.stringify(m)));
                 }
@@ -631,6 +631,8 @@ function advQuery(options, cb) {
 }
 
 function getFullPlayerData(matches, doAction, cb) {
+    cb();
+    /*
     if (!doAction) {
         return cb();
     }
@@ -664,6 +666,7 @@ function getFullPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
+    */
 }
 
 function getParsedPlayerData(matches, doAction, cb) {
