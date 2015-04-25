@@ -239,7 +239,9 @@ function renderMatch(match) {
             "garbage": -1,
             "trash": -1,
             "throw": -1,
-            "salt": -1
+            "salt": -1,
+            "ez": -1,
+            "mad": -1
         });
         match.graphData = generateGraphData(match);
         match.posData = match.players.map(function(p) {
