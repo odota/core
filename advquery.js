@@ -115,6 +115,9 @@ function aggregator(matches, fields) {
         "total_gold": function(key, m, p) {
             standardAgg(key, p.total_gold, m);
         },
+        "total_xp": function(key, m, p) {
+            standardAgg(key, p.total_xp, m);
+        },
         "gold_per_min": function(key, m, p) {
             standardAgg(key, p.gold_per_min, m);
         },
