@@ -166,28 +166,25 @@ before(function(done) {
                     cb();
                 }
                 else {
-                    var d = domain.create();
-                    d.on('error', function(err) {
-                        console.log(err);
-                        console.log("error downloading, retrying");
+                    var failed = false;
+                    var to = setTimeout(function() {
+                        failed = true;
+                        console.log("download took too long, retrying");
                         dl(filename, cb);
-                    });
-                    d.run(function() {
-                        var failed = false;
-                        request({
-                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
-                            timeout: 3000
-                        }).pipe(fs.createWriteStream(path)).on('error', function(err) {
-                            console.log(err);
-                            console.log('retrying dl %s', filename);
-                            failed = true;
-                            dl(filename, cb);
-                        }).on('finish', function() {
-                            if (!failed) {
-                                console.log("completed %s", filename);
-                                cb();
-                            }
-                        });
+                    }, 10000);
+                    request({
+                        url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
+                    }).pipe(fs.createWriteStream(path)).on('error', function(err) {
+                        console.log(err);
+                        console.log('retrying dl %s', filename);
+                        failed = true;
+                        dl(filename, cb);
+                    }).on('finish', function() {
+                        if (!failed) {
+                            console.log("completed %s", filename);
+                            clearTimeout(to);
+                            cb();
+                        }
                     });
                 }
             }

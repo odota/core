@@ -8,7 +8,7 @@ module.exports = function getReplayUrl(match, cb) {
     db.matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
-        if (match.url) { //if there's already a url, for custom jobs!
+        if (match.url || match.fileName) { //if there's already a url or filename, for custom jobs!
             return cb(err);
         }
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
