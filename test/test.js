@@ -636,15 +636,6 @@ describe("web", function() {
 var io = require('socket.io-client');
 describe("unit test", function() {
     this.timeout(wait);
-    it('insertmatch', function(done) {
-        operations.insertMatch({
-            match_id: 2,
-            start_time: new Date().getTime() / 1000,
-            players: []
-        }, function(err, job2) {
-            done(err);
-        });
-    });
     it('socket request', function(done) {
         jobs.process('request', processApi);
         //fake replay response
