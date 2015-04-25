@@ -19,7 +19,19 @@ var permanent = {
 startScan();
 
 function startScan() {
-    if (config.START_SEQ_NUM === "AUTO") {
+    if (config.START_SEQ_NUM === "REDIS") {
+        redis.get("match_seq_num", function(err, result) {
+            if (err || !result) {
+                return startScan();
+            }
+            result = Number(result);
+            scanApi(result);
+        });
+    }
+    else if (config.START_SEQ_NUM) {
+        scanApi(config.START_SEQ_NUM);
+    }
+    else {
         var container = generateJob("api_history", {});
         getData(container.url, function(err, data) {
             if (err) {
@@ -27,18 +39,6 @@ function startScan() {
                 return startScan();
             }
             scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
-    else if (config.START_SEQ_NUM) {
-        scanApi(config.START_SEQ_NUM);
-    }
-    else {
-        redis.get("match_seq_num", function(err, result) {
-            if (err || !result) {
-                return startScan();
-            }
-            result = Number(result);
-            scanApi(result);
         });
     }
 }
@@ -67,7 +67,7 @@ function scanApi(seq_num) {
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
             async.each(resp, function(match, cb) {
-                if (match.leagueid){
+                if (match.leagueid) {
                     //parse tournament games
                     match.parse_status = 0;
                 }

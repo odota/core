@@ -17,6 +17,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="all") Any Hero
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id))=entry.localized_name
+
     .row
       h4 Local 
         small Filter the matches in this result set
@@ -76,6 +77,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             label League
             select.form-control(name="leagueid")
               option(value="all") All Leagues
+              option(value="gtzero") All Professional Games
               each entry in constants.leagueid
                 option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
               

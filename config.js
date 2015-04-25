@@ -9,7 +9,7 @@ var defaults = {
     "RETRIEVER_SECRET": "shared_secret_with_retriever",
     "SESSION_SECRET": "secret to encrypt cookies with",
     "ROOT_URL": "http://localhost:5000",
-    "START_SEQ_NUM": "", //auto, use current number, defined, use sequence number, else, use redis number
+    "START_SEQ_NUM": "", //REDIS: use redis number, defined: use sequence number, else: use auto
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
@@ -34,20 +34,6 @@ var defaults = {
     "STEAM_GUARD_CODE": false
 };
 //nf puts values in .env into process.env
-//use dotenv to read .env and overwrite defaults if running a task (code not run by nf)
-var dotenv = require('dotenv');
-var fs = require('fs');
-try {
-    var fileConfig = {};
-    var file = fs.readFileSync('./.env');
-    fileConfig = dotenv.parse(file); // passing in a buffer
-    for (var key in fileConfig) {
-        defaults[key] = fileConfig[key];
-    }
-}
-catch (e) {
-    console.log(e);
-}
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults) {
     process.env[key] = process.env[key] || defaults[key];

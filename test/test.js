@@ -325,7 +325,7 @@ describe("parser", function() {
         var job = {
             match_id: 1193091757,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1193091757.dem"
+            fileName: replay_dir + "1193091757.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -339,7 +339,7 @@ describe("parser", function() {
         var job = {
             match_id: 1181392470,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1181392470.dem"
+            fileName: replay_dir + "1181392470.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -353,7 +353,7 @@ describe("parser", function() {
         var job = {
             match_id: 1189263979,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1189263979.dem"
+            fileName: replay_dir + "1189263979.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -367,7 +367,7 @@ describe("parser", function() {
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/invalid.dem"
+            fileName: replay_dir + "invalid.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);

@@ -462,8 +462,8 @@ function advQuery(options, cb) {
     options.js_select = {};
     var mongoAble = {
         "players.account_id": 1,
-        "leagueid": 1,
-        "players.hero_id": 1
+        "leagueid": 1
+            //"players.hero_id": 1
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
