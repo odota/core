@@ -394,15 +394,7 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/matches', function(done) {
-            supertest(app).get('/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Matches/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/matches', function(done) {
+        it('/ratings', function(done) {
             supertest(app).get('/ratings')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
