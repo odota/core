@@ -3,14 +3,11 @@ var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 var cluster = require('cluster');
-var buildSets = require('./tasks/buildSets');
 start();
 
 function start() {
     if (cluster.isMaster) {
         console.log("[PARSEMANAGER] starting master");
-        //build sets to ensure parsers are up to date
-        buildSets(function() {
             redis.get("parsers", function(err, result) {
                 if (err || !result) {
                     console.log("no parsers in redis!");
@@ -61,7 +58,6 @@ function start() {
                 });
                 */
             });
-        });
     }
     else {
         /*

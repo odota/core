@@ -45,8 +45,10 @@ module.exports = function playerMatches(options) {
         //updates the table on form change without reload
         //table.draw();
     });
+    var constants;
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
+        constants = json.constants;
         //draw things with the returned data
         //matchups
         var heroes;

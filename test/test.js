@@ -24,7 +24,6 @@ var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
 var updateNames = require('../tasks/updateNames');
-var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
@@ -276,13 +275,6 @@ describe("tasks", function() {
     });
     it('updateNames', function(done) {
         updateNames(function(err, num) {
-            done(err);
-        });
-    });
-    it('constants', function(done) {
-        //fake constants response
-        //nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
-        constants(function(err) {
             done(err);
         });
     });

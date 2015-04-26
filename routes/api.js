@@ -29,12 +29,20 @@ api.get('/matches', function(req, res, next) {
         if (err) {
             return next(err);
         }
+        var clientConstants = {
+            "game_mode": constants.game_mode,
+            "lobby_type": constants.lobby_type,
+            "heroes": constants.heroes,
+            "parse_status": constants.parse_status,
+            "cluster": constants.cluster
+        };
         result = {
             draw: draw,
             aggData: result.aggData,
             recordsTotal: result.unfiltered_count,
             recordsFiltered: result.data.length,
-            data: result.page
+            data: result.page,
+            constants: clientConstants
         };
         res.json(result);
     });

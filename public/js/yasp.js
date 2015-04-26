@@ -29,9 +29,6 @@ require('../css/navbar.css');
 require('../css/yasp_home.css');
 require('../css/yasp.css');
 
-//constants
-window.constants = require('../../sources.json');
-
 window.pad = function pad(n, width, z) {
         z = z || '0';
         n = n + '';

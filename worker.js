@@ -42,7 +42,7 @@ d.run(function() {
     //TODO currently service outages cause these reqs to stack
     setInterval(updateNames, 60 * 1000, function() {});
     setInterval(buildSets, 3 * 60 * 1000, function() {});
-    //todo implement redis window check 
+    //TODO implement redis window check 
     //setInterval(apiStatus, 2 * 60 * 1000);
 });
 

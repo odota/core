@@ -56,6 +56,14 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "api_leagues": function() {
+            return {
+                url: api_url + "/IDOTA2Match_570/GetLeagueListing/v0001/?key=" + api_key,
+                title: [type].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function() {
             return {
                 title: [type, payload.match_id].join(),
