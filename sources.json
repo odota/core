@@ -28,23 +28,6 @@
     "1024": "Radiant Top Melee",
     "2048": "Radiant Top Ranged"
   },
-  "playerPages": {
-    "index": {
-      "name": "Player"
-    },
-    "histograms": {
-      "name": "Histograms"
-    },
-    "activity": {
-      "name": "Activity"
-    },
-    "counts": {
-      "name": "Counts"
-    },
-    "advanced": {
-      "name": "Advanced"
-    }
-  },
   "skillshots": {
     "mirana_arrow": true,
     "pudge_meat_hook": true,

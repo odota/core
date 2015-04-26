@@ -4,10 +4,17 @@ var processMmr = require('./processMmr');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
+var redis = r.client;
+var utility = require('./utility');
+var getData = utility.getData;
 var async = require('async');
 var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
 var domain = require('domain');
+var config = require('../config');
+var retrievers = config.RETRIEVER_HOST;
+var parsers = config.PARSER_HOST;
+var secret = config.RETRIEVER_SECRET;
 //don't need these handlers when kue supports job ttl in 0.9?
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
@@ -42,9 +49,63 @@ d.run(function() {
     //TODO currently service outages cause these reqs to stack
     setInterval(updateNames, 60 * 1000, function() {});
     setInterval(buildSets, 3 * 60 * 1000, function() {});
+    setInterval(retrievers, 2 * 60 * 1000, function() {});
+    setInterval(parsers, 3 * 60 * 1000, function() {});
+    setInterval(constants, 10 * 60 * 1000, function() {});
     //TODO implement redis window check 
     //setInterval(apiStatus, 2 * 60 * 1000);
 });
+
+function retrievers(cb) {
+    var r = {};
+    var b = [];
+    var ps = retrievers.split(",").map(function(r) {
+        return "http://" + r + "?key=" + secret;
+    });
+    async.each(ps, function(url, cb) {
+        getData(url, function(err, body) {
+            if (err) {
+                return cb(err);
+            }
+            for (var key in body.accounts) {
+                b.push(body.accounts[key]);
+            }
+            for (var key in body.accountToIdx) {
+                r[key] = url + "&account_id=" + key;
+            }
+            cb(err);
+        });
+    }, function(err) {
+        redis.set("ratingPlayers", JSON.stringify(r));
+        redis.set("bots", JSON.stringify(b));
+        redis.set("retrievers", JSON.stringify(ps));
+        cb(err);
+    });
+}
+
+function parsers(cb) {
+    var parser_urls = [];
+    var ps = parsers.split(",").map(function(p) {
+        return "http://" + p + "?key=" + secret;
+    });
+    //build array from PARSER_HOST based on each worker's core count
+    async.each(ps, function(url, cb) {
+        getData(url, function(err, body) {
+            if (err) {
+                return cb(err);
+            }
+            for (var i = 0; i < body.capacity; i++) {
+                parser_urls.push(url);
+            }
+            cb(err);
+        });
+    }, function(err) {
+        redis.set("parsers", JSON.stringify(parser_urls));
+        cb(err, parser_urls);
+    });
+}
+
+
 
 function clearActiveJobs(cb) {
         jobs.active(function(err, ids) {

@@ -91,7 +91,13 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
     //fake full history page 2
     .get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2)
     //fake heroes list
-    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
+    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api)
+    //fake leagues
+    .get('/IDOTA2Match_570/GetLeagueListing/v0001/').reply(200, {
+        result: {
+            leagues: []
+        }
+    });
 console.log('starting web');
 var app = require('../web');
 console.log('starting parser');

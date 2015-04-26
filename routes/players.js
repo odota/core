@@ -2,12 +2,27 @@ var express = require('express');
 var players = express.Router();
 var async = require('async');
 var db = require("../db");
-var constants = require("../constants.json");
 var config = require('../config');
 var queries = require("../queries");
 var fillPlayerData = require('../fillPlayerData');
 players.get('/:account_id/:info?', function(req, res, next) {
-    var playerPages = constants.playerPages;
+    var playerPages = {
+        "index": {
+            "name": "Player"
+        },
+        "histograms": {
+            "name": "Histograms"
+        },
+        "activity": {
+            "name": "Activity"
+        },
+        "counts": {
+            "name": "Counts"
+        },
+        "advanced": {
+            "name": "Advanced"
+        }
+    };
     var info = playerPages[req.params.info] ? req.params.info : "index";
     if (req.params.account_id === "all" || req.params.account_id === "professional") {
         var player = {
@@ -39,7 +54,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
     db.players.findOne({
         account_id: account_id
     }, function(err, player) {
-        if (err || !player || account_id === constants.anonymous_account_id) {
+        if (err || !player) {
             return next(new Error("player not found"));
         }
         async.series({
