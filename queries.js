@@ -5,6 +5,7 @@ var config = require("./config");
 var compute = require('./compute');
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
+
 //readies a match for display
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;
@@ -48,7 +49,7 @@ function prepareMatch(match_id, cb) {
 }
 
 function fillPlayerNames(players, cb) {
-    if (!players){
+    if (!players) {
         return cb();
     }
     //make hash of account_ids to players
@@ -124,8 +125,9 @@ function getSets(cb) {
     });
 }
 
+
 module.exports = {
-    fillPlayerNames: fillPlayerNames,
     getSets: getSets,
-    prepareMatch: prepareMatch
+    prepareMatch: prepareMatch,
+    fillPlayerNames: fillPlayerNames
 };

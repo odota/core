@@ -14,7 +14,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
             return Number(c);
         }));
         //increment the max by 1 to account for zero bucket
-        max+=1;
+        max += 1;
     }
     //maximum of 80 bins
     var bins = ~~Math.min(80, max);
@@ -37,9 +37,12 @@ module.exports = function createHistogram(counts, win_counts, label) {
         else if (label === "hour") {
             bucket = moment(key, 'X').hour();
         }
-        //console.log(label, key, bucket)
-        hash[bucket].win += win_counts[key];
-        hash[bucket].games += counts[key];
+        if (hash[bucket]) {
+            //protect against glitchy negative values
+            //console.log(label, key, bucket)
+            hash[bucket].win += win_counts[key];
+            hash[bucket].games += counts[key];
+        }
     }
     //console.log(hash);
     //each histogram needs array of magnitudes for heights

@@ -18,6 +18,7 @@ var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
+var fillPlayerData = require('./fillPlayerData');
 //var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
@@ -142,38 +143,6 @@ app.use('/ratings', function(req, res, next) {
         });
         res.render("ratings", {
             ratings: docs
-        });
-    });
-});
-app.use('/all/:info?', function(req, res) {
-    res.render('matches.jade', {
-        q: req.query,
-        title: "Matches - YASP"
-    });
-});
-var advQuery = require('./advquery');
-app.use('/professional/:info?', function(req, res, next) {
-    advQuery({
-        select: {
-            "leagueid": "gtzero"
-        },
-        project: null, //just project default fields
-        js_agg: null,
-        js_sort: {
-            match_id: -1
-        }
-    }, function(err, results) {
-        if (err) {
-            return next(err);
-        }
-        //TODO dedup matches for display purposes
-        //do same aggregations as for player
-        res.render("professional", {
-            q: req.query,
-            //route: info,
-            //tabs: playerPages,
-            matches: results.data,
-            //aggData: results.aggData
         });
     });
 });

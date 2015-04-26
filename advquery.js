@@ -6,7 +6,7 @@ var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
 var queries = require('./queries');
-var fillPlayerNames = queries.fillPlayerNames;
+var async = require('async');
 
 function aggregator(matches, fields) {
     var aggData = {};
@@ -660,7 +660,7 @@ function advQuery(options, cb) {
                 filtered = sort(filtered, options.js_sort);
                 var aggData = aggregator(filtered, options.js_agg);
                 console.time('teammate_lookup');
-                fillPlayerNames(aggData.teammates, function(err) {
+                queries.fillPlayerNames(aggData.teammates, function(err) {
                     console.timeEnd('teammate_lookup');
                     var result = {
                         aggData: aggData,
@@ -728,7 +728,6 @@ function getParsedPlayerData(matches, doAction, cb) {
     var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
     //the following does a query for each match in the set, so could be a lot of queries
     //since we want a different position on each query, we need to make them individually
-    /*
     async.each(parsed, function(m, cb) {
         var player = m.players[0];
         var parseSlot = player.player_slot % (128 - 5);
@@ -747,21 +746,14 @@ function getParsedPlayerData(matches, doAction, cb) {
             if (err) {
                 return cb(err);
             }
-            //build hash of match_id to parsed_data
-            hash[doc.match_id] = doc.parsed_data;
-            //console.log(doc.parsed_data);
-            //m.parsed_data = doc.parsed_data;
+            m.parsed_data = doc.parsed_data;
             cb(err);
         });
     }, function(err) {
-        //iterate through given matches and populate parsed_data field
-        for (var j = 0; j < matches.length; j++) {
-            matches[j].parsed_data = hash[matches[j].match_id];
-        }
         cb(err);
     });
-    */
-    //better approach, but requires steam_id for each player, which is not present in v5 data, added to v7
+    /*
+    //diff approach, but requires steam_id for each player, which is not present in v5 data, added to v7
     //parsed_data.players needs an identifier we can project on, such as steam_id
     //also need index on parsed_data.players.steam_id
     //compute the steam64 for this player
@@ -796,5 +788,6 @@ function getParsedPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
+    */
 }
 module.exports = advQuery;

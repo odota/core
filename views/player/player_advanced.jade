@@ -58,7 +58,7 @@ block playercontent
                   td=key
                 td=casts
                 td=hits
-                td=(casts/hits*100 || 0).toFixed(2)
+                td=(hits/casts*100 || 0).toFixed(2)
       .col-md-4
         h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>
         #map.mapContainer.mapContainer-small
@@ -81,4 +81,5 @@ append footer_assets
     });
     heatmap.setData(posData[0]["obs"]);
     heatmap2.setData(posData[0]["sen"]);
+    playerTrendsTables();
     
