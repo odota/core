@@ -23,11 +23,6 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         small Filter the matches in this result set
       .col-md-6
         .form-group
-          label Hero
-          select.form-control(name="hero_id", multiple, placeholder="Played Any Hero")#hero_id
-            each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
-        .form-group
           label The Players Included (Account ID)
           input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Included: Any Player", value=q.with_account_id )#with_account_id
           //-
@@ -45,6 +40,12 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q.against_hero_id && typeof q.against_hero_id==="object" ? q.against_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.against_hero_id)===entry.id))=entry.localized_name
       .col-md-6
+        .form-group
+          label Hero
+          select.form-control(name="hero_id" placeholder="Played Any Hero")#hero_id
+            option(value="all") Any Hero
+            each entry in constants.alpha_heroes
+              option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
         .form-group  
           label Faction
           select.form-control(name="isRadiant")
@@ -79,11 +80,11 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
               option(value=entry.id, selected=(Number(q.lobby_type)===entry.id))=entry.name
         .form-group
           label League
-          select.form-control(name="leagueid")
+          select.form-control(name="leagueid")#leagueid
             option(value="all") All Leagues
             option(value="gtzero" selected=q["leagueid"]==="gtzero") All Pro Games
             each entry in constants.leagues
-              option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
+              option(value=entry.leagueid, selected=(Number(q.leagueid)===entry.leagueid))=entry.name
         .form-group
           label Significant
           select.form-control(name="significant")

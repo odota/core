@@ -35,6 +35,10 @@ module.exports = function(options) {
         //placeholder: "Enemy: Any Hero",
         maximumSelectionSize: 5
     });
+    $("#leagueid").select2({
+        //placeholder: "Enemy: Any Hero",
+        maximumSelectionSize: 5
+    });
     $('form').submit(function(e) {
         //updates the table on form submit without reload
         //e.preventDefault();
