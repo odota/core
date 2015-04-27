@@ -1,10 +1,27 @@
 extend match
 
 block match_content
+  - var teamfights = match.parsed_data.teamfights || []
   .row
     .col-md-12
       h2 Teamfights 
         small  where 3+ heroes died
+  .row
+    .col-md-12
+      h3 Participation
+      .row
+        each player in match.players
+          - var hero = constants.heroes[player.hero_id]
+          .col-md-1(class=(player.isRadiant?"success":"danger"))
+            if hero
+              img(src=hero.img, title=hero.localized_name)
+            else
+              =player.hero_id
+            - var pct = (player.teamfights_participated*100/teamfights.length)
+            .progress
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+
+  .row
     .col-md-4
       //pre=JSON.stringify(match.parsed_data.teamfights)
       h3
@@ -19,7 +36,7 @@ block match_content
           th: abbr(title="Net XP advantage for Radiant") XP Swing
           th
         tbody
-          each entry, ind in match.parsed_data.teamfights
+          each entry, ind in teamfights
             tr(target=ind, class=entry.radiant_gold_delta > 0 ? "success" : "danger")
               td.format-seconds(data-format-seconds=entry.start)
               td.format-seconds(data-format-seconds=entry.end-entry.start)
@@ -33,19 +50,18 @@ block match_content
       #map.mapContainer.mapContainer-small
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .icons
-          each entry, ind in match.parsed_data.teamfights
+          each entry, ind in teamfights
             each death in entry.posData
               i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
     .col-md-8
-      h3
-        abbr(title="Heroes in uncolored rows did not participate in the fight.") Details
+      h3 Details
       .table-responsive
         table.table.table-hover
           thead#header
             tr
+              th Hero
               th(style="font-size:30px;") !{"&#128128;"}
               th(style="font-size:30px;") !{"&#128176;"}
-              th Hero
               th Ability Use
               th Item Use
               th Kills
@@ -54,17 +70,11 @@ block match_content
               th Damage
               th Gold Change
               th XP Change
-            each entry, ind in match.parsed_data.teamfights
+            each entry, ind in teamfights
               tbody(id=ind)
                 each player, num in entry.players
                   //color and fade based on team and participation
-                  tr(class= player.deaths > 0 || player.damage > 0 ? (player.isRadiant ? "success" : "danger") : "")
-                    td
-                      if player.deaths
-                        div(style="font-size:30px;") !{"&#128128;"}
-                    td
-                      if player.buybacks
-                       div(style="font-size:30px;") !{"&#128176;"}
+                  tr(class=player.participate ? (player.isRadiant ? "success" : "danger") : "hidden")
                     - var hero = constants.heroes[player.hero_id]
                     td
                       if hero
@@ -72,7 +82,13 @@ block match_content
                       else
                         =player.hero_id
                     td
-                      each val, key in player.ability_uses
+                      if player.deaths
+                        div(style="font-size:30px;") !{"&#128128;"}
+                    td
+                      if player.buybacks
+                       div(style="font-size:30px;") !{"&#128176;"}
+                    td
+                      each val, key in player.ability_uses || {}
                         - var ability = constants.abilities[key]
                         div.img-text
                           if ability
@@ -81,7 +97,7 @@ block match_content
                             //=key
                           div #{val}
                     td
-                      each val, key in player.item_uses
+                      each val, key in player.item_uses || {}
                         - var item = constants.items[key]
                         div.img-text
                           if item
@@ -90,7 +106,7 @@ block match_content
                           else
                             =key
                     td
-                      each val, key in player.kills
+                      each val, key in player.kills || {}
                         - var hero = constants.hero_names[key]
                         div.img-text
                           if hero

@@ -261,6 +261,9 @@ function renderMatch(match) {
                 player.hero_id = p.hero_id;
                 player.player_slot = p.player_slot;
                 player.isRadiant = isRadiant(p);
+                player.participate = player.deaths > 0 || player.damage > 0;
+                p.teamfights_participated = p.teamfights_participated || 0;
+                p.teamfights_participated += player.participate ? 1 : 0;
                 if (isRadiant(p)) {
                     tf.radiant_gold_delta += player.gold_delta;
                     tf.radiant_xp_delta += player.xp_delta;

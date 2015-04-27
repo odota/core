@@ -25,7 +25,7 @@ block match_content
             th Time
             th Message
         tbody
-          each entry in match.chat
+          each entry in match.chat || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
