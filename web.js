@@ -121,6 +121,11 @@ app.route('/').get(function(req, res, next) {
         home: true
     });
 });
+app.route('/live').get(function(req, res) {
+    //TODO index page to list currently live matches
+    //individual live match page for each match
+    res.render('live', {});
+});
 app.route('/request').get(function(req, res) {
     res.render('request', {
         rc_public: rc_public
