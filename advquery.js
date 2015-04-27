@@ -84,6 +84,12 @@ function aggregator(matches, fields) {
         "cluster": function(key, m, p) {
             standardAgg(key, m.cluster, m);
         },
+        "region": function(key, m, p) {
+            standardAgg(key, m.region, m);
+        },
+        "patch": function(key, m, p) {
+            standardAgg(key, m.patch, m);
+        },
         "first_blood_time": function(key, m, p) {
             standardAgg(key, m.first_blood_time, m);
         },

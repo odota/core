@@ -24,7 +24,7 @@ api.get('/matches', function(req, res, next) {
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,
-        js_sort: js_sort,
+        js_sort: js_sort
     }, function(err, result) {
         if (err) {
             return next(err);
@@ -33,8 +33,7 @@ api.get('/matches', function(req, res, next) {
             "game_mode": constants.game_mode,
             "lobby_type": constants.lobby_type,
             "heroes": constants.heroes,
-            "parse_status": constants.parse_status,
-            "cluster": constants.cluster
+            "parse_status": constants.parse_status
         };
         result = {
             draw: draw,

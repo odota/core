@@ -48,21 +48,21 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           label Faction
           select.form-control(name="isRadiant")
             option(value="all") All Factions
-            option(value="1", selected=q.radiant) Radiant
+            option(value="1", selected=(q["isRadiant"]===1)) Radiant
             option(value="0", selected=(q["isRadiant"]===0)) Dire
         .form-group  
           label Result
           select.form-control(name="win")
             option(value="all") All Results
-            option(value="1", selected=q.win) Wins
+            option(value="1", selected=(q["win"]===1)) Wins
             option(value="0", selected=(q["win"]===0)) Losses
       .col-md-6
         .form-group
           label Patch
           select.form-control(name="patch")
             option(value="all") All Patches
-            each entry, i in constants.patches
-              option(value=i, selected=(Number(q.patch)===i))=entry.id
+            each entry, i in constants.patch
+              option(value=i, selected=(Number(q.patch)===i))=entry.name
       
         .form-group
           label Game Mode

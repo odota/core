@@ -1,4 +1,5 @@
-module.exports = function playerMatches(options) {
+module.exports = function(options) {
+    console.log(options);
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -46,12 +47,13 @@ module.exports = function playerMatches(options) {
         //table.draw();
     });
     var constants;
+    var heroes;
+    var teammates;
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
         constants = json.constants;
         //draw things with the returned data
         //matchups
-        var heroes;
         if (!heroes) {
             heroes = $('#heroes').dataTable({
                 //"searching": false,
@@ -143,7 +145,6 @@ module.exports = function playerMatches(options) {
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
         $("#winrate").text(pct + "%").width(pct + "%");
         $("#record").text(json.aggData.win + "-" + json.aggData.lose);
-        var teammates;
         if (!teammates) {
             teammates = $('#teammates').dataTable({
                 //"searching": false,
@@ -199,7 +200,8 @@ module.exports = function playerMatches(options) {
             'url': '/api/matches',
             "data": function(d) {
                 d.select = $('form').serializeObject();
-                //api enforces blank agg if null passed in, so this can be null or {}
+                //player pages aggregate teammates/matchups/win/lose/games
+                //all/pro pages don't aggregate anything
                 d.js_agg = options.js_agg;
             }
         },
@@ -220,7 +222,8 @@ module.exports = function playerMatches(options) {
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
-            }, {
+            },
+            {
                 data: 'players[0].hero_id',
                 title: 'Hero',
                 orderData: [2],
@@ -236,7 +239,30 @@ module.exports = function playerMatches(options) {
                     return constants.heroes[data] ? constants.heroes[data].localized_name : data;
                 }
             },
-            //TODO leagueid, radiant_name, dire_name
+            {
+                data: 'league_name',
+                title: 'League',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data.replace("#DOTA_Item_", "").split("_").join(" ") : "Unknown";
+                }
+            },
+            {
+                data: 'radiant_name',
+                title: 'Radiant',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data : "Unknown";
+                }
+            },
+            {
+                data: 'dire_name',
+                title: 'Dire',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data : "Unknown";
+                }
+            },
             /*
             {
                 data: 'player_win',

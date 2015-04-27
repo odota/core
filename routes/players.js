@@ -41,7 +41,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return res.render("player/player_" + info, {
                 q: req.query,
                 options: {
-                    js_agg: {}
+                    js_agg: {},
+                    professional: req.params.account_id === "professional"
                 },
                 route: info,
                 tabs: playerPages,

@@ -12,14 +12,16 @@ function computeMatchData(match) {
         try {
             match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
             var date = new Date(match.start_time * 1000);
-            for (var i = 0; i < constants.patches.length; i++) {
-                var pd = new Date(constants.patches[i].date);
+            for (var i = 0; i < constants.patch.length; i++) {
+                var pd = new Date(constants.patch[i].date);
                 //stop when patch date is less than the start time
                 if (pd < date) {
                     break;
                 }
             }
             match.patch = i;
+            match.region = constants.cluster[match.cluster];
+            match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
             //add a parsedplayer object to each player, and compute more stats
             match.players.forEach(function(player, ind) {
                 player.isRadiant = isRadiant(player);

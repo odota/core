@@ -1,6 +1,6 @@
-var r = require('./redis');
+var r = require('../redis');
 var redis = r.client;
-var utility = require('./utility');
+var utility = require('../utility');
 var getData = utility.getData;
 var async = require('async');
 var fs = require('fs');
@@ -38,6 +38,7 @@ module.exports = function constants(cb) {
         //key heroes by name
         constants.hero_names = {};
         heroes.forEach(function(h) {
+            h.img = "http://cdn.dota2.com/apps/dota2/images/heroes/"+h.name.replace("npc_dota_hero_", "")+"_sb.png";
             constants.heroes[h.id] = h;
             constants.hero_names[h.name] = h;
         });

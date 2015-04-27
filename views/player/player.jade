@@ -17,4 +17,5 @@ block content
 
 append footer_assets
   script.
-    playerMatches(!{JSON.stringify(options)});
+    var options = !{JSON.stringify(options)};
+    playerMatches(options);
