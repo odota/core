@@ -44,6 +44,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(name="against_hero_id" multiple, placeholder="Enemy: Any Hero")#enemy_hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q.against_hero_id && typeof q.against_hero_id==="object" ? q.against_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.against_hero_id)===entry.id))=entry.localized_name
+      .col-md-6
         .form-group  
           label Faction
           select.form-control(name="isRadiant")
@@ -56,7 +57,6 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="all") All Results
             option(value="1", selected=(q["win"]===1)) Wins
             option(value="0", selected=(q["win"]===0)) Losses
-      .col-md-6
         .form-group
           label Patch
           select.form-control(name="patch")
@@ -82,8 +82,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(name="leagueid")
             option(value="all") All Leagues
             option(value="gtzero" selected=q["leagueid"]==="gtzero") All Pro Games
-            //each entry in constants.leagueid
-              //option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
+            each entry in constants.leagues
+              option(value=entry.id, selected=(Number(q.leagueid)===entry.id))=entry.name
         .form-group
           label Significant
           select.form-control(name="significant")

@@ -8,6 +8,201 @@ var constants = require('./constants.json');
 var queries = require('./queries');
 var async = require('async');
 
+function advQuery(options, cb) {
+    var default_project = {
+        start_time: 1,
+        match_id: 1,
+        cluster: 1,
+        game_mode: 1,
+        duration: 1,
+        radiant_win: 1,
+        parse_status: 1,
+        first_blood_time: 1,
+        lobby_type: 1,
+        leagueid: 1,
+        radiant_name: 1,
+        dire_name: 1
+    };
+    options.project = options.project || default_project;
+    options.project.players = 1;
+    //only project the fields we need
+    options.project["players.account_id"] = 1;
+    options.project["players.hero_id"] = 1;
+    options.project["players.level"] = 1;
+    options.project["players.kills"] = 1;
+    options.project["players.deaths"] = 1;
+    options.project["players.assists"] = 1;
+    options.project["players.gold_per_min"] = 1;
+    options.project["players.xp_per_min"] = 1;
+    options.project["players.hero_damage"] = 1;
+    options.project["players.tower_damage"] = 1;
+    options.project["players.hero_healing"] = 1;
+    options.project["players.player_slot"] = 1;
+    options.project["players.last_hits"] = 1;
+    options.project["players.denies"] = 1;
+    options.project["players.leaver_status"] = 1;
+    //select,the query received, build the mongo query and the filter based on this
+    options.mongo_select = {};
+    options.js_select = {};
+    //default limit
+    var max = 500;
+    //map to limit
+    var mongoAble = {
+        "players.account_id": 10000,
+        "leagueid": 500
+            //"players.hero_id": 10000
+    };
+    for (var key in options.select) {
+        if (options.select[key] === "" || options.select[key] === "all") {
+            //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
+            delete options.select[key];
+        }
+        else {
+            if (mongoAble[key]) {
+                if (options.select[key] === "gtzero") {
+                    options.mongo_select[key] = {
+                        $gt: 0
+                    };
+                }
+                else {
+                    options.mongo_select[key] = Number(options.select[key]);
+                }
+                max = mongoAble[key];
+            }
+            else {
+                //split each by comma
+                if (options.select[key].indexOf(",") !== -1) {
+                    options.select[key] = options.select[key].split(",");
+                }
+                if (options.select[key].constructor === Array) {
+                    //attempt to numberize each element
+                    options.select[key] = options.select[key].map(function(e) {
+                        return Number(e);
+                    });
+                }
+                else {
+                    //number just this element
+                    options.select[key] = Number(options.select[key]);
+                }
+                options.js_select[key] = options.select[key];
+            }
+        }
+    }
+    //use mongodb to sort if selecting on indexed field
+    if (!options.mongo_select["players.account_id"]) {
+        options.sort = {
+            "match_id": -1
+        };
+    }
+    //js_agg, aggregations to do with js
+    //do everything if null passed as fields
+    var bGetFullPlayerData = false;
+    /*
+    //some aggregations/selections require hero_id and player_id of all 10 players in a game
+    var fullPlayerData = {
+        "teammates": 1,
+        "matchups": 1,
+        "with_account_id": 1,
+        "teammate_hero_id": 1,
+        "against_hero_id": 1,
+        "with_hero_id": 1
+    };
+    //if js_agg is null, we need the full data since we're aggregating everything
+    var bGetFullPlayerData = Boolean(!options.js_agg);
+    for (var key in options.js_agg) {
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
+    }
+    for (var key in options.js_select) {
+        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
+    }
+    */
+    //determine if we're doing an aggregation/selection that requires parsed data
+    //var parsedPlayerData = {};
+    //this just gets the parsed data if js_agg is null (do everything)
+    var bGetParsedPlayerData = Boolean(!options.js_agg);
+    console.log(bGetParsedPlayerData);
+    //limit, pass to mongodb, cap the number of matches to return in mongo
+    options.limit = (!options.limit || options.limit > max) ? max : options.limit;
+    //skip, pass to mongodb
+    //sort, pass to mongodb
+    //js_limit, the number of results to return in a page, filtered by js
+    //js_start, the position to start a page at, selected by js
+    //js_sort, post-process sorter that processes with js
+    //build the monk hash
+    var monk_options = {
+        limit: options.limit,
+        skip: options.skip,
+        sort: options.sort,
+        fields: options.project
+    };
+    console.log(options);
+    console.time('db');
+    db.matches.find(options.mongo_select, monk_options, function(err, matches) {
+        if (err) {
+            return cb(err);
+        }
+        console.timeEnd('db');
+        var expanded_matches = [];
+        matches.forEach(function(m) {
+            //get all_players and primary player
+            m.all_players = m.players.slice(0);
+            //console.log(m.players.length, m.all_players.length);
+            //use the mongodb select criteria to filter the player list
+            //create a new match with this primary player
+            //all players for tournament games, otherwise player matching select criteria
+            m.players.forEach(function(p) {
+                var pass = true;
+                //check mongo query, if starting with player
+                for (var key in options.mongo_select) {
+                    var split = key.split(".");
+                    if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
+                        pass = false;
+                    }
+                }
+                if (pass) {
+                    m.players = [p];
+                    expanded_matches.push(JSON.parse(JSON.stringify(m)));
+                }
+            });
+        });
+        matches = expanded_matches;
+        console.time("fullplayerdata");
+        getFullPlayerData(matches, bGetFullPlayerData, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            console.timeEnd("fullplayerdata");
+            console.time("parsedplayerdata");
+            getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                console.timeEnd("parsedplayerdata");
+                console.time('compute');
+                matches.forEach(function(m) {
+                    //post-process the match to get additional stats
+                    computeMatchData(m);
+                });
+                var filtered = filter(matches, options.js_select);
+                filtered = sort(filtered, options.js_sort);
+                var aggData = aggregator(filtered, options.js_agg);
+                console.time('teammate_lookup');
+                queries.fillPlayerNames(aggData.teammates, function(err) {
+                    console.timeEnd('teammate_lookup');
+                    var result = {
+                        aggData: aggData,
+                        page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                        data: filtered,
+                        unfiltered_count: matches.length
+                    };
+                    console.timeEnd('compute');
+                    cb(err, result);
+                });
+            });
+        });
+    });
+}
+
 function aggregator(matches, fields) {
     var aggData = {};
     var types = {
@@ -481,207 +676,6 @@ function sort(matches, sorts) {
     return matches;
 }
 
-function advQuery(options, cb) {
-    var default_project = {
-        start_time: 1,
-        match_id: 1,
-        cluster: 1,
-        game_mode: 1,
-        duration: 1,
-        radiant_win: 1,
-        parse_status: 1,
-        first_blood_time: 1,
-        lobby_type: 1,
-        leagueid: 1,
-        radiant_name: 1,
-        dire_name: 1
-    };
-    options.project = options.project || default_project;
-    //select,the query received, build the mongo query and the filter based on this
-    options.mongo_select = {};
-    options.js_select = {};
-    var mongoAble = {
-        "players.account_id": 1,
-        "leagueid": 1
-            //"players.hero_id": 1
-    };
-    for (var key in options.select) {
-        if (options.select[key] === "" || options.select[key] === "all") {
-            //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
-            delete options.select[key];
-        }
-        else {
-            if (mongoAble[key]) {
-                //options.project["players.$"] = 1;
-                //options.project.players = 1;
-                if (options.select[key] === "gtzero") {
-                    options.mongo_select[key] = {
-                        $gt: 0
-                    };
-                }
-                else {
-                    options.mongo_select[key] = Number(options.select[key]);
-                }
-            }
-            else {
-                //split each by comma
-                if (options.select[key].indexOf(",") !== -1) {
-                    options.select[key] = options.select[key].split(",");
-                }
-                if (options.select[key].constructor === Array) {
-                    //attempt to numberize each element
-                    options.select[key] = options.select[key].map(function(e) {
-                        return Number(e);
-                    });
-                }
-                else {
-                    //number just this element
-                    options.select[key] = Number(options.select[key]);
-                }
-                options.js_select[key] = options.select[key];
-            }
-        }
-    }
-    /*
-    if (!Object.keys(options.mongo_select).length) {
-        //we don't have a "primary" player, so just return the first
-        options.project.players = {
-            $slice: 1
-        };
-        //since we're not selecting, we can mongodb sort without massive slowdown
-        options.sort = {
-            match_id: -1
-        };
-    }
-    */
-    options.project.players = 1;
-    //only project the fields we need
-    options.project["players.account_id"] = 1;
-    options.project["players.hero_id"] = 1;
-    options.project["players.level"] = 1;
-    options.project["players.kills"] = 1;
-    options.project["players.deaths"] = 1;
-    options.project["players.assists"] = 1;
-    options.project["players.gold_per_min"] = 1;
-    options.project["players.xp_per_min"] = 1;
-    options.project["players.hero_damage"] = 1;
-    options.project["players.tower_damage"] = 1;
-    options.project["players.hero_healing"] = 1;
-    options.project["players.player_slot"] = 1;
-    options.project["players.last_hits"] = 1;
-    options.project["players.denies"] = 1;
-    options.project["players.leaver_status"] = 1;
-    //js_agg, aggregations to do with js
-    //do everything if null passed as fields
-    var bGetFullPlayerData = false;
-    /*
-    //some aggregations/selections require hero_id and player_id of all 10 players in a game
-    var fullPlayerData = {
-        "teammates": 1,
-        "matchups": 1,
-        "with_account_id": 1,
-        "teammate_hero_id": 1,
-        "against_hero_id": 1,
-        "with_hero_id": 1
-    };
-    //if js_agg is null, we need the full data since we're aggregating everything
-    var bGetFullPlayerData = Boolean(!options.js_agg);
-    for (var key in options.js_agg) {
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
-    }
-    for (var key in options.js_select) {
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
-    }
-    */
-    //determine if we're doing an aggregation/selection that requires parsed data
-    //var parsedPlayerData = {};
-    //this just gets the parsed data if js_agg is null (do everything)
-    var bGetParsedPlayerData = Boolean(!options.js_agg);
-    console.log(bGetParsedPlayerData);
-    //limit, pass to mongodb
-    //cap the number of matches to return in mongo
-    var max = 10000;
-    options.limit = (!options.limit || options.limit > max) ? max : options.limit;
-    //skip, pass to mongodb
-    //sort, pass to mongodb
-    //js_limit, the number of results to return in a page, filtered by js
-    //js_start, the position to start a page at, selected by js
-    //js_sort, post-process sorter that processes with js
-    //build the monk hash
-    var monk_options = {
-        limit: options.limit,
-        skip: options.skip,
-        sort: options.sort,
-        fields: options.project
-    };
-    console.log(options);
-    console.time('db');
-    db.matches.find(options.mongo_select, monk_options, function(err, matches) {
-        if (err) {
-            return cb(err);
-        }
-        console.timeEnd('db');
-        var expanded_matches = [];
-        matches.forEach(function(m) {
-            //get all_players and primary player
-            m.all_players = m.players.slice(0);
-            //console.log(m.players.length, m.all_players.length);
-            //use the mongodb select criteria to filter the player list
-            //create a new match with this primary player
-            //all players for tournament games, otherwise player matching select criteria
-            m.players.forEach(function(p) {
-                var pass = true;
-                //check mongo query, if starting with player
-                for (var key in options.mongo_select) {
-                    var split = key.split(".");
-                    if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
-                        pass = false;
-                    }
-                }
-                if (pass) {
-                    m.players = [p];
-                    expanded_matches.push(JSON.parse(JSON.stringify(m)));
-                }
-            });
-        });
-        matches = expanded_matches;
-        console.time("fullplayerdata");
-        getFullPlayerData(matches, bGetFullPlayerData, function(err) {
-            if (err) {
-                return cb(err);
-            }
-            console.timeEnd("fullplayerdata");
-            console.time("parsedplayerdata");
-            getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                console.timeEnd("parsedplayerdata");
-                console.time('compute');
-                matches.forEach(function(m) {
-                    //post-process the match to get additional stats
-                    computeMatchData(m);
-                });
-                var filtered = filter(matches, options.js_select);
-                filtered = sort(filtered, options.js_sort);
-                var aggData = aggregator(filtered, options.js_agg);
-                console.time('teammate_lookup');
-                queries.fillPlayerNames(aggData.teammates, function(err) {
-                    console.timeEnd('teammate_lookup');
-                    var result = {
-                        aggData: aggData,
-                        page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
-                        data: filtered,
-                        unfiltered_count: matches.length
-                    };
-                    console.timeEnd('compute');
-                    cb(err, result);
-                });
-            });
-        });
-    });
-}
-
 function getFullPlayerData(matches, doAction, cb) {
     cb();
     /*
@@ -725,11 +719,11 @@ function getParsedPlayerData(matches, doAction, cb) {
     if (!doAction) {
         return cb();
     }
-    var hash = {};
-    //we optimize by filtering matches for only those with parse_status===2
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
+    var hash = {};
+    //we optimize by filtering matches for only those with parse_status===2
     //first player in first match's players has the account id we want
     var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
     //the following does a query for each match in the set, so could be a lot of queries

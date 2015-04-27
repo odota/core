@@ -50,14 +50,14 @@ d.run(function() {
     //TODO currently service outages cause these reqs to stack
     setInterval(updateNames, 60 * 1000, function() {});
     setInterval(buildSets, 3 * 60 * 1000, function() {});
-    setInterval(retrievers, 2 * 60 * 1000, function() {});
-    setInterval(parsers, 3 * 60 * 1000, function() {});
+    setInterval(getRetrievers, 2 * 60 * 1000, function() {});
+    setInterval(getParsers, 3 * 60 * 1000, function() {});
     setInterval(constants, 10 * 60 * 1000, function() {});
     //TODO implement redis window check 
     //setInterval(apiStatus, 2 * 60 * 1000);
 });
 
-function retrievers(cb) {
+function getRetrievers(cb) {
     var r = {};
     var b = [];
     var ps = retrievers.split(",").map(function(r) {
@@ -84,7 +84,7 @@ function retrievers(cb) {
     });
 }
 
-function parsers(cb) {
+function getParsers(cb) {
     var parser_urls = [];
     var ps = parsers.split(",").map(function(p) {
         return "http://" + p + "?key=" + secret;
