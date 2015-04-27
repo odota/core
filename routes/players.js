@@ -29,7 +29,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             account_id: req.params.account_id
         };
         if (req.params.account_id === "professional") {
-            req.query.leagueid = "gtzero";
+            req.query.leagueid = req.query.leagueid || "gtzero";
         }
         return fillPlayerData(player, {
             info: info,
