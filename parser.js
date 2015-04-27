@@ -10,17 +10,6 @@ var port = config.PARSER_PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[PARSER] listening at http://%s:%s', host, port);
-    /*
-    //server must support tcp!
-    var constants = require('./constants.json');
-    var seaport = require('seaport');
-    var ports = seaport.connect(process.env.REGISTRY_HOST || 'localhost', Number(process.env.REGISTRY_PORT) || 5300);
-    ports.register('retriever@' + constants.parser_version + '.0.0', {
-        host: host,
-        port: port,
-        cores: numCPUs
-    });
-*/
 });
 app.get('/', function(req, res, next) {
     var fileName = req.query.fileName;

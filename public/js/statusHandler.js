@@ -1,4 +1,4 @@
-function statusHandler(data) {
+module.exports = function statusHandler(data) {
     console.log(data);
         for (var prop in data) {
             if (typeof data[prop] === "object") {

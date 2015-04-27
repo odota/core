@@ -1,4 +1,5 @@
-function playerMatches(teammates) {
+module.exports = function(options) {
+    console.log(options);
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -18,16 +19,20 @@ function playerMatches(teammates) {
     };
     //query form code
     $("#hero_id").select2({
+        //placeholder: "Played Any Hero",
         maximumSelectionSize: 1
     });
     $("#with_account_id").select2({
-        tags: teammates || [],
+        //placeholder: "Included: Any Player",
+        tags: [],
         maximumSelectionSize: 10
     });
     $("#teammate_hero_id").select2({
+        //placeholder: "Team: Any Hero",
         maximumSelectionSize: 4
     });
     $("#enemy_hero_id").select2({
+        //placeholder: "Enemy: Any Hero",
         maximumSelectionSize: 5
     });
     $('form').submit(function(e) {
@@ -41,12 +46,150 @@ function playerMatches(teammates) {
         //updates the table on form change without reload
         //table.draw();
     });
+    var constants;
+    var heroes;
+    var teammates;
     var table = $('#matches').on('xhr.dt', function(e, settings, json) {
         console.log(json);
+        constants = json.constants;
         //draw things with the returned data
+        //matchups
+        if (!heroes) {
+            heroes = $('#heroes').dataTable({
+                //"searching": false,
+                "paging": true,
+                data: json.aggData.matchups,
+                "drawCallback": function() {
+                    tooltips();
+                    formatHtml();
+                },
+                "order": [
+            [1, "desc"]
+        ],
+                "columns": [{
+                    data: "hero_id",
+                    title: "Hero",
+                    render: function(data, type) {
+                        if (!constants.heroes[data]) {
+                            return data;
+                        }
+                        if (type === "filter") {
+                            return constants.heroes[data].localized_name
+                        }
+                        else {
+                            return "<img src='" + constants.heroes[data].img + "' title=\"" + constants.heroes[data].localized_name + "\"/>";
+                        }
+                    }
+            }, {
+                    data: "games",
+                    title: "Played As",
+            }, {
+                    data: "win",
+                    title: "Win% As",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            }, {
+                    data: "with_games",
+                    title: "Played With",
+            }, {
+                    data: "with_win",
+                    title: "Win% With",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.with_games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            }, {
+                    data: "against_games",
+                    title: "Played Against",
+            }, {
+                    data: "against_win",
+                    title: "Win% Against",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.against_games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            }, {
+                    data: "last_played",
+                    title: "Last",
+                    render: function(data, type) {
+                        if (type === "display") {
+                            if (!Number(data)) {
+                                return "never";
+                            }
+                            else {
+                                return moment.unix(data).fromNow();
+                            }
+                        }
+                        return data;
+                    }
+        }]
+            });
+        }
+        //teammates for select2
+        //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
+        //teammate table
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
         $("#winrate").text(pct + "%").width(pct + "%");
-        $("#count").text(json.aggData.games);
+        $("#record").text(json.aggData.win + "-" + json.aggData.lose);
+        if (!teammates) {
+            teammates = $('#teammates').dataTable({
+                //"searching": false,
+                "paging": true,
+                data: json.aggData.teammates,
+                "order": [
+            [1, "desc"]
+        ],
+                "columns": [{
+                    data: "account_id",
+                    title: "Teammate",
+                    render: function(data, type, row) {
+                        return '<a href="/players/' + data + '">' + row.personaname + '</a>'
+                    }
+            }, {
+                    data: "games",
+                    title: "Matches"
+            }, {
+                    data: "win",
+                    title: "Win%",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            }, {
+                    data: "last_played",
+                    title: "Last",
+                    render: function(data, type) {
+                        if (type === "display") {
+                            if (!Number(data)) {
+                                return "never";
+                            }
+                            else {
+                                return moment.unix(data).fromNow();
+                            }
+                        }
+                        return data;
+                    }
+        }]
+            });
+        }
     }).dataTable({
         "order": [
                 [0, "desc"]
@@ -57,8 +200,9 @@ function playerMatches(teammates) {
             'url': '/api/matches',
             "data": function(d) {
                 d.select = $('form').serializeObject();
-                //api enforces blank agg if null passed in, so this can be null or {}
-                d.agg = {};
+                //player pages aggregate teammates/matchups/win/lose/games
+                //all/pro pages don't aggregate anything
+                d.js_agg = options.js_agg;
             }
         },
         "deferRender": true,
@@ -78,7 +222,8 @@ function playerMatches(teammates) {
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
-            }, {
+            },
+            {
                 data: 'players[0].hero_id',
                 title: 'Hero',
                 orderData: [2],
@@ -94,6 +239,30 @@ function playerMatches(teammates) {
                     return constants.heroes[data] ? constants.heroes[data].localized_name : data;
                 }
             },
+            {
+                data: 'league_name',
+                title: 'League',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data.replace("#DOTA_Item_", "").split("_").join(" ") : "Unknown";
+                }
+            },
+            {
+                data: 'radiant_name',
+                title: 'Radiant',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data : "Unknown";
+                }
+            },
+            {
+                data: 'dire_name',
+                title: 'Dire',
+                visible: Boolean(options.professional),
+                render: function(data, type) {
+                    return data ? data : "Unknown";
+                }
+            },
             /*
             {
                 data: 'player_win',
@@ -107,7 +276,7 @@ function playerMatches(teammates) {
                 data: 'game_mode',
                 title: 'Game Mode',
                 render: function(data, type) {
-                    return constants.modes[data] ? constants.modes[data].name : data;
+                    return constants.game_mode[data] ? constants.game_mode[data].name : data;
                 }
             },
             /*
@@ -115,7 +284,7 @@ function playerMatches(teammates) {
                 data: 'cluster',
                 title: 'Region',
                 render: function(data, type) {
-                    return constants.regions[data] ? constants.regions[data] : data;
+                    return constants.cluster[data] ? constants.cluster[data] : data;
                 }
             },
             */

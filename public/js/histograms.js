@@ -1,34 +1,4 @@
-function createCalHeatmap(data) {
-    //create cal-heatmap from start_time
-    var cal = new CalHeatMap();
-    cal.init({
-        start: new Date(moment().subtract(1, 'year')),
-        itemSelector: "#cal-heatmap",
-        range: 13,
-        domain: "month",
-        subDomain: "day",
-        data: data,
-        verticalOrientation: true,
-        label: {
-            position: "left"
-        },
-        colLimit: 31,
-        tooltip: true,
-        legend: [1, 2, 3, 4],
-        highlight: new Date(),
-        itemName: ["match", "matches"],
-        subDomainTextFormat: function(date, value) {
-            return value;
-        },
-        cellSize: 13,
-        domainGutter: 5,
-        previousSelector: "#prev",
-        nextSelector: "#next",
-        legendHorizontalPosition: "right"
-    });
-}
-
-function createHistogram(counts, win_counts, label) {
+module.exports = function createHistogram(counts, win_counts, label) {
     //counts, the number of matches with a value in each key
     //win_counts, the number of wins with a value in each key
     //create a hash of the categories/buckets to wins/games data
@@ -44,7 +14,7 @@ function createHistogram(counts, win_counts, label) {
             return Number(c);
         }));
         //increment the max by 1 to account for zero bucket
-        max+=1;
+        max += 1;
     }
     //maximum of 80 bins
     var bins = ~~Math.min(80, max);
@@ -67,9 +37,12 @@ function createHistogram(counts, win_counts, label) {
         else if (label === "hour") {
             bucket = moment(key, 'X').hour();
         }
-        //console.log(label, key, bucket)
-        hash[bucket].win += win_counts[key];
-        hash[bucket].games += counts[key];
+        if (hash[bucket]) {
+            //protect against glitchy negative values
+            //console.log(label, key, bucket)
+            hash[bucket].win += win_counts[key];
+            hash[bucket].games += counts[key];
+        }
     }
     //console.log(hash);
     //each histogram needs array of magnitudes for heights
@@ -148,8 +121,8 @@ function computeColor(color, d, source) {
         var pct = source[d.index] && source[d.index].win ? source[d.index].win / source[d.index].games : 0;
         //0 is red and 120 is green, scale by pct
         //we probably want to scale so 0.4- is 0 and 0.6+ is 1
-        var min = 0.4;
-        var max = 0.6;
+        var min = 0.3;
+        var max = 0.7;
         var range = (max - min);
         var clamp = Math.max(min, Math.min(pct, max));
         pct = (clamp - min) / range;

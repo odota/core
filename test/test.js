@@ -24,7 +24,6 @@ var fs = require('fs');
 var request = require('request');
 var unparsed = require('../tasks/unparsed');
 var updateNames = require('../tasks/updateNames');
-var constants = require('../tasks/constants');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
@@ -92,7 +91,13 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
     //fake full history page 2
     .get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2)
     //fake heroes list
-    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api);
+    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api)
+    //fake leagues
+    .get('/IDOTA2Match_570/GetLeagueListing/v0001/').reply(200, {
+        result: {
+            leagues: []
+        }
+    });
 console.log('starting web');
 var app = require('../web');
 console.log('starting parser');
@@ -127,6 +132,45 @@ before(function(done) {
             redis.flushall(function(err) {
                 cb(err);
             });
+            },
+            function(cb) {
+            console.log("loading services into redis");
+            redis.set("bots", JSON.stringify([{
+                "steamID": "76561198174479859",
+                "attempts": 1,
+                "success": 1,
+                "friends": 0
+                }, {
+                "steamID": "76561198174456763",
+                "attempts": 0,
+                "success": 0,
+                "friends": 201
+                }, {
+                "steamID": "76561198174616549",
+                "attempts": 1,
+                "success": 1,
+                "friends": 250
+                }, {
+                "steamID": "76561198173905795",
+                "attempts": 0,
+                "success": 0,
+                "friends": 199
+                }, {
+                "steamID": "76561198152395299",
+                "attempts": 0,
+                "success": 0,
+                "friends": 10
+                }, {
+                "steamID": "76561198174715201",
+                "attempts": 2,
+                "success": 2,
+                "friends": 1
+                }]));
+            redis.set("ratingPlayers", JSON.stringify({}));
+            //todo use functions to prefill these rather than hardcoding
+            redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
+            redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
+            cb();
             },
             function(cb) {
             console.log("loading matches");
@@ -166,27 +210,25 @@ before(function(done) {
                     cb();
                 }
                 else {
-                    var d = domain.create();
-                    d.on('error', function(err) {
-                        console.log(err);
-                        console.log("error downloading, retrying");
+                    var failed = false;
+                    var to = setTimeout(function() {
+                        failed = true;
+                        console.log("download took too long, retrying");
                         dl(filename, cb);
-                    });
-                    d.run(function() {
-                        var failed = false;
-                        request({
-                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename,
-                            timeout: 5000
-                        }).pipe(fs.createWriteStream(path)).on('error', function(err) {
-                            console.log(err);
-                            console.log('retrying dl');
-                            failed = true;
-                            dl(filename, cb);
-                        }).on('finish', function() {
-                            if (!failed) {
-                                cb();
-                            }
-                        });
+                    }, 10000);
+                    request({
+                        url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
+                    }).pipe(fs.createWriteStream(path)).on('error', function(err) {
+                        console.log(err);
+                        console.log('retrying dl %s', filename);
+                        failed = true;
+                        dl(filename, cb);
+                    }).on('finish', function() {
+                        if (!failed) {
+                            console.log("completed %s", filename);
+                            clearTimeout(to);
+                            cb();
+                        }
                     });
                 }
             }
@@ -281,13 +323,6 @@ describe("tasks", function() {
             done(err);
         });
     });
-    it('constants', function(done) {
-        //fake constants response
-        //nock('http://www.dota2.com').get('/jsfeed/itemdata?l=english').reply(200, testdata.item_api).get('/jsfeed/abilitydata').reply(200, testdata.ability_api).get('/jsfeed/heropickerdata').reply(200, {}).get('/jsfeed/heropediadata?feeds=herodata').reply(200, {});
-        constants(function(err) {
-            done(err);
-        });
-    });
 });
 describe("parser", function() {
     this.timeout(wait);
@@ -324,7 +359,7 @@ describe("parser", function() {
         var job = {
             match_id: 1193091757,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1193091757.dem"
+            fileName: replay_dir + "1193091757.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -338,7 +373,7 @@ describe("parser", function() {
         var job = {
             match_id: 1181392470,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1181392470.dem"
+            fileName: replay_dir + "1181392470.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -352,7 +387,7 @@ describe("parser", function() {
         var job = {
             match_id: 1189263979,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/1189263979.dem"
+            fileName: replay_dir + "1189263979.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -366,7 +401,7 @@ describe("parser", function() {
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
-            fileName: replay_dir + "/invalid.dem"
+            fileName: replay_dir + "invalid.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -396,15 +431,7 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/matches', function(done) {
-            supertest(app).get('/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Matches/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/matches', function(done) {
+        it('/ratings', function(done) {
             supertest(app).get('/ratings')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
@@ -454,35 +481,11 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/players/:invalid/matches', function(done) {
-            supertest(app).get('/players/1/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(500).end(function(err, res) {
-                    done(err);
-                });
-        });
         it('/players/:valid', function(done) {
             supertest(app).get('/players/88367253')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(200).expect(/.-./).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid/matches', function(done) {
-            supertest(app).get('/players/88367253/matches')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Matches/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid/trends', function(done) {
-            supertest(app).get('/players/88367253/trends')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Filter/).end(function(err, res) {
                     done(err);
                 });
         });
@@ -635,15 +638,6 @@ describe("web", function() {
 var io = require('socket.io-client');
 describe("unit test", function() {
     this.timeout(wait);
-    it('insertmatch', function(done) {
-        operations.insertMatch({
-            match_id: 2,
-            start_time: new Date().getTime() / 1000,
-            players: []
-        }, function(err, job2) {
-            done(err);
-        });
-    });
     it('socket request', function(done) {
         jobs.process('request', processApi);
         //fake replay response

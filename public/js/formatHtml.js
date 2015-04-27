@@ -1,4 +1,4 @@
-function formatHtml() {
+module.exports = function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
@@ -45,7 +45,7 @@ function formatHtml() {
                 //invert if a negative category
                 greaterThan = negatives[index] ? sum[index] < sums[other][index] : greaterThan;
                 if (greaterThan) {
-                    td.addClass((key === "Radiant") ? 'success': 'danger');
+                    td.addClass((key === "Radiant") ? 'success' : 'danger');
                 }
                 tr.append(td);
             }

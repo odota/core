@@ -1,4 +1,4 @@
-function generateTimeline(match) {
+module.exports = function timeline(match) {
     $(document).on('ready', function() {
         for (var player in match.parsed_data.heroes) {
             var items = []
@@ -12,7 +12,6 @@ function generateTimeline(match) {
                 time = "<div style='font-size:10px;'>" + time + "<div>"
                 bar.start = moment().startOf('day').seconds(event.time)
                 if (event.type == "itembuys") {
-                    //var img = constants.items[event.key].img
                     //bar.content = "<img src='" + img + "' width=30 />" + time
                     bar.content = event.key
                     bar.group = 1
@@ -21,7 +20,6 @@ function generateTimeline(match) {
                 if (event.type == "hero_history") {
                     bar.className = "background-" + (heroes % 10)
                     heroes += 1
-                        //var img = constants.heroes[event.key].img
                         //bar.content = "<img src='" + img + "' width=40 />" + "<span style='font-size:10px;'>" + constants.heroes[event.key].localized_name + "</span>"
                     bar.content = event.key
                     bar.start = moment().startOf('day').seconds(event.time)

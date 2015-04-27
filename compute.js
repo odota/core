@@ -12,18 +12,21 @@ function computeMatchData(match) {
         try {
             match.player_win = (isRadiant(match.players[0]) === match.radiant_win); //did the player win?
             var date = new Date(match.start_time * 1000);
-            for (var i = 0; i < constants.patches.length; i++) {
-                var pd = new Date(constants.patches[i].date);
+            for (var i = 0; i < constants.patch.length; i++) {
+                var pd = new Date(constants.patch[i].date);
                 //stop when patch date is less than the start time
                 if (pd < date) {
                     break;
                 }
             }
             match.patch = i;
+            match.region = constants.cluster[match.cluster];
+            match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
             //add a parsedplayer object to each player, and compute more stats
             match.players.forEach(function(player, ind) {
                 player.isRadiant = isRadiant(player);
                 player.total_gold = ~~(player.gold_per_min * match.duration / 60);
+                player.total_xp = ~~(player.xp_per_min * match.duration / 60);
                 player.parseSlot = player.player_slot % (128 - 5);
                 var p = {};
                 if (match.parsed_data) {
@@ -238,7 +241,9 @@ function renderMatch(match) {
             "garbage": -1,
             "trash": -1,
             "throw": -1,
-            "salt": -1
+            "salt": -1,
+            "ez": -1,
+            "mad": -1
         });
         match.graphData = generateGraphData(match);
         match.posData = match.players.map(function(p) {
@@ -246,7 +251,7 @@ function renderMatch(match) {
         });
         //process teamfight data
         match.parsed_data.teamfights.forEach(function(tf) {
-            tf.posData  =  [];
+            tf.posData = [];
             tf.radiant_gold_delta = 0;
             tf.radiant_xp_delta = 0;
             //add player's hero_id to each teamfight participant
@@ -254,7 +259,7 @@ function renderMatch(match) {
                 //index into the correct slot
                 var player = tf.players[p.parseSlot];
                 player.hero_id = p.hero_id;
-                player.player_slot=p.player_slot;
+                player.player_slot = p.player_slot;
                 player.isRadiant = isRadiant(p);
                 if (isRadiant(p)) {
                     tf.radiant_gold_delta += player.gold_delta;
@@ -265,10 +270,12 @@ function renderMatch(match) {
                     tf.radiant_xp_delta -= player.xp_delta;
                 }
                 //convert 2d hash to array
-                player.posData = generatePositionData({deaths_pos:1}, player);
+                player.posData = generatePositionData({
+                    deaths_pos: 1
+                }, player);
                 //console.log(player);
                 //add player hero id to each death, push into teamfight death position array
-                player.posData.deaths_pos.forEach(function(pt){
+                player.posData.deaths_pos.forEach(function(pt) {
                     pt.hero_id = player.hero_id;
                     tf.posData.push(pt);
                 });

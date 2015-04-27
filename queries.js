@@ -1,14 +1,11 @@
 var db = require('./db');
 var async = require('async');
 var redis = require('./redis').client;
-var constants = require('./constants.json');
 var config = require("./config");
 var compute = require('./compute');
-var advQuery = require('./advquery');
-var utility = require('./utility');
-var generatePositionData = utility.generatePositionData;
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
+
 //readies a match for display
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;
@@ -52,6 +49,9 @@ function prepareMatch(match_id, cb) {
 }
 
 function fillPlayerNames(players, cb) {
+    if (!players) {
+        return cb();
+    }
     //make hash of account_ids to players
     //use $in query to get these players from db
     //loop through results and join with players by hash
@@ -125,84 +125,9 @@ function getSets(cb) {
     });
 }
 
-function fillPlayerData(player, options, cb) {
-    //received from controller
-    //options.info, the tab the player is on
-    //options.query, the querystring from the user, pass these as select conditions
-    //defaults: this player, balanced modes only, put the defaults in options.query
-    var default_select = {
-        "players.account_id": player.account_id.toString(),
-        "significant": "1"
-    };
-    for (var key in default_select) {
-        options.query[key] = options.query[key] || default_select[key];
-    }
-    //null aggs everything by default (trends page), otherwise, we don't want parsed_data
-    var js_agg = (options.info === "trends") ? null : {
-        "win": 1,
-        "lose": 1,
-        "games": 1,
-        "matchups": 1,
-        "teammates": 1
-    };
-    advQuery({
-        select: options.query,
-        project: null, //just project default fields
-        js_agg: js_agg,
-        js_sort: {
-            match_id: -1
-        }
-    }, function(err, results) {
-        if (err) {
-            return cb(err);
-        }
-        player.matches = results.data;
-        player.aggData = results.aggData;
-        if (player.aggData.obs) {
-            //generally position data function is used to generate heatmap data for each player in a natch
-            //we use it here to generate a single heatmap for aggregated counts
-            player.obs = player.aggData.obs.counts;
-            player.sen = player.aggData.sen.counts;
-            var d = {
-                "obs": true,
-                "sen": true
-            };
-            generatePositionData(d, player);
-            player.posData = [d];
-        }
-        //get teammates, heroes, convert hashes to arrays and sort them
-        player.heroes_arr = [];
-        var matchups = player.aggData.matchups;
-        for (var id in matchups) {
-            var h = matchups[id];
-            player.heroes_arr.push(h);
-        }
-        player.heroes_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        player.teammates = [];
-        var teammates = player.aggData.teammates;
-        for (var id in teammates) {
-            var tm = teammates[id];
-            id = Number(id);
-            //don't include if anonymous, the player himself, or if less than 3 games
-            if (id !== constants.anonymous_account_id && id !== player.account_id && tm.games >= 3) {
-                player.teammates.push(tm);
-            }
-        }
-        player.teammates.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        console.time('teammate_lookup');
-        fillPlayerNames(player.teammates, function(err) {
-            console.timeEnd('teammate_lookup');
-            cb(err, player);
-        });
-    });
-}
+
 module.exports = {
-    fillPlayerData: fillPlayerData,
-    fillPlayerNames: fillPlayerNames,
     getSets: getSets,
-    prepareMatch: prepareMatch
+    prepareMatch: prepareMatch,
+    fillPlayerNames: fillPlayerNames
 };

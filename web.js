@@ -1,7 +1,5 @@
 var config = require('./config');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
-var rc_secret = config.RECAPTCHA_SECRET_KEY;
-var request = require('request');
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;
@@ -17,11 +15,10 @@ var auth = require('http-auth');
 var path = require('path');
 var moment = require('moment');
 var bodyParser = require('body-parser');
-var queueReq = require('./operations').queueReq;
 var async = require('async');
 var fs = require('fs');
-var queries = require('./queries');
 var goal = Number(config.GOAL);
+var fillPlayerData = require('./fillPlayerData');
 //var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
@@ -52,70 +49,7 @@ var server = app.listen(config.PORT, function() {
     var port = server.address().port;
     console.log('[WEB] listening at http://%s:%s', host, port);
 });
-var io = require('socket.io')(server);
-/*
-setInterval(function() {
-    status(function(err, res) {
-        if (!err) io.emit(res);
-    });
-}, 5000);
-*/
-io.sockets.on('connection', function(socket) {
-    socket.on('request', function(data) {
-        console.log(data);
-        request.post("https://www.google.com/recaptcha/api/siteverify", {
-            form: {
-                secret: rc_secret,
-                response: data.response
-            }
-        }, function(err, resp, body) {
-            try {
-                body = JSON.parse(body);
-            }
-            catch (err) {
-                return socket.emit("err", err);
-            }
-            var match_id = data.match_id;
-            match_id = Number(match_id);
-            socket.emit('log', "Received request for " + match_id);
-            if (!body.success && config.NODE_ENV !== "test") {
-                console.log('failed recaptcha');
-                socket.emit("err", "Recaptcha Failed!");
-            }
-            else if (!match_id) {
-                console.log("invalid match id");
-                socket.emit("err", "Invalid Match ID!");
-            }
-            else {
-                queueReq("request", {
-                    match_id: match_id,
-                    request: true
-                }, function(err, job) {
-                    if (err) {
-                        return socket.emit('err', err);
-                    }
-                    socket.emit('log', "Queued API request for " + match_id);
-                    job.on('progress', function(prog) {
-                        //TODO: kue now allows emitting additional data so we can capture api start, api finish, match expired, parse start, parse finish
-                        socket.emit('prog', prog);
-                    });
-                    job.on('complete', function(result) {
-                        console.log(result);
-                        socket.emit('log', "Request Complete!");
-                        redis.del("match:" + match_id, function(err, resp) {
-                            if (err) console.log(err);
-                            socket.emit('complete');
-                        });
-                    });
-                    job.on('failed', function(result) {
-                        console.log(result);
-                        socket.emit('err', JSON.stringify(result.error));
-                    });
-                });
-            }
-        });
-    });
-});
+require('./socket.js')(server);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -131,10 +65,6 @@ var basic = auth.basic({
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
-//re-serve content from root for robots.txt
-app.use("/", express.static(path.join(__dirname, '/public')));
-//TODO instead of serving this, we should probably bundle the bower_components into public/build
-app.use("/bower_components", express.static(path.join(__dirname, '/bower_components')));
 app.use(session({
     store: new RedisStore({
         client: redis,
@@ -179,6 +109,10 @@ poet.watch(function() {
     // watcher reloaded
 }).init().then(function() {
     // Ready to go!
+});
+app.get('/robots.txt', function(req, res) {
+    res.type('text/plain');
+    res.send("User-agent: *\nDisallow: /matches");
 });
 app.route('/').get(function(req, res, next) {
     res.render('home', {
