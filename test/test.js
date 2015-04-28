@@ -330,23 +330,23 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    before(function(done) {
+    beforeEach(function(done) {
         //fake retriever response
         nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
             return '/';
-        }).get('/').times(10).reply(200, {
+        }).get('/').reply(200, {
             match: {
                 cluster: 1,
                 replaySalt: 1
             }
         });
+        done();
+    });
+    it('parse replay (standard download)', function(done) {
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
             return '/';
         }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
-        done();
-    });
-    it('parse replay (standard download)', function(done) {
         var job = {
             match_id: 1151783218,
             start_time: moment().format('X'),
@@ -402,6 +402,8 @@ describe("parser", function() {
         });
     });
     it('parse invalid file', function(done) {
+        //write invalid replay file
+        fs.writeFileSync(replay_dir + "invalid.dem", "asdf");
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
