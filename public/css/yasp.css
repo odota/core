@@ -338,7 +338,9 @@ table tfoot * {
 .red {
     color: #FF0000;
 }
-
+.hidden {
+    display: none;
+}
 
 /* Sticky footer styles
 -------------------------------------------------- */

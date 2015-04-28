@@ -161,7 +161,7 @@ function runParse(job, cb) {
             else if (e.subtype === "CHAT_MESSAGE_PAUSED") {
                 //player paused
             }
-            else if (e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
+            else if (e.subtype === "CHAT_MESSAGE_FIRSTBLOOD" || e.subtype === "CHAT_MESSAGE_TOWER_DENY" || e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
                 //objective
                 //tower (player/team)
                 //barracks (player)

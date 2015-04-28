@@ -91,7 +91,11 @@ public class Main {
 			entry.key=String.valueOf(player1);
 			es.output(entry);
 		}
-		else if (type.equals("CHAT_MESSAGE_TOWER_KILL")){
+		else if (type.equals("CHAT_MESSAGE_FIRSTBLOOD")){
+			entry.slot = player1;
+			es.output(entry);
+		}
+		else if (type.equals("CHAT_MESSAGE_TOWER_KILL") || type.equals("CHAT_MESSAGE_TOWER_DENY")){
 			entry.team = value;
 			entry.slot = player1;
 			es.output(entry);
@@ -141,8 +145,6 @@ public class Main {
 			//System.err.format("%s,%s%n", time, u);
 		}
 		else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
-		}
-		else if (type.equals("CHAT_MESSAGE_TOWER_DENY")){
 		}
 		else if (type.equals("CHAT_MESSAGE_HERO_DENY")){
 		}
