@@ -9,10 +9,9 @@ servers
 *.bz2
 output*
 coverage
-*bundle.js
 constants*.json
 parser/target
 /bin/
 Thumbs.db
-streamtest.js
 public/build
+testfiles

@@ -19,7 +19,6 @@ var defaults = {
     "PARSER_PORT": 5200,
     "MONGO_URL": "mongodb://localhost/dota",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
-    "REPLAY_DIR": "./replays/",
     "RETRIEVER_HOST": "localhost:5100",
     "PARSER_HOST": "localhost:5200",
     "UNTRACK_DAYS": 7,
