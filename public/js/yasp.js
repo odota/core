@@ -10,7 +10,7 @@ require('../../node_modules/select2/select2-bootstrap.css');
 require('../../node_modules/select2/select2.js');
 require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../node_modules/bootstrap/dist/js/bootstrap.js');
-require('../../node_modules/webcomponents.js/webcomponents.js');
+//require('../../node_modules/webcomponents.js/webcomponents.js');
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 require('../../node_modules/c3/c3.css');

@@ -27,7 +27,6 @@ var updateNames = require('../tasks/updateNames');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
-var domain = require('domain');
 var wait = 60000;
 //fake retriever response
 nock("http://" + process.env.RETRIEVER_HOST)
@@ -98,6 +97,7 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
             leagues: []
         }
     });
+var replay_dir = "./testfiles/";
 console.log('starting web');
 var app = require('../web');
 console.log('starting parser');
@@ -107,10 +107,6 @@ var parseManager = require('../parseManager');
 //stuff we don't run in test
 //scanner
 //worker
-var replay_dir = process.env.REPLAY_DIR;
-if (!fs.existsSync(replay_dir)) {
-    fs.mkdir(replay_dir);
-}
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -133,7 +129,7 @@ before(function(done) {
                 cb(err);
             });
             },
-            function(cb) {
+ function(cb) {
             console.log("loading services into redis");
             redis.set("bots", JSON.stringify([{
                 "steamID": "76561198174479859",
@@ -196,6 +192,7 @@ before(function(done) {
                 cb(err);
             });
             },
+            /*
             function(cb) {
             console.log('downloading replays');
 
@@ -204,6 +201,7 @@ before(function(done) {
                 var arr = filename.split(".");
                 arr[0] = arr[0].split("_")[0];
                 var path = replay_dir + arr.join(".");
+   
                 console.log("downloading: %s", filename, path);
                 //currently disabled caching of replays, get a fresh copy with each test
                 if (fs.existsSync(path) && false) {
@@ -216,9 +214,12 @@ before(function(done) {
                         console.log("download took too long, retrying");
                         dl(filename, cb);
                     }, 10000);
-                    request({
-                        url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
-                    }).pipe(fs.createWriteStream(path)).on('error', function(err) {
+
+                    var inStream = request({
+                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
+                        });
+
+                    inStream.pipe(fs.createWriteStream(path)).on('error', function(err) {
                         console.log(err);
                         console.log('retrying dl %s', filename);
                         failed = true;
@@ -231,12 +232,15 @@ before(function(done) {
                         }
                     });
                 }
+
             }
             var files = ['1151783218.dem.bz2', '1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
             async.each(files, dl, function(err) {
                 cb(err);
             });
-        }], function(err) {
+        }
+                        */
+        ], function(err) {
         done(err);
     });
 });
@@ -326,23 +330,23 @@ describe("tasks", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    before(function(done) {
-        //fake replay url response
+    beforeEach(function(done) {
+        //fake retriever response
         nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
             return '/';
-        }).get('/').times(10).reply(200, {
+        }).get('/').reply(200, {
             match: {
                 cluster: 1,
                 replaySalt: 1
             }
         });
-        //fake replay
+        done();
+    });
+    it('parse replay (standard download)', function(done) {
+        //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
             return '/';
         }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
-        done();
-    });
-    it('parse replay (download)', function(done) {
         var job = {
             match_id: 1151783218,
             start_time: moment().format('X'),
@@ -355,7 +359,7 @@ describe("parser", function() {
             });
         });
     });
-    it('parse replay (local)', function(done) {
+    it('parse replay (standard local)', function(done) {
         var job = {
             match_id: 1193091757,
             start_time: moment().format('X'),
@@ -373,7 +377,7 @@ describe("parser", function() {
         var job = {
             match_id: 1181392470,
             start_time: moment().format('X'),
-            fileName: replay_dir + "1181392470.dem"
+            fileName: replay_dir + "1181392470_1v1.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -387,7 +391,7 @@ describe("parser", function() {
         var job = {
             match_id: 1189263979,
             start_time: moment().format('X'),
-            fileName: replay_dir + "1189263979.dem"
+            fileName: replay_dir + "1189263979_ardm.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
@@ -398,6 +402,8 @@ describe("parser", function() {
         });
     });
     it('parse invalid file', function(done) {
+        //write invalid replay file
+        fs.writeFileSync(replay_dir + "invalid.dem", "asdf");
         var job = {
             match_id: 1,
             start_time: moment().format('X'),
@@ -640,7 +646,7 @@ describe("unit test", function() {
     this.timeout(wait);
     it('socket request', function(done) {
         jobs.process('request', processApi);
-        //fake replay response
+        //fake replay download
         nock('http://replay1.valve.net').filteringPath(function(path) {
             return '/';
         }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
