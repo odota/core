@@ -49,9 +49,9 @@ d.run(function() {
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(updateNames, 60 * 1000);
     invokeInterval(buildSets, 3 * 60 * 1000);
-    invokeInterval(getRetrievers, 2 * 60 * 1000);
+    invokeInterval(getRetrievers, 3 * 60 * 1000);
     invokeInterval(getParsers, 3 * 60 * 1000);
-    invokeInterval(constants, 10 * 60 * 1000);
+    //invokeInterval(constants, 15 * 60 * 1000);
 });
 
 function invokeInterval(func, delay) {

@@ -1,7 +1,7 @@
 var config = require('./config');
 var role = config.ROLE || config.FOREMAN_WORKER_NAME.split(".")[0];
 console.log(role);
-//constants are currently built pre-run and written to file (constants.json)
+//constants are currently built pre-run and written to file
 //web requires constants
 //worker requires constants (fullhistory needs to iterate through heroes)
 //parseManager requires constants (processparse needs to map combat log names to hero ids, requires a retriever to get replay url)
