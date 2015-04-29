@@ -13,8 +13,8 @@ module.exports = function constants(cb) {
         "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
         "heroes": config.STEAM_API_KEY ? utility.generateJob("api_heroes", {
             language: "en-us"
-        }).url : null,
-        "leagues": config.STEAM_API_KEY ? utility.generateJob("api_leagues").url : null
+        }).url : false,
+        "leagues": config.STEAM_API_KEY ? utility.generateJob("api_leagues").url : false
     };
     var constants = require('../sources.json');
     async.each(Object.keys(urls), function(key, cb) {

@@ -47,15 +47,21 @@ d.run(function() {
     jobs.process('mmr', processMmr);
     jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
-    //TODO currently service outages cause these reqs to stack
-    setInterval(updateNames, 60 * 1000, function() {});
-    setInterval(buildSets, 3 * 60 * 1000, function() {});
-    setInterval(getRetrievers, 2 * 60 * 1000, function() {});
-    setInterval(getParsers, 3 * 60 * 1000, function() {});
-    setInterval(constants, 10 * 60 * 1000, function() {});
-    //TODO implement redis window check 
-    //setInterval(apiStatus, 2 * 60 * 1000);
+    invokeInterval(updateNames, 60 * 1000);
+    invokeInterval(buildSets, 3 * 60 * 1000);
+    invokeInterval(getRetrievers, 2 * 60 * 1000);
+    invokeInterval(getParsers, 3 * 60 * 1000);
+    invokeInterval(constants, 10 * 60 * 1000);
 });
+
+function invokeInterval(func, delay) {
+    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
+    (function foo() {
+        func(function() {
+            setTimeout(foo, delay);
+        });
+    })();
+}
 
 function getRetrievers(cb) {
     var r = {};
@@ -106,8 +112,6 @@ function getParsers(cb) {
     });
 }
 
-
-
 function clearActiveJobs(cb) {
         jobs.active(function(err, ids) {
             if (err) {
@@ -128,6 +132,7 @@ function clearActiveJobs(cb) {
         });
     }
     /*
+        //TODO implement better service outage check
     function apiStatus() {
         db.matches.findOne({}, {
             fields: {

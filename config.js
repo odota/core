@@ -1,15 +1,15 @@
 var defaults = {
-    "STEAM_API_KEY": null, //for API reqs
-    "STEAM_USER": null, //for retrievers
+    "STEAM_API_KEY": null, //for API reqs, in worker
+    "STEAM_USER": null, //for getting replay salt/profile data, in retriever
     "STEAM_PASS": null,
-    "RECAPTCHA_PUBLIC_KEY": null, //for preventing automated requests
+    "RECAPTCHA_PUBLIC_KEY": null, //for preventing automated requests, in web
     "RECAPTCHA_SECRET_KEY": null,
-    "PAYPAL_ID": null, //for donations
+    "PAYPAL_ID": null, //for donations, in web
     "PAYPAL_SECRET": null,
     "RETRIEVER_SECRET": "shared_secret_with_retriever",
     "SESSION_SECRET": "secret to encrypt cookies with",
     "ROOT_URL": "http://localhost:5000",
-    "START_SEQ_NUM": "", //REDIS: use redis number, defined: use sequence number, else: use auto
+    "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
@@ -37,4 +37,5 @@ var defaults = {
 for (var key in defaults) {
     process.env[key] = process.env[key] || defaults[key];
 }
+//now processes can use either process.env or config
 module.exports = process.env;

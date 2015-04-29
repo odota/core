@@ -65,10 +65,10 @@ Tech
 
 Quickstart
 ----
-* Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`
+* Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js null values) `touch .env`
 * Build `npm run build`
-* Launch in dev mode: `npm run dev`
+* Launch in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`
 
 Sample Data
 ----
