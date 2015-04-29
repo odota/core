@@ -60,7 +60,7 @@ module.exports = function(options) {
         //matchups
         if (!heroes) {
             heroes = $('#heroes').dataTable({
-                //"searching": false,
+                "searching": false,
                 "paging": true,
                 data: json.aggData.matchups,
                 "drawCallback": function() {
@@ -151,7 +151,7 @@ module.exports = function(options) {
         $("#record").text(json.aggData.win + "-" + json.aggData.lose);
         if (!teammates) {
             teammates = $('#teammates').dataTable({
-                //"searching": false,
+                "searching": false,
                 "paging": true,
                 data: json.aggData.teammates,
                 "order": [
