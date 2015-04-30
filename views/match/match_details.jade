@@ -107,10 +107,9 @@ block match_content
                         
         hr
         .row
-          .col-md-12
+          .col-md-6
             h2.inline-header Kill/Death
-            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
-            #kills.table-responsive.collapse.in
+            #kills.table-responsive
               table.table.table-hover
                 thead
                   tr
@@ -135,14 +134,10 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td.lead <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
-                          
-        hr
-        .row
-          .col-md-12
-            h2.inline-header Damage/Taken
-            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
-            #kills.table-responsive.collapse.in
+                          td <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
+          .col-md-6
+            h2.inline-header Damage Done/Taken
+            #kills.table-responsive
               table.table.table-hover
                 thead
                   tr
@@ -167,4 +162,4 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td.lead <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              
+                          td <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              
