@@ -69,7 +69,10 @@ function computeMatchData(match) {
                     }
                     if (p.gold) {
                         //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-                        p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
+                        //var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
+                        //6.84 change
+                        var tenMinute = (40 * 60 + 45 * 20 + 74 * 2);
+                        p.lane_efficiency = (p.gold[10] || 0) / tenMinute;
                     }
                     //convert position hashes to heatmap array of x,y,value
                     var d = {

@@ -14,12 +14,12 @@ block match_content
                     th Hero
                     th: abbr(title="Lane based on early game position") LANE
                     th: abbr(title="Percentage of standard lane gold obtained") EFF
-                    th: abbr(title="Town Portal Scrolls bought") TP
-                    th: abbr(title="Observer Wards bought") OBS
-                    th: abbr(title="Sentry Wards bought") SEN
-                    th: abbr(title="Smokes of Deceit bought") SMK
-                    th: abbr(title="Dusts of Appearance bought") DST
-                    th: abbr(title="Gems of True Sight bought") GEM
+                    th: abbr(title="Town Portal Scroll purchases") TP
+                    th: abbr(title="Observer Ward purchases") OBS
+                    th: abbr(title="Sentry Ward purchases") SEN
+                    th: abbr(title="Smokes of Deceit purchases") SMK
+                    th: abbr(title="Dusts of Appearance purchases") DST
+                    th: abbr(title="Gems of True Sight purchases") GEM
                     th: abbr(title="Number of Buybacks") BB
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
                     th: abbr(title="Neutral creeps killed") NK
@@ -41,10 +41,10 @@ block match_content
                   td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
                   td #{(p.lane_efficiency*100).toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
-                  td #{p.purchase.ward_observer*2 || "-"}
-                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.ward_observer || "-"}
+                  td #{p.purchase.ward_sentry || "-"}
                   td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.dust || "-"}
                   td #{p.purchase.gem || "-"}
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}
