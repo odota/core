@@ -417,9 +417,9 @@ describe("parser", function() {
     });
     it('parse 6.84', function(done) {
         var job = {
-            match_id: 1436662199,
+            match_id: 1436943655,
             start_time: moment().format('X'),
-            fileName: replay_dir + "1436662199_684.dem"
+            fileName: replay_dir + "1436943655_684.dem"
         };
         queueReq("parse", job, function(err, job) {
             assert(job && !err);
