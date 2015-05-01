@@ -401,6 +401,34 @@ describe("parser", function() {
             });
         });
     });
+    it('parse 6.83c', function(done) {
+        var job = {
+            match_id: 1232722145,
+            start_time: moment().format('X'),
+            fileName: replay_dir + "1232722145_683c.dem"
+        };
+        queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            job.parser_url = "http://localhost:5200?key=";
+            job.on("complete", function() {
+                done();
+            });
+        });
+    });
+    it('parse 6.84', function(done) {
+        var job = {
+            match_id: 1436662199,
+            start_time: moment().format('X'),
+            fileName: replay_dir + "1436662199_684.dem"
+        };
+        queueReq("parse", job, function(err, job) {
+            assert(job && !err);
+            job.parser_url = "http://localhost:5200?key=";
+            job.on("complete", function() {
+                done();
+            });
+        });
+    });
     it('parse invalid file', function(done) {
         //write invalid replay file
         fs.writeFileSync(replay_dir + "invalid.dem", "asdf");

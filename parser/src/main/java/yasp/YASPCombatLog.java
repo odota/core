@@ -225,6 +225,9 @@ public class YASPCombatLog{
         public String getAttackerNameCompiled() {
             return (isAttackerIllusion() ? "illusion_" : "") + getAttackerName();
         }
+        public String toString(){
+            return event.toString();
+        }
     }
 
 }
