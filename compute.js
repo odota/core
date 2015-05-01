@@ -120,6 +120,10 @@ function computeMatchData(match) {
                     }
                     //compute hashes of purchase time sums and counts from logs
                     if (p.purchase_log) {
+                        //remove ward dispenser and recipes
+                        p.purchase_log = p.purchase_log.filter(function(purchase) {
+                            return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
+                        });
                         p.purchase_time = {};
                         p.purchase_time_count = {};
                         for (var i = 0; i < p.purchase_log.length; i++) {

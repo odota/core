@@ -11,7 +11,7 @@ module.exports = function constants(cb) {
         return process.exit(1);
     }
     var urls = {
-        "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
+        "items": "http://www.dota2.com/jsfeed/itemdata",
         "abilities": "http://www.dota2.com/jsfeed/abilitydata",
         "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata",
         "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
