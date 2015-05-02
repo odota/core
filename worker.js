@@ -42,7 +42,6 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    jobs.promote();
     jobs.process('api', processApi);
     jobs.process('mmr', processMmr);
     jobs.process('request', processApi);
