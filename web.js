@@ -124,7 +124,11 @@ app.route('/').get(function(req, res, next) {
 app.route('/live').get(function(req, res) {
     //TODO index page to list currently live matches
     //individual live match page for each match
-    res.render('live', {});
+    utility.getData(utility.generateJob("api_live").url, function(err, data) {
+        res.render('live', {
+            live: data
+        });
+    });
 });
 app.route('/request').get(function(req, res) {
     res.render('request', {
