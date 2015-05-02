@@ -6,30 +6,28 @@ var async = require('async');
 var fs = require('fs');
 var config = require('../config');
 module.exports = function constants(cb) {
+    if (!config.STEAM_API_KEY){
+        console.log("no api key");
+        return process.exit(1);
+    }
     var urls = {
-        "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
+        "items": "http://www.dota2.com/jsfeed/itemdata",
         "abilities": "http://www.dota2.com/jsfeed/abilitydata",
         "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata",
         "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
-        "heroes": config.STEAM_API_KEY ? utility.generateJob("api_heroes", {
+        "heroes": utility.generateJob("api_heroes", {
             language: "en-us"
-        }).url : null,
-        "leagues": config.STEAM_API_KEY ? utility.generateJob("api_leagues").url : null
+        }).url,
+        "leagues": utility.generateJob("api_leagues").url
     };
     var constants = require('../sources.json');
     async.each(Object.keys(urls), function(key, cb) {
         var val = urls[key];
-        if (val) {
-            //grab raw data from each url and place under that key
-            getData(val, function(err, result) {
-                constants[key] = result;
-                cb(err);
-            });
-        }
-        else {
-            constants[key] = {};
-            cb();
-        }
+        //grab raw data from each url and place under that key
+        getData(val, function(err, result) {
+            constants[key] = result;
+            cb(err);
+        });
     }, function(err) {
         if (err) {
             return cb(err);

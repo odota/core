@@ -33,7 +33,6 @@
     "big-number": "0.3.1",
     "body-parser": "1.12.3",
     "bootstrap": "^3.3.4",
-    "bower": "^1.4.1",
     "c3": "^0.4.10",
     "cal-heatmap": "^3.5.2",
     "compression": "^1.4.3",

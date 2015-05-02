@@ -16,57 +16,63 @@ block playercontent
       small The following data is only available for parsed matches.
     .row
       .col-md-8
-        h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
-        table.table#builds
-          thead
-            tr
-              th Item
-              th Item Name
-              th.time Avg
-              th #
-          tbody
-            each val, key in player.aggData.purchase_time.counts
-              - var item = constants.big_items[key]
-              if item
-                tr 
-                  td: img.item(src=item.img, alt=key)
-                  td= item.dname
-                  td=val/player.aggData.purchase_time_count.counts[key]
-                  td=player.aggData.purchase.counts[key]
-              
-        h3 Skill Accuracy <span class="label label-primary">#{player.aggData.hero_hits.n} games</span>
-        table.table#accuracy
-          thead
-            tr
-              td Ability
-              td Ability Name
-              td Casts
-              td Hits
-              td Hit%
-          tbody
-            each val, key in player.aggData.hero_hits.counts
+        .row
+          h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
+          table.table#builds
+            thead
               tr
-                - var ability = constants.abilities[key]
-                - var casts = player.aggData.ability_uses.counts[key]
-                - var hits = val
-                if ability
-                  td
-                    img.ability(src=ability.img, alt=key)
-                  td= ability.dname
-                else
-                  td=key
-                  td=key
-                td=casts
-                td=hits
-                td=(hits/casts*100 || 0).toFixed(2)
+                th Item
+                th Item Name
+                th.time Avg
+                th #
+            tbody
+              each val, key in player.aggData.purchase_time.counts
+                - var item = constants.big_items[key]
+                if item
+                  tr 
+                    td: img.item(src=item.img, alt=key)
+                    td= item.dname
+                    td=val/player.aggData.purchase_time_count.counts[key]
+                    td=player.aggData.purchase.counts[key]
+                
+        .row
+          h3 Skill Accuracy <span class="label label-primary">#{player.aggData.hero_hits.n} games</span>
+          table.table#accuracy
+            thead
+              tr
+                td Ability
+                td Ability Name
+                td Casts
+                td Hits
+                td Hit%
+            tbody
+              each val, key in player.aggData.hero_hits.counts
+                tr
+                  - var ability = constants.abilities[key]
+                  - var casts = player.aggData.ability_uses.counts[key]
+                  - var hits = val
+                  if ability
+                    td
+                      img.ability(src=ability.img, alt=key)
+                    td= ability.dname
+                  else
+                    td=key
+                    td=key
+                  td=casts
+                  td=hits
+                  td=(hits/casts*100 || 0).toFixed(2)
+        .row
+          .col-md-6
+            h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>
+            #map.mapContainer.mapContainer-small
+              img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+          .col-md-6
+            h3 Sentries <span class="label label-info">#{player.aggData.sen.n} games</span>
+            #map2.mapContainer.mapContainer-small
+              img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
       .col-md-4
-        h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>
-        #map.mapContainer.mapContainer-small
-          img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-
-        h3 Sentries <span class="label label-info">#{player.aggData.sen.n} games</span>
-        #map2.mapContainer.mapContainer-small
-          img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+        include /ads/skyscraper
+        
 append footer_assets
   script.
     var posData = !{JSON.stringify(player.posData)};

@@ -14,12 +14,12 @@ block match_content
                     th Hero
                     th: abbr(title="Lane based on early game position") LANE
                     th: abbr(title="Percentage of standard lane gold obtained") EFF
-                    th: abbr(title="Town Portal Scrolls bought") TP
-                    th: abbr(title="Observer Wards bought") OBS
-                    th: abbr(title="Sentry Wards bought") SEN
-                    th: abbr(title="Smokes of Deceit bought") SMK
-                    th: abbr(title="Dusts of Appearance bought") DST
-                    th: abbr(title="Gems of True Sight bought") GEM
+                    th: abbr(title="Town Portal Scroll purchases") TP
+                    th: abbr(title="Observer Ward purchases") OBS
+                    th: abbr(title="Sentry Ward purchases") SEN
+                    th: abbr(title="Smokes of Deceit purchases") SMK
+                    th: abbr(title="Dusts of Appearance purchases") DST
+                    th: abbr(title="Gems of True Sight purchases") GEM
                     th: abbr(title="Number of Buybacks") BB
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
                     th: abbr(title="Neutral creeps killed") NK
@@ -41,10 +41,10 @@ block match_content
                   td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
                   td #{(p.lane_efficiency*100).toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
-                  td #{p.purchase.ward_observer*2 || "-"}
-                  td #{p.purchase.ward_sentry*2 || "-"}
+                  td #{p.purchase.ward_observer || "-"}
+                  td #{p.purchase.ward_sentry || "-"}
                   td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust*2 || "-"}
+                  td #{p.purchase.dust || "-"}
                   td #{p.purchase.gem || "-"}
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}
@@ -107,10 +107,9 @@ block match_content
                         
         hr
         .row
-          .col-md-12
+          .col-md-6
             h2.inline-header Kill/Death
-            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
-            #kills.table-responsive.collapse.in
+            #kills.table-responsive
               table.table.table-hover
                 thead
                   tr
@@ -135,14 +134,10 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td.lead <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
-                          
-        hr
-        .row
-          .col-md-12
-            h2.inline-header Damage/Taken
-            button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#kills", aria-expanded="true") Toggle Table
-            #kills.table-responsive.collapse.in
+                          td <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
+          .col-md-6
+            h2.inline-header Damage Done/Taken
+            #kills.table-responsive
               table.table.table-hover
                 thead
                   tr
@@ -167,4 +162,4 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td.lead <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              
+                          td <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              
