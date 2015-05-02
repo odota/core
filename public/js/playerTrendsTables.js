@@ -1,24 +1,6 @@
 module.exports = function playerTrendsTables() {
-    var accuracy = $('#accuracy').dataTable({
-        //"searching": false,
-        "paging": true,
-        "order": [
-            [2, "desc"]
-        ],
-        "drawCallback": function() {
-            tooltips();
-            formatHtml();
-        },
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-            }, {
-            "targets": [1],
-            //visible: false
-            }]
-    });
     var builds = $('#builds').dataTable({
-        //"searching": false,
+        "searching": false,
         "paging": true,
         "order": [
             [2, "asc"]
@@ -42,5 +24,23 @@ module.exports = function playerTrendsTables() {
                 return data;
             }
         }]
+    });
+    var accuracy = $('#accuracy').dataTable({
+        "searching": false,
+        "paging": true,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback": function() {
+            tooltips();
+            formatHtml();
+        },
+        "columnDefs": [{
+            "targets": [0],
+            "orderData": [1]
+            }, {
+            "targets": [1],
+            //visible: false
+            }]
     });
 }

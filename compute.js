@@ -137,6 +137,12 @@ function computeMatchData(match) {
                             p.purchase_time_count[k] += 1;
                         }
                     }
+                    //cap killstreaks at 10 (beyond godlike)
+                    for(var key in p.kill_streaks){
+                        if (Number(key)>10){
+                            p.kill_streaks["10"] +=p.kill_streaks[key];
+                        }
+                    }
                 }
                 player.parsedPlayer = p;
             });

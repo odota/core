@@ -16,6 +16,22 @@
     "CHAT_MESSAGE_FIRSTBLOOD": "First Blood",
     "CHAT_MESSAGE_TOWER_DENY": "Tower Deny"
   },
+  "multi_kills":{
+    "2": "Double Kill",
+    "3": "Triple Kill",
+    "4": "Ultra Kill",
+    "5": "Rampage"
+  },
+  "kill_streaks":{
+    "3": "Killing Spree",
+    "4": "Dominating",
+    "5": "Mega Kill",
+    "6": "Unstoppable",
+    "7": "Wicked Sick",
+    "8": "Monster Kill",
+    "9": "Godlike",
+    "10": "Beyond Godlike"
+  },
   "barracks_value": {
     "1": "Dire Bot Melee",
     "2": "Dire Bot Ranged",
