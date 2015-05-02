@@ -48,8 +48,8 @@ public class YASPCombatLog{
         goldReasonIdx = descriptor.getIndexForKey("gold_reason");
         
         //yasp
-        stunDurationIdx = descriptor.getIndexForKey("stun_duration");
         xpReasonIdx = descriptor.getIndexForKey("xp_reason");
+        stunDurationIdx = descriptor.getIndexForKey("stun_duration");
         locationXIdx = descriptor.getIndexForKey("location_x");
         locationYIdx = descriptor.getIndexForKey("location_y");
         //System.err.println(Arrays.toString(descriptor.getKeys()));
