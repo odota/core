@@ -110,7 +110,7 @@ block match_content
                         - var hero = constants.hero_names[key]
                         div.img-text
                           if hero
-                            img.dmg(src=hero.img, title=key)
+                            img.dmg(src=hero.img, title=hero.localized_name)
                             div #{val}
                           else
                             //=key
