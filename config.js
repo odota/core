@@ -1,11 +1,11 @@
 var defaults = {
-    "STEAM_API_KEY": null, //for API reqs, in worker
-    "STEAM_USER": null, //for getting replay salt/profile data, in retriever
-    "STEAM_PASS": null,
-    "RECAPTCHA_PUBLIC_KEY": null, //for preventing automated requests, in web
-    "RECAPTCHA_SECRET_KEY": null,
-    "PAYPAL_ID": null, //for donations, in web
-    "PAYPAL_SECRET": null,
+    "STEAM_API_KEY": "", //for API reqs, in worker
+    "STEAM_USER": "", //for getting replay salt/profile data, in retriever
+    "STEAM_PASS": "",
+    "RECAPTCHA_PUBLIC_KEY": "", //for preventing automated requests, in web
+    "RECAPTCHA_SECRET_KEY": "",
+    "PAYPAL_ID": "", //for donations, in web
+    "PAYPAL_SECRET": "",
     "RETRIEVER_SECRET": "shared_secret_with_retriever",
     "SESSION_SECRET": "secret to encrypt cookies with",
     "ROOT_URL": "http://localhost:5000",
@@ -27,10 +27,10 @@ var defaults = {
     "STEAM_API_HOST": "api.steampowered.com",
     "ROLE": "", //for specifying a node type
     //the following are deprecated
-    "AWS_S3_BUCKET": false,
-    "AWS_ACCESS_KEY_ID": false,
-    "AWS_SECRET_ACCESS_KEY": false,
-    "STEAM_GUARD_CODE": false
+    "AWS_S3_BUCKET": "",
+    "AWS_ACCESS_KEY_ID": "",
+    "AWS_SECRET_ACCESS_KEY": "",
+    "STEAM_GUARD_CODE": ""
 };
 //nf puts values in .env into process.env
 //ensure that process.env has all values in defaults, but prefer the process.env value

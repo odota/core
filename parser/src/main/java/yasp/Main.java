@@ -332,9 +332,15 @@ public class Main {
 			break;
 		default:
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
+			if (type!=null){
 			entry.type = type.name();
 			System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
 			es.output(entry);
+			}
+			else{
+				System.err.format("unknown combat log type: %s\n", cle.getType());
+				System.err.println(cle);
+			}
 			break;
 		}
 	}

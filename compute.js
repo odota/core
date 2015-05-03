@@ -69,7 +69,10 @@ function computeMatchData(match) {
                     }
                     if (p.gold) {
                         //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-                        p.lane_efficiency = (p.gold[10] || 0) / (43 * 60 + 48 * 20 + 74 * 2);
+                        //var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
+                        //6.84 change
+                        var tenMinute = (40 * 60 + 45 * 20 + 74 * 2);
+                        p.lane_efficiency = (p.gold[10] || 0) / tenMinute;
                     }
                     //convert position hashes to heatmap array of x,y,value
                     var d = {
@@ -117,6 +120,10 @@ function computeMatchData(match) {
                     }
                     //compute hashes of purchase time sums and counts from logs
                     if (p.purchase_log) {
+                        //remove ward dispenser and recipes
+                        p.purchase_log = p.purchase_log.filter(function(purchase) {
+                            return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
+                        });
                         p.purchase_time = {};
                         p.purchase_time_count = {};
                         for (var i = 0; i < p.purchase_log.length; i++) {
