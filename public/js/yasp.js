@@ -1,5 +1,5 @@
 //external
-require('jquery');
+window.$ = require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');
 require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
 require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
