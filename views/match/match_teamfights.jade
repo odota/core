@@ -9,17 +9,18 @@ block match_content
   .row
     .col-md-12
       h3 Participation
-      .row
-        each player in match.players
-          - var hero = constants.heroes[player.hero_id]
-          .col-md-1(class=(player.isRadiant?"success":"danger"))
-            if hero
-              img(src=hero.img, title=hero.localized_name)
-            else
-              =player.hero_id
-            - var pct = (player.teamfights_participated*100/teamfights.length)
-            .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+      table.table.table-condensed
+        tr
+          each player in match.players
+            - var hero = constants.heroes[player.hero_id]
+            td(class=(player.isRadiant?"success":"danger"))
+              if hero
+                img(src=hero.img, title=hero.localized_name)
+              else
+                =player.hero_id
+              - var pct = (player.teamfights_participated*100/teamfights.length)
+              .progress
+                .progress-bar(class=pct >= 75 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
   .row
     .col-md-4

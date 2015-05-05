@@ -41,7 +41,7 @@ block match_content
                   td #{p.purchase.ward_observer || "-"}
                   td #{p.purchase.ward_sentry || "-"}
                   td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust || "-"}
+                  td #{p.purchase.dust*2 || "-"}
                   td #{p.purchase.gem || "-"}
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}

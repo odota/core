@@ -186,12 +186,12 @@
     },
     "5": {
       "id": 5,
-      "name": "Team MM",
+      "name": "Ranked Team MM",
       "balanced": true
     },
     "6": {
       "id": 6,
-      "name": "Solo Queue",
+      "name": "Solo MM",
       "balanced": true
     },
     "7": {
@@ -201,7 +201,7 @@
     },
     "8": {
       "id": 8,
-      "name": "Solo Mid 1v1"
+      "name": "1v1 Mid"
     }
   },
   "game_mode": {
@@ -266,8 +266,7 @@
     },
     "13": {
       "id": 13,
-      "name": "Limited Hero Pool",
-      "balanced": true
+      "name": "Limited Heroes"
     },
     "14": {
       "id": 14,

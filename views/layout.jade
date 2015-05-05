@@ -1,4 +1,5 @@
 extend base_layout
+  
 //only display banners on main pages (not home)
 block banners
   if banner_msg
@@ -12,7 +13,6 @@ block banners
   if !error
    include ads/leaderboard
 
-//
 block sticky_content
   body.frame(style="margin-top:70px;")
     include navbar
