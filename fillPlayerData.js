@@ -4,15 +4,18 @@ var generatePositionData = utility.generatePositionData;
 module.exports = function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
+    var js_agg = null;
     if (options.info === "index") {
         //index is loaded via ajax
         return cb(null, player);
+        //js_agg = {};
     }
+    
     //options.query, the querystring from the user, pass these as select conditions
     advQuery({
         select: options.query,
         project: null, //just project default fields
-        js_agg: null,
+        js_agg: js_agg,
         js_sort: {
             match_id: -1
         }
