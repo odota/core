@@ -42,7 +42,6 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    jobs.promote();
     jobs.process('api', processApi);
     jobs.process('mmr', processMmr);
     jobs.process('request', processApi);
@@ -57,7 +56,10 @@ d.run(function() {
 function invokeInterval(func, delay) {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
     (function foo() {
-        func(function() {
+        func(function(err) {
+            if (err) {
+                console.log(err);
+            }
             setTimeout(foo, delay);
         });
     })();
@@ -108,7 +110,7 @@ function getParsers(cb) {
         });
     }, function(err) {
         redis.set("parsers", JSON.stringify(parser_urls));
-        cb(err, parser_urls);
+        cb(err);
     });
 }
 

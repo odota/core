@@ -90,18 +90,18 @@ footer {
 .alert-warning strong {
     color: #000;
 }
-.match .c3 path,
-.match .c3 line {
+.c3 path,
+.c3 line {
     stroke: rgb(199, 199, 199) !important;
 }
-.match .c3-axis-y .tick,
-.match .c3-axis-x .tick,
-.match .c3-axis-x-label,
-.match .c3-axis-y-label,
-.match .c3-legend-item {
+.c3-axis-y .tick,
+.c3-axis-x .tick,
+.c3-axis-x-label,
+.c3-axis-y-label,
+.c3-legend-item {
     fill: rgb(199, 199, 199);
 }
-.match .c3 {
+.c3 {
     color: #000;
 }
 div.dataTables_processing {

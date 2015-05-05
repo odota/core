@@ -3,7 +3,6 @@ var db = require('../db');
 var r = require('../redis');
 var selector = require('../selector');
 var redis = r.client;
-
 module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
@@ -41,9 +40,8 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            console.log(err);
             console.log('error occured during buildSets');
-            return buildSets(cb);
+            return cb(err);
         }
         cb();
     });

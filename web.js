@@ -112,7 +112,7 @@ poet.watch(function() {
 });
 app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
-    res.send("User-agent: *\nDisallow: /matches");
+    res.send("User-agent: *\nDisallow: /players");
 });
 app.route('/').get(function(req, res, next) {
     res.render('home', {

@@ -46,7 +46,7 @@ module.exports = function processParse(job, cb) {
                 $set: job.data.payload,
             }, function(err) {
                 console.timeEnd("parse " + match_id);
-                return cb(err, job.data.payload);
+                return cb(err);
             });
         }
     });

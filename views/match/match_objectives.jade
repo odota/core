@@ -32,3 +32,11 @@ block match_content
               td=constants.barracks_value[entry.key]
     .col-md-4
       include /ads/skyscraper
+  .row
+    .col-md-12
+      #timeline
+
+append footer_assets
+  script.
+    var objectives = !{JSON.stringify(match.parsed_data.objectives)}
+    //timeline(objectives);

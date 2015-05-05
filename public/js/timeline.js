@@ -1,61 +1,64 @@
-module.exports = function timeline(match) {
-    $(document).on('ready', function() {
-        for (var player in match.parsed_data.heroes) {
-            var items = []
-            var heroes = 0
-            var p = match.parsed_data.heroes[player]
-            if (p.timeline.length < 1) continue
-            for (var i = 0; i < p.timeline.length; i++) {
-                var event = p.timeline[i]
-                var bar = {}
-                var time = formatSeconds(event.time)
-                time = "<div style='font-size:10px;'>" + time + "<div>"
-                bar.start = moment().startOf('day').seconds(event.time)
-                if (event.type == "itembuys") {
-                    //bar.content = "<img src='" + img + "' width=30 />" + time
-                    bar.content = event.key
-                    bar.group = 1
-                    items.push(bar)
-                }
-                if (event.type == "hero_history") {
-                    bar.className = "background-" + (heroes % 10)
-                    heroes += 1
-                        //bar.content = "<img src='" + img + "' width=40 />" + "<span style='font-size:10px;'>" + constants.heroes[event.key].localized_name + "</span>"
-                    bar.content = event.key
-                    bar.start = moment().startOf('day').seconds(event.time)
-                    bar.end = moment().startOf('day').seconds(event.end)
-                    bar.type = "background"
-                    bar.group = 1
-                    items.push(bar)
-                }
-            }
-            var groups = [{
-                    id: 0,
-                    content: "Hero"
+module.exports = function timeline(objectives) {
+  var items = [];
+  for (var i = 0; i < objectives.length; i++) {
+    var entry = objectives[i];
+    var bar = {};
+    var time = formatSeconds(entry.time);
+    time = "<div style='font-size:10px;'>" + time + "<div>";
+    bar.start = moment().startOf('day').seconds(entry.time);
+    /*
+     - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+    - var objective = constants.objectives[entry.subtype] || entry.subtype
+    - var p = match.players[adjSlot] || {}
+    - var hero = constants.heroes[p.hero_id]
+    - var slot_color = constants.player_colors[p.player_slot]
+    - var team = entry.team===2 || entry.key<64 || p.isRadiant ? "success" : "danger"
+    tr(class=team)
+      td.format-seconds(data-format-seconds=entry.time)
+      td= objective
+      td
+        if hero
+          img(src=hero.img, title=hero.localized_name)
+        else
+          =team==="success" ? "The Radiant" : "The Dire"
+      td=constants.barracks_value[entry.key]
+      */
+    var img = "";
+    var team = entry.team === 2 || entry.key < 64 || entry.isRadiant ? 0 : 1;
+    bar.content = "<img src='" + img + "' width=30 />" + time;
+    bar.content = entry.subtype;
+    bar.group = team;
+    items.push(bar);
+  }
+  //TODO entries need player hero, isRadiant
+  //TODO server side needs to fill hero image, isRadiant, player color
+  //TODO set backgrounds
+  var groups = [{
+    id: 0,
+    content: "Radiant"
                 }, {
-                    id: 1,
-                    content: "Item"
-                }]
-                // create visualization
-            var container = document.getElementById('timeline');
-            var options = {
-                zoomable: false,
-                moveable: false,
-                showCurrentTime: false,
-                //stack: false,
-                margin: {
-                    item: 2
-                },
-                padding: 1,
-                start: moment().startOf('day').subtract(300, 'seconds'),
-                end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
-                showMajorLabels: false,
-                showMinorLabels: false
-            };
-            var timeline = new vis.Timeline(container);
-            timeline.setOptions(options);
-            timeline.setItems(items);
-            timeline.setGroups(groups);
-        }
-    });
+    id: 1,
+    content: "Dire"
+                }];
+  // create visualization
+  var container = document.getElementById('timeline');
+  var options = {
+    zoomable: false,
+    moveable: false,
+    showCurrentTime: false,
+    //stack: false,
+    margin: {
+      item: 2
+    },
+    padding: 1,
+    //TODO adjust start/end based on duration or max event?
+    start: moment().startOf('day').subtract(300, 'seconds'),
+    end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
+    showMajorLabels: false,
+    showMinorLabels: false
+  };
+  var timeline = new vis.Timeline(container);
+  timeline.setOptions(options);
+  timeline.setItems(items);
+  timeline.setGroups(groups);
 }
