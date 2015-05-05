@@ -145,12 +145,14 @@ function computeMatchData(match) {
                             p.purchase_time_count[k] += 1;
                         }
                     }
-                    //cap killstreaks at 10 (beyond godlike)
+                    //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
+                    /*
                     for (var key in p.kill_streaks) {
                         if (Number(key) > 10) {
                             p.kill_streaks["10"] += p.kill_streaks[key];
                         }
                     }
+                    */
                 }
                 player.parsedPlayer = p;
             });
@@ -305,11 +307,6 @@ function renderMatch(match) {
                 });
             });
         });
-        /*
-        match.tfPosData = match.parsed_data.teamfights.map(function(tf) {
-            return tf.posData;
-        });
-        */
     }
     /**
      * Generates data for c3 charts in a match
