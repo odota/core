@@ -20,7 +20,7 @@ block match_content
                 =player.hero_id
               - var pct = (player.teamfights_participated*100/teamfights.length)
               .progress
-                .progress-bar(class=pct >= 75 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+                .progress-bar(class=pct >= 75 ? "progress-bar-success" : pct >=50 ? "progress-bar-warning" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
   .row
     .col-md-4

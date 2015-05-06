@@ -48,7 +48,15 @@ function computeMatchData(match) {
                         p.neutral_kills = 0;
                         p.tower_kills = 0;
                         p.courier_kills = 0;
+                        p.lane_kills = 0;
+                        p.hero_kills = 0;
                         for (var key in p.kills) {
+                            if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
+                                p.lane_kills += p.kills[key];
+                            }
+                            if (key.indexOf("npc_dota_hero") === 0) {
+                                p.hero_kills += p.kills[key];
+                            }
                             if (key.indexOf("npc_dota_neutral") === 0) {
                                 p.neutral_kills += p.kills[key];
                             }
@@ -137,12 +145,14 @@ function computeMatchData(match) {
                             p.purchase_time_count[k] += 1;
                         }
                     }
-                    //cap killstreaks at 10 (beyond godlike)
-                    for(var key in p.kill_streaks){
-                        if (Number(key)>10){
-                            p.kill_streaks["10"] +=p.kill_streaks[key];
+                    //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
+                    /*
+                    for (var key in p.kill_streaks) {
+                        if (Number(key) > 10) {
+                            p.kill_streaks["10"] += p.kill_streaks[key];
                         }
                     }
+                    */
                 }
                 player.parsedPlayer = p;
             });
@@ -258,9 +268,19 @@ function renderMatch(match) {
             "ez": -1,
             "mad": -1
         });
+        //create graph data
         match.graphData = generateGraphData(match);
+        //create heatmap data
         match.posData = match.players.map(function(p) {
             return p.parsedPlayer.posData;
+        });
+        //process objectives
+        match.parsed_data.objectives.forEach(function(entry) {
+            var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot - 5;
+            var p = match.players[adjSlot] || {};
+            entry.objective = constants.objectives[entry.subtype] || entry.subtype;
+            entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
+            entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
         });
         //process teamfight data
         match.parsed_data.teamfights.forEach(function(tf) {
@@ -297,11 +317,6 @@ function renderMatch(match) {
                 });
             });
         });
-        /*
-        match.tfPosData = match.parsed_data.teamfights.map(function(tf) {
-            return tf.posData;
-        });
-        */
     }
     /**
      * Generates data for c3 charts in a match
