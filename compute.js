@@ -268,9 +268,19 @@ function renderMatch(match) {
             "ez": -1,
             "mad": -1
         });
+        //create graph data
         match.graphData = generateGraphData(match);
+        //create heatmap data
         match.posData = match.players.map(function(p) {
             return p.parsedPlayer.posData;
+        });
+        //process objectives
+        match.parsed_data.objectives.forEach(function(entry) {
+            var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot - 5;
+            var p = match.players[adjSlot] || {};
+            entry.objective = constants.objectives[entry.subtype] || entry.subtype;
+            entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
+            entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
         });
         //process teamfight data
         match.parsed_data.teamfights.forEach(function(tf) {
