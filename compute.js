@@ -44,6 +44,9 @@ function computeMatchData(match) {
                             });
                         }
                     }
+                    if (p.hero_log) {
+                        p.pick_time = p.hero_log[p.hero_log.length - 1].time;
+                    }
                     if (p.kills) {
                         p.neutral_kills = 0;
                         p.tower_kills = 0;
@@ -155,6 +158,23 @@ function computeMatchData(match) {
                     */
                 }
                 player.parsedPlayer = p;
+            });
+            //determine pick order based on last time value of hero_log
+            //if tied, break ties arbitrarily
+            //duplicate, sort, iterate and put index
+            //create hash of indices
+            //insert back into originals, indexing by player slot
+            var pick_map = {};
+            var sorted = match.players.slice().sort(function(a, b) {
+                return a.parsedPlayer.pick_time - b.parsedPlayer.pick_time;
+            });
+            sorted.forEach(function(player, i) {
+                if (player.parsedPlayer.pick_time) {
+                    pick_map[player.player_slot] = i + 1;
+                }
+            });
+            match.players.forEach(function(player) {
+                player.parsedPlayer.pick_order = pick_map[player.player_slot];
             });
         }
         catch (e) {

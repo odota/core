@@ -417,7 +417,7 @@ function aggregator(matches, fields) {
         },
         "kill_streaks": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.kill_streaks, m);
-        },
+        }
     };
     //if null fields passed in, do all aggregations
     fields = fields || types;
