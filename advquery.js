@@ -545,6 +545,9 @@ function filter(matches, filters) {
         game_mode: function(m, key) {
             return m.game_mode === key;
         },
+        lobby_type: function(m, key) {
+            return m.lobby_type === key;
+        },
         hero_id: function(m, key) {
             return m.players[0].hero_id === key;
         },

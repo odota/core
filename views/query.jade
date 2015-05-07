@@ -3,24 +3,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
 #filter_collapse.collapse
   form#query(action="" method="GET")
     //pre=JSON.stringify(q)
-    .row(style=player ? "display:none;" : "display:none;")
-      h4 Global 
-        small Query the full match set
-      .col-md-6
+    .row
+      .col-md-4(style="display:none;")
         .form-group
           label All Matches with Player (Account ID)
-          input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"])
-      .col-md-6
+          input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"], readonly)
         .form-group
           label All Matches with Hero
           select.form-control(name="players.hero_id")
             option(value="all") Any Hero
             each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id))=entry.localized_name
-
-    .row
-      h4 Local 
-        small Filter the matches in this result set
+              option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id), readonly)=entry.localized_name
       .col-md-6
         .form-group
           label The Players Included (Account ID)
@@ -50,28 +43,26 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           label Faction
           select.form-control(name="isRadiant")
             option(value="all") All Factions
-            option(value="1", selected=(q["isRadiant"]===1)) Radiant
-            option(value="0", selected=(q["isRadiant"]===0)) Dire
+            option(value="1", selected=(q["isRadiant"]==="1")) Radiant
+            option(value="0", selected=(q["isRadiant"]==="0")) Dire
         .form-group  
           label Result
           select.form-control(name="win")
             option(value="all") All Results
-            option(value="1", selected=(q["win"]===1)) Wins
-            option(value="0", selected=(q["win"]===0)) Losses
+            option(value="1", selected=(q["win"]==="1")) Wins
+            option(value="0", selected=(q["win"]==="0")) Losses
         .form-group
           label Patch
           select.form-control(name="patch")
             option(value="all") All Patches
             each entry, i in constants.patch
               option(value=i, selected=(Number(q.patch)===i))=entry.name
-      
         .form-group
           label Game Mode
           select.form-control(name="game_mode")
             option(value="all") All Modes
             each entry in constants.game_mode
               option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
-              
         .form-group
           label Lobby Type
           select.form-control(name="lobby_type")
@@ -86,7 +77,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             each entry in constants.leagues
               option(value=entry.leagueid, selected=(Number(q.leagueid)===entry.leagueid))=entry.name
         .form-group
-          label Significant
+          label: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
           select.form-control(name="significant")
             option(value="1",  selected=Boolean(Number(q.significant))) Significant Matches
             option(value="all", selected=!Boolean(Number(q.significant))) All Matches
@@ -94,4 +85,3 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
     .row
       .col-md-12.text-center
         button.btn.btn-yasp(type="submit") Do the Thing
-        p: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant?
