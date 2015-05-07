@@ -122,8 +122,11 @@ app.route('/').get(function(req, res, next) {
     });
 });
 app.route('/live').get(function(req, res) {
-    //TODO index page to list currently live matches
+    //TODO index page to list currently live matches and pro games
+    //link to parsed match page and live match page (if available)
     //individual live match page for each match
+    //interval check api
+    //for each match, if time changed, update redis, push to clients
     utility.getData(utility.generateJob("api_live").url, function(err, data) {
         res.render('live', {
             live: data
