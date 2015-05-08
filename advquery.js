@@ -144,26 +144,28 @@ function advQuery(options, cb) {
         console.timeEnd('db');
         var expanded_matches = [];
         matches.forEach(function(m) {
-            //get all_players and primary player
-            m.all_players = m.players.slice(0);
-            //console.log(m.players.length, m.all_players.length);
-            //use the mongodb select criteria to filter the player list
-            //create a new match with this primary player
-            //all players for tournament games, otherwise player matching select criteria
-            m.players.forEach(function(p) {
-                var pass = true;
-                //check mongo query, if starting with player
-                for (var key in options.mongo_select) {
-                    var split = key.split(".");
-                    if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
-                        pass = false;
+            if (m.players) {
+                //get all_players and primary player
+                m.all_players = m.players.slice(0);
+                //console.log(m.players.length, m.all_players.length);
+                //use the mongodb select criteria to filter the player list
+                //create a new match with this primary player
+                //all players for tournament games, otherwise player matching select criteria
+                m.players.forEach(function(p) {
+                    var pass = true;
+                    //check mongo query, if starting with player, this means we select a single player, otherwise select all players
+                    for (var key in options.mongo_select) {
+                        var split = key.split(".");
+                        if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
+                            pass = false;
+                        }
                     }
-                }
-                if (pass) {
-                    m.players = [p];
-                    expanded_matches.push(JSON.parse(JSON.stringify(m)));
-                }
-            });
+                    if (pass) {
+                        m.players = [p];
+                        expanded_matches.push(JSON.parse(JSON.stringify(m)));
+                    }
+                });
+            }
         });
         matches = expanded_matches;
         console.time("fullplayerdata");
