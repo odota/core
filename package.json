@@ -88,5 +88,8 @@
     "supertest": "^0.15.0",
     "url-loader": "^0.5.5",
     "webpack": "^1.8.10"
+  },
+  "engines": {
+    "node": ">= 0.12.0"
   }
 }
