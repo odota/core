@@ -49,16 +49,19 @@ h3 img {
     font-size: 10px;
 }
 .ability {
-    height: 30px
+    margin-right: 1px;
+    height: 25px
 }
 .item {
-    margin: 1px;
+    margin-right: 1px;
     height: 25px;
 }
 .kill {
-    height: 30px;
+    margin-right: 1px;
+    height: 25px;
 }
 .dmg {
+    margin-right: 1px;
     height: 25px;
 }
 td.abilities {
@@ -341,7 +344,6 @@ table tfoot * {
 .hidden {
     display: none;
 }
-
 /* Sticky footer styles
 -------------------------------------------------- */
 

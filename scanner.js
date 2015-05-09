@@ -13,6 +13,7 @@ var queries = require('./queries');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
+var donators;
 var permanent = {
     88367253: true
 };
@@ -56,6 +57,7 @@ function scanApi(seq_num) {
         trackedPlayers = result.trackedPlayers;
         ratingPlayers = result.ratingPlayers;
         userPlayers = result.userPlayers;
+        donators = result.donators;
         getData(container.url, function(err, data) {
             if (err) {
                 return scanApi(seq_num);
@@ -66,13 +68,13 @@ function scanApi(seq_num) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.each(resp, function(match, cb) {
+            async.eachSeries(resp, function(match, cb) {
                 if (match.leagueid) {
                     //parse tournament games
                     match.parse_status = 0;
                 }
                 async.each(match.players, function(p, cb) {
-                    if (p.account_id in trackedPlayers || p.account_id in permanent) {
+                    if (p.account_id in trackedPlayers || p.account_id in permanent || p.account_id in donators) {
                         //queued
                         match.parse_status = 0;
                     }
@@ -100,12 +102,16 @@ function scanApi(seq_num) {
                     }
                     else if (match.parse_status === 0 || match.parse_status === 3) {
                         insertMatch(match, function(err) {
-                            cb(err);
+                            close(err, cb);
                         });
                     }
                     else {
-                        //don't insert this match
-                        cb(err);
+                        close(err, cb);
+                    }
+
+                    function close(err, cb) {
+                        redis.set("match_seq_num", next_seq_num);
+                        return cb(err);
                     }
                 });
             }, function(err) {
@@ -115,8 +121,6 @@ function scanApi(seq_num) {
                 }
                 else {
                     //completed inserting matches
-                    //mark progress
-                    redis.set("match_seq_num", next_seq_num);
                     //wait 100ms for each match less than 100
                     var delay = (100 - resp.length) * 100;
                     setTimeout(function() {

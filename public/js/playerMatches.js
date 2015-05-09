@@ -205,7 +205,7 @@ module.exports = function(options) {
         ajax: {
             'url': '/api/matches',
             "data": function(d) {
-                d.select = $('form').serializeObject();
+                d.select = $('#query').serializeObject();
                 //player pages aggregate teammates/matchups/win/lose/games
                 //all/pro pages don't aggregate anything
                 d.js_agg = options.js_agg;
