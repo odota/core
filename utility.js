@@ -268,6 +268,7 @@ function getParseSchema() {
                 //individual chat event counts?
                 //"CHAT_MESSAGE_HERO_KILL":{},
                 //"clicks":{},
+                "pings": {},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
