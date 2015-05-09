@@ -7,8 +7,8 @@ public class EventStream{
     private List<Entry> es;
     public EventStream(){
         g = new Gson();
-        //buffers the log in Java before emitting
-        //log = new ArrayList<Entry>();
+        //if es is defined, buffers the log in Java before emitting
+        //es = new ArrayList<Entry>();
         es = null;
     }
     public void output(Entry e){

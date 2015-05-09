@@ -24,7 +24,7 @@ block playercontent
                 th Item
                 th Item Name
                 th.time Avg
-                th #
+                th Built
             tbody
               each val, key in player.aggData.purchase_time.counts
                 - var item = constants.big_items[key]
@@ -40,27 +40,45 @@ block playercontent
           table.table#accuracy
             thead
               tr
-                td Ability
-                td Ability Name
-                td Casts
-                td Hits
-                td Hit%
+                th Ability
+                th Ability Name
+                th Casts
+                th Hits
+                th Hit%
             tbody
               each val, key in player.aggData.hero_hits.counts
+                - var ability = constants.abilities[key]
+                - var casts = player.aggData.ability_uses.counts[key]
+                - var hits = val
+                if casts
+                  tr
+                    if ability
+                      td
+                        img.ability(src=ability.img, alt=key)
+                      td= ability.dname
+                    else
+                      td=key
+                      td=key
+                    td=casts
+                    td=hits
+                    td=(hits/casts*100 || 0).toFixed(2)
+        .row
+          .col-md-6
+            h3 Multi Kills <span class="label label-warning">#{player.aggData.multi_kills.n} games</span>
+            table.table
+              each val, key in constants.multi_kills
                 tr
-                  - var ability = constants.abilities[key]
-                  - var casts = player.aggData.ability_uses.counts[key]
-                  - var hits = val
-                  if ability
-                    td
-                      img.ability(src=ability.img, alt=key)
-                    td= ability.dname
-                  else
-                    td=key
-                    td=key
-                  td=casts
-                  td=hits
-                  td=(hits/casts*100 || 0).toFixed(2)
+                  td #{val} (#{key})
+                  td=player.aggData.multi_kills.counts[key] || 0
+
+          .col-md-6
+            h3 Kill Streaks <span class="label label-danger">#{player.aggData.kill_streaks.n} games</span>
+            table.table
+              each val, key in constants.kill_streaks
+                tr
+                  td #{val} (#{key})
+                  td=player.aggData.kill_streaks.counts[key] || 0
+
         .row
           .col-md-6
             h3 Observers <span class="label label-warning">#{player.aggData.obs.n} games</span>

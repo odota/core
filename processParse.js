@@ -46,7 +46,7 @@ module.exports = function processParse(job, cb) {
                 $set: job.data.payload,
             }, function(err) {
                 console.timeEnd("parse " + match_id);
-                return cb(err, job.data.payload);
+                return cb(err);
             });
         }
     });
@@ -141,6 +141,8 @@ function runParse(job, cb) {
         "ability_trigger": getSlot,
         "item_uses": getSlot,
         "ability_uses": getSlot,
+        "kill_streaks" : getSlot,
+        "multi_kills": getSlot,
         "clicks": function(e) {
             //just 0 (other) the key for now since we dont know what the order_types are
             e.key = 0;
@@ -550,7 +552,7 @@ function runParse(job, cb) {
         //e.unit will be populated with the killed/damaged unit for killed/damaged (this may not be a hero, in that case e.slot will be undefined)
         //e.unit = assocName(e.unit);
         //if slot in event, use that, otherwise map value (could be undefined)
-        //e.slot can be 0, so we check for existence in the object
+        //e.slot can be 0, so we check for existence in the object rather than !e.slot
         e.slot = ("slot" in e) ? e.slot : hero_to_slot[e.unit];
         populate(e);
     }

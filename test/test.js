@@ -357,6 +357,9 @@ describe("parser", function() {
             job.on("complete", function() {
                 done();
             });
+            job.on("failed attempt", function(){
+                done("failed");
+            });
         });
     });
     it('parse replay (standard local)', function(done) {

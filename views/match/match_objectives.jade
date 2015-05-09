@@ -12,7 +12,6 @@ block match_content
             th Objective
             th Achieved By
             th Notes
-            
         tbody
           each entry in match.parsed_data.objectives || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
@@ -32,3 +31,12 @@ block match_content
               td=constants.barracks_value[entry.key]
     .col-md-4
       include /ads/skyscraper
+  .row
+    .col-md-12
+      #timeline
+
+append footer_assets
+  //-
+   script.
+     var objectives = !{JSON.stringify(match.parsed_data.objectives)}
+     timeline(objectives);

@@ -1,61 +1,38 @@
-module.exports = function timeline(match) {
-    $(document).on('ready', function() {
-        for (var player in match.parsed_data.heroes) {
-            var items = []
-            var heroes = 0
-            var p = match.parsed_data.heroes[player]
-            if (p.timeline.length < 1) continue
-            for (var i = 0; i < p.timeline.length; i++) {
-                var event = p.timeline[i]
-                var bar = {}
-                var time = formatSeconds(event.time)
-                time = "<div style='font-size:10px;'>" + time + "<div>"
-                bar.start = moment().startOf('day').seconds(event.time)
-                if (event.type == "itembuys") {
-                    //bar.content = "<img src='" + img + "' width=30 />" + time
-                    bar.content = event.key
-                    bar.group = 1
-                    items.push(bar)
-                }
-                if (event.type == "hero_history") {
-                    bar.className = "background-" + (heroes % 10)
-                    heroes += 1
-                        //bar.content = "<img src='" + img + "' width=40 />" + "<span style='font-size:10px;'>" + constants.heroes[event.key].localized_name + "</span>"
-                    bar.content = event.key
-                    bar.start = moment().startOf('day').seconds(event.time)
-                    bar.end = moment().startOf('day').seconds(event.end)
-                    bar.type = "background"
-                    bar.group = 1
-                    items.push(bar)
-                }
-            }
-            var groups = [{
-                    id: 0,
-                    content: "Hero"
+module.exports = function timeline(objectives) {
+  var items = [];
+  for (var i = 0; i < objectives.length; i++) {
+    var entry = objectives[i];
+    var bar = {};
+    var time = formatSeconds(entry.time);
+    var img = entry.hero_img ? "<img src='" + entry.hero_img + "' width=30 />" : entry.team ? "The Dire" : "The Radiant";
+    bar.start = moment().startOf('day').seconds(entry.time).toDate();
+    bar.content = "<div style='font-size:10px;'>" + img + entry.objective + time + "</div>";
+    bar.group = entry.team;
+    items.push(bar);
+  }
+  //TODO set backgrounds as additional items pushed
+  var groups = [{
+    id: 0,
+    content: "Radiant"
                 }, {
-                    id: 1,
-                    content: "Item"
-                }]
-                // create visualization
-            var container = document.getElementById('timeline');
-            var options = {
-                zoomable: false,
-                moveable: false,
-                showCurrentTime: false,
-                //stack: false,
-                margin: {
-                    item: 2
-                },
-                padding: 1,
-                start: moment().startOf('day').subtract(300, 'seconds'),
-                end: moment().startOf('day').seconds(match.duration).add(180, 'seconds'),
-                showMajorLabels: false,
-                showMinorLabels: false
-            };
-            var timeline = new vis.Timeline(container);
-            timeline.setOptions(options);
-            timeline.setItems(items);
-            timeline.setGroups(groups);
-        }
-    });
+    id: 1,
+    content: "Dire"
+                }];
+  // create visualization
+  var container = document.getElementById('timeline');
+  var options = {
+    zoomable: false,
+    moveable: false,
+    showCurrentTime: false,
+    //TODO adjust start/end based on duration or max event?
+    start: moment().startOf('day').subtract(180, 'seconds'),
+    end: moment().startOf('day').seconds(objectives[objectives.length - 1].time).add(180, 'seconds'),
+    showMajorLabels: false
+      //showMinorLabels: false
+  };
+  var timeline = new vis.Timeline(container);
+  timeline.setOptions(options);
+  timeline.setItems(items);
+  timeline.setGroups(groups);
+  console.log(items);
 }

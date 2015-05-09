@@ -147,8 +147,10 @@ module.exports = function(options) {
         //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
         //teammate table
         var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
-        $("#winrate").text(pct + "%").width(pct + "%");
-        $("#record").text(json.aggData.win + "-" + json.aggData.lose);
+        $("#winbar").width(pct + "%");
+        $("#winrate").text(pct + "%");
+        $("#win").text(json.aggData.win);
+        $("#lose").text(json.aggData.lose);
         if (!teammates) {
             teammates = $('#teammates').dataTable({
                 "searching": false,

@@ -413,6 +413,12 @@ function aggregator(matches, fields) {
         },
         "sentry_uses": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
+        },
+        "multi_kills": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.multi_kills, m);
+        },
+        "kill_streaks": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.kill_streaks, m);
         }
     };
     //if null fields passed in, do all aggregations

@@ -237,7 +237,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 8,
+        "version": 9,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -282,6 +282,8 @@ function getParseSchema() {
                 "modifier_applied": {},
                 //"modifier_lost": {},
                 //"ability_trigger": {}
+                "kill_streaks": {},
+                "multi_kills": {},
                 "healing": {}
             };
         })

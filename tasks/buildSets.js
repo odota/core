@@ -4,6 +4,7 @@ var r = require('../redis');
 var redis = r.client;
 var moment = require('moment');
 var config = require('../config');
+
 module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
@@ -63,9 +64,8 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            console.log(err);
             console.log('error occured during buildSets');
-            return buildSets(cb);
+            return cb(err);
         }
         cb();
     });
