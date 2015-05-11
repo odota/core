@@ -15,6 +15,7 @@ import skadistats.clarity.processor.stringtables.StringTables;
 import skadistats.clarity.processor.stringtables.UsesStringTable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Arrays;
 
 @Provides({OnYASPCombatLogEntry.class})
 public class YASPCombatLog{
@@ -49,10 +50,20 @@ public class YASPCombatLog{
         
         //yasp
         xpReasonIdx = descriptor.getIndexForKey("xp_reason");
+        //TODO: descriptor only contains a subset of the keys available, do protobufs need updating?
+        //we can't use this method to get indices of some combat log fields:
+        /*
         stunDurationIdx = descriptor.getIndexForKey("stun_duration");
+        slowDurationIdx = descriptor.getIndexForKey("slow_duration");
         locationXIdx = descriptor.getIndexForKey("location_x");
         locationYIdx = descriptor.getIndexForKey("location_y");
-        //System.err.println(Arrays.toString(descriptor.getKeys()));
+    optional float modifier_duration = 25;
+    optional uint32 last_hits = 27;
+    optional uint32 attacker_team = 28;
+    optional uint32 target_team = 29;
+    optional uint32 obs_wards_placed = 30;
+    */
+        System.err.println(Arrays.toString(descriptor.getKeys()));
     }
 
     @OnGameEvent(GAME_EVENT_NAME)
@@ -89,11 +100,19 @@ public class YASPCombatLog{
     private Integer goldReasonIdx;
     
     //yasp
-    Integer stunDurationIdx;
     Integer xpReasonIdx;
-    Integer locationXIdx;
-    Integer locationYIdx;
-
+    
+    //temporary manually set idx values for fields missing in gameeventdescriptor
+    Integer stunDurationIdx = 16;
+    Integer slowDurationIdx = 17;
+    Integer locationXIdx = 21;
+    Integer locationYIdx = 22;
+    Integer modifierDurationIdx = 25;
+    Integer lastHitsIdx = 27;
+    Integer attackerTeamIdx = 28;
+    Integer targetTeamIdx = 29;
+    Integer obsWardsPlacedIdx = 30;
+    
     public class Entry {
 
         private final StringTable combatLogNames;
@@ -172,8 +191,13 @@ public class YASPCombatLog{
             return event.getProperty(abilityLevelIdx);
         }
         
-        //yasp
-        
+        //yasp augmentations
+        //TODO: for full safety, all getters should check for null on Idx
+        public String toString(){
+            //print the underlying gameevent
+            //this uses gameeventdescriptor to dump!  missing fields aren't shown
+            return event.toString();
+        }
         public boolean isTargetHero() {
             if (targetHeroIdx==null) {
                 return true;
@@ -185,15 +209,6 @@ public class YASPCombatLog{
                 return true;
             }
             return event.getProperty(attackerHeroIdx);
-        }
-        
-        private String translate(String in) {
-            if (in!=null){
-                if (in.startsWith("item_")){
-                    in=in.substring("item_".length());
-                }
-            }
-            return in;
         }
         public int getGoldReason() {
             if (goldReasonIdx==null){
@@ -207,8 +222,14 @@ public class YASPCombatLog{
             }
             return event.getProperty(xpReasonIdx);
         }
-        public int getStunDuration() {
+        public String getValueName(){
+            return translate(readCombatLogName(getValue()));
+        }
+        public float getStunDuration() {
             return event.getProperty(stunDurationIdx);
+        }
+        public float getSlowDuration() {
+            return event.getProperty(slowDurationIdx);
         }
         public int getLocationX() {
             return event.getProperty(locationXIdx);
@@ -216,17 +237,35 @@ public class YASPCombatLog{
         public int getLocationY() {
             return event.getProperty(locationYIdx);
         }
-        public String getValueName(){
-            return translate(readCombatLogName(getValue()));
+        public float getModifierDuration(){
+            return event.getProperty(modifierDurationIdx);
+        }
+        public int getLastHits(){
+            return event.getProperty(lastHitsIdx);
+        }
+        public int getAttackerTeam(){
+            return event.getProperty(attackerTeamIdx);
+        }
+        public int getTargetTeam(){
+            return event.getProperty(targetTeamIdx);
+        }
+        public int getObsWardsPlaced(){
+            return event.getProperty(obsWardsPlacedIdx);
+        }
+        //string formatting functions, should be client defined
+        private String translate(String in) {
+            if (in!=null){
+                if (in.startsWith("item_")){
+                    in=in.substring("item_".length());
+                }
+            }
+            return in;
         }
         public String getTargetNameCompiled() {
             return (isTargetIllusion() ? "illusion_" : "") + getTargetName();
         }
         public String getAttackerNameCompiled() {
             return (isAttackerIllusion() ? "illusion_" : "") + getAttackerName();
-        }
-        public String toString(){
-            return event.toString();
         }
     }
 

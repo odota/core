@@ -148,6 +148,11 @@ function runParse(job, cb) {
             e.key = 0;
             getSlot(e);
         },
+        "pings": function(e){
+            //we're not breaking pings into subtypes atm so just set key to 0 for now
+            e.key = 0;
+            getSlot(e);
+        },
         "chat_event": function(e) {
             if (e.subtype === "CHAT_MESSAGE_RUNE_PICKUP") {
                 //player

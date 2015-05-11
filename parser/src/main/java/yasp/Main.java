@@ -20,6 +20,7 @@ import skadistats.clarity.source.InputStreamSource;
 import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
+import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
 import skadistats.clarity.wire.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
@@ -73,6 +74,29 @@ public class Main {
 		es.output(entry);
 	}
 
+	@OnMessage(CDOTAUserMsg_LocationPing.class)
+	public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message){
+		Entry entry = new Entry(time);
+		entry.type = "pings";
+		Integer player1=(Integer)message.getPlayerId();
+		entry.slot = player1;
+		/*
+		System.err.println(message);
+		player_id: 7
+		location_ping {
+		  x: 5871
+		  y: 6508
+		  target: -1
+		  direct_ping: false
+		  type: 0
+		}
+		*/
+		//we could get the ping coordinates/type if we cared
+		//skadistats.clarity.wire.proto.DotaCommonmessages.CDOTAMsg_LocationPing getLocationPing();
+		//entry.key = String.valueOf(message.getOrderType());
+		es.output(entry);
+	}
+	
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
 	public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
 		CDOTAUserMsg_ChatEvent u = message;
@@ -223,9 +247,14 @@ public class Main {
 
 	@OnYASPCombatLogEntry
 	public void onCombatLogEntry(Context ctx, YASPCombatLog.Entry cle) {
+		//System.err.println(cle);
+		//System.err.format("%s\n", cle);
+		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
+		//System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
+		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
-		//TODO use DOTA_COMBATLOG_TYPES to determine type?
+		//TODO use DOTA_COMBATLOG_TYPES to determine type rather than our own strings
 		switch(cle.getType()) {
 		case 0:
 			//damage
@@ -407,6 +436,8 @@ Integer timeIdx;
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 			if (pr!=null){
 				if (!initialized) {
+					//dump playerresource for inspection
+					//System.err.println(pr);
 					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
 					xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
 					goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
@@ -415,7 +446,7 @@ Integer timeIdx;
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		//slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
+		//TODO: slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
 		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
 		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
 		

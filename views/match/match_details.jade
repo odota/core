@@ -14,7 +14,7 @@ block match_content
                     th Hero
                     th: abbr(title="Order in which the player picked") PICK
                     th: abbr(title="Lane based on early game position") POS
-                    th: abbr(title="Percentage of standard lane gold obtained") EFF
+                    th: abbr(title="Percentage of lane gold obtained at 10 minutes") EFF
                     th: abbr(title="Town Portal Scroll purchases") TP
                     th: abbr(title="Observer Ward purchases") OBS
                     th: abbr(title="Sentry Ward purchases (x2)") SEN
@@ -23,7 +23,7 @@ block match_content
                     th: abbr(title="Gem of True Sight purchases") GEM
                     th: abbr(title="Number of Buybacks") BB
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
-
+                    th: abbr(title="Number of times the player pinged") PING
                     //th: abbr(title="Number of times the player clicked") CLICK
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
@@ -45,6 +45,7 @@ block match_content
                   td #{p.purchase.gem || "-"}
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}
+                  td #{p.pings[0] || "-"}
                   //td #{p.clicks[0] || "-"}
 
         hr
@@ -159,8 +160,7 @@ block match_content
                   tr
                     th Hero
                     each val,key in constants.multi_kills
-                      //th #{val} (#{key})
-                      th: abbr(title=val) #{key}
+                      th #{val} (#{key})
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
