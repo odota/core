@@ -53,8 +53,6 @@ block content
 
 append footer_assets
   script.
-    var options = !{JSON.stringify(options)};
-    playerMatches(options);
     $(".pref").change(function() {
         $.post(
             "/preferences", {
@@ -70,3 +68,5 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
+    var options = !{JSON.stringify(options)};
+    playerMatches(options);
