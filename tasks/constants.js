@@ -50,6 +50,7 @@ module.exports = function constants(cb) {
         var leagues = JSON.parse(JSON.stringify(constants.leagues.result.leagues));
         constants.leagues = {};
         leagues.forEach(function(l) {
+            l.name = l.name.replace("#DOTA_Item_", "").split("_").join(" ");
             constants.leagues[l.leagueid] = l;
         });
         //items, already keyed by name

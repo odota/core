@@ -93,7 +93,7 @@ module.exports = function(options) {
                     title: 'League',
                     visible: Boolean(options.professional),
                     render: function(data, type) {
-                        return data ? data.replace("#DOTA_Item_", "").split("_").join(" ") : "Unknown";
+                        return data ? data : "Unknown";
                     }
             },
                 {

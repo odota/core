@@ -25,9 +25,13 @@ module.exports = function fillPlayerData(player, options, cb) {
             return cb(err);
         }
         player.matches = results.data;
-        //delete all_players from each match, dump matches into js var, use datatables to generate table
+        //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
         player.matches.forEach(function(m) {
             delete m.all_players;
+            delete m.parsed_data;
+            m.players.forEach(function(p) {
+                delete p.parsedPlayer;
+            });
         });
         player.aggData = results.aggData;
         if (player.aggData.obs) {
