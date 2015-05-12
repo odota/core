@@ -8,22 +8,28 @@ block playercontent
   .row
     .col-md-12
       h3 Record 
-        small.green#win
+        small.green#win #{player.aggData.win}
         small -
-        small.red#lose
+        small.red#lose #{player.aggData.lose}
+      - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
       .progress
-        .progress-bar.progress-bar-success#winbar
-          span#winrate
+        .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
               
-  //query form and matches
   .row
      .col-md-12
        include /query
+  - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status};
+  script.
+    var constants = !{JSON.stringify(clientConstants)};
+    var matches = !{JSON.stringify(player.matches)};
+    var heroes = !{JSON.stringify(player.aggData.matchups)};
+    var teammates = !{JSON.stringify(player.aggData.teammates)};
+    var ratings = !{JSON.stringify(player.ratings || [])};
   .row
     .col-md-12.table-responsive
       h3 Matches
       table.table#matches
-
+      
   hr
   .row
     include /ads/leaderboard_2
@@ -51,5 +57,4 @@ block playercontent
 
 append footer_assets
   script.
-    var ratings = !{JSON.stringify(player.ratings || [])};
     ratingsChart(ratings);
