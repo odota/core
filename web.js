@@ -185,6 +185,9 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
+app.route('/compare').get(function(req,res){
+    res.render("compare", {});
+})
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
