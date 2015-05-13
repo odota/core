@@ -360,6 +360,10 @@ module.exports = function(options) {
             "order": [
             [1, "desc"]
         ],
+            "drawCallback": function() {
+                tooltips();
+                formatHtml();
+            },
             "columns": [{
                 data: "account_id",
                 title: "Teammate",
