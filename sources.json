@@ -16,13 +16,13 @@
     "CHAT_MESSAGE_FIRSTBLOOD": "First Blood",
     "CHAT_MESSAGE_TOWER_DENY": "Tower Deny"
   },
-  "multi_kills":{
+  "multi_kills": {
     "2": "Double Kill",
     "3": "Triple Kill",
     "4": "Ultra Kill",
     "5": "Rampage"
   },
-  "kill_streaks":{
+  "kill_streaks": {
     "3": "Killing Spree",
     "4": "Dominating",
     "5": "Mega Kill",
@@ -308,6 +308,33 @@
       "balanced": true
     }
   },
+  "xp_level": [
+0,
+200,
+400,
+900,
+1400,
+2000,
+2600,
+3200,
+4400,
+ 5400,
+ 6000,
+ 8200,
+ 9000,
+ 10400,
+ 11900,
+ 13500,
+ 15200,
+ 17000,
+ 18900,
+ 20900,
+ 23000,
+ 25200,
+ 27500,
+ 29900,
+ 32400
+ ],
   "patch": [{
     "name": "6.84",
     "date": "2015-04-30T21:00:00Z"
