@@ -5,12 +5,13 @@ module.exports = function fillPlayerData(player, options, cb) {
     //received from controller
     //options.info, the tab the player is on
     var js_agg = null;
+    /*
     if (options.info === "index") {
         //index is loaded via ajax
         return cb(null, player);
         //js_agg = {};
     }
-    
+    */
     //options.query, the querystring from the user, pass these as select conditions
     advQuery({
         select: options.query,
@@ -24,6 +25,14 @@ module.exports = function fillPlayerData(player, options, cb) {
             return cb(err);
         }
         player.matches = results.data;
+        //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
+        player.matches.forEach(function(m) {
+            delete m.all_players;
+            delete m.parsed_data;
+            m.players.forEach(function(p) {
+                delete p.parsedPlayer;
+            });
+        });
         player.aggData = results.aggData;
         if (player.aggData.obs) {
             //generally position data function is used to generate heatmap data for each player in a natch
