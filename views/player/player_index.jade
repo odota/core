@@ -24,7 +24,7 @@ block playercontent
     var matches = !{JSON.stringify(player.matches)};
     var heroes = !{JSON.stringify(player.aggData.matchups)};
     var teammates = !{JSON.stringify(player.aggData.teammates)};
-    var ratings = !{JSON.stringify(player.ratings || [])};
+    var ratings = !{JSON.stringify(player.ratings ? player.ratings.reverse() : [])};
   .row
     .col-md-12.table-responsive
       h3 Matches

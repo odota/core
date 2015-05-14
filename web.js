@@ -197,6 +197,31 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
+app.route('/compare').get(function(req, res, next) {
+    //TODO pick up account ids to analyze from parsing querystring, comma-separated
+    //parse the multiple account ids into array
+    //TODO limit the results to return for comparison to save time, set options.limit?
+    //TODO max compare 5 people (+all/professional)
+    var account_ids = [88367253];
+    async.map(account_ids, function(account_id, cb) {
+        fillPlayerData(account_id, {
+            query: req.query
+        }, function(err, player) {
+            //create array of results.aggData for each account_id
+            //we care about average and percentile for each stat
+            //TODO compute percentile for each stat, against "all" values, iterate through keys and determine whether given value is gt/lt key, then add to appropriate bucket. percentile is gt/(gt+lt)
+            cb(err, {account_id: account_id, personaname: player.personaname, data: player.aggData});
+        });
+    }, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        res.render("compare", {
+            data: results,
+            q: req.query
+        });
+    });
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));

@@ -307,6 +307,19 @@ function renderMatch(match) {
             tf.posData = [];
             tf.radiant_gold_delta = 0;
             tf.radiant_xp_delta = 0;
+            tf.players.forEach(function(p) {
+                //lookup starting, ending level
+                p.level_start = getLevelFromXp(p.xp_start);
+                p.level_end = getLevelFromXp(p.xp_end);
+
+                function getLevelFromXp(xp) {
+                    for (var i = 0; i < constants.xp_level.length; i++) {
+                        if (constants.xp_level[i] > xp) {
+                            return i;
+                        }
+                    }
+                }
+            });
             //add player's hero_id to each teamfight participant
             match.players.forEach(function(p) {
                 //index into the correct slot
