@@ -120,7 +120,6 @@ function advQuery(options, cb) {
     //var parsedPlayerData = {};
     //this just gets the parsed data if js_agg is null (do everything)
     var bGetParsedPlayerData = Boolean(!options.js_agg);
-    console.log(bGetParsedPlayerData);
     //limit, pass to mongodb, cap the number of matches to return in mongo
     options.limit = (!options.limit || options.limit > max) ? max : options.limit;
     //skip, pass to mongodb
@@ -562,7 +561,7 @@ function filter(matches, filters) {
         isRadiant: function(m, key) {
             return Number(m.players[0].isRadiant) === key;
         },
-        //GETFULLPLAYERDATA: we need to request getFullPlayerData for these, and then iterate over match.all_players
+        //GETFULLPLAYERDATA: we need to iterate over match.all_players
         //ensure all array elements fit the condition
         //with_account_id: player id was also in the game
         with_account_id: function(m, key) {
@@ -598,7 +597,7 @@ function filter(matches, filters) {
                 });
             }
             //TODO implement more filters
-            //filter: specific regions (tricky because there are multiple ids per region)
+            //filter: specific regions
             //filter: endgame item
             //filter: no stats recorded (need to implement custom filter to detect)
             //filter kill differential
@@ -672,7 +671,7 @@ function sort(matches, sorts) {
             //TODO implement more sorts
             //game mode
             //hero (sort alpha?)
-            //played time
+            //date played
             //result
             //region
             //parse status

@@ -18,7 +18,7 @@ var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
-var fillPlayerData = require('./fillPlayerData');
+var advQuery = require('./advQuery');
 //var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
@@ -185,9 +185,26 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
-app.route('/compare').get(function(req,res){
-    res.render("compare", {});
-})
+app.route('/compare').get(function(req, res, next) {
+    //TODO pick up account ids to analyze from parsing querystring, comma-separated
+    //parse the multiple account ids into array
+    //do advquery for each account_id
+    advQuery({
+        select: req.query,
+        project: null, //just project default fields
+        js_agg: null, //do all aggregations
+        js_sort: {
+            match_id: -1
+        }
+    }, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        //create array of results.aggData for each account_id
+        //TODO compute percentile for each stat, against "all" values, expanded from counts
+        res.render("compare", {});
+    });
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
