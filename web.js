@@ -18,7 +18,7 @@ var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
-var advQuery = require('./advQuery');
+var fillPlayerData = require('./fillPlayerData');
 //var cpuCount = require('os').cpus().length;
 // Include the cluster module
 var cluster = require('cluster');
@@ -188,21 +188,26 @@ app.route('/faq').get(function(req, res) {
 app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated
     //parse the multiple account ids into array
-    //do advquery for each account_id
-    advQuery({
-        select: req.query,
-        project: null, //just project default fields
-        js_agg: null, //do all aggregations
-        js_sort: {
-            match_id: -1
-        }
+    //TODO limit the results to return for comparison to save time, set options.limit?
+    //TODO max compare 5 people (+all/professional)
+    var account_ids = [88367253];
+    async.map(account_ids, function(account_id, cb) {
+        fillPlayerData(account_id, {
+            query: req.query
+        }, function(err, player) {
+            //create array of results.aggData for each account_id
+            //we care about average and percentile for each stat
+            //TODO compute percentile for each stat, against "all" values, iterate through keys and determine whether given value is gt/lt key, then add to appropriate bucket. percentile is gt/(gt+lt)
+            cb(err, {account_id: account_id, personaname: player.personaname, data: player.aggData});
+        });
     }, function(err, results) {
         if (err) {
             return next(err);
         }
-        //create array of results.aggData for each account_id
-        //TODO compute percentile for each stat, against "all" values, expanded from counts
-        res.render("compare", {});
+        res.render("compare", {
+            data: results,
+            q: req.query
+        });
     });
 });
 app.use('/matches', require('./routes/matches'));

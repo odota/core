@@ -19,26 +19,12 @@ module.exports = function(options) {
         });
         return o;
     };
-    queryForm();
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
 
     function drawMatches(data) {
-        $('#matches').on('xhr.dt', function(e, settings, json) {
-            /*
-            console.log(json);
-            constants = json.constants;
-            //draw things with the returned data
-            var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
-            $("#winbar").width(pct + "%");
-            $("#winrate").text(pct + "%");
-            $("#win").text(json.aggData.win);
-            $("#lose").text(json.aggData.lose);
-            drawHeroes(json.aggData.matchups);
-            drawTeammates(json.aggData.teammates);
-            */
-        }).dataTable({
+        $('#matches').dataTable({
             "order": [
                 [0, "desc"]
             ],
@@ -227,42 +213,6 @@ module.exports = function(options) {
                         return constants.parse_status[data] ? constants.parse_status[data] : data;
                     }
             }]
-        });
-    }
-
-    function queryForm() {
-        //query form code
-        $("#hero_id").select2({
-            //placeholder: "Played Any Hero",
-            maximumSelectionSize: 1
-        });
-        $("#with_account_id").select2({
-            //placeholder: "Included: Any Player",
-            tags: [],
-            maximumSelectionSize: 10
-        });
-        $("#teammate_hero_id").select2({
-            //placeholder: "Team: Any Hero",
-            maximumSelectionSize: 4
-        });
-        $("#enemy_hero_id").select2({
-            //placeholder: "Enemy: Any Hero",
-            maximumSelectionSize: 5
-        });
-        $("#leagueid").select2({
-            //placeholder: "Enemy: Any Hero",
-            maximumSelectionSize: 5
-        });
-        $('form').submit(function(e) {
-            //updates the table on form submit without reload
-            //e.preventDefault();
-            //console.log(JSON.stringify($('form').serializeObject()));
-            //table.draw();
-            //return false;
-        });
-        $('.form-control').on('change', function(e) {
-            //updates the table on form change without reload
-            //table.draw();
         });
     }
 
