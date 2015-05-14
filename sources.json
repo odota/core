@@ -16,6 +16,22 @@
     "CHAT_MESSAGE_FIRSTBLOOD": "First Blood",
     "CHAT_MESSAGE_TOWER_DENY": "Tower Deny"
   },
+  "multi_kills":{
+    "2": "Double Kill",
+    "3": "Triple Kill",
+    "4": "Ultra Kill",
+    "5": "Rampage"
+  },
+  "kill_streaks":{
+    "3": "Killing Spree",
+    "4": "Dominating",
+    "5": "Mega Kill",
+    "6": "Unstoppable",
+    "7": "Wicked Sick",
+    "8": "Monster Kill",
+    "9": "Godlike",
+    "10": "Beyond Godlike"
+  },
   "barracks_value": {
     "1": "Dire Bot Melee",
     "2": "Dire Bot Ranged",
@@ -170,12 +186,12 @@
     },
     "5": {
       "id": 5,
-      "name": "Team MM",
+      "name": "Ranked Team MM",
       "balanced": true
     },
     "6": {
       "id": 6,
-      "name": "Solo Queue",
+      "name": "Solo MM",
       "balanced": true
     },
     "7": {
@@ -185,7 +201,7 @@
     },
     "8": {
       "id": 8,
-      "name": "Solo Mid 1v1"
+      "name": "1v1 Mid"
     }
   },
   "game_mode": {
@@ -250,8 +266,7 @@
     },
     "13": {
       "id": 13,
-      "name": "Limited Hero Pool",
-      "balanced": true
+      "name": "Limited Heroes"
     },
     "14": {
       "id": 14,

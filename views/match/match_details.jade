@@ -12,23 +12,19 @@ block match_content
                 thead
                   tr
                     th Hero
-                    th: abbr(title="Lane based on early game position") LANE
-                    th: abbr(title="Percentage of standard lane gold obtained") EFF
+                    th: abbr(title="Order in which the player picked") PICK
+                    th: abbr(title="Lane based on early game position") POS
+                    th: abbr(title="Percentage of lane gold obtained at 10 minutes") EFF
                     th: abbr(title="Town Portal Scroll purchases") TP
                     th: abbr(title="Observer Ward purchases") OBS
-                    th: abbr(title="Sentry Ward purchases") SEN
-                    th: abbr(title="Smokes of Deceit purchases") SMK
-                    th: abbr(title="Dusts of Appearance purchases") DST
-                    th: abbr(title="Gems of True Sight purchases") GEM
+                    th: abbr(title="Sentry Ward purchases (x2)") SEN
+                    th: abbr(title="Smoke of Deceit purchases") SMK
+                    th: abbr(title="Dust of Appearance purchases (x2)") DST
+                    th: abbr(title="Gem of True Sight purchases") GEM
                     th: abbr(title="Number of Buybacks") BB
                     th: abbr(title="Seconds of disable on enemy heroes") STUN
-                    th: abbr(title="Neutral creeps killed") NK
-                    th: abbr(title="Towers killed") TK
-                    th: abbr(title="Couriers killed") CK
-                    //th: abbr(title="Number of times the player clicked") CLICK
-                    each val, key in constants.runes
-                      th=val.name
 
+                    //th: abbr(title="Number of times the player clicked") CLICK
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
@@ -38,23 +34,19 @@ block match_content
                      img(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
+                  td #{p.pick_order} (<span class="format-seconds" data-format-seconds=#{p.pick_time}></span>)
                   td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
                   td #{(p.lane_efficiency*100).toFixed(2)}
                   td #{p.purchase.tpscroll || "-"}
                   td #{p.purchase.ward_observer || "-"}
                   td #{p.purchase.ward_sentry*2 || "-"}
                   td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust || "-"}
+                  td #{p.purchase.dust*2 || "-"}
                   td #{p.purchase.gem || "-"}
                   td #{p.buyback_log.length || "-"}
                   td #{p.stuns.toFixed(2)}
-                  td #{p.neutral_kills || "-"}
-                  td #{p.tower_kills || "-"}
-                  td #{p.courier_kills || "-"}
                   //td #{p.clicks[0] || "-"}
-                  each val, key in constants.runes
-                    td #{p.runes[key] || "-"}
-                  
+
         hr
         include /ads/leaderboard_2
         hr
@@ -105,6 +97,104 @@ block match_content
                       each val, key in constants.xp_reasons
                         td #{p.xp_reasons[key] || "-"}
                         
+
+        hr
+        .row
+         .col-md-6
+           h2 Farm
+           table.table.table-hover.summable
+            each player, i in match.players
+              if !(i%10)
+                thead
+                  tr
+                    th Hero
+                    th: abbr(title="Heroes killed") Heroes
+                    th: abbr(title="Lane creeps killed") Creeps
+                    th: abbr(title="Neutral creeps killed") Neutrals
+                    th: abbr(title="Towers killed") Towers
+                    th: abbr(title="Couriers killed") Couriers
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  td #{p.hero_kills || "-"}
+                  td #{p.lane_kills || "-"}
+                  td #{p.neutral_kills || "-"}
+                  td #{p.tower_kills || "-"}
+                  td #{p.courier_kills || "-"}
+         .col-md-6
+           h2 Runes
+           table.table.table-hover.summable
+            each player, i in match.players
+              if !(i%10)
+                thead
+                  tr
+                    th Hero
+                    each val, key in constants.runes
+                      th=val.name
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  each val, key in constants.runes
+                    td #{p.runes[key] || "-"}
+        hr
+        .row
+         .col-md-6
+           h2 Multi Kills
+           table.table.table-hover.summable
+            each player, i in match.players
+              if !(i%10)
+                thead
+                  tr
+                    th Hero
+                    each val,key in constants.multi_kills
+                      //th #{val} (#{key})
+                      th: abbr(title=val) #{key}
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  each val,key in constants.multi_kills
+                    td #{p.multi_kills[key] || "-"}
+         .col-md-6
+           h2 Kill Streaks
+           table.table.table-hover.summable
+            each player, i in match.players
+              if !(i%10)
+                thead
+                  tr
+                    th Hero
+                    each val, key in constants.kill_streaks
+                      //th #{val} (#{key})
+                      th: abbr(title=val) #{key}
+              tbody
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                  each val, key in constants.kill_streaks
+                    td #{p.kill_streaks[key] || "-"}
+         
         hr
         .row
           .col-md-6
@@ -134,7 +224,9 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td <span class="green">#{player.parsedPlayer.kills[hero2.name] || 0}</span>/<span class="red">#{player.parsedPlayer.killed_by[hero2.name] || 0}</span>
+                          - var p1 = player.parsedPlayer.kills[hero2.name] || 0
+                          - var p2 = player.parsedPlayer.killed_by[hero2.name] || 0
+                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) <span class="green">#{p1}</span>/<span class="red">#{p2}</span>
           .col-md-6
             h2.inline-header Damage Done/Taken
             #kills.table-responsive
@@ -162,4 +254,6 @@ block match_content
                         each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                           - var hero1 = constants.heroes[player.hero_id]
                           - var hero2 = constants.heroes[player2.hero_id]
-                          td <span class="green format">#{player.parsedPlayer.damage[hero2.name] || 0}</span>/<span class="red format">#{player.parsedPlayer.damage_taken[hero2.name] || 0}</span>              
+                          - var p1 = player.parsedPlayer.damage[hero2.name] || 0
+                          - var p2 = player.parsedPlayer.damage_taken[hero2.name] || 0                          
+                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) <span class="green format">#{p1}</span>/<span class="red format">#{p2}</span>              

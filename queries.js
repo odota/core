@@ -5,7 +5,6 @@ var config = require("./config");
 var compute = require('./compute');
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
-
 //readies a match for display
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;
@@ -119,13 +118,16 @@ function getSets(cb) {
             redis.get("userPlayers", function(err, ups) {
                 cb(err, JSON.parse(ups || "{}"));
             });
+        },
+        "donators": function(cb) {
+            redis.get("donators", function(err, ds) {
+                cb(err, JSON.parse(ds || "{}"));
+            });
         }
     }, function(err, results) {
         cb(err, results);
     });
 }
-
-
 module.exports = {
     getSets: getSets,
     prepareMatch: prepareMatch,

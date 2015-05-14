@@ -225,6 +225,7 @@ public class Main {
 	public void onCombatLogEntry(Context ctx, YASPCombatLog.Entry cle) {
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
+		//TODO use DOTA_COMBATLOG_TYPES to determine type?
 		switch(cle.getType()) {
 		case 0:
 			//damage
@@ -249,7 +250,7 @@ public class Main {
 		case 2:
 			//gain buff/debuff
 			entry.type = "modifier_applied";
-			entry.unit = cle.getAttackerName(); //unit that buffed (can we use source to get the hero directly responsible?)
+			entry.unit = cle.getAttackerName(); //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
 			entry.key = cle.getInflictorName(); //the buff
 			//String unit2 = cle.getTargetNameCompiled(); //target of buff
 			es.output(entry);
@@ -295,7 +296,7 @@ public class Main {
 		case 9:
 			//state
 			//System.err.println(cle.getValue());
-			//if the value is out of bounds, just make it to the value itself
+			//if the value is out of bounds, just make it the value itself
 			String state =  GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue()-1);
 			entry.key = state;
 			entry.value = Integer.valueOf(time);
@@ -324,18 +325,57 @@ public class Main {
 			es.output(entry);
 			break;
 		case 13:
+			//TODO only seems to trigger for axe spins
 			entry.type = "ability_trigger";
 			entry.unit = cle.getAttackerName(); //unit triggered on?
 			entry.key = cle.getInflictorName();
 			//entry.unit = cle.getTargetNameCompiled(); //triggering unit?
-			//log.output(entry);
+			//es.output(entry);
+			break;
+		case 14:
+			//player stats
+			//TODO: don't really know what this does, attacker seems to be a hero, target can be an item or hero?!
+			//System.err.println(cle);
+			entry.type = "player_stats";
+			entry.unit = cle.getAttackerName();
+			entry.key = cle.getTargetName();
+			entry.value = cle.getValue();
+			//es.output(entry);
+			break;
+		case 15:
+			//multikill
+			//System.err.println(cle);
+			entry.type = "multi_kills";
+			entry.unit = cle.getAttackerName();
+			entry.key = String.valueOf(cle.getValue());
+			es.output(entry);
+			break;
+		case 16:
+			//killstreak
+			//System.err.println(cle);
+			entry.type = "kill_streaks";
+			entry.unit = cle.getAttackerName();
+			entry.key = String.valueOf(cle.getValue());
+			es.output(entry);
+			break;
+		case 17:
+			//team building kill
+			//System.err.println(cle);
+			entry.type = "team_building_kill";
+			entry.unit = cle.getAttackerName();
+			//0 is other?
+			//1 is tower?
+			//2 is rax?
+			//3 is ancient
+			entry.key = String.valueOf(cle.getValue());
+			//es.output(entry);
 			break;
 		default:
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 			if (type!=null){
-			entry.type = type.name();
-			System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
-			es.output(entry);
+				entry.type = type.name();
+				System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
+				es.output(entry);
 			}
 			else{
 				System.err.format("unknown combat log type: %s\n", cle.getType());
@@ -375,7 +415,6 @@ Integer timeIdx;
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		//Integer steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
 		//slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
 		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
 		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
@@ -402,7 +441,7 @@ Integer timeIdx;
 		//m_iLastHitMultikill.0000
 		
 		//gem, rapier time?
-		//TODO :not sure how to get
+		//TODO: https://github.com/yasp-dota/yasp/issues/333
 		
 		//time dead
 		//m_iRespawnSeconds.0000
