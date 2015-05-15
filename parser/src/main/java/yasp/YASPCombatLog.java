@@ -25,61 +25,6 @@ public class YASPCombatLog{
 
     private final List<Entry> logEntries = new LinkedList<>();
 
-    @OnGameEventDescriptor(GAME_EVENT_NAME)
-    @UsesStringTable(CombatLog.STRING_TABLE_NAME)
-    public void onGameEventDescriptor(Context ctx, GameEventDescriptor descriptor){
-        typeIdx = descriptor.getIndexForKey("type");
-        sourceNameIdx = descriptor.getIndexForKey("sourcename");
-        targetNameIdx = descriptor.getIndexForKey("targetname");
-        attackerNameIdx = descriptor.getIndexForKey("attackername");
-        inflictorNameIdx = descriptor.getIndexForKey("inflictorname");
-        attackerIllusionIdx = descriptor.getIndexForKey("attackerillusion");
-        targetIllusionIdx = descriptor.getIndexForKey("targetillusion");
-        valueIdx = descriptor.getIndexForKey("value");
-        healthIdx = descriptor.getIndexForKey("health");
-        timestampIdx = descriptor.getIndexForKey("timestamp");
-        targetSourceNameIdx = descriptor.getIndexForKey("targetsourcename");
-
-        timestampRawIdx = descriptor.getIndexForKey("timestampraw");
-        attackerHeroIdx = descriptor.getIndexForKey("attackerhero");
-        targetHeroIdx = descriptor.getIndexForKey("targethero");
-        abilityToggleOnIdx = descriptor.getIndexForKey("ability_toggle_on");
-        abilityToggleOffIdx = descriptor.getIndexForKey("ability_toggle_off");
-        abilityLevelIdx = descriptor.getIndexForKey("ability_level");
-        goldReasonIdx = descriptor.getIndexForKey("gold_reason");
-        
-        //yasp
-        xpReasonIdx = descriptor.getIndexForKey("xp_reason");
-        //TODO: descriptor only contains a subset of the keys available, do protobufs need updating?
-        //we can't use this method to get indices of some combat log fields:
-        /*
-        stunDurationIdx = descriptor.getIndexForKey("stun_duration");
-        slowDurationIdx = descriptor.getIndexForKey("slow_duration");
-        locationXIdx = descriptor.getIndexForKey("location_x");
-        locationYIdx = descriptor.getIndexForKey("location_y");
-    optional float modifier_duration = 25;
-    optional uint32 last_hits = 27;
-    optional uint32 attacker_team = 28;
-    optional uint32 target_team = 29;
-    optional uint32 obs_wards_placed = 30;
-    */
-        System.err.println(Arrays.toString(descriptor.getKeys()));
-    }
-
-    @OnGameEvent(GAME_EVENT_NAME)
-    public void onGameEvent(Context ctx, GameEvent gameEvent) {
-        logEntries.add(new Entry(ctx, gameEvent));
-    }
-
-    @OnTickEnd
-    public void onTickEnd(Context ctx, boolean synthetic) {
-        Event<OnYASPCombatLogEntry> ev = ctx.createEvent(OnYASPCombatLogEntry.class, Entry.class);
-        for (Entry e : logEntries) {
-            ev.raise(e);
-        }
-        logEntries.clear();
-    }
-
     private int typeIdx;
     private int sourceNameIdx;
     private int targetNameIdx;
@@ -101,7 +46,6 @@ public class YASPCombatLog{
     
     //yasp
     Integer xpReasonIdx;
-    
     //temporary manually set idx values for fields missing in gameeventdescriptor
     Integer stunDurationIdx = 16;
     Integer slowDurationIdx = 17;
@@ -112,6 +56,61 @@ public class YASPCombatLog{
     Integer attackerTeamIdx = 28;
     Integer targetTeamIdx = 29;
     Integer obsWardsPlacedIdx = 30;
+    Integer assist_player0Idx = 31;
+	Integer assist_player1Idx = 32;
+	Integer assist_player2Idx = 33;
+	Integer assist_player3Idx = 34;
+	Integer stack_countIdx = 35;
+	Integer hidden_modifierIdx = 36;
+	
+    @OnGameEventDescriptor(GAME_EVENT_NAME)
+    @UsesStringTable(CombatLog.STRING_TABLE_NAME)
+    public void onGameEventDescriptor(Context ctx, GameEventDescriptor descriptor){
+        typeIdx = descriptor.getIndexForKey("type");
+        sourceNameIdx = descriptor.getIndexForKey("sourcename");
+        targetNameIdx = descriptor.getIndexForKey("targetname");
+        attackerNameIdx = descriptor.getIndexForKey("attackername");
+        inflictorNameIdx = descriptor.getIndexForKey("inflictorname");
+        attackerIllusionIdx = descriptor.getIndexForKey("attackerillusion");
+        targetIllusionIdx = descriptor.getIndexForKey("targetillusion");
+        valueIdx = descriptor.getIndexForKey("value");
+        healthIdx = descriptor.getIndexForKey("health");
+        timestampIdx = descriptor.getIndexForKey("timestamp");
+        targetSourceNameIdx = descriptor.getIndexForKey("targetsourcename");
+        timestampRawIdx = descriptor.getIndexForKey("timestampraw");
+        attackerHeroIdx = descriptor.getIndexForKey("attackerhero");
+        targetHeroIdx = descriptor.getIndexForKey("targethero");
+        abilityToggleOnIdx = descriptor.getIndexForKey("ability_toggle_on");
+        abilityToggleOffIdx = descriptor.getIndexForKey("ability_toggle_off");
+        abilityLevelIdx = descriptor.getIndexForKey("ability_level");
+        goldReasonIdx = descriptor.getIndexForKey("gold_reason");
+        
+        //yasp
+        xpReasonIdx = descriptor.getIndexForKey("xp_reason");
+        //TODO: descriptor only contains a subset of the keys available
+        //we can't use this method to get indices of some combat log fields, so trying to set them manually:
+        /*
+        stunDurationIdx = descriptor.getIndexForKey("stun_duration");
+        slowDurationIdx = descriptor.getIndexForKey("slow_duration");
+        locationXIdx = descriptor.getIndexForKey("location_x");
+        locationYIdx = descriptor.getIndexForKey("location_y");
+    */
+        System.err.println(Arrays.toString(descriptor.getKeys()));
+    }
+
+    @OnGameEvent(GAME_EVENT_NAME)
+    public void onGameEvent(Context ctx, GameEvent gameEvent) {
+        logEntries.add(new Entry(ctx, gameEvent));
+    }
+
+    @OnTickEnd
+    public void onTickEnd(Context ctx, boolean synthetic) {
+        Event<OnYASPCombatLogEntry> ev = ctx.createEvent(OnYASPCombatLogEntry.class, Entry.class);
+        for (Entry e : logEntries) {
+            ev.raise(e);
+        }
+        logEntries.clear();
+    }
     
     public class Entry {
 
@@ -196,6 +195,7 @@ public class YASPCombatLog{
         public String toString(){
             //print the underlying gameevent
             //this uses gameeventdescriptor to dump!  missing fields aren't shown
+            //TODO implement JSON dump of combat log entries
             return event.toString();
         }
         public boolean isTargetHero() {
