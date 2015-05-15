@@ -61,8 +61,9 @@ block match_content
           thead#header
             tr
               th Hero
-              th(style="font-size:30px;") !{"&#128128;"}
-              th(style="font-size:30px;") !{"&#128176;"}
+              th(style="font-size:30px;"): abbr(title="Died") !{"&#128128;"}
+              th(style="font-size:30px;"): abbr(title="Bought Back") !{"&#128176;"}
+              th Level
               th Ability Use
               th Item Use
               th Kills
@@ -88,6 +89,7 @@ block match_content
                     td
                       if player.buybacks
                        div(style="font-size:30px;") !{"&#128176;"}
+                    td(style="white-space: nowrap;") #{player.level_start}<i class="fa fa-long-arrow-right"></i>#{player.level_end}
                     td
                       each val, key in player.ability_uses || {}
                         - var ability = constants.abilities[key]

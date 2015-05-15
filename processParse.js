@@ -5,7 +5,7 @@ var getReplayUrl = require('./getReplayUrl');
 var fs = require('fs');
 var request = require('request');
 var domain = require('domain');
-var JSONStream = require('JSONStream');
+var JSONStream = require('json-stream');
 var constants = require('./constants.json');
 var utility = require('./utility');
 module.exports = function processParse(job, cb) {
@@ -141,14 +141,14 @@ function runParse(job, cb) {
         "ability_trigger": getSlot,
         "item_uses": getSlot,
         "ability_uses": getSlot,
-        "kill_streaks" : getSlot,
+        "kill_streaks": getSlot,
         "multi_kills": getSlot,
         "clicks": function(e) {
             //just 0 (other) the key for now since we dont know what the order_types are
             e.key = 0;
             getSlot(e);
         },
-        "pings": function(e){
+        "pings": function(e) {
             //we're not breaking pings into subtypes atm so just set key to 0 for now
             e.key = 0;
             getSlot(e);
@@ -351,7 +351,7 @@ function runParse(job, cb) {
         var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log("target:%s", target);
         inStream = request(target);
-        outStream = JSONStream.parse();
+        outStream = JSONStream();
         inStream.pipe(outStream);
         /*
         parser = spawn("java", ["-jar",
@@ -402,7 +402,7 @@ function runParse(job, cb) {
         });
         parser.stdout.pipe(outStream);
         */
-        outStream.on('root', handleStream);
+        outStream.on('data', handleStream);
         outStream.on('end', function() {
             console.time("postprocess");
             processEventBuffer();
@@ -460,7 +460,11 @@ function runParse(job, cb) {
             teamfights.forEach(function(tf) {
                 tf.players.forEach(function(p, ind) {
                     //set gold/xp deltas here
-                    //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells
+                    //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
+                    p.xp_start = intervalState[tf.start][ind].xp;
+                    p.xp_end = intervalState[tf.end][ind].xp;
+                    p.gold_start = intervalState[tf.start][ind].gold;
+                    p.gold_end = intervalState[tf.end][ind].gold;
                     p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
                     p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
                 });
