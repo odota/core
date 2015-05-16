@@ -1,4 +1,4 @@
-{{{ "title": "v3.0.0", "tags": ["release"], "date": "4-20-2015", "author": "Howard and Albert" }}}
+{{{ "title": "v3.0.0", "tags": ["release"], "date": "5-15-2015", "author": "Howard and Albert" }}}
 
 YASP is here with v3.1.0!
 
