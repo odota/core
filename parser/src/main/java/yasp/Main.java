@@ -256,7 +256,7 @@ public class Main {
 		Entry entry = new Entry(time);
 		//TODO use DOTA_COMBATLOG_TYPES to determine type rather than our own strings
 		//TODO just dump all the fields that aren't null, let js take care of post-processing?  implement tostring that dumps json
-		//TODO would need a migration, or convert key names on-the-fly
+		//TODO would need js object mapping combat log names to BSON names
 		switch(cle.getType()) {
 		case 0:
 			//damage

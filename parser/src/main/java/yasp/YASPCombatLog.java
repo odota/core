@@ -88,7 +88,8 @@ public class YASPCombatLog{
         //yasp
         xpReasonIdx = descriptor.getIndexForKey("xp_reason");
         //TODO: descriptor only contains a subset of the keys available
-        //we can't use this method to get indices of some combat log fields, so trying to set them manually:
+        //we can't use this method to get indices of some combat log fields, so trying to set them manually
+        //however this doesn't work due to array out of bounds error, the gameeventdescriptor must be set properly?
         /*
         stunDurationIdx = descriptor.getIndexForKey("stun_duration");
         slowDurationIdx = descriptor.getIndexForKey("slow_duration");
@@ -195,7 +196,6 @@ public class YASPCombatLog{
         public String toString(){
             //print the underlying gameevent
             //this uses gameeventdescriptor to dump!  missing fields aren't shown
-            //TODO implement JSON dump of combat log entries
             return event.toString();
         }
         public boolean isTargetHero() {
