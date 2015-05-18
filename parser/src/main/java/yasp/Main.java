@@ -405,9 +405,11 @@ public class Main {
 			//first blood
 			entry.type="first_blood";
 			//time, involved players?
+			break;
 		case 19:
 			//modifier refresh
 			entry.type="modifier_refresh";
+			break;
 		default:
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 			if (type!=null){
