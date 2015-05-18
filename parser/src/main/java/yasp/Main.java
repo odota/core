@@ -255,6 +255,8 @@ public class Main {
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
 		//TODO use DOTA_COMBATLOG_TYPES to determine type rather than our own strings
+		//TODO just dump all the fields that aren't null, let js take care of post-processing?  implement tostring that dumps json
+		//TODO would need js object mapping combat log names to BSON names
 		switch(cle.getType()) {
 		case 0:
 			//damage
@@ -399,6 +401,15 @@ public class Main {
 			entry.key = String.valueOf(cle.getValue());
 			//es.output(entry);
 			break;
+		case 18:
+			//first blood
+			entry.type="first_blood";
+			//time, involved players?
+			break;
+		case 19:
+			//modifier refresh
+			entry.type="modifier_refresh";
+			break;
 		default:
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 			if (type!=null){
@@ -456,27 +467,17 @@ Integer timeIdx;
 		//m_iDeaths.0000
 		//m_iTowerKills.0000
 		//m_iRoshanKills.0000
-		//m_iNearbyCreepDeathCount.0000
-		//m_iMetaLevel.0000
-		//m_iMetaExperience.0000
-		//m_iMetaExperienceAwarded.0000
 		
 		//booleans to check at endgame
 		//m_bVoiceChatBanned.0000
 		//m_bHasRandomed.0000
 		//m_bHasRepicked.0000
 		
-		//might want the max only
-		//m_iStreak.0000
-		//m_iLastHitStreak.0000
-		//m_iLastHitMultikill.0000
-		
 		//gem, rapier time?
 		//TODO: https://github.com/yasp-dota/yasp/issues/333
 		
-		//time dead
+		//time dead, count number of intervals where this value is >0?
 		//m_iRespawnSeconds.0000
-		//count number of intervals where this value is >0?
 					initialized = true;
 				}
 					for (int i = 0; i < numPlayers; i++) {
