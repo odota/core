@@ -410,7 +410,7 @@ function runParse(job, cb) {
             processEventBuffer();
             processTeamfights();
             console.timeEnd("postprocess");
-            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             exit(error);
         });
     });
