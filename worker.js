@@ -56,8 +56,10 @@ d.run(function() {
 function invokeInterval(func, delay) {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
     (function foo() {
+        console.log("running %s", func.name);
         func(function(err) {
             if (err) {
+                //log the error, but wait until next interval to retry
                 console.log(err);
             }
             setTimeout(foo, delay);
@@ -85,6 +87,9 @@ function getRetrievers(cb) {
             cb(err);
         });
     }, function(err) {
+        if (err){
+            return cb(err);
+        }
         redis.set("ratingPlayers", JSON.stringify(r));
         redis.set("bots", JSON.stringify(b));
         redis.set("retrievers", JSON.stringify(ps));
