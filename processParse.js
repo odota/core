@@ -5,7 +5,8 @@ var getReplayUrl = require('./getReplayUrl');
 var fs = require('fs');
 var request = require('request');
 var domain = require('domain');
-var JSONStream = require('json-stream');
+var JSONStream = require('JSONStream');
+//var JSONStream = require('json-stream');
 var constants = require('./constants.json');
 var utility = require('./utility');
 module.exports = function processParse(job, cb) {
@@ -351,7 +352,8 @@ function runParse(job, cb) {
         var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log("target:%s", target);
         inStream = request(target);
-        outStream = JSONStream();
+        //if (process.env.NODE_ENV!=="production") inStream.pipe(fs.createWriteStream("output.json"));
+        outStream = JSONStream.parse();
         inStream.pipe(outStream);
         /*
         parser = spawn("java", ["-jar",
@@ -402,13 +404,13 @@ function runParse(job, cb) {
         });
         parser.stdout.pipe(outStream);
         */
-        outStream.on('data', handleStream);
+        outStream.on('root', handleStream);
         outStream.on('end', function() {
             console.time("postprocess");
             processEventBuffer();
             processTeamfights();
             console.timeEnd("postprocess");
-            //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             exit(error);
         });
     });
