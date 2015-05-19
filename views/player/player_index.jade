@@ -15,9 +15,6 @@ block playercontent
       .progress
         .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
               
-  .row
-     .col-md-12
-       include /query
   - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status};
   script.
     var constants = !{JSON.stringify(clientConstants)};

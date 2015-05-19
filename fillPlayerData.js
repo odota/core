@@ -3,15 +3,11 @@ var utility = require('./utility');
 var generatePositionData = utility.generatePositionData;
 module.exports = function fillPlayerData(player, options, cb) {
     //received from controller
-    //options.info, the tab the player is on
+    //TODO if index page, try to use cached data
+    //set player.aggData with cached data if available
+    //player.recent_matches capped collection of recent matches
     var js_agg = null;
-    /*
-    if (options.info === "index") {
-        //index is loaded via ajax
-        return cb(null, player);
-        //js_agg = {};
-    }
-    */
+    //options.info, the tab the player is on
     //options.query, the querystring from the user, pass these as select conditions
     advQuery({
         select: options.query,

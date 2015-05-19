@@ -6,8 +6,6 @@ var async = require('async');
 var r = require("./redis");
 var jobs = r.jobs;
 var redis = r.client;
-var moment = require('moment');
-var getData = utility.getData;
 
 function insertMatch(match, cb) {
     async.series([function(cb) {
@@ -25,6 +23,12 @@ function insertMatch(match, cb) {
             function(cb) {
             //insert players into db
             async.eachSeries(match.players, function(p, cb) {
+                //TODO do basic aggregations, findandmodify
+                //win/lose/games/matchups/teammates/matches
+                //if doesn't exist, don't increment
+                //TODO don't increment if this is a re-insert
+                //build capped collection of most recent 10 matches
+                //db.products.update({},{$push:{last_viewed:{$each:["skis"],$slice:-5}}})
                 db.players.update({
                     account_id: p.account_id
                 }, {

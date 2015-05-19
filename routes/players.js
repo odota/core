@@ -10,6 +10,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "index": {
             "name": "Player"
         },
+        "matches":{
+            "name": "Matches"            
+        },
         "histograms": {
             "name": "Histograms"
         },
