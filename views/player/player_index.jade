@@ -19,12 +19,12 @@ block playercontent
   script.
     var constants = !{JSON.stringify(clientConstants)};
     var matches = !{JSON.stringify(player.matches)};
-    var heroes = !{JSON.stringify(player.aggData.matchups)};
+    var heroes = !{JSON.stringify(player.aggData.heroes)};
     var teammates = !{JSON.stringify(player.aggData.teammates)};
     var ratings = !{JSON.stringify(player.ratings || [])};
   .row
     .col-md-12.table-responsive
-      h3 Matches
+      h3 Recent
       table.table#matches
       
   hr

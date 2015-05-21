@@ -23,10 +23,10 @@ function insertMatch(match, cb) {
             function(cb) {
             //insert players into db
             async.eachSeries(match.players, function(p, cb) {
-                //TODO do basic aggregations, findandmodify
+                //TODO do basic aggregations, findandmodify the player to increment
                 //win/lose/games/matchups/teammates/matches
-                //if doesn't exist, don't increment
-                //TODO don't increment if this is a re-insert
+                //if cache doesn't exist, skip
+                //TODO don't increment if this is a re-insert, findandmodify detection
                 //build capped collection of most recent 10 matches
                 //db.products.update({},{$push:{last_viewed:{$each:["skis"],$slice:-5}}})
                 db.players.update({
