@@ -15,8 +15,6 @@ module.exports = function fillPlayerData(player, options, cb) {
         //player.cache.aggData.games
         return finish(cb, player.cache);
     }
-    //TODO if cache doesn't exist, build the cache
-    //run advquery, slice results, cache aggData
     var js_agg = null;
     advQuery({
         select: options.query,
@@ -25,7 +23,11 @@ module.exports = function fillPlayerData(player, options, cb) {
         js_sort: {
             match_id: -1
         }
-    }, finish);
+    }, function(err, results) {
+        //TODO if cache doesn't exist, save the cache
+        //run advquery, slice results, cache aggData
+        finish(err, results);
+    });
 
     function finish(err, results) {
         if (err) {
