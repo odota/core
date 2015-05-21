@@ -3,6 +3,7 @@ extend match
 block match_content
   .row
     .col-md-12
+    
       h2.inline-header= match.radiant_win ? "Radiant Victory" : "Dire Victory"
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#index", aria-expanded="true") Toggle Table
       #index.table-responsive.collapse.in
@@ -69,8 +70,44 @@ block match_content
                          - var item = constants.items[constants.item_ids[val]]                             
                          if item
                            img.item(src=item.img, alt=constants.item_ids[val])
+      
+      if match.picks_bans
+        hr
+        h2.inline-header Picks/Bans
+        table.table.table-hover
+          tbody
+          
+            tr.success
+              each pick in match.picks_bans
+                td(style="padding: 3px;")
+                  if pick.team === 0
+                    - var hero_id = pick.hero_id
+                    - var is_pick = pick.is_pick
+                    - var hero = constants.heroes[hero_id]
+                    if hero
+                      div.img-text
+                        img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
+                        div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
+                    else
+                      = hero_id
+                      
+            tr.danger
+              each pick in match.picks_bans
+                td(style="padding: 3px;")
+                  if pick.team === 1
+                    - var hero_id = pick.hero_id
+                    - var is_pick = pick.is_pick
+                    - var hero = constants.heroes[hero_id]
+                    if hero
+                      div.img-text
+                        img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
+                        div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
+                    else
+                      = hero_id
+
       hr
       include /ads/leaderboard_2
+      
       hr
       h2.inline-header Skill Builds
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
@@ -98,14 +135,15 @@ block match_content
                             img.ability(src=abilityData.img, alt=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
-  hr
-  .row.margin-bottom
-    .col-md-6
-      h2 Buildings
-      #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    .col-md-6
-      include /ads/skyscraper
+                            
+      hr
+      .row.margin-bottom
+        .col-md-6
+          h2 Buildings
+          #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
+            img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+        .col-md-6
+          include /ads/skyscraper
       
 append footer_assets
   script.

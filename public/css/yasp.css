@@ -64,6 +64,10 @@ h3 img {
     margin-right: 1px;
     height: 25px;
 }
+.pickban {
+    margin: 0px;
+    height: 25px;
+}
 td.abilities {
     padding: 8px 1px !important;
 }
