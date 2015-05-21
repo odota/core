@@ -1,5 +1,19 @@
 extend match
 
+mixin picks_bans_row(picks_bans, team_int)
+  each pick in picks_bans
+    td(style="padding: 3px;")
+      if pick.team === team_int
+        - var hero_id = pick.hero_id
+        - var is_pick = pick.is_pick
+        - var hero = constants.heroes[hero_id]
+        if hero
+          div.img-text
+            img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
+            div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
+        else
+          = hero_id
+
 block match_content
   .row
     .col-md-12
@@ -76,34 +90,10 @@ block match_content
         h2.inline-header Picks/Bans
         table.table.table-hover
           tbody
-          
             tr.success
-              each pick in match.picks_bans
-                td(style="padding: 3px;")
-                  if pick.team === 0
-                    - var hero_id = pick.hero_id
-                    - var is_pick = pick.is_pick
-                    - var hero = constants.heroes[hero_id]
-                    if hero
-                      div.img-text
-                        img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
-                        div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
-                    else
-                      = hero_id
-                      
+              +picks_bans_row(match.picks_bans, 0)
             tr.danger
-              each pick in match.picks_bans
-                td(style="padding: 3px;")
-                  if pick.team === 1
-                    - var hero_id = pick.hero_id
-                    - var is_pick = pick.is_pick
-                    - var hero = constants.heroes[hero_id]
-                    if hero
-                      div.img-text
-                        img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
-                        div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
-                    else
-                      = hero_id
+              +picks_bans_row(match.picks_bans, 1)
 
       hr
       include /ads/leaderboard_2
