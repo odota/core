@@ -11,7 +11,6 @@ block match_content
             th Time
             th Objective
             th Achieved By
-            th Notes
         tbody
           each entry in match.parsed_data.objectives || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
@@ -22,13 +21,13 @@ block match_content
             - var team = entry.team===2 || entry.key<64 || p.isRadiant ? "success" : "danger"
             tr(class=team)
               td.format-seconds(data-format-seconds=entry.time)
-              td= objective
+              td=entry.key ? constants.barracks_value[entry.key] + " " + objective : objective
               td
                 if hero
                   img(src=hero.img, title=hero.localized_name)
                 else
                   =team==="success" ? "The Radiant" : "The Dire"
-              td=constants.barracks_value[entry.key]
+              
     .col-md-4
       include /ads/skyscraper
   .row
