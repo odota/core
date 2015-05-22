@@ -5,7 +5,6 @@ var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var constants = require('./constants.json');
-var queries = require('./queries');
 var async = require('async');
 
 function advQuery(options, cb) {
@@ -188,18 +187,14 @@ function advQuery(options, cb) {
                 var filtered = filter(matches, options.js_select);
                 filtered = sort(filtered, options.js_sort);
                 var aggData = aggregator(filtered, options.js_agg);
-                console.time('teammate_lookup');
-                queries.fillPlayerNames(aggData.teammates, function(err) {
-                    console.timeEnd('teammate_lookup');
-                    var result = {
-                        aggData: aggData,
-                        page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
-                        data: filtered,
-                        unfiltered_count: matches.length
-                    };
-                    console.timeEnd('compute');
-                    cb(err, result);
-                });
+                var result = {
+                    aggData: aggData,
+                    page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                    data: filtered,
+                    unfiltered_count: matches.length
+                };
+                console.timeEnd('compute');
+                cb(err, result);
             });
         });
     });
@@ -210,6 +205,22 @@ function aggregator(matches, fields) {
     var types = {
         "heroes": function(key, m, p) {
             var heroes = aggData.heroes;
+            if (Object.keys.heroes.length !== Object.keys.constants.heroes.length) {
+                //prefill heroes with every hero
+                for (var hero_id in constants.heroes) {
+                    var hero = {
+                        hero_id: hero_id,
+                        last_played: 0,
+                        games: 0,
+                        win: 0,
+                        with_games: 0,
+                        with_win: 0,
+                        against_games: 0,
+                        against_win: 0
+                    };
+                    heroes[hero_id] = heroes[hero_id] || hero;
+                }
+            }
             var player_win = m.player_win;
             for (var j = 0; j < m.all_players.length; j++) {
                 var tm = m.all_players[j];
@@ -443,22 +454,6 @@ function aggregator(matches, fields) {
         }
         else if (key === "teammates" || key === "heroes") {
             aggData[key] = {};
-            if (key === "heroes") {
-                //prefill heroes with every hero
-                for (var hero_id in constants.heroes) {
-                    var obj = {
-                        hero_id: hero_id,
-                        last_played: 0,
-                        games: 0,
-                        win: 0,
-                        with_games: 0,
-                        with_win: 0,
-                        against_games: 0,
-                        against_win: 0
-                    };
-                    aggData.heroes[hero_id] = obj;
-                }
-            }
         }
         else {
             aggData[key] = {
@@ -481,35 +476,6 @@ function aggregator(matches, fields) {
                 types[key](key, m, p);
             }
         }
-    }
-    //get teammates, heroes, convert hashes to arrays and sort them
-    if (aggData.heroes) {
-        var heroes_arr = [];
-        var heroes = aggData.heroes;
-        for (var id in heroes) {
-            var h = heroes[id];
-            heroes_arr.push(h);
-        }
-        heroes_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        aggData.heroes = heroes_arr;
-    }
-    if (aggData.teammates) {
-        var teammates_arr = [];
-        var teammates = aggData.teammates;
-        for (var id in teammates) {
-            var tm = teammates[id];
-            id = Number(id);
-            //don't include if anonymous or if less than 3 games
-            if (id !== constants.anonymous_account_id && tm.games >= 3) {
-                teammates_arr.push(tm);
-            }
-        }
-        teammates_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        aggData.teammates = teammates_arr;
     }
     return aggData;
 

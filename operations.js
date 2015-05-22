@@ -22,12 +22,14 @@ function insertMatch(match, cb) {
             },
             function(cb) {
             //insert players into db
-            async.eachSeries(match.players, function(p, cb) {
+            async.each(match.players, function(p, cb) {
+                //TODO if cache doesn't exist, skip
+                //TODO don't increment if this is a re-insert, findandmodify detection, skip
                 //TODO do basic aggregations, findandmodify the player to increment
-                //win/lose/games/matchups/teammates/matches
-                //if cache doesn't exist, skip
-                //TODO don't increment if this is a re-insert, findandmodify detection
-                //build capped collection of most recent 10 matches
+                //update the player.cache object
+                //aggData: win/lose/games/heroes/teammates
+                //data
+                //build capped array of most recent 10 matches
                 //db.products.update({},{$push:{last_viewed:{$each:["skis"],$slice:-5}}})
                 db.players.update({
                     account_id: p.account_id
