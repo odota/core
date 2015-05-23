@@ -6,9 +6,23 @@ var async = require('async');
 var r = require("./redis");
 var jobs = r.jobs;
 var redis = r.client;
+var isRadiant = utility.isRadiant;
+var helper = require('./helper');
+var isSignificant = helper.isSignificant;
+var aggHeroes = helper.aggHeroes;
+var aggTeammates = helper.aggTeammates;
 
 function insertMatch(match, cb) {
+    var reInsert = false;
     async.series([function(cb) {
+            //determine if reinsert
+            db.matches.find({
+                match_id: match.match_id
+            }, function(err, docs) {
+                reInsert = Boolean(docs.length);
+                cb(err);
+            });
+    }, function(cb) {
             //put api data in db
             //set to queued, unless we specified something earlier (like skipped)
             match.parse_status = match.parse_status || 0;
@@ -23,26 +37,61 @@ function insertMatch(match, cb) {
             function(cb) {
             //insert players into db
             async.each(match.players, function(p, cb) {
-                //TODO if cache doesn't exist, skip
-                //TODO don't increment if this is a re-insert, findandmodify detection, skip
-                //TODO do basic aggregations, findandmodify the player to increment
-                //update the player.cache object
-                //aggData: win/lose/games/heroes/teammates
-                //data
-                //build capped array of most recent 10 matches
-                //db.products.update({},{$push:{last_viewed:{$each:["skis"],$slice:-5}}})
-                db.players.update({
-                    account_id: p.account_id
-                }, {
-                    $set: {
+                    db.players.findOne({
                         account_id: p.account_id
-                    }
-                }, {
-                    upsert: true
-                }, function(err) {
-                    cb(err);
-                });
-            }, cb);
+                    }, function(err, player) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        //if player cache doesn't exist, skip
+                        //if insignificant, skip
+                        //if this is a re-inserted match, skip
+                        if (player && player.cache && player.cache.aggData && player.cache.data && isSignificant(match) && !reInsert) {
+                            //m.players[0] should be this player
+                            //m.all_players should be all players
+                            //duplicate this data into a copy to avoid corrupting original match object
+                            var match_copy = {
+                                all_players: match.players.slice(0),
+                                players: [p]
+                            };
+                            //do basic aggregations, findandmodify the player to increment
+                            player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
+                            player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
+                            player.cache.aggData.games += 1;
+                            aggHeroes(player.cache.aggData.heroes, match_copy);
+                            aggTeammates(player.cache.aggData.teammates, match_copy);
+                            //aggData: win/lose/games/heroes/teammates
+                            //add this match to the cache;
+                            player.cache.data.push(match);
+                            //keep 10 latest matches by id
+                            player.cache.data.sort(function(a,b){
+                                return a.match_id - b.match_id;
+                            })
+                            //remove the oldest match
+                            if (player.cache.data.length > 10) {
+                                player.cache.data.shift();
+                            }
+                        }
+                        else {
+                            player = {};
+                        }
+                        //update the player.cache object
+                        db.players.update({
+                            account_id: p.account_id
+                        }, {
+                            $set: {
+                                account_id: p.account_id,
+                                cache: player.cache
+                            }
+                        }, {
+                            upsert: true
+                        }, function(err) {
+                            cb(err);
+                        });
+                    })
+                },
+                //done with all 10 players
+                cb);
             }], function decideParse(err) {
         if (err) {
             //error occured

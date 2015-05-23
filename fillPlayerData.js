@@ -2,14 +2,23 @@ var advQuery = require('./advquery');
 var utility = require('./utility');
 var constants = require('./constants.json');
 var queries = require('./queries');
+var db = require('./db');
 var generatePositionData = utility.generatePositionData;
 module.exports = function fillPlayerData(player, options, cb) {
     //options.info, the tab the player is on
     //options.query, the querystring from the user, pass these as select conditions
-    if (options.info === "index" && player.cache) {
-        //if index page, try to use cached data
-        //TODO either hide query form on index page or reject cache if filters exist
-        return finish(cb, player.cache);
+    if (options.info === "index" && player.cache && !Object.keys(options.query).length) {
+        //if index page, try to use cached data if no query
+        console.log("using cache");
+        return finish(null, player.cache);
+    }
+    //defaults: this player, balanced modes only, put the defaults in options.query
+    var default_select = {
+        "players.account_id": player.account_id.toString(),
+        "significant": "1"
+    };
+    for (var key in default_select) {
+        options.query[key] = options.query[key] || default_select[key];
     }
     var js_agg = null;
     advQuery({
@@ -28,7 +37,7 @@ module.exports = function fillPlayerData(player, options, cb) {
                 delete p.parsedPlayer;
             });
         });
-        if (!player.cache) {
+        if (!player.cache || true) {
             player.cache = {
                 aggData: {}
             };
@@ -42,10 +51,23 @@ module.exports = function fillPlayerData(player, options, cb) {
             for (var key in cached) {
                 player.cache.aggData[key] = results.aggData[key];
             }
-            player.cache.data = results.data.slice(10);
-            //TODO if cache doesn't exist, save the cache
+            player.cache.data = results.data.slice(0, 10);
+            db.players.update({
+                account_id: player.account_id
+            }, {
+                $set: {
+                    cache: player.cache
+                }
+            }, {
+                upsert: true
+            }, function(err) {
+                //if cache doesn't exist, save the cache
+                finish(err, results);
+            });
         }
-        finish(err, results);
+        else {
+            finish(err, results);
+        }
     });
 
     function finish(err, results) {

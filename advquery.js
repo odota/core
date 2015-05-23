@@ -4,7 +4,10 @@ var computeMatchData = compute.computeMatchData;
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
-var constants = require('./constants.json');
+var helper = require('./helper');
+var aggHeroes = helper.aggHeroes;
+var aggTeammates = helper.aggTeammates;
+var isSignificant = helper.isSignificant;
 var async = require('async');
 
 function advQuery(options, cb) {
@@ -204,88 +207,10 @@ function aggregator(matches, fields) {
     var aggData = {};
     var types = {
         "heroes": function(key, m, p) {
-            var heroes = aggData.heroes;
-            if (Object.keys.heroes.length !== Object.keys.constants.heroes.length) {
-                //prefill heroes with every hero
-                for (var hero_id in constants.heroes) {
-                    var hero = {
-                        hero_id: hero_id,
-                        last_played: 0,
-                        games: 0,
-                        win: 0,
-                        with_games: 0,
-                        with_win: 0,
-                        against_games: 0,
-                        against_win: 0
-                    };
-                    heroes[hero_id] = heroes[hero_id] || hero;
-                }
-            }
-            var player_win = m.player_win;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                var tm_hero = tm.hero_id;
-                if (tm_hero in heroes) {
-                    //don't count invalid heroes
-                    if (isRadiant(tm) === isRadiant(p)) {
-                        //count teammate heroes
-                        if (tm.account_id === p.account_id) {
-                            //console.log("self %s", tm_hero);
-                            heroes[tm_hero].games += 1;
-                            heroes[tm_hero].win += player_win ? 1 : 0;
-                            if (m.start_time > heroes[tm_hero].last_played) {
-                                heroes[tm_hero].last_played = m.start_time;
-                            }
-                        }
-                        else {
-                            //console.log("teammate %s", tm_hero);
-                            heroes[tm_hero].with_games += 1;
-                            heroes[tm_hero].with_win += player_win ? 1 : 0;
-                        }
-                    }
-                    else {
-                        //count enemy heroes
-                        //console.log("opp %s", tm_hero);
-                        heroes[tm_hero].against_games += 1;
-                        heroes[tm_hero].against_win += player_win ? 1 : 0;
-                    }
-                }
-            }
+            aggHeroes(aggData.heroes, m);
         },
         "teammates": function(key, m, p) {
-            var teammates = aggData.teammates;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                //count teammate players
-                if (!teammates[tm.account_id]) {
-                    teammates[tm.account_id] = {
-                        account_id: tm.account_id,
-                        last_played: 0,
-                        win: 0,
-                        games: 0,
-                        with_win: 0,
-                        with_games: 0,
-                        against_win: 0,
-                        against_games: 0
-                    };
-                }
-                if (m.start_time > teammates[tm.account_id].last_played) {
-                    teammates[tm.account_id].last_played = m.start_time;
-                }
-                //played with
-                teammates[tm.account_id].games += 1;
-                teammates[tm.account_id].win += m.player_win ? 1 : 0;
-                if (isRadiant(tm) === isRadiant(p)) {
-                    //played with
-                    teammates[tm.account_id].with_games += 1;
-                    teammates[tm.account_id].win += m.with_win ? 1 : 0;
-                }
-                else {
-                    //played against
-                    teammates[tm.account_id].against_games += 1;
-                    teammates[tm.account_id].against_win += m.player_win ? 1 : 0;
-                }
-            }
+            aggTeammates(aggData.teammates, m);
         },
         "win": function(key, m, p) {
             aggData[key] += (m.player_win) ? 1 : 0;
@@ -518,9 +443,8 @@ function filter(matches, filters) {
     //console.log(filters);
     var conditions = {
         //filter: significant, remove unbalanced game modes/lobbies
-        //TODO detect no stats recorded?
         significant: function(m, key) {
-            return Number(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced) === key;
+            return Number(isSignificant(m)) === key;
         },
         //filter: player won
         win: function(m, key) {
