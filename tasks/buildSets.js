@@ -4,15 +4,23 @@ var r = require('../redis');
 var redis = r.client;
 var moment = require('moment');
 var config = require('../config');
-
 module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
         "trackedPlayers": function(cb) {
             db.players.find({
-                last_visited: {
-                    $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
-                }
+                $or: [
+                    {
+                        last_visited: {
+                            $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
+                        }
+                    },
+                    {
+                        cheese: {
+                            $gt: 0
+                        }
+                    }
+                ]
             }, function(err, docs) {
                 if (err) {
                     return cb(err);

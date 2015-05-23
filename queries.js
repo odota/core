@@ -1,52 +1,6 @@
 var db = require('./db');
 var async = require('async');
 var redis = require('./redis').client;
-var config = require("./config");
-var compute = require('./compute');
-var computeMatchData = compute.computeMatchData;
-var renderMatch = compute.renderMatch;
-//readies a match for display
-function prepareMatch(match_id, cb) {
-    var key = "match:" + match_id;
-    redis.get(key, function(err, reply) {
-        if (!err && reply) {
-            console.log("Cache hit for match " + match_id);
-            try {
-                var match = JSON.parse(reply);
-                return cb(err, match);
-            }
-            catch (e) {
-                return cb(e);
-            }
-        }
-        else {
-            console.log("Cache miss for match " + match_id);
-            db.matches.findOne({
-                match_id: Number(match_id)
-            }, function(err, match) {
-                if (err || !match) {
-                    return cb("match not found");
-                }
-                else {
-                    fillPlayerNames(match.players, function(err) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        computeMatchData(match);
-                        renderMatch(match);
-                        //Add to cache if match is parsed
-                        //TODO: this prevents reparses from showing immediately
-                        if (match.parse_status === 2 && config.NODE_ENV !== "development") {
-                            redis.setex(key, 3600, JSON.stringify(match));
-                        }
-                        return cb(err, match);
-                    });
-                }
-            });
-        }
-    });
-}
-
 function fillPlayerNames(players, cb) {
     if (!players) {
         return cb();
@@ -130,6 +84,5 @@ function getSets(cb) {
 }
 module.exports = {
     getSets: getSets,
-    prepareMatch: prepareMatch,
     fillPlayerNames: fillPlayerNames
 };
