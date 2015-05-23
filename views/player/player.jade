@@ -26,14 +26,14 @@ block content
               td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
               td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")}
     if !(player.account_id in trackedPlayers)
-       .alert.alert-danger This user has not visited recently, and their matches are not automatically queued for parse.  Log in to YASP to resume automatic parsing.
+      .alert.alert-danger This user has not visited recently, and their matches are not automatically queued for parse.  Log in to YASP to resume automatic parsing.  (may take a few minutes to update)
+    if (!player.full_history_time)
+      .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.    
     if (user && user.account_id === player.account_id)
       .row
         .col-md-12
-          if (!user.full_history_time)
-            .alert.alert-danger This user does not currently have full match history.  Some matches may be missing.
           if (!ratingPlayers[user.account_id])
-            .alert.alert-info Want to include MMR here and be eligible for the leaderboard? 
+            .alert.alert-info To display MMR on profile and be eligible for the leaderboard: 
               a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) Add a tracker.
           .checkbox
             label
