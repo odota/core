@@ -37,6 +37,7 @@ module.exports = function fillPlayerData(player, options, cb) {
                 delete p.parsedPlayer;
             });
         });
+        //currently, always refresh cache
         if (!player.cache || true) {
             player.cache = {
                 aggData: {}
