@@ -318,6 +318,7 @@ function renderMatch(match) {
                             return i;
                         }
                     }
+                    return constants.xp_level.length;
                 }
             });
             //add player's hero_id to each teamfight participant
