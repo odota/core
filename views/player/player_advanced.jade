@@ -6,9 +6,6 @@ block playercontent
   //th Abandon
   //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
   //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
-  .row
-    .col-md-12
-      include /query
   
   hr
   .advanced

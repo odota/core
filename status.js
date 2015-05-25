@@ -81,6 +81,12 @@ module.exports = function getStatus(cb) {
                 cb(err, result);
             });
         },
+        donated_players: function(cb) {
+            redis.get("donators", function(err, res) {
+                res = res ? Object.keys(JSON.parse(res)).length : 0;
+                cb(err, res);
+            });
+        },
         last_added: function(cb) {
             redis.get("match_seq_num", function(err, result) {
                 result = Number(result);

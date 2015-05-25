@@ -4,8 +4,10 @@ var computeMatchData = compute.computeMatchData;
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
-var constants = require('./constants.json');
-var queries = require('./queries');
+var helper = require('./helper');
+var aggHeroes = helper.aggHeroes;
+var aggTeammates = helper.aggTeammates;
+var isSignificant = helper.isSignificant;
 var async = require('async');
 
 function advQuery(options, cb) {
@@ -49,7 +51,8 @@ function advQuery(options, cb) {
     //map to limit
     var mongoAble = {
         "players.account_id": 10000,
-        //"players.hero_id": 10000
+        "leagueid": 10000
+            //"players.hero_id": 10000
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
@@ -70,7 +73,7 @@ function advQuery(options, cb) {
             }
             else {
                 //split each by comma
-                if (options.select[key].indexOf(",") !== -1) {
+                if (options.select[key].toString().indexOf(",") !== -1) {
                     options.select[key] = options.select[key].split(",");
                 }
                 if (options.select[key].constructor === Array) {
@@ -100,7 +103,7 @@ function advQuery(options, cb) {
     //some aggregations/selections require hero_id and player_id of all 10 players in a game
     var fullPlayerData = {
         "teammates": 1,
-        "matchups": 1,
+        "heroes": 1,
         "with_account_id": 1,
         "teammate_hero_id": 1,
         "against_hero_id": 1,
@@ -184,20 +187,17 @@ function advQuery(options, cb) {
                     computeMatchData(m);
                 });
                 var filtered = filter(matches, options.js_select);
+                console.log(matches.length, filtered.length);
                 filtered = sort(filtered, options.js_sort);
                 var aggData = aggregator(filtered, options.js_agg);
-                console.time('teammate_lookup');
-                queries.fillPlayerNames(aggData.teammates, function(err) {
-                    console.timeEnd('teammate_lookup');
-                    var result = {
-                        aggData: aggData,
-                        page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
-                        data: filtered,
-                        unfiltered_count: matches.length
-                    };
-                    console.timeEnd('compute');
-                    cb(err, result);
-                });
+                var result = {
+                    aggData: aggData,
+                    page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                    data: filtered,
+                    unfiltered_count: matches.length
+                };
+                console.timeEnd('compute');
+                cb(err, result);
             });
         });
     });
@@ -206,60 +206,11 @@ function advQuery(options, cb) {
 function aggregator(matches, fields) {
     var aggData = {};
     var types = {
-        "matchups": function(key, m, p) {
-            var matchups = aggData.matchups;
-            var player_win = m.player_win;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                var tm_hero = tm.hero_id;
-                if (tm_hero in matchups) {
-                    //don't count invalid heroes
-                    if (isRadiant(tm) === isRadiant(p)) {
-                        //count teammate heroes
-                        if (tm.account_id === p.account_id) {
-                            //console.log("self %s", tm_hero);
-                            matchups[tm_hero].games += 1;
-                            matchups[tm_hero].win += player_win ? 1 : 0;
-                            if (m.start_time > matchups[tm_hero].last_played) {
-                                matchups[tm_hero].last_played = m.start_time;
-                            }
-                        }
-                        else {
-                            //console.log("teammate %s", tm_hero);
-                            matchups[tm_hero].with_games += 1;
-                            matchups[tm_hero].with_win += player_win ? 1 : 0;
-                        }
-                    }
-                    else {
-                        //count enemy heroes
-                        //console.log("opp %s", tm_hero);
-                        matchups[tm_hero].against_games += 1;
-                        matchups[tm_hero].against_win += player_win ? 1 : 0;
-                    }
-                }
-            }
+        "heroes": function(key, m, p) {
+            aggHeroes(aggData.heroes, m);
         },
         "teammates": function(key, m, p) {
-            var teammates = aggData.teammates;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                if (isRadiant(tm) === isRadiant(p)) {
-                    //count teammate players
-                    if (!teammates[tm.account_id]) {
-                        teammates[tm.account_id] = {
-                            account_id: tm.account_id,
-                            last_played: 0,
-                            win: 0,
-                            games: 0
-                        };
-                    }
-                    if (m.start_time > teammates[tm.account_id].last_played) {
-                        teammates[tm.account_id].last_played = m.start_time;
-                    }
-                    teammates[tm.account_id].games += 1;
-                    teammates[tm.account_id].win += m.player_win ? 1 : 0;
-                }
-            }
+            aggTeammates(aggData.teammates, m);
         },
         "win": function(key, m, p) {
             aggData[key] += (m.player_win) ? 1 : 0;
@@ -426,24 +377,8 @@ function aggregator(matches, fields) {
         if (key === "win" || key === "lose" || key === "games") {
             aggData[key] = 0;
         }
-        else if (key === "teammates" || key === "matchups") {
+        else if (key === "teammates" || key === "heroes") {
             aggData[key] = {};
-            if (key === "matchups") {
-                //prefill matchups with every hero
-                for (var hero_id in constants.heroes) {
-                    var obj = {
-                        hero_id: hero_id,
-                        last_played: 0,
-                        games: 0,
-                        win: 0,
-                        with_games: 0,
-                        with_win: 0,
-                        against_games: 0,
-                        against_win: 0
-                    };
-                    aggData.matchups[hero_id] = obj;
-                }
-            }
         }
         else {
             aggData[key] = {
@@ -466,35 +401,6 @@ function aggregator(matches, fields) {
                 types[key](key, m, p);
             }
         }
-    }
-    //get teammates, heroes, convert hashes to arrays and sort them
-    if (aggData.matchups) {
-        var heroes_arr = [];
-        var matchups = aggData.matchups;
-        for (var id in matchups) {
-            var h = matchups[id];
-            heroes_arr.push(h);
-        }
-        heroes_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        aggData.matchups = heroes_arr;
-    }
-    if (aggData.teammates) {
-        var teammates_arr = [];
-        var teammates = aggData.teammates;
-        for (var id in teammates) {
-            var tm = teammates[id];
-            id = Number(id);
-            //don't include if anonymous or if less than 3 games
-            if (id !== constants.anonymous_account_id && tm.games >= 3) {
-                teammates_arr.push(tm);
-            }
-        }
-        teammates_arr.sort(function(a, b) {
-            return b.games - a.games;
-        });
-        aggData.teammates = teammates_arr;
     }
     return aggData;
 
@@ -537,9 +443,9 @@ function filter(matches, filters) {
     //console.log(filters);
     var conditions = {
         //filter: significant, remove unbalanced game modes/lobbies
-        //TODO detect no stats recorded?
         significant: function(m, key) {
-            return Number(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced) === key;
+            //console.log(m.match_id, m.game_mode, m.lobby_type, isSignificant(m));
+            return Number(isSignificant(m)) === key;
         },
         //filter: player won
         win: function(m, key) {
@@ -580,7 +486,7 @@ function filter(matches, filters) {
             }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]) && p.account_id !== m.players[0].account_id);
+                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
                 });
             });
         },

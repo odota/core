@@ -5,6 +5,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
     //pre=JSON.stringify(q)
     .row
       .col-md-4(style="display:none;")
+        h4 Global Parameters
         .form-group
           label All Matches with Player (Account ID)
           input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"], readonly)
@@ -14,7 +15,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="all") Any Hero
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id), readonly)=entry.localized_name
-      .col-md-6
+      .col-md-4
+        h4 Synergies
         .form-group
           label The Players Included (Account ID)
           input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Included: Any Player", value=q.with_account_id )#with_account_id
@@ -26,13 +28,14 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           label The Team Included
           select.form-control(name="teammate_hero_id" multiple, placeholder="Team: Any Hero")#teammate_hero_id
             each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(q.teammate_hero_id && typeof q.teammate_hero_id==="object" ? q.teammate_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.teammate_hero_id)===entry.id))=entry.localized_name
+              option(value=entry.id, selected=(q.teammate_hero_id && typeof q.teammate_hero_id==="object" ? q.teammate_hero_id.indexOf(entry.id)!==-1 : Number(q.teammate_hero_id)===entry.id))=entry.localized_name
         .form-group
           label The Enemies Included
           select.form-control(name="against_hero_id" multiple, placeholder="Enemy: Any Hero")#enemy_hero_id
             each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(q.against_hero_id && typeof q.against_hero_id==="object" ? q.against_hero_id.indexOf(entry.id.toString())!==-1 : Number(q.against_hero_id)===entry.id))=entry.localized_name
-      .col-md-6
+              option(value=entry.id, selected=(q.against_hero_id && typeof q.against_hero_id==="object" ? q.against_hero_id.indexOf(entry.id)!==-1 : Number(q.against_hero_id)===entry.id))=entry.localized_name
+      .col-md-4
+        h4 Personal Parameters
         .form-group
           label Hero
           select.form-control(name="hero_id" placeholder="Played Any Hero")#hero_id
@@ -51,6 +54,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="all") All Results
             option(value="1", selected=(q["win"]==="1")) Wins
             option(value="0", selected=(q["win"]==="0")) Losses
+      .col-md-4
+        h4 Match Parameters
         .form-group
           label Patch
           select.form-control(name="patch")

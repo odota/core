@@ -4,3 +4,14 @@ block content
   h1 Compare
   include query
   pre=JSON.stringify(data)
+  table.table
+    tr
+      td
+      each player in data
+        td=player.account_id
+    each val, key in data[0].aggData
+      tr
+        td=key
+        each player in data
+          td=player.aggData[key].avg
+        

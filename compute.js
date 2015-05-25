@@ -44,7 +44,7 @@ function computeMatchData(match) {
                             });
                         }
                     }
-                    if (p.hero_log) {
+                    if (p.hero_log && p.hero_log.length) {
                         p.pick_time = p.hero_log[p.hero_log.length - 1].time;
                     }
                     if (p.kills) {
@@ -178,7 +178,7 @@ function computeMatchData(match) {
             });
         }
         catch (e) {
-            console.log(e, match.match_id);
+            console.log(e.stack, match.match_id);
         }
     }
     /**
@@ -318,6 +318,7 @@ function renderMatch(match) {
                             return i;
                         }
                     }
+                    return constants.xp_level.length;
                 }
             });
             //add player's hero_id to each teamfight participant

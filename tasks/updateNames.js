@@ -1,6 +1,6 @@
 var db = require('../db');
 var queueReq = require('../operations').queueReq;
-module.exports = function(cb) {
+module.exports = function updateNames(cb) {
     db.players.find({}, {
         sort: {
             last_summaries_update: 1

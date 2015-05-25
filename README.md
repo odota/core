@@ -8,14 +8,6 @@ YASP - YASP: Another Stats Page
 [![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Stories in Ready](https://badge.waffle.io/yasp-dota/yasp.svg?label=ready&title=Ready)](http://waffle.io/yasp-dota/yasp)
 
-How To Use
-----
-Sign in through Steam, and we'll start watching your matches and automatically parse the replays.
-
-Note that probably only a few of your previous matches are listed.  It takes us some time to retrieve your full match history.
-
-We can get basic match data but cannot parse matches where the replays have expired.
-
 Features
 ----
 * Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics.
@@ -64,7 +56,7 @@ Tech
 * Client: Bootstrap, c3, datatables, cal-heatmap, select2, heatmap.js, qtip2
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
-Quickstart
+Starting YASP
 ----
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
@@ -79,7 +71,7 @@ Lessons and Rules
 ----
 * Never async.parallel database calls.
 
-Developer Questions
+Questions
 ----
 ###How do I programmatically get replays?
 * You can fire up the retriever (supplying your own Steam credentials) and basically get a REST API for retrieving replay salts.  
