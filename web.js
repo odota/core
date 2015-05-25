@@ -189,12 +189,14 @@ app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
     //TODO limit compare to 5 people (+all/professional)
     var account_ids = ["all", "professional", 88367253];
+    var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
+        req.query = JSON.parse(JSON.stringify(qCopy));
         fillPlayerData(account_id, {
             query: {
                 select: req.query,
-                //limit to 500 results to reduce computation time
-                limit: 500
+                //limit results to reduce computation time
+                limit: 300
             }
         }, function(err, player) {
             //create array of results.aggData for each account_id

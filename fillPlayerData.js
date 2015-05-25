@@ -8,13 +8,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     //retrieve the player from db by id
     var player;
     if (account_id === "all" || account_id === "professional") {
-        options.query.select["players.account_id"] = account_id;
+        options.query.select["players.account_id"] = "all";
         player = {
             account_id: account_id
         };
         if (account_id === "professional") {
             options.query.select.leagueid = options.query.select.leagueid || "gtzero";
         }
+        options.query.sort = {"match_id": -1};
         query();
     }
     else {
@@ -46,14 +47,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         for (var key in default_select) {
             options.query.select[key] = options.query.select[key] || default_select[key];
         }
-        //do all aggregations unless index
-        options.query.js_agg = options.info === "index" ? {
-            "win": 1,
-            "lose": 1,
-            "games": 1,
-            "matchups": 1,
-            "teammates": 1
-        } : null;
+        options.query.js_agg = null;
         //do a js sort by match_id since our mongo index doesn't support this
         options.query.js_sort = {
             match_id: -1
@@ -94,7 +88,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         cache: player.cache
                     }
                 }, function(err) {
-                    console.log("advquery return");
                     //if cache doesn't exist, save the cache
                     finish(err, result);
                 });

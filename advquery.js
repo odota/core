@@ -51,7 +51,8 @@ function advQuery(options, cb) {
     //map to limit
     var mongoAble = {
         "players.account_id": 10000,
-        //"players.hero_id": 10000
+        "leagueid": 10000
+            //"players.hero_id": 10000
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
@@ -186,6 +187,7 @@ function advQuery(options, cb) {
                     computeMatchData(m);
                 });
                 var filtered = filter(matches, options.js_select);
+                console.log(matches.length, filtered.length);
                 filtered = sort(filtered, options.js_sort);
                 var aggData = aggregator(filtered, options.js_agg);
                 var result = {
@@ -442,6 +444,7 @@ function filter(matches, filters) {
     var conditions = {
         //filter: significant, remove unbalanced game modes/lobbies
         significant: function(m, key) {
+            //console.log(m.match_id, m.game_mode, m.lobby_type, isSignificant(m));
             return Number(isSignificant(m)) === key;
         },
         //filter: player won
