@@ -186,6 +186,43 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/compare').get(function(req, res, next) {
+    //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
+    //TODO limit compare to 5 people (+all/professional)
+    var account_ids = ["all", "professional", 88367253];
+    async.mapSeries(account_ids, function(account_id, cb) {
+        fillPlayerData(account_id, {
+            query: {
+                select: req.query,
+                //limit to 500 results to reduce computation time
+                limit: 500
+            }
+        }, function(err, player) {
+            //create array of results.aggData for each account_id
+            //compute average for aggregations supporting it
+            for (var key in player.aggData) {
+                if (player.aggData[key].sum && player.aggData[key].n) {
+                    player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
+                }
+            }
+            cb(err, {
+                account_id: account_id,
+                personaname: player.personaname,
+                aggData: player.aggData
+            });
+        });
+    }, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        //TODO compute percentile for each stat
+        //for each avg in each player's aggdata, iterate through "all" counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+        res.render("compare", {
+            data: results,
+            q: req.query
+        });
+    });
+});
+app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated
     //parse the multiple account ids into array
     //TODO limit the results to return for comparison to save time, set req.query.limit?

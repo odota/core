@@ -31,7 +31,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "player": function(cb) {
             fillPlayerData(req.params.account_id, {
                 info: info,
-                query: req.query
+                query: {
+                    select: req.query
+                }
             }, function(err, player) {
                 cb(err, player);
             });

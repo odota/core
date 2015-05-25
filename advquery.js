@@ -72,7 +72,7 @@ function advQuery(options, cb) {
             }
             else {
                 //split each by comma
-                if (options.select[key].indexOf(",") !== -1) {
+                if (options.select[key].toString().indexOf(",") !== -1) {
                     options.select[key] = options.select[key].split(",");
                 }
                 if (options.select[key].constructor === Array) {
