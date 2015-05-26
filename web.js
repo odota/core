@@ -194,9 +194,7 @@ app.route('/compare').get(function(req, res, next) {
         req.query = JSON.parse(JSON.stringify(qCopy));
         fillPlayerData(account_id, {
             query: {
-                select: req.query,
-                //limit results to reduce computation time
-                limit: 300
+                select: req.query
             }
         }, function(err, player) {
             //create array of results.aggData for each account_id
