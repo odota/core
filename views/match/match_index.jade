@@ -88,12 +88,14 @@ block match_content
       if match.picks_bans
         hr
         h2.inline-header Picks/Bans
-        table.table.table-hover
-          tbody
-            tr.success
-              +picks_bans_row(match.picks_bans, 0)
-            tr.danger
-              +picks_bans_row(match.picks_bans, 1)
+        button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#picks-bans", aria-expanded="true") Toggle Table
+        #picks-bans.table-responsive.collapse.in
+          table.table.table-hover
+            tbody
+              tr.success
+                +picks_bans_row(match.picks_bans, 0)
+              tr.danger
+                +picks_bans_row(match.picks_bans, 1)
 
       hr
       include /ads/leaderboard_2
