@@ -47,6 +47,8 @@ block content
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
         if player.profileurl
           li: a(href=player.profileurl, target="_blank") Steam Profile
+  include /query
+  hr
   block playercontent
   hr
   .row
