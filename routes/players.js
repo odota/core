@@ -10,6 +10,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "index": {
             "name": "Player"
         },
+        "matches": {
+            "name": "Matches"
+        },
         "histograms": {
             "name": "Histograms"
         },
@@ -24,7 +27,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         }
     };
     var info = playerPages[req.params.info] ? req.params.info : "index";
+    /*
     if (req.params.account_id === "all" || req.params.account_id === "professional") {
+    //these special keywords don't produce a "real" player so we can't use findOne
         var player = {
             account_id: req.params.account_id
         };
@@ -50,6 +55,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             });
         });
     }
+    */
     var account_id = Number(req.params.account_id);
     console.time("player " + account_id);
     db.players.findOne({
@@ -60,14 +66,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
         }
         async.series({
             "player": function(cb) {
-                //defaults: this player, balanced modes only, put the defaults in options.query
-                var default_select = {
-                    "players.account_id": player.account_id.toString(),
-                    "significant": "1"
-                };
-                for (var key in default_select) {
-                    req.query[key] = req.query[key] || default_select[key];
-                }
                 fillPlayerData(player, {
                     info: info,
                     query: req.query

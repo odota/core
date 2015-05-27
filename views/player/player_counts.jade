@@ -1,16 +1,6 @@
 extend player
 
 block playercontent
-  //pre #{JSON.stringify(player.aggData, null, 2)}
-  //th KDA
-  //th Abandon
-  //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
-  //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
-  .row
-    .col-md-12
-      include /query
-
-  hr
   .counts
     .row
       - var counts = {"leaver_status":1,"game_mode":1,"lobby_type":1,"lane_role":1,"region":1,"patch":1}

@@ -297,7 +297,7 @@ module.exports = function(options) {
                 title: "Played As",
             }, {
                 data: "win",
-                title: "Win% As",
+                title: "Win%",
                 render: function(data, type, row) {
                     var pct = data ? 100 * data / row.games : 0;
                     var elt = $('<div class="progress-bar"></div>');
@@ -311,7 +311,7 @@ module.exports = function(options) {
                 title: "Played With",
             }, {
                 data: "with_win",
-                title: "Win% With",
+                title: "Win%",
                 render: function(data, type, row) {
                     var pct = data ? 100 * data / row.with_games : 0;
                     var elt = $('<div class="progress-bar"></div>');
@@ -325,7 +325,7 @@ module.exports = function(options) {
                 title: "Played Against",
             }, {
                 data: "against_win",
-                title: "Win% Against",
+                title: "Win%",
                 render: function(data, type, row) {
                     var pct = data ? 100 * data / row.against_games : 0;
                     var elt = $('<div class="progress-bar"></div>');
@@ -365,39 +365,69 @@ module.exports = function(options) {
                 formatHtml();
             },
             "columns": [{
-                data: "account_id",
-                title: "Teammate",
-                render: function(data, type, row) {
-                    return '<a href="/players/' + data + '">' + row.personaname + '</a>'
-                }
-            }, {
-                data: "games",
-                title: "Matches"
-            }, {
-                data: "win",
-                title: "Win%",
-                render: function(data, type, row) {
-                    var pct = data ? 100 * data / row.games : 0;
-                    var elt = $('<div class="progress-bar"></div>');
-                    elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
-                    elt.css("width", pct + "%");
-                    elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
-                }
-            }, {
-                data: "last_played",
-                title: "Last",
-                render: function(data, type) {
-                    if (type === "display") {
-                        if (!Number(data)) {
-                            return "never";
-                        }
-                        else {
-                            return moment.unix(data).fromNow();
-                        }
+                    data: "account_id",
+                    title: "Teammate",
+                    render: function(data, type, row) {
+                        return '<a href="/players/' + data + '">' + row.personaname + '</a>'
                     }
-                    return data;
-                }
+            }, {
+                    data: "games",
+                    title: "Matches"
+            }, {
+                    data: "win",
+                    title: "Win%",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            }, {
+                    data: "with_games",
+                    title: "Teammate"
+            }, {
+                    data: "with_win",
+                    title: "Win%",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.with_games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            },
+                {
+                    data: "against_games",
+                    title: "Opponent"
+            }, {
+                    data: "against_win",
+                    title: "Win%",
+                    render: function(data, type, row) {
+                        var pct = data ? 100 * data / row.against_games : 0;
+                        var elt = $('<div class="progress-bar"></div>');
+                        elt.addClass(pct >= 50 ? "progress-bar-success" : "progress-bar-danger");
+                        elt.css("width", pct + "%");
+                        elt.text(pct.toFixed(2));
+                        return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    }
+            },
+                {
+                    data: "last_played",
+                    title: "Last",
+                    render: function(data, type) {
+                        if (type === "display") {
+                            if (!Number(data)) {
+                                return "never";
+                            }
+                            else {
+                                return moment.unix(data).fromNow();
+                            }
+                        }
+                        return data;
+                    }
         }]
         });
     }
