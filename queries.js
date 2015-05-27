@@ -20,7 +20,7 @@ function fillPlayerNames(players, cb) {
         account_id: {
             $in: player_ids
         }
-    }, function(err, docs) {
+    }, {fields:{"personaname":1,"avatarmedium":1}}, function(err, docs) {
         if (err) {
             return cb(err);
         }

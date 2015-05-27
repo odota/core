@@ -66,7 +66,7 @@ function insertMatch(match, cb) {
                             //keep 10 latest matches by id
                             player.cache.data.sort(function(a,b){
                                 return a.match_id - b.match_id;
-                            })
+                            });
                             //remove the oldest match
                             if (player.cache.data.length > 10) {
                                 player.cache.data.shift();
