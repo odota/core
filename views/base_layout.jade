@@ -27,9 +27,17 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
 
-    script(src="/public/build/yasp.min.js")
+    //- yasp css
+    link(rel='stylesheet', href="/public/css/flaticon.css")
+    link(rel='stylesheet', href="/public/css/font.css")
+    link(rel='stylesheet', href="/public/css/navbar.css")
+    link(rel='stylesheet', href="/public/css/yasp_home.css")
+    link(rel='stylesheet', href="/public/css/yasp.css")
     if !(user && user.light_theme)
       link(rel='stylesheet', href="/public/css/dark.css")
+    
+    //- yasp js bundle
+    script(src="/public/build/yasp.min.js")
       
     block head
 
