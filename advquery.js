@@ -485,7 +485,7 @@ function filter(matches, filters) {
             }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]) && p.account_id !== m.players[0].account_id);
+                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
                 });
             });
         },
