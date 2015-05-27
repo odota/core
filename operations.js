@@ -54,7 +54,7 @@ function insertMatch(match, cb) {
                                 all_players: match.players.slice(0),
                                 players: [p]
                             };
-                            //do basic aggregations, findandmodify the player to increment
+                            //do basic aggregations
                             player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
                             player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
                             player.cache.aggData.games += 1;
@@ -62,14 +62,14 @@ function insertMatch(match, cb) {
                             aggTeammates(player.cache.aggData.teammates, match_copy);
                             //aggData: win/lose/games/heroes/teammates
                             //add this match to the cache;
-                            player.cache.data.push(match);
+                            player.cache.data.unshift(match);
                             //keep 10 latest matches by id
                             player.cache.data.sort(function(a,b){
-                                return a.match_id - b.match_id;
+                                return b.match_id - a.match_id;
                             });
                             //remove the oldest match
                             if (player.cache.data.length > 10) {
-                                player.cache.data.shift();
+                                player.cache.data.pop();
                             }
                         }
                         else {
@@ -88,7 +88,7 @@ function insertMatch(match, cb) {
                         }, function(err) {
                             cb(err);
                         });
-                    })
+                    });
                 },
                 //done with all 10 players
                 cb);
