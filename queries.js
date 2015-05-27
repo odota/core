@@ -1,6 +1,7 @@
 var db = require('./db');
 var async = require('async');
 var redis = require('./redis').client;
+
 function fillPlayerNames(players, cb) {
     if (!players) {
         return cb();
@@ -20,7 +21,13 @@ function fillPlayerNames(players, cb) {
         account_id: {
             $in: player_ids
         }
-    }, {fields:{"personaname":1,"avatarmedium":1}}, function(err, docs) {
+    }, {
+        fields: {
+            "account_id": 1,
+            "personaname": 1,
+            "avatarmedium": 1
+        }
+    }, function(err, docs) {
         if (err) {
             return cb(err);
         }
