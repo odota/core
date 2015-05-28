@@ -4,7 +4,8 @@ db.players = db.get('players');
 db.matches = db.get('matches');
 db.ratings = db.get('ratings');
 db.matches.index({
-    'players.account_id': 1
+    'players.account_id': 1,
+    'match_id': -1
 });
 /*
 db.matches.index({

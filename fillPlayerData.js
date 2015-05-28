@@ -10,11 +10,15 @@ module.exports = function fillPlayerData(player, options, cb) {
     //defaults: this player, balanced modes only, put the defaults in options.query
     var js_agg = null;
     var limit = null;
+    var sort = null;
     var query = Boolean(Object.keys(options.query).length);
     if (options.info === "index" && player.cache && !query) {
         console.log("using cache");
         js_agg = {};
         limit = 10;
+        sort = {
+            match_id: -1
+        };
     }
     var default_select = {
         "players.account_id": player.account_id.toString(),
@@ -30,7 +34,8 @@ module.exports = function fillPlayerData(player, options, cb) {
         js_sort: {
             match_id: -1
         },
-        limit: limit
+        limit: limit,
+        sort: sort
     }, processResults);
 
     function processResults(err, results) {
@@ -42,14 +47,14 @@ module.exports = function fillPlayerData(player, options, cb) {
                 delete p.parsedPlayer;
             });
         });
-        if (player.cache) {
-            //add matches to player cache
+        //use cache
+        if (options.info === "index" && player.cache && !query) {
+            //add recent matches to cache
             player.cache.data = results.data;
-            //use the cached aggregations
-            results = player.cache;
+            return finish(err, player.cache);
         }
-        //currently, always refresh cache if not hitting index and if no query
-        if ((!player.cache || true) && options.info !== "index" && !query) {
+        //save cache if doesn't exist and no query
+        if (!player.cache && !query) {
             player.cache = {
                 aggData: {}
             };
@@ -64,21 +69,19 @@ module.exports = function fillPlayerData(player, options, cb) {
                 player.cache.aggData[key] = results.aggData[key];
             }
             player.cache.data = results.data.slice(0, 10);
+            //if cache doesn't exist, save the cache
             db.players.update({
                 account_id: player.account_id
             }, {
                 $set: {
                     cache: player.cache
                 }
-            }, {
-                upsert: true
             }, function(err) {
-                //if cache doesn't exist, save the cache
                 finish(err, results);
             });
         }
+        //skip saving the cache
         else {
-            //skip saving the cache
             finish(err, results);
         }
     }
