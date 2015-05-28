@@ -10,10 +10,9 @@ module.exports = function fillPlayerData(player, options, cb) {
     //defaults: this player, balanced modes only, put the defaults in options.query
     var js_agg = null;
     var limit = null;
-    var useCache = false;
-    if (options.info === "index" && player.cache && !Object.keys(options.query).length) {
+    var query = Boolean(Object.keys(options.query).length);
+    if (options.info === "index" && player.cache && !query) {
         console.log("using cache");
-        useCache = true;
         js_agg = {};
         limit = 10;
     }
@@ -43,8 +42,8 @@ module.exports = function fillPlayerData(player, options, cb) {
                 delete p.parsedPlayer;
             });
         });
-        //currently, always refresh cache if not hitting index
-        if ((!player.cache || true) && !useCache) {
+        //currently, always refresh cache if not hitting index and if no query
+        if ((!player.cache || true) && options.info !== "index" && !query) {
             player.cache = {
                 aggData: {}
             };

@@ -72,9 +72,8 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            console.log('error occured during buildSets');
-            return cb(err);
+            console.log('error occured during buildSets: %s', err);
         }
-        cb();
+        return cb(err);
     });
 };

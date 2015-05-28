@@ -78,7 +78,7 @@ function aggTeammates(teammates, m) {
         if (isRadiant(tm) === isRadiant(p)) {
             //played with
             teammates[tm.account_id].with_games += 1;
-            teammates[tm.account_id].win += m.with_win ? 1 : 0;
+            teammates[tm.account_id].with_win += m.player_win ? 1 : 0;
         }
         else {
             //played against
