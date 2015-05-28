@@ -23,10 +23,7 @@ function fillPlayerNames(players, cb) {
         }
     }, {
         fields: {
-            "account_id": 1,
-            "personaname": 1,
-            "avatarmedium": 1,
-            "last_visited": 1
+            "cache": 0
         }
     }, function(err, docs) {
         if (err) {

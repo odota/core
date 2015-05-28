@@ -12,6 +12,10 @@ module.exports = function buildSets(cb) {
                 last_visited: {
                     $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
                 }
+            }, {
+                fields: {
+                    "cache": 0
+                }
             }, function(err, docs) {
                 if (err) {
                     return cb(err);
@@ -30,6 +34,10 @@ module.exports = function buildSets(cb) {
                 last_visited: {
                     $ne: null
                 }
+            }, {
+                fields: {
+                    "cache": 0
+                }
             }, function(err, docs) {
                 if (err) {
                     return cb(err);
@@ -47,6 +55,10 @@ module.exports = function buildSets(cb) {
             db.players.find({
                 cheese: {
                     $gt: 0
+                }
+            }, {
+                fields: {
+                    "cache": 0
                 }
             }, function(err, docs) {
                 if (err) {
@@ -67,7 +79,7 @@ module.exports = function buildSets(cb) {
         }
         //merge trackedPlayers with donators
         //we are doing this because the $or query forces iteration through all players, which is slow!
-        for (var key in result.donators){
+        for (var key in result.donators) {
             result.trackedPlayers[key] = true;
         }
         return cb(err);
