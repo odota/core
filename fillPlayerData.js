@@ -7,12 +7,16 @@ var generatePositionData = utility.generatePositionData;
 module.exports = function fillPlayerData(player, options, cb) {
     //options.info, the tab the player is on
     //options.query, the querystring from the user, pass these as select conditions
-    if (options.info === "index" && player.cache && !Object.keys(options.query).length) {
-        //if index page, try to use cached data if no query
-        console.log("using cache");
-        return finish(null, player.cache);
-    }
     //defaults: this player, balanced modes only, put the defaults in options.query
+    var js_agg = null;
+    var limit = null;
+    var useCache = false;
+    if (options.info === "index" && player.cache && !Object.keys(options.query).length) {
+        console.log("using cache");
+        useCache = true;
+        js_agg = {};
+        limit = 10;
+    }
     var default_select = {
         "players.account_id": player.account_id.toString(),
         "significant": "1"
@@ -20,36 +24,38 @@ module.exports = function fillPlayerData(player, options, cb) {
     for (var key in default_select) {
         options.query[key] = options.query[key] || default_select[key];
     }
-    var js_agg = null;
     advQuery({
         select: options.query,
         project: null, //just project default fields
         js_agg: js_agg,
         js_sort: {
             match_id: -1
-        }
-    }, function(err, results) {
+        },
+        limit: limit
+    }, processResults);
+
+    function processResults(err, results) {
         //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
-        results.data.forEach(function(m) {
+        results.data.forEach(function reduceMatchData(m) {
             delete m.all_players;
             delete m.parsed_data;
             m.players.forEach(function(p) {
                 delete p.parsedPlayer;
             });
         });
-        //currently, always refresh cache
-        if (!player.cache || true) {
+        //currently, always refresh cache if not hitting index
+        if ((!player.cache || true) && !useCache) {
             player.cache = {
                 aggData: {}
             };
-            var cached = {
+            var cachedKeys = {
                 "win": 1,
                 "lose": 1,
                 "games": 1,
                 "heroes": 1,
                 "teammates": 1
             };
-            for (var key in cached) {
+            for (var key in cachedKeys) {
                 player.cache.aggData[key] = results.aggData[key];
             }
             player.cache.data = results.data.slice(0, 10);
@@ -67,15 +73,15 @@ module.exports = function fillPlayerData(player, options, cb) {
             });
         }
         else {
-            finish(err, results);
+            //otherwise use the cache
+            finish(err, player.cache);
         }
-    });
+    }
 
     function finish(err, results) {
         if (err) {
             return cb(err);
         }
-        player.matches = results.data;
         var aggData = results.aggData;
         //get teammates, heroes, convert hashes to arrays and sort them
         if (aggData.heroes) {
@@ -121,6 +127,7 @@ module.exports = function fillPlayerData(player, options, cb) {
         console.time('teammate_lookup');
         queries.fillPlayerNames(aggData.teammates, function(err) {
             console.timeEnd('teammate_lookup');
+            player.matches = results.data;
             player.aggData = results.aggData;
             cb(err, player);
         });

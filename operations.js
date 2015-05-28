@@ -61,16 +61,6 @@ function insertMatch(match, cb) {
                             aggHeroes(player.cache.aggData.heroes, match_copy);
                             aggTeammates(player.cache.aggData.teammates, match_copy);
                             //aggData: win/lose/games/heroes/teammates
-                            //add this match to the cache;
-                            player.cache.data.unshift(match);
-                            //keep 10 latest matches by id
-                            player.cache.data.sort(function(a,b){
-                                return b.match_id - a.match_id;
-                            });
-                            //remove the oldest match
-                            if (player.cache.data.length > 10) {
-                                player.cache.data.pop();
-                            }
                         }
                         else {
                             player = {};
