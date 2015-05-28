@@ -53,9 +53,17 @@ function computeMatchData(match) {
                         p.courier_kills = 0;
                         p.lane_kills = 0;
                         p.hero_kills = 0;
+                        p.observer_kills = 0;
+                        p.sentry_kills = 0;
                         for (var key in p.kills) {
                             if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
                                 p.lane_kills += p.kills[key];
+                            }
+                            if (key.indexOf("observer")!== -1){
+                                p.observer_kills += p.kills[key];
+                            }
+                            if (key.indexOf("sentry")!== -1){
+                                p.sentry_kills += p.kills[key];
                             }
                             if (key.indexOf("npc_dota_hero") === 0) {
                                 p.hero_kills += p.kills[key];
