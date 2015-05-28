@@ -14,7 +14,7 @@ module.exports = function buildSets(cb) {
                 }
             }, {
                 fields: {
-                    "cache": 0
+                    "account_id":1
                 }
             }, function(err, docs) {
                 if (err) {
@@ -36,7 +36,7 @@ module.exports = function buildSets(cb) {
                 }
             }, {
                 fields: {
-                    "cache": 0
+                    "account_id":1
                 }
             }, function(err, docs) {
                 if (err) {
@@ -58,7 +58,7 @@ module.exports = function buildSets(cb) {
                 }
             }, {
                 fields: {
-                    "cache": 0
+                    "account_id":1
                 }
             }, function(err, docs) {
                 if (err) {
