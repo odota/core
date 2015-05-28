@@ -42,6 +42,12 @@ module.exports = function fillPlayerData(player, options, cb) {
                 delete p.parsedPlayer;
             });
         });
+        if (player.cache) {
+            //add matches to player cache
+            player.cache.data = results.data;
+            //use the cached aggregations
+            results = player.cache;
+        }
         //currently, always refresh cache if not hitting index and if no query
         if ((!player.cache || true) && options.info !== "index" && !query) {
             player.cache = {
@@ -72,8 +78,8 @@ module.exports = function fillPlayerData(player, options, cb) {
             });
         }
         else {
-            //otherwise use the cache
-            finish(err, player.cache);
+            //skip saving the cache
+            finish(err, results);
         }
     }
 
