@@ -131,6 +131,10 @@ app.use('/ratings', function(req, res, next) {
         "ratings": {
             $ne: null
         }
+    }, {
+        fields: {
+            "cache": 0
+        }
     }, function(err, docs) {
         if (err) {
             return next(err);

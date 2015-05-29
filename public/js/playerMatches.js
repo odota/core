@@ -1,5 +1,6 @@
 module.exports = function(options) {
     console.log(options);
+    //options.professional, display of league columns
     //teammates for select2
     //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
     //extend jquery to serialize form data to JSON
@@ -35,9 +36,6 @@ module.exports = function(options) {
                 'url': '/api/matches',
                 "data": function(d) {
                     d.select = $('#query').serializeObject();
-                    //player pages aggregate teammates/matchups/win/lose/games
-                    //all/pro pages don't aggregate anything
-                    d.js_agg = options.js_agg;
                 }
             },
             */

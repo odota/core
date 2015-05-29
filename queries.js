@@ -1,6 +1,7 @@
 var db = require('./db');
 var async = require('async');
 var redis = require('./redis').client;
+
 function fillPlayerNames(players, cb) {
     if (!players) {
         return cb();
@@ -19,6 +20,10 @@ function fillPlayerNames(players, cb) {
     db.players.find({
         account_id: {
             $in: player_ids
+        }
+    }, {
+        fields: {
+            "cache": 0
         }
     }, function(err, docs) {
         if (err) {

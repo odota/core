@@ -8,12 +8,7 @@ require('../../node_modules/qTip2/dist/jquery.qtip.css');
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 require('../../node_modules/vis/dist/vis.min.css');
-//yasp css
-require('../css/flaticon.css');
-require('../css/font.css');
-require('../css/navbar.css');
-require('../css/yasp_home.css');
-require('../css/yasp.css');
+
 //external js libs
 window.$ = require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');

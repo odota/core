@@ -15,7 +15,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         if (account_id === "professional") {
             options.query.select.leagueid = options.query.select.leagueid || "gtzero";
         }
-        options.query.sort = {"match_id": -1};
+        options.query.sort = {
+            "match_id": -1
+        };
         query();
     }
     else {
@@ -32,55 +34,63 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     }
 
     function query() {
-        //options.info, the tab the user is on
-        //options.query, the advquery object to use
-        if (options.info === "index" && player.cache && !Object.keys(options.query.select).length) {
-            //if index page, try to use cached data if no query
-            console.log("using cache");
-            return finish(null, player.cache);
-        }
+        //options.info, the tab the player is on
+        //options.query, the querystring from the user, pass these as select conditions
         //defaults: this player, balanced modes only, put the defaults in options.query
+        var js_agg = options.info === "index" || options.info === "matches" ? {} : null;
+        var limit = options.info === "index" ? 10 : null;
+        var sort = {
+            match_id: -1
+        };
+        var query = Boolean(Object.keys(options.query).length);
         var default_select = {
             "players.account_id": player.account_id.toString(),
             "significant": "1"
         };
         for (var key in default_select) {
-            options.query.select[key] = options.query.select[key] || default_select[key];
+            options.query[key] = options.query[key] || default_select[key];
         }
-        options.query.js_agg = null;
-        //do a js sort by match_id since our mongo index doesn't support this
-        options.query.js_sort = {
-            match_id: -1
-        };
-        advQuery(options.query, function(err, result) {
-            if (err) {
-                return cb(err);
-            }
-            //delete all_players from each match, remove parsedPlayer from each player
-            result.data.forEach(function(m) {
+        advQuery({
+            select: options.query,
+            project: null, //just project default fields
+            js_agg: js_agg,
+            js_sort: {
+                match_id: -1
+            },
+            limit: limit,
+            sort: sort
+        }, processResults);
+
+        function processResults(err, results) {
+            //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
+            results.data.forEach(function reduceMatchData(m) {
                 delete m.all_players;
                 delete m.parsed_data;
                 m.players.forEach(function(p) {
                     delete p.parsedPlayer;
                 });
             });
-            //currently, always refresh cache each time the full aggregation is done
-            if (!player.cache || true) {
+            //use cache
+            if (options.info === "index" && player.cache && !query) {
+                //add recent matches to cache
+                player.cache.data = results.data;
+                return finish(err, player.cache);
+            }
+            //rebuild cache if no query
+            if (!query) {
                 player.cache = {
                     aggData: {}
                 };
-                var cached = {
+                var cachedKeys = {
                     "win": 1,
                     "lose": 1,
                     "games": 1,
                     "heroes": 1,
                     "teammates": 1
                 };
-                for (var key in cached) {
-                    player.cache.aggData[key] = result.aggData[key];
+                for (var key in cachedKeys) {
+                    player.cache.aggData[key] = results.aggData[key];
                 }
-                //cache only 10 matches
-                player.cache.data = result.data.slice(0, 10);
                 db.players.update({
                     account_id: player.account_id
                 }, {
@@ -88,14 +98,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         cache: player.cache
                     }
                 }, function(err) {
-                    //if cache doesn't exist, save the cache
-                    finish(err, result);
+                    finish(err, results);
                 });
             }
+            //don't save the cache if there was a query
             else {
-                finish(err, result);
+                finish(err, results);
             }
-        });
+        }
 
         function finish(err, results) {
             if (err) {
