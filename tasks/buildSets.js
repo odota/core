@@ -9,18 +9,13 @@ module.exports = function buildSets(cb) {
     async.parallel({
         "trackedPlayers": function(cb) {
             db.players.find({
-                $or: [
-                    {
-                        last_visited: {
-                            $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
-                        }
-                    },
-                    {
-                        cheese: {
-                            $gt: 0
-                        }
-                    }
-                ]
+                last_visited: {
+                    $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
+                }
+            }, {
+                fields: {
+                    "account_id":1
+                }
             }, function(err, docs) {
                 if (err) {
                     return cb(err);
@@ -38,6 +33,10 @@ module.exports = function buildSets(cb) {
             db.players.find({
                 last_visited: {
                     $ne: null
+                }
+            }, {
+                fields: {
+                    "account_id":1
                 }
             }, function(err, docs) {
                 if (err) {
@@ -57,6 +56,10 @@ module.exports = function buildSets(cb) {
                 cheese: {
                     $gt: 0
                 }
+            }, {
+                fields: {
+                    "account_id":1
+                }
             }, function(err, docs) {
                 if (err) {
                     return cb(err);
@@ -72,9 +75,13 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            console.log('error occured during buildSets');
-            return cb(err);
+            console.log('error occured during buildSets: %s', err);
         }
-        cb();
+        //merge trackedPlayers with donators
+        //we are doing this because the $or query forces iteration through all players, which is slow!
+        for (var key in result.donators) {
+            result.trackedPlayers[key] = true;
+        }
+        return cb(err);
     });
 };
