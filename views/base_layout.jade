@@ -26,7 +26,10 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-
+      
+    //- yasp js bundle, dynamically inserts external js/css
+    script(src="/public/build/yasp.min.js")
+    
     //- yasp css
     link(rel='stylesheet', href="/public/css/flaticon.css")
     link(rel='stylesheet', href="/public/css/font.css")
@@ -35,9 +38,6 @@ html
     link(rel='stylesheet', href="/public/css/yasp.css")
     if !(user && user.light_theme)
       link(rel='stylesheet', href="/public/css/dark.css")
-    
-    //- yasp js bundle
-    script(src="/public/build/yasp.min.js")
       
     block head
 
