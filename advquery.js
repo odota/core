@@ -97,32 +97,9 @@ function advQuery(options, cb) {
         };
     }
     //js_agg, aggregations to do with js
-    //do everything if null passed as fields
-    var bGetFullPlayerData = false;
-    /*
-    //some aggregations/selections require hero_id and player_id of all 10 players in a game
-    var fullPlayerData = {
-        "teammates": 1,
-        "heroes": 1,
-        "with_account_id": 1,
-        "teammate_hero_id": 1,
-        "against_hero_id": 1,
-        "with_hero_id": 1
-    };
-    //if js_agg is null, we need the full data since we're aggregating everything
-    var bGetFullPlayerData = Boolean(!options.js_agg);
-    for (var key in options.js_agg) {
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
-    }
-    for (var key in options.js_select) {
-        bGetFullPlayerData = bGetFullPlayerData || (key in fullPlayerData);
-    }
-    */
-    //determine if we're doing an aggregation/selection that requires parsed data
-    //var parsedPlayerData = {};
-    //this just gets the parsed data if js_agg is null (do everything)
+    //do everything if null
+    //this just gets the parsed data if js_agg is null (which means do everything)
     var bGetParsedPlayerData = Boolean(!options.js_agg);
-    console.log(bGetParsedPlayerData);
     //limit, pass to mongodb, cap the number of matches to return in mongo
     options.limit = (!options.limit || options.limit > max) ? max : options.limit;
     //skip, pass to mongodb
@@ -171,34 +148,29 @@ function advQuery(options, cb) {
         });
         matches = expanded_matches;
         console.time("fullplayerdata");
-        getFullPlayerData(matches, bGetFullPlayerData, function(err) {
+        console.timeEnd("fullplayerdata");
+        console.time("parsedplayerdata");
+        getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
             if (err) {
                 return cb(err);
             }
-            console.timeEnd("fullplayerdata");
-            console.time("parsedplayerdata");
-            getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                console.timeEnd("parsedplayerdata");
-                console.time('compute');
-                matches.forEach(function(m) {
-                    //post-process the match to get additional stats
-                    computeMatchData(m);
-                });
-                var filtered = filter(matches, options.js_select);
-                filtered = sort(filtered, options.js_sort);
-                var aggData = aggregator(filtered, options.js_agg);
-                var result = {
-                    aggData: aggData,
-                    page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
-                    data: filtered,
-                    unfiltered_count: matches.length
-                };
-                console.timeEnd('compute');
-                cb(err, result);
+            console.timeEnd("parsedplayerdata");
+            console.time('compute');
+            matches.forEach(function(m) {
+                //post-process the match to get additional stats
+                computeMatchData(m);
             });
+            var filtered = filter(matches, options.js_select);
+            filtered = sort(filtered, options.js_sort);
+            var aggData = aggregator(filtered, options.js_agg);
+            var result = {
+                aggData: aggData,
+                page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                data: filtered,
+                unfiltered_count: matches.length
+            };
+            console.timeEnd('compute');
+            cb(err, result);
         });
     });
 }
@@ -527,72 +499,72 @@ function filter(matches, filters) {
 }
 
 function sort(matches, sorts) {
-    //console.log(sorts);
-    //dir 1 ascending, -1 descending
-    var sortFuncs = {
-        match_id: function(a, b, dir) {
-            return (a.match_id - b.match_id) * dir;
-        },
-        duration: function(a, b, dir) {
-            return (a.duration - b.duration) * dir;
-        },
-        game_mode: function(a, b, dir) {
-            return (a.game_mode - b.game_mode) * dir;
-        },
-        "players[0].kills": function(a, b, dir) {
-            return (a.players[0].kills - b.players[0].kills) * dir;
-        },
-        "players[0].deaths": function(a, b, dir) {
-            return (a.players[0].deaths - b.players[0].deaths) * dir;
-        },
-        "players[0].assists": function(a, b, dir) {
-            return (a.players[0].assists - b.players[0].assists) * dir;
-        },
-        "players[0].level": function(a, b, dir) {
-            return (a.players[0].level - b.players[0].level) * dir;
-        },
-        "players[0].last_hits": function(a, b, dir) {
-            return (a.players[0].last_hits - b.players[0].last_hits) * dir;
-        },
-        "players[0].denies": function(a, b, dir) {
-            return (a.players[0].denies - b.players[0].denies) * dir;
-        },
-        "players[0].gold_per_min": function(a, b, dir) {
-            return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
-        },
-        "players[0].xp_per_min": function(a, b, dir) {
-            return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
-        },
-        "players[0].hero_damage": function(a, b, dir) {
-            return (a.players[0].hero_damage - b.players[0].hero_damage) * dir;
-        },
-        "players[0].tower_damage": function(a, b, dir) {
-            return (a.players[0].tower_damage - b.players[0].tower_damage) * dir;
-        },
-        "players[0].hero_healing": function(a, b, dir) {
-                return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
+        //console.log(sorts);
+        //dir 1 ascending, -1 descending
+        var sortFuncs = {
+            match_id: function(a, b, dir) {
+                return (a.match_id - b.match_id) * dir;
+            },
+            duration: function(a, b, dir) {
+                return (a.duration - b.duration) * dir;
+            },
+            game_mode: function(a, b, dir) {
+                return (a.game_mode - b.game_mode) * dir;
+            },
+            "players[0].kills": function(a, b, dir) {
+                return (a.players[0].kills - b.players[0].kills) * dir;
+            },
+            "players[0].deaths": function(a, b, dir) {
+                return (a.players[0].deaths - b.players[0].deaths) * dir;
+            },
+            "players[0].assists": function(a, b, dir) {
+                return (a.players[0].assists - b.players[0].assists) * dir;
+            },
+            "players[0].level": function(a, b, dir) {
+                return (a.players[0].level - b.players[0].level) * dir;
+            },
+            "players[0].last_hits": function(a, b, dir) {
+                return (a.players[0].last_hits - b.players[0].last_hits) * dir;
+            },
+            "players[0].denies": function(a, b, dir) {
+                return (a.players[0].denies - b.players[0].denies) * dir;
+            },
+            "players[0].gold_per_min": function(a, b, dir) {
+                return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
+            },
+            "players[0].xp_per_min": function(a, b, dir) {
+                return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
+            },
+            "players[0].hero_damage": function(a, b, dir) {
+                return (a.players[0].hero_damage - b.players[0].hero_damage) * dir;
+            },
+            "players[0].tower_damage": function(a, b, dir) {
+                return (a.players[0].tower_damage - b.players[0].tower_damage) * dir;
+            },
+            "players[0].hero_healing": function(a, b, dir) {
+                    return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
+                }
+                //TODO implement more sorts
+                //game mode
+                //hero (sort alpha?)
+                //played time
+                //result
+                //region
+                //parse status
+        };
+        for (var key in sorts) {
+            if (key in sortFuncs) {
+                matches.sort(function(a, b) {
+                    return sortFuncs[key](a, b, sorts[key]);
+                });
             }
-            //TODO implement more sorts
-            //game mode
-            //hero (sort alpha?)
-            //played time
-            //result
-            //region
-            //parse status
-    };
-    for (var key in sorts) {
-        if (key in sortFuncs) {
-            matches.sort(function(a, b) {
-                return sortFuncs[key](a, b, sorts[key]);
-            });
         }
+        return matches;
     }
-    return matches;
-}
-
+    /*
 function getFullPlayerData(matches, doAction, cb) {
     cb();
-    /*
+
     if (!doAction) {
         return cb();
     }
@@ -626,21 +598,18 @@ function getFullPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-    */
-}
 
+}
+    */
 function getParsedPlayerData(matches, doAction, cb) {
     if (!doAction) {
         return cb();
     }
+    //we optimize by filtering matches for only those with parse_status===2
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
-    var hash = {};
-    //we optimize by filtering matches for only those with parse_status===2
-    //first player in first match's players has the account id we want
-    var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
-    //the following does a query for each match in the set, so could be a lot of queries
+    //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we want a different position on each query, we need to make them individually
     async.each(parsed, function(m, cb) {
         var player = m.players[0];
@@ -667,11 +636,16 @@ function getParsedPlayerData(matches, doAction, cb) {
         cb(err);
     });
     /*
-    //diff approach, but requires steam_id for each player, which is not present in v5 data, added to v7
+    //diff approach that requires steam_id for each player, which is not present in v5 data, added to v7
     //parsed_data.players needs an identifier we can project on, such as steam_id
     //also need index on parsed_data.players.steam_id
     //compute the steam64 for this player
     //create array of ids to use for $in
+    //NOTE this only works if we're getting parse data for a single steam_id
+            var hash = {};
+
+    //first player in first match's players has the account id we want
+    var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
     console.log(steam64);
     var match_ids = parsed.map(function(m) {
         return m.match_id;

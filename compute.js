@@ -275,6 +275,7 @@ function renderMatch(match) {
             }
         });
         match.chat = match.parsed_data.chat;
+        //concatenation of all the chat strings in this match
         match.chat_words = match.chat.map(function(c) {
             return c.key;
         }).join(' ');

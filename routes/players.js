@@ -27,35 +27,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
         }
     };
     var info = playerPages[req.params.info] ? req.params.info : "index";
-    /*
-    if (req.params.account_id === "all" || req.params.account_id === "professional") {
-    //these special keywords don't produce a "real" player so we can't use findOne
-        var player = {
-            account_id: req.params.account_id
-        };
-        if (req.params.account_id === "professional") {
-            req.query.leagueid = req.query.leagueid || "gtzero";
-        }
-        return fillPlayerData(player, {
-            info: info,
-            query: req.query
-        }, function(err) {
-            if (err) {
-                return next(err);
-            }
-            return res.render("player/player_" + info, {
-                q: req.query,
-                options: {
-                    js_agg: {},
-                    professional: req.params.account_id === "professional"
-                },
-                route: info,
-                tabs: playerPages,
-                player: player
-            });
-        });
-    }
-    */
     var account_id = Number(req.params.account_id);
     console.time("player " + account_id);
     db.players.findOne({
@@ -92,15 +63,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
             }
             res.render("player/player_" + info, {
                 q: req.query,
-                options: {
-                    js_agg: {
-                        "win": 1,
-                        "lose": 1,
-                        "games": 1,
-                        "matchups": 1,
-                        "teammates": 1
-                    }
-                },
                 route: info,
                 tabs: playerPages,
                 player: result.player,

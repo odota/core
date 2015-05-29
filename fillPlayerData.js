@@ -8,18 +8,12 @@ module.exports = function fillPlayerData(player, options, cb) {
     //options.info, the tab the player is on
     //options.query, the querystring from the user, pass these as select conditions
     //defaults: this player, balanced modes only, put the defaults in options.query
-    var js_agg = null;
-    var limit = null;
-    var sort = null;
+    var js_agg = options.info === "index" || options.info === "matches" ? {} : null;
+    var limit = options.info === "index" ? 10 : null;
+    var sort = {
+        match_id: -1
+    };
     var query = Boolean(Object.keys(options.query).length);
-    if (options.info === "index" && player.cache && !query) {
-        console.log("using cache");
-        js_agg = {};
-        limit = 10;
-        sort = {
-            match_id: -1
-        };
-    }
     var default_select = {
         "players.account_id": player.account_id.toString(),
         "significant": "1"
@@ -53,8 +47,8 @@ module.exports = function fillPlayerData(player, options, cb) {
             player.cache.data = results.data;
             return finish(err, player.cache);
         }
-        //save cache if doesn't exist and no query
-        if (!player.cache && !query) {
+        //rebuild cache if no query
+        if (!query) {
             player.cache = {
                 aggData: {}
             };
@@ -68,8 +62,6 @@ module.exports = function fillPlayerData(player, options, cb) {
             for (var key in cachedKeys) {
                 player.cache.aggData[key] = results.aggData[key];
             }
-            player.cache.data = results.data.slice(0, 10);
-            //if cache doesn't exist, save the cache
             db.players.update({
                 account_id: player.account_id
             }, {
@@ -80,7 +72,7 @@ module.exports = function fillPlayerData(player, options, cb) {
                 finish(err, results);
             });
         }
-        //skip saving the cache
+        //don't save the cache if there was a query
         else {
             finish(err, results);
         }
