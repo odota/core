@@ -19,15 +19,13 @@ var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
-//var cpuCount = require('os').cpus().length;
-// Include the cluster module
-var cluster = require('cluster');
-// Include Express
 var express = require('express');
-// Create a new Express application
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
 /*
+//var cpuCount = require('os').cpus().length;
+// Include the cluster module
+var cluster = require('cluster');
 if (config.NODE_ENV === "test") {
     //don't cluster in test env
     configureApp(app);
@@ -191,6 +189,7 @@ app.route('/faq').get(function(req, res) {
 app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
     //TODO limit compare to 5 people (+all/professional)
+    //TODO add per_min stats
     var account_ids = ["all", "professional", 88367253];
     var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
@@ -219,37 +218,7 @@ app.route('/compare').get(function(req, res, next) {
             return next(err);
         }
         //TODO compute percentile for each stat
-        //for each avg in each player's aggdata, iterate through "all" counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
-        res.render("compare", {
-            data: results,
-            q: req.query
-        });
-    });
-});
-app.route('/compare').get(function(req, res, next) {
-    //TODO pick up account ids to analyze from parsing querystring, comma-separated
-    //parse the multiple account ids into array
-    //TODO limit the results to return for comparison to save time, set req.query.limit?
-    //TODO max compare 5 people (+all/professional)
-    var account_ids = ["all", 88367253];
-    async.map(account_ids, function(account_id, cb) {
-        fillPlayerData(account_id, {
-            query: req.query
-        }, function(err, player) {
-            //create array of results.aggData for each account_id
-            //TODO compute average for each stat
-            cb(err, {
-                account_id: account_id,
-                personaname: player.personaname,
-                aggData: player.aggData
-            });
-        });
-    }, function(err, results) {
-        if (err) {
-            return next(err);
-        }
-        //TODO compute percentile for each stat
-        //iterate through "all" counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+        //for each stat average in each player's aggdata, iterate through "all"'s stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
         res.render("compare", {
             data: results,
             q: req.query
