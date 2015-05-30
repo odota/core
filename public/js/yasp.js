@@ -8,7 +8,6 @@ require('../../node_modules/qTip2/dist/jquery.qtip.css');
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 require('../../node_modules/vis/dist/vis.min.css');
-
 //external js libs
 window.$ = require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');
@@ -17,6 +16,7 @@ require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-boo
 require('../../node_modules/qTip2/dist/jquery.qtip.js');
 require('../../node_modules/select2/select2.js');
 require('../../node_modules/bootstrap/dist/js/bootstrap.js');
+require('../../node_modules/wordcloud2.js/src/wordcloud2.js');
 //require('../../node_modules/webcomponents.js/webcomponents.js');
 window.c3 = require('c3');
 window.CalHeatMap = require('cal-heatmap');
@@ -24,7 +24,6 @@ window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
 window.moment = require('moment');
 window.numeral = require('numeral');
 window.vis = require('vis');
-
 //yasp utility functions
 window.pad = function pad(n, width, z) {
         z = z || '0';
@@ -58,8 +57,6 @@ window.adjustHeatmapData = function adjustHeatmapData(posData, scalef, max, shif
         };
     }
 }
-
-
 window.format = function format(input) {
     input = Number(input);
     if (input === 0 || isNaN(input)) {
@@ -67,7 +64,6 @@ window.format = function format(input) {
     }
     return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
 }
-
 window.formatSeconds = function formatSeconds(input) {
     var absTime = Math.abs(input);
     var minutes = ~~(absTime / 60);
@@ -76,7 +72,30 @@ window.formatSeconds = function formatSeconds(input) {
     time += minutes + ":" + seconds;
     return time;
 }
-
+window.queryForm = function queryForm() {
+    //query form code
+    $("#hero_id").select2({
+        //placeholder: "Played Any Hero",
+        maximumSelectionSize: 1
+    });
+    $("#with_account_id").select2({
+        //placeholder: "Included: Any Player",
+        tags: [],
+        maximumSelectionSize: 10
+    });
+    $("#teammate_hero_id").select2({
+        //placeholder: "Team: Any Hero",
+        maximumSelectionSize: 4
+    });
+    $("#enemy_hero_id").select2({
+        //placeholder: "Enemy: Any Hero",
+        maximumSelectionSize: 5
+    });
+    $("#leagueid").select2({
+        //placeholder: "Enemy: Any Hero",
+        maximumSelectionSize: 5
+    });
+}
 window.tooltips = require('./tooltips.js');
 window.formatHtml = require("./formatHtml.js");
 window.createHistogram = require('./histograms.js');

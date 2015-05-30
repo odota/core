@@ -1,6 +1,4 @@
-module.exports = function(options) {
-    console.log(options);
-    //options.professional, display of league columns
+module.exports = function() {
     //teammates for select2
     //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
     //extend jquery to serialize form data to JSON
@@ -20,10 +18,11 @@ module.exports = function(options) {
         });
         return o;
     };
-    queryForm();
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
+    //don't display league/team name columns
+    var professional = false;
 
     function drawMatches(data) {
         $('#matches').on('xhr.dt', function(e, settings, json) {
@@ -89,7 +88,7 @@ module.exports = function(options) {
                 {
                     data: 'league_name',
                     title: 'League',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -97,7 +96,7 @@ module.exports = function(options) {
                 {
                     data: 'radiant_name',
                     title: 'Radiant',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -105,7 +104,7 @@ module.exports = function(options) {
                 {
                     data: 'dire_name',
                     title: 'Dire',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -228,44 +227,8 @@ module.exports = function(options) {
         });
     }
 
-    function queryForm() {
-        //query form code
-        $("#hero_id").select2({
-            //placeholder: "Played Any Hero",
-            maximumSelectionSize: 1
-        });
-        $("#with_account_id").select2({
-            //placeholder: "Included: Any Player",
-            tags: [],
-            maximumSelectionSize: 10
-        });
-        $("#teammate_hero_id").select2({
-            //placeholder: "Team: Any Hero",
-            maximumSelectionSize: 4
-        });
-        $("#enemy_hero_id").select2({
-            //placeholder: "Enemy: Any Hero",
-            maximumSelectionSize: 5
-        });
-        $("#leagueid").select2({
-            //placeholder: "Enemy: Any Hero",
-            maximumSelectionSize: 5
-        });
-        $('form').submit(function(e) {
-            //updates the table on form submit without reload
-            //e.preventDefault();
-            //console.log(JSON.stringify($('form').serializeObject()));
-            //table.draw();
-            //return false;
-        });
-        $('.form-control').on('change', function(e) {
-            //updates the table on form change without reload
-            //table.draw();
-        });
-    }
-
     function drawHeroes(data) {
-        heroes = $('#heroes').dataTable({
+        $('#heroes').dataTable({
             "searching": false,
             "paging": true,
             data: data,

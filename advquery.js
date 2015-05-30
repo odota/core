@@ -340,6 +340,9 @@ function aggregator(matches, fields) {
         },
         "kill_streaks": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.kill_streaks, m);
+        },
+        "word_counts": function(key, m, p) {
+            standardAgg(key, m.word_counts, m);
         }
     };
     //if null fields passed in, do all aggregations
@@ -620,6 +623,7 @@ function getParsedPlayerData(matches, doAction, cb) {
             fields: {
                 "parsed_data": 1,
                 "parsed_data.version": 1,
+                "parsed_data.chat": 1,
                 "parsed_data.players": {
                     $slice: [parseSlot, 1]
                 },
@@ -659,6 +663,7 @@ function getParsedPlayerData(matches, doAction, cb) {
         fields: {
             "parsed_data": 1,
             "parsed_data.version": 1,
+            "parsed_data.chat": 1,
             "parsed_data.players.$": 1,
             match_id: 1
         }
