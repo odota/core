@@ -50,7 +50,8 @@ function advQuery(options, cb) {
     var max = 100;
     //map to limit
     var mongoAble = {
-        "players.account_id": 10000
+        "players.account_id": 10000,
+        "leagueid": 100
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {

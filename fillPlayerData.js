@@ -13,11 +13,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             account_id: account_id
         };
         if (account_id === "professional") {
-            options.query.select.leagueid = options.query.select.leagueid || "gtzero";
+            options.query.select.leagueid = "gtzero";
         }
-        options.query.sort = {
-            "match_id": -1
-        };
         query();
     }
     else {
@@ -35,33 +32,31 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
     function query() {
         //options.info, the tab the player is on
-        //options.query, the querystring from the user, pass these as select conditions
+        //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
         var js_agg = options.info === "index" || options.info === "matches" ? {} : null;
         var limit = options.info === "index" ? 10 : null;
-        var sort = {
-            match_id: -1
-        };
-        var query = Boolean(Object.keys(options.query).length);
+        var query = Boolean(Object.keys(options.query.select).length);
         var default_select = {
             "players.account_id": player.account_id.toString(),
             "significant": "1"
         };
         for (var key in default_select) {
-            options.query[key] = options.query[key] || default_select[key];
+            options.query.select[key] = options.query.select[key] || default_select[key];
         }
         advQuery({
-            select: options.query,
+            select: options.query.select,
             project: null, //just project default fields
             js_agg: js_agg,
-            js_sort: {
-                match_id: -1
-            },
+            js_sort: null,
             limit: limit,
-            sort: sort
+            sort: {
+                match_id: -1
+            }
         }, processResults);
 
         function processResults(err, results) {
+            console.log("results: %s", results.data.length);
             //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
             results.data.forEach(function reduceMatchData(m) {
                 delete m.all_players;

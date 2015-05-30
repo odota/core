@@ -54,7 +54,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = require('./constants.json');
-app.locals.sources = require('./sources.json');
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
 var basic = auth.basic({
@@ -211,6 +210,7 @@ app.route('/compare').get(function(req, res, next) {
             cb(err, {
                 account_id: account_id,
                 personaname: player.personaname,
+                matches: player.matches,
                 aggData: player.aggData
             });
         });

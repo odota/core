@@ -9,6 +9,10 @@ block content
       td
       each player in data
         td=player.account_id
+    tr
+      td Results
+      each player in data
+        td=player.matches.length
     each val, key in data[0].aggData
       tr
         td=key
