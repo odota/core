@@ -23,6 +23,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         },
         "advanced": {
             "name": "Advanced"
+        },
+        "wordcloud": {
+            "name": "Word Cloud"
         }
     };
     var info = playerPages[req.params.info] ? req.params.info : "index";

@@ -1,5 +1,4 @@
-module.exports = function(options) {
-    console.log(options);
+module.exports = function() {
     //teammates for select2
     //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
     //extend jquery to serialize form data to JSON
@@ -22,6 +21,8 @@ module.exports = function(options) {
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
+    //don't display league/team name columns
+    var professional = false;
 
     function drawMatches(data) {
         $('#matches').dataTable({
@@ -35,9 +36,6 @@ module.exports = function(options) {
                 'url': '/api/matches',
                 "data": function(d) {
                     d.select = $('#query').serializeObject();
-                    //player pages aggregate teammates/matchups/win/lose/games
-                    //all/pro pages don't aggregate anything
-                    d.js_agg = options.js_agg;
                 }
             },
             */
@@ -77,7 +75,7 @@ module.exports = function(options) {
                 {
                     data: 'league_name',
                     title: 'League',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -85,7 +83,7 @@ module.exports = function(options) {
                 {
                     data: 'radiant_name',
                     title: 'Radiant',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -93,7 +91,7 @@ module.exports = function(options) {
                 {
                     data: 'dire_name',
                     title: 'Dire',
-                    visible: Boolean(options.professional),
+                    visible: Boolean(professional),
                     render: function(data, type) {
                         return data ? data : "Unknown";
                     }
@@ -217,7 +215,7 @@ module.exports = function(options) {
     }
 
     function drawHeroes(data) {
-        heroes = $('#heroes').dataTable({
+        $('#heroes').dataTable({
             "searching": false,
             "paging": true,
             data: data,

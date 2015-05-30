@@ -117,6 +117,8 @@ block match_content
                     th: abbr(title="Neutral creeps killed") Neutrals
                     th: abbr(title="Towers killed") Towers
                     th: abbr(title="Couriers killed") Couriers
+                    th: abbr(title="Observer wards killed") Obs
+                    th: abbr(title="Sentry wards killed") Sen
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
@@ -131,6 +133,8 @@ block match_content
                   td #{p.neutral_kills || "-"}
                   td #{p.tower_kills || "-"}
                   td #{p.courier_kills || "-"}
+                  td #{p.observer_kills || "-"}
+                  td #{p.sentry_kills || "-"}
          .col-md-6
            h2 Runes
            table.table.table-hover.summable

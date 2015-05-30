@@ -11,6 +11,21 @@ var logger = new(winston.Logger)({
     transports: transports
 });
 
+/**
+ * Tokenizes an input string.
+ *
+ * @param {String} Input
+ *
+ * @return {Array}
+ */
+function tokenize (input) {
+    return input
+            .replace(/[^a-zA-Z- ]+/g, '')
+            .replace('/ {2,}/',' ')
+            .toLowerCase()
+            .split(' ');
+}
+
 function generateJob(type, payload) {
     var api_url = "http://api.steampowered.com";
     var api_key;
@@ -321,6 +336,7 @@ function generatePositionData(d, p) {
     return d;
 }
 module.exports = {
+    tokenize: tokenize,
     logger: logger,
     generateJob: generateJob,
     getData: getData,

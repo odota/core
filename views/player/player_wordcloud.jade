@@ -1,0 +1,19 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData.word_counts)}
+  .row
+    .col-md-12
+      h2 Word Cloud 
+        small Created from the all chat of this player's parsed matches
+      canvas(width=1000, height=800)#wordcloud
+        
+append footer_assets
+  script.
+    var counts = !{JSON.stringify(player.aggData.word_counts.counts)};
+    var list = [];
+    for (var key in counts){
+    list.push([key, counts[key]]);
+    }
+    console.log(list);
+    WordCloud(document.getElementById('wordcloud'), { list: list, weightFactor:5, minSize: 10 } );

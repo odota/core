@@ -28,7 +28,7 @@ block content
     if !(player.account_id in trackedPlayers)
       .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse. (may take a few minutes to update)
     if (!player.full_history_time)
-      .alert.alert-primary This user does not have full match history yet.  Some matches may be missing.
+      .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.
     if (user && user.account_id === player.account_id)
       .row
         .col-md-12
@@ -47,6 +47,8 @@ block content
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
         if player.profileurl
           li: a(href=player.profileurl, target="_blank") Steam Profile
+  include /query
+  hr
   block playercontent
   hr
   .row
@@ -70,5 +72,3 @@ append footer_assets
                 $(".sync").fadeOut(3000);
             });
     });
-    var options = !{JSON.stringify(options)};
-    playerMatches(options);
