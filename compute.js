@@ -28,14 +28,16 @@ function computeMatchData(match) {
                 player.total_gold = ~~(player.gold_per_min * match.duration / 60);
                 player.total_xp = ~~(player.xp_per_min * match.duration / 60);
                 player.parseSlot = player.player_slot % (128 - 5);
-                var p = {};
-                if (match.parsed_data) {
+                player.parsedPlayer = {};
+            });
+            if (match.parsed_data) {
+                match.players.forEach(function(player, ind) {
                     //mapping 0 to 0, 128 to 5, etc.
                     //if we projected only one player, then use slot 0
                     if (match.parsed_data.players.length === 1) {
                         player.parseSlot = 0;
                     }
-                    p = match.parsed_data.players[player.parseSlot];
+                    var p = match.parsed_data.players[player.parseSlot];
                     if (p.kills_log) {
                         //remove meepo/meepo kills
                         if (player.hero_id === 82) {
@@ -59,10 +61,10 @@ function computeMatchData(match) {
                             if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
                                 p.lane_kills += p.kills[key];
                             }
-                            if (key.indexOf("observer")!== -1){
+                            if (key.indexOf("observer") !== -1) {
                                 p.observer_kills += p.kills[key];
                             }
-                            if (key.indexOf("sentry")!== -1){
+                            if (key.indexOf("sentry") !== -1) {
                                 p.sentry_kills += p.kills[key];
                             }
                             if (key.indexOf("npc_dota_hero") === 0) {
@@ -164,26 +166,43 @@ function computeMatchData(match) {
                         }
                     }
                     */
+                    player.parsedPlayer = p;
+                });
+                if (match.parsed_data.chat) {
+                    match.chat = match.parsed_data.chat;
+                    //concatenation of all the chat strings in this match
+                    match.chat_words = match.chat.map(function(c) {
+                        return c.key;
+                    }).join(' ');
+                    var tokens = utility.tokenize(match.chat_words);
+                    //tokenize the string and do word count, make it part of compute and do in every match, will it be too slow?
+                    var counts = {};
+                    for (var i = 0; i < tokens.length; i++) {
+                        if (!counts[tokens[i]]) {
+                            counts[tokens[i]] = 0;
+                        }
+                        counts[tokens[i]] += 1;
+                    }
+                    match.word_counts = counts;
                 }
-                player.parsedPlayer = p;
-            });
-            //determine pick order based on last time value of hero_log
-            //if tied, break ties arbitrarily
-            //duplicate, sort, iterate and put index
-            //create hash of indices
-            //insert back into originals, indexing by player slot
-            var pick_map = {};
-            var sorted = match.players.slice().sort(function(a, b) {
-                return a.parsedPlayer.pick_time - b.parsedPlayer.pick_time;
-            });
-            sorted.forEach(function(player, i) {
-                if (player.parsedPlayer.pick_time) {
-                    pick_map[player.player_slot] = i + 1;
-                }
-            });
-            match.players.forEach(function(player) {
-                player.parsedPlayer.pick_order = pick_map[player.player_slot];
-            });
+                //determine pick order based on last time value of hero_log
+                //if tied, break ties arbitrarily
+                //duplicate, sort, iterate and put index
+                //create hash of indices
+                //insert back into originals, indexing by player slot
+                var pick_map = {};
+                var sorted = match.players.slice().sort(function(a, b) {
+                    return a.parsedPlayer.pick_time - b.parsedPlayer.pick_time;
+                });
+                sorted.forEach(function(player, i) {
+                    if (player.parsedPlayer.pick_time) {
+                        pick_map[player.player_slot] = i + 1;
+                    }
+                });
+                match.players.forEach(function(player) {
+                    player.parsedPlayer.pick_order = pick_map[player.player_slot];
+                });
+            }
         }
         catch (e) {
             console.log(e.stack, match.match_id);
@@ -274,11 +293,6 @@ function renderMatch(match) {
                 });
             }
         });
-        match.chat = match.parsed_data.chat;
-        //concatenation of all the chat strings in this match
-        match.chat_words = match.chat.map(function(c) {
-            return c.key;
-        }).join(' ');
         match.sentiment = sentiment(match.chat_words, {
             "report": -2,
             "commend": 2,

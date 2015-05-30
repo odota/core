@@ -51,16 +51,16 @@ function insertMatch(match, cb) {
                             //m.all_players should be all players
                             //duplicate this data into a copy to avoid corrupting original match object
                             var match_copy = {
+                                start_time: match.start_time,
                                 all_players: match.players.slice(0),
                                 players: [p]
                             };
-                            //do basic aggregations
+                            //do basic aggregations: win/lose/games/heroes/teammates
                             player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
                             player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
                             player.cache.aggData.games += 1;
                             aggHeroes(player.cache.aggData.heroes, match_copy);
                             aggTeammates(player.cache.aggData.teammates, match_copy);
-                            //aggData: win/lose/games/heroes/teammates
                         }
                         else {
                             player = {};

@@ -70,6 +70,7 @@
     "steam": "0.6.8",
     "vis": "^4.0.0",
     "winston": "1.0.0"
+    "wordcloud2.js": "yasp-dota/wordcloud2.js"
   },
   "devDependencies": {
     "coveralls": "2.11.2",
