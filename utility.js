@@ -287,11 +287,10 @@ function getParseSchema() {
                 "multi_kills": {},
                 "healing": {},
                 "multi_kill_streaks": {
-                    "cur_streak_id": 0,
+                    "kills": [[]],
                     "cur_multi_id": 0,
-                    "kills": [],
-                    "streaks": [],
-                    "multis": []
+                    "cur_multi_val": 0,
+                    "all_multi_vals": [1]
                 }
             };
         })

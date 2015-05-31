@@ -495,11 +495,15 @@ function runParse(job, cb) {
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
                             e.type = "deaths_pos";
+                            var old_key = e.key;
                             e.key = [x, y];
                             e.posData = true;
                             populate(e, tf);
                             //increment death count for this hero
                             tf.players[e.slot].deaths += 1;
+                            //return the entry to its original state
+                            e.type = "kills";
+                            e.key = old_key;
                         }
                     }
                     else if (e.type === "buyback_log") {
@@ -529,37 +533,101 @@ function runParse(job, cb) {
         parsed_data.teamfights = teamfights;
     }
 
+    var KILLED = 0;
+    var MULTI = 1;
+    var TFID = 2;
+
     function processMultiKillStreaks () {
 
+        // for each entry in the combat log
         for (var i = 0; i < entries.length; i++) {
-
             var entry = entries[i];
-            var killer = entry.unit;
-            var killer_index = hero_to_slot[killer];
 
+            // if this entry is a valid kill
             if ((entry.type === "kills" || entry.type === "kills_log")
                     && entry.target_hero && !entry.target_illusion) {
 
+                // identify the killer and the player who was killed
+                var killer = entry.unit;
+                var killer_index = hero_to_slot[killer];
                 var killed = entry.key;
                 var killed_index = hero_to_slot[killed];
 
-                console.log("[processMultiKillStreaks] kill:");
+                console.log("[processMultiKillStreaks] %s", entry.type);
                 console.log("\tkiller = %s", killer);
                 console.log("\tkiller_index = %s", killer_index);
                 console.log("\tkilled = %s", killed);
                 console.log("\tkilled_index = %s", killed_index);
 
+                // if the killer is a hero
                 if (killer_index) {
 
-                    var length = parsed_data.players[killer_index].multi_kill_streaks.kills.length;
-                    if (length === 0) {
-                        parsed_data.players[killer_index].multi_kill_streaks.kills.push([]);
-                        length++;
-                    }
+                    // bookmark the killer's bookkeeping
+                    var killer_info = parsed_data.players[killer_index].multi_kill_streaks;
+                    var all_streak_length = killer_info.kills.length;
+                    var cur_streak_length = killer_info.kills[all_streak_length-1].length;
 
-                    parsed_data.players[killer_index].multi_kill_streaks.kills[length-1].push([killed, 0, 0, 1]);
+                    // add a new tuple representing this kill to the list of kills
+                    killer_info.kills[all_streak_length-1].push([0, 0, 0]);
+                    cur_streak_length++;
+
+                    // populate the tuple with the pertinent information
+                    var kill_info = killer_info.kills[all_streak_length-1][cur_streak_length-1];
+
+                    // a) denote who was killed
+                    kill_info[KILLED] = killed;
+
+                    // b) denote if this kill was part of a multi kill
+                    if (killer_info.cur_multi_val < 
+                            killer_info.all_multi_vals[killer_info.cur_multi_id]) {
+                        killer_info.cur_multi_val++;
+                    } else {
+                        killer_info.cur_multi_id++;
+                        killer_info.cur_multi_val = 1;
+                        killer_info.all_multi_vals.push(1);
+                    }
+                    kill_info[MULTI] = killer_info.cur_multi_id;
+
+                    // c) denote if this kill was part of a team fight
+                    kill_info[TFID] = -1;
 
                     console.log("\tlogged %s killing %s", killer, killed);
+
+                }
+
+                // ensure that the killed unit is a hero (which it should be)
+                if (killed_index) {
+
+                    // bookmark the killed unit's bookkeeping
+                    var killed_info = parsed_data.players[killed_index].multi_kill_streaks;
+                    var all_streak_length = killed_info.kills.length;
+                    var cur_streak_length = killed_info.kills[all_streak_length-1].length;
+
+                    // if the current streak isn't empty, end it
+                    if (cur_streak_length != 0) {
+                        killed_info.kills.push([]);
+                    }
+
+                    console.log("\tended %s's current killing streak", killed);
+
+                }
+
+            // if this entry is a notification of a multi kill (note: the kill that is responsible
+            // for this multi kill has not been seen yet; it will one of the next few entries)
+            } else if (entry.type === "multi_kills") {
+
+                var killer = entry.unit;
+                var killer_index = hero_to_slot[killer];
+
+                // ensure that killer is a hero (which it should be)
+                if (killer_index) {
+
+                    // bookmark the killer's bookkeeping
+                    var killer_info = parsed_data.players[killer_index].multi_kill_streaks;
+                    var all_multi_length = killer_info.all_multi_vals.length;
+
+                    // update the value of the current multi kill
+                    killer_info.all_multi_vals[all_multi_length-1] = entry.key;
 
                 }
 
