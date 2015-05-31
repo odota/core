@@ -186,6 +186,7 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
+/*
 app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
     //TODO limit compare to 5 people
@@ -244,6 +245,7 @@ app.route('/compare').get(function(req, res, next) {
         });
     });
 });
+*/
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
