@@ -14,7 +14,7 @@ block content
         .form-group
           input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
         .form-group
-          if process.env.DISABLE_RECAPTCHA === "false"
+          if !process.env.DISABLE_RECAPTCHA
             .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
           else
             // if the DISABLE_RECAPTCHA env var has been set, bypass the recaptcha

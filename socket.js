@@ -34,10 +34,11 @@ io.sockets.on('connection', function(socket) {
             socket.emit('log', "Received request for " + match_id);
             if (!body.success && config.NODE_ENV !== "test"
                     // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
-                    && config.DISABLE_RECAPTCHA === "false") {
+                    && !config.DISABLE_RECAPTCHA) {
                 console.log('failed recaptcha');
                 socket.emit("err", "Recaptcha Failed!");
-            } else if (!match_id) {
+            }
+            else if (isNaN(match_id)) {
                 console.log("invalid match id");
                 socket.emit("err", "Invalid Match ID!");
             }
