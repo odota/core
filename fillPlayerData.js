@@ -34,11 +34,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //options.info, the tab the player is on
         //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
-        options.query.limit = options.info === "index" ? 10 : options.query.limit;
+        var queryExists = Boolean(Object.keys(options.query.select).length);
+        var cacheAble = options.info === "index" && player.cache && !queryExists;
+        options.query.limit = cacheAble ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
         };
-        var queryExists = Boolean(Object.keys(options.query.select).length);
         var default_select = {
             "players.account_id": player.account_id.toString(),
             "significant": "1"
@@ -59,13 +60,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 });
             });
             //use cache
-            if (options.info === "index" && player.cache && !queryExists) {
+            if (cacheAble) {
                 //add recent matches to cache
                 player.cache.data = results.data;
                 return finish(err, player.cache);
             }
-            //rebuild cache if no query and aggData is complete
-            if (options.query !== "index" && !queryExists) {
+            //rebuild cache if no query and we didn't use cache (which means only 10 matches from db)
+            if (!queryExists) {
                 player.cache = {
                     aggData: {}
                 };
