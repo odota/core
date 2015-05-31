@@ -90,7 +90,7 @@ function aggTeammates(teammates, m) {
 
 function isSignificant(m) {
     //TODO detect no stats recorded?
-    return constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced;
+    return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
 }
 module.exports = {
     aggHeroes: aggHeroes,

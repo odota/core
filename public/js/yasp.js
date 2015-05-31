@@ -72,30 +72,6 @@ window.formatSeconds = function formatSeconds(input) {
     time += minutes + ":" + seconds;
     return time;
 }
-window.queryForm = function queryForm() {
-    //query form code
-    $("#hero_id").select2({
-        //placeholder: "Played Any Hero",
-        maximumSelectionSize: 1
-    });
-    $("#with_account_id").select2({
-        //placeholder: "Included: Any Player",
-        tags: [],
-        maximumSelectionSize: 10
-    });
-    $("#teammate_hero_id").select2({
-        //placeholder: "Team: Any Hero",
-        maximumSelectionSize: 4
-    });
-    $("#enemy_hero_id").select2({
-        //placeholder: "Enemy: Any Hero",
-        maximumSelectionSize: 5
-    });
-    $("#leagueid").select2({
-        //placeholder: "Enemy: Any Hero",
-        maximumSelectionSize: 5
-    });
-}
 window.tooltips = require('./tooltips.js');
 window.formatHtml = require("./formatHtml.js");
 window.createHistogram = require('./histograms.js');
@@ -105,6 +81,7 @@ window.playerMatches = require('./playerMatches.js');
 window.playerTrendsTables = require('./playerTrendsTables.js');
 window.ratingsChart = require('./ratingsChart.js');
 window.statusHandler = require('./statusHandler.js');
-window.generateCharts = require("./charts.js");
+window.generateCharts = require('./charts.js');
+window.queryForm = require('./queryForm.js');
 window.timeline = require('./timeline.js');
 require('./ga.js');

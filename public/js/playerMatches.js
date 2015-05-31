@@ -1,6 +1,5 @@
 module.exports = function() {
     //teammates for select2
-    //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};
@@ -25,20 +24,7 @@ module.exports = function() {
     var professional = false;
 
     function drawMatches(data) {
-        $('#matches').on('xhr.dt', function(e, settings, json) {
-            /*
-            console.log(json);
-            constants = json.constants;
-            //draw things with the returned data
-            var pct = (json.aggData.win / json.aggData.games * 100).toFixed(2);
-            $("#winbar").width(pct + "%");
-            $("#winrate").text(pct + "%");
-            $("#win").text(json.aggData.win);
-            $("#lose").text(json.aggData.lose);
-            drawHeroes(json.aggData.matchups);
-            drawTeammates(json.aggData.teammates);
-            */
-        }).dataTable({
+        $('#matches').dataTable({
             "order": [
                 [0, "desc"]
             ],

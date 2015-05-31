@@ -22,7 +22,7 @@ block playercontent
     var matches = !{JSON.stringify(player.matches.slice(0,10))};
     var heroes = !{JSON.stringify(player.aggData.heroes)};
     var teammates = !{JSON.stringify(player.aggData.teammates)};
-    var ratings = !{JSON.stringify(player.ratings || [])};
+    var ratings = !{JSON.stringify(player.ratings ? player.ratings.reverse() : [])};
   .row
     .col-md-12.table-responsive
       h3 Recent
