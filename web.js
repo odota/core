@@ -19,6 +19,7 @@ var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
+var queries = require('./queries');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
@@ -187,9 +188,12 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/compare').get(function(req, res, next) {
-    //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
-    //TODO limit compare to 5 people
-    var account_ids = ["all", 88367253];
+    var account_ids = ["all"];
+    if (req.query.compare) {
+        account_ids = account_ids.concat(req.query.compare.split(","));
+    }
+    account_ids = account_ids.slice(0, 5);
+    console.log(account_ids);
     var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
         req.query = JSON.parse(JSON.stringify(qCopy));
@@ -238,9 +242,29 @@ app.route('/compare').get(function(req, res, next) {
                 }
             }
         });
-        res.render("compare", {
-            data: results,
-            q: req.query
+        var player = req.user;
+        var teammates_arr = [];
+        if (player && player.cache && player.cache.aggData && player.cache.aggData.teammates) {
+            var teammates = player.cache.aggData.teammates;
+            for (var id in teammates) {
+                var tm = teammates[id];
+                id = Number(id);
+                //don't include if anonymous or if less than 3 games
+                if (id !== app.locals.constants.anonymous_account_id && tm.games >= 3) {
+                    teammates_arr.push(tm);
+                }
+            }
+        }
+        queries.fillPlayerNames(teammates_arr, function(err) {
+            if (err) {
+                return next(err);
+            }
+            res.render("compare", {
+                teammate_list: teammates_arr,
+                data: results,
+                q: req.query,
+                compare: true
+            });
         });
     });
 });

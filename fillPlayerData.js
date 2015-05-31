@@ -64,8 +64,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 player.cache.data = results.data;
                 return finish(err, player.cache);
             }
-            //rebuild cache if no query
-            if (!queryExists) {
+            //rebuild cache if no query and aggData is complete
+            if (options.query !== "index" && !queryExists) {
                 player.cache = {
                     aggData: {}
                 };

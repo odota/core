@@ -47,7 +47,7 @@ function advQuery(options, cb) {
     options.mongo_select = {};
     options.js_select = {};
     //default limit
-    var max = 200;
+    var max = 100;
     //map to limit
     var mongoAble = {
         "players.account_id": 10000,
