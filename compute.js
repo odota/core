@@ -168,6 +168,7 @@ function computeMatchData(match) {
                     */
                     player.parsedPlayer = p;
                 });
+                //combine all the words in this player's matches
                 if (match.parsed_data.chat) {
                     match.chat = match.parsed_data.chat;
                     //concatenation of all the chat strings in this match

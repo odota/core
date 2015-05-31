@@ -189,14 +189,14 @@ app.route('/faq').get(function(req, res) {
 app.route('/compare').get(function(req, res, next) {
     //TODO pick up account ids to analyze from parsing querystring, comma-separated, parse into array
     //TODO limit compare to 5 people (+all/professional)
-    //TODO add per_min stats
     var account_ids = ["all", "professional", 88367253];
     var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
         req.query = JSON.parse(JSON.stringify(qCopy));
         fillPlayerData(account_id, {
             query: {
-                select: req.query
+                select: req.query,
+                limit: 250
             }
         }, function(err, player) {
             //create array of results.aggData for each account_id
@@ -217,8 +217,28 @@ app.route('/compare').get(function(req, res, next) {
         if (err) {
             return next(err);
         }
-        //TODO compute percentile for each stat
-        //for each stat average in each player's aggdata, iterate through "all"'s stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+        //compute percentile for each stat
+        //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+        results.forEach(function(r, i) {
+            for (var key in results[i].aggData) {
+                var avg = results[i].aggData[key].avg;
+                var allCounts = results[0].aggData[key].counts;
+                var gt = 0;
+                var lt = 0;
+                if (avg) {
+                    for (var value in allCounts) {
+                        var valueCount = allCounts[value];
+                        if (avg >= Number(value)) {
+                            gt += valueCount;
+                        }
+                        else {
+                            lt += valueCount;
+                        }
+                    }
+                    results[i].aggData[key].percentile = gt / (gt + lt);
+                }
+            }
+        });
         res.render("compare", {
             data: results,
             q: req.query

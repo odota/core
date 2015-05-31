@@ -47,11 +47,11 @@ function advQuery(options, cb) {
     options.mongo_select = {};
     options.js_select = {};
     //default limit
-    var max = 100;
+    var max = 1000;
     //map to limit
     var mongoAble = {
         "players.account_id": 10000,
-        "leagueid": 100
+        "leagueid": max
     };
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
@@ -220,6 +220,7 @@ function aggregator(matches, fields) {
         "level": function(key, m, p) {
             standardAgg(key, p.level, m);
         },
+        //numeric values
         "kills": function(key, m, p) {
             standardAgg(key, p.kills, m);
         },
@@ -241,12 +242,6 @@ function aggregator(matches, fields) {
         "total_xp": function(key, m, p) {
             standardAgg(key, p.total_xp, m);
         },
-        "gold_per_min": function(key, m, p) {
-            standardAgg(key, p.gold_per_min, m);
-        },
-        "xp_per_min": function(key, m, p) {
-            standardAgg(key, p.xp_per_min, m);
-        },
         "hero_damage": function(key, m, p) {
             standardAgg(key, p.hero_damage, m);
         },
@@ -256,15 +251,65 @@ function aggregator(matches, fields) {
         "hero_healing": function(key, m, p) {
             standardAgg(key, p.hero_healing, m);
         },
+        "courier_kills": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.courier_kills, m);
+        },
+        "tower_kills": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.tower_kills, m);
+        },
+        "neutral_kills": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.neutral_kills, m);
+        },
+        "buyback_count": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.buyback_count, m);
+        },
+        /*
+        //no longer accurate in 6.84 due to ability to use wards from stack
+        //alternatives include counting purchases or checking length of ward positions object
+        "observer_uses": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.observer_uses, m);
+        },
+        "sentry_uses": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.sentry_uses, m);
+        },
+        */
+        "stuns": function(key, m, p) {
+            standardAgg(key, p.parsedPlayer.stuns, m);
+        },
+        //per minute values
+        "kills_per_min": function(key, m, p) {
+            standardAgg(key, p.kills / (m.duration / 60), m);
+        },
+        "deaths_per_min": function(key, m, p) {
+            standardAgg(key, p.deaths / (m.duration / 60), m);
+        },
+        "assists_per_min": function(key, m, p) {
+            standardAgg(key, p.assists / (m.duration / 60), m);
+        },
+        "last_hits_per_min": function(key, m, p) {
+            standardAgg(key, p.last_hits / (m.duration / 60), m);
+        },
+        "gold_per_min": function(key, m, p) {
+            standardAgg(key, p.gold_per_min, m);
+        },
+        "xp_per_min": function(key, m, p) {
+            standardAgg(key, p.xp_per_min, m);
+        },
+        "hero_damage_per_min": function(key, m, p) {
+            standardAgg(key, p.hero_damage / (m.duration / 60), m);
+        },
+        "tower_damage_per_min": function(key, m, p) {
+            standardAgg(key, p.tower_damage / (m.duration / 60), m);
+        },
+        "hero_healing_per_min": function(key, m, p) {
+            standardAgg(key, p.hero_healing / (m.duration / 60), m);
+        },
+        //categorical values
         "leaver_status": function(key, m, p) {
             standardAgg(key, p.leaver_status, m);
         },
         "isRadiant": function(key, m, p) {
             standardAgg(key, isRadiant(p), m);
-        },
-        //following aggregations require parsed data
-        "stuns": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.stuns, m);
         },
         "lane": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.lane, m);
@@ -313,24 +358,6 @@ function aggregator(matches, fields) {
         },
         "hero_hits": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.hero_hits, m);
-        },
-        "courier_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.courier_kills, m);
-        },
-        "tower_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.tower_kills, m);
-        },
-        "neutral_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.neutral_kills, m);
-        },
-        "buyback_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.buyback_count, m);
-        },
-        "observer_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.observer_uses, m);
-        },
-        "sentry_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.sentry_uses, m);
         },
         "multi_kills": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.multi_kills, m);
