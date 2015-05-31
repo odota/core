@@ -34,7 +34,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //options.info, the tab the player is on
         //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
-        options.query.js_agg = options.info === "index" || options.info === "matches" ? {} : options.query.js_agg;
         options.query.limit = options.info === "index" ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
