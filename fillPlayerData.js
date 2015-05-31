@@ -13,11 +13,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             account_id: account_id
         };
         if (account_id === "professional") {
-            options.query.select.leagueid = options.query.select.leagueid || "gtzero";
+            options.query.select.leagueid = "gtzero";
         }
-        options.query.sort = {
-            "match_id": -1
-        };
         query();
     }
     else {
@@ -35,33 +32,24 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
     function query() {
         //options.info, the tab the player is on
-        //options.query, the querystring from the user, pass these as select conditions
+        //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
-        var js_agg = options.info === "index" || options.info === "matches" ? {} : null;
-        var limit = options.info === "index" ? 10 : null;
-        var sort = {
+        options.query.limit = options.info === "index" ? 10 : options.query.limit;
+        options.query.sort = {
             match_id: -1
         };
-        var query = Boolean(Object.keys(options.query).length);
+        var queryExists = Boolean(Object.keys(options.query.select).length);
         var default_select = {
             "players.account_id": player.account_id.toString(),
             "significant": "1"
         };
         for (var key in default_select) {
-            options.query[key] = options.query[key] || default_select[key];
+            options.query.select[key] = options.query.select[key] || default_select[key];
         }
-        advQuery({
-            select: options.query,
-            project: null, //just project default fields
-            js_agg: js_agg,
-            js_sort: {
-                match_id: -1
-            },
-            limit: limit,
-            sort: sort
-        }, processResults);
+        advQuery(options.query, processResults);
 
         function processResults(err, results) {
+            console.log("results: %s", results.data.length);
             //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
             results.data.forEach(function reduceMatchData(m) {
                 delete m.all_players;
@@ -71,13 +59,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 });
             });
             //use cache
-            if (options.info === "index" && player.cache && !query) {
+            if (options.info === "index" && player.cache && !queryExists) {
                 //add recent matches to cache
                 player.cache.data = results.data;
                 return finish(err, player.cache);
             }
-            //rebuild cache if no query
-            if (!query) {
+            //rebuild cache if no query and aggData is complete
+            if (options.query !== "index" && !queryExists) {
                 player.cache = {
                     aggData: {}
                 };

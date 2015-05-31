@@ -1,6 +1,5 @@
 module.exports = function() {
     //teammates for select2
-    //var teammates = !{player ? JSON.stringify(player.teammates.map(function(t) {return {id: t.account_id,text: t.account_id+ "-" + t.personaname};})) : "[]"};
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
         var o = {};

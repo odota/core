@@ -25,7 +25,8 @@ module.exports = function getReplayUrl(match, cb) {
         }
         else {
             redis.get("retrievers", function(err, result) {
-                if (err) {
+                if (err || !result) {
+                    console.log("failed to get retrievers from redis");
                     return cb(err);
                 }
                 result = JSON.parse(result);

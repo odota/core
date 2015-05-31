@@ -6,7 +6,7 @@ module.exports = function queryForm() {
     });
     $("#with_account_id").select2({
         //placeholder: "Included: Any Player",
-        tags: [],
+        tags: teammate_list,
         maximumSelectionSize: 10
     });
     $("#teammate_hero_id").select2({
@@ -21,15 +21,8 @@ module.exports = function queryForm() {
         //placeholder: "Enemy: Any Hero",
         maximumSelectionSize: 5
     });
-    $('form').submit(function(e) {
-        //updates the table on form submit without reload
-        //e.preventDefault();
-        //console.log(JSON.stringify($('form').serializeObject()));
-        //table.draw();
-        //return false;
-    });
-    $('.form-control').on('change', function(e) {
-        //updates the table on form change without reload
-        //table.draw();
+    $("#compare").select2({
+        tags: teammate_list,
+        maximumSelectionSize: 5
     });
 };
