@@ -285,7 +285,14 @@ function getParseSchema() {
                 //"ability_trigger": {}
                 "kill_streaks": {},
                 "multi_kills": {},
-                "healing": {}
+                "healing": {},
+                "multi_kill_streaks": {
+                    "cur_streak_id": 0,
+                    "cur_multi_id": 0,
+                    "kills": [],
+                    "streaks": [],
+                    "multis": []
+                }
             };
         })
     };
