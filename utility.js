@@ -290,7 +290,8 @@ function getParseSchema() {
                     "kills": [[]],
                     "cur_multi_id": 0,
                     "cur_multi_val": 0,
-                    "all_multi_vals": [1]
+                    "all_multi_vals": [1],
+                    "all_streak_vals": [2]
                 }
             };
         })
