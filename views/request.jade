@@ -44,7 +44,9 @@ append footer_assets
       var field = document.getElementById("match_id");
       match_id = field.value;
       field.value = "";
+      console.log(match_id);
       if (!socket){
+        //set up the handlers
         socket = io.connect();
         socket.on('err', function(data){
           $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
@@ -67,6 +69,7 @@ append footer_assets
           // redir to match page (?)
           window.location.assign("/matches/"+match_id);
         });
+        }
         socket.emit('request', {
           match_id: match_id,
           response: response
@@ -74,5 +77,5 @@ append footer_assets
         $("#request").hide('slow');
         $("#messages").empty();
         $("#progContainer").show('slow');
-      }
+
     }

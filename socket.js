@@ -38,7 +38,7 @@ io.sockets.on('connection', function(socket) {
                 console.log('failed recaptcha');
                 socket.emit("err", "Recaptcha Failed!");
             }
-            else if (isNaN(match_id)) {
+            else if (!match_id) {
                 console.log("invalid match id");
                 socket.emit("err", "Invalid Match ID!");
             }
@@ -58,14 +58,15 @@ io.sockets.on('connection', function(socket) {
                     job.on('complete', function(result) {
                         console.log(result);
                         socket.emit('log', "Request Complete!");
+                        //clear the cache for this match
                         redis.del("match:" + match_id, function(err, resp) {
                             if (err) console.log(err);
                             socket.emit('complete');
                         });
                     });
                     job.on('failed', function(result) {
-                        console.log(result);
-                        socket.emit('err', JSON.stringify(result.error));
+                        console.log(JSON.stringify(result));
+                        socket.emit('err', result);
                     });
                 });
             }
