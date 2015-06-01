@@ -2,7 +2,8 @@ extend match
 
 block match_content
 
-  - var teamfights = match.parsed_data.teamfights || []
+  - var parsed_data = match.parsed_data
+  - var teamfights = parsed_data.teamfights || []
 
   .row
     .col-md-12
@@ -132,65 +133,81 @@ block match_content
                     td=player.gold_delta
                     td=player.xp_delta
 
-  - var players = match.parsed_data.players || []
-  if players[0].multi_kill_streaks
+  if parsed_data
+    - var players = parsed_data.players
+    if players
+      if players[0]
+        if players[0].multi_kill_streaks
+          if players[0].multi_kill_streaks.hero_id
 
-    hr
-    .row
-      .col-md-12
+            hr
+            .row
+              .col-md-12
+                h2
+                  abbr(title="This table associates Kill Streaks (one row for each streak) with Multi Kills and the Teamfight analysis seen above (denoted under each kill in the streak).") Kill Streaks / Multi Kills
 
-        h2 Multi Kills / Kill Streaks
-        table.table.table-hover(style="text-align:center; vertical-align:middle;")
+                table.table.table-hover(style="text-align:center; vertical-align:middle;")
 
-          thead
-            tr
-              th Streak By
-              th(colspan="3") Heroes Killed In Streak
+                  thead
+                    tr
+                      td Streak By
+                      td(colspan="3") Heroes Killed In Streak
 
-          tbody
-            - var player_num = 0
-            each player in players
-              - player_num = player_num + 1
+                  tbody
+                    - var player_num = 0
+                    each player in players
+                      - player_num = player_num + 1
 
-              - var info = player.multi_kill_streaks
-              - var hero_id = info.hero_id
-              - var hero = constants.heroes[hero_id]
+                      - var info = player.multi_kill_streaks
+                      - var hero_id = info.hero_id
+                      - var hero = constants.heroes[hero_id]
 
-              each streak in info.kills
-                if streak.length >= 3
+                      each streak in info.kills
+                        if streak.length >= 3
 
-                  tr
-                    td(class = (player_num <= 5 ? "success" : "danger"))
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        = hero_id
-                      - var streak_size = streak.length > 10 ? 10 : streak.length
-                      div #{constants.kill_streaks[streak_size]}
-                      div(style="visibility: hidden;") #{"-"}
+                          tr
+                            td(class = (player_num <= 5 ? "success" : "danger"))
+                              if hero
+                                img(src=hero.img, title=hero.localized_name)
+                              else
+                                = hero_id
+                              - var streak_size = streak.length > 10 ? 10 : streak.length
+                              - var streak_name = constants.kill_streaks[streak_size]
+                              - var article = streak_size === 6 ? "an " : "a "
+                              - var popup = "These " + streak.length + " kills counted as " + article + streak_name + " streak."
+                              div
+                                abbr(title=popup) #{streak_name}
+                              div(style="visibility: hidden;") #{"-"}
 
-                    each kill in streak
-                      td(class = (player_num <= 5 ? "danger" : "success"))
+                            each kill in streak
+                              td(class = (player_num <= 5 ? "danger" : "success"))
 
-                        - var killed_id = kill[0]
-                        - var killed = constants.heroes[killed_id]
-                        if killed
-                          img(src=killed.img, title=killed.localized_name)
-                        else
-                          = killed_id
+                                - var killed_id = kill[0]
+                                - var killed = constants.heroes[killed_id]
+                                if killed
+                                  img(src=killed.img, title=killed.localized_name)
+                                else
+                                  = killed_id
 
-                        - var multi_id = kill[1]
-                        - var multi_size = info.all_multi_vals[multi_id]
-                        if multi_size >= 2
-                          div #{constants.multi_kills[multi_size]}
-                        else
-                          div(style="visibility: hidden;") #{"-"}
+                                - var multi_id = kill[1]
+                                - var multi_size = info.all_multi_vals[multi_id]
+                                if multi_size >= 2
+                                  - var multi_name = constants.multi_kills[multi_size]
+                                  - var article = multi_size === 4 ? "an " : "a "
+                                  - var popup = "These " + multi_size + " kills counted as " + article + multi_name + "."
+                                  div
+                                    abbr(title=popup) #{multi_name}
+                                else
+                                  div(style="visibility: hidden;") #{"-"}
 
-                        - var tf_id = kill[2]
-                        if tf_id
-                          div Teamfight #{tf_id}
-                        else
-                          div(style="visibility: hidden;") #{"-"}
+                                - var tf_id = kill[2]
+                                if tf_id
+                                  - var tf_name = "Teamfight " + tf_id
+                                  - var popup = "This kill occurred during " + tf_name + "."
+                                  div
+                                    abbr(title=popup) #{tf_name}
+                                else
+                                  div(style="visibility: hidden;") #{"-"}
 
 append footer_assets
   script.
@@ -209,7 +226,6 @@ append footer_assets
       icons.show();
       $("#header").show();
     })
-    
     $("#show_all").click(function(event) {
       all_icons.show();
     });
