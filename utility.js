@@ -287,6 +287,7 @@ function getParseSchema() {
                 "multi_kills": {},
                 "healing": {},
                 "multi_kill_streaks": {
+                    "hero_id": "",
                     "kills": [[]],
                     "cur_multi_id": 0,
                     "cur_multi_val": 0,

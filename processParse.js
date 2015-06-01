@@ -64,6 +64,7 @@ function runParse(job, cb) {
     var entries = [];
     var name_to_slot = {};
     var hero_to_slot = {};
+    var hero_to_id = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
@@ -79,9 +80,11 @@ function runParse(job, cb) {
             console.log(e);
         },
         "hero_log": function(e) {
-            //get hero by id
+            //get hero name by id
             var h = constants.heroes[e.key];
             hero_to_slot[h ? h.name : e.key] = e.slot;
+            //get hero id by name
+            hero_to_id[h ? h.name : e.key] = e.key;
             //push it to entries for hero log
             entries.push(e);
         },
@@ -545,10 +548,6 @@ function runParse(job, cb) {
         parsed_data.teamfights = teamfights;
     }
 
-    var KILLED = 0;
-    var MULTI = 1;
-    var TFID = 2;
-
     function processMultiKillStreaks () {
 
         // for each entry in the combat log
@@ -560,20 +559,19 @@ function runParse(job, cb) {
             var killer_index = hero_to_slot[killer];
 
             // if the killer is a hero
-            if (killer_index) {
+            if (killer_index !== undefined) {
 
                 // bookmark the killer's bookkeeping
                 var killer_info = parsed_data.players[killer_index].multi_kill_streaks;
                 var all_streak_length = killer_info.kills.length;
                 var cur_streak_length = killer_info.kills[all_streak_length-1].length;
 
+                // record which hero this is
+                killer_info.hero_id = hero_to_id[killer];
+
                 // if this entry is a notification of a valid kill
                 if ((entry.type === "kills" || entry.type === "kills_log")
                         && entry.target_hero && !entry.target_illusion) {
-
-                    // identify the killed player
-                    var killed = entry.key;
-                    var killed_index = hero_to_slot[killed];
 
                     // check if the current kill streak has ended
                     if (cur_streak_length >= killer_info.all_streak_vals[all_streak_length-1]) {
@@ -587,17 +585,7 @@ function runParse(job, cb) {
 
                     }
 
-                    // add a new tuple representing this kill to the list of kills
-                    killer_info.kills[all_streak_length-1].push([0, 0, 0]);
-                    cur_streak_length++;
-
-                    // populate the tuple with some pertinent information
-                    var kill_info = killer_info.kills[all_streak_length-1][cur_streak_length-1];
-
-                    // a) denote who was killed
-                    kill_info[KILLED] = killed;
-
-                    // b-i) check if the current multi kill has ended
+                    // check if the current multi kill has ended
                     if (killer_info.cur_multi_val <
                             killer_info.all_multi_vals[killer_info.cur_multi_id]) {
 
@@ -613,11 +601,31 @@ function runParse(job, cb) {
 
                     }
 
-                    // b-ii) denote if this kill was part of a multi kill
-                    kill_info[MULTI] = killer_info.cur_multi_id;
+                    // determine if this kill was part of a team fight
+                    var teamfights_id = 0;
+                    for (var j = 0; j < teamfights.length; j++) {
+                        var teamfight = teamfights[j];
+                        if (entry.time >= teamfight.start && entry.time <= teamfight.end) {
+                            teamfights_id = j + 1;
+                        }
+                    }
 
-                    // c) denote if this kill was part of a team fight
-                    kill_info[TFID] = -1;
+                    // add a new tuple representing this kill to the list of kills
+                    killer_info.kills[all_streak_length-1].push([0, 0, 0]);
+                    cur_streak_length++;
+
+                    // populate the tuple with some pertinent information
+                    var kill_info = killer_info.kills[all_streak_length-1][cur_streak_length-1];
+
+                    // a) record who was killed
+                    var killed = entry.key;
+                    kill_info[0] = hero_to_id[killed];
+
+                    // b) record if this kill was part of a multi kill
+                    kill_info[1] = killer_info.cur_multi_id;
+
+                    // c) record if this kill was part of a team fight
+                    kill_info[2] = teamfights_id;
 
                     console.log("\t%s killed %s", killer, killed);
 

@@ -1,11 +1,14 @@
 extend match
 
 block match_content
+
   - var teamfights = match.parsed_data.teamfights || []
+
   .row
     .col-md-12
       h2 Teamfights 
         small  where 3+ heroes died
+
   .row
     .col-md-12
       h3 Participation
@@ -30,6 +33,7 @@ block match_content
         small   Click a row to display
       table.table.table-condensed.table-hover#teamfights
         thead
+          th #
           th Start
           th Length
           th Deaths
@@ -37,8 +41,11 @@ block match_content
           th: abbr(title="Net XP advantage for Radiant") XP Swing
           th
         tbody
+          - var i = 0
           each entry, ind in teamfights
+            - i = i + 1
             tr(target=ind, class=entry.radiant_gold_delta > 0 ? "success" : "danger")
+              td=i
               td.format-seconds(data-format-seconds=entry.start)
               td.format-seconds(data-format-seconds=entry.end-entry.start)
               td=entry.deaths
@@ -46,6 +53,7 @@ block match_content
               td=entry.radiant_xp_delta
               td
                 i.fa
+
       h3.inline-header Death Map
       button.btn.btn-xs.btn-dark.toggle-button#show_all Show All Deaths
       #map.mapContainer.mapContainer-small
@@ -54,6 +62,7 @@ block match_content
           each entry, ind in teamfights
             each death in entry.posData
               i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
+
     .col-md-8
       h3 Details
       .table-responsive
@@ -122,6 +131,67 @@ block match_content
                     td=player.damage
                     td=player.gold_delta
                     td=player.xp_delta
+
+  - var players = match.parsed_data.players || []
+  if players[0].multi_kill_streaks
+
+    hr
+    .row
+      .col-md-12
+
+        h2 Multi Kills / Kill Streaks
+        table.table.table-hover(style="text-align:center; vertical-align:middle;")
+
+          thead
+            tr
+              th Streak By
+              th(colspan="3") Heroes Killed In Streak
+
+          tbody
+            - var player_num = 0
+            each player in players
+              - player_num = player_num + 1
+
+              - var info = player.multi_kill_streaks
+              - var hero_id = info.hero_id
+              - var hero = constants.heroes[hero_id]
+
+              each streak in info.kills
+                if streak.length >= 3
+
+                  tr
+                    td(class = (player_num <= 5 ? "success" : "danger"))
+                      if hero
+                        img(src=hero.img, title=hero.localized_name)
+                      else
+                        = hero_id
+                      - var streak_size = streak.length > 10 ? 10 : streak.length
+                      div #{constants.kill_streaks[streak_size]}
+                      div(style="visibility: hidden;") #{"-"}
+
+                    each kill in streak
+                      td(class = (player_num <= 5 ? "danger" : "success"))
+
+                        - var killed_id = kill[0]
+                        - var killed = constants.heroes[killed_id]
+                        if killed
+                          img(src=killed.img, title=killed.localized_name)
+                        else
+                          = killed_id
+
+                        - var multi_id = kill[1]
+                        - var multi_size = info.all_multi_vals[multi_id]
+                        if multi_size >= 2
+                          div #{constants.multi_kills[multi_size]}
+                        else
+                          div(style="visibility: hidden;") #{"-"}
+
+                        - var tf_id = kill[2]
+                        if tf_id
+                          div Teamfight #{tf_id}
+                        else
+                          div(style="visibility: hidden;") #{"-"}
+
 append footer_assets
   script.
     var all_icons = $("#map i");
