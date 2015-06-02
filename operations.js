@@ -46,7 +46,7 @@ function insertMatch(match, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && player.cache.data && isSignificant(match) && !reInsert) {
+                        if (player && player.cache && player.cache.aggData && isSignificant(match) && !reInsert) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
                             //duplicate this data into a copy to avoid corrupting original match objects
