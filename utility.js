@@ -286,13 +286,20 @@ function getParseSchema() {
                 "kill_streaks": {},
                 "multi_kills": {},
                 "healing": {},
-                "multi_kill_streaks": {
-                    "hero_id": "",
-                    "kills": [[]],
-                    "cur_multi_id": 0,
-                    "cur_multi_val": 0,
-                    "all_multi_vals": [1],
-                    "all_streak_vals": [2]
+                "multi_kill_streaks": {     // for use with processMultiKillStreaks() in processParse.js
+                    "hero_id": "",          // the hero id of this player
+                    "kills": [[]],          // an array of kill streaks
+                                            //     where each kill streak is an array of kills
+                                            //         where each kill is an array with
+                                            //             index 0 = the hero id of the player who was killed
+                                            //             index 1 = the multi kill id of this kill
+                                            //             index 2 = the team fight id of this kill
+                                            //             index 3 = the time of this kill
+                    "cur_multi_id": 0,      // the id of the "current" (during population) multi kill
+                    "cur_multi_val": 0,     // the value of the "current" (during population) multi kill
+                    "all_multi_vals": [1],  // the value of all multi kills (the length of each multi kill)
+                                            //     where index i maps multi kill id i onto multi kill value i
+                    "all_streak_vals": [2]  // the value of all kill streaks (the length of each kill streak)
                 }
             };
         })

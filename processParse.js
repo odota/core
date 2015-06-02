@@ -645,7 +645,7 @@ function runParse(job, cb) {
                         }
 
                         // add this kill (represented by a tuple) to the killer's list of kills
-                        killer_info.kills[all_streak_length-1].push([0, 0, 0]);
+                        killer_info.kills[all_streak_length-1].push([0, 0, 0, 0]);
                         cur_streak_length++;
 
                         // populate the tuple with some pertinent information
@@ -659,6 +659,9 @@ function runParse(job, cb) {
 
                         // c) record if this kill was part of a team fight
                         kill_info[2] = teamfights_id;
+
+                        // d) record the time this kill occurred
+                        kill_info[3] = entry.time;
 
                         if (print_multi_kill_streak_debugging) {
                             console.log("\t%s killed %s", killer, killed);
