@@ -205,7 +205,7 @@ block match_content
         hr
         .row
           .col-md-6
-            h2.inline-header Kill/Death
+            h2.inline-header: abbr(title="Radiant kills/Dire kills") Kill/Death
             #kills.table-responsive
               table.table.table-hover
                 thead
@@ -233,7 +233,7 @@ block match_content
                           - var hero2 = constants.heroes[player2.hero_id]
                           - var p1 = player.parsedPlayer.kills[hero2.name] || 0
                           - var p2 = player.parsedPlayer.killed_by[hero2.name] || 0
-                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) <span class="green">#{p1}</span>/<span class="red">#{p2}</span>
+                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) #{p1}/#{p2}
           .col-md-6
             h2.inline-header Damage Done/Taken
             #kills.table-responsive
@@ -263,4 +263,4 @@ block match_content
                           - var hero2 = constants.heroes[player2.hero_id]
                           - var p1 = player.parsedPlayer.damage[hero2.name] || 0
                           - var p2 = player.parsedPlayer.damage_taken[hero2.name] || 0                          
-                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) <span class="green format">#{p1}</span>/<span class="red format">#{p2}</span>              
+                          td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger")) <span class="format">#{p1}</span>/<span class="format">#{p2}</span>         
