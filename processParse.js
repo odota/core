@@ -506,9 +506,11 @@ function runParse(job, cb) {
                 if (e.time >= tf.start && e.time <= tf.end) {
                     //kills_log tracks only hero kills on non-illusions
                     if (e.type === "kills_log") {
+                        //copy the entry
+                        var e_cpy_1 = JSON.parse(JSON.stringify(e))
                         //count toward kills
-                        e.type = "kills";
-                        populate(e, tf);
+                        e_cpy_1.type = "kills";
+                        populate(e_cpy_1, tf);
                         //get slot of target
                         e.slot = hero_to_slot[e.key];
                         //0 is valid value, so check for undefined
@@ -516,16 +518,15 @@ function runParse(job, cb) {
                             //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
-                            e.type = "deaths_pos";
-                            var old_key = e.key;
-                            e.key = [x, y];
-                            e.posData = true;
-                            populate(e, tf);
+                            //copy the entry
+                            var e_cpy_2 = JSON.parse(JSON.stringify(e))
+                            //fill in the copy
+                            e_cpy_2.type = "deaths_pos";
+                            e_cpy_2.key = [x, y];
+                            e_cpy_2.posData = true;
+                            populate(e_cpy_2, tf);
                             //increment death count for this hero
-                            tf.players[e.slot].deaths += 1;
-                            //return the entry to its original state
-                            e.type = "kills";
-                            e.key = old_key;
+                            tf.players[e_cpy_2.slot].deaths += 1;
                         }
                     }
                     else if (e.type === "buyback_log") {
@@ -555,8 +556,11 @@ function runParse(job, cb) {
         parsed_data.teamfights = teamfights;
     }
 
-    // associate multi kills with kill streaks with specific team fights
+    // associate kill streaks with multi kills and team fights
     function processMultiKillStreaks () {
+
+        // bookkeeping about each player
+        var players = {};
 
         // for each entry in the combat log
         for (var i = 0; i < entries.length; i++) {
@@ -569,17 +573,38 @@ function runParse(job, cb) {
             // if the killer is a hero (which it might not be)
             if (killer_index !== undefined) {
 
-                // index into the killer's kills log
-                var killer_info = parsed_data.players[killer_index].multi_kill_streaks;
-                var all_streak_length = killer_info.kills.length;
-                var cur_streak_length = killer_info.kills[all_streak_length-1].length;
+                // bookmark this player's parsed bookkeeping
+                var parsed_info = parsed_data.players[killer_index];
 
                 // record which hero this is
-                killer_info.hero_id = hero_to_id[killer];
+                parsed_info.hero_id = hero_to_id[killer];
+
+                // record that this function has completed
+                parsed_info.multi_kill_streaks = true;
+
+                // if needed, initialize this player's bookkeeping
+                if (players[killer_index] === undefined) {
+
+                    parsed_info.kill_streaks.push([]);
+
+                    players[killer_index] = {
+                        "cur_multi_id": 0,     // the id of the current multi kill
+                        "cur_multi_val": 0,    // the value of the current multi kill
+                        "cur_streak_budget": 2 // the max length of the current kill streak
+
+                    };
+
+                }
+
+                // get the number of streaks and the length of the current streak
+                var all_streak_length = parsed_info.kill_streaks.length;
+                var cur_streak_length = parsed_info.kill_streaks[all_streak_length-1].length;
+
+                // bookmark this player's local bookkeeping
+                var local_info = players[killer_index];
 
                 // if this entry is a valid kill notification
-                if ((entry.type === "kills" || entry.type === "kills_log")
-                        && entry.target_hero && !entry.target_illusion) {
+                if (entry.type === "kills_log") {
 
                     // determine who was killed
                     var killed = entry.key;
@@ -592,12 +617,12 @@ function runParse(job, cb) {
                         // check if we've run out of room in the current kills array (note: this
                         // would happen because (for some reason) the combat log does not contain
                         // kill streak events for streaks of size 2 (even though it really should))
-                        var cur_streak_budget = killer_info.all_streak_vals[all_streak_length-1];
+                        var cur_streak_budget = local_info.cur_streak_budget;
                         if (cur_streak_length == cur_streak_budget && cur_streak_budget == 2) {
 
                             // remove the first element of the streak (note: later we will
                             // push a new second element on to the end of the streak)
-                            killer_info.kills[all_streak_length-1].splice(0, 1);
+                            parsed_info.kill_streaks[all_streak_length-1].splice(0, 1);
                             cur_streak_length--;
 
                         // check if the current kill streak has ended
@@ -606,8 +631,8 @@ function runParse(job, cb) {
                             // if so, create a new streak in the kills array
                             all_streak_length++;
                             cur_streak_length = 0;
-                            killer_info.kills.push([]);
-                            killer_info.all_streak_vals.push(2);
+                            parsed_info.kill_streaks.push([]);
+                            local_info.cur_streak_budget = 2;
 
                             if (print_multi_kill_streak_debugging) {
                                 console.log("\t%s kill streak has ended", killer);
@@ -616,18 +641,18 @@ function runParse(job, cb) {
                         }
 
                         // check if the current multi kill has ended
-                        if (killer_info.cur_multi_val <
-                                killer_info.all_multi_vals[killer_info.cur_multi_id]) {
+                        if (local_info.cur_multi_val <
+                                parsed_info.multi_kill_id_vals[local_info.cur_multi_id]) {
 
                             // if not, increment the current multi kill value
-                            killer_info.cur_multi_val++;
+                            local_info.cur_multi_val++;
 
                         } else {
 
                             // if so, create a new multi kill id and value
-                            killer_info.cur_multi_id++;
-                            killer_info.cur_multi_val = 1;
-                            killer_info.all_multi_vals.push(1);
+                            local_info.cur_multi_id++;
+                            local_info.cur_multi_val = 1;
+                            parsed_info.multi_kill_id_vals.push(1);
 
                             if (print_multi_kill_streak_debugging) {
                                 console.log("\t%s multi kill has ended", killer);
@@ -636,32 +661,22 @@ function runParse(job, cb) {
                         }
 
                         // determine if this kill was part of a team fight
-                        var teamfights_id = 0;
+                        var team_fight_id = 0;
+                        var kill_time = entry.time;
                         for (var j = 0; j < teamfights.length; j++) {
                             var teamfight = teamfights[j];
-                            if (entry.time >= teamfight.start && entry.time <= teamfight.end) {
-                                teamfights_id = j + 1;
+                            if (kill_time >= teamfight.start && kill_time <= teamfight.end) {
+                                team_fight_id = j + 1;
                             }
                         }
 
-                        // add this kill (represented by a tuple) to the killer's list of kills
-                        killer_info.kills[all_streak_length-1].push([0, 0, 0, 0]);
-                        cur_streak_length++;
-
-                        // populate the tuple with some pertinent information
-                        var kill_info = killer_info.kills[all_streak_length-1][cur_streak_length-1];
-
-                        // a) record who was killed
-                        kill_info[0] = hero_to_id[killed];
-
-                        // b) record if this kill was part of a multi kill
-                        kill_info[1] = killer_info.cur_multi_id;
-
-                        // c) record if this kill was part of a team fight
-                        kill_info[2] = teamfights_id;
-
-                        // d) record the time this kill occurred
-                        kill_info[3] = entry.time;
+                        // add this kill to the killer's list of kills
+                        parsed_info.kill_streaks[all_streak_length-1].push({
+                            "hero_id": hero_to_id[killed],
+                            "multi_kill_id": local_info.cur_multi_id,
+                            "team_fight_id": team_fight_id,
+                            "time": kill_time
+                        });
 
                         if (print_multi_kill_streak_debugging) {
                             console.log("\t%s killed %s", killer, killed);
@@ -674,8 +689,7 @@ function runParse(job, cb) {
                 } else if (entry.type === "multi_kills") {
 
                     // update the value of the current multi kill
-                    var all_multi_length = killer_info.all_multi_vals.length;
-                    killer_info.all_multi_vals[all_multi_length-1] = parseInt(entry.key);
+                    parsed_info.multi_kill_id_vals[local_info.cur_multi_id] = parseInt(entry.key);
 
                     if (print_multi_kill_streak_debugging) {
                         console.log("\t%s got a multi kill of %s", killer, entry.key);
@@ -686,8 +700,7 @@ function runParse(job, cb) {
                 } else if (entry.type === "kill_streaks") {
 
                     // update the value of the current kill streak
-                    var all_streak_length = killer_info.all_streak_vals.length;
-                    killer_info.all_streak_vals[all_streak_length-1] = parseInt(entry.key);
+                    local_info.cur_streak_budget = parseInt(entry.key);
 
                     if (print_multi_kill_streak_debugging) {
                         console.log("\t%s got a kill streak of %s", killer, entry.key);
@@ -697,6 +710,17 @@ function runParse(job, cb) {
 
             }
 
+        }
+
+        // remove small (length < 3) kill streaks
+        for (var index in players) {
+            var data = parsed_data.players[index].kill_streaks;
+            var i = data.length;
+            while (i--) {
+                if (data[i].length < 3) {
+                    data.splice(i, 1);
+                }
+            }
         }
         
     }
