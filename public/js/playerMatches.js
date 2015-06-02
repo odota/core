@@ -39,7 +39,7 @@ module.exports = function() {
             },
             */
             "rowCallback": function(row, data) {
-                $(row).addClass(data.player_win ? "success" : "danger");
+                //$(row).addClass(data.player_win ? "success" : "danger");
             },
             "drawCallback": function() {
                 tooltips();
@@ -48,13 +48,16 @@ module.exports = function() {
             stateSave: true,
             searching: false,
             processing: true,
-            columns: [{
+            columns: [
+                {
                     data: 'match_id',
                     title: 'Match ID',
+                    visible: false,
                     render: function(data, type) {
                         return '<a href="/matches/' + data + '">' + data + '</a>';
                     }
             },
+
                 {
                     data: 'players[0].hero_id',
                     title: 'Hero',
@@ -95,15 +98,13 @@ module.exports = function() {
                         return data ? data : "Unknown";
                     }
             },
-            /*
-            {
-                data: 'player_win',
-                title: 'Result',
-                render: function(data, type, row) {
-                    return (data) ? "Won" : "Lost";
-                }
+                {
+                    data: 'player_win',
+                    title: 'Result',
+                    render: function(data, type, row) {
+                        return '<a class="' + (data ? "green" : "red") + '" href="/matches/' + row.match_id + '">' + ((data) ? "Victory" : "Defeat") + '</a>';
+                    }
             },
-            */
                 {
                     data: 'game_mode',
                     title: 'Game Mode',

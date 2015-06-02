@@ -7,7 +7,7 @@ var fillPlayerData = require('../fillPlayerData');
 players.get('/:account_id/:info?', function(req, res, next) {
     var playerPages = {
         "index": {
-            "name": "Player"
+            "name": "Overview"
         },
         "matches": {
             "name": "Matches"
