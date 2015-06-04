@@ -579,9 +579,6 @@ function runParse(job, cb) {
                 // record which hero this is
                 parsed_info.hero_id = hero_to_id[killer];
 
-                // record that this function has completed
-                parsed_info.multi_kill_streaks = true;
-
                 // if needed, initialize this player's bookkeeping
                 if (players[killer_index] === undefined) {
 

@@ -237,7 +237,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 9,
+        "version": 10,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -287,7 +287,6 @@ function getParseSchema() {
                 "multi_kills": {},
                 "healing": {},
                 "hero_id": "",                  // the hero id of this player
-                "multi_kill_streaks": false,    // whether multi_kill_streaks was calculated for this player
                 "kill_streaks": [],             // an array of kill streak values
                                                 //     where each kill streak is an array of kills where
                                                 //         where each kill is an object that contains
