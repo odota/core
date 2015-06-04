@@ -3,19 +3,23 @@ extend match
 block match_content
   .row
     .col-md-12
+      div 50
       include positions_map.jade
+
 append footer_assets
   script.
+
     var heatmap = h337.create({
-        container: document.getElementById('map'),
-        radius: 15
-      });
-      var posData = !{JSON.stringify(match.posData)}
-      adjustHeatmapData(posData, 600/127, null, 0);
-      $(".activate").on("mouseover", function(){
-        var pData = posData[Number($(this).attr('data-index'))]
-        var data = pData[$(this).attr('data-type')];
-        console.log(data);
-        heatmap.setData(data);
-        heatmap.repaint();
-      })
+      container: document.getElementById('map'),
+      radius: 15
+    });
+
+    var posData = !{JSON.stringify(match.posData)}
+    adjustHeatmapData(posData, 600/127, null, 50);
+
+    $(".activate").on("mouseover", function(){
+      var pData = posData[Number($(this).attr('data-index'))]
+      var data = pData[$(this).attr('data-type')];
+      heatmap.setData(data);
+      heatmap.repaint();
+    })
