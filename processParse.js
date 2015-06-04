@@ -310,22 +310,24 @@ function runParse(job, cb) {
                 }
                 e.interval = false;
                 //add to positions
-                if (e.x && e.y) {
-                    e.type = "pos";
-                    e.key = [e.x, e.y];
-                    e.posData = true;
-                    //not currently storing pos data
-                    //populate(e);
-                    if (e.time < 600) {
-                        e.type = "lane_pos";
-                        populate(e);
-                    }
-                    /*
-            //log all the positions for animation
-            e.type = "pos_log";
-            populate(e);
-            */
-                }
+                // if (e.x && e.y) {
+                //     e.type = "pos";
+                //     e.key = [e.x, e.y];
+                //     e.posData = true;
+                //     //not currently storing pos data
+                //     //populate(e);
+                //     if (e.time < 600) {
+                //         e.type = "lane_pos";
+                //         populate(e);
+                //     }
+                // }
+            }
+            // store player position for the first 10 minutes
+            if (e.time <= 600 && e.x && e.y) {
+                e.type = "lane_pos";
+                e.key = [e.x, e.y];
+                e.posData = true;
+                populate(e);
             }
         },
         "obs": function(e) {
