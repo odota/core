@@ -320,12 +320,13 @@ function runParse(job, cb) {
                         e.type = "lane_pos";
                         populate(e);
                     }
-                    /*
-            //log all the positions for animation
-            e.type = "pos_log";
-            populate(e);
-            */
                 }
+            } else {
+                //get lane position before time == 0
+                e.type = "lane_pos";
+                e.key = [e.x, e.y];
+                e.posData = true;
+                populate(e);
             }
         },
         "obs": function(e) {
