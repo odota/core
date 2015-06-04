@@ -3,7 +3,6 @@ extend match
 block match_content
   .row
     .col-md-12
-      div 50
       include positions_map.jade
 
 append footer_assets
@@ -14,8 +13,10 @@ append footer_assets
       radius: 15
     });
 
+    // scale points by 600/127 units to fit to size of map
+    // offset points by 25 units to increase visibility
     var posData = !{JSON.stringify(match.posData)}
-    adjustHeatmapData(posData, 600/127, null, 50);
+    adjustHeatmapData(posData, 600/127, null, 25);
 
     $(".activate").on("mouseover", function(){
       var pData = posData[Number($(this).attr('data-index'))]
