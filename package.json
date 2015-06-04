@@ -44,7 +44,7 @@
     "express": "~4.12.4",
     "express-session": "~1.11.2",
     "font-awesome": "^4.3.0",
-    "foreman": "~1.3.0",
+    "foreman": "~1.4.0",
     "heatmap.js": "pa7/heatmap.js#develop",
     "http-auth": "~2.2.7",
     "http-proxy": "^1.11.1",
