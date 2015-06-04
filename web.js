@@ -193,7 +193,7 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/compare').get(function(req, res, next) {
-    var account_ids = ["all"];
+    var account_ids = ["all","professional"];
     if (req.query.compare) {
         account_ids = account_ids.concat(req.query.compare.split(","));
     }
@@ -231,10 +231,25 @@ app.route('/compare').get(function(req, res, next) {
         }, function(err, player) {
             //create array of results.aggData for each account_id
             //compute average for aggregations supporting it
+            //mean or median?
             for (var key in player.aggData) {
+                /*
+                //mean
                 if (player.aggData[key].sum && player.aggData[key].n) {
                     player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
                 }
+                */
+                //median
+                var arr = [];
+                for (var value in player.aggData[key].counts) {
+                    for (var i = 0; i < player.aggData[key].counts[value]; i++) {
+                        arr.push(Number(value));
+                    }
+                }
+                arr.sort(function(a, b) {
+                    return a - b;
+                });
+                player.aggData[key].avg = arr[arr.length / 2];
             }
             cb(err, {
                 account_id: account_id,

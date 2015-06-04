@@ -9,12 +9,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var player;
     if (account_id === "all" || account_id === "professional") {
         options.query.select["players.account_id"] = "all";
-        player = {
-            account_id: account_id
-        };
         if (account_id === "professional") {
             options.query.select.leagueid = "gtzero";
         }
+        player = {
+            account_id: account_id,
+            personaname: account_id
+        };
         query();
     }
     else {
