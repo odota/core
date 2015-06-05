@@ -156,7 +156,7 @@ block match_content
                   tr
                     th Hero
                     each val, key in constants.runes
-                      th=val.name
+                      th: abbr(title=val.tooltip)=val.name
 
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
