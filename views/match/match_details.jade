@@ -209,8 +209,7 @@ block match_content
                   tr
                     th Hero
                     each val, key in constants.kill_streaks
-                      //th #{val} (#{key})
-                      th: abbr(title=val) #{key}
+                      th: abbr(title=val) #{key!=="10"?key:"10+"}
 
               tbody
                 tr(class = player.isRadiant ? "success" : "danger")
