@@ -134,3 +134,10 @@ div.container.well.well-lg {
 #match_statistics tbody, #positions tbody {
     color: rgb(199, 199, 199);
 }
+
+/* tool-tip pop-up styles */
+
+abbr.blackunderline {
+    /* change from default of #777 */
+    border-bottom: 1px dotted #000000;
+}
