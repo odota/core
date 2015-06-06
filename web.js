@@ -113,11 +113,16 @@ app.get('/robots.txt', function(req, res) {
     res.send("User-agent: *\nDisallow: /players");
 });
 app.route('/').get(function(req, res, next) {
+    if (req.user){
+        res.redirect('/players/'+req.user.account_id);
+    }
+    else{
     res.render('home', {
         match: example_match,
         truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
         home: true
     });
+    }
 });
 app.route('/request').get(function(req, res) {
     res.render('request', {

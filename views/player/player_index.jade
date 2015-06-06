@@ -5,16 +5,6 @@ include /mixins/teammate_table
 
 block playercontent
   //pre=JSON.stringify(player.aggData)
-  //result, W-L
-  .row
-    .col-md-12
-      h3 Record 
-        small.green#win #{player.aggData.win}
-        small -
-        small.red#lose #{player.aggData.lose}
-      - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
-      .progress
-        .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
               
   - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status};
   script.
@@ -42,7 +32,7 @@ block playercontent
     hr
     .row
       .col-md-12
-        h3 Teammates
+        h3 Teammates/Opponents
         table.table#teammates
         //+teammate_table(player.teammates)
     hr

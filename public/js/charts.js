@@ -21,6 +21,10 @@ module.exports = function generateCharts(data) {
             }
         }
     });
+    var color_array = [];
+    for (var key in player_colors) {
+        color_array.push(player_colors[key]);
+    }
     var difference = data.difference;
     var gold = data.gold;
     var xp = data.xp;
@@ -38,21 +42,30 @@ module.exports = function generateCharts(data) {
         x: 'time',
         type: "spline",
         xLabel: 'Game Time (minutes)',
-        yLabel: 'Gold'
+        yLabel: 'Gold',
+        color: {
+            pattern: color_array
+        }
         }, {
         bindTo: "#chart-xp",
         columns: xp,
         x: 'time',
         type: "spline",
         xLabel: 'Game Time (minutes)',
-        yLabel: 'XP'
+        yLabel: 'XP',
+        color: {
+            pattern: color_array
+        }
         }, {
         bindTo: "#chart-lh",
         columns: lh,
         x: 'time',
         type: "spline",
         xLabel: 'Game Time (minutes)',
-        yLabel: 'LH'
+        yLabel: 'LH',
+        color: {
+            pattern: color_array
+        }
         }];
     charts.forEach(function(chart) {
         c3.generate({
@@ -62,6 +75,7 @@ module.exports = function generateCharts(data) {
                 columns: chart.columns,
                 type: chart.type
             },
+            color: chart.color,
             axis: {
                 x: {
                     type: 'timeseries',
