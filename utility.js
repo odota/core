@@ -252,7 +252,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 9,
+        "version": 10,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -300,7 +300,16 @@ function getParseSchema() {
                 //"ability_trigger": {}
                 "kill_streaks": {},
                 "multi_kills": {},
-                "healing": {}
+                "healing": {},
+                "hero_id": "",                  // the hero id of this player
+                "kill_streaks": [],             // an array of kill streak values
+                                                //     where each kill streak is an array of kills where
+                                                //         where each kill is an object that contains
+                                                //             - the hero id of the player who was killed
+                                                //             - the multi kill id of this kill
+                                                //             - the team fight id of this kill
+                                                //             - the time of this kill
+                "multi_kill_id_vals": []        // an array of multi kill values (the length of each multi kill)
             };
         })
     };

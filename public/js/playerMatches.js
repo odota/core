@@ -314,7 +314,7 @@ module.exports = function() {
             },
             "columns": [{
                     data: "account_id",
-                    title: "Teammate",
+                    title: "Name",
                     render: function(data, type, row) {
                         return '<a href="/players/' + data + '">' + row.personaname + '</a>'
                     }

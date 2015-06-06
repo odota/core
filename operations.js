@@ -46,15 +46,13 @@ function insertMatch(match, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && player.cache.data && isSignificant(match) && !reInsert) {
+                        if (player && player.cache && player.cache.aggData && isSignificant(match) && !reInsert) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match object
-                            var match_copy = {
-                                start_time: match.start_time,
-                                all_players: match.players.slice(0),
-                                players: [p]
-                            };
+                            //duplicate this data into a copy to avoid corrupting original match objects
+                            var match_copy = JSON.parse(JSON.stringify(match));
+                            match_copy.all_players = match.players.slice(0);
+                            match_copy.players = [p];
                             //do basic aggregations: win/lose/games/heroes/teammates
                             player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
                             player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
