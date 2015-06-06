@@ -19,15 +19,14 @@ var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
-//var cpuCount = require('os').cpus().length;
-// Include the cluster module
-var cluster = require('cluster');
-// Include Express
+var queries = require('./queries');
 var express = require('express');
-// Create a new Express application
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
 /*
+//var cpuCount = require('os').cpus().length;
+// Include the cluster module
+var cluster = require('cluster');
 if (config.NODE_ENV === "test") {
     //don't cluster in test env
     configureApp(app);
@@ -54,7 +53,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = require('./constants.json');
-app.locals.sources = require('./sources.json');
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
 var basic = auth.basic({
@@ -187,6 +185,87 @@ app.route('/status').get(function(req, res, next) {
 app.route('/faq').get(function(req, res) {
     res.render("faq", {
         questions: poet.helpers.postsWithTag("faq").reverse()
+    });
+});
+app.route('/compare').get(function(req, res, next) {
+    var account_ids = ["all"];
+    if (req.query.compare) {
+        account_ids = account_ids.concat(req.query.compare.split(","));
+    }
+    account_ids = account_ids.slice(0, 5);
+    console.log(account_ids);
+    var qCopy = JSON.parse(JSON.stringify(req.query));
+    async.mapSeries(account_ids, function(account_id, cb) {
+        req.query = JSON.parse(JSON.stringify(qCopy));
+        fillPlayerData(account_id, {
+            query: {
+                select: req.query
+            }
+        }, function(err, player) {
+            //create array of results.aggData for each account_id
+            //compute average for aggregations supporting it
+            for (var key in player.aggData) {
+                if (player.aggData[key].sum && player.aggData[key].n) {
+                    player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
+                }
+            }
+            cb(err, {
+                account_id: account_id,
+                personaname: player.personaname,
+                matches: player.matches,
+                aggData: player.aggData
+            });
+        });
+    }, function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        //compute percentile for each stat
+        //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+        results.forEach(function(r, i) {
+            for (var key in results[i].aggData) {
+                var avg = results[i].aggData[key].avg;
+                var allCounts = results[0].aggData[key].counts;
+                var gt = 0;
+                var lt = 0;
+                if (avg) {
+                    for (var value in allCounts) {
+                        var valueCount = allCounts[value];
+                        if (avg >= Number(value)) {
+                            gt += valueCount;
+                        }
+                        else {
+                            lt += valueCount;
+                        }
+                    }
+                    results[i].aggData[key].percentile = gt / (gt + lt);
+                }
+            }
+        });
+        var player = req.user;
+        var teammates_arr = [];
+        if (player && player.cache && player.cache.aggData && player.cache.aggData.teammates) {
+            var teammates = player.cache.aggData.teammates;
+            for (var id in teammates) {
+                var tm = teammates[id];
+                id = Number(id);
+                //don't include if anonymous or if less than 3 games
+                if (id !== app.locals.constants.anonymous_account_id && tm.games >= 3) {
+                    teammates_arr.push(tm);
+                }
+            }
+        }
+        queries.fillPlayerNames(teammates_arr, function(err) {
+            if (err) {
+                return next(err);
+            }
+            res.render("compare", {
+                teammate_list: teammates_arr,
+                data: results,
+                q: req.query,
+                compare: true
+            });
+        });
     });
 });
 app.use('/matches', require('./routes/matches'));

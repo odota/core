@@ -1,8 +1,8 @@
 var db = require('./db');
 var config = require('./config');
 var moment = require('moment');
-var getReplayUrl = require('./getReplayUrl');
 var fs = require('fs');
+var getReplayUrl = require('./getReplayUrl');
 var request = require('request');
 var domain = require('domain');
 var JSONStream = require('JSONStream');
@@ -18,10 +18,10 @@ module.exports = function processParse(job, cb) {
         if (err) {
             return cb(err);
         }
-        //match object should now contain replay url, also persisted to db
+        //match object should now contain replay url, and should also be persisted to db
         if (match.parse_status === 1) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //TODO improve current socket test: we have no url in db and replay is expired on socket request, so that request fails!
+            //TODO improve current socket test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't care
             console.log("parse: replay expired");
             updateDb();
         }
@@ -462,7 +462,7 @@ function runParse(job, cb) {
             teamfights.forEach(function(tf) {
                 tf.players.forEach(function(p, ind) {
                     //set gold/xp deltas here
-                    //alternative: total gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
+                    //TODO alternative: sum gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
                     p.xp_start = intervalState[tf.start][ind].xp;
                     p.xp_end = intervalState[tf.end][ind].xp;
                     p.gold_start = intervalState[tf.start][ind].gold;

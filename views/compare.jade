@@ -1,0 +1,24 @@
+extend layout
+
+block content
+  h1 Compare
+  include query
+  //pre=JSON.stringify(data)
+  table.table
+    tr
+      td
+      each player in data
+        td=player.account_id
+        td percentile
+    tr
+      td Results
+      each player in data
+        td=player.matches.length
+        td
+    each val, key in data[0].aggData
+      tr
+        td=key
+        each player in data
+          td=player.aggData[key].avg
+          td=player.aggData[key].percentile
+        

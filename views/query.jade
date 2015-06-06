@@ -1,3 +1,4 @@
+
 h3.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
@@ -20,10 +21,6 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         .form-group
           label The Players Included (Account ID)
           input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Included: Any Player", value=q.with_account_id )#with_account_id
-          //-
-            //disabled due to passing teammates to select2
-            each tm in player.teammates
-              option(value=tm.account_id, selected=(q.with_account_id && typeof q.with_account_id==="object" ? q.with_account_id.indexOf(tm.account_id.toString())!==-1 : Number(q.with_account_id)===tm.account_id)) #{tm.personaname} (#{tm.account_id})
         .form-group
           label The Team Included
           select.form-control(name="teammate_hero_id" multiple, placeholder="Team: Any Hero")#teammate_hero_id
@@ -86,7 +83,16 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(name="significant")
             option(value="1",  selected=Boolean(Number(q.significant))) Significant Matches
             option(value="all", selected=!Boolean(Number(q.significant))) All Matches
-
+    if compare
+      .row
+        .col-md-12
+          .form-group
+            label Compare
+            input.form-control(type="hidden", name="compare", multiple, value=q.compare)#compare
     .row
       .col-md-12.text-center
         button.btn.btn-yasp(type="submit") Do the Thing
+
+script.
+  var teammate_list = !{teammate_list ? JSON.stringify(teammate_list.map(function(t) {return {id: t.account_id, text: t.personaname + " (" + t.account_id +")"};})) : "[]"};
+  queryForm();

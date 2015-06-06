@@ -5,11 +5,9 @@ console.log(role);
 //web requires constants
 //worker requires constants (fullhistory needs to iterate through heroes)
 //parseManager requires constants (processparse needs to map combat log names to hero ids)
-//buildSets
-//scanner requires in order to avoid leaking players
-//getRetriever
-//getParser
-//parseManager requires getRetrievers to get replay url
-//parseManager requires getParsers, since we need to set concurrency before starting
+//buildSets currently built by worker, re-runs every 3 minutes, includes getRetriever, getParser, which could be separated
+//scanner requires buildSets in order to avoid leaking players, retries until available
+//parseManager requires getRetrievers to get replay url, retries until available
+//parseManager requires getParsers, since we need to set concurrency before starting, retries until available
 //retriever, parser, proxy are independent
 require("./" + role + ".js");
