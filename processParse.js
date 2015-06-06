@@ -273,7 +273,10 @@ function runParse(job, cb) {
                     key: e.key,
                     value: e.value
                 };
-                getSlot(m);
+                //don't count self-damage as a max_hero_hit
+                if (m.key !== m.unit) {
+                    getSlot(m);
+                }
             }
         },
         "buyback_log": getSlot,
