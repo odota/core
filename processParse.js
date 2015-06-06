@@ -9,6 +9,10 @@ var JSONStream = require('JSONStream');
 //var JSONStream = require('json-stream');
 var constants = require('./constants.json');
 var utility = require('./utility');
+
+// do you want to print debugging statements for processing multi-kill-streaks?
+var print_multi_kill_streak_debugging = false;
+
 module.exports = function processParse(job, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
@@ -64,6 +68,7 @@ function runParse(job, cb) {
     var entries = [];
     var name_to_slot = {};
     var hero_to_slot = {};
+    var hero_to_id = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
@@ -79,9 +84,11 @@ function runParse(job, cb) {
             console.log(e);
         },
         "hero_log": function(e) {
-            //get hero by id
+            //get hero name by id
             var h = constants.heroes[e.key];
             hero_to_slot[h ? h.name : e.key] = e.slot;
+            //get hero id by name
+            hero_to_id[h ? h.name : e.key] = e.key;
             //push it to entries for hero log
             entries.push(e);
         },
@@ -404,14 +411,33 @@ function runParse(job, cb) {
         });
         parser.stdout.pipe(outStream);
         */
+
         outStream.on('root', handleStream);
         outStream.on('end', function() {
-            console.time("postprocess");
+
+            console.log("beginning post-processing");
+            var message = "time spent on post-processing";
+            console.time(message);
+
+            console.log("processing event buffer...");
             processEventBuffer();
+
+            console.log("processing team fights...");
             processTeamfights();
-            console.timeEnd("postprocess");
+
+            console.log("processing multi-kill-streaks...");
+            processMultiKillStreaks();
+
+            console.timeEnd(message);
+
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+
+            if (print_multi_kill_streak_debugging) {
+                fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
+            }
+
             exit(error);
+
         });
     });
 
@@ -453,110 +479,250 @@ function runParse(job, cb) {
     }
 
     function processTeamfights() {
-            //fights that didnt end wont be pushed to teamfights array (endgame case)
-            //filter only fights where 3+ heroes died
-            teamfights = teamfights.filter(function(tf) {
-                return tf.deaths >= 3;
+        //fights that didnt end wont be pushed to teamfights array (endgame case)
+        //filter only fights where 3+ heroes died
+        teamfights = teamfights.filter(function(tf) {
+            return tf.deaths >= 3;
+        });
+        //go through teamfights, add gold/xp deltas
+        teamfights.forEach(function(tf) {
+            tf.players.forEach(function(p, ind) {
+                //set gold/xp deltas here
+                //TODO alternative: sum gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
+                p.xp_start = intervalState[tf.start][ind].xp;
+                p.xp_end = intervalState[tf.end][ind].xp;
+                p.gold_start = intervalState[tf.start][ind].gold;
+                p.gold_end = intervalState[tf.end][ind].gold;
+                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
+                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
             });
-            //go through teamfights, add gold/xp deltas
-            teamfights.forEach(function(tf) {
-                tf.players.forEach(function(p, ind) {
-                    //set gold/xp deltas here
-                    //TODO alternative: sum gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
-                    p.xp_start = intervalState[tf.start][ind].xp;
-                    p.xp_end = intervalState[tf.end][ind].xp;
-                    p.gold_start = intervalState[tf.start][ind].gold;
-                    p.gold_end = intervalState[tf.end][ind].gold;
-                    p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
-                    p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
-                });
-            });
-            for (var i = 0; i < entries.length; i++) {
-                //loop over entries again
-                var e = entries[i];
-                //check each teamfight to see if this event should be processed as part of that teamfight
-                for (var j = 0; j < teamfights.length; j++) {
-                    var tf = teamfights[j];
-                    if (e.time >= tf.start && e.time <= tf.end) {
-                        //kills_log tracks only hero kills on non-illusions
-                        if (e.type === "kills_log") {
-                            //count toward kills
-                            e.type = "kills";
-                            populate(e, tf);
-                            //get slot of target
-                            e.slot = hero_to_slot[e.key];
-                            //0 is valid value, so check for undefined
+        });
+        
+        for (var i = 0; i < entries.length; i++) {
+            //loop over entries again
+            var e = entries[i];
+            //check each teamfight to see if this event should be processed as part of that teamfight
+            for (var j = 0; j < teamfights.length; j++) {
+                var tf = teamfights[j];
+                if (e.time >= tf.start && e.time <= tf.end) {
+                    //kills_log tracks only hero kills on non-illusions
+                    if (e.type === "kills_log") {
+                        //copy the entry
+                        var e_cpy_1 = JSON.parse(JSON.stringify(e))
+                        //count toward kills
+                        e_cpy_1.type = "kills";
+                        populate(e_cpy_1, tf);
+                        //get slot of target
+                        e.slot = hero_to_slot[e.key];
+                        //0 is valid value, so check for undefined
+                        if (e.slot !== undefined) {
+                            //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
+                            var x = intervalState[e.time][e.slot].x;
+                            var y = intervalState[e.time][e.slot].y;
+                            //copy the entry
+                            var e_cpy_2 = JSON.parse(JSON.stringify(e))
+                            //fill in the copy
+                            e_cpy_2.type = "deaths_pos";
+                            e_cpy_2.key = [x, y];
+                            e_cpy_2.posData = true;
+                            populate(e_cpy_2, tf);
+                            //increment death count for this hero
+                            tf.players[e_cpy_2.slot].deaths += 1;
+                        }
+                    }
+                    else if (e.type === "buyback_log") {
+                        //bought back
+                        tf.players[e.slot].buybacks += 1;
+                    }
+                    else if (e.type === "damage") {
+                        //sum damage
+                        //check if damage dealt to hero and not illusion
+                        if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
+                            //check if the damage dealer could be assigned to a slot
                             if (e.slot !== undefined) {
-                                //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
-                                var x = intervalState[e.time][e.slot].x;
-                                var y = intervalState[e.time][e.slot].y;
-                                e.type = "deaths_pos";
-                                e.key = [x, y];
-                                e.posData = true;
-                                populate(e, tf);
-                                //increment death count for this hero
-                                tf.players[e.slot].deaths += 1;
+                                tf.players[e.slot].damage += e.value;
                             }
                         }
-                        else if (e.type === "buyback_log") {
-                            //bought back
-                            tf.players[e.slot].buybacks += 1;
-                        }
-                        else if (e.type === "damage") {
-                            //sum damage
-                            //check if damage dealt to hero and not illusion
-                            if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
-                                //check if the damage dealer could be assigned to a slot
-                                if (e.slot !== undefined) {
-                                    tf.players[e.slot].damage += e.value;
-                                }
-                            }
-                        }
-                        else if (e.type === "ability_uses" || e.type === "item_uses") {
-                            //count skills, items
-                            populate(e, tf);
-                        }
-                        else {
-                            continue;
-                        }
+                    }
+                    else if (e.type === "ability_uses" || e.type === "item_uses") {
+                        //count skills, items
+                        populate(e, tf);
+                    }
+                    else {
+                        continue;
                     }
                 }
             }
-            parsed_data.teamfights = teamfights;
         }
-        /*
-        //don't need this function with source/targetSource
-            function assocName(name) {
-                //given a name (npc_dota_visage_familiar...), tries to convert to the associated hero's name
-                if (!name) {
-                    return;
+        parsed_data.teamfights = teamfights;
+    }
+
+    // associate kill streaks with multi kills and team fights
+    function processMultiKillStreaks () {
+
+        // bookkeeping about each player
+        var players = {};
+
+        // for each entry in the combat log
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+
+            // identify the killer
+            var killer = entry.unit;
+            var killer_index = hero_to_slot[killer];
+
+            // if the killer is a hero (which it might not be)
+            if (killer_index !== undefined) {
+
+                // bookmark this player's parsed bookkeeping
+                var parsed_info = parsed_data.players[killer_index];
+
+                // record which hero this is
+                parsed_info.hero_id = hero_to_id[killer];
+
+                // if needed, initialize this player's bookkeeping
+                if (players[killer_index] === undefined) {
+
+                    parsed_info.kill_streaks.push([]);
+
+                    players[killer_index] = {
+                        "cur_multi_id": 0,     // the id of the current multi kill
+                        "cur_multi_val": 0,    // the value of the current multi kill
+                        "cur_streak_budget": 2 // the max length of the current kill streak
+
+                    };
+
                 }
-                else if (name in hero_to_slot) {
-                    return name;
-                }
-                else if (name.indexOf("illusion_") === 0) {
-                    //associate illusions with the heroes they are illusions of
-                    var s = name.slice("illusion_".length);
-                    return s;
-                }
-                else if (name.indexOf("npc_dota_") === 0) {
-                    //try to get the hero this minion is associated with
-                    //split by _
-                    var split = name.split("_");
-                    //get the third element
-                    var identifiers = [split[2], split[2] + "_" + split[3]];
-                    for (var i = 0; i < identifiers.length; i++) {
-                        var id = identifiers[i];
-                        //append to npc_dota_hero_, see if matches
-                        var attempt = "npc_dota_hero_" + id;
-                        if (attempt in hero_to_slot) {
-                            return attempt;
+
+                // get the number of streaks and the length of the current streak
+                var all_streak_length = parsed_info.kill_streaks.length;
+                var cur_streak_length = parsed_info.kill_streaks[all_streak_length-1].length;
+
+                // bookmark this player's local bookkeeping
+                var local_info = players[killer_index];
+
+                // if this entry is a valid kill notification
+                if (entry.type === "kills_log") {
+
+                    // determine who was killed
+                    var killed = entry.key;
+                    var killed_index = hero_to_slot[killed];
+
+                    // if this is a valid kill (note: self-denies (via bloodstone, etc) are logged
+                    // as kill events but do not break kill streaks or multi kills events)
+                    if (killer_index != killed_index) {
+
+                        // check if we've run out of room in the current kills array (note: this
+                        // would happen because (for some reason) the combat log does not contain
+                        // kill streak events for streaks of size 2 (even though it really should))
+                        var cur_streak_budget = local_info.cur_streak_budget;
+                        if (cur_streak_length == cur_streak_budget && cur_streak_budget == 2) {
+
+                            // remove the first element of the streak (note: later we will
+                            // push a new second element on to the end of the streak)
+                            parsed_info.kill_streaks[all_streak_length-1].splice(0, 1);
+                            cur_streak_length--;
+
+                        // check if the current kill streak has ended
+                        } else if (cur_streak_length >= cur_streak_budget) {
+
+                            // if so, create a new streak in the kills array
+                            all_streak_length++;
+                            cur_streak_length = 0;
+                            parsed_info.kill_streaks.push([]);
+                            local_info.cur_streak_budget = 2;
+
+                            if (print_multi_kill_streak_debugging) {
+                                console.log("\t%s kill streak has ended", killer);
+                            }
+
                         }
+
+                        // check if the current multi kill has ended
+                        if (local_info.cur_multi_val <
+                                parsed_info.multi_kill_id_vals[local_info.cur_multi_id]) {
+
+                            // if not, increment the current multi kill value
+                            local_info.cur_multi_val++;
+
+                        } else {
+
+                            // if so, create a new multi kill id and value
+                            local_info.cur_multi_id++;
+                            local_info.cur_multi_val = 1;
+                            parsed_info.multi_kill_id_vals.push(1);
+
+                            if (print_multi_kill_streak_debugging) {
+                                console.log("\t%s multi kill has ended", killer);
+                            }
+
+                        }
+
+                        // determine if this kill was part of a team fight
+                        var team_fight_id = 0;
+                        var kill_time = entry.time;
+                        for (var j = 0; j < teamfights.length; j++) {
+                            var teamfight = teamfights[j];
+                            if (kill_time >= teamfight.start && kill_time <= teamfight.end) {
+                                team_fight_id = j + 1;
+                            }
+                        }
+
+                        // add this kill to the killer's list of kills
+                        parsed_info.kill_streaks[all_streak_length-1].push({
+                            "hero_id": hero_to_id[killed],
+                            "multi_kill_id": local_info.cur_multi_id,
+                            "team_fight_id": team_fight_id,
+                            "time": kill_time
+                        });
+
+                        if (print_multi_kill_streak_debugging) {
+                            console.log("\t%s killed %s", killer, killed);
+                        }
+
                     }
+
+                // if this entry is a notification of a multi kill (note: the kill that caused
+                // this multi kill has not been seen yet; it will one of the next few entries)
+                } else if (entry.type === "multi_kills") {
+
+                    // update the value of the current multi kill
+                    parsed_info.multi_kill_id_vals[local_info.cur_multi_id] = parseInt(entry.key);
+
+                    if (print_multi_kill_streak_debugging) {
+                        console.log("\t%s got a multi kill of %s", killer, entry.key);
+                    }
+
+                // if this entry is a notification of a kill streak (note: the kill that caused
+                // this kill streak has not been seen yet; it will one of the next few entries)
+                } else if (entry.type === "kill_streaks") {
+
+                    // update the value of the current kill streak
+                    local_info.cur_streak_budget = parseInt(entry.key);
+
+                    if (print_multi_kill_streak_debugging) {
+                        console.log("\t%s got a kill streak of %s", killer, entry.key);
+                    }
+
                 }
-                return name;
+
             }
-        */
+
+        }
+
+        // remove small (length < 3) kill streaks
+        for (var index in players) {
+            var data = parsed_data.players[index].kill_streaks;
+            var i = data.length;
+            while (i--) {
+                if (data[i].length < 3) {
+                    data.splice(i, 1);
+                }
+            }
+        }
+        
+    }
+
     function getSlot(e) {
         //with replay outputting sourceName and targetSourceName, merging/associating no longer necessary
         //e.unit should be populated with a valid hero for kill/damage
@@ -569,19 +735,23 @@ function runParse(job, cb) {
     }
 
     function populate(e, container) {
+
         //use parsed_data by default if nothing passed in
         container = container || parsed_data;
+
         if (!container.players[e.slot]) {
             //couldn't associate with a player, probably attributed to a creep/tower/necro unit
             //console.log(e);
             return;
         }
+
         var t = container.players[e.slot][e.type];
         if (typeof t === "undefined") {
             //parsed_data.players[0] doesn't have a type for this event
             console.log(e);
             return;
         }
+
         else if (e.posData) {
             //fill 2d hash with x,y values
             var x = e.key[0];
@@ -594,13 +764,16 @@ function runParse(job, cb) {
             }
             t[x][y] += 1;
         }
+
         else if (e.max) {
             //check if value is greater than what was stored
             if (e.value > t.value) {
                 container.players[e.slot][e.type] = e;
             }
         }
+
         else if (t.constructor === Array) {
+
             //determine whether we want the value only (interval) or the time and key (log)
             //either way this creates a new value so e can be mutated later
             var arrEntry = (e.interval) ? e.value : {
@@ -608,21 +781,41 @@ function runParse(job, cb) {
                 key: e.key
             };
             t.push(arrEntry);
+
+            if (print_multi_kill_streak_debugging && e.type == "kills_log") {
+                console.log("\t%s killed %s", e.unit, e.key);
+            }
+
         }
+
         else if (typeof t === "object") {
+
             //add it to hash of counts
             e.value = e.value || 1;
             t[e.key] ? t[e.key] += e.value : t[e.key] = e.value;
+
+            if (print_multi_kill_streak_debugging) {
+                if (e.type == "kill_streaks") {
+                    console.log("\t%s got a kill streak of %s", e.unit, e.key);
+                } else if (e.type == "multi_kills") {
+                    console.log("\t%s got a multi kill of %s", e.unit, e.key);
+                }
+            }
+
         }
+
         else if (typeof t === "string") {
             //string, used for steam id
             container.players[e.slot][e.type] = e.key;
         }
+
         else {
             //we must use the full reference since this is a primitive type
             //use the value most of the time, but key when stuns since value only holds Integers in Java
             //replace the value directly
             container.players[e.slot][e.type] = e.value || Number(e.key);
         }
+
     }
+
 }
