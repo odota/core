@@ -159,7 +159,7 @@ block match_content
                 - var hero_id = player.hero_id
                 - var hero = constants.heroes[hero_id]
   
-                each streak in player.kill_streaks
+                each streak in player.kill_streaks_log
   
                   - var num_rows = Math.ceil(streak.length / max_row_size)
                   - var kills_in_other_rows = Math.ceil(streak.length / num_rows)

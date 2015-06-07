@@ -296,23 +296,15 @@ function getParseSchema() {
                 "kill_streaks": {},
                 "multi_kills": {},
                 "healing": {},
-                // the hero id of this player
-                // an array of kill streak values
+                "hero_id": "", // the hero id of this player
+                "kill_streaks_log": [], // an array of kill streak values
                 //     where each kill streak is an array of kills where
                 //         where each kill is an object that contains
                 //             - the hero id of the player who was killed
                 //             - the multi kill id of this kill
                 //             - the team fight id of this kill
                 //             - the time of this kill
-                // an array of multi kill values (the length of each multi kill)
-                "multi_kill_streaks": {
-                    "hero_id": "",
-                    "kills": [[]],
-                    "cur_multi_id": 0,
-                    "cur_multi_val": 0,
-                    "all_multi_vals": [1],
-                    "all_streak_vals": [2]
-                }
+                "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
             };
         })
     };
