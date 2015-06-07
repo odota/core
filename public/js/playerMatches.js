@@ -52,7 +52,6 @@ module.exports = function() {
                 {
                     data: 'match_id',
                     title: 'Match ID',
-                    visible: false,
                     render: function(data, type) {
                         return '<a href="/matches/' + data + '">' + data + '</a>';
                     }
@@ -102,7 +101,7 @@ module.exports = function() {
                     data: 'player_win',
                     title: 'Result',
                     render: function(data, type, row) {
-                        return '<a class="' + (data ? "green" : "red") + '" href="/matches/' + row.match_id + '">' + ((data) ? "Victory" : "Defeat") + '</a>';
+                        return '<span class="' + (data ? "green" : "red") + '">' + ((data) ? "Win" : "Loss") + '</span>';
                     }
             },
                 {
@@ -183,27 +182,30 @@ module.exports = function() {
                     render: function(data, type) {
                         return data;
                     }
-            },
-                {
-                    data: 'players[0].hero_damage',
-                    title: 'HD',
-                    render: function(data, type) {
-                        return data;
-                    }
-            },
-                {
-                    data: 'players[0].tower_damage',
-                    title: 'TD',
-                    render: function(data, type) {
-                        return data;
-                    }
-            },
-                {
-                    data: 'players[0].hero_healing',
-                    title: 'HH',
-                    render: function(data, type) {
-                        return data;
-                    }
+            // },
+            //     {
+            //         data: 'players[0].hero_damage',
+            //         title: 'HD',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
+            // },
+            //     {
+            //         data: 'players[0].tower_damage',
+            //         title: 'TD',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
+            // },
+            //     {
+            //         data: 'players[0].hero_healing',
+            //         title: 'HH',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
             }, {
                     data: 'parse_status',
                     title: 'Status',

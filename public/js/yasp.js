@@ -23,7 +23,6 @@ window.CalHeatMap = require('cal-heatmap');
 window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
 window.moment = require('moment');
 window.numeral = require('numeral');
-window.vis = require('vis');
 //yasp utility functions
 window.pad = function pad(n, width, z) {
         z = z || '0';
