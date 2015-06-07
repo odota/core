@@ -260,12 +260,9 @@ block match_content
                           - var p2 = player.parsedPlayer.killed_by[hero2.name] || 0
 
                           td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger"))
-                            abbr.blackunderline(title=hero1name+" killed "+hero2name+" "+p1+" time"+(p1===1?"":"s")+".")
-                              span(class="green") #{p1}
-                            span=" / "
-                            abbr.blackunderline(title=hero2name+" killed "+hero1name+" "+p2+" time"+(p2===1?"":"s")+".")
-                              span(class="red") #{p2}
-
+                            abbr.blackunderline(title=hero1name+" killed "+hero2name+" "+p1+" time"+(p1===1?"":"s")+".<br>"+hero2name+" killed "+hero1name+" "+p2+" time"+(p2===1?"":"s")+".")
+                              span(class="") #{p1} / #{p2}
+                              
           .col-md-6
 
             h2.inline-header Damage Done/Taken
@@ -302,8 +299,7 @@ block match_content
                           - var p2 = player.parsedPlayer.damage_taken[hero2.name] || 0                          
                           
                           td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger"))
-                            abbr.blackunderline(title=hero1name+" did "+p1+" damage to "+hero2name+".")
-                              span(class="green format") #{p1}
-                            span=" / "
-                            abbr.blackunderline(title=hero2name+" did "+p2+" damage to "+hero1name+".")
-                              span(class="red format") #{p2}
+                            abbr.blackunderline(title=hero1name+" did "+p1+" damage to "+hero2name+".<br>"+hero2name+" did "+p2+" damage to "+hero1name+".")
+                              span(class="format") #{p1}
+                              span=" / "
+                              span(class="format") #{p2}
