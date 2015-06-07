@@ -193,7 +193,7 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/compare').get(function(req, res, next) {
-    var account_ids = ["all","professional"];
+    var account_ids = ["all"];
     if (req.query.compare) {
         account_ids = account_ids.concat(req.query.compare.split(","));
     }
@@ -249,7 +249,7 @@ app.route('/compare').get(function(req, res, next) {
                 arr.sort(function(a, b) {
                     return a - b;
                 });
-                player.aggData[key].avg = arr[arr.length / 2];
+                player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
             }
             cb(err, {
                 account_id: account_id,

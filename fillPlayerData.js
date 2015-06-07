@@ -38,13 +38,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         var queryExists = Boolean(Object.keys(options.query.select).length);
         var cacheAble = options.info === "index" && player.cache && !queryExists;
         //don't get parsed data on tabs that don't require it
-        options.query.js_agg = options.info === "index" || options.info === "matches" ? {
-            "win": 1,
-            "games": 1,
-            "lose": 1,
-            "heroes": 1,
-            "teammates": 1
-        } : null;
         options.query.limit = cacheAble ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
