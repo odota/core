@@ -28,29 +28,28 @@ block match_content
                     th: abbr(title="Gem of True Sight purchases") GEM
                     th: abbr(title="Number of Buybacks") BB
 
-              tbody
-                tr(class = player.isRadiant ? "success" : "danger")
-                  - var hero = constants.heroes[player.hero_id]
-                  - var p = player.parsedPlayer
-                  td.hero
-                   if hero
-                     img(src=hero.img, title=hero.localized_name)
-                   else
-                     =player.hero_id
-                  td #{p.pick_order} (<span class="format-seconds" data-format-seconds=#{p.pick_time}></span>)
-                  td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
-                  td #{(p.lane_efficiency*100).toFixed(2)}
-                  td #{p.lh[10] || "-"}
-                  td #{p.stuns.toFixed(2)}
-                  td #{p.pings[0] || "-"}
-                  //td #{p.clicks[0] || "-"}
-                  td #{p.purchase.tpscroll || "-"}
-                  td #{p.purchase.ward_observer || "-"}
-                  td #{p.purchase.ward_sentry*2 || "-"}
-                  td #{p.purchase.smoke_of_deceit || "-"}
-                  td #{p.purchase.dust*2 || "-"}
-                  td #{p.purchase.gem || "-"}
-                  td #{p.buyback_log.length || "-"}
+              tr(class = player.isRadiant ? "success" : "danger")
+                - var hero = constants.heroes[player.hero_id]
+                - var p = player.parsedPlayer
+                td.hero
+                 if hero
+                   img(src=hero.img, title=hero.localized_name)
+                 else
+                   =player.hero_id
+                td #{p.pick_order} (<span class="format-seconds" data-format-seconds=#{p.pick_time}></span>)
+                td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
+                td #{(p.lane_efficiency*100).toFixed(2)}
+                td #{p.lh[10] || "-"}
+                td #{p.stuns.toFixed(2)}
+                td #{p.pings[0] || "-"}
+                //td #{p.clicks[0] || "-"}
+                td #{p.purchase.tpscroll || "-"}
+                td #{p.purchase.ward_observer || "-"}
+                td #{p.purchase.ward_sentry*2 || "-"}
+                td #{p.purchase.smoke_of_deceit || "-"}
+                td #{p.purchase.dust*2 || "-"}
+                td #{p.purchase.gem || "-"}
+                td #{p.buyback_log.length || "-"}
 
         hr
         include /ads/leaderboard_2
