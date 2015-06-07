@@ -588,7 +588,7 @@ function runParse(job, cb) {
                 // if needed, initialize this player's bookkeeping
                 if (players[killer_index] === undefined) {
 
-                    parsed_info.kill_streaks.push([]);
+                    parsed_info.kill_streaks_log.push([]);
 
                     players[killer_index] = {
                         "cur_multi_id": 0,     // the id of the current multi kill
@@ -600,8 +600,8 @@ function runParse(job, cb) {
                 }
 
                 // get the number of streaks and the length of the current streak
-                var all_streak_length = parsed_info.kill_streaks.length;
-                var cur_streak_length = parsed_info.kill_streaks[all_streak_length-1].length;
+                var all_streak_length = parsed_info.kill_streaks_log.length;
+                var cur_streak_length = parsed_info.kill_streaks_log[all_streak_length-1].length;
 
                 // bookmark this player's local bookkeeping
                 var local_info = players[killer_index];
@@ -625,7 +625,7 @@ function runParse(job, cb) {
 
                             // remove the first element of the streak (note: later we will
                             // push a new second element on to the end of the streak)
-                            parsed_info.kill_streaks[all_streak_length-1].splice(0, 1);
+                            parsed_info.kill_streaks_log[all_streak_length-1].splice(0, 1);
                             cur_streak_length--;
 
                         // check if the current kill streak has ended
@@ -634,7 +634,7 @@ function runParse(job, cb) {
                             // if so, create a new streak in the kills array
                             all_streak_length++;
                             cur_streak_length = 0;
-                            parsed_info.kill_streaks.push([]);
+                            parsed_info.kill_streaks_log.push([]);
                             local_info.cur_streak_budget = 2;
 
                             if (print_multi_kill_streak_debugging) {
@@ -674,7 +674,7 @@ function runParse(job, cb) {
                         }
 
                         // add this kill to the killer's list of kills
-                        parsed_info.kill_streaks[all_streak_length-1].push({
+                        parsed_info.kill_streaks_log[all_streak_length-1].push({
                             "hero_id": hero_to_id[killed],
                             "multi_kill_id": local_info.cur_multi_id,
                             "team_fight_id": team_fight_id,
@@ -717,7 +717,7 @@ function runParse(job, cb) {
 
         // remove small (length < 3) kill streaks
         for (var index in players) {
-            var data = parsed_data.players[index].kill_streaks;
+            var data = parsed_data.players[index].kill_streaks_log;
             var i = data.length;
             while (i--) {
                 if (data[i].length < 3) {
