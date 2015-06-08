@@ -39,7 +39,7 @@ module.exports = function() {
             },
             */
             "rowCallback": function(row, data) {
-                $(row).addClass(data.player_win ? "success" : "danger");
+                //$(row).addClass(data.player_win ? "success" : "danger");
             },
             "drawCallback": function() {
                 tooltips();
@@ -48,13 +48,15 @@ module.exports = function() {
             stateSave: true,
             searching: false,
             processing: true,
-            columns: [{
+            columns: [
+                {
                     data: 'match_id',
                     title: 'Match ID',
                     render: function(data, type) {
                         return '<a href="/matches/' + data + '">' + data + '</a>';
                     }
             },
+
                 {
                     data: 'players[0].hero_id',
                     title: 'Hero',
@@ -95,15 +97,13 @@ module.exports = function() {
                         return data ? data : "Unknown";
                     }
             },
-            /*
-            {
-                data: 'player_win',
-                title: 'Result',
-                render: function(data, type, row) {
-                    return (data) ? "Won" : "Lost";
-                }
+                {
+                    data: 'player_win',
+                    title: 'Result',
+                    render: function(data, type, row) {
+                        return '<span class="' + (data ? "green" : "red") + '">' + ((data) ? "Win" : "Loss") + '</span>';
+                    }
             },
-            */
                 {
                     data: 'game_mode',
                     title: 'Game Mode',
@@ -182,27 +182,30 @@ module.exports = function() {
                     render: function(data, type) {
                         return data;
                     }
-            },
-                {
-                    data: 'players[0].hero_damage',
-                    title: 'HD',
-                    render: function(data, type) {
-                        return data;
-                    }
-            },
-                {
-                    data: 'players[0].tower_damage',
-                    title: 'TD',
-                    render: function(data, type) {
-                        return data;
-                    }
-            },
-                {
-                    data: 'players[0].hero_healing',
-                    title: 'HH',
-                    render: function(data, type) {
-                        return data;
-                    }
+            // },
+            //     {
+            //         data: 'players[0].hero_damage',
+            //         title: 'HD',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
+            // },
+            //     {
+            //         data: 'players[0].tower_damage',
+            //         title: 'TD',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
+            // },
+            //     {
+            //         data: 'players[0].hero_healing',
+            //         title: 'HH',
+            //         visible: false,
+            //         render: function(data, type) {
+            //             return data;
+            //         }
             }, {
                     data: 'parse_status',
                     title: 'Status',
@@ -313,7 +316,7 @@ module.exports = function() {
             },
             "columns": [{
                     data: "account_id",
-                    title: "Teammate",
+                    title: "Name",
                     render: function(data, type, row) {
                         return '<a href="/players/' + data + '">' + row.personaname + '</a>'
                     }

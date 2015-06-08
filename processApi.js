@@ -12,10 +12,7 @@ module.exports = function processApi(job, cb) {
     getData(job.data.url, function(err, body) {
         if (err) {
             //couldn't get data from api, non-retryable
-            //we don't want to retry, so cb with null err, but capture the error
-            return cb(null, {
-                error: err
-            });
+            return cb(JSON.stringify(err));
         }
         else if (body.response) {
             logger.info("summaries response");

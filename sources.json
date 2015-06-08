@@ -122,27 +122,33 @@
   "runes": {
     "0": {
       "name": "DD",
-      "img": ""
+      "img": "",
+      "tooltip": "Double Damage Runes"
     },
     "1": {
       "name": "HST",
-      "img": ""
+      "img": "",
+      "tooltip": "Haste Runes"
     },
     "2": {
       "name": "ILL",
-      "img": ""
+      "img": "",
+      "tooltip": "Illusion Runes"
     },
     "3": {
       "name": "INV",
-      "img": ""
+      "img": "",
+      "tooltip": "Invisibility Runes"
     },
     "4": {
       "name": "REG",
-      "img": ""
+      "img": "",
+      "tooltip": "Regeneration Runes"
     },
     "5": {
       "name": "BTY",
-      "img": ""
+      "img": "",
+      "tooltip": "Bounty Runes"
     }
   },
   "parse_status": {

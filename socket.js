@@ -32,7 +32,9 @@ io.sockets.on('connection', function(socket) {
             var match_id = data.match_id;
             match_id = Number(match_id);
             socket.emit('log', "Received request for " + match_id);
-            if (!body.success && config.NODE_ENV !== "test") {
+            if (!body.success && config.NODE_ENV !== "test"
+                    // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
+                    && !config.DISABLE_RECAPTCHA) {
                 console.log('failed recaptcha');
                 socket.emit("err", "Recaptcha Failed!");
             }
@@ -56,14 +58,15 @@ io.sockets.on('connection', function(socket) {
                     job.on('complete', function(result) {
                         console.log(result);
                         socket.emit('log', "Request Complete!");
+                        //clear the cache for this match
                         redis.del("match:" + match_id, function(err, resp) {
                             if (err) console.log(err);
                             socket.emit('complete');
                         });
                     });
                     job.on('failed', function(result) {
-                        console.log(result);
-                        socket.emit('err', JSON.stringify(result.error));
+                        console.log(JSON.stringify(result));
+                        socket.emit('err', result);
                     });
                 });
             }
