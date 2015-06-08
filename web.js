@@ -197,7 +197,7 @@ app.route('/compare').get(function(req, res, next) {
     if (req.query.compare) {
         account_ids = account_ids.concat(req.query.compare.split(","));
     }
-    account_ids = account_ids.slice(0, 5);
+    account_ids = account_ids.slice(0, 6);
     console.log(account_ids);
     var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
