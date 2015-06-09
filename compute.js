@@ -196,40 +196,25 @@ function computeMatchData (match, requesting_player) {
 
             });
 
-            //combine all the words in this player's matches
+            // aggregate all the words in this matches
             if (match.parsed_data.chat) {
 
-                // console.log("match.chat = %s", JSON.stringify(match.chat, null, 2));
-                // console.log("match.all_players = %s", JSON.stringify(match.all_players, null, 2));
-
-                /* old way of doing this:
-                match.chat = match.parsed_data.chat;
-                //concatenation of all the chat strings in this match
-                match.chat_words = match.chat.map(function(c) {
-                    return c.key;
-                }).join(' ');
-                var tokens = utility.tokenize(match.chat_words);
-                //tokenize the string and do word count, make it part of compute and do in every match, will it be too slow?
-                var counts = {};
-                for (var i = 0; i < tokens.length; i++) {
-                    if (!counts[tokens[i]]) {
-                        counts[tokens[i]] = 0;
-                    }
-                    counts[tokens[i]] += 1;
-                }
-                match.word_counts = counts;
-                */
-
+                // count the words that occur in a set of messages
+                // - messages: the messages to create the counts over
+                // - player_filter: if non-null, only count that player's messages
                 function count_words (messages, player_filter) {
 
+                    // extract the message strings from the message objects
                     var chat_words = messages.map(
                         function(message) {
                             return (!player_filter || match.all_players[message.slot].account_id
                                 === player_filter) ? message.key : " ";
                         }).join(' ');
 
+                    // extract individual words from the message strings
                     var tokens = utility.tokenize(chat_words);
 
+                    // count how frequently each word occurs
                     var counts = {};
                     for (var i = 0; i < tokens.length; i++) {
                         if (!counts[tokens[i]]) {
@@ -238,11 +223,14 @@ function computeMatchData (match, requesting_player) {
                         counts[tokens[i]] += 1;
                     }
 
+                    // return the final counts
                     return counts;
 
                 }
 
+                // aggregation of all words in all chat this player has experienced
                 match.all_word_counts = count_words(match.parsed_data.chat, null);
+                // aggregation of only the words in all chat this player said themselves
                 match.my_word_counts = count_words(match.parsed_data.chat, requesting_player);
 
             }
