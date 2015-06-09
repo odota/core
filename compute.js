@@ -220,14 +220,13 @@ function computeMatchData (match, requesting_player) {
                 match.word_counts = counts;
                 */
 
-                function count_words (messages) {
+                function count_words (messages, player_filter) {
 
                     var chat_words = messages.map(
                         function(message) {
-                            return match.all_players[message.slot].account_id === requesting_player ? message.key : " ";
+                            return (!player_filter || match.all_players[message.slot].account_id
+                                === player_filter) ? message.key : " ";
                         }).join(' ');
-
-                    console.log("chat_words = %s", chat_words);
 
                     var tokens = utility.tokenize(chat_words);
 
@@ -239,19 +238,12 @@ function computeMatchData (match, requesting_player) {
                         counts[tokens[i]] += 1;
                     }
 
-                    console.log("counts = %s", JSON.stringify(counts));
-
                     return counts;
 
                 }
 
-                // var all_messages = match.parsed_data.chat;
-
-                // var all_counts = {};
-                // var my_counts = {};
-
-                match.word_counts = count_words(match.parsed_data.chat);
-                // match.my_word_counts = my_counts;
+                match.all_word_counts = count_words(match.parsed_data.chat, null);
+                match.my_word_counts = count_words(match.parsed_data.chat, requesting_player);
 
             }
 

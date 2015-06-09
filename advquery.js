@@ -171,7 +171,7 @@ function advQuery(options, cb) {
             }
 
             // determine which user page this information is for
-            var requesting_player = parseInt(options.select["players.account_id"]) || false;
+            var requesting_player = parseInt(options.select["players.account_id"]);
 
             // console.timeEnd("parsedplayerdata");
             // console.time('compute');
@@ -394,8 +394,11 @@ function aggregator(matches, fields) {
         "kill_streaks": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.kill_streaks, m);
         },
-        "word_counts": function(key, m, p) {
-            standardAgg(key, m.word_counts, m);
+        "all_word_counts": function(key, m, p) {
+            standardAgg(key, m.all_word_counts, m);
+        },
+        "my_word_counts": function(key, m, p) {
+            standardAgg(key, m.my_word_counts, m);
         }
     };
     //if null fields passed in, do all aggregations
