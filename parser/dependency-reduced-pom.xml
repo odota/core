@@ -12,6 +12,11 @@
       <name>Albert Cui</name>
       <email>albertqcui@gmail.com</email>
     </developer>
+    <developer>
+      <id>howardc93</id>
+      <name>Howard Chung</name>
+      <email>howardc93@gmail.com</email>
+    </developer>
   </developers>
   <build>
     <plugins>
@@ -50,13 +55,8 @@
   </build>
   <repositories>
     <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>sonatype.oss.snapshots</id>
-      <name>Sonatype OSS Snapshot Repository</name>
-      <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
   <properties>
