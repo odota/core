@@ -9,6 +9,8 @@ import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.GameRulesStateType;
 import skadistats.clarity.processor.gameevents.OnGameEvent;
+import skadistats.clarity.processor.gameevents.CombatLog;
+import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
 import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.reader.OnMessage;
@@ -558,7 +560,7 @@ Integer timeIdx;
     }
     
     private String determineIllusion(String in, boolean illusion){
-    	return (illusion ? "illusion_" : "") + getTargetName();
+    	return (illusion ? "illusion_" : "") + in;
     }
         
 	public void run(String[] args) throws Exception {
