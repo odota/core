@@ -207,7 +207,10 @@ function computeMatchData (match, requesting_player) {
                     // extract the message strings from the message objects
                     var chat_words = messages.map(
                         function(message) {
-                            return (!player_filter || match.all_players[message.slot].account_id
+                            // adjust the slot position (important if there are fewer than 10 players)
+                            var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
+                            // if there is no player_filter, or if the player_filter matches this message, log it
+                            return (!player_filter || match.all_players[adjusted_slot].account_id
                                 === player_filter) ? message.key : " ";
                         }).join(' ');
 

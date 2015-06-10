@@ -12,8 +12,7 @@ var async = require('async');
 
 function advQuery(options, cb) {
 
-    var agg_player_page = "time to aggregate player page";
-    console.time(agg_player_page);
+    console.log("advquery: aggregating player page...");
 
     var default_project = {
         start_time: 1,
@@ -127,15 +126,15 @@ function advQuery(options, cb) {
         fields: options.project
     };
 
+    console.time('querying database');
     // console.log(options);
-    // console.time('db');
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
 
         if (err) {
             return cb(err);
         }
 
-        // console.timeEnd('db');
+        console.timeEnd('querying database');
         var expanded_matches = [];
         matches.forEach(function(m) {
             if (m.players) {
@@ -163,7 +162,7 @@ function advQuery(options, cb) {
         });
 
         matches = expanded_matches;
-        // console.time("parsedplayerdata");
+        console.time("parsing player data");
         getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
 
             if (err) {
@@ -173,8 +172,8 @@ function advQuery(options, cb) {
             // determine which user page this information is for
             var requesting_player = parseInt(options.select["players.account_id"]);
 
-            // console.timeEnd("parsedplayerdata");
-            // console.time('compute');
+            console.timeEnd("parsing player data");
+            console.time('computing aggregations');
             matches.forEach(function(m) {
                 //post-process the match to get additional stats
                 computeMatchData(m, requesting_player);
@@ -190,14 +189,12 @@ function advQuery(options, cb) {
                 data: filtered,
                 unfiltered_count: matches.length
             };
-            // console.timeEnd('compute');
+            console.timeEnd('computing aggregations');
             cb(err, result);
 
         });
 
     });
-
-    console.timeEnd(agg_player_page);
 
 }
 

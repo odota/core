@@ -7,28 +7,32 @@ block playercontent
       h2: abbr(title="Generated from the messages said in All Chat of parsed matches that this player participated in.") Word Clouds
 
       h3="Words said by this player in all chat in any parsed game"
-      canvas(width=1000, height=800)#my_word_counts
+      canvas(width=1000, height=800)#mywordcounts
 
       h3="Words read by this player in all chat in any parsed game"
-      canvas(width=1000, height=800)#all_word_counts
+      canvas(width=1000, height=800)#allwordcounts
         
 append footer_assets
 
   script.
 
-    var my_list = [];
-    var all_list = [];
+    function populate_word_cloud (cloud_dom_id, word_counts) {
+
+      var word_list = [];
+
+      for (var key in word_counts){
+        word_list.push([key, word_counts[key]+2]);
+      }
+
+      WordCloud(document.getElementById(cloud_dom_id), { list: word_list, weightFactor:5, minSize: 10 } );
+
+    }
 
     var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};
     var all_counts = !{JSON.stringify(player.aggData.all_word_counts.counts)};
 
-    for (var key in my_counts){
-      my_list.push([key, my_counts[key]]);
-    }
+    console.log("my_counts:");
+    console.log(my_counts);
 
-    for (var key in all_counts){
-      all_list.push([key, all_counts[key]]);
-    }
-
-    WordCloud(document.getElementById('my_word_counts'), { list: my_list, weightFactor:5, minSize: 10 } );
-    WordCloud(document.getElementById('all_word_counts'), { list: all_list, weightFactor:5, minSize: 10 } );
+    populate_word_cloud("mywordcounts", my_counts);
+    populate_word_cloud("allwordcounts", all_counts);
