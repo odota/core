@@ -4,12 +4,12 @@ block playercontent
   .row
     .col-md-12
 
-      h2: abbr(title="Generated from the messages said in All Chat of parsed matches that this player participated in.") Word Clouds
+      h2: abbr(title="Generated from all chat of this player's parsed matches") Word Clouds
 
-      h3="Words said by this player in all chat in any parsed game"
+      h3="Words said by this player in all chat"
       canvas(width=1000, height=800)#mywordcounts
 
-      h3="Words read by this player in all chat in any parsed game"
+      h3="Words read by this player in all chat"
       canvas(width=1000, height=800)#allwordcounts
         
 append footer_assets
@@ -21,10 +21,9 @@ append footer_assets
       var word_list = [];
 
       for (var key in word_counts){
-        word_list.push([key, word_counts[key]+2]);
+        word_list.push([key, word_counts[key] > 40 ? 40 : word_counts[key]]);
       }
-
-      WordCloud(document.getElementById(cloud_dom_id), { list: word_list, weightFactor:5, minSize: 10 } );
+      WordCloud(document.getElementById(cloud_dom_id), { list: word_list, weightFactor:10, minSize: 9 } );
 
     }
 

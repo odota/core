@@ -11,9 +11,7 @@ var isSignificant = helper.isSignificant;
 var async = require('async');
 
 function advQuery(options, cb) {
-
     console.log("advquery: aggregating player page...");
-
     var default_project = {
         start_time: 1,
         match_id: 1,
@@ -28,10 +26,8 @@ function advQuery(options, cb) {
         radiant_name: 1,
         dire_name: 1
     };
-
     options.project = options.project || default_project;
     options.project.players = 1;
-
     //only project the fields we need
     options.project["players.account_id"] = 1;
     options.project["players.hero_id"] = 1;
@@ -48,20 +44,16 @@ function advQuery(options, cb) {
     options.project["players.last_hits"] = 1;
     options.project["players.denies"] = 1;
     options.project["players.leaver_status"] = 1;
-
     //select,the query received, build the mongo query and the filter based on this
     options.mongo_select = {};
     options.js_select = {};
-
     //default limit
     var max = 100;
-
     //map to limit
     var mongoAble = {
         "players.account_id": 10000,
         "leagueid": max
     };
-
     for (var key in options.select) {
         if (options.select[key] === "" || options.select[key] === "all") {
             //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
@@ -98,14 +90,12 @@ function advQuery(options, cb) {
             }
         }
     }
-
     //use mongodb to sort if selecting on indexed field
     if (!options.mongo_select["players.account_id"]) {
         options.sort = {
             "match_id": -1
         };
     }
-
     //js_agg, aggregations to do with js
     //do everything if null
     //this just gets the parsed data if js_agg is null (which means do everything)
@@ -117,7 +107,6 @@ function advQuery(options, cb) {
     //js_limit, the number of results to return in a page, filtered by js
     //js_start, the position to start a page at, selected by js
     //js_sort, post-process sorter that processes with js
-
     //build the monk hash
     var monk_options = {
         limit: options.limit,
@@ -125,15 +114,12 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-
     console.time('querying database');
     // console.log(options);
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
-
         if (err) {
             return cb(err);
         }
-
         console.timeEnd('querying database');
         var expanded_matches = [];
         matches.forEach(function(m) {
@@ -160,25 +146,20 @@ function advQuery(options, cb) {
                 });
             }
         });
-
         matches = expanded_matches;
         console.time("parsing player data");
         getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
-
             if (err) {
                 return cb(err);
             }
-
             // determine which user page this information is for
             var requesting_player = parseInt(options.select["players.account_id"]);
-
             console.timeEnd("parsing player data");
             console.time('computing aggregations');
             matches.forEach(function(m) {
                 //post-process the match to get additional stats
-                computeMatchData(m, requesting_player);
+                computeMatchData(m);
             });
-
             var filtered = filter(matches, options.js_select);
             filtered = sort(filtered, options.js_sort);
             // console.log('aggData: options.js_agg = %s', options.js_agg);
@@ -191,11 +172,8 @@ function advQuery(options, cb) {
             };
             console.timeEnd('computing aggregations');
             cb(err, result);
-
         });
-
     });
-
 }
 
 function aggregator(matches, fields) {
