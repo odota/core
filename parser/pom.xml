@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.github.yasp-dota</groupId>
             <artifactId>clarity</artifactId>
-            <version>49f4f1f0</version>
+            <version>c8ff17e</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

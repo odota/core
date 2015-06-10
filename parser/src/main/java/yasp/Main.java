@@ -245,8 +245,8 @@ public class Main {
 		}
 	}
 
-	@OnYASPCombatLogEntry
-	public void onCombatLogEntry(Context ctx, YASPCombatLog.Entry cle) {
+	@OnCombatLogEntry
+	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
 		//System.err.println(cle);
 		//System.err.format("%s\n", cle);
 		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
@@ -261,7 +261,7 @@ public class Main {
 		case 0:
 			//damage
 			entry.unit = cle.getSourceName(); //source of damage (a hero)
-			entry.key = cle.getTargetNameCompiled();
+			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
 			entry.target_source = cle.getTargetSourceName();
 			entry.target_hero = cle.isTargetHero();
 			entry.inflictor = cle.getInflictorName();
@@ -273,7 +273,7 @@ public class Main {
 		case 1:
 			//healing
 			entry.unit = cle.getSourceName(); //source of healing (a hero)
-			entry.key = cle.getTargetNameCompiled();
+			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
 			entry.value = cle.getValue();
 			entry.type = "healing";
 			es.output(entry);
@@ -282,20 +282,20 @@ public class Main {
 			//gain buff/debuff
 			entry.type = "modifier_applied";
 			entry.unit = cle.getAttackerName(); //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
-			entry.key = cle.getInflictorName(); //the buff
-			//String unit2 = cle.getTargetNameCompiled(); //target of buff
+			entry.key = translate(cle.getInflictorName()); //the buff
+			//entry.target = determineIllusion(cle.getTargetName(), cle.isTargetIllusion()); //target of buff
 			es.output(entry);
 			break;
 		case 3:
 			//lose buff/debuff
 			entry.type = "modifier_lost";
 			//TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
-			// log.info("{} {} loses {} buff/debuff", time, cle.getTargetNameCompiledCompiled(), cle.getInflictorName() );
+			// log.info("{} {} loses {} buff/debuff", time, determineIllusion(cle.getTargetName(), cle.isTargetIllusion()), cle.getInflictorName() );
 			break;
 		case 4:
 			//kill
 			entry.unit = cle.getSourceName(); //source of damage (a hero)
-			entry.key = cle.getTargetNameCompiled();
+			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
 			entry.target_source = cle.getTargetSourceName();
 			entry.target_hero = cle.isTargetHero();
 			entry.target_illusion = cle.isTargetIllusion();
@@ -312,7 +312,7 @@ public class Main {
 		case 6:
 			//item use
 			entry.unit = cle.getAttackerName();
-			entry.key = cle.getInflictorName();
+			entry.key = translate(cle.getInflictorName());
 			entry.type = "item_uses";
 			es.output(entry);
 			break;
@@ -345,7 +345,7 @@ public class Main {
 		case 11:
 			//purchase
 			entry.unit = cle.getTargetName();
-			entry.key = cle.getValueName();
+			entry.key = translate(cle.getValueName());
 			entry.type = "purchase";
 			es.output(entry);
 			break;
@@ -360,7 +360,7 @@ public class Main {
 			entry.type = "ability_trigger";
 			entry.unit = cle.getAttackerName(); //unit triggered on?
 			entry.key = cle.getInflictorName();
-			//entry.unit = cle.getTargetNameCompiled(); //triggering unit?
+			//entry.unit = determineIllusion(cle.getTargetName(), cle.isTargetIllusion()); //triggering unit?
 			//es.output(entry);
 			break;
 		case 14:
@@ -548,6 +548,19 @@ Integer timeIdx;
 		}
 	}
 
+    private String translate(String in) {
+        if (in!=null){
+            if (in.startsWith("item_")){
+                in=in.substring("item_".length());
+            }
+        }
+        return in;
+    }
+    
+    private String determineIllusion(String in, boolean illusion){
+    	return (illusion ? "illusion_" : "") + getTargetName();
+    }
+        
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
 		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
