@@ -21,7 +21,7 @@ import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.proto.DotaUsermessages.DOTA_COMBATLOG_TYPES;
+import skadistats.clarity.wire.proto.DotaGcmessagesCommon.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
