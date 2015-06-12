@@ -24,9 +24,9 @@ app.get('/', function(req, res, next) {
     }
     var parser = spawn("java", ["-jar",
         "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
+        "parser/target/stats-0.1.0.jar"
     ], {
-        //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
+        //we want want to ignore stderr if we're not dumping it to /dev/null from java already
         stdio: ['pipe', 'pipe', 'pipe'],
         encoding: 'utf8'
     });
