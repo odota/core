@@ -1,24 +1,23 @@
 extend layout
 
 block content
-  h1 Compare
-    small Compare players to each other or with all YASP players.
+  h1 Compare 
+    small Compare players to each other
   include query
   //pre=JSON.stringify(data[1].aggData)
   table.table.match-top
     thead
       tr
         td
-        each player in data
-          // This check doesn't seem that great since if the user has the name "all"...
-          td #{player.account_id === "all" ? "All Filtered Matches" : player.personaname} 
-            abbr(title="Number of parsed matches") (#{player.matches.length})
-          td Percentile
+        each player in data.slice(1)
+          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} 
+            abbr(title="Number of  matches") (#{player.matches.length})
+          td Percentile (#{data[0].matches.length})
     tbody
       each val, key in data[0].aggData
         tr
           td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-          each player in data
+          each player in data.slice(1)
             td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(2) : "N/A"
             - var pct = player.aggData[key].percentile*100
             td
