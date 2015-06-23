@@ -124,15 +124,25 @@ app.route('/').get(function(req, res, next) {
         });
     }
 });
-app.route('/live').get(function(req, res) {
+var advQuery = require('./advquery');
+app.route('/professional').get(function(req, res) {
     //TODO index page to list currently live matches and pro games
-    //link to parsed match page and live match page (if available)
     //individual live match page for each match
     //interval check api
     //for each match, if time changed, update redis, push to clients
     utility.getData(utility.generateJob("api_live").url, function(err, data) {
-        res.render('live', {
-            live: data
+        db.matches.find({
+            leagueid: {
+                $gt: 0
+            }
+        }, {
+            limit: 100,
+        }, function(err, data2) {
+            //TODO add league data to pro matches
+            res.render('professional', {
+                live: data,
+                recent: data2
+            });
         });
     });
 });
@@ -206,7 +216,7 @@ app.route('/faq').get(function(req, res) {
 });
 app.route('/compare').get(function(req, res, next) {
     var account_ids = ["all"];
-    if (!req.query.compare && req.user){
+    if (!req.query.compare && req.user) {
         req.query.compare = req.user.account_id.toString();
     }
     if (req.query.compare) {
