@@ -19,8 +19,8 @@ function aggHeroes(heroes, m) {
             heroes[hero_id] = heroes[hero_id] || hero;
         }
     }
-    var player_win = m.player_win;
     var p = m.players[0];
+    var player_win = isRadiant(p) === m.radiant_win;
     for (var j = 0; j < m.all_players.length; j++) {
         var tm = m.all_players[j];
         var tm_hero = tm.hero_id;
@@ -54,6 +54,7 @@ function aggHeroes(heroes, m) {
 
 function aggTeammates(teammates, m) {
     var p = m.players[0];
+    var player_win = isRadiant(p) === m.radiant_win;
     for (var j = 0; j < m.all_players.length; j++) {
         var tm = m.all_players[j];
         //count teammate players
@@ -74,16 +75,16 @@ function aggTeammates(teammates, m) {
         }
         //played with
         teammates[tm.account_id].games += 1;
-        teammates[tm.account_id].win += m.player_win ? 1 : 0;
+        teammates[tm.account_id].win += player_win ? 1 : 0;
         if (isRadiant(tm) === isRadiant(p)) {
             //played with
             teammates[tm.account_id].with_games += 1;
-            teammates[tm.account_id].with_win += m.player_win ? 1 : 0;
+            teammates[tm.account_id].with_win += player_win ? 1 : 0;
         }
         else {
             //played against
             teammates[tm.account_id].against_games += 1;
-            teammates[tm.account_id].against_win += m.player_win ? 1 : 0;
+            teammates[tm.account_id].against_win += player_win ? 1 : 0;
         }
     }
 }

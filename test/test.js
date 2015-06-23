@@ -27,7 +27,7 @@ var updateNames = require('../tasks/updateNames');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 var supertest = require('supertest');
-var wait = 60000;
+var wait = 90000;
 //fake retriever response
 nock("http://" + process.env.RETRIEVER_HOST)
     /*

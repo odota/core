@@ -168,23 +168,47 @@ function computeMatchData(match) {
                     */
                     player.parsedPlayer = p;
                 });
-                //combine all the words in this player's matches
+                // aggregate all the words in these matches for a single player (don't do this for single match display)
                 if (match.parsed_data.chat) {
-                    match.chat = match.parsed_data.chat;
-                    //concatenation of all the chat strings in this match
-                    match.chat_words = match.chat.map(function(c) {
-                        return c.key;
-                    }).join(' ');
-                    var tokens = utility.tokenize(match.chat_words);
-                    //tokenize the string and do word count, make it part of compute and do in every match, will it be too slow?
-                    var counts = {};
-                    for (var i = 0; i < tokens.length; i++) {
-                        if (!counts[tokens[i]]) {
-                            counts[tokens[i]] = 0;
+                    // count the words that occur in a set of messages
+                    // - messages: the messages to create the counts over
+                    // - player_filter: if non-null, only count that player's messages
+                    function count_words(messages, player_filter) {
+                        // extract the message strings from the message objects
+                        // extract individual words from the message strings
+                        var chat_words = [];
+                        messages.forEach(function(message) {
+                            // adjust the slot position (important if there are fewer than 10 players)
+                            var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
+                            var p = match.all_players[adjusted_slot] || {};
+                            // if there is no player_filter, or if the player_filter matches this message, log it
+                            if (!player_filter || p.player_slot === player_filter.player_slot) {
+                                chat_words.push(message.key);
+                            }
+                        });
+                        chat_words = chat_words.join(' ');
+                        var tokens = utility.tokenize(chat_words);
+                        // count how frequently each word occurs
+                        var counts = {};
+                        for (var i = 0; i < tokens.length; i++) {
+                            if (!counts[tokens[i]]) {
+                                counts[tokens[i]] = 0;
+                            }
+                            counts[tokens[i]] += 1;
                         }
-                        counts[tokens[i]] += 1;
+                        // return the final counts
+                        return counts;
                     }
-                    match.word_counts = counts;
+                    if (match.all_players) {
+                        // aggregation of all words in all chat this player has experienced
+                        match.all_word_counts = count_words(match.parsed_data.chat, null);
+                        // aggregation of only the words in all chat this player said themselves
+                        match.my_word_counts = count_words(match.parsed_data.chat, match.players[0]);
+                    }
+                    //save full word list for sentiment analysis
+                    match.chat_words = match.parsed_data.chat.map(function(message) {
+                        return message.key;
+                    }).join(' ');
                 }
                 //determine pick order based on last time value of hero_log
                 //if tied, break ties arbitrarily

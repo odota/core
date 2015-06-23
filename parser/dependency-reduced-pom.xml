@@ -12,6 +12,11 @@
       <name>Albert Cui</name>
       <email>albertqcui@gmail.com</email>
     </developer>
+    <developer>
+      <id>howardc93</id>
+      <name>Howard Chung</name>
+      <email>howardc93@gmail.com</email>
+    </developer>
   </developers>
   <build>
     <plugins>
@@ -34,29 +39,12 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>com.jolira</groupId>
-        <artifactId>onejar-maven-plugin</artifactId>
-        <version>1.4.4</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>one-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
   <repositories>
     <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>sonatype.oss.snapshots</id>
-      <name>Sonatype OSS Snapshot Repository</name>
-      <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
   <properties>
