@@ -20,7 +20,7 @@
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "dev": "nf -j Procfile.dev start",
     "yasp-parser": "sudo nf export -j Procfile.prod -o /etc/init/ parser && sudo restart foreman",
-    "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ web,worker,parser,parseManager,scanner && sudo restart foreman"
+    "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman"
   },
   "repository": {
     "type": "git",

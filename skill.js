@@ -1,6 +1,8 @@
 var utility = require('./utility');
 var async = require('async');
+var db = require('./db');
 var result = {};
+var record = {};
 scanSkill();
 
 function scanSkill() {
@@ -14,17 +16,33 @@ function scanSkill() {
         if (err) {
             console.log(err);
         }
-        //finished all three skill levels
-        //start over
-        scanSkill();
         //iterate through results
-        //TODO check db to see if this match exists, add skill data
-        //TODO optimization; don't re-check/re-insert if already processed this match id
+        async.each(Object.keys(result), function(match_id, cb) {
+            var skill = result[match_id];
+            record[match_id] = skill;
+            db.matches.update({
+                match_id: Number(match_id)
+            }, {
+                $set: {
+                    skill: skill
+                }
+            }, function(err) {
+                cb(err);
+            });
+        }, function(err) {
+            if (err) {
+                console.log(err);
+            }
+            console.log(Object.keys(record).length);
+            result = {};
+            //start over
+            scanSkill();
+            //TODO optimization; don't re-check/re-insert if already processed this match id
+        });
     });
 }
 
 function getPageData(start, skill, cb) {
-    console.log(Object.keys(result).length);
     var container = utility.generateJob("api_skill", {
         skill: skill,
         start_at_match_id: start
