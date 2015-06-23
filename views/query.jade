@@ -20,7 +20,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .col-md-4
         h4 Synergies
         .form-group
-          label The Players Included (Account ID)
+          abbr(title="Select a teammate or enter an account ID")
+            label The Players Included (Account ID)
           input.form-control(type="hidden", name="with_account_id", multiple, placeholder="Included: Any Player", value=q.with_account_id )#with_account_id
         .form-group
           label The Team Included
@@ -88,7 +89,8 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .row
         .col-md-12
           .form-group
-            label Compare
+            abbr(title="Select a teammate or enter an account ID")
+              label Compare With
             input.form-control(type="hidden", name="compare", multiple, value=q.compare)#compare
     .row
       .col-md-12.text-center
