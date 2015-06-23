@@ -3,22 +3,56 @@ extend layout
 block content
   h1 Compare
   include query
-  //pre=JSON.stringify(data)
+  //pre=JSON.stringify(data[1].aggData)
   table.table
     tr
       td
       each player in data
-        td=player.account_id
-        td percentile
-    tr
-      td Results
-      each player in data
-        td=player.matches.length
-        td
+        td #{player.personaname} (#{player.matches.length})
+        td Percentile
     each val, key in data[0].aggData
       tr
         td=key
         each player in data
-          td=player.aggData[key].avg
-          td=player.aggData[key].percentile
-        
+          td=player.aggData[key].avg.toFixed(2)
+          - var pct = player.aggData[key].percentile*100
+          td
+            .progress
+              div(class=pct >= 50 ? "progress-bar progress-bar-success" : "progress-bar progress-bar-danger", style="width:#{pct}%;")=pct.toFixed(2)
+  #chart
+//-
+  append footer_assets
+    script.
+      var data = !{JSON.stringify(data.map(function(d){delete d.matches;return d;}))};
+      //cats are names of aggData keys
+      //first element of each array is name of player
+      var columns = [];
+      var categories = [];
+      for (var key in data[0].aggData){
+      categories.push(key);
+      }
+      data.forEach(function(p){
+      var col = [p.personaname];
+      for (var key in p.aggData){
+      col.push(p.aggData[key].avg);
+      }
+      columns.push(col);
+      });
+      console.log(columns);
+      var chart = c3.generate({
+        data: {
+            columns: columns,
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+        },
+        axis: {
+        x:{            
+        type: 'category',
+                categories: categories
+                }
+                }
+      });

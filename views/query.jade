@@ -5,17 +5,18 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
   form#query(action="" method="GET")
     //pre=JSON.stringify(q)
     .row
-      .col-md-4(style="display:none;")
-        h4 Global Parameters
-        .form-group
-          label All Matches with Player (Account ID)
-          input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"], readonly)
-        .form-group
-          label All Matches with Hero
-          select.form-control(name="players.hero_id")
-            option(value="all") Any Hero
-            each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id), readonly)=entry.localized_name
+      //-
+        .col-md-4(style="display:none;")
+          h4 Global Parameters
+          .form-group
+            label All Matches with Player (Account ID)
+            input.form-control(name="players.account_id", placeholder="Any Player", value=q["players.account_id"], readonly)
+          .form-group
+            label All Matches with Hero
+            select.form-control(name="players.hero_id")
+              option(value="all") Any Hero
+              each entry in constants.alpha_heroes
+                option(value=entry.id, selected=(Number(q["players.hero_id"])===entry.id), readonly)=entry.localized_name
       .col-md-4
         h4 Synergies
         .form-group

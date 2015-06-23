@@ -113,15 +113,15 @@ app.get('/robots.txt', function(req, res) {
     res.send("User-agent: *\nDisallow: /players");
 });
 app.route('/').get(function(req, res, next) {
-    if (req.user){
-        res.redirect('/players/'+req.user.account_id);
+    if (req.user) {
+        res.redirect('/players/' + req.user.account_id);
     }
-    else{
-    res.render('home', {
-        match: example_match,
-        truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
-        home: true
-    });
+    else {
+        res.render('home', {
+            match: example_match,
+            truncate: [2, 6], // if tables should be truncated, pass in an array of which players to display
+            home: true
+        });
     }
 });
 app.route('/request').get(function(req, res) {
@@ -197,22 +197,59 @@ app.route('/compare').get(function(req, res, next) {
     if (req.query.compare) {
         account_ids = account_ids.concat(req.query.compare.split(","));
     }
-    account_ids = account_ids.slice(0, 5);
+    account_ids = account_ids.slice(0, 6);
     console.log(account_ids);
     var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
         req.query = JSON.parse(JSON.stringify(qCopy));
         fillPlayerData(account_id, {
             query: {
-                select: req.query
+                select: req.query,
+                js_agg: {
+                    "duration": 1,
+                    "first_blood_time": 1,
+                    "level": 1,
+                    "kills": 1,
+                    "deaths": 1,
+                    "assists": 1,
+                    "last_hits": 1,
+                    "denies": 1,
+                    "hero_damage": 1,
+                    "tower_damage": 1,
+                    "hero_healing": 1,
+                    "kills_per_min": 1,
+                    "deaths_per_min": 1,
+                    "assists_per_min": 1,
+                    "last_hits_per_min": 1,
+                    "gold_per_min": 1,
+                    "xp_per_min": 1,
+                    "hero_damage_per_min": 1,
+                    "tower_damage_per_min": 1,
+                    "hero_healing_per_min": 1
+                }
             }
         }, function(err, player) {
             //create array of results.aggData for each account_id
             //compute average for aggregations supporting it
+            //mean or median?
             for (var key in player.aggData) {
+                /*
+                //mean
                 if (player.aggData[key].sum && player.aggData[key].n) {
                     player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
                 }
+                */
+                //median
+                var arr = [];
+                for (var value in player.aggData[key].counts) {
+                    for (var i = 0; i < player.aggData[key].counts[value]; i++) {
+                        arr.push(Number(value));
+                    }
+                }
+                arr.sort(function(a, b) {
+                    return a - b;
+                });
+                player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
             }
             cb(err, {
                 account_id: account_id,
