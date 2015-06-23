@@ -11,6 +11,7 @@ var isSignificant = helper.isSignificant;
 var async = require('async');
 
 function advQuery(options, cb) {
+    console.log("advquery: aggregating player page...");
     var default_project = {
         start_time: 1,
         match_id: 1,
@@ -113,13 +114,13 @@ function advQuery(options, cb) {
         sort: options.sort,
         fields: options.project
     };
-    console.log(options);
-    console.time('db');
+    console.time('querying database');
+    // console.log(options);
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
         }
-        console.timeEnd('db');
+        console.timeEnd('querying database');
         var expanded_matches = [];
         matches.forEach(function(m) {
             if (m.players) {
@@ -146,19 +147,22 @@ function advQuery(options, cb) {
             }
         });
         matches = expanded_matches;
-        console.time("parsedplayerdata");
+        console.time("parsing player data");
         getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
             if (err) {
                 return cb(err);
             }
-            console.timeEnd("parsedplayerdata");
-            console.time('compute');
+            // determine which user page this information is for
+            var requesting_player = parseInt(options.select["players.account_id"]);
+            console.timeEnd("parsing player data");
+            console.time('computing aggregations');
             matches.forEach(function(m) {
                 //post-process the match to get additional stats
                 computeMatchData(m);
             });
             var filtered = filter(matches, options.js_select);
             filtered = sort(filtered, options.js_sort);
+            // console.log('aggData: options.js_agg = %s', options.js_agg);
             var aggData = aggregator(filtered, options.js_agg);
             var result = {
                 aggData: aggData,
@@ -166,7 +170,7 @@ function advQuery(options, cb) {
                 data: filtered,
                 unfiltered_count: matches.length
             };
-            console.timeEnd('compute');
+            console.timeEnd('computing aggregations');
             cb(err, result);
         });
     });
@@ -365,8 +369,11 @@ function aggregator(matches, fields) {
         "kill_streaks": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.kill_streaks, m);
         },
-        "word_counts": function(key, m, p) {
-            standardAgg(key, m.word_counts, m);
+        "all_word_counts": function(key, m, p) {
+            standardAgg(key, m.all_word_counts, m);
+        },
+        "my_word_counts": function(key, m, p) {
+            standardAgg(key, m.my_word_counts, m);
         }
     };
     //if null fields passed in, do all aggregations
