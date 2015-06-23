@@ -11,7 +11,7 @@ block content
         td
         each player in data
           // This check doesn't seem that great since if the user has the name "all"...
-          td #{player.personaname === "all" ? "All Filtered Matches" : player.personaname} 
+          td #{player.account_id === "all" ? "All Filtered Matches" : player.personaname} 
             abbr(title="Number of parsed matches") (#{player.matches.length})
           td Percentile
     tbody
