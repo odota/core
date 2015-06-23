@@ -7,6 +7,7 @@ var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
 var port = config.PARSER_PORT;
+var domain = require('domain');
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[PARSER] listening at http://%s:%s', host, port);
@@ -30,52 +31,47 @@ app.get('/', function(req, res, next) {
         stdio: ['pipe', 'pipe', 'pipe'],
         encoding: 'utf8'
     });
-    if (fileName) {
-        inStream = fs.createReadStream(fileName);
-        inStream.pipe(parser.stdin);
-    }
-    else if (url) {
-        inStream = progress(request.get({
-            url: url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state) {
-            outStream.write(JSON.stringify({
-                "type": "progress",
-                "key": state.percent
-            }));
-        }).on('response', function(response) {
-            if (response.statusCode !== 200) {
+    var d = domain.create();
+    d.run(function() {
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
+            inStream.pipe(parser.stdin);
+        }
+        else if (url) {
+            inStream = progress(request.get({
+                url: url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state) {
                 outStream.write(JSON.stringify({
-                    "type": "error",
-                    "key": response.statusCode
+                    "type": "progress",
+                    "key": state.percent
                 }));
-            }
-        }).on('error', function(err) {
-            parser.kill();
-            bz.kill();
-            outStream.write(JSON.stringify({
-                "type": "error",
-                "key": err
-            }));
+            }).on('response', function(response) {
+                if (response.statusCode !== 200) {
+                    outStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": response.statusCode
+                    }));
+                }
+            });
+            bz = spawn("bunzip2");
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        }
+        parser.stdout.pipe(outStream);
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
         });
-        bz = spawn("bunzip2");
-        inStream.pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
-    }
-    parser.stderr.on('data', function(data) {
-        console.log(data.toString());
     });
-    /*
-    //tries to write after stream end
-    parser.on('exit', function(code) {
+    d.on('error', function(err) {
+        parser.kill();
+        bz.kill();
         outStream.write(JSON.stringify({
-            "type": "exit",
-            "key": code
+            "type": "error",
+            "key": err
         }));
     });
-    */
-    parser.stdout.pipe(outStream);
 });
 app.use(function(err, req, res, next) {
     return res.status(500).json({
