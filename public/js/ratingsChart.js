@@ -13,22 +13,15 @@ module.exports = function ratingsChart(ratings) {
     c3.generate({
         bindto: "#ratings",
         data: {
-            x: 'x',
             columns: [
-          ['x'].concat(times),
           ['Solo'].concat(solo),
           ['Party'].concat(party)
           ],
-            type: "line"
+            type: "spline"
         },
         axis: {
             x: {
-                type: 'timeseries',
-                label: 'Date',
-                tick: {
-                    format: '%Y-%m-%d',
-                    count: 10
-                }
+
             },
             y: {
                 label: 'Rating'
