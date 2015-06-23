@@ -74,6 +74,14 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "api_skill": function(){
+            return {
+                url: api_url + "/IDOTA2Match_570/GetMatchHistory/v0001/?key=" + api_key + "&start_at_match_id=" + payload.start_at_match_id + "&skill=" + payload.skill,
+                title: [type, payload.skill].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function() {
             return {
                 title: [type, payload.match_id].join(),
