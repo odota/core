@@ -22,6 +22,7 @@ block content
         - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
         .progress
           .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
+    hr
     .row
       .col-md-12
         if !(player.account_id in trackedPlayers)

@@ -6,57 +6,58 @@ block playercontent
   //th Abandon
   //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
   //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
-  .advanced
-    h2 Advanced<br>
+  .row
+    .col-md-8
+      h2 Advanced<br>
       small The following data is only available for parsed matches.
-    .row
-      .col-md-8
         .row
-          h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
-          table.table#builds
-            thead
-              tr
-                th Item
-                th Item Name
-                th.time Avg
-                th Built
-            tbody
-              each val, key in player.aggData.purchase_time.counts
-                - var item = constants.big_items[key]
-                if item
-                  tr 
-                    td: img.item(src=item.img, alt=key)
-                    td= item.dname
-                    td=val/player.aggData.purchase_time_count.counts[key]
-                    td=player.aggData.purchase.counts[key]
+          .col-md-12
+            h3 Build Times <span class="label label-success">#{player.aggData.purchase_time.n} games</span>
+            table.table#builds
+              thead
+                tr
+                  th Item
+                  th Item Name
+                  th.time Avg
+                  th Built
+              tbody
+                each val, key in player.aggData.purchase_time.counts
+                  - var item = constants.big_items[key]
+                  if item
+                    tr 
+                      td: img.item(src=item.img, alt=key)
+                      td= item.dname
+                      td=val/player.aggData.purchase_time_count.counts[key]
+                      td=player.aggData.purchase.counts[key]
                 
         .row
-          h3 Skill Accuracy <span class="label label-primary">#{player.aggData.hero_hits.n} games</span>
-          table.table#accuracy
-            thead
-              tr
-                th Ability
-                th Ability Name
-                th Casts
-                th Hits
-                th Hit%
-            tbody
-              each val, key in player.aggData.hero_hits.counts
-                - var ability = constants.abilities[key]
-                - var casts = player.aggData.ability_uses.counts[key]
-                - var hits = val
-                if casts
-                  tr
-                    if ability
-                      td
-                        img.ability(src=ability.img, alt=key)
-                      td= ability.dname
-                    else
-                      td=key
-                      td=key
-                    td=casts
-                    td=hits
-                    td=(hits/casts*100 || 0).toFixed(2)
+          .col-md-12
+            h3 Skill Accuracy <span class="label label-primary">#{player.aggData.hero_hits.n} games</span>
+            table.table#accuracy
+              thead
+                tr
+                  th Ability
+                  th Ability Name
+                  th Casts
+                  th Hits
+                  th Hit%
+              tbody
+                each val, key in player.aggData.hero_hits.counts
+                  - var ability = constants.abilities[key]
+                  - var casts = player.aggData.ability_uses.counts[key]
+                  - var hits = val
+                  if casts
+                    tr
+                      if ability
+                        td
+                          img.ability(src=ability.img, alt=key)
+                        td= ability.dname
+                      else
+                        td=key
+                        td=key
+                      td=casts
+                      td=hits
+                      td=(hits/casts*100 || 0).toFixed(2)
         .row
           .col-md-6
             h3 Multi Kills <span class="label label-warning">#{player.aggData.multi_kills.n} games</span>
@@ -83,8 +84,8 @@ block playercontent
             h3 Sentries <span class="label label-info">#{player.aggData.sen.n} games</span>
             #map2.mapContainer.mapContainer-small
               img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-      .col-md-4
-        include /ads/skyscraper
+    .col-md-4
+      include /ads/skyscraper
         
 append footer_assets
   script.
