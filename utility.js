@@ -74,6 +74,14 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "api_live": function() {
+            return {
+                url: api_url + "/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=" + api_key,
+                title: [type].join(),
+                type: "api",
+                payload: payload
+            };
+        },
         "parse": function() {
             return {
                 title: [type, payload.match_id].join(),
