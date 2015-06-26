@@ -97,10 +97,6 @@ block match_content
               tr.danger
                 +picks_bans_row(match.picks_bans, 1)
 
-      hr
-      include /ads/leaderboard_2
-      
-      hr
       h2.inline-header Skill Builds
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
       #skills.table-responsive.collapse.in
@@ -135,7 +131,7 @@ block match_content
           #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
             img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .col-md-6
-          include /ads/skyscraper
+          +ad("skyscraper")
       
 append footer_assets
   script.

@@ -2,7 +2,7 @@ extend layout
 block content
   h3 Players
   .row
-    .col-md-7
+    .col-md-12
       table.table
         tr
           th Name
@@ -11,5 +11,3 @@ block content
             td
               a(href='/players/#{player.account_id}')
                 =player.personaname || player.account_id
-    .col-md-5
-      include ads/skyscraper
