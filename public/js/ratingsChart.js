@@ -21,11 +21,19 @@ module.exports = function ratingsChart(ratings) {
         },
         axis: {
             x: {
-
+                label: "Date",
+                tick: {
+                    format: function(x) {
+                        return moment(times[x]).format("MMM YYYY");
+                    }
+                }
             },
             y: {
                 label: 'Rating'
             }
+        },
+        zoom: {
+            enabled: true
         }
     });
 }
