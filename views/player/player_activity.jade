@@ -6,9 +6,8 @@ block playercontent
       h2 Activity
       #cal-heatmap
     .col-md-4
-      include /ads/skyscraper
+      +ad("skyscraper")
     
-
 append footer_assets
   script.
     createCalHeatmap(!{JSON.stringify(player.aggData.start_time.counts)});

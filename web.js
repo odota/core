@@ -194,6 +194,9 @@ app.route('/faq').get(function(req, res) {
 });
 app.route('/compare').get(function(req, res, next) {
     var account_ids = ["all"];
+    if (!req.query.compare && req.user){
+        req.query.compare = req.user.account_id.toString();
+    }
     if (req.query.compare) {
         account_ids = account_ids.concat(req.query.compare.split(","));
     }

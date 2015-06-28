@@ -28,21 +28,22 @@ app.get('/', function(req, res, next) {
     var inStream;
     var bz;
     var outStream = res;
-    if (!fileName && !url) {
-        return outStream.json({
-            capacity: capacity
-        });
-    }
-    var parser = spawn("java", ["-jar",
+    var d = domain.create();
+    var parser;
+    d.run(function() {
+        if (!fileName && !url) {
+            return outStream.json({
+                capacity: capacity
+            });
+        }
+        parser = spawn("java", ["-jar",
         "-Xmx64m",
         "parser/target/stats-0.1.0.jar"
     ], {
-        //we want want to ignore stderr if we're not dumping it to /dev/null from java already
-        stdio: ['pipe', 'pipe', 'pipe'],
-        encoding: 'utf8'
-    });
-    var d = domain.create();
-    d.run(function() {
+            //we want want to ignore stderr if we're not dumping it to /dev/null from java already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
         if (fileName) {
             inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
@@ -77,7 +78,7 @@ app.get('/', function(req, res, next) {
     d.on('error', function(err) {
         parser.kill();
         bz.kill();
-        outStream.write(JSON.stringify({
+        outStream.end(JSON.stringify({
             "type": "error",
             "key": err
         }));
