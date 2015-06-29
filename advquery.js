@@ -24,10 +24,10 @@ function advQuery(options, cb) {
         lobby_type: 1,
         leagueid: 1,
         radiant_name: 1,
-        dire_name: 1
+        dire_name: 1,
+        players: 1
     };
     options.project = options.project || default_project;
-    options.project.players = 1;
     //only project the fields we need
     options.project["players.account_id"] = 1;
     options.project["players.hero_id"] = 1;
@@ -532,69 +532,69 @@ function filter(matches, filters) {
 }
 
 function sort(matches, sorts) {
-        //console.log(sorts);
-        //dir 1 ascending, -1 descending
-        var sortFuncs = {
-            match_id: function(a, b, dir) {
-                return (a.match_id - b.match_id) * dir;
-            },
-            duration: function(a, b, dir) {
-                return (a.duration - b.duration) * dir;
-            },
-            game_mode: function(a, b, dir) {
-                return (a.game_mode - b.game_mode) * dir;
-            },
-            "players[0].kills": function(a, b, dir) {
-                return (a.players[0].kills - b.players[0].kills) * dir;
-            },
-            "players[0].deaths": function(a, b, dir) {
-                return (a.players[0].deaths - b.players[0].deaths) * dir;
-            },
-            "players[0].assists": function(a, b, dir) {
-                return (a.players[0].assists - b.players[0].assists) * dir;
-            },
-            "players[0].level": function(a, b, dir) {
-                return (a.players[0].level - b.players[0].level) * dir;
-            },
-            "players[0].last_hits": function(a, b, dir) {
-                return (a.players[0].last_hits - b.players[0].last_hits) * dir;
-            },
-            "players[0].denies": function(a, b, dir) {
-                return (a.players[0].denies - b.players[0].denies) * dir;
-            },
-            "players[0].gold_per_min": function(a, b, dir) {
-                return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
-            },
-            "players[0].xp_per_min": function(a, b, dir) {
-                return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
-            },
-            "players[0].hero_damage": function(a, b, dir) {
-                return (a.players[0].hero_damage - b.players[0].hero_damage) * dir;
-            },
-            "players[0].tower_damage": function(a, b, dir) {
-                return (a.players[0].tower_damage - b.players[0].tower_damage) * dir;
-            },
-            "players[0].hero_healing": function(a, b, dir) {
-                    return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
-                }
-                //TODO implement more sorts
-                //game mode
-                //hero (sort alpha?)
-                //played time
-                //result
-                //region
-                //parse status
-        };
-        for (var key in sorts) {
-            if (key in sortFuncs) {
-                matches.sort(function(a, b) {
-                    return sortFuncs[key](a, b, sorts[key]);
-                });
+    //console.log(sorts);
+    //dir 1 ascending, -1 descending
+    var sortFuncs = {
+        match_id: function(a, b, dir) {
+            return (a.match_id - b.match_id) * dir;
+        },
+        duration: function(a, b, dir) {
+            return (a.duration - b.duration) * dir;
+        },
+        game_mode: function(a, b, dir) {
+            return (a.game_mode - b.game_mode) * dir;
+        },
+        "players[0].kills": function(a, b, dir) {
+            return (a.players[0].kills - b.players[0].kills) * dir;
+        },
+        "players[0].deaths": function(a, b, dir) {
+            return (a.players[0].deaths - b.players[0].deaths) * dir;
+        },
+        "players[0].assists": function(a, b, dir) {
+            return (a.players[0].assists - b.players[0].assists) * dir;
+        },
+        "players[0].level": function(a, b, dir) {
+            return (a.players[0].level - b.players[0].level) * dir;
+        },
+        "players[0].last_hits": function(a, b, dir) {
+            return (a.players[0].last_hits - b.players[0].last_hits) * dir;
+        },
+        "players[0].denies": function(a, b, dir) {
+            return (a.players[0].denies - b.players[0].denies) * dir;
+        },
+        "players[0].gold_per_min": function(a, b, dir) {
+            return (a.players[0].gold_per_min - b.players[0].gold_per_min) * dir;
+        },
+        "players[0].xp_per_min": function(a, b, dir) {
+            return (a.players[0].xp_per_min - b.players[0].xp_per_min) * dir;
+        },
+        "players[0].hero_damage": function(a, b, dir) {
+            return (a.players[0].hero_damage - b.players[0].hero_damage) * dir;
+        },
+        "players[0].tower_damage": function(a, b, dir) {
+            return (a.players[0].tower_damage - b.players[0].tower_damage) * dir;
+        },
+        "players[0].hero_healing": function(a, b, dir) {
+                return (a.players[0].hero_healing - b.players[0].hero_healing) * dir;
             }
+            //TODO implement more sorts
+            //game mode
+            //hero (sort alpha?)
+            //played time
+            //result
+            //region
+            //parse status
+    };
+    for (var key in sorts) {
+        if (key in sortFuncs) {
+            matches.sort(function(a, b) {
+                return sortFuncs[key](a, b, sorts[key]);
+            });
         }
-        return matches;
     }
-    /*
+    return matches;
+}
+/*
 function getFullPlayerData(matches, doAction, cb) {
     cb();
 

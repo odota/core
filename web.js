@@ -19,6 +19,7 @@ var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
+var advQuery = require('./advquery');
 var queries = require('./queries');
 var express = require('express');
 var app = express();
@@ -124,28 +125,6 @@ app.route('/').get(function(req, res, next) {
         });
     }
 });
-var advQuery = require('./advquery');
-app.route('/professional').get(function(req, res) {
-    //TODO index page to list currently live matches and pro games
-    //individual live match page for each match
-    //interval check api
-    //for each match, if time changed, update redis, push to clients
-    utility.getData(utility.generateJob("api_live").url, function(err, data) {
-        db.matches.find({
-            leagueid: {
-                $gt: 0
-            }
-        }, {
-            limit: 100,
-        }, function(err, data2) {
-            //TODO add league data to pro matches
-            res.render('professional', {
-                live: data,
-                recent: data2
-            });
-        });
-    });
-});
 app.route('/request').get(function(req, res) {
     res.render('request', {
         rc_public: rc_public
@@ -212,6 +191,52 @@ app.route('/status').get(function(req, res, next) {
 app.route('/faq').get(function(req, res) {
     res.render("faq", {
         questions: poet.helpers.postsWithTag("faq").reverse()
+    });
+});
+app.route('/professional').get(function(req, res) {
+    //TODO index page to list currently live matches and pro games
+    //individual live match page for each match
+    //interval check api
+    //for each match, if time changed, update redis, push to clients
+    utility.getData(utility.generateJob("api_live").url, function(err, data) {
+        advQuery({
+                select: {
+                    leagueid: "gtzero"
+                },
+                project: {
+                    players: {
+                        $slice: 1
+                    },
+                    match_id: 1,
+                    leagueid: 1,
+                    radiant_name: 1,
+                    dire_name: 1,
+                    game_mode: 1,
+                    duration: 1,
+                    start_time: 1,
+                    parse_status: 1
+                }
+            }, function(err, data2) {
+                res.render('professional', {
+                    live: data,
+                    recent: data2.data
+                });
+            })
+            /*
+            db.matches.find({
+                leagueid: {
+                    $gt: 0
+                }
+            }, {
+                limit: 100,
+            }, function(err, data2) {
+                //TODO add league data to pro matches
+                res.render('professional', {
+                    live: data,
+                    recent: data2
+                });
+            });
+            */
     });
 });
 app.route('/compare').get(function(req, res, next) {
