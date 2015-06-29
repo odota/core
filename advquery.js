@@ -152,8 +152,6 @@ function advQuery(options, cb) {
             if (err) {
                 return cb(err);
             }
-            // determine which user page this information is for
-            var requesting_player = parseInt(options.select["players.account_id"]);
             console.timeEnd("parsing player data");
             console.time('computing aggregations');
             matches.forEach(function(m) {

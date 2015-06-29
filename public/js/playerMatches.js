@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(options) {
     //teammates for select2
     //extend jquery to serialize form data to JSON
     $.fn.serializeObject = function() {
@@ -17,11 +17,95 @@ module.exports = function() {
         });
         return o;
     };
+    drawProMatches(pro_matches);
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
-    //don't display league/team name columns
-    var professional = false;
+
+    function drawProMatches(data) {
+        $('#pro_matches').dataTable({
+            "order": [
+                [0, "desc"]
+            ],
+            "data": data,
+            /*
+            serverSide: true,
+            ajax: {
+                'url': '/api/matches',
+                "data": function(d) {
+                    d.select = $('#query').serializeObject();
+                }
+            },
+            */
+            "rowCallback": function(row, data) {
+                //$(row).addClass(data.player_win ? "success" : "danger");
+            },
+            "drawCallback": function() {
+                tooltips();
+                formatHtml();
+            },
+            stateSave: true,
+            searching: false,
+            processing: true,
+            columns: [
+                {
+                    data: 'match_id',
+                    title: 'Match ID',
+                    render: function(data, type) {
+                        return '<a href="/matches/' + data + '">' + data + '</a>';
+                    }
+            },
+                {
+                    data: 'league_name',
+                    title: 'League',
+                    render: function(data, type) {
+                        return data ? data : "Unknown";
+                    }
+            },
+                {
+                    data: 'radiant_name',
+                    title: 'Radiant',
+                    render: function(data, type) {
+                        return data ? data : "Unknown";
+                    }
+            },
+                {
+                    data: 'dire_name',
+                    title: 'Dire',
+                    render: function(data, type) {
+                        return data ? data : "Unknown";
+                    }
+            },
+                {
+                    data: 'game_mode',
+                    title: 'Game Mode',
+                    render: function(data, type) {
+                        return constants.game_mode[data] ? constants.game_mode[data].name : data;
+                    }
+            },
+                {
+                    data: 'duration',
+                    title: 'Duration',
+                    render: function(data, type) {
+                        return moment().startOf('day').seconds(data).format("H:mm:ss");
+                    }
+            },
+                {
+                    data: 'start_time',
+                    title: 'Played',
+                    render: function(data, type, row) {
+                        return moment.unix(data + row.duration).fromNow();
+                    }
+            },
+                {
+                    data: 'parse_status',
+                    title: 'Status',
+                    render: function(data, type) {
+                        return constants.parse_status[data] ? constants.parse_status[data] : data;
+                    }
+            }]
+        });
+    }
 
     function drawMatches(data) {
         $('#matches').dataTable({
@@ -71,30 +155,6 @@ module.exports = function() {
                     visible: false,
                     render: function(data, type) {
                         return constants.heroes[data] ? constants.heroes[data].localized_name : data;
-                    }
-            },
-                {
-                    data: 'league_name',
-                    title: 'League',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'radiant_name',
-                    title: 'Radiant',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'dire_name',
-                    title: 'Dire',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
                     }
             },
                 {
@@ -187,33 +247,8 @@ module.exports = function() {
                     data: 'players[0].xp_per_min',
                     title: 'XPM',
                     render: function(data, type) {
-                            return data;
-                        }
-                        // },
-                        //     {
-                        //         data: 'players[0].hero_damage',
-                        //         title: 'HD',
-                        //         visible: false,
-                        //         render: function(data, type) {
-                        //             return data;
-                        //         }
-                        // },
-                        //     {
-                        //         data: 'players[0].tower_damage',
-                        //         title: 'TD',
-                        //         visible: false,
-                        //         render: function(data, type) {
-                        //             return data;
-                        //         }
-                        // },
-                        //     {
-                        //         data: 'players[0].hero_healing',
-                        //         title: 'HH',
-                        //         visible: false,
-                        //         render: function(data, type) {
-                        //             return data;
-                        //         }
-            }, {
+                        return data;
+                    },
                     data: 'parse_status',
                     title: 'Status',
                     render: function(data, type) {
