@@ -58,7 +58,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return next(err);
         }
         console.timeEnd("player " + req.params.account_id);
-        if (req.query.json && config.NODE_ENV !== "production") {
+        if (req.query.json) {
+            delete result.player.cache;
             return res.json(result.player);
         }
         res.render("player/player_" + info, {
