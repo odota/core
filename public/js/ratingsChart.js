@@ -28,7 +28,7 @@ module.exports = function ratingsChart(ratings) {
                 label: "Date",
                 tick: {
                     format: function(x) {
-                        return moment(times[x]).format("MMM YYYY");
+                        return moment(times[x]).format("MMM DD YYYY");
                     }
                 }
             },
