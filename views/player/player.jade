@@ -45,8 +45,6 @@ block content
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
     .col-md-2
       a(href="?json=1" class="btn btn-success") Download JSON
-    .col-md-2
-      .addthis_sharing_toolbox.pull-right
   include /query
   hr
   block playercontent
