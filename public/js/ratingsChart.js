@@ -1,6 +1,6 @@
 module.exports = function ratingsChart(ratings) {
     //sort ratings by time
-    ratings.sort(function(a, b) {
+    ratings = ratings.sort(function(a, b) {
         return a.time - b.time;
     });
     $("#solo").append(ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A");
