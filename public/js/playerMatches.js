@@ -111,6 +111,13 @@ module.exports = function() {
                         return constants.game_mode[data] ? constants.game_mode[data].name : data;
                     }
             },
+                {
+                    data: 'skill',
+                    title: 'Skill',
+                    render: function(data, type) {
+                        return constants.skill[data] ? constants.skill[data] : data;
+                    }
+            },
             /*
             {
                 data: 'cluster',
@@ -180,32 +187,32 @@ module.exports = function() {
                     data: 'players[0].xp_per_min',
                     title: 'XPM',
                     render: function(data, type) {
-                        return data;
-                    }
-            // },
-            //     {
-            //         data: 'players[0].hero_damage',
-            //         title: 'HD',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
-            // },
-            //     {
-            //         data: 'players[0].tower_damage',
-            //         title: 'TD',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
-            // },
-            //     {
-            //         data: 'players[0].hero_healing',
-            //         title: 'HH',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
+                            return data;
+                        }
+                        // },
+                        //     {
+                        //         data: 'players[0].hero_damage',
+                        //         title: 'HD',
+                        //         visible: false,
+                        //         render: function(data, type) {
+                        //             return data;
+                        //         }
+                        // },
+                        //     {
+                        //         data: 'players[0].tower_damage',
+                        //         title: 'TD',
+                        //         visible: false,
+                        //         render: function(data, type) {
+                        //             return data;
+                        //         }
+                        // },
+                        //     {
+                        //         data: 'players[0].hero_healing',
+                        //         title: 'HH',
+                        //         visible: false,
+                        //         render: function(data, type) {
+                        //             return data;
+                        //         }
             }, {
                     data: 'parse_status',
                     title: 'Status',

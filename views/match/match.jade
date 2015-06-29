@@ -6,9 +6,9 @@ append head
     
 block content
   .row.match-top
-    .col-md-6
+    .col-md-4
       h1 Match #{match.match_id}
-    .col-md-6.table-responsive
+    .col-md-8.table-responsive
       table.table.table-condensed
         thead
           tr
@@ -21,6 +21,7 @@ block content
             td Result
             td Played
             td Patch
+            td Skill
         tbody
           tr(class = match.radiant_win ? "success" : "danger")
             td= constants.parse_status[match.parse_status]
@@ -31,6 +32,7 @@ block content
             td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow(data-time=match.start_time + match.duration)
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
+            td=constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
   .row
       .col-md-10.table-responsive
         ul.nav.nav-tabs
