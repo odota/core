@@ -6,9 +6,9 @@ append head
     
 block content
   .row.match-top
-    .col-md-4
+    .col-md-5
       h1 Match #{match.match_id}
-    .col-md-8.table-responsive
+    .col-md-7.table-responsive
       table.table.table-condensed
         thead
           tr
@@ -18,18 +18,16 @@ block content
             td Game Mode
             td Region
             td Duration
-            td Result
             td Played
             td Patch
             td Skill
         tbody
-          tr(class = match.radiant_win ? "success" : "danger")
+          tr
             td= constants.parse_status[match.parse_status]
             td= match.parsed_data ? match.parsed_data.version : "N/A"
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            td= match.radiant_win ? "Radiant Victory" : "Dire Victory"
             td.fromNow(data-time=match.start_time + match.duration)
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
             td=constants.skill[match.skill] ? constants.skill[match.skill] : match.skill

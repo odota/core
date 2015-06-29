@@ -19,25 +19,33 @@ function scanSkill() {
         //iterate through results
         async.each(Object.keys(result), function(match_id, cb) {
             var skill = result[match_id];
-            record[match_id] = skill;
-            db.matches.update({
-                match_id: Number(match_id)
-            }, {
-                $set: {
-                    skill: skill
-                }
-            }, function(err) {
-                cb(err);
-            });
+            if (!record[match_id]) {
+                record[match_id] = skill;
+                db.matches.update({
+                    match_id: Number(match_id)
+                }, {
+                    $set: {
+                        skill: skill
+                    }
+                }, function(err) {
+                    cb(err);
+                });
+            }
+            else {
+                cb();
+            }
         }, function(err) {
             if (err) {
                 console.log(err);
             }
             console.log(Object.keys(record).length);
+            //dump record once in a while to prevent memory leak
+            if (Object.keys(record).length > 1000000) {
+                record = {};
+            }
             result = {};
             //start over
             scanSkill();
-            //TODO optimization; don't re-check/re-insert if already processed this match id
         });
     });
 }

@@ -1,111 +1,9 @@
 module.exports = function(options) {
-    //teammates for select2
-    //extend jquery to serialize form data to JSON
-    $.fn.serializeObject = function() {
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function() {
-            if (o[this.name] !== undefined) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            }
-            else {
-                o[this.name] = this.value || '';
-            }
-        });
-        return o;
-    };
-    drawProMatches(pro_matches);
+    //currently nothing is done with options
+    //TODO separate out functions to draw heroes/teammates tables?
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
-
-    function drawProMatches(data) {
-        $('#pro_matches').dataTable({
-            "order": [
-                [0, "desc"]
-            ],
-            "data": data,
-            /*
-            serverSide: true,
-            ajax: {
-                'url': '/api/matches',
-                "data": function(d) {
-                    d.select = $('#query').serializeObject();
-                }
-            },
-            */
-            "rowCallback": function(row, data) {
-                //$(row).addClass(data.player_win ? "success" : "danger");
-            },
-            "drawCallback": function() {
-                tooltips();
-                formatHtml();
-            },
-            stateSave: true,
-            searching: false,
-            processing: true,
-            columns: [
-                {
-                    data: 'match_id',
-                    title: 'Match ID',
-                    render: function(data, type) {
-                        return '<a href="/matches/' + data + '">' + data + '</a>';
-                    }
-            },
-                {
-                    data: 'league_name',
-                    title: 'League',
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'radiant_name',
-                    title: 'Radiant',
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'dire_name',
-                    title: 'Dire',
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'game_mode',
-                    title: 'Game Mode',
-                    render: function(data, type) {
-                        return constants.game_mode[data] ? constants.game_mode[data].name : data;
-                    }
-            },
-                {
-                    data: 'duration',
-                    title: 'Duration',
-                    render: function(data, type) {
-                        return moment().startOf('day').seconds(data).format("H:mm:ss");
-                    }
-            },
-                {
-                    data: 'start_time',
-                    title: 'Played',
-                    render: function(data, type, row) {
-                        return moment.unix(data + row.duration).fromNow();
-                    }
-            },
-                {
-                    data: 'parse_status',
-                    title: 'Status',
-                    render: function(data, type) {
-                        return constants.parse_status[data] ? constants.parse_status[data] : data;
-                    }
-            }]
-        });
-    }
 
     function drawMatches(data) {
         $('#matches').dataTable({
@@ -122,12 +20,9 @@ module.exports = function(options) {
                 }
             },
             */
-            "rowCallback": function(row, data) {
-                //$(row).addClass(data.player_win ? "success" : "danger");
-            },
             "drawCallback": function() {
-                tooltips();
-                formatHtml();
+                window.tooltips();
+                window.formatHtml();
             },
             stateSave: true,
             searching: false,
@@ -175,7 +70,7 @@ module.exports = function(options) {
                     data: 'skill',
                     title: 'Skill',
                     render: function(data, type) {
-                        return constants.skill[data] ? constants.skill[data] : data;
+                        return constants.skill[data] ? constants.skill[data] : "N/A";
                     }
             },
             /*

@@ -276,12 +276,13 @@ app.route('/compare').get(function(req, res, next) {
                 });
                 player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
             }
-            cb(err, {
+            var result = {
                 account_id: account_id,
                 personaname: player.personaname,
                 matches: player.matches,
                 aggData: player.aggData
-            });
+            };
+            cb(err, result);
         });
     }, function(err, results) {
         if (err) {
