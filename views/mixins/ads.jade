@@ -1,0 +1,29 @@
+mixin ad(type)
+  if user && user.cheese
+    if type==="skyscraper"
+      h2
+        small Thanks for your support. By buying cheese, we've removed all ads from YASP.
+  else
+    if type==="banner1"
+      script(async='', src='//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
+      // responsive-1
+      ins.adsbygoogle(style='display:block', data-ad-client='ca-pub-5591574346816667', data-ad-slot='6152484630', data-ad-format='auto')
+      script.
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    else if type==="banner2"
+      script(async='', src='//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
+      // responsive-2
+      ins.adsbygoogle(style='display:block', data-ad-client='ca-pub-5591574346816667', data-ad-slot='1582684231', data-ad-format='auto')
+      script.
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    else if type==="banner3"
+      script(async='', src='//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
+      // responsive-3
+      ins.adsbygoogle(style='display:block; margin-bottom: 2em;', data-ad-client='ca-pub-5591574346816667', data-ad-slot='8966350234', data-ad-format='auto')
+      script.
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    else if type==="skyscraper"
+      script(async='', src='//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
+      ins.adsbygoogle.skyscraper(style='width:300px;height:600px', data-ad-client='ca-pub-5591574346816667', data-ad-slot='4779840634')
+      script.
+        (adsbygoogle = window.adsbygoogle || []).push({});
