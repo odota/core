@@ -340,10 +340,10 @@ table tfoot * {
     zoom: .5;
 }
 .green {
-    color: #00FF00;
+    color: #5cb85c;
 }
 .red {
-    color: #FF0000;
+    color: #d9534f;
 }
 .hidden {
     display: none;
