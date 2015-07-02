@@ -26,9 +26,9 @@ block content
     .row
       .col-md-12
         if !(player.account_id in trackedPlayers)
-          .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse.
+          .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse. (Login to resume automatic parsing)
         if (!player.full_history_time)
-          .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.
+          .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history is requested on login)
         if (user && user.account_id === player.account_id)
           if (!ratingPlayers[user.account_id])
             .alert.alert-info To display MMR on profile and be eligible for the leaderboard, 

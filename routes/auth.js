@@ -3,7 +3,7 @@ var app = express.Router();
 var db = require('../db');
 var passport = require('../passport');
 var queueReq = require('../operations').queueReq;
-var buildSets = require('./tasks/buildSets');
+var buildSets = require('../tasks/buildSets');
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
