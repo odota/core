@@ -116,6 +116,7 @@ function advQuery(options, cb) {
     };
     console.time('querying database');
     // console.log(options);
+    //TODO cache returned matches for "all"
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
@@ -147,7 +148,7 @@ function advQuery(options, cb) {
             }
         });
         matches = expanded_matches;
-        console.time("parsing player data");
+        console.time("retrieving parsed data");
         getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
             if (err) {
                 return cb(err);
