@@ -1,7 +1,7 @@
 module.exports = function ratingsChart(ratings) {
     //sort ratings by time
-    ratings.sort(function(a, b) {
-        return a.time - b.time;
+    ratings = ratings.sort(function(a, b) {
+        return new Date(a.time) - new Date(b.time);
     });
     $("#solo").append(ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A");
     $("#party").append(ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A");
@@ -28,7 +28,7 @@ module.exports = function ratingsChart(ratings) {
                 label: "Date",
                 tick: {
                     format: function(x) {
-                        return moment(times[x]).format("MMM YYYY");
+                        return moment(times[x]).format("MMM DD YYYY");
                     }
                 }
             },

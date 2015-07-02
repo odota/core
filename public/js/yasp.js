@@ -14,8 +14,8 @@ require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bo
 require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
 require('../../node_modules/qTip2/dist/jquery.qtip.js');
 require('../../node_modules/select2/select2.js');
-require('../../node_modules/bootstrap/dist/js/bootstrap.js');
-require('../../node_modules/wordcloud2.js/src/wordcloud2.js');
+require('bootstrap');
+require('wordcloud');
 //require('../../node_modules/webcomponents.js/webcomponents.js');
 window.c3 = require('c3');
 window.CalHeatMap = require('cal-heatmap');
@@ -24,13 +24,13 @@ window.moment = require('moment');
 window.numeral = require('numeral');
 //yasp utility functions
 window.pad = function pad(n, width, z) {
-        z = z || '0';
-        n = n + '';
-        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-    }
-    //adjust each x/y coordinate by the provided scale factor
-    //if max is provided, use that, otherwise, use local max of data
-    //shift all values by the provided shift
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+};
+//adjust each x/y coordinate by the provided scale factor
+//if max is provided, use that, otherwise, use local max of data
+//shift all values by the provided shift
 window.adjustHeatmapData = function adjustHeatmapData(posData, scalef, max, shift) {
     posData.forEach(function(d) {
         for (var key in d) {
