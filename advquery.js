@@ -153,7 +153,7 @@ function advQuery(options, cb) {
             if (err) {
                 return cb(err);
             }
-            console.timeEnd("parsing player data");
+            console.timeEnd("retrieving parsed data");
             console.time('computing aggregations');
             matches.forEach(function(m) {
                 //post-process the match to get additional stats
