@@ -3,6 +3,7 @@ var app = express.Router();
 var db = require('../db');
 var passport = require('../passport');
 var queueReq = require('../operations').queueReq;
+var buildSets = require('./tasks/buildSets');
 app.route('/login').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }));
@@ -29,11 +30,18 @@ app.route('/return').get(passport.authenticate('steam', {
             if (err) {
                 return next(err);
             }
-            queueReq("fullhistory", req.user, function(err, job) {
+            //rebuild sets since a player just logged in and might need to be retracked
+            buildSets(function(err, cb) {
                 if (err) {
-                    return next(err);
+                    //had issues rebuilding set, but move on anyway
+                    console.log(err);
                 }
-                res.redirect('/players/' + req.user.account_id);
+                queueReq("fullhistory", req.user, function(err, job) {
+                    if (err) {
+                        return next(err);
+                    }
+                    res.redirect('/players/' + req.user.account_id);
+                });
             });
         });
     });
