@@ -114,11 +114,11 @@ function advQuery(options, cb) {
     };
     console.time('querying database');
     // console.log(options);
-    //TODO cache returned matches for "all"
     db.matches.find(options.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
         }
+        //TODO cache returned matches for "all" for faster compares
         console.timeEnd('querying database');
         var expanded_matches = [];
         matches.forEach(function(m) {
