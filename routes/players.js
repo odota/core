@@ -36,13 +36,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 info: info,
                 query: {
                     select: req.query,
-                    js_agg: info === "index" || info === "matches" ? {
-                        "win": 1,
-                        "games": 1,
-                        "lose": 1,
-                        "heroes": 1,
-                        "teammates": 1
-                    } : null
+                    js_agg: null
                 }
             }, function(err, player) {
                 cb(err, player);

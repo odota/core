@@ -194,7 +194,7 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/professional').get(function(req, res) {
-    //TODO index page to list currently live matches and pro games
+    //TODO implement live match pages
     //individual live match page for each match
     //interval check api
     //for each match, if time changed, update redis, push to clients
@@ -215,7 +215,8 @@ app.route('/professional').get(function(req, res) {
                     duration: 1,
                     start_time: 1,
                     parse_status: 1
-                }
+                },
+                limit: 100
             }, function(err, data2) {
                 res.render('professional', {
                     live: data,

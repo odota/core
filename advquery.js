@@ -6,7 +6,6 @@ var isRadiant = utility.isRadiant;
 var isSignificant = utility.isSignificant;
 var async = require('async');
 var aggregator = require('./aggregator');
-var isSignificant = require();
 var constants = require('./constants.json');
 
 function advQuery(options, cb) {

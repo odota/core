@@ -50,13 +50,6 @@ module.exports = function drawProMatches(data) {
                 }
             },
             {
-                data: 'game_mode',
-                title: 'Game Mode',
-                render: function(data, type) {
-                    return constants.game_mode[data] ? constants.game_mode[data].name : data;
-                }
-            },
-            {
                 data: 'duration',
                 title: 'Duration',
                 render: function(data, type) {

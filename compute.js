@@ -158,6 +158,9 @@ function computeMatchData(match) {
                         p.purchase_time_count[k] += 1;
                     }
                 }
+                if (p.stuns) {
+                    p.stuns = ~~p.stuns;
+                }
                 //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
                 /*
                 for (var key in p.kill_streaks) {
@@ -170,46 +173,18 @@ function computeMatchData(match) {
             });
             // aggregate all the words in these matches for a single player (don't do this for single match display)
             if (match.parsed_data.chat) {
-                // count the words that occur in a set of messages
-                // - messages: the messages to create the counts over
-                // - player_filter: if non-null, only count that player's messages
-                function count_words(messages, player_filter) {
-                    // extract the message strings from the message objects
-                    // extract individual words from the message strings
-                    var chat_words = [];
-                    messages.forEach(function(message) {
-                        // adjust the slot position (important if there are fewer than 10 players)
-                        var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
-                        var p = match.all_players[adjusted_slot] || {};
-                        // if there is no player_filter, or if the player_filter matches this message, log it
-                        if (!player_filter || p.player_slot === player_filter.player_slot) {
-                            chat_words.push(message.key);
-                        }
-                    });
-                    chat_words = chat_words.join(' ');
-                    var tokens = utility.tokenize(chat_words);
-                    // count how frequently each word occurs
-                    var counts = {};
-                    for (var i = 0; i < tokens.length; i++) {
-                        if (!counts[tokens[i]]) {
-                            counts[tokens[i]] = 0;
-                        }
-                        counts[tokens[i]] += 1;
-                    }
-                    // return the final counts
-                    return counts;
-                }
                 if (match.all_players) {
                     // aggregation of all words in all chat this player has experienced
-                    match.all_word_counts = count_words(match.parsed_data.chat, null);
+                    match.all_word_counts = count_words(match, null);
                     // aggregation of only the words in all chat this player said themselves
-                    match.my_word_counts = count_words(match.parsed_data.chat, match.players[0]);
+                    match.my_word_counts = count_words(match, match.players[0]);
                 }
                 //save full word list for sentiment analysis
                 match.chat_words = match.parsed_data.chat.map(function(message) {
                     return message.key;
                 }).join(' ');
             }
+            //TODO this and biggest throw/comeback rely on all players parsed data and could be computed at insertion time
             //determine pick order based on last time value of hero_log
             //if tied, break ties arbitrarily
             //duplicate, sort, iterate and put index
@@ -232,6 +207,36 @@ function computeMatchData(match) {
     catch (e) {
         console.log(e.stack, match.match_id);
     }
+}
+// count the words that occur in a set of messages
+// - messages: the messages to create the counts over
+// - player_filter: if non-null, only count that player's messages
+function count_words(match, player_filter) {
+    var messages = match.parsed_data.chat;
+    // extract the message strings from the message objects
+    // extract individual words from the message strings
+    var chat_words = [];
+    messages.forEach(function(message) {
+        // adjust the slot position (important if there are fewer than 10 players)
+        var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
+        var p = match.all_players[adjusted_slot] || {};
+        // if there is no player_filter, or if the player_filter matches this message, log it
+        if (!player_filter || p.player_slot === player_filter.player_slot) {
+            chat_words.push(message.key);
+        }
+    });
+    chat_words = chat_words.join(' ');
+    var tokens = utility.tokenize(chat_words);
+    // count how frequently each word occurs
+    var counts = {};
+    for (var i = 0; i < tokens.length; i++) {
+        if (!counts[tokens[i]]) {
+            counts[tokens[i]] = 0;
+        }
+        counts[tokens[i]] += 1;
+    }
+    // return the final counts
+    return counts;
 }
 /**
  * Renders display-only data for a match

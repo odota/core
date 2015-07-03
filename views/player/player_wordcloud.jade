@@ -78,7 +78,7 @@ append footer_assets
       
       //floor all words that show up to a minimum, or count*scalef
       word_list.forEach(function(w){
-      w[1] = Math.max(w[1] * scalef, 8);
+      w[1] = Math.max(w[1] * scalef, 10);
       });
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){

@@ -2,181 +2,231 @@ var constants = require('./constants.json');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
-
 module.exports = function aggregator(matches, fields) {
     var aggData = {};
     var types = {
-        "heroes": function(key, m, p) {
-            var heroes = aggData.heroes;
-            if (Object.keys(heroes).length !== Object.keys(constants.heroes).length) {
-                //prefill heroes with every hero
-                for (var hero_id in constants.heroes) {
-                    var hero = {
-                        hero_id: hero_id,
-                        last_played: 0,
-                        games: 0,
-                        win: 0,
-                        with_games: 0,
-                        with_win: 0,
-                        against_games: 0,
-                        against_win: 0
-                    };
-                    heroes[hero_id] = heroes[hero_id] || hero;
-                }
-            }
-            var p = m.players[0];
-            var player_win = isRadiant(p) === m.radiant_win;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                var tm_hero = tm.hero_id;
-                if (tm_hero in heroes) {
-                    //don't count invalid heroes
-                    if (isRadiant(tm) === isRadiant(p)) {
-                        //count teammate heroes
-                        if (tm.account_id === p.account_id) {
-                            //console.log("self %s", tm_hero);
-                            heroes[tm_hero].games += 1;
-                            heroes[tm_hero].win += player_win ? 1 : 0;
-                            if (m.start_time > heroes[tm_hero].last_played) {
-                                heroes[tm_hero].last_played = m.start_time;
-                            }
-                        }
-                        else {
-                            //console.log("teammate %s", tm_hero);
-                            heroes[tm_hero].with_games += 1;
-                            heroes[tm_hero].with_win += player_win ? 1 : 0;
-                        }
-                    }
-                    else {
-                        //count enemy heroes
-                        //console.log("opp %s", tm_hero);
-                        heroes[tm_hero].against_games += 1;
-                        heroes[tm_hero].against_win += player_win ? 1 : 0;
-                    }
-                }
+        "heroes": {
+            type: "api",
+            agg: aggHeroes
+        },
+        "teammates": {
+            type: "api",
+            agg: aggTeammates
+        },
+        //w/l counts
+        "win": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key] += (isRadiant(p) === m.radiant_win) ? 1 : 0;
             }
         },
-        "teammates": function(key, m, p) {
-            var teammates = aggData.teammates;
-            var p = m.players[0];
-            var player_win = isRadiant(p) === m.radiant_win;
-            for (var j = 0; j < m.all_players.length; j++) {
-                var tm = m.all_players[j];
-                //count teammate players
-                if (!teammates[tm.account_id]) {
-                    teammates[tm.account_id] = {
-                        account_id: tm.account_id,
-                        last_played: 0,
-                        win: 0,
-                        games: 0,
-                        with_win: 0,
-                        with_games: 0,
-                        against_win: 0,
-                        against_games: 0
-                    };
-                }
-                if (m.start_time > teammates[tm.account_id].last_played) {
-                    teammates[tm.account_id].last_played = m.start_time;
-                }
-                //played with
-                teammates[tm.account_id].games += 1;
-                teammates[tm.account_id].win += player_win ? 1 : 0;
-                if (isRadiant(tm) === isRadiant(p)) {
-                    //played with
-                    teammates[tm.account_id].with_games += 1;
-                    teammates[tm.account_id].with_win += player_win ? 1 : 0;
-                }
-                else {
-                    //played against
-                    teammates[tm.account_id].against_games += 1;
-                    teammates[tm.account_id].against_win += player_win ? 1 : 0;
-                }
+        "lose": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key] += (isRadiant(p) === m.radiant_win) ? 0 : 1;
             }
         },
-        "win": function(key, m, p) {
-            aggData[key] += (m.player_win) ? 1 : 0;
+        "games": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key] += 1;
+            }
         },
-        "lose": function(key, m, p) {
-            aggData[key] += (m.player_win) ? 0 : 1;
+        //match level values
+        "start_time": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.start_time, m);
+            }
         },
-        "games": function(key, m, p) {
-            aggData[key] += 1;
+        "duration": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.duration, m);
+            }
         },
-        "start_time": function(key, m, p) {
-            standardAgg(key, m.start_time, m);
+        "cluster": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.cluster, m);
+            }
         },
-        "duration": function(key, m, p) {
-            standardAgg(key, m.duration, m);
+        "region": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.region, m);
+            }
         },
-        "cluster": function(key, m, p) {
-            standardAgg(key, m.cluster, m);
+        "patch": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.patch, m);
+            }
         },
-        "region": function(key, m, p) {
-            standardAgg(key, m.region, m);
+        "first_blood_time": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.first_blood_time, m);
+            }
         },
-        "patch": function(key, m, p) {
-            standardAgg(key, m.patch, m);
+        "lobby_type": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.lobby_type, m);
+            }
         },
-        "first_blood_time": function(key, m, p) {
-            standardAgg(key, m.first_blood_time, m);
-        },
-        "lobby_type": function(key, m, p) {
-            standardAgg(key, m.lobby_type, m);
-        },
-        "game_mode": function(key, m, p) {
-            standardAgg(key, m.game_mode, m);
-        },
-        "hero_id": function(key, m, p) {
-            standardAgg(key, p.hero_id, m);
-        },
-        "level": function(key, m, p) {
-            standardAgg(key, p.level, m);
+        "game_mode": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, m.game_mode, m);
+            }
         },
         //numeric values
-        "kills": function(key, m, p) {
-            standardAgg(key, p.kills, m);
+        "level": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.level, m);
+            }
         },
-        "deaths": function(key, m, p) {
-            standardAgg(key, p.deaths, m);
+        "kills": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.kills, m);
+            }
         },
-        "assists": function(key, m, p) {
-            standardAgg(key, p.assists, m);
+        "deaths": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.deaths, m);
+            }
         },
-        "last_hits": function(key, m, p) {
-            standardAgg(key, p.last_hits, m);
+        "assists": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.assists, m);
+            }
         },
-        "denies": function(key, m, p) {
-            standardAgg(key, p.denies, m);
+        "last_hits": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.last_hits, m);
+            }
         },
-        "total_gold": function(key, m, p) {
-            standardAgg(key, p.total_gold, m);
+        "denies": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.denies, m);
+            }
         },
-        "total_xp": function(key, m, p) {
-            standardAgg(key, p.total_xp, m);
+        "total_gold": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.total_gold, m);
+            }
         },
-        "hero_damage": function(key, m, p) {
-            standardAgg(key, p.hero_damage, m);
+        "total_xp": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.total_xp, m);
+            }
         },
-        "tower_damage": function(key, m, p) {
-            standardAgg(key, p.tower_damage, m);
+        "hero_damage": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.hero_damage, m);
+            }
         },
-        "hero_healing": function(key, m, p) {
-            standardAgg(key, p.hero_healing, m);
+        "tower_damage": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.tower_damage, m);
+            }
         },
-        "courier_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.courier_kills, m);
+        "hero_healing": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.hero_healing, m);
+            }
         },
-        "tower_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.tower_kills, m);
-        },
-        "neutral_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.neutral_kills, m);
-        },
-        "buyback_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.buyback_count, m);
-        },
+        //per minute values
         /*
-        //no longer accurate in 6.84 due to ability to use wards from stack
+        "kills_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.kills / (m.duration / 60), m);
+            }
+        },
+        "deaths_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.deaths / (m.duration / 60), m);
+            }
+        },
+        "assists_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.assists / (m.duration / 60), m);
+            }
+        },
+        "last_hits_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.last_hits / (m.duration / 60), m);
+            }
+        },
+        "hero_damage_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.hero_damage / (m.duration / 60), m);
+            }
+        },
+        "tower_damage_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.tower_damage / (m.duration / 60), m);
+            }
+        },
+        "hero_healing_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.hero_healing / (m.duration / 60), m);
+            }
+        },
+        */
+        "gold_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.gold_per_min, m);
+            }
+        },
+        "xp_per_min": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.xp_per_min, m);
+            }
+        },
+        //categorical values
+        "hero_id": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.hero_id, m);
+            }
+        },
+        "leaver_status": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, p.leaver_status, m);
+            }
+        },
+        "isRadiant": {
+            type: "api",
+            agg: function(key, m, p) {
+                standardAgg(key, isRadiant(p), m);
+            }
+        },
+        //PARSED data aggregations below
+        /*
+        //ward uses no longer accurate in 6.84 due to ability to use wards from stack
         //alternatives include counting purchases or checking length of ward positions object
         "observer_uses": function(key, m, p) {
             standardAgg(key, p.parsedPlayer.observer_uses, m);
@@ -185,107 +235,166 @@ module.exports = function aggregator(matches, fields) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
         },
         */
-        "stuns": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.stuns, m);
+        "stuns": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.stuns, m);
+            }
         },
-        //per minute values
-        "kills_per_min": function(key, m, p) {
-            standardAgg(key, p.kills / (m.duration / 60), m);
+        "courier_kills": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.courier_kills, m);
+            }
         },
-        "deaths_per_min": function(key, m, p) {
-            standardAgg(key, p.deaths / (m.duration / 60), m);
+        "tower_kills": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.tower_kills, m);
+            }
         },
-        "assists_per_min": function(key, m, p) {
-            standardAgg(key, p.assists / (m.duration / 60), m);
+        "neutral_kills": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.neutral_kills, m);
+            }
         },
-        "last_hits_per_min": function(key, m, p) {
-            standardAgg(key, p.last_hits / (m.duration / 60), m);
+        "buyback_count": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.buyback_count, m);
+            }
         },
-        "gold_per_min": function(key, m, p) {
-            standardAgg(key, p.gold_per_min, m);
+        "lane": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.lane, m);
+            }
         },
-        "xp_per_min": function(key, m, p) {
-            standardAgg(key, p.xp_per_min, m);
-        },
-        "hero_damage_per_min": function(key, m, p) {
-            standardAgg(key, p.hero_damage / (m.duration / 60), m);
-        },
-        "tower_damage_per_min": function(key, m, p) {
-            standardAgg(key, p.tower_damage / (m.duration / 60), m);
-        },
-        "hero_healing_per_min": function(key, m, p) {
-            standardAgg(key, p.hero_healing / (m.duration / 60), m);
-        },
-        //categorical values
-        "leaver_status": function(key, m, p) {
-            standardAgg(key, p.leaver_status, m);
-        },
-        "isRadiant": function(key, m, p) {
-            standardAgg(key, isRadiant(p), m);
-        },
-        "lane": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.lane, m);
-        },
-        "lane_role": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.lane_role, m);
+        "lane_role": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.lane_role, m);
+            }
         },
         //lifetime ward positions
-        "obs": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.obs, m);
+        "obs": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.obs, m);
+            }
         },
-        "sen": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.sen, m);
+        "sen": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.sen, m);
+            }
         },
         //lifetime rune counts
-        "runes": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.runes, m);
+        "runes": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.runes, m);
+            }
         },
         //lifetime item uses
-        "item_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.item_uses, m);
+        "item_uses": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.item_uses, m);
+            }
         },
         //track sum of purchase times and counts to get average build time
-        "purchase_time": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.purchase_time, m);
+        "purchase_time": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase_time, m);
+            }
         },
-        "purchase_time_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.purchase_time_count, m);
+        "purchase_time_count": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase_time_count, m);
+            }
         },
         //lifetime item purchases
-        "purchase": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.purchase, m);
-        },
-        "kills_count": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.kills, m);
-        },
-        "gold_reasons": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.gold_reasons, m);
-        },
-        "xp_reasons": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.xp_reasons, m);
+        "purchase": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase, m);
+            }
         },
         //lifetime skill accuracy
-        "ability_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.ability_uses, m);
+        "ability_uses": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.ability_uses, m);
+            }
         },
-        "hero_hits": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.hero_hits, m);
+        "hero_hits": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.hero_hits, m);
+            }
         },
-        "multi_kills": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.multi_kills, m);
+        "kills_count": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.kills, m);
+            }
         },
-        "kill_streaks": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.kill_streaks, m);
+        "gold_reasons": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.gold_reasons, m);
+            }
         },
-        "all_word_counts": function(key, m, p) {
-            standardAgg(key, m.all_word_counts, m);
+        "xp_reasons": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.xp_reasons, m);
+            }
         },
-        "my_word_counts": function(key, m, p) {
-            standardAgg(key, m.my_word_counts, m);
+        "multi_kills": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.multi_kills, m);
+            }
+        },
+        "kill_streaks": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.kill_streaks, m);
+            }
+        },
+        "all_word_counts": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, m.all_word_counts, m);
+            }
+        },
+        "my_word_counts": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, m.my_word_counts, m);
+            }
         }
     };
-    //if fields passed in is null, do all aggregations
-    fields = fields || types;
+    if (typeof fields === "string") {
+        console.log("aggregating %s", fields);
+        var t = {};
+        for (var key in types) {
+            if (types[key].type === fields) {
+                t[key] = 1;
+            }
+        }
+        fields = t;
+    }
+    else if (!fields) {
+        console.log("aggregating all fields");
+        //if null fields passed in, do all aggregations
+        fields = types;
+    }
     //ensure aggData isn't null for each requested aggregation field
     for (var key in fields) {
         //basic counts
@@ -297,7 +406,7 @@ module.exports = function aggregator(matches, fields) {
             aggData[key] = {};
         }
         //standard aggregation
-        else {
+        else if (types[key]) {
             aggData[key] = {
                 sum: 0,
                 min: Number.MAX_VALUE,
@@ -315,10 +424,39 @@ module.exports = function aggregator(matches, fields) {
         for (var key in fields) {
             //execute the aggregation function for each specified field
             if (types[key]) {
-                types[key](key, m, p);
+                types[key].agg(key, m, p);
             }
         }
     }
+    /*
+function roughSizeOfObject(object) {
+    var objectList = [];
+    var recurse = function(value) {
+        var bytes = 0;
+        if (typeof value === 'boolean') {
+            bytes = 4;
+        }
+        else if (typeof value === 'string') {
+            bytes = value.length * 2;
+        }
+        else if (typeof value === 'number') {
+            bytes = 8;
+        }
+        else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+            objectList[objectList.length] = value;
+            for (i in value) {
+                bytes += 8; // an assumed existence overhead
+                bytes += recurse(value[i])
+            }
+        }
+        return bytes;
+    }
+    return recurse(object);
+}
+console.log(roughSizeOfObject(aggData));
+var fs = require('fs');
+fs.writeFile("output.json",JSON.stringify(aggData));
+*/
     return aggData;
 
     function standardAgg(key, value, match) {
@@ -353,4 +491,93 @@ module.exports = function aggregator(matches, fields) {
             }
         }
     }
-}
+
+    function aggHeroes(key, m, p) {
+        var heroes = aggData.heroes;
+        if (Object.keys(heroes).length !== Object.keys(constants.heroes).length) {
+            //prefill heroes with every hero
+            for (var hero_id in constants.heroes) {
+                var hero = {
+                    hero_id: hero_id,
+                    last_played: 0,
+                    games: 0,
+                    win: 0,
+                    with_games: 0,
+                    with_win: 0,
+                    against_games: 0,
+                    against_win: 0
+                };
+                heroes[hero_id] = heroes[hero_id] || hero;
+            }
+        }
+        var p = m.players[0];
+        var player_win = isRadiant(p) === m.radiant_win;
+        for (var j = 0; j < m.all_players.length; j++) {
+            var tm = m.all_players[j];
+            var tm_hero = tm.hero_id;
+            if (tm_hero in heroes) {
+                //don't count invalid heroes
+                if (isRadiant(tm) === isRadiant(p)) {
+                    //count teammate heroes
+                    if (tm.account_id === p.account_id) {
+                        //console.log("self %s", tm_hero);
+                        heroes[tm_hero].games += 1;
+                        heroes[tm_hero].win += player_win ? 1 : 0;
+                        if (m.start_time > heroes[tm_hero].last_played) {
+                            heroes[tm_hero].last_played = m.start_time;
+                        }
+                    }
+                    else {
+                        //console.log("teammate %s", tm_hero);
+                        heroes[tm_hero].with_games += 1;
+                        heroes[tm_hero].with_win += player_win ? 1 : 0;
+                    }
+                }
+                else {
+                    //count enemy heroes
+                    //console.log("opp %s", tm_hero);
+                    heroes[tm_hero].against_games += 1;
+                    heroes[tm_hero].against_win += player_win ? 1 : 0;
+                }
+            }
+        }
+    }
+
+    function aggTeammates(key, m, p) {
+        var teammates = aggData.teammates;
+        var p = m.players[0];
+        var player_win = isRadiant(p) === m.radiant_win;
+        for (var j = 0; j < m.all_players.length; j++) {
+            var tm = m.all_players[j];
+            //count teammate players
+            if (!teammates[tm.account_id]) {
+                teammates[tm.account_id] = {
+                    account_id: tm.account_id,
+                    last_played: 0,
+                    win: 0,
+                    games: 0,
+                    with_win: 0,
+                    with_games: 0,
+                    against_win: 0,
+                    against_games: 0
+                };
+            }
+            if (m.start_time > teammates[tm.account_id].last_played) {
+                teammates[tm.account_id].last_played = m.start_time;
+            }
+            //played with
+            teammates[tm.account_id].games += 1;
+            teammates[tm.account_id].win += player_win ? 1 : 0;
+            if (isRadiant(tm) === isRadiant(p)) {
+                //played with
+                teammates[tm.account_id].with_games += 1;
+                teammates[tm.account_id].with_win += player_win ? 1 : 0;
+            }
+            else {
+                //played against
+                teammates[tm.account_id].against_games += 1;
+                teammates[tm.account_id].against_win += player_win ? 1 : 0;
+            }
+        }
+    }
+};

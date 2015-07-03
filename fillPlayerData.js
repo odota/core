@@ -62,12 +62,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //use cache
             if (cacheAble) {
-                //add recent matches to cache
-                player.cache.data = results.data;
-                return finish(err, player.cache);
+                console.log("using player cache");
+                results.aggData = player.cache.aggData;
+                return finish(err, results);
             }
-            //rebuild cache if no query
-            else if (!queryExists) {
+            //rebuild cache if no query and data is complete
+            else if (!queryExists && options.info === "matches") {
+                console.log("rebuilding cache");
                 player.cache = {
                     aggData: {}
                 };
@@ -84,6 +85,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             //don't save the cache if there was a query
             else {
+                console.log("not using or saving cache");
                 finish(err, results);
             }
         }

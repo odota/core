@@ -17,7 +17,7 @@ block content
         tr
           td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
           each player in data.slice(1)
-            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(2) : "N/A"
+            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "N/A"
             - var pct = player.aggData[key].percentile*100
             td
               .progress
