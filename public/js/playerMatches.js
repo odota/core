@@ -1,27 +1,9 @@
-module.exports = function() {
-    //teammates for select2
-    //extend jquery to serialize form data to JSON
-    $.fn.serializeObject = function() {
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function() {
-            if (o[this.name] !== undefined) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            }
-            else {
-                o[this.name] = this.value || '';
-            }
-        });
-        return o;
-    };
+module.exports = function(options) {
+    //currently nothing is done with options
+    //TODO separate out functions to draw heroes/teammates tables?
     drawMatches(matches);
     drawHeroes(heroes);
     drawTeammates(teammates);
-    //don't display league/team name columns
-    var professional = false;
 
     function drawMatches(data) {
         $('#matches').dataTable({
@@ -38,12 +20,9 @@ module.exports = function() {
                 }
             },
             */
-            "rowCallback": function(row, data) {
-                //$(row).addClass(data.player_win ? "success" : "danger");
-            },
             "drawCallback": function() {
-                tooltips();
-                formatHtml();
+                window.tooltips();
+                window.formatHtml();
             },
             stateSave: true,
             searching: false,
@@ -74,30 +53,6 @@ module.exports = function() {
                     }
             },
                 {
-                    data: 'league_name',
-                    title: 'League',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'radiant_name',
-                    title: 'Radiant',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
-                    data: 'dire_name',
-                    title: 'Dire',
-                    visible: Boolean(professional),
-                    render: function(data, type) {
-                        return data ? data : "Unknown";
-                    }
-            },
-                {
                     data: 'player_win',
                     title: 'Result',
                     render: function(data, type, row) {
@@ -109,6 +64,13 @@ module.exports = function() {
                     title: 'Game Mode',
                     render: function(data, type) {
                         return constants.game_mode[data] ? constants.game_mode[data].name : data;
+                    }
+            },
+                {
+                    data: 'skill',
+                    title: 'Skill',
+                    render: function(data, type) {
+                        return constants.skill[data] ? constants.skill[data] : "N/A";
                     }
             },
             /*
@@ -181,32 +143,7 @@ module.exports = function() {
                     title: 'XPM',
                     render: function(data, type) {
                         return data;
-                    }
-            // },
-            //     {
-            //         data: 'players[0].hero_damage',
-            //         title: 'HD',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
-            // },
-            //     {
-            //         data: 'players[0].tower_damage',
-            //         title: 'TD',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
-            // },
-            //     {
-            //         data: 'players[0].hero_healing',
-            //         title: 'HH',
-            //         visible: false,
-            //         render: function(data, type) {
-            //             return data;
-            //         }
-            }, {
+                    },
                     data: 'parse_status',
                     title: 'Status',
                     render: function(data, type) {

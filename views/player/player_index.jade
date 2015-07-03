@@ -5,10 +5,7 @@ include /mixins/teammate_table
 
 block playercontent
   //pre=JSON.stringify(player.aggData)
-              
-  - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status};
   script.
-    var constants = !{JSON.stringify(clientConstants)};
     var matches = !{JSON.stringify(player.matches.slice(0,10))};
     var heroes = !{JSON.stringify(player.aggData.heroes)};
     var teammates = !{JSON.stringify(player.aggData.teammates)};
