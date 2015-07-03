@@ -152,7 +152,7 @@ function queueReq(type, payload, cb) {
     var kuejob = jobs.create(job.type, job).attempts(payload.attempts || 15).backoff({
         delay: 60 * 1000,
         type: 'exponential'
-    }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
+    }).removeOnComplete(true).priority(payload.priority || 'normal').ttl(30*60*1000).save(function(err) {
         console.log("[KUE] created jobid: %s", kuejob.id);
         cb(err, kuejob);
     });
