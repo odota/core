@@ -125,7 +125,7 @@ append footer_assets
         radius: 15
       });
       var posData = !{JSON.stringify(match.posData)}
-      adjustHeatmapData(posData, 600/127, null, 0);
+      adjustHeatmapData(posData, 600/127, null, 25);
       $(".activate").on("mouseover", function(){
         var pData = posData[Number($(this).attr('data-index'))]
         var data = pData[$(this).attr('data-type')];
