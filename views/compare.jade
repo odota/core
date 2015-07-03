@@ -10,9 +10,8 @@ block content
       tr
         td
         each player in data.slice(1)
-          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} 
-            abbr(title="Number of  matches") (#{player.matches.length})
-          td Percentile (#{data[0].matches.length})
+          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.matches.length} matches)
+          td Percentile (#{data[0].matches.length} matches)
     tbody
       each val, key in data[0].aggData
         tr
