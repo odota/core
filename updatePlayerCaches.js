@@ -6,15 +6,17 @@ var async = require('async');
 var db = require('./db');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
-    //check if match is a reinsert
+    //check if match is a reinsert/reparse
     db.matches.find({
         match_id: match.match_id
     }, function(err, docs) {
         if (err) {
             return cb(err);
         }
-        var reInsert = Boolean(docs.length);
-        if (reInsert) {
+        var reInsert = docs.length && options.type === "api";
+        var reParse = docs.length && docs[0].parse_status === 2 && options.type === "parsed";
+        console.log("reInsert: %s, reParse: %s", reInsert, reParse);
+        if (reInsert || reParse) {
             return cb(err);
         }
         else {
@@ -29,7 +31,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && isSignificant(constants, match) && !reInsert) {
+                        if (player && player.cache && player.cache.aggData && isSignificant(constants, match)) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
                             //duplicate this data into a copy to avoid corrupting original match object
@@ -39,7 +41,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //some data fields require computeMatchData in order to aggregate correctly
                             computeMatchData(match_copy);
                             //do aggregations on fields based on type
-                            player.cache.aggData = aggregator(match_copy, options.type);
+                            player.cache.aggData = aggregator([match_copy], options.type, player.cache.aggData);
                         }
                         else {
                             player = {};

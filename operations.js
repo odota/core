@@ -9,20 +9,21 @@ var updatePlayerCaches = require('./updatePlayerCaches');
 
 function insertMatch(match, cb) {
     async.series([function(cb) {
-            //put api data in db
-            //set to queued, unless we specified something earlier (like skipped)
-            match.parse_status = match.parse_status || 0;
-            db.matches.update({
-                match_id: match.match_id
-            }, {
-                $set: match
-            }, {
-                upsert: true
-            }, cb);
-            },
-            function(cb) {
-            updatePlayerCaches(match, {type:"api"}, cb);
-        }], function decideParse(err) {
+        updatePlayerCaches(match, {
+            type: "api"
+        }, cb);
+        }, function(cb) {
+        //put api data in db
+        //set to queued, unless we specified something earlier (like skipped)
+        match.parse_status = match.parse_status || 0;
+        db.matches.update({
+            match_id: match.match_id
+        }, {
+            $set: match
+        }, {
+            upsert: true
+        }, cb);
+            }], function decideParse(err) {
         if (err) {
             //error occured
             return cb(err);

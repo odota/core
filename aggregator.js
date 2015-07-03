@@ -2,8 +2,7 @@ var constants = require('./constants.json');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
-module.exports = function aggregator(matches, fields) {
-    var aggData = {};
+module.exports = function aggregator(matches, fields, existing) {
     var types = {
         "heroes": {
             type: "api",
@@ -396,26 +395,29 @@ module.exports = function aggregator(matches, fields) {
         fields = types;
     }
     //ensure aggData isn't null for each requested aggregation field
+    var aggData = existing || {};
     for (var key in fields) {
-        //basic counts
-        if (key === "win" || key === "lose" || key === "games") {
-            aggData[key] = 0;
-        }
-        //track unique ids
-        else if (key === "teammates" || key === "heroes") {
-            aggData[key] = {};
-        }
-        //standard aggregation
-        else if (types[key]) {
-            aggData[key] = {
-                sum: 0,
-                min: Number.MAX_VALUE,
-                max: 0,
-                max_match: null,
-                n: 0,
-                counts: {},
-                win_counts: {}
-            };
+        if (!aggData[key]) {
+            //basic counts
+            if (key === "win" || key === "lose" || key === "games") {
+                aggData[key] = 0;
+            }
+            //track unique ids
+            else if (key === "teammates" || key === "heroes") {
+                aggData[key] = {};
+            }
+            //standard aggregation
+            else if (types[key]) {
+                aggData[key] = {
+                    sum: 0,
+                    min: Number.MAX_VALUE,
+                    max: 0,
+                    max_match: null,
+                    n: 0,
+                    counts: {},
+                    win_counts: {}
+                };
+            }
         }
     }
     for (var i = 0; i < matches.length; i++) {

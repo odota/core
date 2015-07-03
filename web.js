@@ -234,21 +234,6 @@ app.route('/professional').get(function(req, res, next) {
                 });
         });
         */
-        /*
-        db.matches.find({
-            leagueid: {
-                $gt: 0
-            }
-        }, {
-            limit: 100,
-        }, function(err, data2) {
-            //TODO add league data to pro matches
-            res.render('professional', {
-                live: data,
-                recent: data2
-            });
-        });
-        */
     });
 });
 app.route('/compare').get(function(req, res, next) {
