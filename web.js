@@ -229,7 +229,7 @@ app.route('/professional').get(function(req, res, next) {
                     return next(err);
                 }
                 res.render('professional', {
-                    live: data,
+                    live: data.result.games,
                     recent: data2.data
                 });
         });

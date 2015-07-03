@@ -2,12 +2,12 @@ extend layout
 
 block content
   //pre=JSON.stringify(live)
-  h1 Live (work in progress)
+  h1 Live (under construction)
   table.table#live
     thead
       tr
         th Match ID
-    each match in live.result.games
+    each match in live || []
       tr
         td=match.match_id
   h1 Recent
