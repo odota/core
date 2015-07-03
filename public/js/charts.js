@@ -22,8 +22,8 @@ module.exports = function generateCharts(data) {
         }
     });
     var color_array = [];
-    for (var key in player_colors) {
-        color_array.push(player_colors[key]);
+    for (var key in constants.player_colors) {
+        color_array.push(constants.player_colors[key]);
     }
     var difference = data.difference;
     var gold = data.gold;

@@ -9,9 +9,6 @@ block sticky_content
       .container
         if banner_msg
           .alert.alert-success.text-center(role="alert") !{banner_msg}
-        - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status,"skill":constants.skill};
-        script.
-          var constants = !{JSON.stringify(clientConstants)};         
         +ad("banner1")
         block content
         +ad("banner3")
