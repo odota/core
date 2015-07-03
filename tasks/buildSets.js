@@ -134,7 +134,7 @@ module.exports = function buildSets(cb) {
             console.log('error occured during buildSets: %s', err);
         }
         //merge trackedPlayers with donators
-        //we are doing this because the $or query forces iteration through all players, which is slow!
+        //we are doing it this way because the $or query forces iteration through all players, which is slow!
         for (var key in result.donators) {
             result.trackedPlayers[key] = true;
         }
