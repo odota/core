@@ -24,7 +24,7 @@ api.get('/matches', function(req, res, next) {
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,
-        js_sort: js_sort
+        //js_sort: js_sort
     }, function(err, result) {
         if (err) {
             return next(err);

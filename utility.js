@@ -331,6 +331,12 @@ function generatePositionData(d, p) {
     }
     return d;
 }
+
+function isSignificant(constants, m) {
+    //TODO detect no stats recorded?
+    return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
+}
+
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -342,5 +348,6 @@ module.exports = {
     mergeObjects: mergeObjects,
     mode: mode,
     generatePositionData: generatePositionData,
-    getParseSchema: getParseSchema
+    getParseSchema: getParseSchema,
+    isSignificant: isSignificant
 };

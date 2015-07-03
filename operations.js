@@ -2,15 +2,13 @@ var db = require('./db');
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var generateJob = utility.generateJob;
+var isRadiant = utility.isRadiant;
+var isSignificant = utility.isSignificant;
 var async = require('async');
 var r = require("./redis");
 var jobs = r.jobs;
-var redis = r.client;
-var isRadiant = utility.isRadiant;
-var helper = require('./helper');
-var isSignificant = helper.isSignificant;
-var aggHeroes = helper.aggHeroes;
-var aggTeammates = helper.aggTeammates;
+var constants = require('./constants.json');
+var aggregator = require('./aggregator');
 
 function insertMatch(match, cb) {
     var reInsert = false;
@@ -46,19 +44,15 @@ function insertMatch(match, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && isSignificant(match) && !reInsert) {
+                        if (player && player.cache && player.cache.aggData && isSignificant(constants, match) && !reInsert) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
                             //duplicate this data into a copy to avoid corrupting original match objects
                             var match_copy = JSON.parse(JSON.stringify(match));
                             match_copy.all_players = match.players.slice(0);
                             match_copy.players = [p];
-                            //do basic aggregations: win/lose/games/heroes/teammates
-                            player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
-                            player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
-                            player.cache.aggData.games += 1;
-                            aggHeroes(player.cache.aggData.heroes, match_copy);
-                            aggTeammates(player.cache.aggData.teammates, match_copy);
+                            //do aggregations on api data fields: win/lose/games/heroes/teammates
+                            player.cache.aggData = aggregator(match_copy, {"heroes":1,"teammates":1,"win":1,"lose":1,"games":1});
                         }
                         else {
                             player = {};
@@ -157,6 +151,7 @@ function queueReq(type, payload, cb) {
         cb(err, kuejob);
     });
 }
+
 module.exports = {
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,

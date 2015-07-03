@@ -36,8 +36,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
         var queryExists = Boolean(Object.keys(options.query.select).length);
-        var cacheAble = options.info === "index" && player.cache && !queryExists;
-        //don't get parsed data on tabs that don't require it
+        var cacheAble = options.info !== "matches" && player.cache && !queryExists;
         options.query.limit = cacheAble ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
@@ -67,21 +66,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 player.cache.data = results.data;
                 return finish(err, player.cache);
             }
-            //rebuild cache if no query and we didn't use cache (which means only 10 matches from db)
-            if (!queryExists) {
+            //rebuild cache if no query
+            else if (!queryExists) {
                 player.cache = {
                     aggData: {}
                 };
-                var cachedKeys = {
-                    "win": 1,
-                    "lose": 1,
-                    "games": 1,
-                    "heroes": 1,
-                    "teammates": 1
-                };
-                for (var key in cachedKeys) {
-                    player.cache.aggData[key] = results.aggData[key];
-                }
+                player.cache.aggData = results.aggData;
                 db.players.update({
                     account_id: player.account_id
                 }, {
@@ -155,4 +145,4 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
         }
     }
-}
+};
