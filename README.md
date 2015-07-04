@@ -10,50 +10,56 @@ YASP - YASP: Another Stats Page
 
 Features
 ----
-* Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics.
+* Replay Parsing: Parses replays of Dota 2 matches to provide additional statistics per match.
   * Item build times
+  * Pick order
+  * Number of pings
+  * Stun/disable time
   * Consumables bought
   * Runes picked up
+  * Laning position heatmap
   * Ward placement map
   * LHs per min table
   * Radiant advantage/Gold/XP/LH graphs per min
-  * Laning position heatmap
   * Teamfight summary
   * Objective times
-  * Ability uses/hits
-  * Gold/XP breakdown
-  * Damage/Kills breakdown
   * Largest hit on a hero
+  * Ability uses/hits
+  * Item uses
+  * Gold/XP breakdown
+  * Damage/Kills crosstables
+  * Multikills/Kill streaks
+  * All chat
 * Advanced Querying: Supports flexible querying and aggregation with the following criteria:
-  * player(s) in game (account ID)
-  * team composition (heroes)
-  * opponent composition (heroes)
-  * Standard filters: patch, game mode, etc.
+  * Player(s) in game (account ID)
+  * Team composition (heroes)
+  * Opponent composition (heroes)
+  * Standard filters: patch, game mode, hero, etc.
 * Aggregations:
   * Result count, win rate
   * Win rate by hour/day of week
-  * Hero Matchups (win rate when playing as, with, against a hero)
-  * Teammates (win rate playing with particular players)
   * Histogram (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
+  * Hero Matchups (win rate when playing as, with, against a hero)
+  * Teammates/Opponents (win rate playing with/against particular players)
   * Max/N/Sum on multiple stat categories
-* Additional aggregations for parsed matches:
-  * Mean build times
+  * Mean item build times
   * Skill accuracy
   * Laning
-  * Ward Map
-* Rating Tracking: Users can keep track of their MMR by adding a Steam account to their friends list.
-* Visualizations: Data is rendered into timeseries graphs, bar charts, histograms, heatmaps, and more.
-* Modular: You may find certain parts of YASP to be useful for your own needs.
+  * Ward maps
+  * Word clouds (text said and read in all chat)
+* Pro Games: See the latest professional matches (automatically parsed)
+* Live matches: (Under construction)
+* Comparison Tool: Compare players to each other and compute a percentile against all YASP users
+* Rating Tracker: Keep track of MMR by adding a Steam account as a friend
+* Modular: YASP is built with a microservice architecture, with pieces that can be reused in other projects
 * Scalable: Designed to scale to thousands of users.
-* Free: YASP has no "premium" features--everything is free for everyone!
+* Free: YASP puts no features behind paywalls.  All data is available for free to users.
 * Open Source: YASP encourages contributions from the Dota 2 developer community.
 
 Tech
 ----
 * Web: Node.js/Express
 * Storage: MongoDB/Redis
-* Queue Management: Kue
-* Client: Bootstrap, c3, datatables, cal-heatmap, select2, heatmap.js, qtip2
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Starting YASP
@@ -62,29 +68,14 @@ Starting YASP
 * Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
 * Build `npm run build`
 * Launch in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`
+* Developers: If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
+* Tests: Tests are run with the Mocha framework.  `npm test` to run the full test suite.
 
 Sample Data
 ----
 * Load the test players and matches: `mongo dota migrations/loader.js`
+* https://github.com/yasp-dota/testfiles/blob/master/dota.zip contains a database dump that can be imported using mongorestore if a larger data set is desired.
 
 Lessons and Rules
 ----
 * Never async.parallel database calls.
-
-Questions
-----
-###How do I programmatically get replays?
-* You can fire up the retriever (supplying your own Steam credentials) and basically get a REST API for retrieving replay salts.  
-* If you have friends on that account you could extract their MMR as well.
-
-###How do I use the parser?
-* You'll probably need to download the replays and pipe them through the parser (it uses stdin/stdout streams, so standard shell redirection will work).
-* This just emits a raw event log of JSON objects.  You'll have to figure out what you want to do with that data.
-* In YASP, we aggregate that data into a single JSON object and store it in MongoDB, then display it nicely with our Jade templates.
-
-###I've got a bunch of replay files.  Can I get them into YASP?
-* If you want to run a replay file through the YASP pipeline, your best bet is probably to use the Kue JSON API to POST a job.
-* We don't allow public access to this API for production YASP, but you could do it yourself on your own instance.
-
-###How can I run my own YASP for myself/friends?
-* You can run your own instance of YASP, and then add account_ids to the "permanent" list to make them immune to untracking.

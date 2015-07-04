@@ -93,7 +93,10 @@ module.exports = function(options) {
                     data: 'start_time',
                     title: 'Played',
                     render: function(data, type, row) {
-                        return moment.unix(data + row.duration).fromNow();
+                        if (type === 'sort') {
+                            return data + row.duration; // Sort by unix timestamp
+                        }
+                        return  moment.unix(data + row.duration).fromNow();
                     }
             },
                 {
