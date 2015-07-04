@@ -131,12 +131,10 @@ module.exports = function() {
                     data: 'start_time',
                     title: 'Played',
                     render: function(data, type, row) {
-                        var timestamp = moment.unix(data + row.duration);
                         if (type === 'sort') {
-                            return timestamp.valueOf(); // Sort by unix timestamp
+                            return data + row.duration; // Sort by unix timestamp
                         }
-
-                        return timestamp.fromNow();
+                        return  moment.unix(data + row.duration).fromNow();
                     }
             },
                 {
