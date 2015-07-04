@@ -21,19 +21,19 @@ Features
   * Ward placement map
   * LHs per min table
   * Radiant advantage/Gold/XP/LH graphs per min
-  * Teamfight Summary
+  * Teamfight summary
   * Objective times
   * Largest hit on a hero
   * Ability uses/hits
   * Item uses
   * Gold/XP breakdown
-  * Damage/Kills cross tables
-  * Multi-Kills/Kill Streaks
-  * All Chat
+  * Damage/Kills crosstables
+  * Multikills/Kill streaks
+  * All chat
 * Advanced Querying: Supports flexible querying and aggregation with the following criteria:
-  * player(s) in game (account ID)
-  * team composition (heroes)
-  * opponent composition (heroes)
+  * Player(s) in game (account ID)
+  * Team composition (heroes)
+  * Opponent composition (heroes)
   * Standard filters: patch, game mode, hero, etc.
 * Aggregations:
   * Result count, win rate
@@ -45,16 +45,15 @@ Features
   * Mean item build times
   * Skill accuracy
   * Laning
-  * Ward Map
-  * Word Clouds (text said and read in all chat)
+  * Ward maps
+  * Word clouds (text said and read in all chat)
 * Pro Games: See the latest professional matches (automatically parsed)
 * Live matches: (Under construction)
 * Comparison Tool: Compare players to each other and compute a percentile against all YASP users
-* Rating Tracking: Keep track of their MMR by adding a Steam account as a friend
-* Visualizations: Data is rendered into timeseries graphs, bar charts, histograms, heatmaps, and more.
-* Modular: YASP is built with a microservice architecture that can used for other projects individually
-* Scalable: Designed and tested to scale to thousands of users.
-* Free: YASP has no features behind paywalls.  All features are available for free to users.
+* Rating Tracker: Keep track of MMR by adding a Steam account as a friend
+* Modular: YASP is built with a microservice architecture, with pieces that can be reused in other projects
+* Scalable: Designed to scale to thousands of users.
+* Free: YASP puts no features behind paywalls.  All data is available for free to users.
 * Open Source: YASP encourages contributions from the Dota 2 developer community.
 
 Tech
