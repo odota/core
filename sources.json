@@ -14,7 +14,8 @@
     "CHAT_MESSAGE_ROSHAN_KILL": "Roshan",
     "CHAT_MESSAGE_AEGIS": "Picked up the Aegis",
     "CHAT_MESSAGE_FIRSTBLOOD": "First Blood",
-    "CHAT_MESSAGE_TOWER_DENY": "Tower Deny"
+    "CHAT_MESSAGE_TOWER_DENY": "Tower Deny",
+    "CHAT_MESSAGE_AEGIS_STOLEN": "Stole the Aegis"
   },
   "multi_kills": {
     "2": "Double Kill",

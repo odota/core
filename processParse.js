@@ -172,6 +172,9 @@ function runParse(job, cb) {
                 e.type = "runes";
                 populate(e);
             }
+            else if (e.subtype === "CHAT_MESSAGE_RUNE_BOTTLE") {
+                //player, bottled rune
+            }
             else if (e.subtype === "CHAT_MESSAGE_HERO_KILL") {
                 //player, assisting players
             }
@@ -181,8 +184,7 @@ function runParse(job, cb) {
             else if (e.subtype === "CHAT_MESSAGE_PAUSED") {
                 //player paused
             }
-            else if (e.subtype === "CHAT_MESSAGE_FIRSTBLOOD" || e.subtype === "CHAT_MESSAGE_TOWER_DENY" || e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
-                //objective
+            else if (e.subtype === "CHAT_MESSAGE_FIRSTBLOOD" || e.subtype === "CHAT_MESSAGE_TOWER_DENY" || e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_AEGIS_STOLEN" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
                 //tower (player/team)
                 //barracks (player)
                 //aegis (player)
@@ -190,11 +192,7 @@ function runParse(job, cb) {
                 parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
             else {
-                //ignore rune bottling events
-                if (e.subtype === "CHAT_MESSAGE_RUNE_BOTTLE") {}
-                else {
-                    console.log(e);
-                }
+                console.log(e);
             }
         },
         "kills": function(e) {
