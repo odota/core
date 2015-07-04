@@ -105,6 +105,12 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, p.assists, m);
             }
         },
+        "kda": {
+            type: "api",
+            agg: function(key, m, p){
+                standardAgg(key, p.kda, m);
+            }
+        },
         "last_hits": {
             type: "api",
             agg: function(key, m, p) {
