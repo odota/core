@@ -28,7 +28,7 @@ function computeMatchData(match) {
             player.total_gold = ~~(player.gold_per_min * match.duration / 60);
             player.total_xp = ~~(player.xp_per_min * match.duration / 60);
             player.parseSlot = player.player_slot % (128 - 5);
-            player.kda = ~~((player.kills+player.assists)/(player.deaths+1));
+            player.kda = ~~((player.kills + player.assists) / (player.deaths + 1));
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
@@ -361,6 +361,10 @@ function renderMatch(match) {
         tf.posData = [];
         tf.radiant_gold_delta = 0;
         tf.radiant_xp_delta = 0;
+        tf.radiant_participation = 0;
+        tf.radiant_deaths = 0;
+        tf.dire_participation = 0;
+        tf.dire_deaths = 0;
         tf.players.forEach(function(p) {
             //lookup starting, ending level
             p.level_start = getLevelFromXp(p.xp_start);
@@ -385,13 +389,18 @@ function renderMatch(match) {
             player.participate = player.deaths > 0 || player.damage > 0;
             p.teamfights_participated = p.teamfights_participated || 0;
             p.teamfights_participated += player.participate ? 1 : 0;
+            //compute team gold/xp deltas
             if (isRadiant(p)) {
                 tf.radiant_gold_delta += player.gold_delta;
                 tf.radiant_xp_delta += player.xp_delta;
+                tf.radiant_participation += player.participate ? 1 : 0;
+                tf.radiant_deaths += player.deaths ? 1 : 0;
             }
             else {
                 tf.radiant_gold_delta -= player.gold_delta;
                 tf.radiant_xp_delta -= player.xp_delta;
+                tf.dire_participation += player.participate ? 1 : 0;
+                tf.dire_deaths += player.deaths ? 1 : 0;
             }
             //convert 2d hash to array
             player.posData = generatePositionData({
