@@ -14,6 +14,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         var reInsert = docs.length && options.type === "api";
+        //TODO reparses are incorrectly detected
         var reParse = docs.length && docs[0].parse_status === 2 && options.type === "parsed";
         console.log("reInsert: %s, reParse: %s", reInsert, reParse);
         if (reInsert || reParse) {

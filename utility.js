@@ -263,7 +263,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 10,
+        "version": 11,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -304,6 +304,7 @@ function getParseSchema() {
                 "hero_hits": {},
                 "damage": {},
                 "damage_taken": {},
+                "damage_inflictor": {},
                 "runes": {},
                 "killed_by": {},
                 "modifier_applied": {},
@@ -352,7 +353,6 @@ function isSignificant(constants, m) {
     //TODO detect no stats recorded?
     return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
 }
-
 module.exports = {
     tokenize: tokenize,
     logger: logger,

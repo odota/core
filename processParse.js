@@ -129,7 +129,7 @@ function runParse(job, cb) {
         "gold_reasons": function(e) {
             if (!constants.gold_reasons[e.key]) {
                 //new gold reason
-                //reason 8=cheat?
+                //reason 8=cheat?  shouldn't occur in pub games
                 console.log(e);
             }
             getSlot(e);
@@ -144,6 +144,7 @@ function runParse(job, cb) {
         "purchase": function(e) {
             getSlot(e);
             if (e.key.indexOf("recipe_") === -1) {
+                //don't include recipes in purchase logs
                 e.type = "purchase_log";
                 populate(e);
             }
@@ -226,7 +227,9 @@ function runParse(job, cb) {
                             kills: {},
                             deaths: 0,
                             buybacks: 0,
-                            damage: 0
+                            damage: 0,
+                            gold_delta: 0,
+                            xp_delta: 0
                         };
                     })
                 };
@@ -246,7 +249,7 @@ function runParse(job, cb) {
             getSlot(r);
         },
         "damage": function(e) {
-            //count damage dealt
+            //count damage dealt to unit
             getSlot(e);
             //reverse and count as damage taken (see comment for reversed kill)
             var r = {
@@ -257,8 +260,9 @@ function runParse(job, cb) {
                 type: "damage_taken"
             };
             getSlot(r);
-            //check if hero hit
+            //check if this damage happened to a real hero
             if (e.target_hero && !e.target_illusion) {
+                //count a hit on a real hero with this inflictor
                 var h = {
                     time: e.time,
                     unit: e.unit,
@@ -266,6 +270,15 @@ function runParse(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
+                //count damage dealt a real hero with this inflictor
+                var inf = {
+                    type: "damage_inflictor",
+                    time: e.time,
+                    unit: e.unit,
+                    key: e.inflictor,
+                    value: e.value
+                };
+                getSlot(inf);
                 //biggest hit on a hero
                 var m = {
                     type: "max_hero_hit",
@@ -367,10 +380,10 @@ function runParse(job, cb) {
         var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log("target:%s", target);
         inStream = request(target);
-        //if (process.env.NODE_ENV!=="production") inStream.pipe(fs.createWriteStream("output.json"));
         outStream = JSONStream.parse();
         inStream.pipe(outStream);
         /*
+        //following is currently run by external process
         parser = spawn("java", ["-jar",
         "-Xmx64m",
         "parser/target/stats-0.1.0.one-jar.jar"
@@ -446,7 +459,6 @@ function runParse(job, cb) {
             //best is probably to have processparse running via cluster threads
             //then we can just crash this thread and master can respawn a new worker
             //we need to use kue's pause to stop processing jobs, then crash the thread
-            //there is an API change in 0.9, so wait for that?
             console.log(err);
             cb(err.message || err, parsed_data);
         }
@@ -482,17 +494,11 @@ function runParse(job, cb) {
         teamfights = teamfights.filter(function(tf) {
             return tf.deaths >= 3;
         });
-        //go through teamfights, add gold/xp deltas
         teamfights.forEach(function(tf) {
             tf.players.forEach(function(p, ind) {
-                //set gold/xp deltas here
-                //TODO alternative: sum gold/xp change events?  This omits passive gold income and is affected by sells, includes gold lost to death
+                //record player's start/end xp for level change computation
                 p.xp_start = intervalState[tf.start][ind].xp;
                 p.xp_end = intervalState[tf.end][ind].xp;
-                p.gold_start = intervalState[tf.start][ind].gold;
-                p.gold_end = intervalState[tf.end][ind].gold;
-                p.gold_delta = intervalState[tf.end][ind].gold - intervalState[tf.start][ind].gold;
-                p.xp_delta = intervalState[tf.end][ind].xp - intervalState[tf.start][ind].xp;
             });
         });
         for (var i = 0; i < entries.length; i++) {
@@ -503,10 +509,11 @@ function runParse(job, cb) {
                 var tf = teamfights[j];
                 if (e.time >= tf.start && e.time <= tf.end) {
                     //kills_log tracks only hero kills on non-illusions
+                    //we mutated the type in an earlier pass
                     if (e.type === "kills_log") {
                         //copy the entry
-                        var e_cpy_1 = JSON.parse(JSON.stringify(e))
-                            //count toward kills
+                        var e_cpy_1 = JSON.parse(JSON.stringify(e));
+                        //count toward kills
                         e_cpy_1.type = "kills";
                         populate(e_cpy_1, tf);
                         //get slot of target
@@ -517,8 +524,8 @@ function runParse(job, cb) {
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
                             //copy the entry
-                            var e_cpy_2 = JSON.parse(JSON.stringify(e))
-                                //fill in the copy
+                            var e_cpy_2 = JSON.parse(JSON.stringify(e));
+                            //fill in the copy
                             e_cpy_2.type = "deaths_pos";
                             e_cpy_2.key = [x, y];
                             e_cpy_2.posData = true;
@@ -539,6 +546,16 @@ function runParse(job, cb) {
                             if (e.slot !== undefined) {
                                 tf.players[e.slot].damage += e.value;
                             }
+                        }
+                    }
+                    else if (e.type === "gold_reasons" || e.type === "xp_reasons") {
+                        //add gold/xp to delta
+                        if (e.slot !== undefined) {
+                            var types = {
+                                "gold_reasons": "gold_delta",
+                                "xp_reasons": "xp_delta"
+                            };
+                            tf.players[e.slot][types[e.type]] += e.value;
                         }
                     }
                     else if (e.type === "ability_uses" || e.type === "item_uses") {
