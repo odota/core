@@ -60,6 +60,7 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        /*
         unavailable_last_day: function(cb) {
             db.matches.count({
                 parse_status: 1,
@@ -68,6 +69,7 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        */
         full_history: function(cb) {
             db.players.count({
                 full_history_time: {
