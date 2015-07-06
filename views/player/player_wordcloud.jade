@@ -4,9 +4,8 @@ block playercontent
   .row
     .col-md-12
 
-      h2: abbr(title="Generated from all chat in this player's parsed matches") Word Clouds
-      h3
-        span.label.label-info #{player.aggData.all_word_counts.n} games
+      h2: abbr(title="Generated from all chat in this player's parsed matches") Word Clouds 
+        small (#{player.aggData.all_word_counts.n} matches)
 
       h3="Words said by this player in all chat"
       canvas(width=1000, height=800)#mywordcounts

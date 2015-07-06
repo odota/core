@@ -31,7 +31,7 @@ module.exports = function aggregator(matches, fields, existing) {
                 aggData[key] += 1;
             }
         },
-        //match level values
+        //match values
         "start_time": {
             type: "api",
             agg: function(key, m, p) {
@@ -80,7 +80,7 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, m.game_mode, m);
             }
         },
-        //numeric values
+        //player numeric values
         "level": {
             type: "api",
             agg: function(key, m, p) {

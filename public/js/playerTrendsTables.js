@@ -1,9 +1,9 @@
 module.exports = function playerTrendsTables() {
     var builds = $('#builds').dataTable({
-        "searching": false,
+        //"searching": false,
         "paging": true,
         "order": [
-            [2, "asc"]
+            [2, "desc"]
         ],
         "drawCallback": function() {
             tooltips();
@@ -26,7 +26,7 @@ module.exports = function playerTrendsTables() {
         }]
     });
     var accuracy = $('#accuracy').dataTable({
-        "searching": false,
+        //"searching": false,
         "paging": true,
         "order": [
             [2, "desc"]
