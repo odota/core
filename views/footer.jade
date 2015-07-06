@@ -3,30 +3,25 @@ footer.footer
     if !home
       include cheese_block
     .row(style="font-size: .8em;")
-      .col-md-4.text-center
-       p.
-        Dota 2, Dota 2 related images, and all that stuff belongs to Valve. <br>
-        We use Google AdSense and Analytics. They might be using some 
-        <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">
-        cookies</a>.
-        We also use cookies for sessions.
-        Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
-      .col-md-4.text-center(style="font-size: 1.2em;")
-        p.
-          &copy; YASP #{moment().get('year')}. If that means anything. <br>
-          Built from apathy, boredom, and procrastination. <br>
-          Comments, suggestions? 
-          <a href='http://goo.gl/forms/NgwhEqx4lt', target="_blank"> Fill this out</a>.
-          Thanks! <br>
-        a(href="https://twitter.com/yasp_dota" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true") Follow @yasp_dota
-        script.
-          !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-      .col-md-4.text-center
-       p.
-         <a href='http://store.steampowered.com/', target="_blank"> Powered by Steam</a>. Thanks Valve! <br>
-         Match parsing powered by
-         <a href='https://github.com/skadistats/clarity', target="_blank"> clarity</a>. <br>
-         Source code can be found on 
-         <a href='https://github.com/yasp-dota/yasp', target="_blank"> GitHub</a>. <br>
-         Thanks to <a href='https://twitter.com/medowar0', target='_blank'>Medowar</a> for additional server power!
-       block footer_text
+      .col-md-4
+        ul
+          li &copy; #{moment().get('year')} YASP. <a href='http://goo.gl/forms/NgwhEqx4lt'>Comments, suggestions</a>?
+          li Dota 2 API <a href='http://store.steampowered.com/'> powered by Steam</a>. 
+          li Match parsing powered by <a href='https://github.com/skadistats/clarity'> clarity</a>. 
+          li Thanks to <a href='https://twitter.com/medowar0'>Medowar</a> for additional server power!
+      .col-md-4
+        ul
+          li We're fully <a href='https://github.com/yasp-dota/yasp'> open source</a>.
+          li Follow us on <a href='https://twitter.com/yasp_dota'>Twitter</a>.
+          li We use cookies for sessions, <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">ads</a> and analytics.
+
+      .col-md-4
+        ul
+          li Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a> and <a href="http://css101.deviantart.com/">css101</a>.
+          li Dota 2 and all Dota 2 related images belong to Valve. 
+          li Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
+    //-
+      .row.text-center
+         a(href="https://twitter.com/yasp_dota" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true") Follow @yasp_dota
+         script.
+           !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');

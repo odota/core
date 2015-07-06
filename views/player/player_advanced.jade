@@ -7,19 +7,20 @@ block playercontent
   //td #{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.matches.length)).toFixed(2)}
   //td #{((1-(player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])/player.matches.length)*100 || 0).toFixed(2)}%
   .row
-    .col-md-8
-      h2 Advanced<br>
-        small Data is only available for parsed matches.
+    .col-md-12
+      h2 Advanced
       .row
         .col-md-12
-          h3 Build Times <span class="label label-info">#{player.aggData.purchase_time.n} games</span>
+          h3 Purchase Times 
+            small (#{player.aggData.purchase_time.n} matches)
           table.table#builds
             thead
               tr
                 th Item
                 th Item Name
-                th.time Avg
                 th Built
+                th.time Avg
+
             tbody
               each val, key in player.aggData.purchase_time.counts
                 - var item = constants.big_items[key]
@@ -27,12 +28,13 @@ block playercontent
                   tr 
                     td: img.item(src=item.img, alt=key)
                     td= item.dname
-                    td=val/player.aggData.purchase_time_count.counts[key]
                     td=player.aggData.purchase.counts[key]
+                    td=val/player.aggData.purchase_time_count.counts[key]
               
       .row
         .col-md-12
-          h3 Skill Accuracy <span class="label label-info">#{player.aggData.hero_hits.n} games</span>
+          h3 Skill Accuracy 
+            small (#{player.aggData.hero_hits.n} matches)
           table.table#accuracy
             thead
               tr
@@ -60,7 +62,8 @@ block playercontent
                     td=(hits/casts*100 || 0).toFixed(2)
       .row
         .col-md-6
-          h3 Multi Kills <span class="label label-info">#{player.aggData.multi_kills.n} games</span>
+          h3 Multi Kills 
+            small (#{player.aggData.multi_kills.n} matches)
           table.table
             each val, key in constants.multi_kills
               tr
@@ -68,7 +71,8 @@ block playercontent
                 td=player.aggData.multi_kills.counts[key] || 0
 
         .col-md-6
-          h3 Kill Streaks <span class="label label-info">#{player.aggData.kill_streaks.n} games</span>
+          h3 Kill Streaks 
+            small (#{player.aggData.kill_streaks.n} matches)
           table.table
             each val, key in constants.kill_streaks
               tr
@@ -77,15 +81,15 @@ block playercontent
 
       .row
         .col-md-6
-          h3 Observers <span class="label label-info">#{player.aggData.obs.n} games</span>
+          h3 Observers 
+            small (#{player.aggData.obs.n} matches)
           #map.mapContainer.mapContainer-small
             img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .col-md-6
-          h3 Sentries <span class="label label-info">#{player.aggData.sen.n} games</span>
+          h3 Sentries 
+            small (#{player.aggData.sen.n} matches)
           #map2.mapContainer.mapContainer-small
             img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    .col-md-4
-      +ad("skyscraper")
         
 append footer_assets
   script.
