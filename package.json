@@ -19,8 +19,8 @@
     "watch": "webpack --watch",
     "build": "npm install && npm run webpack && npm run maven && npm run constants",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
-    "yasp-parser": "sudo nf export -j Procfile.prod -o /etc/init/ parser && sudo restart foreman",
-    "yasp-core": "sudo nf export -j Procfile.prod -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman"
+    "yasp-parser": "sudo nf export -o /etc/init/ parser && sudo restart foreman",
+    "yasp-core": "sudo nf export -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman"
   },
   "repository": {
     "type": "git",
