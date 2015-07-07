@@ -28,6 +28,7 @@ module.exports = function drawProMatches(data) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
             },
+            /*
             {
                 data: 'league_name',
                 title: 'League',
@@ -35,6 +36,7 @@ module.exports = function drawProMatches(data) {
                     return data ? data : "Unknown";
                 }
             },
+            */
             {
                 data: 'radiant_name',
                 title: 'Radiant',

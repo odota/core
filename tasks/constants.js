@@ -46,6 +46,7 @@ module.exports = function constants(cb) {
             constants.heroes[h.id] = h;
             constants.hero_names[h.name] = h;
         });
+        /*
         //leagues, key by id
         var leagues = JSON.parse(JSON.stringify(constants.leagues.result.leagues));
         constants.leagues = {};
@@ -53,6 +54,7 @@ module.exports = function constants(cb) {
             l.name = l.name.replace("#DOTA_Item_", "").split("_").join(" ");
             constants.leagues[l.leagueid] = l;
         });
+        */
         //items, already keyed by name
         var items = constants.items.itemdata;
         constants.item_ids = {};
@@ -61,13 +63,6 @@ module.exports = function constants(cb) {
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
-        //significant items
-        constants.big_items = {};
-        for (var key in items) {
-            if (items[key].cost > 1400) {
-                constants.big_items[key] = items[key];
-            }
-        }
         //abilities, already keyed by name
         var abilities = constants.abilities.abilitydata;
         for (var key2 in abilities) {

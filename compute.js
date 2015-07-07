@@ -21,7 +21,7 @@ function computeMatchData(match) {
         }
         match.patch = i;
         match.region = constants.cluster[match.cluster];
-        match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
+        //match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
         //add a parsedplayer object to each player, and compute more stats
         match.players.forEach(function(player, ind) {
             player.isRadiant = isRadiant(player);

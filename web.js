@@ -243,7 +243,7 @@ app.route('/compare').get(function(req, res, next) {
         req.query.compare = req.user.account_id.toString();
     }
     if (req.query.compare) {
-        account_ids = account_ids.concat(req.query.compare.split(","));
+        account_ids = account_ids.concat(req.query.compare);
     }
     account_ids = account_ids.slice(0, 6);
     console.log(account_ids);

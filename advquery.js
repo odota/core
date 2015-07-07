@@ -70,10 +70,6 @@ function advQuery(options, cb) {
                 max = mongoAble[key];
             }
             else {
-                //split each by comma
-                if (options.select[key].toString().indexOf(",") !== -1) {
-                    options.select[key] = options.select[key].split(",");
-                }
                 if (options.select[key].constructor === Array) {
                     //attempt to numberize each element
                     options.select[key] = options.select[key].map(function(e) {
