@@ -61,7 +61,7 @@ window.format = function format(input) {
         return "-";
     }
     return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
-}
+};
 window.formatSeconds = function formatSeconds(input) {
         var absTime = Math.abs(input);
         var minutes = ~~(absTime / 60);
@@ -69,7 +69,7 @@ window.formatSeconds = function formatSeconds(input) {
         var time = ((input < 0) ? "-" : "");
         time += minutes + ":" + seconds;
         return time;
-    }
+    };
     //extend jquery to serialize form data to JSON
 $.fn.serializeObject = function() {
     var o = {};
@@ -98,6 +98,5 @@ window.playerTrendsTables = require('./playerTrendsTables.js');
 window.ratingsChart = require('./ratingsChart.js');
 window.statusHandler = require('./statusHandler.js');
 window.generateCharts = require('./charts.js');
-window.queryForm = require('./queryForm.js');
 window.timeline = require('./timeline.js');
 require('./ga.js');

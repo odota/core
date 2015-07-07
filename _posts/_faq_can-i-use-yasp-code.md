@@ -5,6 +5,6 @@
   "author": "Admin"
 }}}
 
-YASP is licensed under the GNU GPLv3. 
-This means you can use YASP if your project is under the same license (free and open source).
-We also ask that you give us attribution in your project if you use our code.
+YASP is licensed under the GNU GPLv3.
+This means you are free to use YASP in your own project.
+We would also appreciate a credit/attribution in your project if you use our code.
