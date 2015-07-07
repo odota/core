@@ -53,10 +53,13 @@
                    - var key = key.substring(5)
                 else if key === "undefined"
                    - var key = "Auto Attack/Other"
-                - var inf = constants.abilities[key] || constants.items[key]
+                - var ab = constants.abilities[key]
+                - var item = constants.items[key]
                 div.img-text
-                  if inf
-                    img.ability(src=inf.img, alt=key)
+                  if ab
+                    img.ability(src=ab.img, alt=key)
+                  else if item
+                    img.item(src=item.img, alt=key)
                   else
                     img.ability(src="/public/images/default_attack.png", title=key)
                   div.format #{val}
