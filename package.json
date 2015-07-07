@@ -65,6 +65,7 @@
     "request": "~2.58.0",
     "request-progress": "^0.3.1",
     "select2": "^4.0.0",
+    "select2-bootstrap-theme":"select2/select2-bootstrap-theme",
     "sentiment": "^1.0.2",
     "socket.io": "^1.3.5",
     "socket.io-client": "^1.3.5",

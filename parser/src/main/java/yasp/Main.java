@@ -266,7 +266,7 @@ public class Main {
 			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
 			entry.target_source = cle.getTargetSourceName();
 			entry.target_hero = cle.isTargetHero();
-			entry.inflictor = cle.getInflictorName();
+			entry.inflictor = translate(cle.getInflictorName());
 			entry.target_illusion = cle.isTargetIllusion();
 			entry.value = cle.getValue();
 			entry.type = "damage";
@@ -307,7 +307,7 @@ public class Main {
 		case 5:
 			//ability use
 			entry.unit = cle.getAttackerName();
-			entry.key = cle.getInflictorName();
+			entry.key = translate(cle.getInflictorName());
 			entry.type = "ability_uses";
 			es.output(entry);
 			break;

@@ -259,61 +259,32 @@ function renderMatch(match) {
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
-        var t = [];
-        for (var key in p.ability_uses) {
-            var a = constants.abilities[key];
-            if (a) {
-                var ability = {};
-                ability.img = a.img;
-                ability.name = key;
-                ability.val = p.ability_uses[key];
-                ability.hero_hits = p.hero_hits[key];
-                t.push(ability);
+        var targets = ["ability_uses", "item_uses", "damage_inflictor"];
+        targets.forEach(function(target) {
+            var t = [];
+            for (var key in p[target]) {
+                var a = constants.abilities[key];
+                var i = constants.items[key];
+                var def = {
+                    img: "/public/images/default_attack.png"
+                };
+                def = a || i || def;
+                var result = {
+                    img: def.img,
+                    name: key === "undefined" ? "Auto Attack/Other" : key,
+                    val: p[target][key],
+                    className: a ? "ability" : i ? "item" : "img-small"
+                };
+                if (p.hero_hits) {
+                    result.hero_hits = p.hero_hits[key];
+                }
+                t.push(result);
             }
-            else {
-                console.log(key);
-            }
-        }
-        t.sort(function(a, b) {
-            return b.val - a.val;
+            t.sort(function(a, b) {
+                return b.val - a.val;
+            });
+            p[target + "_arr"] = t;
         });
-        p.ability_uses_arr = t;
-        var u = [];
-        for (var key in p.item_uses) {
-            var b = constants.items[key];
-            if (b) {
-                var item = {};
-                item.img = b.img;
-                item.name = key;
-                item.val = p.item_uses[key];
-                u.push(item);
-            }
-            else {
-                console.log(key);
-            }
-        }
-        u.sort(function(a, b) {
-            return b.val - a.val;
-        });
-        p.item_uses_arr = u;
-        var v = [];
-        for (var key in p.damage) {
-            var c = constants.hero_names[key];
-            if (c) {
-                var dmg = {};
-                dmg.img = c.img;
-                dmg.val = p.damage[key];
-                dmg.kills = p.kills[key];
-                v.push(dmg);
-            }
-            else {
-                //console.log(key);
-            }
-        }
-        v.sort(function(a, b) {
-            return b.val - a.val;
-        });
-        p.damage_arr = v;
         //filter interval data to only be >= 0
         if (p.times) {
             var intervals = ["lh", "gold", "xp", "times"];

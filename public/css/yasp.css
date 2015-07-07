@@ -48,6 +48,10 @@ h3 img {
     text-align: center;
     font-size: 10px;
 }
+.img-small {
+    margin-right: 1px;
+    height: 25px;
+}
 .ability {
     margin-right: 1px;
     height: 25px

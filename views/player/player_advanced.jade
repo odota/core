@@ -23,10 +23,10 @@ block playercontent
 
             tbody
               each val, key in player.aggData.purchase_time.counts
-                - var item = constants.big_items[key]
+                - var item = constants.items[key]
                 if item
                   tr 
-                    td: img.item(src=item.img, alt=key)
+                    td: img.item(src=item.img, title=key)
                     td= item.dname
                     td=player.aggData.purchase.counts[key]
                     td=val/player.aggData.purchase_time_count.counts[key]
@@ -52,7 +52,7 @@ block playercontent
                   tr
                     if ability
                       td
-                        img.ability(src=ability.img, alt=key)
+                        img.ability(src=ability.img, title=key)
                       td= ability.dname
                     else
                       td=key

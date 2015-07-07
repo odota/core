@@ -215,6 +215,7 @@ app.route('/professional').get(function(req, res, next) {
             start_time: 1,
             parse_status: 1
         },
+        js_agg : {},
         limit: 100
     }, function(err, data2) {
         if (err) {

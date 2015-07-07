@@ -1,11 +1,14 @@
 module.exports = function tooltips() {
+    $('[title]').qtip({
+        style: "qtip-dark"
+    });
     $('.item').qtip({
         content: {
             text: function(event, api) {
                 $.ajax({
                     url: "/api/items",
                     data: {
-                        name: $(this).attr('alt')
+                        name: $(this).attr('title')
                     }
                 }).then(function(data) {
                     var content = $("<div/>")
@@ -28,9 +31,9 @@ module.exports = function tooltips() {
                         html: '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />' + data.cd
                     }) : "")
                     content.append(data.lore ? $("<div/>", {
-                            html: data.lore
-                        }) : "")
-                        // Set the tooltip content upon successful retrieval
+                        html: data.lore
+                    }) : "");
+                    // Set the tooltip content upon successful retrieval
                     api.set('content.text', content.html());
                     api.set('content.title', data.dname);
                 }, function(xhr, status, error) {
@@ -48,7 +51,7 @@ module.exports = function tooltips() {
                 $.ajax({
                     url: "/api/abilities",
                     data: {
-                        name: $(this).attr('alt')
+                        name: $(this).attr('title')
                     }
                 }).then(function(data) {
                     var content = $("<div/>")
@@ -72,8 +75,7 @@ module.exports = function tooltips() {
                     }) : "")
                     content.append(data.lore ? $("<div/>", {
                         html: data.lore
-                    }) : "")
-
+                    }) : "");
                     // Set the tooltip content upon successful retrieval
                     api.set('content.text', content.html());
                     api.set('content.title', data.dname);
@@ -84,9 +86,6 @@ module.exports = function tooltips() {
                 return 'Loading...'; // Set some initial text
             }
         },
-        style: "qtip-dark"
-    });
-    $('[title]').qtip({
         style: "qtip-dark"
     });
 }

@@ -24,7 +24,7 @@
                     - var item = constants.items[entry.key]                 
                     if item
                       div.img-text
-                        img.item(src=item.img, alt=entry.key)
+                        img.item(src=item.img, title=entry.key)
                         div.format-seconds(data-format-seconds=entry.time)=entry.time
                     else
                       =entry.key

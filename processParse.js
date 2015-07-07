@@ -270,7 +270,7 @@ function runParse(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
-                //count damage dealt a real hero with this inflictor
+                //count damage dealt to a real hero with this inflictor
                 var inf = {
                     type: "damage_inflictor",
                     time: e.time,
