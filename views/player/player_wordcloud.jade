@@ -78,11 +78,13 @@ append footer_assets
         }
       }
       
-      var scale = 300/max
+      max = max > 1000 ? 1000 : max;
+      
+      var scale = 300/max;
 
-      //scale the words, min 10, max 300
+      //scale the words, min 10, max 500
       word_list.forEach(function(w){
-        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), 300);
+        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 800));
       });
       
       //sort the list to ensure most frequent words get displayed
