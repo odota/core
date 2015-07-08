@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "ignore": ["public","views","node_modules","*.json"]
+  "ignore": ["public","views","node_modules","*.json","tasks"]
 }
