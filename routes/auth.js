@@ -30,18 +30,12 @@ app.route('/return').get(passport.authenticate('steam', {
             if (err) {
                 return next(err);
             }
-            //rebuild sets since a player just logged in and might need to be retracked
-            buildSets(function(err, cb) {
+            //TODO rebuild sets since a player just logged in and might need to be retracked
+            queueReq("fullhistory", req.user, function(err, job) {
                 if (err) {
-                    //had issues rebuilding set, but move on anyway
-                    console.log(err);
+                    return next(err);
                 }
-                queueReq("fullhistory", req.user, function(err, job) {
-                    if (err) {
-                        return next(err);
-                    }
-                    res.redirect('/players/' + req.user.account_id);
-                });
+                res.redirect('/players/' + req.user.account_id);
             });
         });
     });
