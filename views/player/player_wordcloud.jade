@@ -84,7 +84,7 @@ append footer_assets
 
       //scale the words, min 10, max 500
       word_list.forEach(function(w){
-        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 800));
+        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 600));
       });
       
       //sort the list to ensure most frequent words get displayed
