@@ -66,26 +66,31 @@ append footer_assets
       
     function populate_word_cloud (cloud_dom_id, word_counts) {
       var word_list = [];
-      var max = 800;
-      var scalef = max;
+      var max = 0;
       
     for (var key in word_counts){
+      
         if (!isStopWord(key)){
-        word_list.push([key, word_counts[key] > max ? max : word_counts[key]]);
-        //decrease the scalef by the factor necessary
-        scalef = Math.min(max/word_counts[key], scalef);
+          word_list.push([key, word_counts[key]]);
+          if (word_counts[key] > max) {
+            max = word_counts[key];
+          }
         }
       }
       
-      //floor all words that show up to a minimum, or count*scalef
+      var scale = 300/max
+
+      //scale the words, min 10, max 300
       word_list.forEach(function(w){
-      w[1] = Math.max(w[1] * scalef, 10);
+        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), 300);
       });
+      
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){
         return b[1] - a[1];
       });
-      console.log(scalef);
+
+      
       WordCloud(document.getElementById(cloud_dom_id), { list: word_list } );
     }
 
