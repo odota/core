@@ -8,6 +8,9 @@ module.exports = function createHistogram(counts, win_counts, label) {
     else if (label === "hour") {
         max = 24;
     }
+    else if (label === "month"){
+        max = 12;
+    }
     else {
         //figure out the max to determine how many bins we should have
         var max = Math.max.apply(null, Object.keys(counts).map(function(c) {
@@ -36,6 +39,9 @@ module.exports = function createHistogram(counts, win_counts, label) {
         }
         else if (label === "hour") {
             bucket = moment(key, 'X').hour();
+        }
+        else if (label === "month"){
+            bucket = moment(key, 'X').month();
         }
         if (hash[bucket]) {
             //protect against glitchy negative values
@@ -112,6 +118,12 @@ module.exports = function createHistogram(counts, win_counts, label) {
                 return moment().startOf('day').hours(i).format('ha');
             })
         };
+    }
+    else if (label==="month"){
+        options.axis.x = {
+            type: "category",
+            categories: moment.months()
+        }
     }
     c3.generate(options);
 }
