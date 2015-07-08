@@ -107,7 +107,7 @@ module.exports = function aggregator(matches, fields, existing) {
         },
         "kda": {
             type: "api",
-            agg: function(key, m, p){
+            agg: function(key, m, p) {
                 standardAgg(key, p.kda, m);
             }
         },
@@ -316,11 +316,21 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, p.parsedPlayer.purchase_time, m);
             }
         },
-        "purchase_time_count": {
+        "item_usage": {
             type: "parsed",
             agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase_time_count, m);
+                standardAgg(key, p.parsedPlayer.item_usage, m);
             }
+        },
+        "item_win": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.item_win, m);
+            }
+        },
+        "item_matches": {
+            type: "parsed",
+            agg: function(key, m, p) {}
         },
         //lifetime item purchases
         "purchase": {
