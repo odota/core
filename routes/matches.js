@@ -41,7 +41,7 @@ matches.get('/:match_id/:info?', function(req, res, next) {
         }
         console.timeEnd("match page");
         var info = matchPages[req.params.info] ? req.params.info : "index";
-        if (req.query.json && config.NODE_ENV !== "production") {
+        if (req.query.json) {
             return res.json(match);
         }
         res.render("match/match_" + info, {

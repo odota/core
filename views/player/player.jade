@@ -38,11 +38,13 @@ block content
               input.pref#theme(type="checkbox", checked=user.light_theme)
               | Use Light Theme
   .row(style="margin-top:1em;")
-    .col-md-12
+    .col-md-10.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
           li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
+    .col-md-2
+      a(href="?json=1" class="btn btn-success") Download JSON
   include /query
   hr
   block playercontent

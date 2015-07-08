@@ -38,6 +38,9 @@ block content
             li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
                 a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
       .col-md-2
+        a(href="?json=1" class="btn btn-success") Download JSON
+        br
+        br
         .addthis_sharing_toolbox.pull-right
   .match
     block match_content
