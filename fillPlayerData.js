@@ -67,7 +67,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 return finish(err, results);
             }
             //rebuild cache if no query and data is complete
-            else if (!queryExists && options.info === "matches") {
+            else if (!queryExists) {
                 console.log("rebuilding cache");
                 player.cache = {
                     aggData: {}
