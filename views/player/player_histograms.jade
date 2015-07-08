@@ -5,16 +5,13 @@ block playercontent
     .row
       .col-md-12
         h2 Histograms
-        - var histograms = {"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kda": 1, "kills":1,"deaths":1,"assists":1,"level":1,"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1,"day":1,"hour":1}
+        - var histograms = {"duration":1,"first_blood_time":1,"last_hits":1,"denies":1,"gold_per_min":1,"xp_per_min":1,"hero_damage":1,"tower_damage":1,"hero_healing":1,"kda": 1, "kills":1,"deaths":1,"assists":1,"level":1, "tower_kills":1, "neutral_kills":1,"stuns":1}
         - var times={"duration":1,"first_blood_time":1}
-        - var advanced={"courier_kills":1, "tower_kills":1, "neutral_kills":1,"stuns":1}
         script.
           var histogramData = {};
         each val, key in histograms
           .row
-            .col-md-4
               h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
-            .col-md-6.col-md-offset-2
               if player.aggData[key]
                 - var avg = player.aggData[key].sum/player.aggData[key].n
                 - var val = player.aggData[key]
@@ -31,9 +28,8 @@ block playercontent
                     td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
                     td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
                     td #{val.sum}
-          - var source = (key==="day" || key==="hour") ? "start_time" : key
           script.
-            histogramData["#{key}"] = !{JSON.stringify(player.aggData[source])};
+            histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
           div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
           
 append footer_assets

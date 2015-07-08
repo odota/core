@@ -2,12 +2,23 @@ extend player
 
 block playercontent
   .row
-    .col-md-8
+    .col-md-12
       h2 Activity
       #cal-heatmap
-    .col-md-4
-      +ad("skyscraper")
+  .row
+    .col-md-12
+      script.
+        var start_times = !{JSON.stringify(player.aggData.start_time)};
+      - var histograms = {"day":1,"hour":1,"month":1}
+      each val, key in histograms
+        h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+        div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
     
 append footer_assets
   script.
     createCalHeatmap(!{JSON.stringify(player.aggData.start_time.counts)});
+  script.
+    $(".histogram-chart").each(function() {
+        var key = $(this).attr('data-histogram');
+        createHistogram(start_times.counts, start_times.win_counts, key);
+    });
