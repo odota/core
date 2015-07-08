@@ -10,24 +10,23 @@ block playercontent
         script.
           var histogramData = {};
         each val, key in histograms
-          .row
-              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
-              if player.aggData[key]
-                - var avg = player.aggData[key].sum/player.aggData[key].n
-                - var val = player.aggData[key]
-                table.table.table-condensed
-                  tr
-                    th Games
-                    th Avg
-                    th Record
-                    th Set
-                    th Sum
-                  tr
-                    td #{val.n}
-                    td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{(avg).toFixed(2)}
-                    td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
-                    td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
-                    td #{val.sum}
+          h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+          if player.aggData[key]
+            - var avg = player.aggData[key].sum/player.aggData[key].n
+            - var val = player.aggData[key]
+            table.table.table-condensed
+              tr
+                th Games
+                th Avg
+                th Record
+                th Set
+                th Sum
+              tr
+                td #{val.n}
+                td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{(avg).toFixed(2)}
+                td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
+                td: a(href=val.max_match ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match ? moment.unix(val.max_match.start_time).fromNow() : "never"}
+                td #{val.sum}
           script.
             histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
           div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)

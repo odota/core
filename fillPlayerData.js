@@ -36,7 +36,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
         var queryExists = Boolean(Object.keys(options.query.select).length);
-        var cacheAble = options.info !== "matches" && player.cache && !queryExists;
+        var cacheAble = options.info && options.info !== "matches" && player.cache && !queryExists;
         options.query.limit = cacheAble ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
@@ -62,13 +62,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //use cache
             if (cacheAble) {
-                console.log("using player cache");
+                console.log("using player cache %s", player.account_id);
                 results.aggData = player.cache.aggData;
                 return finish(err, results);
             }
-            //rebuild cache if no query and data is complete
-            else if (!queryExists) {
-                console.log("rebuilding cache");
+            //rebuild cache if no query and no cache
+            //also rebuild if loading matches tab (error correction)
+            else if ((!queryExists && !player.cache) || options.info === "matches") {
+                console.log("rebuilding cache %s", player.account_id);
                 player.cache = {
                     aggData: {}
                 };
@@ -85,7 +86,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             //don't save the cache if there was a query
             else {
-                console.log("not using or saving cache");
+                console.log("not using or saving cache %s", player.account_id);
                 finish(err, results);
             }
         }
