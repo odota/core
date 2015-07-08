@@ -37,7 +37,8 @@ block match_content
           th #
           th Start
           th Length
-          th Deaths
+          th Radiant (Deaths)
+          th Dire (Deaths)
           th: abbr(title="Net gold advantage for Radiant") Gold Swing
           th: abbr(title="Net XP advantage for Radiant") XP Swing
           th
@@ -49,7 +50,8 @@ block match_content
               td=i
               td.format-seconds(data-format-seconds=entry.start)
               td.format-seconds(data-format-seconds=entry.end-entry.start)
-              td=entry.deaths
+              td #{entry.radiant_participation} (#{entry.radiant_deaths})
+              td #{entry.dire_participation} (#{entry.dire_deaths})
               td=entry.radiant_gold_delta
               td=entry.radiant_xp_delta
               td
@@ -77,8 +79,6 @@ block match_content
               th Ability Use
               th Item Use
               th Kills
-              //th Deaths
-              //th Buybacks
               th Damage
               th Gold Change
               th XP Change
@@ -86,7 +86,7 @@ block match_content
               tbody(id=ind)
                 each player, num in entry.players
                   //color and fade based on team and participation
-                  tr(class=player.participate ? (player.isRadiant ? "success" : "danger") : "hidden")
+                  tr(class=player.participate ? (player.isRadiant ? "success" : "danger") : "")
                     - var hero = constants.heroes[player.hero_id]
                     td
                       if hero
@@ -105,7 +105,7 @@ block match_content
                         - var ability = constants.abilities[key]
                         div.img-text
                           if ability
-                            img.ability(src=ability.img, alt=key)
+                            img.ability(src=ability.img, title=key)
                           else
                             //=key
                           div #{val}
@@ -114,7 +114,7 @@ block match_content
                         - var item = constants.items[key]
                         div.img-text
                           if item
-                            img.item(src=item.img, alt=key)
+                            img.item(src=item.img, title=key)
                             div #{val}
                           else
                             =key

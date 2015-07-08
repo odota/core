@@ -4,9 +4,8 @@ block playercontent
   .row
     .col-md-12
 
-      h2: abbr(title="Generated from all chat in this player's parsed matches") Word Clouds
-      h3
-        span.label.label-info #{player.aggData.all_word_counts.n} games
+      h2: abbr(title="Generated from all chat in this player's parsed matches") Word Clouds 
+        small (#{player.aggData.all_word_counts.n} matches)
 
       h3="Words said by this player in all chat"
       canvas(width=1000, height=800)#mywordcounts
@@ -80,7 +79,7 @@ append footer_assets
       
       //floor all words that show up to a minimum, or count*scalef
       word_list.forEach(function(w){
-      w[1] = Math.max(w[1] * scalef, 8);
+      w[1] = Math.max(w[1] * scalef, 10);
       });
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){

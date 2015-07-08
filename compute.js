@@ -21,13 +21,14 @@ function computeMatchData(match) {
         }
         match.patch = i;
         match.region = constants.cluster[match.cluster];
-        match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
+        //match.league_name = constants.leagues[match.leagueid] ? constants.leagues[match.leagueid].name : null;
         //add a parsedplayer object to each player, and compute more stats
         match.players.forEach(function(player, ind) {
             player.isRadiant = isRadiant(player);
             player.total_gold = ~~(player.gold_per_min * match.duration / 60);
             player.total_xp = ~~(player.xp_per_min * match.duration / 60);
             player.parseSlot = player.player_slot % (128 - 5);
+            player.kda = ~~((player.kills + player.assists) / (player.deaths + 1));
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
@@ -158,6 +159,9 @@ function computeMatchData(match) {
                         p.purchase_time_count[k] += 1;
                     }
                 }
+                if (p.stuns) {
+                    p.stuns = ~~p.stuns;
+                }
                 //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
                 /*
                 for (var key in p.kill_streaks) {
@@ -170,46 +174,18 @@ function computeMatchData(match) {
             });
             // aggregate all the words in these matches for a single player (don't do this for single match display)
             if (match.parsed_data.chat) {
-                // count the words that occur in a set of messages
-                // - messages: the messages to create the counts over
-                // - player_filter: if non-null, only count that player's messages
-                function count_words(messages, player_filter) {
-                    // extract the message strings from the message objects
-                    // extract individual words from the message strings
-                    var chat_words = [];
-                    messages.forEach(function(message) {
-                        // adjust the slot position (important if there are fewer than 10 players)
-                        var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
-                        var p = match.all_players[adjusted_slot] || {};
-                        // if there is no player_filter, or if the player_filter matches this message, log it
-                        if (!player_filter || p.player_slot === player_filter.player_slot) {
-                            chat_words.push(message.key);
-                        }
-                    });
-                    chat_words = chat_words.join(' ');
-                    var tokens = utility.tokenize(chat_words);
-                    // count how frequently each word occurs
-                    var counts = {};
-                    for (var i = 0; i < tokens.length; i++) {
-                        if (!counts[tokens[i]]) {
-                            counts[tokens[i]] = 0;
-                        }
-                        counts[tokens[i]] += 1;
-                    }
-                    // return the final counts
-                    return counts;
-                }
                 if (match.all_players) {
                     // aggregation of all words in all chat this player has experienced
-                    match.all_word_counts = count_words(match.parsed_data.chat, null);
+                    match.all_word_counts = count_words(match, null);
                     // aggregation of only the words in all chat this player said themselves
-                    match.my_word_counts = count_words(match.parsed_data.chat, match.players[0]);
+                    match.my_word_counts = count_words(match, match.players[0]);
                 }
                 //save full word list for sentiment analysis
                 match.chat_words = match.parsed_data.chat.map(function(message) {
                     return message.key;
                 }).join(' ');
             }
+            //TODO this and biggest throw/comeback rely on all players parsed data and could be computed at insertion time
             //determine pick order based on last time value of hero_log
             //if tied, break ties arbitrarily
             //duplicate, sort, iterate and put index
@@ -233,6 +209,36 @@ function computeMatchData(match) {
         console.log(e.stack, match.match_id);
     }
 }
+// count the words that occur in a set of messages
+// - messages: the messages to create the counts over
+// - player_filter: if non-null, only count that player's messages
+function count_words(match, player_filter) {
+    var messages = match.parsed_data.chat;
+    // extract the message strings from the message objects
+    // extract individual words from the message strings
+    var chat_words = [];
+    messages.forEach(function(message) {
+        // adjust the slot position (important if there are fewer than 10 players)
+        var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
+        var p = match.all_players[adjusted_slot] || {};
+        // if there is no player_filter, or if the player_filter matches this message, log it
+        if (!player_filter || p.player_slot === player_filter.player_slot) {
+            chat_words.push(message.key);
+        }
+    });
+    chat_words = chat_words.join(' ');
+    var tokens = utility.tokenize(chat_words);
+    // count how frequently each word occurs
+    var counts = {};
+    for (var i = 0; i < tokens.length; i++) {
+        if (!counts[tokens[i]]) {
+            counts[tokens[i]] = 0;
+        }
+        counts[tokens[i]] += 1;
+    }
+    // return the final counts
+    return counts;
+}
 /**
  * Renders display-only data for a match
  **/
@@ -253,61 +259,32 @@ function renderMatch(match) {
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
-        var t = [];
-        for (var key in p.ability_uses) {
-            var a = constants.abilities[key];
-            if (a) {
-                var ability = {};
-                ability.img = a.img;
-                ability.name = key;
-                ability.val = p.ability_uses[key];
-                ability.hero_hits = p.hero_hits[key];
-                t.push(ability);
+        var targets = ["ability_uses", "item_uses", "damage_inflictor"];
+        targets.forEach(function(target) {
+            var t = [];
+            for (var key in p[target]) {
+                var a = constants.abilities[key];
+                var i = constants.items[key];
+                var def = {
+                    img: "/public/images/default_attack.png"
+                };
+                def = a || i || def;
+                var result = {
+                    img: def.img,
+                    name: key === "undefined" ? "Auto Attack/Other" : key,
+                    val: p[target][key],
+                    className: a ? "ability" : i ? "item" : "img-small"
+                };
+                if (p.hero_hits) {
+                    result.hero_hits = p.hero_hits[key];
+                }
+                t.push(result);
             }
-            else {
-                console.log(key);
-            }
-        }
-        t.sort(function(a, b) {
-            return b.val - a.val;
+            t.sort(function(a, b) {
+                return b.val - a.val;
+            });
+            p[target + "_arr"] = t;
         });
-        p.ability_uses_arr = t;
-        var u = [];
-        for (var key in p.item_uses) {
-            var b = constants.items[key];
-            if (b) {
-                var item = {};
-                item.img = b.img;
-                item.name = key;
-                item.val = p.item_uses[key];
-                u.push(item);
-            }
-            else {
-                console.log(key);
-            }
-        }
-        u.sort(function(a, b) {
-            return b.val - a.val;
-        });
-        p.item_uses_arr = u;
-        var v = [];
-        for (var key in p.damage) {
-            var c = constants.hero_names[key];
-            if (c) {
-                var dmg = {};
-                dmg.img = c.img;
-                dmg.val = p.damage[key];
-                dmg.kills = p.kills[key];
-                v.push(dmg);
-            }
-            else {
-                //console.log(key);
-            }
-        }
-        v.sort(function(a, b) {
-            return b.val - a.val;
-        });
-        p.damage_arr = v;
         //filter interval data to only be >= 0
         if (p.times) {
             var intervals = ["lh", "gold", "xp", "times"];
@@ -355,6 +332,10 @@ function renderMatch(match) {
         tf.posData = [];
         tf.radiant_gold_delta = 0;
         tf.radiant_xp_delta = 0;
+        tf.radiant_participation = 0;
+        tf.radiant_deaths = 0;
+        tf.dire_participation = 0;
+        tf.dire_deaths = 0;
         tf.players.forEach(function(p) {
             //lookup starting, ending level
             p.level_start = getLevelFromXp(p.xp_start);
@@ -379,13 +360,18 @@ function renderMatch(match) {
             player.participate = player.deaths > 0 || player.damage > 0;
             p.teamfights_participated = p.teamfights_participated || 0;
             p.teamfights_participated += player.participate ? 1 : 0;
+            //compute team gold/xp deltas
             if (isRadiant(p)) {
                 tf.radiant_gold_delta += player.gold_delta;
                 tf.radiant_xp_delta += player.xp_delta;
+                tf.radiant_participation += player.participate ? 1 : 0;
+                tf.radiant_deaths += player.deaths ? 1 : 0;
             }
             else {
                 tf.radiant_gold_delta -= player.gold_delta;
                 tf.radiant_xp_delta -= player.xp_delta;
+                tf.dire_participation += player.participate ? 1 : 0;
+                tf.dire_deaths += player.deaths ? 1 : 0;
             }
             //convert 2d hash to array
             player.posData = generatePositionData({

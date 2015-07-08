@@ -10,15 +10,14 @@ block content
       tr
         td
         each player in data.slice(1)
-          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} 
-            abbr(title="Number of  matches") (#{player.matches.length})
-          td Percentile (#{data[0].matches.length})
+          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.matches.length} matches)
+          td Percentile (#{data[0].matches.length} matches)
     tbody
       each val, key in data[0].aggData
         tr
           td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
           each player in data.slice(1)
-            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(2) : "N/A"
+            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "N/A"
             - var pct = player.aggData[key].percentile*100
             td
               .progress

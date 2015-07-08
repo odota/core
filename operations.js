@@ -5,81 +5,24 @@ var generateJob = utility.generateJob;
 var async = require('async');
 var r = require("./redis");
 var jobs = r.jobs;
-var redis = r.client;
-var isRadiant = utility.isRadiant;
-var helper = require('./helper');
-var isSignificant = helper.isSignificant;
-var aggHeroes = helper.aggHeroes;
-var aggTeammates = helper.aggTeammates;
+var updatePlayerCaches = require('./updatePlayerCaches');
 
 function insertMatch(match, cb) {
-    var reInsert = false;
     async.series([function(cb) {
-            //determine if reinsert
-            db.matches.find({
-                match_id: match.match_id
-            }, function(err, docs) {
-                reInsert = Boolean(docs.length);
-                cb(err);
-            });
-    }, function(cb) {
-            //put api data in db
-            //set to queued, unless we specified something earlier (like skipped)
-            match.parse_status = match.parse_status || 0;
-            db.matches.update({
-                match_id: match.match_id
-            }, {
-                $set: match
-            }, {
-                upsert: true
-            }, cb);
-            },
-            function(cb) {
-            //insert players into db
-            async.each(match.players, function(p, cb) {
-                    db.players.findOne({
-                        account_id: p.account_id
-                    }, function(err, player) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        //if player cache doesn't exist, skip
-                        //if insignificant, skip
-                        //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && isSignificant(match) && !reInsert) {
-                            //m.players[0] should be this player
-                            //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match objects
-                            var match_copy = JSON.parse(JSON.stringify(match));
-                            match_copy.all_players = match.players.slice(0);
-                            match_copy.players = [p];
-                            //do basic aggregations: win/lose/games/heroes/teammates
-                            player.cache.aggData.win += isRadiant(p) === match.radiant_win ? 1 : 0;
-                            player.cache.aggData.lose += isRadiant(p) === match.radiant_win ? 0 : 1;
-                            player.cache.aggData.games += 1;
-                            aggHeroes(player.cache.aggData.heroes, match_copy);
-                            aggTeammates(player.cache.aggData.teammates, match_copy);
-                        }
-                        else {
-                            player = {};
-                        }
-                        //update the player.cache object
-                        db.players.update({
-                            account_id: p.account_id
-                        }, {
-                            $set: {
-                                account_id: p.account_id,
-                                cache: player.cache
-                            }
-                        }, {
-                            upsert: true
-                        }, function(err) {
-                            cb(err);
-                        });
-                    });
-                },
-                //done with all 10 players
-                cb);
+        updatePlayerCaches(match, {
+            type: "api"
+        }, cb);
+        }, function(cb) {
+        //put api data in db
+        //set to queued, unless we specified something earlier (like skipped)
+        match.parse_status = match.parse_status || 0;
+        db.matches.update({
+            match_id: match.match_id
+        }, {
+            $set: match
+        }, {
+            upsert: true
+        }, cb);
             }], function decideParse(err) {
         if (err) {
             //error occured

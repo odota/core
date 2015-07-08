@@ -32,5 +32,4 @@ block match_content
 append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
-    var player_colors = !{JSON.stringify(constants.player_colors)};
     generateCharts(graphData);

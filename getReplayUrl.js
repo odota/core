@@ -13,9 +13,9 @@ module.exports = function getReplayUrl(match, cb) {
         }
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             console.log("replay expired, not getting replay url");
-            //set status to 1 if this match isn't parsed already
+            //set status to 1 if match doesn't have parsed data
             //this ensures we don't mark formerly parsed matches as unavailable on reparses
-            match.parse_status = (doc.parse_status === 2) ? doc.parse_status : 1;
+            match.parse_status = (doc.parsed_data) ? doc.parse_status : 1;
             return cb(err);
         }
         if (!err && doc && doc.url) {

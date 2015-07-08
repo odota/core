@@ -67,7 +67,8 @@ Starting YASP
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
 * Build `npm run build`
-* Launch in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`
+* Launch in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`.  Alternatively launch in regular mode: `npm start`
+* The full list of services can be found in the Procfile.  You can run individual microservices using Foreman: `nf start {process name}`.  However, they will all try to start on port 5000 when run individually, so you may need to pass the `-p` argument to set the port explicitly.
 * Developers: If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
 * Tests: Tests are run with the Mocha framework.  `npm test` to run the full test suite.
 

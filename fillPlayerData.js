@@ -36,8 +36,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //options.query, the query object to use in advQuery
         //defaults: this player, balanced modes only, put the defaults in options.query
         var queryExists = Boolean(Object.keys(options.query.select).length);
-        var cacheAble = options.info === "index" && player.cache && !queryExists;
-        //don't get parsed data on tabs that don't require it
+        var cacheAble = options.info !== "matches" && player.cache && !queryExists;
         options.query.limit = cacheAble ? 10 : options.query.limit;
         options.query.sort = {
             match_id: -1
@@ -63,25 +62,17 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //use cache
             if (cacheAble) {
-                //add recent matches to cache
-                player.cache.data = results.data;
-                return finish(err, player.cache);
+                console.log("using player cache");
+                results.aggData = player.cache.aggData;
+                return finish(err, results);
             }
-            //rebuild cache if no query and we didn't use cache (which means only 10 matches from db)
-            if (!queryExists) {
+            //rebuild cache if no query and data is complete
+            else if (!queryExists && options.info === "matches") {
+                console.log("rebuilding cache");
                 player.cache = {
                     aggData: {}
                 };
-                var cachedKeys = {
-                    "win": 1,
-                    "lose": 1,
-                    "games": 1,
-                    "heroes": 1,
-                    "teammates": 1
-                };
-                for (var key in cachedKeys) {
-                    player.cache.aggData[key] = results.aggData[key];
-                }
+                player.cache.aggData = results.aggData;
                 db.players.update({
                     account_id: player.account_id
                 }, {
@@ -94,6 +85,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             //don't save the cache if there was a query
             else {
+                console.log("not using or saving cache");
                 finish(err, results);
             }
         }
@@ -155,4 +147,4 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
         }
     }
-}
+};

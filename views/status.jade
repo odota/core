@@ -15,7 +15,6 @@ block content
             th Tracked
             th Donated
             th MMR
-            th SEQ
         tbody
           tr
             td#players
@@ -25,7 +24,6 @@ block content
             td#tracked_players
             td#donated_players
             td#rating_players
-            td#match_seq_num
     .col-md-6
       h3 Today
       table.table
@@ -35,14 +33,14 @@ block content
             th Queued
             th Skipped
             th Parsed
-            th Unavailable
+            //th Unavailable
         tbody
           tr
             td#matches_last_day
             td#queued_last_day
             td#skipped_last_day
             td#parsed_last_day
-            td#unavailable_last_day
+            //td#unavailable_last_day
   .row
     .col-md-6
       h3 Last Added
@@ -50,6 +48,7 @@ block content
         thead
           tr
             th Match ID
+            th Sequence
             th Ended
         tbody
     .col-md-6
@@ -58,6 +57,7 @@ block content
         thead
           tr
             th Match ID
+            th Sequence
             th Ended
         tbody
 

@@ -5,3 +5,4 @@ worker: nodemon index.js
 parseManager: nodemon index.js
 scanner: nodemon index.js
 proxy: nodemon index.js
+skill: nodemon index.js

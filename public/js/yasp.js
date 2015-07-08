@@ -2,18 +2,18 @@
 require('../../node_modules/c3/c3.css');
 require('../../node_modules/cal-heatmap/cal-heatmap.css');
 require('../../node_modules/bootstrap/dist/css/bootstrap.css');
-require('../../node_modules/select2/select2.css');
-require('../../node_modules/select2/select2-bootstrap.css');
+require('../../node_modules/select2/dist/css/select2.css');
+require('../../node_modules/select2-bootstrap-theme/dist/select2-bootstrap.css');
 require('../../node_modules/qTip2/dist/jquery.qtip.css');
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
+require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
 //external js libs
 window.$ = require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');
-require('../../node_modules/datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
 require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
 require('../../node_modules/qTip2/dist/jquery.qtip.js');
-require('../../node_modules/select2/select2.js');
+require('../../node_modules/select2/dist/js/select2.full.js');
 require('bootstrap');
 require('wordcloud');
 //require('../../node_modules/webcomponents.js/webcomponents.js');
@@ -61,25 +61,42 @@ window.format = function format(input) {
         return "-";
     }
     return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
-}
+};
 window.formatSeconds = function formatSeconds(input) {
-    var absTime = Math.abs(input);
-    var minutes = ~~(absTime / 60);
-    var seconds = pad(~~(absTime % 60), 2);
-    var time = ((input < 0) ? "-" : "");
-    time += minutes + ":" + seconds;
-    return time;
-}
+        var absTime = Math.abs(input);
+        var minutes = ~~(absTime / 60);
+        var seconds = pad(~~(absTime % 60), 2);
+        var time = ((input < 0) ? "-" : "");
+        time += minutes + ":" + seconds;
+        return time;
+    };
+    //extend jquery to serialize form data to JSON
+$.fn.serializeObject = function() {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        }
+        else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
 window.tooltips = require('./tooltips.js');
 window.formatHtml = require("./formatHtml.js");
 window.createHistogram = require('./histograms.js');
 window.createCalHeatmap = require('./calheatmap.js');
 window.buildMap = require('./map.js');
 window.playerMatches = require('./playerMatches.js');
+window.proMatches = require('./proMatches.js');
 window.playerTrendsTables = require('./playerTrendsTables.js');
 window.ratingsChart = require('./ratingsChart.js');
 window.statusHandler = require('./statusHandler.js');
 window.generateCharts = require('./charts.js');
-window.queryForm = require('./queryForm.js');
 window.timeline = require('./timeline.js');
 require('./ga.js');

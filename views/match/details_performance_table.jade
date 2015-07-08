@@ -8,7 +8,7 @@
             th: abbr(title="Largest instance of damage on a hero") Biggest Hit
             th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hero Hits)
             th: abbr(title="Items used") Item Use
-            //th: abbr(title="Damage dealt (Number of kills)") Damage (Kills)
+            th: abbr(title="Damage dealt to heroes by skills/abilities") Damage Inflictors
     
       if !truncate || truncate.indexOf(i) > -1
         tr(class = player.isRadiant ? "success" : "danger")
@@ -25,11 +25,11 @@
             - var hero = constants.hero_names[p.max_hero_hit.key]
             div.img-text
               if ability
-                span: img.ability(src=ability.img, alt=p.max_hero_hit.inflictor)
+                span: img.ability(src=ability.img, title=p.max_hero_hit.inflictor)
               else if item
-                span: img.item(src=item.img, alt=p.max_hero_hit.inflictor)
+                span: img.item(src=item.img, title=p.max_hero_hit.inflictor)
               else
-                span: img.ability(src="/public/images/default_attack.png" ,title="Auto Attack/Other")
+                span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
               div (#{p.max_hero_hit.value})                      
             if hero
               span: img.kill(src=hero.img, title=hero.localized_name)
@@ -39,19 +39,16 @@
           td.table-img
             each ability in p.ability_uses_arr
               div.img-text
-                img.ability(src=ability.img, alt=ability.name)
+                img.ability(src=ability.img, title=ability.name)
                 div #{ability.val}
                 div (#{ability.hero_hits || 0})
           td.table-img
             each item in p.item_uses_arr
               div.img-text
-                img.item(src=item.img, alt=item.name)
+                img.item(src=item.img, title=item.name)
                 div #{item.val}
-          //-
-            td.table-img
-              each dmg in p.damage_arr
-                div.img-text
-                  img.dmg(src=dmg.img, title=dmg.localized_name)
-                  div.format #{dmg.val}
-                  div (#{dmg.kills || 0})
-                        
+          td.table-img
+            each item in p.damage_inflictor_arr
+              div.img-text
+                img(class=item.className src=item.img, title=item.name)
+                div.format #{item.val}

@@ -1,24 +1,14 @@
 extend base_layout
 include mixins/ads
 
-//only display banners on main pages (not home)
-block banners
-  if banner_msg
-   .alert.alert-success.text-center(role="alert") !{banner_msg}
-  if api_down
-   .alert.alert-warning.text-center(role="alert") !{constants.api_msg}
-  if user && user.track===0
-     .alert.alert-warning(role="alert") !{constants.untracked_msg}
-  if login_req_msg
-   .alert.alert-warning(role="alert") Please log in to access the #{login_req_msg} page
-
 block sticky_content
   body.frame(style="margin-top:70px;")
     include navbar
     .sticky_footer_row
     .sticky_footer_row.expand
       .container
-        block banners
+        if banner_msg
+          .alert.alert-success.text-center(role="alert") !{banner_msg}
         +ad("banner1")
         block content
         +ad("banner3")
@@ -26,7 +16,7 @@ block sticky_content
       include footer
   script.
       //check adblocker
-      window.onload = function(){ 
+      window.onload = function(){
         setTimeout(function() { 
           // We are targeting the first banner ad of AdSense
           var ad = document.querySelector("ins.adsbygoogle");

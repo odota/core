@@ -60,6 +60,7 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        /*
         unavailable_last_day: function(cb) {
             db.matches.count({
                 parse_status: 1,
@@ -68,6 +69,7 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        */
         full_history: function(cb) {
             db.players.count({
                 full_history_time: {
@@ -75,12 +77,14 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
+        /*
         match_seq_num: function(cb) {
             redis.get("match_seq_num", function(err, result) {
                 result = Number(result);
                 cb(err, result);
             });
         },
+        */
         donated_players: function(cb) {
             redis.get("donators", function(err, res) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;
@@ -103,6 +107,7 @@ module.exports = function getStatus(cb) {
                     },
                     fields: {
                         match_id: 1,
+                        match_seq_num: 1,
                         start_time: 1,
                         duration: 1
                     },
@@ -127,6 +132,7 @@ module.exports = function getStatus(cb) {
                     },
                     fields: {
                         match_id: 1,
+                        match_seq_num: 1,
                         start_time: 1,
                         duration: 1
                     },
