@@ -10,8 +10,8 @@ block content
           th Rank
           th Name
           th Solo
-          //th Party
-          //th Updated
+          th Party
+          th Updated
       each rating, i in ratings
         tr
           td=i+1
@@ -19,8 +19,8 @@ block content
             img.user(src=rating.avatar)
             a(href='/players/#{rating.account_id}')=rating.personaname || rating.account_id
           td= rating.soloCompetitiveRank
-          //td= rating.competitiveRank
-          //td= moment(rating.time).format('X')
+          td= rating.competitiveRank
+          td= moment(rating.time).format('X')
   
 append footer_assets
   script $("#ratings").dataTable();

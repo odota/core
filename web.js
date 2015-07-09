@@ -145,6 +145,7 @@ app.use('/ratings', function(req, res, next) {
         }
         docs.forEach(function(d) {
             d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
+            d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
         });
         docs.sort(function(a, b) {
             return b.soloCompetitiveRank - a.soloCompetitiveRank;

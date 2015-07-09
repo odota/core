@@ -23,19 +23,23 @@ db.matches.index({
 }, {
     unique: true
 });
+/*
 db.matches.index({
     'match_seq_num': -1
 }, {
     unique: true
 });
+*/
 db.matches.index({
     'start_time': -1,
     'parse_status': 1
 });
+/*
 db.matches.index({
     'leagueid': 1,
     'match_id': -1
 });
+*/
 db.players.index('account_id', {
     unique: true
 });

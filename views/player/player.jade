@@ -31,7 +31,7 @@ block content
           .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history is requested on login)
         if (user && user.account_id === player.account_id)
           if (!ratingPlayers[user.account_id])
-            .alert.alert-info To display MMR on profile and be eligible for the leaderboard, 
+            .alert.alert-info To display MMR on profile, 
               a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
           .checkbox
             label
