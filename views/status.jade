@@ -3,18 +3,22 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-6
-      h3 All Time
+    .col-md-12
+      h3 Statistics
       table.table
         thead
           tr
             th Players
             th Matches
             th Users
-            th FH
+            th Full History
             th Tracked
             th Donated
             th MMR
+            th Matches (24h)
+            th Queued (24h)
+            th Skipped (24h)
+            th Parsed (24h)
         tbody
           tr
             td#players
@@ -24,25 +28,11 @@ block content
             td#tracked_players
             td#donated_players
             td#rating_players
-    .col-md-6
-      h3 Today
-      table.table
-        thead
-          tr
-            th Matches
-            th Queued
-            th Skipped
-            th Parsed
-            //th Unavailable
-        tbody
-          tr
             td#matches_last_day
             td#queued_last_day
             td#skipped_last_day
             td#parsed_last_day
-            //td#unavailable_last_day
-  .row
-    .col-md-6
+    .col-md-4
       h3 Last Added
       table.table#last_added
         thead
@@ -51,9 +41,18 @@ block content
             th Sequence
             th Ended
         tbody
-    .col-md-6
+    .col-md-4
       h3 Last Parsed
       table.table#last_parsed
+        thead
+          tr
+            th Match ID
+            th Sequence
+            th Ended
+        tbody
+    .col-md-4
+      h3 Last Requested
+      table.table#last_requested
         thead
           tr
             th Match ID

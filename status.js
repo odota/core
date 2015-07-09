@@ -120,6 +120,22 @@ module.exports = function getStatus(cb) {
                 },
                 limit: 10
             }, cb);
-        }
+        },
+        last_requested: function(cb) {
+            db.matches.find({
+                request: true
+            }, {
+                sort: {
+                    _id: -1
+                },
+                fields: {
+                    match_id: 1,
+                    match_seq_num: 1,
+                    start_time: 1,
+                    duration: 1
+                },
+                limit: 10
+            }, cb);
+        },
     }, cb);
 };
