@@ -92,53 +92,34 @@ module.exports = function getStatus(cb) {
             });
         },
         last_added: function(cb) {
-            redis.get("match_seq_num", function(err, result) {
-                result = Number(result);
-                if (err) {
-                    return cb(err);
-                }
-                db.matches.find({
-                    match_seq_num: {
-                        $lt: result
-                    }
-                }, {
-                    sort: {
-                        match_seq_num: -1
-                    },
-                    fields: {
-                        match_id: 1,
-                        match_seq_num: 1,
-                        start_time: 1,
-                        duration: 1
-                    },
-                    limit: 10
-                }, cb);
-            });
+            db.matches.find({}, {
+                sort: {
+                    _id: -1
+                },
+                fields: {
+                    match_id: 1,
+                    match_seq_num: 1,
+                    start_time: 1,
+                    duration: 1
+                },
+                limit: 10
+            }, cb);
         },
         last_parsed: function(cb) {
-            redis.get("match_seq_num", function(err, result) {
-                result = Number(result);
-                if (err) {
-                    return cb(err);
-                }
-                db.matches.find({
-                    match_seq_num: {
-                        $lt: result
-                    },
-                    parse_status: 2
-                }, {
-                    sort: {
-                        match_seq_num: -1
-                    },
-                    fields: {
-                        match_id: 1,
-                        match_seq_num: 1,
-                        start_time: 1,
-                        duration: 1
-                    },
-                    limit: 10
-                }, cb);
-            });
+            db.matches.find({
+                parse_status: 2
+            }, {
+                sort: {
+                    _id: -1
+                },
+                fields: {
+                    match_id: 1,
+                    match_seq_num: 1,
+                    start_time: 1,
+                    duration: 1
+                },
+                limit: 10
+            }, cb);
         }
     }, cb);
 };

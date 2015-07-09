@@ -20,6 +20,9 @@ app.route('/carry').get(function(req, res, next) {
         sort: {
             cheese: -1
         },
+        fields: {
+            cache: 0
+        },
         limit: 50
     }, function(err, results) {
         if (err) return next(err);
