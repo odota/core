@@ -11,7 +11,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     if (account_id === "all" || account_id === "professional") {
         options.query.select["players.account_id"] = "all";
         if (account_id === "professional") {
-            options.query.select.leagueid = "gtzero";
+            options.query.select.leagueid = {
+                $gt: 0
+            };
         }
         player = {
             account_id: account_id,

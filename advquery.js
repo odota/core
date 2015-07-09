@@ -8,8 +8,7 @@ var async = require('async');
 var aggregator = require('./aggregator');
 var constants = require('./constants.json');
 
-function advQuery(options, cb) {
-    console.log("advquery: aggregating player page...");
+function advQuery(query, cb) {
     var default_project = {
         start_time: 1,
         match_id: 1,
@@ -26,77 +25,76 @@ function advQuery(options, cb) {
         players: 1,
         skill: 1
     };
-    options.project = options.project || default_project;
+    query.project = query.project || default_project;
     //only project the fields we need
-    options.project["players.account_id"] = 1;
-    options.project["players.hero_id"] = 1;
-    options.project["players.level"] = 1;
-    options.project["players.kills"] = 1;
-    options.project["players.deaths"] = 1;
-    options.project["players.assists"] = 1;
-    options.project["players.gold_per_min"] = 1;
-    options.project["players.xp_per_min"] = 1;
-    options.project["players.hero_damage"] = 1;
-    options.project["players.tower_damage"] = 1;
-    options.project["players.hero_healing"] = 1;
-    options.project["players.player_slot"] = 1;
-    options.project["players.last_hits"] = 1;
-    options.project["players.denies"] = 1;
-    options.project["players.leaver_status"] = 1;
+    query.project["players.account_id"] = 1;
+    query.project["players.hero_id"] = 1;
+    query.project["players.level"] = 1;
+    query.project["players.kills"] = 1;
+    query.project["players.deaths"] = 1;
+    query.project["players.assists"] = 1;
+    query.project["players.gold_per_min"] = 1;
+    query.project["players.xp_per_min"] = 1;
+    query.project["players.hero_damage"] = 1;
+    query.project["players.tower_damage"] = 1;
+    query.project["players.hero_healing"] = 1;
+    query.project["players.player_slot"] = 1;
+    query.project["players.last_hits"] = 1;
+    query.project["players.denies"] = 1;
+    query.project["players.leaver_status"] = 1;
     //select,the query received, build the mongo query and the filter based on this
-    options.mongo_select = {};
-    options.js_select = {};
+    query.mongo_select = {};
+    query.js_select = {};
     //default limit
     var max = 1000;
     //map to limit
     var mongoAble = {
         "players.account_id": 20000,
-        "leagueid": max
+        "leagueid": max,
+        "start_time": max
     };
-    for (var key in options.select) {
-        if (options.select[key] === "" || options.select[key] === "all") {
+    for (var key in query.select) {
+        if (query.select[key] === "" || query.select[key] === "all") {
             //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
-            delete options.select[key];
+            delete query.select[key];
         }
         else {
             if (mongoAble[key]) {
-                if (options.select[key] === "gtzero") {
-                    options.mongo_select[key] = {
+                if (query.select[key] === "string") {
+                    //TODO translate strings to mongodb queries
+                    query.mongo_select[key] = {
                         $gt: 0
                     };
                 }
+                else if (typeof query.select[key] === "object") {
+                    //pass the query directly
+                    query.mongo_select[key] = query.select[key];
+                }
                 else {
-                    options.mongo_select[key] = Number(options.select[key]);
+                    query.mongo_select[key] = Number(query.select[key]);
                 }
                 max = mongoAble[key];
             }
             else {
-                if (options.select[key].constructor === Array) {
+                if (query.select[key].constructor === Array) {
                     //attempt to numberize each element
-                    options.select[key] = options.select[key].map(function(e) {
+                    query.select[key] = query.select[key].map(function(e) {
                         return Number(e);
                     });
                 }
                 else {
                     //number just this element
-                    options.select[key] = Number(options.select[key]);
+                    query.select[key] = Number(query.select[key]);
                 }
-                options.js_select[key] = options.select[key];
+                query.js_select[key] = query.select[key];
             }
         }
     }
-    //use mongodb to sort if selecting on indexed field
-    if (!options.mongo_select["players.account_id"]) {
-        options.sort = {
-            "match_id": -1
-        };
-    }
     //js_agg, aggregations to do with js
-    //do everything if null
-    //this just gets the parsed data if js_agg is null (which means do everything)
-    var bGetParsedPlayerData = Boolean(!options.js_agg);
+    //do all aggregations if null, so we need parsed data
+    var bGetParsedPlayerData = Boolean(!query.js_agg);
     //limit, pass to mongodb, cap the number of matches to return in mongo
-    options.limit = (!options.limit || options.limit > max) ? max : options.limit;
+    query.limit = (!query.limit || query.limit > max) ? max : query.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
     //js_limit, the number of results to return in a page, filtered by js
@@ -104,14 +102,15 @@ function advQuery(options, cb) {
     //js_sort, post-process sorter that processes with js
     //build the monk hash
     var monk_options = {
-        limit: options.limit,
-        skip: options.skip,
-        sort: options.sort,
-        fields: options.project
+        limit: query.limit,
+        skip: query.skip,
+        sort: query.sort,
+        fields: query.project
     };
+    console.log(query);
     console.time('querying database');
     // console.log(options);
-    db.matches.find(options.mongo_select, monk_options, function(err, matches) {
+    db.matches.find(query.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
         }
@@ -129,9 +128,9 @@ function advQuery(options, cb) {
                 m.players.forEach(function(p) {
                     var pass = true;
                     //check mongo query, if starting with player, this means we select a single player, otherwise select all players
-                    for (var key in options.mongo_select) {
+                    for (var key in query.mongo_select) {
                         var split = key.split(".");
-                        if (split[0] === "players" && p[split[1]] !== options.mongo_select[key]) {
+                        if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
                             pass = false;
                         }
                     }
@@ -154,13 +153,13 @@ function advQuery(options, cb) {
                 //post-process the match to get additional stats
                 computeMatchData(m);
             });
-            var filtered = filter(matches, options.js_select);
+            var filtered = filter(matches, query.js_select);
             //filtered = sort(filtered, options.js_sort);
             // console.log('aggData: options.js_agg = %s', options.js_agg);
-            var aggData = aggregator(filtered, options.js_agg);
+            var aggData = aggregator(filtered, query.js_agg);
             var result = {
                 aggData: aggData,
-                page: filtered.slice(options.js_skip, options.js_skip + options.js_limit),
+                page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
                 data: filtered,
                 unfiltered_count: matches.length
             };

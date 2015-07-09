@@ -20,7 +20,7 @@ block content
             a(href='/players/#{rating.account_id}')=rating.personaname || rating.account_id
           td= rating.soloCompetitiveRank
           td= rating.competitiveRank
-          td= moment(rating.time).format('X')
+          td= moment(rating.time).fromNow()
   
 append footer_assets
   script $("#ratings").dataTable();

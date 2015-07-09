@@ -146,6 +146,7 @@ app.use('/ratings', function(req, res, next) {
         docs.forEach(function(d) {
             d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
             d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
+            d.time = d.ratings[d.ratings.length - 1].time;
         });
         docs.sort(function(a, b) {
             return b.soloCompetitiveRank - a.soloCompetitiveRank;
@@ -201,7 +202,12 @@ app.route('/professional').get(function(req, res, next) {
     //for each match, if time changed, update redis, push to clients
     advQuery({
         select: {
-            leagueid: "gtzero"
+            start_time: {
+                $gt: moment().subtract(1, 'day').unix()
+            },
+            leagueid: {
+                $gt: 0
+            }
         },
         project: {
             players: {
@@ -216,8 +222,7 @@ app.route('/professional').get(function(req, res, next) {
             start_time: 1,
             parse_status: 1
         },
-        js_agg: {},
-        limit: 100
+        js_agg: {}
     }, function(err, data2) {
         if (err) {
             return next(err);
