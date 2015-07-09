@@ -5,9 +5,12 @@ var utility = require("./utility");
 var async = require('async');
 var convert64To32 = utility.convert64to32;
 var express = require('express');
+var r = require('./redis');
+var redis = r.client;
 var app = express();
 var users = config.STEAM_USER.split(",");
 var passes = config.STEAM_PASS.split(",");
+var authCodes = config.STEAM_GUARD_CODE.split(",");
 var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
@@ -38,16 +41,25 @@ async.each(a, function(i, cb) {
         Ignored: 5,
         IgnoredFriend: 6,
         SuggestedFriend: 7,
-        Max: 8,
+        Max: 8
     };
     var user = users[i];
     var pass = passes[i];
+    var authCode = authCodes[i];
+    var connectCount = 0;
+
     var logOnDetails = {
         "accountName": user,
         "password": pass
     };
-    Steam.logOn(logOnDetails);
-    console.log("[STEAM] Trying to log on with %s,%s", user, pass);
+
+    redis.get("sentryfile_" + user + "_hash" , function(err, sentry){
+        logOnDetails.shaSentryfile = sentry ? new Buffer(sentry, 'base64') : null;
+        Steam.logOn(logOnDetails);
+        console.log("[STEAM] Trying to log on with %s,%s", user, pass);
+    });
+
+
     Steam.on("friend", function(steamID, relationship) {
         //immediately accept incoming friend requests
         if (relationship === Steam.EFriendRelationship.PendingInvitee) {
@@ -87,7 +99,23 @@ async.each(a, function(i, cb) {
         console.log("finished searching");
     });
     Steam.on('error', function onSteamError(e) {
-        console.log(e);
+
+        //TODO change 63 to enum
+        if (e.eresult == 63 && connectCount === 0) {
+            // Prompt the user for Steam Gaurd code
+            if (authCode){
+                logOnDetails.authCode = authCode;
+            }
+            connectCount++;
+            Steam.logOn(logOnDetails);
+        } else{
+            console.error('steam error')
+            console.log(e);
+        }
+    });
+    Steam.on('sentry', function(sentry){
+        console.log('Got new sentry file hash from Steam.  Saving.');
+        redis.set("sentryfile_" + user + "_hash" , sentry.toString('base64'));
     });
     Steam.once("relationships", function() {
         //console.log("relationships obtained");
