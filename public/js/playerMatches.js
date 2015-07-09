@@ -276,7 +276,7 @@ module.exports = function(options) {
                     }
             }, {
                     data: "with_games",
-                    title: "Teammate"
+                    title: "Played With"
             }, {
                     data: "with_win",
                     title: "Win%",
@@ -291,7 +291,7 @@ module.exports = function(options) {
             },
                 {
                     data: "against_games",
-                    title: "Opponent"
+                    title: "Played Against"
             }, {
                     data: "against_win",
                     title: "Win%",

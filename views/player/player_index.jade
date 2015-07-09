@@ -5,11 +5,7 @@ include /mixins/teammate_table
 
 block playercontent
   //pre=JSON.stringify(player.aggData)
-  script.
-    var matches = !{JSON.stringify(player.matches.slice(0,10))};
-    var heroes = !{JSON.stringify(player.aggData.heroes)};
-    var teammates = !{JSON.stringify(player.aggData.teammates)};
-    var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
+
   .row
     .col-md-12.table-responsive
       h3 Recent
@@ -30,7 +26,7 @@ block playercontent
     hr
     .row
       .col-md-12
-        h3 Teammates/Opponents
+        h3 Players
         table.table#teammates
         //+teammate_table(player.teammates)
     hr
@@ -43,5 +39,9 @@ block playercontent
 
 append footer_assets
   script.
+    var matches = !{JSON.stringify(player.matches.slice(0,10))};
+    var heroes = !{JSON.stringify(player.heroes_list)};
+    var teammates = !{JSON.stringify(player.teammate_list)};
+    var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
     playerMatches();
     ratingsChart(ratings);

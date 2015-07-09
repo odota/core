@@ -215,7 +215,7 @@ app.route('/professional').get(function(req, res, next) {
             start_time: 1,
             parse_status: 1
         },
-        js_agg : {},
+        js_agg: {},
         limit: 100
     }, function(err, data2) {
         if (err) {
@@ -251,6 +251,7 @@ app.route('/compare').get(function(req, res, next) {
     async.mapSeries(account_ids, function(account_id, cb) {
         req.query = JSON.parse(JSON.stringify(qCopy));
         fillPlayerData(account_id, {
+            info: "compare",
             query: {
                 select: req.query,
                 js_agg: {
@@ -333,29 +334,11 @@ app.route('/compare').get(function(req, res, next) {
                 }
             }
         });
-        var player = req.user;
-        var teammates_arr = [];
-        if (player && player.cache && player.cache.aggData && player.cache.aggData.teammates) {
-            var teammates = player.cache.aggData.teammates;
-            for (var id in teammates) {
-                var tm = teammates[id];
-                id = Number(id);
-                //don't include if anonymous or if less than 3 games
-                if (id !== app.locals.constants.anonymous_account_id && tm.games >= 3) {
-                    teammates_arr.push(tm);
-                }
-            }
-        }
-        queries.fillPlayerNames(teammates_arr, function(err) {
-            if (err) {
-                return next(err);
-            }
-            res.render("compare", {
-                teammate_list: teammates_arr,
-                data: results,
-                q: req.query,
-                compare: true
-            });
+        res.render("compare", {
+            teammate_list: [],
+            data: results,
+            q: req.query,
+            compare: true
         });
     });
 });

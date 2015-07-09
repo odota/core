@@ -64,7 +64,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
             trackedPlayers: result.sets.trackedPlayers,
             bots: result.sets.bots,
             ratingPlayers: result.sets.ratingPlayers,
-            teammate_list: result.player.aggData.teammates,
+            teammate_list: result.player.teammate_list,
+            all_teammate_list: result.player.all_teammate_list,
             title: (result.player.personaname || result.player.account_id) + " - YASP"
         });
     });

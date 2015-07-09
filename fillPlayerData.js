@@ -4,6 +4,7 @@ var db = require('./db');
 var generatePositionData = utility.generatePositionData;
 var constants = require('./constants.json');
 var queries = require('./queries');
+var async = require('async');
 module.exports = function fillPlayerData(account_id, options, cb) {
     //retrieve the player from db by id
     var player;
@@ -95,7 +96,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             if (err) {
                 return cb(err);
             }
-            console.time("finish");
             var aggData = results.aggData;
             //get teammates, heroes, convert hashes to arrays and sort them
             if (aggData.heroes) {
@@ -108,23 +108,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 heroes_arr.sort(function(a, b) {
                     return b.games - a.games;
                 });
-                aggData.heroes = heroes_arr;
-            }
-            if (aggData.teammates) {
-                var teammates_arr = [];
-                var teammates = aggData.teammates;
-                for (var id in teammates) {
-                    var tm = teammates[id];
-                    id = Number(id);
-                    //don't include if anonymous or if less than 3 games
-                    if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 3) {
-                        teammates_arr.push(tm);
-                    }
-                }
-                teammates_arr.sort(function(a, b) {
-                    return b.games - a.games;
-                });
-                aggData.teammates = teammates_arr;
+                player.heroes_list = heroes_arr;
             }
             if (aggData.obs) {
                 //generally position data function is used to generate heatmap data for each player in a natch
@@ -138,13 +122,43 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 generatePositionData(d, player);
                 player.posData = [d];
             }
-            console.timeEnd("finish");
-            console.time('teammate_lookup');
-            queries.fillPlayerNames(aggData.teammates, function(err) {
-                console.timeEnd('teammate_lookup');
+            async.parallel({
+                teammate_list: function(cb) {
+                    generateTeammateList(aggData.teammates ? aggData.teammates : null, cb);
+                },
+                all_teammate_list: function(cb) {
+                    generateTeammateList(player.cache && player.cache.aggData && player.cache.aggData.teammates ? player.cache.aggData.teammates : null, cb);
+                }
+            }, function(err, lists) {
+                player.all_teammate_list = lists.all_teammate_list;
+                player.teammate_list = lists.teammate_list;
                 player.matches = results.data;
                 player.aggData = results.aggData;
                 cb(err, player);
+            });
+        }
+
+        function generateTeammateList(input, cb) {
+            if (!input) {
+                return cb();
+            }
+            var teammates_arr = [];
+            var teammates = input;
+            for (var id in teammates) {
+                var tm = teammates[id];
+                id = Number(id);
+                //don't include if anonymous or if few games together
+                if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 7) {
+                    teammates_arr.push(tm);
+                }
+            }
+            teammates_arr.sort(function(a, b) {
+                return b.games - a.games;
+            });
+            console.time('teammate_lookup');
+            queries.fillPlayerNames(teammates_arr, function(err) {
+                console.timeEnd('teammate_lookup');
+                cb(err, teammates_arr);
             });
         }
     }
