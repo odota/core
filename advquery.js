@@ -50,7 +50,6 @@ function advQuery(query, cb) {
     //map to limit
     var mongoAble = {
         "players.account_id": 20000,
-        "leagueid": max,
         "start_time": max
     };
     for (var key in query.select) {
@@ -61,10 +60,13 @@ function advQuery(query, cb) {
         else {
             if (mongoAble[key]) {
                 if (query.select[key] === "string") {
-                    //TODO translate strings to mongodb queries
-                    query.mongo_select[key] = {
-                        $gt: 0
+                    //translate strings to mongodb queries
+                    var queries = {
+                        "gtzero": {
+                            $gt: 0
+                        }
                     };
+                    query.mongo_select[key] = queries[query.select[key]];
                 }
                 else if (typeof query.select[key] === "object") {
                     //pass the query directly
@@ -107,14 +109,13 @@ function advQuery(query, cb) {
         sort: query.sort,
         fields: query.project
     };
-    console.log(query);
+    //console.log(query);
     console.time('querying database');
     // console.log(options);
     db.matches.find(query.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
         }
-        //TODO cache returned matches for "all" for faster compares
         console.timeEnd('querying database');
         var expanded_matches = [];
         matches.forEach(function(m) {

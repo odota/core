@@ -53,7 +53,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
         }
         console.timeEnd("player " + req.params.account_id);
         if (req.query.json) {
-            delete result.player.cache;
             return res.json(result.player);
         }
         res.render("player/player_" + info, {

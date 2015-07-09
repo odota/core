@@ -26,12 +26,16 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         }
         else {
             account_id = Number(account_id);
+            console.time("getting player from db " + account_id);
             db.players.findOne({
                 account_id: account_id
             }, function(err, doc) {
                 if (err || !doc) {
                     return cb(new Error("player not found"));
                 }
+                console.timeEnd("getting player from db " + account_id);
+                //load the cache
+                doc.cache = player.cache;
                 player = doc;
                 query();
             });
@@ -78,23 +82,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             else if ((!queryExists && !player.cache) || options.info === "matches") {
                 console.log("rebuilding cache %s", player.account_id);
                 player.cache = {
-                    aggData: {}
+                    aggData: results.aggData
                 };
-                player.cache.aggData = results.aggData;
                 redis.set("player:" + player.account_id, JSON.stringify(player.cache));
                 finish(err, results);
-                /*
-                //old db cache
-                db.players.update({
-                    account_id: player.account_id
-                }, {
-                    $set: {
-                        cache: player.cache
-                    }
-                }, function(err) {
-                    finish(err, results);
-                });
-                */
             }
             //don't save the cache if there was a query
             else {
