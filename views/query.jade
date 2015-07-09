@@ -12,7 +12,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           abbr(title="Select a teammate or enter an account ID")
             label The Players Included (Account ID)
           select.form-control(name="with_account_id", multiple, data-placeholder="Any Player")#with_account_id
-            each entry in all_teammate_list
+            each entry in all_teammate_list || []
               option(value=entry.account_id, selected=typeof q.with_account_id==="object" ? q.with_account_id.indexOf(entry.account_id)!==-1 : Number(q.with_account_id)===entry.account_id)=entry.personaname
         .form-group
           label The Team Included
@@ -76,7 +76,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             abbr(title="Select a teammate or enter an account ID")
               label Compare With (Account ID)
             select.form-control(name="compare", multiple)#compare
-              each entry in all_teammate_list
+              each entry in all_teammate_list || []
                 option(value=entry.account_id, selected=typeof q.compare==="object" ? q.compare.indexOf(entry.account_id)!==-1 : Number(q.compare)===entry.account_id)=entry.personaname
             
     .row
