@@ -23,7 +23,8 @@ function advQuery(options, cb) {
         leagueid: 1,
         radiant_name: 1,
         dire_name: 1,
-        players: 1
+        players: 1,
+        skill: 1
     };
     options.project = options.project || default_project;
     //only project the fields we need
@@ -368,6 +369,7 @@ function getParsedPlayerData(matches, doAction, cb) {
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
+    /*
     //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we might want a different position on each query, we need to make them individually
     async.each(parsed, function(m, cb) {
@@ -395,15 +397,14 @@ function getParsedPlayerData(matches, doAction, cb) {
     }, function(err) {
         cb(err);
     });
-    /*
+    */
     //diff approach that requires steam_id for each player, which is not present in v5 data, added to v7
     //parsed_data.players needs an identifier we can project on, such as steam_id
     //also need index on parsed_data.players.steam_id
     //compute the steam64 for this player
     //create array of ids to use for $in
     //NOTE this only works if we're getting parse data for a single steam_id
-            var hash = {};
-
+    var hash = {};
     //first player in first match's players has the account id we want
     var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
     console.log(steam64);
@@ -437,6 +438,5 @@ function getParsedPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-    */
 }
 module.exports = advQuery;
