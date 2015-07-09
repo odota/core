@@ -142,7 +142,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
         function generateTeammateList(input, cb) {
             if (!input) {
-                return cb();
+                return cb(null, []);
             }
             var teammates_arr = [];
             var teammates = input;
