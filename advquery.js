@@ -50,6 +50,7 @@ function advQuery(query, cb) {
     //map to limit
     var mongoAble = {
         "players.account_id": 20000,
+        "leagueid": max,
         "start_time": max
     };
     for (var key in query.select) {
