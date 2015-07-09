@@ -24,32 +24,7 @@ var queries = require('./queries');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
-/*
-//var cpuCount = require('os').cpus().length;
-// Include the cluster module
-var cluster = require('cluster');
-if (config.NODE_ENV === "test") {
-    //don't cluster in test env
-    configureApp(app);
-} else {
-    if (cluster.isMaster) {
-        // Count the machine's CPUs
-        // Create a worker for each CPU
-        for (var i = 0; i < cpuCount; i += 1) {
-            cluster.fork();
-        }
-    }
-    else {
-        configureApp(app);
-    }
-}
-*/
-var server = app.listen(config.PORT, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('[WEB] listening at http://%s:%s', host, port);
-});
-require('./socket.js')(server);
+var sticky = require('sticky-session');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -380,3 +355,18 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
+if (config.NODE_ENV === "test") {
+    var server = app.listen(config.PORT, function() {
+        console.log('[WEB] listening on %s', config.PORT);
+    });
+    require('./socket.js')(server);
+}
+else {
+    sticky(function() {
+        var server = app.listen(config.PORT, function() {
+            console.log('[WEB] listening on %s', config.PORT);
+        });
+        require('./socket.js')(server);
+        return server;
+    });
+}

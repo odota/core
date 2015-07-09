@@ -48,7 +48,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //defaults: this player, balanced modes only, put the defaults in options.query
         var selectExists = Boolean(Object.keys(options.query.select).length);
         var cacheAble = options.info && options.info !== "matches" && player.cache && !selectExists && !options.query.js_agg;
-        options.query.limit = cacheAble ? 10 : options.query.limit;
+        if (cacheAble) {
+            options.query.limit = 10;
+            options.query.js_agg = {};
+        }
         options.query.sort = {
             match_id: -1
         };
@@ -62,6 +65,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         advQuery(options.query, processResults);
 
         function processResults(err, results) {
+            if (err) {
+                return cb(err);
+            }
             console.log("results: %s", results.data.length);
             //delete all_players from each match, remove parsedPlayer from each player, dump matches into js var, use datatables to generate table
             results.data.forEach(function reduceMatchData(m) {
@@ -126,14 +132,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             async.parallel({
                 teammate_list: function(cb) {
-                    generateTeammateList(aggData.teammates ? aggData.teammates : null, cb);
+                    generateTeammateList(aggData.teammates && !cacheAble ? aggData.teammates : null, cb);
                 },
                 all_teammate_list: function(cb) {
                     generateTeammateList(player.cache && player.cache.aggData && player.cache.aggData.teammates ? player.cache.aggData.teammates : null, cb);
                 }
             }, function(err, lists) {
                 player.all_teammate_list = lists.all_teammate_list;
-                player.teammate_list = lists.teammate_list;
+                player.teammate_list = lists.teammate_list || lists.all_teammate_list;
                 player.matches = results.data;
                 player.aggData = results.aggData;
                 cb(err, player);
@@ -142,8 +148,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
         function generateTeammateList(input, cb) {
             if (!input) {
-                return cb(null, []);
+                return cb();
             }
+            console.time('teammate list');
             var teammates_arr = [];
             var teammates = input;
             for (var id in teammates) {
@@ -157,9 +164,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             teammates_arr.sort(function(a, b) {
                 return b.games - a.games;
             });
-            console.time('teammate_lookup');
             queries.fillPlayerNames(teammates_arr, function(err) {
-                console.timeEnd('teammate_lookup');
+                console.timeEnd('teammate list');
                 cb(err, teammates_arr);
             });
         }
