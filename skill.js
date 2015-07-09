@@ -3,6 +3,7 @@ var async = require('async');
 var db = require('./db');
 var result = {};
 var record = {};
+var total = 0;
 scanSkill();
 
 function scanSkill() {
@@ -29,6 +30,7 @@ function scanSkill() {
                         skill: skill
                     }
                 }, function(err,num) {
+                    total += num;
                     cb(err);
                 });
             }
@@ -39,7 +41,7 @@ function scanSkill() {
             if (err) {
                 console.log(err);
             }
-            console.log(Object.keys(record).length);
+            console.log("matches: %s, skill_added: %s", Object.keys(record).length, total);
             //dump record once in a while to prevent memory leak
             if (Object.keys(record).length > 1000000) {
                 record = {};
