@@ -245,6 +245,7 @@ app.route('/professional').get(function(req, res, next) {
 });
 app.route('/compare').get(function(req, res, next) {
     var account_ids = ["all"];
+    //TODO all/percentile works incorrectly due to current advquery getting only one steamid's parsed data per match
     if (!req.query.compare && req.user) {
         req.query.compare = req.user.account_id.toString();
     }
@@ -253,13 +254,14 @@ app.route('/compare').get(function(req, res, next) {
     }
     account_ids = account_ids.slice(0, 6);
     console.log(account_ids);
-    var qCopy = JSON.parse(JSON.stringify(req.query));
     async.mapSeries(account_ids, function(account_id, cb) {
-        req.query = JSON.parse(JSON.stringify(qCopy));
+        var qCopy = JSON.parse(JSON.stringify(req.query));
+        delete qCopy.compare;
         fillPlayerData(account_id, {
             info: "compare",
             query: {
-                select: req.query,
+                select: qCopy,
+                /*
                 js_agg: {
                     "duration": 1,
                     "first_blood_time": 1,
@@ -272,16 +274,17 @@ app.route('/compare').get(function(req, res, next) {
                     "hero_damage": 1,
                     "tower_damage": 1,
                     "hero_healing": 1,
+                    "gold_per_min": 1,
+                    "xp_per_min": 1,
                     "kills_per_min": 1,
                     "deaths_per_min": 1,
                     "assists_per_min": 1,
                     "last_hits_per_min": 1,
-                    "gold_per_min": 1,
-                    "xp_per_min": 1,
                     "hero_damage_per_min": 1,
                     "tower_damage_per_min": 1,
                     "hero_healing_per_min": 1
                 }
+                */
             }
         }, function(err, player) {
             //create array of results.aggData for each account_id
@@ -309,7 +312,6 @@ app.route('/compare').get(function(req, res, next) {
             var result = {
                 account_id: account_id,
                 personaname: player.personaname,
-                matches: player.matches,
                 aggData: player.aggData
             };
             cb(err, result);
@@ -341,8 +343,16 @@ app.route('/compare').get(function(req, res, next) {
             }
         });
         res.render("compare", {
-            teammate_list: [],
+            //TODO list won't include self
+            //TODO list should include cached player teammates and players manually added via tag
+            all_teammate_list: (typeof req.query.compare === "object" ? req.query.compare : [req.query.compare]).map(function(c) {
+                return {
+                    account_id: c,
+                    personaname: c
+                };
+            }),
             data: results,
+            //TODO query object needs to be processed (convert string to number, etc.)
             q: req.query,
             compare: true
         });

@@ -10,8 +10,8 @@ block content
       tr
         td
         each player in data.slice(1)
-          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.matches.length} matches)
-          td Percentile (#{data[0].matches.length} matches)
+          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
+          td Percentile (#{data[0].aggData.games} matches)
     tbody
       each val, key in data[0].aggData
         tr
@@ -26,7 +26,7 @@ block content
 //-
   append footer_assets
     script.
-      var data = !{JSON.stringify(data.map(function(d){delete d.matches;return d;}))};
+      var data = !{JSON.stringify(data.map(function(d){return d;}))};
       //cats are names of aggData keys
       //first element of each array is name of player
       var columns = [];
