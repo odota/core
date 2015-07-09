@@ -5,34 +5,38 @@ var generatePositionData = utility.generatePositionData;
 var constants = require('./constants.json');
 var queries = require('./queries');
 var async = require('async');
+var r = require('./redis');
+var redis = r.client;
 module.exports = function fillPlayerData(account_id, options, cb) {
     //retrieve the player from db by id
-    var player;
-    if (account_id === "all" || account_id === "professional") {
-        options.query.select["players.account_id"] = "all";
-        if (account_id === "professional") {
-            options.query.select.leagueid = {
-                $gt: 0
-            };
-        }
-        player = {
-            account_id: account_id,
-            personaname: account_id
-        };
-        query();
-    }
-    else {
-        account_id = Number(account_id);
-        db.players.findOne({
-            account_id: account_id
-        }, function(err, doc) {
-            if (err || !doc) {
-                return cb(new Error("player not found"));
+    var player = {
+        account_id: account_id,
+        personaname: account_id
+    };
+    redis.get("player:" + account_id, function(err, result) {
+        player.cache = result && !err ? JSON.parse(result) : null;
+        if (account_id === "all" || account_id === "professional") {
+            options.query.select["players.account_id"] = "all";
+            if (account_id === "professional") {
+                options.query.select.leagueid = {
+                    $gt: 0
+                };
             }
-            player = doc;
             query();
-        });
-    }
+        }
+        else {
+            account_id = Number(account_id);
+            db.players.findOne({
+                account_id: account_id
+            }, function(err, doc) {
+                if (err || !doc) {
+                    return cb(new Error("player not found"));
+                }
+                player = doc;
+                query();
+            });
+        }
+    });
 
     function query() {
         //options.info, the tab the player is on
@@ -77,6 +81,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     aggData: {}
                 };
                 player.cache.aggData = results.aggData;
+                redis.set("player:" + player.account_id, JSON.stringify(player.cache));
+                finish(err, results);
+                /*
+                //old db cache
                 db.players.update({
                     account_id: player.account_id
                 }, {
@@ -86,6 +94,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 }, function(err) {
                     finish(err, results);
                 });
+                */
             }
             //don't save the cache if there was a query
             else {

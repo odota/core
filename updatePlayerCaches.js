@@ -4,6 +4,8 @@ var constants = require('./constants.json');
 var aggregator = require('./aggregator');
 var async = require('async');
 var db = require('./db');
+var r = require('./redis');
+var redis = r.client;
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //check if match is a reinsert/reparse
@@ -32,28 +34,27 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         //if this is a re-inserted match, skip
-                        if (player && player.cache && player.cache.aggData && isSignificant(constants, match)) {
-                            //m.players[0] should be this player
-                            //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match object
-                            var match_copy = JSON.parse(JSON.stringify(match));
-                            match_copy.all_players = match.players.slice(0);
-                            match_copy.players = [p];
-                            //some data fields require computeMatchData in order to aggregate correctly
-                            computeMatchData(match_copy);
-                            //do aggregations on fields based on type
-                            player.cache.aggData = aggregator([match_copy], options.type, player.cache.aggData);
-                        }
-                        else {
-                            player = {};
-                        }
-                        //update the player.cache object
+                        redis.get("player:" + p.account_id, function(err, result) {
+                            player.cache = result && !err ? JSON.parse(result) : null;
+                            if (player.cache && isSignificant(constants, match)) {
+                                //m.players[0] should be this player
+                                //m.all_players should be all players
+                                //duplicate this data into a copy to avoid corrupting original match object
+                                var match_copy = JSON.parse(JSON.stringify(match));
+                                match_copy.all_players = match.players.slice(0);
+                                match_copy.players = [p];
+                                //some data fields require computeMatchData in order to aggregate correctly
+                                computeMatchData(match_copy);
+                                //do aggregations on fields based on type
+                                player.cache.aggData = aggregator([match_copy], options.type, player.cache.aggData);
+                                redis.set("player:" + p.account_id, JSON.stringify(player.cache));
+                            }
+                        });
                         db.players.update({
                             account_id: p.account_id
                         }, {
                             $set: {
                                 account_id: p.account_id,
-                                cache: player.cache
                             }
                         }, {
                             upsert: true
