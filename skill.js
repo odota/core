@@ -20,6 +20,7 @@ function scanSkill() {
         async.each(Object.keys(result), function(match_id, cb) {
             var skill = result[match_id];
             if (!record[match_id]) {
+                //TODO race condition if match sequence API is behind, since we don't add data for matches not in db
                 record[match_id] = skill;
                 db.matches.update({
                     match_id: Number(match_id)
@@ -27,7 +28,7 @@ function scanSkill() {
                     $set: {
                         skill: skill
                     }
-                }, function(err) {
+                }, function(err,num) {
                     cb(err);
                 });
             }

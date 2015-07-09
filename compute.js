@@ -147,16 +147,17 @@ function computeMatchData(match) {
                         return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
                     });
                     p.purchase_time = {};
-                    p.purchase_time_count = {};
+                    p.item_win = {};
+                    p.item_usage = {};
                     for (var i = 0; i < p.purchase_log.length; i++) {
                         var k = p.purchase_log[i].key;
                         var time = p.purchase_log[i].time;
                         if (!p.purchase_time[k]) {
                             p.purchase_time[k] = 0;
-                            p.purchase_time_count[k] = 0;
                         }
                         p.purchase_time[k] += time;
-                        p.purchase_time_count[k] += 1;
+                        p.item_usage[k] = 1;
+                        p.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
                 if (p.stuns) {
