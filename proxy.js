@@ -20,5 +20,4 @@ d.run(function() {
 });
 d.on('error', function(err) {
     console.log(err);
-    process.exit(1);
 });
