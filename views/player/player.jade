@@ -3,13 +3,13 @@ extend /layout
 block content
   if typeof player.account_id === "number"
     .row.match-top 
-      .col-md-1
-        img(src='#{player.avatarmedium}').img-thumbnail
+      if player.avatarmedium
+        .col-md-1
+           img(src='#{player.avatarmedium}').img-thumbnail
       .col-md-6
         h1.inline-header= player.personaname || player.account_id
         a(href=player.profileurl || "#", target="_blank")
           i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
-      
       .col-md-1
         if player.cheese
           i.flaticon-1.medium-cheese(style="display:inline-block")
