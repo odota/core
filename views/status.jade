@@ -3,7 +3,7 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-12
+    .col-md-8
       h3 Statistics
       table.table
         thead
@@ -15,10 +15,6 @@ block content
             th Tracked
             th Donated
             th MMR
-            th Matches (24h)
-            th Queued (24h)
-            th Skipped (24h)
-            th Parsed (24h)
         tbody
           tr
             td#players
@@ -28,10 +24,21 @@ block content
             td#tracked_players
             td#donated_players
             td#rating_players
+    .col-md-4
+      h3 Last 24H
+      table.table
+        thead
+          tr
+            th Matches
+            th Queued
+            th Parsed
+            th Requested
+        tbody
+          tr
             td#matches_last_day
             td#queued_last_day
-            td#skipped_last_day
             td#parsed_last_day
+            td#requested_last_day
     .col-md-4
       h3 Last Added
       table.table#last_added

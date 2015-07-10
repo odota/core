@@ -30,10 +30,12 @@ db.matches.index({
     unique: true
 });
 */
+/*
 db.matches.index({
     'start_time': -1,
     'parse_status': 1
 });
+*/
 /*
 db.matches.index({
     'leagueid': 1,

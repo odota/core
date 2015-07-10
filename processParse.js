@@ -8,6 +8,8 @@ var JSONStream = require('JSONStream');
 var constants = require('./constants.json');
 var utility = require('./utility');
 var updatePlayerCaches = require('./updatePlayerCaches');
+var r = require('./redis');
+var redis = r.client;
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
 module.exports = function processParse(job, cb) {
@@ -50,6 +52,10 @@ module.exports = function processParse(job, cb) {
 
         function updateDb() {
             job.update();
+            //set key in redis
+            //remove queue key
+            redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
+            redis.delete("queued_match:" + match.match_id);
             db.matches.update({
                 match_id: match_id
             }, {

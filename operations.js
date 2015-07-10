@@ -6,6 +6,7 @@ var async = require('async');
 var r = require("./redis");
 var jobs = r.jobs;
 var updatePlayerCaches = require('./updatePlayerCaches');
+var redis = r.client;
 
 function insertMatch(match, cb) {
     async.series([function(cb) {
@@ -16,6 +17,13 @@ function insertMatch(match, cb) {
         //put api data in db
         //set to queued, unless we specified something earlier (like skipped)
         match.parse_status = match.parse_status || 0;
+        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
+        if (match.request) {
+            redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
+        }
+        if (match.parse_status === 0) {
+            redis.setex("queued_match:" + match.match_id, 60 * 60 * 24, "1");
+        }
         db.matches.update({
             match_id: match.match_id
         }, {
@@ -95,7 +103,7 @@ function queueReq(type, payload, cb) {
     var kuejob = jobs.create(job.type, job).attempts(payload.attempts || 15).backoff({
         delay: 60 * 1000,
         type: 'exponential'
-    }).removeOnComplete(true).priority(payload.priority || 'normal').ttl(30*60*1000).save(function(err) {
+    }).removeOnComplete(true).priority(payload.priority || 'normal').ttl(30 * 60 * 1000).save(function(err) {
         console.log("[KUE] created jobid: %s", kuejob.id);
         cb(err, kuejob);
     });

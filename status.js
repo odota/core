@@ -33,46 +33,25 @@ module.exports = function getStatus(cb) {
             });
         },
         matches_last_day: function(cb) {
-            db.matches.count({
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, cb);
+            redis.keys("added_match:*", function(err, result) {
+                cb(err, result.length);
+            });
         },
         queued_last_day: function(cb) {
-            db.matches.count({
-                parse_status: 0,
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, cb);
-        },
-        skipped_last_day: function(cb) {
-            db.matches.count({
-                parse_status: 3,
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, cb);
+            redis.keys("queued_match:*", function(err, result) {
+                cb(err, result.length);
+            });
         },
         parsed_last_day: function(cb) {
-            db.matches.count({
-                parse_status: 2,
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, cb);
+            redis.keys("parsed_match:*", function(err, result) {
+                cb(err, result.length);
+            });
         },
-        /*
-        unavailable_last_day: function(cb) {
-            db.matches.count({
-                parse_status: 1,
-                start_time: {
-                    $gt: Number(moment().subtract(1, 'day').format('X'))
-                }
-            }, cb);
+        requested_last_day: function(cb) {
+            redis.keys("requested_match:*", function(err, result) {
+                cb(err, result.length);
+            });
         },
-        */
         full_history: function(cb) {
             db.players.count({
                 full_history_time: {
@@ -80,14 +59,6 @@ module.exports = function getStatus(cb) {
                 }
             }, cb);
         },
-        /*
-        match_seq_num: function(cb) {
-            redis.get("match_seq_num", function(err, result) {
-                result = Number(result);
-                cb(err, result);
-            });
-        },
-        */
         donated_players: function(cb) {
             redis.get("donators", function(err, res) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;

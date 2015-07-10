@@ -177,9 +177,6 @@ app.route('/professional').get(function(req, res, next) {
     //for each match, if time changed, update redis, push to clients
     advQuery({
         select: {
-            start_time: {
-                $gt: moment().subtract(1, 'day').unix()
-            },
             leagueid: {
                 $gt: 0
             }
@@ -197,7 +194,11 @@ app.route('/professional').get(function(req, res, next) {
             start_time: 1,
             parse_status: 1
         },
-        js_agg: {}
+        js_agg: {},
+        sort: {
+            match_id: -1
+        },
+        limit: 100
     }, function(err, data2) {
         if (err) {
             return next(err);
