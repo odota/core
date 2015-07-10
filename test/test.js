@@ -172,6 +172,7 @@ before(function(done) {
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
                 db.matches.insert(m, function(err) {
+                    console.log(m.match_id);
                     cb(err);
                 });
             }, function(err) {
@@ -342,7 +343,7 @@ describe("parser", function() {
         });
         done();
     });
-    it('parse replay (standard download)', function(done) {
+    it('parse replay (zipped download)', function(done) {
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
             return '/';
@@ -357,12 +358,13 @@ describe("parser", function() {
             job.on("complete", function() {
                 done();
             });
-            job.on("failed attempt", function(){
+            job.on("failed attempt", function() {
                 done("failed");
             });
         });
     });
-    it('parse replay (standard local)', function(done) {
+    //TODO use function to run a set of these
+    it('parse replay (local)', function(done) {
         var job = {
             match_id: 1193091757,
             start_time: moment().format('X'),
@@ -376,6 +378,7 @@ describe("parser", function() {
             });
         });
     });
+    /*
     it('parse 1v1', function(done) {
         var job = {
             match_id: 1181392470,
@@ -432,6 +435,7 @@ describe("parser", function() {
             });
         });
     });
+    */
     it('parse invalid file', function(done) {
         //write invalid replay file
         fs.writeFileSync(replay_dir + "invalid.dem", "asdf");
@@ -510,128 +514,41 @@ describe("web", function() {
         });
     })
     describe("player page tests", function() {
-        it('/players/:invalid', function(done) {
-            supertest(app).get('/players/1')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).end(function(err, res) {
+        var tests = ["", "matches", "advanced", "histograms", "counts", "asdf"];
+        tests.forEach(function(t) {
+            it('/players/:valid/' + t, function(done) {
+                supertest(app).get('/matches/1193091757/' + t).expect(200).end(function(err, res) {
                     done(err);
                 });
-        });
-        it('/players/:valid', function(done) {
-            supertest(app).get('/players/88367253')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/.-./).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid/:invalid', function(done) {
-            supertest(app).get('/players/88367253/asdf')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/.-./).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/players/:valid (no matches)', function(done) {
-            supertest(app).get('/players/88367251')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/.-./).end(function(err, res) {
-                    done(err);
-                });
+            });
         });
     });
-    describe("match page tests", function() {
+    describe("unparsed match page tests", function() {
         it('/matches/:invalid', function(done) {
-            supertest(app).get('/matches/4294967295')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(500).end(function(err, res) {
-                    done(err);
-                });
+            supertest(app).get('/matches/1').expect(500).end(function(err, res) {
+                done(err);
+            });
         });
-        it('/matches/:invalid/details', function(done) {
-            supertest(app).get('/matches/4294967295/details')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(500).end(function(err, res) {
-                    done(err);
-                });
-        });
+        /*
         it('/matches/:valid', function(done) {
-            supertest(app).get('/matches/870061127')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Match/).end(function(err, res) {
+            supertest(app).get('/matches/870061127').expect(200).end(function(err, res) {
+                done(err);
+            });
+        });
+        */
+    });
+    describe("parsed match page tests", function() {
+        var tests = ["", "performances", "purchases", "chat"];
+        tests.forEach(function(t) {
+            it('/matches/:valid_parsed/' + t, function(done) {
+                supertest(app).get('/matches/1193091757/' + t).expect(200).expect(new RegExp(t, "i")).end(function(err, res) {
                     done(err);
                 });
+            });
         });
-        it('/matches/:valid/details (unparsed)', function(done) {
-            supertest(app).get('/matches/870061127/details')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).end(function(err, res) {
-                    done(err);
-                });
-        });
-        describe("verify templates after parse", function() {
-            it('/matches/:valid/ (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Details/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/details (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/details')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Details/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/timelines (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/timelines')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Kills/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/graphs (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/graphs')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Gold/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/positions (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/positions')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Positions/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/chat (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/chat')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).expect(/Chat/).end(function(err, res) {
-                        done(err);
-                    });
-            });
-            it('/matches/:valid/:invalid (parsed)', function(done) {
-                supertest(app).get('/matches/1193091757/asdf')
-                    //.expect('Content-Type', /json/)
-                    //.expect('Content-Length', '20')
-                    .expect(200).end(function(err, res) {
-                        done(err);
-                    });
+        it('/matches/:valid_parsed/:invalid', function(done) {
+            supertest(app).get('/matches/1193091757/asdf').expect(200).expect(/Match/).end(function(err, res) {
+                done(err);
             });
         });
     });
