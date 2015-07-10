@@ -2,7 +2,7 @@ var utility = require('./utility');
 var async = require('async');
 var db = require('./db');
 var result = {};
-var record = {};
+var tries = {};
 var total = 0;
 scanSkill();
 
@@ -18,34 +18,33 @@ function scanSkill() {
             console.log(err);
         }
         //iterate through results
-        async.each(Object.keys(result), function(match_id, cb) {
-            var skill = result[match_id];
-            if (!record[match_id]) {
-                //TODO race condition if match sequence API is behind, since we don't add data for matches not in db
-                record[match_id] = skill;
+        for (var match_id in result){
+            tries[match_id] = tries[match_id] || {skill: result[match_id], tries:0};
+        }
+        async.each(Object.keys(tries), function(match_id, cb) {
+            var skill = tries[match_id].skill;
+            tries[match_id].tries += 1;
+            if (tries[match_id].tries <= 15) {
                 db.matches.update({
                     match_id: Number(match_id)
                 }, {
                     $set: {
                         skill: skill
                     }
-                }, function(err,num) {
+                }, function(err, num) {
                     total += num;
                     cb(err);
                 });
             }
             else {
+                delete tries["match_id"];
                 cb();
             }
         }, function(err) {
             if (err) {
                 console.log(err);
             }
-            console.log("matches: %s, skill_added: %s", Object.keys(record).length, total);
-            //dump record once in a while to prevent memory leak
-            if (Object.keys(record).length > 1000000) {
-                record = {};
-            }
+            console.log("matches to try: %s, skill_added: %s", Object.keys(tries).length, total);
             result = {};
             //start over
             scanSkill();
