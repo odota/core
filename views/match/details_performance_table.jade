@@ -44,7 +44,7 @@
                 span: img.item(src=item.img, title=p.max_hero_hit.inflictor)
               else
                 span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
-              div (#{p.max_hero_hit.value})                      
+              div #{p.max_hero_hit.value}                    
             if hero
               span: img.kill(src=hero.img, title=hero.localized_name)
             else
