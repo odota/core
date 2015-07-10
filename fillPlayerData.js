@@ -17,7 +17,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         cache = result && !err ? JSON.parse(result) : null;
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var selectExists = Boolean(Object.keys(options.query.select).length);
-        var cacheAble = options.info && options.info !== "matches" && cache && !selectExists && !options.query.js_agg;
+        var cacheAble = options.info !== "matches" && cache && !selectExists && !options.query.js_agg;
         if (cacheAble) {
             options.query.limit = 10;
             options.query.js_agg = {};
@@ -71,13 +71,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 return finish(err);
             }
             else {
-                //set cache to data from advquery
-                cache = {
-                    aggData: results.aggData
-                };
                 //rebuild cache if no query and no cache
-                //also rebuild if loading matches tab (error correction)
+                //rebuild if loading matches tab (error correction)
                 if ((!selectExists && !cache) || options.info === "matches") {
+                    //set cache to data from advquery
+                    cache = {
+                        aggData: results.aggData
+                    };
                     console.log("player cache miss, rebuilding %s", player.account_id);
                     redis.set("player:" + player.account_id, JSON.stringify(cache));
                     finish(err);

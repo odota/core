@@ -55,7 +55,7 @@ module.exports = function processParse(job, cb) {
             //set key in redis
             //remove queue key
             redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
-            redis.delete("queued_match:" + match.match_id);
+            redis.del("queued_match:" + match.match_id);
             db.matches.update({
                 match_id: match_id
             }, {

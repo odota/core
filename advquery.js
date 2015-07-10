@@ -370,7 +370,7 @@ function getParsedPlayerData(matches, doAction, cb) {
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
-    /*
+    
     //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we might want a different position on each query, we need to make them individually
     async.each(parsed, function(m, cb) {
@@ -396,47 +396,6 @@ function getParsedPlayerData(matches, doAction, cb) {
             cb(err);
         });
     }, function(err) {
-        cb(err);
-    });
-    */
-    //diff approach that requires steam_id for each player, which is not present in v5 data, added to v7
-    //parsed_data.players needs an identifier we can project on, such as steam_id
-    //also need index on parsed_data.players.steam_id
-    //compute the steam64 for this player
-    //create array of ids to use for $in
-    //NOTE this only works if we're getting parse data for a single steam_id
-    var hash = {};
-    //first player in first match's players has the account id we want
-    var steam64 = matches[0] && matches[0].players[0] ? utility.convert32to64(matches[0].players[0].account_id).toString() : "";
-    console.log(steam64);
-    var match_ids = parsed.map(function(m) {
-        return m.match_id;
-    });
-    db.matches.find({
-        match_id: {
-            $in: match_ids
-        },
-        "parsed_data.players.steam_id": steam64
-    }, {
-        fields: {
-            "parsed_data": 1,
-            "parsed_data.version": 1,
-            "parsed_data.chat": 1,
-            "parsed_data.players.$": 1,
-            match_id: 1
-        }
-    }, function(err, docs) {
-        if (err) {
-            return cb(err);
-        }
-        //build hash of match_id to parsed_data
-        for (var i = 0; i < docs.length; i++) {
-            hash[docs[i].match_id] = docs[i].parsed_data;
-        }
-        //iterate through given matches and populate parsed_data field
-        for (var j = 0; j < matches.length; j++) {
-            matches[j].parsed_data = hash[matches[j].match_id];
-        }
         cb(err);
     });
 }
