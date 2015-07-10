@@ -1,5 +1,8 @@
 var db = require('../db');
 var queueReq = require('../operations').queueReq;
+/**
+ * Gets the least recently updated 100 users in db and queues for new Steam data
+ **/
 module.exports = function updateNames(cb) {
     db.players.find({}, {
         sort: {

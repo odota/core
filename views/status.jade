@@ -51,14 +51,8 @@ block content
             th Ended
         tbody
     .col-md-4
-      h3 Last Requested
-      table.table#last_requested
-        thead
-          tr
-            th Match ID
-            th Sequence
-            th Ended
-        tbody
+      h3 Inactive Kue Jobs
+      pre=JSON.stringify(result.kue, null, 2)
 
 append footer_assets
   script(src="/socket.io/socket.io.js")

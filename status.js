@@ -1,7 +1,10 @@
 var async = require('async');
 var db = require('./db');
-var redis = require('./redis').client;
+var r = require('./redis');
+var redis = r.client;
 var moment = require('moment');
+var kue = r.kue;
+var jobs = r.jobs;
 module.exports = function getStatus(cb) {
     async.series({
         matches: function(cb) {
@@ -121,21 +124,18 @@ module.exports = function getStatus(cb) {
                 limit: 10
             }, cb);
         },
-        last_requested: function(cb) {
-            db.matches.find({
-                request: true
-            }, {
-                sort: {
-                    _id: -1
-                },
-                fields: {
-                    match_id: 1,
-                    match_seq_num: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
-        },
+        kue: function(cb) {
+            var counts = {};
+            jobs.types(function(err, data) {
+                async.each(data, function(d, cb) {
+                    jobs.cardByType(d, "inactive", function(err, result) {
+                        counts[d] = result;
+                        cb(err);
+                    });
+                }, function(err) {
+                    cb(err, counts);
+                });
+            });
+        }
     }, cb);
 };
