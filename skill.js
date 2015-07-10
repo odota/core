@@ -1,66 +1,48 @@
 var utility = require('./utility');
 var async = require('async');
 var db = require('./db');
-var result = {};
-var tries = {};
+var constants = require("./constants.json");
+var results = {};
 var added = {};
-var total = 0;
+var config = require('./config.js');
+var api_keys = config.STEAM_API_KEY.split(",");
+var steam_hosts = config.STEAM_API_HOST.split(",");
+var parallelism = Math.min(4 * steam_hosts.length, api_keys.length);
+var skills = [1, 2, 3];
+var heroes = Object.keys(constants.heroes);
+var permute = [];
+for (var i = 0; i < heroes.length; i++) {
+    for (var j = 0; j < skills.length; j++) {
+        permute.push({
+            skill: skills[j],
+            hero_id: heroes[i]
+        });
+    }
+}
 scanSkill();
 
 function scanSkill() {
-    //for each skill level
-    var skills = [1, 2, 3];
-    async.each(skills, function(skill, cb) {
+    async.eachLimit(permute, parallelism, function(object, cb) {
         //use api_skill
         var start = null;
-        getPageData(start, skill, cb);
+        getPageData(start, object, cb);
     }, function(err) {
         if (err) {
             console.log(err);
         }
-        //iterate through results
-        for (var match_id in result) {
-            tries[match_id] = tries[match_id] || {
-                skill: result[match_id],
-                tries: 0
-            };
+        if (Object.keys(results).length > 1000000) {
+            //reset to prevent memory leak
+            process.exit(0);
         }
-        async.each(Object.keys(tries), function(match_id, cb) {
-            var skill = tries[match_id].skill;
-            tries[match_id].tries += 1;
-            if (tries[match_id].tries <= 10) {
-                db.matches.update({
-                    match_id: Number(match_id)
-                }, {
-                    $set: {
-                        skill: skill
-                    }
-                }, function(err, num) {
-                    if (num) {
-                        added[match_id] = 1;
-                    }
-                    cb(err);
-                });
-            }
-            else {
-                delete tries["match_id"];
-                cb();
-            }
-        }, function(err) {
-            if (err) {
-                console.log(err);
-            }
-            console.log("matches to try: %s, skill_added: %s", Object.keys(tries).length, Object.keys(added).length);
-            result = {};
-            //start over
-            scanSkill();
-        });
+        //start over
+        scanSkill();
     });
 }
 
-function getPageData(start, skill, cb) {
+function getPageData(start, options, cb) {
     var container = utility.generateJob("api_skill", {
-        skill: skill,
+        skill: options.skill,
+        hero_id: options.hero_id,
         start_at_match_id: start
     });
     utility.getData(container.url, function(err, data) {
@@ -69,16 +51,44 @@ function getPageData(start, skill, cb) {
         }
         //data is in data.result.matches
         var matches = data.result.matches;
-        matches.forEach(function(m) {
-            result[m.match_id] = skill;
+        async.each(matches, function(m, cb) {
+            var match_id = m.match_id;
+            //retry adding the skill data a set number of times
+            results[match_id] = results[match_id] || 0;
+            if (results[match_id] < 3 && !added[match_id]) {
+                db.matches.update({
+                    match_id: match_id
+                }, {
+                    $set: {
+                        skill: options.skill
+                    }
+                }, function(err, num) {
+                    //if num, we modified a match in db
+                    if (num) {
+                        //add to set of matches for which we were able to add skill data
+                        added[match_id] = 1;
+                    }
+                    else {
+                        //add to retry count
+                        results[match_id] += 1;
+                    }
+                    cb(err);
+                });
+            }
+            else {
+                //already got skill for this match
+                cb();
+            }
+        }, function(err) {
+            console.log("matches: %s, skill_added: %s", Object.keys(results).length, Object.keys(added).length);
+            //repeat until results_remaining===0
+            if (data.result.results_remaining === 0) {
+                cb(err);
+            }
+            else {
+                start = matches[matches.length - 1].match_id - 1;
+                getPageData(start, options, cb);
+            }
         });
-        start = matches[matches.length - 1].match_id - 1;
-        //repeat until results_remaining===0
-        if (data.result.results_remaining === 0) {
-            cb();
-        }
-        else {
-            getPageData(start, skill, cb);
-        }
     });
 }
