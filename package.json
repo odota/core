@@ -36,6 +36,7 @@
     "cal-heatmap": "^3.5.2",
     "compression": "^1.5.1",
     "connect-redis": "^2.3.0",
+    "cookie-session": "^1.2.0",
     "d3": "^3.5.6",
     "datatables": "^1.10.7",
     "datatables-bootstrap3-plugin": "^0.4.0",
