@@ -79,7 +79,6 @@ block match_content
                             span(class="format") #{p1}
                             span=" / "
                             span(class="format") #{p2}
-      hr
       .row
        .col-md-6
          h3 Multi Kills
@@ -127,6 +126,8 @@ block match_content
                    =player.hero_id
                 each val, key in constants.kill_streaks
                   td #{p.kill_streaks[key] || "-"}
+      hr
+      +ad("banner2")
       hr
       .row
         .col-md-12

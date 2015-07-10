@@ -33,6 +33,9 @@ block match_content
                td #{p.purchase.dust*2 || "-"}
                td #{p.purchase.gem || "-"}
                td #{p.buyback_log.length || "-"}
+        hr
+        +ad("banner2")
+        hr
         h2.inline-header Build Times
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#purchases", aria-expanded="true") Toggle Table
         include timelines_purchases_table
