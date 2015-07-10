@@ -10,11 +10,15 @@ app.use(function(req, res) {
 app.listen(process.env.PORT);
 */
 //mirrors steam api
+var domain = require('domain');
 var httpProxy = require('http-proxy');
-var proxy = httpProxy.createProxyServer({
-    target: 'http://api.steampowered.com'
-}).listen(process.env.PORT);
-proxy.on('error', function (err, req, res) {
-  console.log(err);
-  process.exit(1);
+var d = domain.create();
+d.run(function() {
+    httpProxy.createProxyServer({
+        target: 'http://api.steampowered.com'
+    }).listen(process.env.PORT);
+});
+d.on('error', function(err) {
+    console.log(err);
+    process.exit(1);
 });
