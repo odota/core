@@ -13,10 +13,6 @@ var queries = require('./queries');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-var donators;
-var permanent = {
-    88367253: true
-};
 startScan();
 
 function startScan() {
@@ -57,7 +53,6 @@ function scanApi(seq_num) {
         trackedPlayers = result.trackedPlayers;
         ratingPlayers = result.ratingPlayers;
         userPlayers = result.userPlayers;
-        donators = result.donators;
         getData(container.url, function(err, data) {
             if (err) {
                 return scanApi(seq_num);
@@ -74,7 +69,7 @@ function scanApi(seq_num) {
                     match.parse_status = 0;
                 }
                 async.each(match.players, function(p, cb) {
-                    if (p.account_id in trackedPlayers || p.account_id in permanent || p.account_id in donators) {
+                    if (p.account_id in trackedPlayers) {
                         //queued
                         match.parse_status = 0;
                     }

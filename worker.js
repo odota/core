@@ -39,7 +39,7 @@ d.run(function() {
     jobs.process('mmr', processMmr);
     jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
-    invokeInterval(buildSets, 2 * 60 * 1000);
+    invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
 });

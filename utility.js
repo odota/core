@@ -183,6 +183,8 @@ function getData(url, cb) {
             if (err || res.statusCode !== 200 || !body) {
                 if (body && body.error) {
                     //body contained an error (probably from retriever)
+                    //TODO don't retry if failed to get rating, replay salt, etc.
+                    //can retry if retriever not ready
                     //non-retryable
                     return cb(body);
                 }

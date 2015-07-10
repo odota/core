@@ -9,7 +9,6 @@ var getData = utility.getData;
 var retrievers = config.RETRIEVER_HOST;
 var parsers = config.PARSER_HOST;
 var secret = config.RETRIEVER_SECRET;
-
 module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
@@ -133,11 +132,11 @@ module.exports = function buildSets(cb) {
         if (err) {
             console.log('error occured during buildSets: %s', err);
         }
-        //merge trackedPlayers with donators
-        //we are doing it this way because the $or query forces iteration through all players, which is slow!
+        //merge trackedPlayers with donators, resave to redis
         for (var key in result.donators) {
             result.trackedPlayers[key] = true;
         }
+        redis.set("trackedPlayers", JSON.stringify(result.trackedPlayers));
         return cb(err);
     });
 };
