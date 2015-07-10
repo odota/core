@@ -514,7 +514,7 @@ describe("web", function() {
             supertest(app).get('/players/1')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
-                .expect(500).end(function(err, res) {
+                .expect(200).end(function(err, res) {
                     done(err);
                 });
         });

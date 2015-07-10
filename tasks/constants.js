@@ -4,21 +4,19 @@ var utility = require('../utility');
 var getData = utility.getData;
 var async = require('async');
 var fs = require('fs');
-var config = require('../config');
 module.exports = function constants(cb) {
-    if (!config.STEAM_API_KEY){
-        console.log("no api key");
-        return process.exit(1);
-    }
     var urls = {
         "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
         "abilities": "http://www.dota2.com/jsfeed/abilitydata?l=english",
+        /*
         "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata?l=english",
         "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
+        //these require an API key!
         "heroes": utility.generateJob("api_heroes", {
             language: "en-us"
         }).url,
         "leagues": utility.generateJob("api_leagues").url
+        */
     };
     var constants = require('../sources.json');
     async.each(Object.keys(urls), function(key, cb) {
@@ -109,4 +107,4 @@ module.exports = function constants(cb) {
             return cb(err);
         });
     });
-}
+};
