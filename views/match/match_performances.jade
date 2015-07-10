@@ -1,0 +1,8 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12
+        h2.inline-header Performances
+        button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#performance", aria-expanded="true") Toggle Table
+        include details_performance_table

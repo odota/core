@@ -34,15 +34,17 @@ block content
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
             td=constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
   .row
-      .col-md-8.table-responsive
-        ul.nav.nav-tabs
-          each val, key in tabs
-            li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
-                a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
-      .col-md-2
-        a(href="?json=1" class="btn btn-success") Download JSON
-      .col-md-2
-        .addthis_sharing_toolbox.pull-right
+    .col-md-12
+      .addthis_sharing_toolbox.pull-right
+  .row
+    .col-md-10.table-responsive
+      ul.nav.nav-tabs
+        each val, key in tabs
+          li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
+              a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+    .col-md-2
+      a(href="?json=1" class="btn btn-success") Download JSON
+
   .match
     block match_content
       

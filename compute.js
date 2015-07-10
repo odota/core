@@ -316,6 +316,7 @@ function renderMatch(match) {
     });
     //create graph data
     match.graphData = generateGraphData(match);
+    match.incomeData = generateIncomeData(match);
     //create heatmap data
     match.posData = match.players.map(function(p) {
         return p.parsedPlayer.posData;
@@ -426,6 +427,10 @@ function generateGraphData(match) {
         data.xp.push([hero].concat(p.xp));
         data.lh.push([hero].concat(p.lh));
     });
+    return data;
+}
+
+function generateIncomeData(match) {
     //data for income chart
     var gold_reasons = [];
     var columns = [];
@@ -448,10 +453,11 @@ function generateGraphData(match) {
         });
         columns.push(col);
     }
-    data.cats = categories;
-    data.goldCols = columns;
-    data.gold_reasons = gold_reasons;
-    return data;
+    return {
+        cats: categories,
+        goldCols: columns,
+        gold_reasons: gold_reasons
+    }
 }
 module.exports = {
     renderMatch: renderMatch,

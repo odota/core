@@ -1,0 +1,131 @@
+extend match
+    
+block match_content
+  .row
+    .col-md-12
+      h2 Farm
+      h3 Distribution
+      table.table.table-hover.summable
+       each player, i in match.players
+         if !(i%10)
+           thead
+             tr
+               th Hero
+               th: abbr(title="Heroes killed") Heroes
+               th: abbr(title="Lane creeps killed") Creeps
+               th: abbr(title="Neutral creeps killed") Neutrals
+               th: abbr(title="Towers killed") Towers
+               th: abbr(title="Couriers killed") Couriers
+               th: abbr(title="Observer wards killed") Obs
+               th: abbr(title="Sentry wards killed") Sen
+         tbody
+           tr(class = player.isRadiant ? "success" : "danger")
+             - var hero = constants.heroes[player.hero_id]
+             - var p = player.parsedPlayer
+             td.hero
+              if hero
+                img(src=hero.img, title=hero.localized_name)
+              else
+                =player.hero_id
+             td #{p.hero_kills || "-"}
+             td #{p.lane_kills || "-"}
+             td #{p.neutral_kills || "-"}
+             td #{p.tower_kills || "-"}
+             td #{p.courier_kills || "-"}
+             td #{p.observer_kills || "-"}
+             td #{p.sentry_kills || "-"}
+      h3 Last Hits
+      table.table.table-hover.summable
+        thead
+          tr
+            th Hero
+            - var bucket = 300
+            - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+              th= i/60+"'"
+        tbody  
+          each player, ind in match.players
+            - var hero = constants.heroes[player.hero_id]
+            - var p = player.parsedPlayer
+            tr(class = player.isRadiant ? "success" : "danger")
+              td.hero
+                if hero
+                  img(src=hero.img, title=hero.localized_name)
+                else
+                  =player.hero_id
+              - for (var i = 0; i <= match.duration + bucket; i+=bucket)
+                td #{p.lh[i/60]}
+                      
+      .row
+        .col-md-8.table-responsive
+          h3 Gold
+          table.table.table-hover.summable
+            thead
+              tr
+                th Hero
+                each val, key in constants.gold_reasons
+                  th: abbr(title=val.tooltip)=val.name
+    
+            tbody
+              each player, i in match.players
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    each val, key in constants.gold_reasons
+                      td #{p.gold_reasons[key] || "-"}
+    
+        .col-md-4.table-responsive
+          h3 XP
+          table.table.table-hover.summable
+    
+            thead
+              tr
+                th Hero
+                each val, key in constants.xp_reasons
+                  th=val
+    
+            tbody
+              each player, i in match.players
+                tr(class = player.isRadiant ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  - var p = player.parsedPlayer
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    each val, key in constants.xp_reasons
+                      td #{p.xp_reasons[key] || "-"}
+      h3 Income Sources
+      #chart-gold-breakdown
+      hr
+        
+append footer_assets
+  script.
+    var data = !{JSON.stringify(match.incomeData)};
+    c3.generate({
+        bindto: "#chart-gold-breakdown",
+        data: {
+            columns: data.goldCols,
+            type: 'bar',
+            order: 'desc',
+            groups: [
+                    data.gold_reasons
+                ]
+        },
+        bar: {
+            width: {
+                ratio: 0.9
+            }
+        },
+        axis: {
+            x: {
+                type: "category",
+                categories: data.cats
+            }
+        }
+    });

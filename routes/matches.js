@@ -11,11 +11,17 @@ var matchPages = {
     index: {
         name: "Basic"
     },
-    details: {
-        name: "Details"
+    performances: {
+        name: "Performances"
     },
-    timelines: {
-        name: "Timelines"
+    purchases: {
+        name: "Purchases"
+    },
+    farm: {
+        name: "Farm"
+    },
+    combat: {
+        name: "Combat"
     },
     graphs: {
         name: "Graphs"

@@ -1,26 +1,4 @@
 module.exports = function generateCharts(data) {
-    c3.generate({
-        bindto: "#chart-gold-breakdown",
-        data: {
-            columns: data.goldCols,
-            type: 'bar',
-            order: 'desc',
-            groups: [
-                    data.gold_reasons
-                ]
-        },
-        bar: {
-            width: {
-                ratio: 0.9
-            }
-        },
-        axis: {
-            x: {
-                type: "category",
-                categories: data.cats
-            }
-        }
-    });
     var color_array = [];
     for (var key in constants.player_colors) {
         color_array.push(constants.player_colors[key]);

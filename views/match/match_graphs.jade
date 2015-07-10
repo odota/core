@@ -1,34 +1,24 @@
 extend match
     
 block match_content
-  .row.match-top
+  .row
     .col-md-12
+      h2 Graphs
       .alert.alert-success.text-center Click on an entry in the legend to select/deselect.  Alt-click to show only that entry.
-  .row
-    .col-md-12
-      h2 Radiant Advantage
+      h3 Radiant Advantage
       #chart-diff
-  hr
-  .row
-    .col-md-12
-      h2 Gold
+      hr
+      h3 Gold
       #chart-gold
-  hr
-  .row
-    .col-md-12
+      hr
       +ad("banner3")
-  hr
-  .row
-    .col-md-12
-      h2 XP
+      hr
+      h3 XP
       #chart-xp
       hr
-      h2 LH
+      h3 LH
       #chart-lh
-      hr
-      h2 Income Sources
-      #chart-gold-breakdown
-          
+
 append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};

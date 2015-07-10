@@ -27,7 +27,7 @@ block match_content
                 .progress-bar(class=pct >= 75 ? "progress-bar-success" : pct >=50 ? "progress-bar-warning" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
   .row
-    .col-md-4
+    .col-md-5
       //pre=JSON.stringify(match.parsed_data.teamfights)
       h3
         abbr(title="Rows are colored by winner, determined by gold swing.") Fights
@@ -66,7 +66,7 @@ block match_content
             each death in entry.posData
               i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
 
-    .col-md-8
+    .col-md-7
       h3 Details
       .table-responsive
         table.table.table-hover
@@ -76,8 +76,8 @@ block match_content
               th(style="font-size:30px;"): abbr(title="Died") !{"&#128128;"}
               th(style="font-size:30px;"): abbr(title="Bought Back") !{"&#128176;"}
               th Level
-              th Ability Use
-              th Item Use
+              th Abilities
+              th Items
               th Kills
               th Damage
               th Gold Change

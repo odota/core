@@ -2,7 +2,7 @@ extend match
 
 block match_content
   .row
-    .col-md-8
+    .col-md-6
       h2 Objectives
       //pre=JSON.stringify(match.parsed_data.objectives)
       table.table
@@ -28,8 +28,29 @@ block match_content
                 else
                   =team==="success" ? "The Radiant" : "The Dire"
               
-    .col-md-4
-      +ad("skyscraper")
+    .col-md-6
+       h2 Runes
+       table.table.table-hover.summable
+        each player, i in match.players
+          if !(i%10)
+
+            thead
+              tr
+                th Hero
+                each val, key in constants.runes
+                  th: abbr(title=val.tooltip)=val.name
+
+          tbody
+            tr(class = player.isRadiant ? "success" : "danger")
+              - var hero = constants.heroes[player.hero_id]
+              - var p = player.parsedPlayer
+              td.hero
+               if hero
+                 img(src=hero.img, title=hero.localized_name)
+               else
+                 =player.hero_id
+              each val, key in constants.runes
+                td #{p.runes[key] || "-"}
   .row
     .col-md-12
       #timeline
