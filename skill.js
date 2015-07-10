@@ -3,6 +3,7 @@ var async = require('async');
 var db = require('./db');
 var result = {};
 var tries = {};
+var added = {};
 var total = 0;
 scanSkill();
 
@@ -18,13 +19,16 @@ function scanSkill() {
             console.log(err);
         }
         //iterate through results
-        for (var match_id in result){
-            tries[match_id] = tries[match_id] || {skill: result[match_id], tries:0};
+        for (var match_id in result) {
+            tries[match_id] = tries[match_id] || {
+                skill: result[match_id],
+                tries: 0
+            };
         }
         async.each(Object.keys(tries), function(match_id, cb) {
             var skill = tries[match_id].skill;
             tries[match_id].tries += 1;
-            if (tries[match_id].tries <= 15) {
+            if (tries[match_id].tries <= 10) {
                 db.matches.update({
                     match_id: Number(match_id)
                 }, {
@@ -32,7 +36,9 @@ function scanSkill() {
                         skill: skill
                     }
                 }, function(err, num) {
-                    total += num;
+                    if (num) {
+                        added[match_id] = 1;
+                    }
                     cb(err);
                 });
             }
@@ -44,7 +50,7 @@ function scanSkill() {
             if (err) {
                 console.log(err);
             }
-            console.log("matches to try: %s, skill_added: %s", Object.keys(tries).length, total);
+            console.log("matches to try: %s, skill_added: %s", Object.keys(tries).length, Object.keys(added).length);
             result = {};
             //start over
             scanSkill();
