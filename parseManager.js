@@ -45,10 +45,12 @@ function start() {
         }
         else {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-            process.send({
-                pid: process.pid,
-                url: process.env.PARSER_URL
-            });
+            if (process.send) {
+                process.send({
+                    pid: process.pid,
+                    url: process.env.PARSER_URL
+                });
+            }
             //process requests
             jobs.process('request_parse', function(job, cb) {
                 getParserEnv(job, function() {
