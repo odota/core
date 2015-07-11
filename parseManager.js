@@ -4,6 +4,7 @@ var redis = r.client;
 var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
+var config = require('./config');
 start();
 
 function start() {
@@ -14,7 +15,7 @@ function start() {
         }
         var parsers = JSON.parse(result);
         var capacity = parsers.length;
-        if (cluster.isMaster) {
+        if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             for (var i = 0; i < capacity; i++) {
                 cluster.fork();
@@ -36,6 +37,7 @@ function start() {
             });
             //process regular parses
             jobs.process('parse', function(job, cb) {
+                console.log("starting job: %s", job.id);
                 //RR or randomly select a parser for each job
                 getParserRandom(job, function() {
                     processParse(job, cb);
