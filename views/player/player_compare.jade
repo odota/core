@@ -1,27 +1,28 @@
-extend layout
+extend player
 
-block content
-  h1 Compare 
-    small Compare players to each other
-  include query
+block playercontent
+  h2 Compare
+    br
+    small Comparisons based on median in each stat
   //pre=JSON.stringify(data[1].aggData)
-  table.table.match-top
+  table.table
     thead
       tr
         td
-        each player in data.slice(1)
+        each player in compare_data.slice(1)
           td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
-          td Percentile (#{data[0].aggData.games} matches)
+          td Percentile (#{compare_data[0].aggData.games} matches)
     tbody
-      each val, key in data[0].aggData
-        tr
-          td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-          each player in data.slice(1)
-            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "N/A"
-            - var pct = player.aggData[key].percentile*100
-            td
-              .progress
-                div(class=pct >= 50 ? "progress-bar progress-bar-success" : "progress-bar progress-bar-danger", style="width:#{pct}%;")=pct ? pct.toFixed(2) : "-"
+      each val, key in compare_data[0].aggData
+        if val.n
+          tr
+            td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+            each player in compare_data.slice(1)
+              td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "N/A"
+              - var pct = player.aggData[key].percentile*100
+              td
+                .progress
+                  div(class=pct >= 50 ? "progress-bar progress-bar-success" : "progress-bar progress-bar-danger", style="width:#{pct}%;")=pct ? pct.toFixed(2) : "-"
   #chart
 //-
   append footer_assets

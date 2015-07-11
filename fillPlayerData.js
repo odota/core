@@ -1,6 +1,5 @@
 var advQuery = require('./advquery');
 var utility = require('./utility');
-var db = require('./db');
 var generatePositionData = utility.generatePositionData;
 var constants = require('./constants.json');
 var queries = require('./queries');
@@ -17,7 +16,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         cache = result && !err ? JSON.parse(result) : null;
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var selectExists = Boolean(Object.keys(options.query.select).length);
-        var cacheAble = options.info !== "matches" && cache && !selectExists && !options.query.js_agg;
+        //console.log("cache conditions %s, %s, %s, %s", options.info !== "matches", cache, !selectExists, !options.query.js_agg);
+        var cacheAble = options.info !== "matches" && cache && !selectExists
         if (cacheAble) {
             options.query.limit = 10;
             options.query.js_agg = {};
@@ -83,6 +83,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     finish(err);
                 }
                 else {
+                    //set cache to data from advquery
+                    cache = {
+                        aggData: results.aggData
+                    };
                     //don't save the cache if there was a query
                     console.log("player cache miss, uncacheable %s", player.account_id);
                     finish(err);
@@ -121,47 +125,11 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 generatePositionData(d, player);
                 player.posData = [d];
             }
-            async.parallel({
-                teammate_list: function(cb) {
-                    generateTeammateList(aggData.teammates, cb);
-                },
-                all_teammate_list: function(cb) {
-                    generateTeammateList(cachedTeammates || aggData.teammates, cb);
-                }
-            }, function(err, lists) {
-                if (err) {
-                    return cb(err);
-                }
-                player.all_teammate_list = lists.all_teammate_list;
-                player.teammate_list = lists.teammate_list;
-                var playerArr = [player];
-                queries.fillPlayerNames(playerArr, function(err) {
-                    cb(err, playerArr[0]);
-                });
-            });
-        }
-
-        function generateTeammateList(input, cb) {
-            if (!input) {
-                return cb();
-            }
-            console.time('teammate list');
-            var teammates_arr = [];
-            var teammates = input;
-            for (var id in teammates) {
-                var tm = teammates[id];
-                id = Number(id);
-                //don't include if anonymous or if few games together
-                if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 7) {
-                    teammates_arr.push(tm);
-                }
-            }
-            teammates_arr.sort(function(a, b) {
-                return b.games - a.games;
-            });
-            queries.fillPlayerNames(teammates_arr, function(err) {
-                console.timeEnd('teammate list');
-                cb(err, teammates_arr);
+            player.all_teammates = cachedTeammates || aggData.teammates;
+            var playerArr = [player];
+            queries.fillPlayerNames(playerArr, function(err) {
+                var player = playerArr[0];
+                cb(err, player);
             });
         }
     });
