@@ -100,7 +100,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             player.aggData = cache.aggData;
             var aggData = player.aggData;
-            //convert hashes to arrays and sort them
+            //convert hashes to arrays and sort them for display
             if (aggData.heroes) {
                 var heroes_arr = [];
                 var heroes = aggData.heroes;

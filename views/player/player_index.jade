@@ -43,5 +43,7 @@ append footer_assets
     var heroes = !{JSON.stringify(player.heroes_list)};
     var teammates = !{JSON.stringify(player.teammate_list)};
     var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
-    playerMatches();
+    playerMatches(matches, {paging: false});
+    drawHeroes(heroes);
+    drawTeammates(teammates);
     ratingsChart(ratings);

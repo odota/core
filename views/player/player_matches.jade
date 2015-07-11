@@ -1,14 +1,12 @@
 extend player
 
 block playercontent
-  script.
-    var matches = !{JSON.stringify(player.matches)};
-    var heroes = !{JSON.stringify({})};
-    var teammates = !{JSON.stringify({})};
   .row
     .col-md-12.table-responsive
       h3 Matches
       table.table#matches
+
 append footer_assets
   script.
-    playerMatches();
+    var matches = !{JSON.stringify(player.matches)};
+    playerMatches(matches);

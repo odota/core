@@ -117,6 +117,7 @@ function advQuery(query, cb) {
             return cb(err);
         }
         console.timeEnd('querying database');
+        console.time('expanding matches');
         var expanded_matches = [];
         matches.forEach(function(m) {
             if (m.players) {
@@ -143,6 +144,7 @@ function advQuery(query, cb) {
             }
         });
         matches = expanded_matches;
+        console.timeEnd('expanding matches');
         console.time("retrieving parsed data");
         getParsedPlayerData(matches, bGetParsedPlayerData, function(err) {
             if (err) {
@@ -321,7 +323,6 @@ function sort(matches, sorts) {
     return matches;
 }
 /*
->>>>>>> bf9a943fcc062b09e1c7d1e17f6fa9474ffd1727
 function getFullPlayerData(matches, doAction, cb) {
     cb();
 
