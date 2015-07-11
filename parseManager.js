@@ -5,7 +5,8 @@ var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-start();
+//wait to begin parsing to allow parsers to be put in redis
+setTimeout(start, 3000);
 
 function start() {
     redis.get("parsers", function(err, result) {
@@ -15,6 +16,12 @@ function start() {
         }
         var parsers = JSON.parse(result);
         var capacity = parsers.length;
+        //process requests
+        jobs.process('request_parse', function(job, cb) {
+            console.log("starting request_parse job: %s", job.id);
+            job.parser_url = parsers[0];
+            processParse(job, cb);
+        });
         if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             var urls = {};
@@ -54,13 +61,6 @@ function start() {
             //process regular parses
             jobs.process('parse', function(job, cb) {
                 console.log("starting parse job: %s", job.id);
-                getParserUrl(job, function() {
-                    processParse(job, cb);
-                });
-            });
-            //process requests
-            jobs.process('request_parse', function(job, cb) {
-                console.log("starting request_parse job: %s", job.id);
                 getParserUrl(job, function() {
                     processParse(job, cb);
                 });
