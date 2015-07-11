@@ -355,7 +355,6 @@ app.use(function(err, req, res, next) {
     //default express handler
     next(err);
 });
-module.exports = app;
 var server = app.listen(config.PORT, function() {
     console.log('[WEB] listening on %s', config.PORT);
 });
@@ -373,3 +372,4 @@ sticky(function() {
 });
 }
 */
+module.exports = app;
