@@ -55,7 +55,7 @@ function advQuery(query, cb) {
     var multiples = {
         "with_account_id": 1,
         "teammate_hero_id": 1,
-        "enemy_hero_id": 1,
+        "against_hero_id": 1,
         "compare": 1
     };
     var queries = {
