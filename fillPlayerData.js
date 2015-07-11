@@ -79,7 +79,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         aggData: results.aggData
                     };
                     console.log("player cache miss, rebuilding %s", player.account_id);
-                    redis.set("player:" + player.account_id, JSON.stringify(cache));
+                    redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, JSON.stringify(cache));
                     finish(err);
                 }
                 else {
