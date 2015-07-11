@@ -53,26 +53,21 @@ function start() {
             }
             //process requests
             jobs.process('request_parse', function(job, cb) {
-                getParserEnv(job, function() {
+                getParserUrl(job, function() {
                     processParse(job, cb);
                 });
             });
             //process regular parses
             jobs.process('parse', function(job, cb) {
                 console.log("starting job: %s", job.id);
-                getParserEnv(job, function() {
+                getParserUrl(job, function() {
                     processParse(job, cb);
                 });
             });
         }
 
-        function getParserEnv(job, cb) {
-            job.parser_url = process.env.PARSER_URL;
-            cb();
-        }
-
-        function getParserRandom(job, cb) {
-            job.parser_url = parsers[Math.floor(Math.random() * parsers.length)];
+        function getParserUrl(job, cb) {
+            job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
             cb();
         }
     });
