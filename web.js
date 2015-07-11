@@ -365,12 +365,14 @@ app.use(function(err, req, res, next) {
     //default express handler
     next(err);
 });
-module.exports = app;
 var server = app.listen(config.PORT, function() {
     console.log('[WEB] listening on %s', config.PORT);
 });
 require('./socket.js')(server);
 /*
+//if (config.NODE_ENV !== "test") {
+}
+else{
 sticky(function() {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
@@ -378,4 +380,6 @@ sticky(function() {
     require('./socket.js')(server);
     return server;
 });
+}
 */
+module.exports = app;
