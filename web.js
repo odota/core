@@ -356,18 +356,16 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-if (config.NODE_ENV === "test") {
+var server = app.listen(config.PORT, function() {
+    console.log('[WEB] listening on %s', config.PORT);
+});
+require('./socket.js')(server);
+/*
+sticky(function() {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
     });
     require('./socket.js')(server);
-}
-else {
-    sticky(function() {
-        var server = app.listen(config.PORT, function() {
-            console.log('[WEB] listening on %s', config.PORT);
-        });
-        require('./socket.js')(server);
-        return server;
-    });
-}
+    return server;
+});
+*/
