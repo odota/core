@@ -6,7 +6,7 @@ var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
 //wait to begin parsing to allow parsers to be put in redis
-setTimeout(start, 3000);
+setTimeout(start, 5000);
 
 function start() {
     redis.get("parsers", function(err, result) {

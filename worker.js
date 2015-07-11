@@ -10,6 +10,7 @@ var domain = require('domain');
 var async = require('async');
 
 //don't need these handlers when kue supports job ttl in 0.9?
+//ttl fails jobs rather than requeuing them
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
