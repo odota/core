@@ -7,8 +7,9 @@ var kue = r.kue;
 var db = require('./db');
 var logger = utility.logger;
 var compression = require('compression');
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
+var session = require('cookie-session');
+//var session = require('express-session');
+//var RedisStore = require('connect-redis')(session);
 var passport = require('./passport');
 var status = require('./status');
 var auth = require('http-auth');
@@ -39,7 +40,8 @@ var basic = auth.basic({
 app.use("/kue", auth.connect(basic));
 app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
-app.use(session({
+/*
+var sessOptions = {
     store: new RedisStore({
         client: redis,
         ttl: 52 * 7 * 24 * 60 * 60
@@ -50,7 +52,15 @@ app.use(session({
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
-}));
+}
+*/
+var sessOptions = {
+    maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
+    secret: config.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+};
+app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({
