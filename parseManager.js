@@ -51,15 +51,16 @@ function start() {
                     url: process.env.PARSER_URL
                 });
             }
-            //process requests
-            jobs.process('request_parse', function(job, cb) {
+            //process regular parses
+            jobs.process('parse', function(job, cb) {
+                console.log("starting parse job: %s", job.id);
                 getParserUrl(job, function() {
                     processParse(job, cb);
                 });
             });
-            //process regular parses
-            jobs.process('parse', function(job, cb) {
-                console.log("starting job: %s", job.id);
+            //process requests
+            jobs.process('request_parse', function(job, cb) {
+                console.log("starting request_parse job: %s", job.id);
                 getParserUrl(job, function() {
                     processParse(job, cb);
                 });
