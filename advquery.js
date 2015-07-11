@@ -49,7 +49,8 @@ function advQuery(query, cb) {
     var max = 500;
     //map to limit
     var mongoAble = {
-        "players.account_id": 20000
+        "players.account_id": 20000,
+        "leagueid": max
     };
     var multiples = {
         "with_account_id": 1,
@@ -75,12 +76,12 @@ function advQuery(query, cb) {
             else if (key in queries) {
                 query.select[key] = queries[query.select[key]];
             }
-            else {
+            else if (typeof query.select[key] === "string") {
                 query.select[key] = Number(query.select[key]);
             }
             if (mongoAble[key]) {
                 query.mongo_select[key] = query.select[key];
-                max = mongoAble[key];
+                max = Math.max(mongoAble[key], max);
             }
             else {
                 query.js_select[key] = query.select[key];
