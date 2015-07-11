@@ -41,7 +41,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             computeMatchData(match_copy);
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
-                            redis.set("player:" + p.account_id, JSON.stringify(cache));
+                            redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, JSON.stringify(cache));
                         }
                         /*
                         //temporarily disable inserting new players into db

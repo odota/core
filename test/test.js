@@ -100,13 +100,14 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
 var replay_dir = "./testfiles/";
 console.log('starting web');
 var app = require('../web');
-console.log('starting parser');
 var parser = require('../parser');
-console.log('starting parseManager');
 var parseManager = require('../parseManager');
 //stuff we don't run in test
 //scanner
 //worker
+//retriever
+//skill
+//proxy
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -129,7 +130,7 @@ before(function(done) {
                 cb(err);
             });
             },
- function(cb) {
+             function(cb) {
             console.log("loading services into redis");
             redis.set("bots", JSON.stringify([{
                 "steamID": "76561198174479859",
@@ -163,7 +164,7 @@ before(function(done) {
                 "friends": 1
                 }]));
             redis.set("ratingPlayers", JSON.stringify({}));
-            //todo use functions to prefill these rather than hardcoding
+            //TODO use functions to prefill these rather than hardcoding
             redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
             redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
             cb();
@@ -364,6 +365,7 @@ describe("parser", function() {
         });
     });
     //TODO use function to run a set of these
+    //1v1, ardm, 6.84
     it('parse replay (local)', function(done) {
         var job = {
             match_id: 1193091757,
@@ -378,64 +380,6 @@ describe("parser", function() {
             });
         });
     });
-    /*
-    it('parse 1v1', function(done) {
-        var job = {
-            match_id: 1181392470,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "1181392470_1v1.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-        });
-    });
-    it('parse ardm', function(done) {
-        var job = {
-            match_id: 1189263979,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "1189263979_ardm.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-        });
-    });
-    it('parse 6.83c', function(done) {
-        var job = {
-            match_id: 1232722145,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "1232722145_683c.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-        });
-    });
-    it('parse 6.84', function(done) {
-        var job = {
-            match_id: 1436943655,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "1436943655_684.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-        });
-    });
-    */
     it('parse invalid file', function(done) {
         //write invalid replay file
         fs.writeFileSync(replay_dir + "invalid.dem", "asdf");
@@ -517,7 +461,7 @@ describe("web", function() {
         var tests = ["", "matches", "advanced", "histograms", "counts", "asdf"];
         tests.forEach(function(t) {
             it('/players/:valid/' + t, function(done) {
-                supertest(app).get('/matches/1193091757/' + t).expect(200).end(function(err, res) {
+                supertest(app).get('/players/88367253/' + t).expect(200).end(function(err, res) {
                     done(err);
                 });
             });
