@@ -49,8 +49,7 @@ function advQuery(query, cb) {
     var max = 500;
     //map to limit
     var mongoAble = {
-        "players.account_id": 20000,
-        "leagueid": max
+        "players.account_id": 20000
     };
     var multiples = {
         "with_account_id": 1,
