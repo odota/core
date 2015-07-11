@@ -17,19 +17,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var selectExists = Boolean(Object.keys(options.query.select).length);
         //console.log("cache conditions %s, %s, %s, %s", options.info !== "matches", cache, !selectExists, !options.query.js_agg);
-        var cacheAble = options.info !== "matches" && cache && !selectExists
+        var cacheAble = options.info !== "matches" && cache && !selectExists;
         if (cacheAble) {
             options.query.limit = 10;
             options.query.js_agg = {};
         }
-        //defaults: this player, balanced modes only, put the defaults in options.query
-        var default_select = {
-            "players.account_id": account_id.toString(),
-            "significant": "1"
-        };
-        for (var key in default_select) {
-            options.query.select[key] = options.query.select[key] || default_select[key];
-        }
+
+        options.query.select["players.account_id"] = account_id.toString();
+        options.query.select["significant"] = options.query.select["significant"]==="" ? "" : "1";
         //sort results by match_id
         options.query.sort = options.query.sort || {
             match_id: -1

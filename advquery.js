@@ -52,42 +52,38 @@ function advQuery(query, cb) {
         "players.account_id": 20000,
         "leagueid": max
     };
+    var multiples = {
+        "with_account_id": 1,
+        "teammate_hero_id": 1,
+        "enemy_hero_id": 1,
+        "compare": 1
+    };
+    var queries = {
+        "gtzero": {
+            $gt: 0
+        }
+    };
     for (var key in query.select) {
-        if (query.select[key] === "" || query.select[key] === "all") {
-            //using special keyword all since both "" and 0 evaluate to the same number and 0 is valid while "" is not
+        if (query.select[key] === "") {
             delete query.select[key];
         }
         else {
+            if (key in multiples) {
+                query.select[key] = [].concat(query.select[key]).map(function(e) {
+                    return Number(e);
+                });
+            }
+            else if (key in queries) {
+                query.select[key] = queries[query.select[key]];
+            }
+            else {
+                query.select[key] = Number(query.select[key]);
+            }
             if (mongoAble[key]) {
-                if (query.select[key] === "string") {
-                    //translate strings to mongodb queries
-                    var queries = {
-                        "gtzero": {
-                            $gt: 0
-                        }
-                    };
-                    query.mongo_select[key] = queries[query.select[key]];
-                }
-                else if (typeof query.select[key] === "object") {
-                    //pass the query directly
-                    query.mongo_select[key] = query.select[key];
-                }
-                else {
-                    query.mongo_select[key] = Number(query.select[key]);
-                }
+                query.mongo_select[key] = query.select[key];
                 max = mongoAble[key];
             }
             else {
-                if (query.select[key].constructor === Array) {
-                    //attempt to numberize each element
-                    query.select[key] = query.select[key].map(function(e) {
-                        return Number(e);
-                    });
-                }
-                else {
-                    //number just this element
-                    query.select[key] = Number(query.select[key]);
-                }
                 query.js_select[key] = query.select[key];
             }
         }
@@ -203,9 +199,6 @@ function filter(matches, filters) {
         //ensure all array elements fit the condition
         //with_account_id: player id was also in the game
         with_account_id: function(m, key) {
-            if (key.constructor !== Array) {
-                key = [key];
-            }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
                     return p.account_id === k;
@@ -214,9 +207,6 @@ function filter(matches, filters) {
         },
         //teammate_hero_id
         teammate_hero_id: function(m, key) {
-            if (key.constructor !== Array) {
-                key = [key];
-            }
             return key.every(function(k) {
                 return m.all_players.some(function(p) {
                     return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
@@ -225,9 +215,6 @@ function filter(matches, filters) {
         },
         //against_hero_id
         against_hero_id: function(m, key) {
-                if (key.constructor !== Array) {
-                    key = [key];
-                }
                 return key.every(function(k) {
                     return m.all_players.some(function(p) {
                         return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
@@ -370,7 +357,6 @@ function getParsedPlayerData(matches, doAction, cb) {
     var parsed = matches.filter(function(m) {
         return m.parse_status === 2;
     });
-    
     //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we might want a different position on each query, we need to make them individually
     async.each(parsed, function(m, cb) {
