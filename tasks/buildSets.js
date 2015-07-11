@@ -131,6 +131,7 @@ module.exports = function buildSets(cb) {
     }, function(err, result) {
         if (err) {
             console.log('error occured during buildSets: %s', err);
+            return cb(err);
         }
         //merge trackedPlayers with donators, resave to redis
         for (var key in result.donators) {
