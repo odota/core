@@ -42,8 +42,7 @@ app.route('/return').get(passport.authenticate('steam', {
 });
 app.route('/logout').get(function(req, res) {
     req.logout();
-    req.session.destroy(function() {
-        res.redirect('/');
-    });
+    req.session = null;
+    res.redirect('/');
 });
 module.exports = app;
