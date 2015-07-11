@@ -46,7 +46,6 @@ append footer_assets
         socket = io.connect();
         socket.on('err', function(data){
           $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-          $("#messages").append("<div class='alert alert-danger' role='alert'>Something went wrong!</div>");
           $("#loading").css("display", "none");
           document.getElementById("bar").style.width = "0%";
           $("#request").show('slow');

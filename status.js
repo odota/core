@@ -32,26 +32,6 @@ module.exports = function getStatus(cb) {
                 cb(err, res);
             });
         },
-        matches_last_day: function(cb) {
-            redis.keys("added_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
-        queued_last_day: function(cb) {
-            redis.keys("queued_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
-        parsed_last_day: function(cb) {
-            redis.keys("parsed_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
-        requested_last_day: function(cb) {
-            redis.keys("requested_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
         full_history: function(cb) {
             db.players.count({
                 full_history_time: {
@@ -63,6 +43,23 @@ module.exports = function getStatus(cb) {
             redis.get("donators", function(err, res) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;
                 cb(err, res);
+            });
+        },
+        /*
+        matches_last_day: function(cb) {
+            redis.keys("added_match:*", function(err, result) {
+                cb(err, result.length);
+            });
+        },
+        */
+        parsed_last_day: function(cb) {
+            redis.keys("parsed_match:*", function(err, result) {
+                cb(err, result.length);
+            });
+        },
+        requested_last_day: function(cb) {
+            redis.keys("requested_match:*", function(err, result) {
+                cb(err, result.length);
             });
         },
         last_added: function(cb) {

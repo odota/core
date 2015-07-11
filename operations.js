@@ -17,13 +17,7 @@ function insertMatch(match, cb) {
         //put api data in db
         //set to queued, unless we specified something earlier (like skipped)
         match.parse_status = match.parse_status || 0;
-        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-        if (match.request) {
-            redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
-        }
-        if (match.parse_status === 0) {
-            redis.setex("queued_match:" + match.match_id, 60 * 60 * 24, "1");
-        }
+        //redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
         db.matches.update({
             match_id: match.match_id
         }, {
@@ -63,21 +57,21 @@ function insertMatchProgress(match, job, cb) {
             return cb(err);
         }
         if (!job2) {
-            job.progress(100, 100, "not queued for parse");
+            job.progress(100, 100, "This replay is unavailable.");
             cb(err);
         }
         else {
             //wait for parse to finish
-            job.progress(0, 100, "parse: starting");
+            job.progress(0, 100, "Parsing replay...");
             //request, parse and log the progress
             job2.on('progress', function(prog) {
-                job.progress(prog, 100, "parse: progress");
+                job.progress(prog, 100);
             });
-            job2.on('failed', function() {
-                cb("parse: failed");
+            job2.on('failed', function(err) {
+                cb(err);
             });
             job2.on('complete', function() {
-                job.progress(100, 100, "parse: complete");
+                job.progress(100, 100, "Parse complete!");
                 cb();
             });
         }

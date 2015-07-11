@@ -8,8 +8,8 @@ block content
       table.table
         thead
           tr
-            th Players
             th Matches
+            th Players
             th Users
             th Full History
             th Tracked
@@ -17,8 +17,8 @@ block content
             th MMR
         tbody
           tr
-            td#players
             td#matches
+            td#players
             td#visited
             td#full_history
             td#tracked_players
@@ -29,14 +29,12 @@ block content
       table.table
         thead
           tr
-            th Matches
-            th Queued
+            //th Matches
             th Parsed
             th Requested
         tbody
           tr
-            td#matches_last_day
-            td#queued_last_day
+            //td#matches_last_day
             td#parsed_last_day
             td#requested_last_day
     .col-md-4
@@ -58,7 +56,7 @@ block content
             th Ended
         tbody
     .col-md-4
-      h3 Inactive Kue Jobs
+      h3 Kue
       pre=JSON.stringify(result.kue, null, 2)
 
 append footer_assets

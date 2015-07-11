@@ -8,7 +8,7 @@ var insertMatch = operations.insertMatch;
 var insertMatchProgress = operations.insertMatchProgress;
 module.exports = function processApi(job, cb) {
     var payload = job.data.payload;
-    job.progress(0, 100, "api: starting");
+    job.progress(0, 100, "Getting basic match data from Steam API...");
     getData(job.data.url, function(err, body) {
         if (err) {
             //couldn't get data from api, non-retryable
@@ -27,7 +27,7 @@ module.exports = function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            job.progress(100, 100, "api: complete");
+            job.progress(100, 100, "Received basic match data.");
             if (match.request) {
                 insertMatchProgress(match, job, function(err) {
                     cb(err);
