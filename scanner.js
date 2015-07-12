@@ -71,10 +71,13 @@ function scanApi(seq_num) {
                 async.each(match.players, function(p, cb) {
                     if (p.account_id in trackedPlayers) {
                         //queued
+                        redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
+                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 0;
                     }
                     if (p.account_id in userPlayers && match.parse_status !== 0) {
                         //skipped, but only if not already queued
+                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 3;
                     }
                     if (p.account_id in ratingPlayers && match.lobby_type === 7) {

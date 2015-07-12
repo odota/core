@@ -45,13 +45,11 @@ module.exports = function getStatus(cb) {
                 cb(err, res);
             });
         },
-        /*
         matches_last_day: function(cb) {
             redis.keys("added_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
-        */
         parsed_last_day: function(cb) {
             redis.keys("parsed_match:*", function(err, result) {
                 cb(err, result.length);

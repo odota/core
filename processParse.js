@@ -38,7 +38,6 @@ module.exports = function processParse(job, cb) {
                 job.data.payload.match_id = match_id;
                 job.data.payload.parsed_data = parsed_data;
                 job.data.payload.parse_status = 2;
-                redis.setex("parsed_match:" + match_id, 60 * 60 * 24, "1");
                 //run aggregations on parsed data fields
                 updatePlayerCaches(match, {
                     type: "parsed"
