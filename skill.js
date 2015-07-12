@@ -1,6 +1,8 @@
 var utility = require('./utility');
 var async = require('async');
 var db = require('./db');
+var r = require('./redis');
+var redis = r.client;
 var constants = require("./constants.json");
 var results = {};
 var added = {};
@@ -59,6 +61,7 @@ function getPageData(start, options, cb) {
             //retry adding the skill data a set number of times
             results[match_id] = results[match_id] || 0;
             if (results[match_id] < 3 && !added[match_id]) {
+                redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, options.skill);
                 db.matches.update({
                     match_id: match_id
                 }, {

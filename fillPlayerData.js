@@ -52,16 +52,17 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 return b.match_id - a.match_id;
             });
             console.time("retrieving skill data");
-            //cache may not contain skill data since it's added after the original insert!  do db lookups for skill data
+            //cache does not contain skill data since it's added after the original insert!
+            //we can do db lookups for skill data (or only go until we hit a match with skill data)
+            //or store skill data in redis for fast lookups?
             async.each(cache.data, function(match, cb) {
-                db.matches.findOne({
-                    match_id: match.match_id
-                }, {
-                    fields: {
-                        skill: 1
+                redis.get("skill:" + match.match_id, function(err, result) {
+                    if (err) {
+                        return cb(err);
                     }
-                }, function(err, result) {
-                    match.skill = result.skill;
+                    if (result) {
+                        match.skill = Number(result);
+                    }
                     cb(err);
                 });
             }, function(err) {
