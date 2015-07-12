@@ -36,20 +36,6 @@ function start() {
                     });
                 }
             });
-            //TODO jobs with filename it must be parsed by localhost (on master)!
-            //process requests on master
-            jobs.process('request_parse', function(job, cb) {
-                console.log("starting request_parse job: %s", job.id);
-                job.parser_url = parsers[0];
-                processParse(job, cb);
-            });
-            //process regular parses
-            jobs.process('parse', function(job, cb) {
-                console.log("starting parse job: %s", job.id);
-                getParserUrl(job, function() {
-                    processParse(job, cb);
-                });
-            });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
@@ -58,8 +44,15 @@ function start() {
                     });
                 }
             }
+            else {
+                runWorker();
+            }
         }
         else {
+            runWorker();
+        }
+
+        function runWorker() {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
             if (process.send) {
                 process.send({
@@ -67,6 +60,13 @@ function start() {
                     url: process.env.PARSER_URL
                 });
             }
+            //TODO jobs with filename it must be parsed by localhost (on master)!
+            //process requests
+            jobs.process('request_parse', function(job, cb) {
+                console.log("starting request_parse job: %s", job.id);
+                job.parser_url = parsers[0];
+                processParse(job, cb);
+            });
             //process regular parses
             jobs.process('parse', function(job, cb) {
                 console.log("starting parse job: %s", job.id);
