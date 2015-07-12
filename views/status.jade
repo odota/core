@@ -3,66 +3,75 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-8
+    .col-md-3
       h3 Statistics
       table.table
         thead
           tr
-            th Matches
-            th Players
-            th Users
-            th Full History
-            th Tracked
-            th Donated
-            th MMR
+            th Stat
+            th Count
         tbody
-          tr
-            td#matches
-            td#players
-            td#visited
-            td#full_history
-            td#tracked_players
-            td#donated_players
-            td#rating_players
-    .col-md-4
-      h3 Last 24H
-      table.table
-        thead
-          tr
-            th Matches
-            th Parsed
-            th Requested
-        tbody
-          tr
-            td#matches_last_day
-            td#parsed_last_day
-            td#requested_last_day
-    .col-md-4
+          each val, key in result
+            if typeof val === "number"
+              tr
+                td=key
+                td(id=key)=val
+    .col-md-3
       h3 Last Added
       table.table#last_added
         thead
           tr
             th Match ID
-            th Sequence
             th Ended
         tbody
-    .col-md-4
+    .col-md-3
       h3 Last Parsed
       table.table#last_parsed
         thead
           tr
             th Match ID
-            th Sequence
             th Ended
         tbody
-    .col-md-4
-      h3 Kue
-      pre=JSON.stringify(result.kue, null, 2)
+    .col-md-3
+      h3 Queue
+      table.table
+        thead
+          tr
+            th Type
+            th Count
+        tbody
+          each val, key in result.kue
+            tr
+              td=key
+              td(id="kue_"+key)=val
 
 append footer_assets
   script(src="/socket.io/socket.io.js")
   script.
     var data = !{JSON.stringify(result)}
-    //var socket = io.connect();
-    //socket.on('stats', statusHandler);
     statusHandler(data);
+    var socket = io.connect();
+    socket.on('status', statusHandler);
+    function statusHandler(data){
+    console.log(data);
+    for (var prop in data) {
+      if (prop==="kue"){
+        for (var key in data[prop]){
+            $("#kue_" + key).html(data[prop][key]);
+        }
+      }
+      else if (typeof data[prop] === "object") {
+          $("#" + prop + " tbody").empty();
+          for (var i = 0; i < data[prop].length; i++) {
+          var seqnum = "<td>" + data[prop][i].match_seq_num + "</td>";
+          var match_id = "<td><a href='/matches/" + data[prop][i].match_id + "'>" + data[prop][i].match_id + "</a></td>";
+          var time = "<td class='fromNow' data-time='" + (data[prop][i].start_time + data[prop][i].duration) + "'></td>";
+              $("<tr>" + match_id + time + "</tr>").appendTo($("#" + prop + " tbody"));
+          }
+          formatHtml();
+      }
+      else {
+          $("#" + prop).html(data[prop]);
+      }
+    }
+    }

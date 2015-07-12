@@ -98,7 +98,7 @@ window.drawTeammates = require('./drawTeammates.js');
 window.proMatches = require('./proMatches.js');
 window.playerTrendsTables = require('./playerTrendsTables.js');
 window.ratingsChart = require('./ratingsChart.js');
-window.statusHandler = require('./statusHandler.js');
+//window.statusHandler = require('./statusHandler.js');
 window.generateCharts = require('./charts.js');
 window.timeline = require('./timeline.js');
 require('./ga.js');

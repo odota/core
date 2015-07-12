@@ -4,15 +4,17 @@ var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var queueReq = require('./operations').queueReq;
 var r = require('./redis');
 var redis = r.client;
+var status = require('./status');
+
 module.exports = function(server) {
     var io = require('socket.io')(server);
-    /*
+    
     setInterval(function() {
         status(function(err, res) {
-            if (!err) io.emit(res);
+            if (!err) io.emit('status', res);
         });
-    }, 5000);
-    */
+    }, 3000);
+    
     io.sockets.on('connection', function(socket) {
         socket.on('request', function(data) {
             console.log(data);
