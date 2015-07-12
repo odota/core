@@ -450,6 +450,8 @@ function runParse(job, cb) {
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
+            //TODO compute data that requires all parsed players
+            //pick order, radiant advantage per minute
             exit(error);
         });
     });

@@ -1,11 +1,13 @@
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
+var reduceMatch = utility.reduceMatch;
 var constants = require('./constants.json');
 var aggregator = require('./aggregator');
 var async = require('async');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
+var zlib = require('zlib');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //check if match is a reinsert/reparse
@@ -29,7 +31,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     redis.get("player:" + p.account_id, function(err, result) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
-                        var cache = result && !err ? JSON.parse(result) : null;
+                        var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                         if (cache && isSignificant(constants, match)) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
@@ -41,7 +43,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             computeMatchData(match_copy);
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
-                            redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, JSON.stringify(cache));
+                            //reduce the match
+                            var reduced = reduceMatch(match_copy);
+                            //push match onto cache array
+                            cache.data.push(reduced);
+                            redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         }
                         /*
                         //temporarily disable inserting new players into db
