@@ -49,7 +49,7 @@ function getPageData(start, options, cb) {
         if (err) {
             return cb(err);
         }
-        if (!data || !data.result|| !data.result.matches){
+        if (!data || !data.result || !data.result.matches) {
             return getPageData(start, options, cb);
         }
         //data is in data.result.matches

@@ -45,8 +45,14 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                             //reduce the match
                             var reduced = reduceMatch(match_copy);
-                            //push match onto cache array
-                            cache.data.push(reduced);
+                            //push onto array if we don't have this match already
+                            var ids = {};
+                            cache.data.forEach(function(m) {
+                                ids[m.match_id] = true;
+                            });
+                            if (ids[match_copy.match_id]) {
+                                cache.data.push(reduced);
+                            }
                             redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         }
                         /*

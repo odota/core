@@ -5,6 +5,7 @@ var reduceMatch = utility.reduceMatch;
 var constants = require('./constants.json');
 var queries = require('./queries');
 var async = require('async');
+var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var zlib = require('zlib');
@@ -20,8 +21,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         console.timeEnd("inflate");
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var selectExists = Boolean(Object.keys(options.query.select).length);
-        options.query.select["players.account_id"] = account_id.toString();
-        options.query.select["significant"] = options.query.select["significant"] === "" ? "" : "1";
         //sort results by match_id
         options.query.sort = options.query.sort || {
             match_id: -1
@@ -37,7 +36,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         else {
             //convert account id to number
             account_id = Number(account_id);
+            options.query.select["players.account_id"] = account_id;
         }
+        options.query.select["significant"] = options.query.select["significant"] === "" ? "" : 1;
         player = {
             account_id: account_id,
             personaname: account_id
@@ -50,7 +51,23 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             cache.data.sort(function(a, b) {
                 return b.match_id - a.match_id;
             });
-            processResults(null, cache);
+            console.time("retrieving skill data");
+            //cache may not contain skill data since it's added after the original insert!  do db lookups for skill data
+            async.each(cache.data, function(match, cb) {
+                db.matches.findOne({
+                    match_id: match.match_id
+                }, {
+                    fields: {
+                        skill: 1
+                    }
+                }, function(err, result) {
+                    match.skill = result.skill;
+                    cb(err);
+                });
+            }, function(err) {
+                console.timeEnd("retrieving skill data");
+                processResults(err, cache);
+            });
         }
         else {
             console.log("player cache miss %s", player.account_id);

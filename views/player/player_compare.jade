@@ -2,8 +2,7 @@ extend player
 
 block playercontent
   h2 Compare
-    br
-    small Comparisons based on median in each stat
+
   //pre=JSON.stringify(data[1].aggData)
   table.table
     thead
@@ -13,7 +12,8 @@ block playercontent
           td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
           td Percentile (#{compare_data[0].aggData.games} matches)
     tbody
-      each val, key in compare_data[0].aggData
+      each val, key in histograms
+        - var val = compare_data[0].aggData[key]
         if val.n
           tr
             td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
