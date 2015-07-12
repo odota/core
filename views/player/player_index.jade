@@ -32,9 +32,12 @@ block playercontent
     hr
     .row
       .col-md-12
-        h3 Rating
-          small.rating#solo Solo:
-          small.rating#party Party:
+        h3 Rating 
+          small To display MMR on profile, 
+            a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+        h3
+          span.label.label-info#solo Solo: 
+          span.label.label-warning#party Party: 
         #ratings
 
 append footer_assets

@@ -232,10 +232,13 @@ function count_words(match, player_filter) {
     // count how frequently each word occurs
     var counts = {};
     for (var i = 0; i < tokens.length; i++) {
-        if (!counts[tokens[i]]) {
-            counts[tokens[i]] = 0;
+        //ignore the empty string
+        if (tokens[i]) {
+            if (!counts[tokens[i]]) {
+                counts[tokens[i]] = 0;
+            }
+            counts[tokens[i]] += 1;
         }
-        counts[tokens[i]] += 1;
     }
     // return the final counts
     return counts;

@@ -394,6 +394,21 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, m.my_word_counts, m);
             }
         }
+        /*
+        "my_word_total": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                var count;
+                if (m.my_word_counts) {
+                    count = 0;
+                    for (var key2 in m.my_word_counts) {
+                        count += m.my_word_counts[key2];
+                    }
+                }
+                standardAgg(key, count, m);
+            }
+        }
+        */
     };
     if (typeof fields === "string") {
         console.log("aggregating %s", fields);
@@ -413,6 +428,7 @@ module.exports = function aggregator(matches, fields, existing) {
     //ensure aggData isn't null for each requested aggregation field
     var aggData = existing || {};
     for (var key in fields) {
+        //if we don't have a cached aggregation for this field, replace with empty ones
         if (!aggData[key]) {
             //basic counts
             if (key === "win" || key === "lose" || key === "games") {
@@ -428,7 +444,7 @@ module.exports = function aggregator(matches, fields, existing) {
                     sum: 0,
                     min: Number.MAX_VALUE,
                     max: 0,
-                    max_match: null,
+                    max_match: {},
                     n: 0,
                     counts: {},
                     win_counts: {}
@@ -446,39 +462,11 @@ module.exports = function aggregator(matches, fields, existing) {
             }
         }
     }
-    /*
-function roughSizeOfObject(object) {
-    var objectList = [];
-    var recurse = function(value) {
-        var bytes = 0;
-        if (typeof value === 'boolean') {
-            bytes = 4;
-        }
-        else if (typeof value === 'string') {
-            bytes = value.length * 2;
-        }
-        else if (typeof value === 'number') {
-            bytes = 8;
-        }
-        else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
-            objectList[objectList.length] = value;
-            for (i in value) {
-                bytes += 8; // an assumed existence overhead
-                bytes += recurse(value[i])
-            }
-        }
-        return bytes;
-    }
-    return recurse(object);
-}
-console.log(roughSizeOfObject(aggData));
-var fs = require('fs');
-fs.writeFile("output.json",JSON.stringify(aggData));
-*/
     return aggData;
 
     function standardAgg(key, value, match) {
         var aggObj = aggData[key];
+        //console.log(key, aggObj);
         if (typeof value === "undefined") {
             return;
         }

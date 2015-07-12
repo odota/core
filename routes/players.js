@@ -16,6 +16,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "histograms": {
             "name": "Histograms"
         },
+        "records": {
+            "name": "Records"
+        },
         "activity": {
             "name": "Activity"
         },
@@ -171,6 +174,26 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     trackedPlayers: result.sets.trackedPlayers,
                     bots: result.sets.bots,
                     ratingPlayers: result.sets.ratingPlayers,
+                    histograms: {
+                        "duration": 1,
+                        "first_blood_time": 1,
+                        "last_hits": 1,
+                        "denies": 1,
+                        "gold_per_min": 1,
+                        "xp_per_min": 1,
+                        "hero_damage": 1,
+                        "tower_damage": 1,
+                        "hero_healing": 1,
+                        "kda": 1,
+                        "kills": 1,
+                        "deaths": 1,
+                        "assists": 1,
+                        "level": 1,
+                        "tower_kills": 1,
+                        "neutral_kills": 1,
+                        "stuns": 1
+                        //"my_word_total": 1
+                    },
                     teammate_ids: teammate_ids,
                     compare_data: compare_data,
                     compare: info === "compare",
