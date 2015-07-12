@@ -16,12 +16,6 @@ function start() {
         }
         var parsers = JSON.parse(result);
         var capacity = parsers.length;
-        //process requests
-        jobs.process('request_parse', function(job, cb) {
-            console.log("starting request_parse job: %s", job.id);
-            job.parser_url = parsers[0];
-            processParse(job, cb);
-        });
         if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             var urls = {};
@@ -58,6 +52,12 @@ function start() {
                     url: process.env.PARSER_URL
                 });
             }
+            //process requests
+            jobs.process('request_parse', function(job, cb) {
+                console.log("starting request_parse job: %s", job.id);
+                job.parser_url = parsers[0];
+                processParse(job, cb);
+            });
             //process regular parses
             jobs.process('parse', function(job, cb) {
                 console.log("starting parse job: %s", job.id);
