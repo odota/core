@@ -158,7 +158,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     return next(err);
                 }
                 player.teammate_list = lists.teammate_list;
-                var teammate_ids = lists.all_teammate_list;
+                var teammate_ids = lists.all_teammate_list || [];
                 //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates
                 //TODO how to use caches when the only defined field is compare?  all form fields get submitted
                 //TODO currently only supporting nonparsed data due to selecting js_agg

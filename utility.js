@@ -355,6 +355,19 @@ function isSignificant(constants, m) {
     //TODO detect no stats recorded?
     return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
 }
+
+function reduceMatch(match) {
+    //returns only the minimum of data required for display
+    delete match.all_players;
+    delete match.parsed_data;
+    delete match.my_word_counts;
+    delete match.all_word_counts;
+    delete match.chat_words;
+    match.players.forEach(function(p) {
+        delete p.parsedPlayer;
+    });
+    return match;
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -367,5 +380,6 @@ module.exports = {
     mode: mode,
     generatePositionData: generatePositionData,
     getParseSchema: getParseSchema,
-    isSignificant: isSignificant
+    isSignificant: isSignificant,
+    reduceMatch: reduceMatch
 };
