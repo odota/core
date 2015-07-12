@@ -16,7 +16,7 @@ function start() {
         }
         var parsers = JSON.parse(result);
         var capacity = parsers.length;
-        if (cluster.isMaster && config.NODE_ENV !== "test") {
+        if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
             var urls = {};
             cluster.on('fork', function(worker) {
@@ -27,13 +27,6 @@ function start() {
                     console.log(urls);
                 });
             });
-            for (var i = 0; i < capacity; i++) {
-                //fork a worker for each available parse core
-                cluster.fork({
-                    PARSER_URL: parsers[i]
-                });
-            }
-            //TODO if we submitted a job with filename it must be parsed by localhost (on master)!
             cluster.on("exit", function(worker, code) {
                 if (code !== 0) {
                     console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
@@ -43,6 +36,28 @@ function start() {
                     });
                 }
             });
+            //TODO jobs with filename it must be parsed by localhost (on master)!
+            //process requests on master
+            jobs.process('request_parse', function(job, cb) {
+                console.log("starting request_parse job: %s", job.id);
+                job.parser_url = parsers[0];
+                processParse(job, cb);
+            });
+            //process regular parses
+            jobs.process('parse', function(job, cb) {
+                console.log("starting parse job: %s", job.id);
+                getParserUrl(job, function() {
+                    processParse(job, cb);
+                });
+            });
+            if (config.NODE_ENV !== "test") {
+                for (var i = 0; i < capacity; i++) {
+                    //fork a worker for each available parse core
+                    cluster.fork({
+                        PARSER_URL: parsers[i]
+                    });
+                }
+            }
         }
         else {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
@@ -52,12 +67,6 @@ function start() {
                     url: process.env.PARSER_URL
                 });
             }
-            //process requests
-            jobs.process('request_parse', function(job, cb) {
-                console.log("starting request_parse job: %s", job.id);
-                job.parser_url = parsers[0];
-                processParse(job, cb);
-            });
             //process regular parses
             jobs.process('parse', function(job, cb) {
                 console.log("starting parse job: %s", job.id);
