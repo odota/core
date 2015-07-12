@@ -8,13 +8,13 @@ var status = require('./status');
 
 module.exports = function(server) {
     var io = require('socket.io')(server);
-    
+    /*
     setInterval(function() {
         status(function(err, res) {
             if (!err) io.emit('status', res);
         });
     }, 3000);
-    
+    */
     io.sockets.on('connection', function(socket) {
         socket.on('request', function(data) {
             console.log(data);
