@@ -125,7 +125,7 @@ module.exports = function buildSets(cb) {
         for (var key in result) {
             if (key === "retrievers") {
                 var r = result.retrievers;
-                console.log(r);
+                console.log(Object.keys(r));
                 redis.set("ratingPlayers", JSON.stringify(r.ratingPlayers));
                 redis.set("bots", JSON.stringify(r.bots));
                 redis.set("retrievers", JSON.stringify(r.retrievers));
