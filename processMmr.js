@@ -8,6 +8,7 @@ module.exports = function processMmr(job, cb) {
         if (err) {
             logger.info(err);
             //don't clutter kue with failed mmr reqs
+            //if any error occurs (including retriever down) we simply skip getting MMR for this match
             return cb(null, err);
         }
         logger.info("mmr response");
