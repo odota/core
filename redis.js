@@ -12,7 +12,7 @@ var client = redis.createClient(options.port, options.host, {
 var jobs = kue.createQueue({
     redis: options
 });
-
+jobs.watchStuckJobs();
 module.exports = {
     client: client,
     kue: kue,
