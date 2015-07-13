@@ -85,10 +85,7 @@ module.exports = function buildSets(cb) {
                     cb(err);
                 });
             }, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                cb(err, {
+                return cb(err, {
                     ratingPlayers: r,
                     bots: b,
                     retrievers: ps
@@ -123,9 +120,10 @@ module.exports = function buildSets(cb) {
         }
         console.log('saving sets to redis');
         for (var key in result) {
+            console.log(key, Boolean(result[key]));
             if (key === "retrievers") {
                 var r = result.retrievers;
-                console.log(Object.keys(r));
+                console.log("r", Boolean(r.ratingPlayers), Boolean(r.bots), Boolean(r.retrievers));
                 redis.set("ratingPlayers", JSON.stringify(r.ratingPlayers));
                 redis.set("bots", JSON.stringify(r.bots));
                 redis.set("retrievers", JSON.stringify(r.retrievers));
