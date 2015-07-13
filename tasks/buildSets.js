@@ -13,21 +13,11 @@ module.exports = function buildSets(cb) {
     console.log("rebuilding sets");
     async.parallel({
         "trackedPlayers": function(cb) {
-            db.players.find({
-                last_visited: {
-                    $gt: moment().subtract(config.UNTRACK_DAYS, 'day').toDate()
-                }
-            }, {
-                fields: {
-                    "account_id": 1
-                }
-            }, function(err, docs) {
-                if (err) {
-                    return cb(err);
-                }
+            redis.keys("visit:*", function(err, result) {
                 var t = {};
-                docs.forEach(function(player) {
-                    t[player.account_id] = true;
+                result.forEach(function(redis_key) {
+                    var account_id = redis_key.split(":")[1];
+                    t[account_id] = true;
                 });
                 //console.log(t);
                 redis.set("trackedPlayers", JSON.stringify(t));

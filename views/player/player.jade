@@ -49,17 +49,13 @@ block content
   table.table.table-condensed
     thead
       tr
-        //th Record
         th Full History
         th Name Update
-        th Last Visit
     tbody
       tr
-        //td <span class="green">#{player.aggData.win}</span>-<span class="red">#{player.aggData.lose}</span> <br> (#{player.aggData.games ? (player.aggData.win/player.aggData.games*100).toFixed(2) : "0.00"}%)
         td=(player.full_history_time ? moment(player.full_history_time).fromNow() : "never")
         td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
-        td #{(player.last_visited ? moment(player.last_visited).fromNow() : "never")}
-        
+
 append footer_assets
   script.
     $(".pref").change(function() {

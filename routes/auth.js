@@ -20,6 +20,7 @@ app.route('/return').get(passport.authenticate('steam', {
             //don't update join date if we have this in db already
             delete req.user["join_date"];
         }
+        req.user.last_visited = new Date();
         db.players.update({
             account_id: req.user.account_id
         }, {
@@ -30,7 +31,7 @@ app.route('/return').get(passport.authenticate('steam', {
             if (err) {
                 return next(err);
             }
-            //TODO rebuild sets since a player just logged in and might need to be retracked
+            //TODO rebuild trackedPlayers since a player just logged in and might need to be retracked
             queueReq("fullhistory", req.user, function(err, job) {
                 if (err) {
                     return next(err);

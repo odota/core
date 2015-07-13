@@ -13,10 +13,17 @@ module.exports = function getStatus(cb) {
         players: function(cb) {
             db.players.count({}, cb);
         },
-        visited: function(cb) {
+        yasp_players: function(cb) {
             db.players.count({
                 last_visited: {
-                    $ne: null
+                    $gt: 0
+                }
+            }, cb);
+        },
+        full_history_players: function(cb) {
+            db.players.count({
+                full_history_time: {
+                    $gt: 0
                 }
             }, cb);
         },
@@ -31,13 +38,6 @@ module.exports = function getStatus(cb) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;
                 cb(err, res);
             });
-        },
-        full_history: function(cb) {
-            db.players.count({
-                full_history_time: {
-                    $ne: null
-                }
-            }, cb);
         },
         donated_players: function(cb) {
             redis.get("donators", function(err, res) {

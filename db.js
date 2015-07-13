@@ -51,6 +51,9 @@ db.players.index({
     'ratings': 1
 });
 db.players.index({
+    'cheese': -1
+});
+db.players.index({
     'last_visited': -1
 });
 db.players.index({
@@ -59,7 +62,5 @@ db.players.index({
 db.players.index({
     'last_summaries_update': 1
 });
-db.players.index({
-    'cheese': -1
-});
+
 module.exports = db;

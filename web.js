@@ -141,6 +141,7 @@ app.use('/ratings', function(req, res, next) {
         });
     });
 });
+//TODO hopefully we can get rid of this and go to single-theme design
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {
