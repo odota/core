@@ -20,7 +20,6 @@ module.exports = function buildSets(cb) {
                     t[account_id] = true;
                 });
                 //console.log(t);
-                redis.set("trackedPlayers", JSON.stringify(t));
                 cb(err, t);
             });
         },
@@ -42,7 +41,6 @@ module.exports = function buildSets(cb) {
                     t[player.account_id] = true;
                 });
                 //console.log(t);
-                redis.set("userPlayers", JSON.stringify(t));
                 cb(err, t);
             });
         },
@@ -64,7 +62,6 @@ module.exports = function buildSets(cb) {
                     t[player.account_id] = true;
                 });
                 //console.log(t);
-                redis.set("donators", JSON.stringify(t));
                 cb(err, t);
             });
         },
@@ -91,10 +88,11 @@ module.exports = function buildSets(cb) {
                 if (err) {
                     return cb(err);
                 }
-                redis.set("ratingPlayers", JSON.stringify(r));
-                redis.set("bots", JSON.stringify(b));
-                redis.set("retrievers", JSON.stringify(ps));
-                cb(err);
+                cb(err, {
+                    ratingPlayers: r,
+                    bots: b,
+                    retrievers: ps
+                });
             });
         },
         "parsers": function getParsers(cb) {
@@ -114,20 +112,32 @@ module.exports = function buildSets(cb) {
                     cb(err);
                 });
             }, function(err) {
-                redis.set("parsers", JSON.stringify(parser_urls));
-                cb(err);
+                cb(err, parser_urls);
             });
         }
     }, function(err, result) {
         if (err) {
+            //TODO isolate failures of each set build
             console.log('error occured during buildSets: %s', err);
             return cb(err);
         }
-        //merge trackedPlayers with donators, resave to redis
-        for (var key in result.donators) {
-            result.trackedPlayers[key] = true;
+        for (var key in result) {
+            if (key === "retrievers") {
+                var r = result.retrievers;
+                redis.set("ratingPlayers", JSON.stringify(r.ratingPlayers));
+                redis.set("bots", JSON.stringify(r.bots));
+                redis.set("retrievers", JSON.stringify(r.retrievers));
+            }
+            else {
+                if (key === "trackedPlayers") {
+                    //add donators to set
+                    for (var key in result.donators) {
+                        result.trackedPlayers[key] = true;
+                    }
+                }
+                redis.set(key, JSON.stringify(result[key]));
+            }
         }
-        redis.set("trackedPlayers", JSON.stringify(result.trackedPlayers));
         return cb(err);
     });
 };
