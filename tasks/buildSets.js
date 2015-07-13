@@ -120,7 +120,6 @@ module.exports = function buildSets(cb) {
         }
         console.log('saving sets to redis');
         for (var key in result) {
-            console.log(key, Boolean(result[key]));
             if (key === "trackedPlayers") {
                 //add donators to set
                 for (var key in result.donators) {
@@ -133,7 +132,12 @@ module.exports = function buildSets(cb) {
                 redis.set("retrievers", JSON.stringify(result[key].retrievers));
             }
             else {
-                //redis.set(key, JSON.stringify(result[key]));
+                if (key) {
+                    redis.set(key, JSON.stringify(result[key]));
+                }
+                else {
+                    console.log(key, Boolean(result[key]));
+                }
             }
         }
         console.log('set build complete');
