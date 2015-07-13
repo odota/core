@@ -25,8 +25,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         options.query.sort = options.query.sort || {
             match_id: -1
         };
-        if (account_id === "all" || account_id === "professional" || Number(account_id)===constants.anonymous_account_id) {
-            options.query.select["players.account_id"] = "";
+        if (account_id === "all" || account_id === "professional" || Number(account_id) === constants.anonymous_account_id) {
+            if (Number(account_id) === constants.anonymous_account_id) {
+                account_id = "anonymous";
+            }
             /*
             if (account_id === "professional") {
                 options.query.select.leagueid = {
@@ -34,6 +36,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 };
             }
             */
+            options.query.select["players.account_id"] = "";
         }
         else {
             //convert account id to number
