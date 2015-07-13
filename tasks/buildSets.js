@@ -132,7 +132,8 @@ module.exports = function buildSets(cb) {
                 redis.set("retrievers", JSON.stringify(result[key].retrievers));
             }
             else {
-                redis.set(key.toString(), JSON.stringify(result[key]).toString());
+                console.log(key, Boolean(JSON.stringify(result[key])));
+                redis.set(key, JSON.stringify(result[key]));
             }
         }
         console.log('set build complete');
