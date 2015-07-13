@@ -122,8 +122,8 @@ module.exports = function buildSets(cb) {
         for (var key in result) {
             if (key === "trackedPlayers") {
                 //add donators to set
-                for (var key in result.donators) {
-                    result.trackedPlayers[key] = true;
+                for (var key2 in result.donators) {
+                    result.trackedPlayers[key2] = true;
                 }
             }
             if (key === "retrievers") {
@@ -132,7 +132,6 @@ module.exports = function buildSets(cb) {
                 redis.set("retrievers", JSON.stringify(result[key].retrievers));
             }
             else {
-                console.log(key, Boolean(JSON.stringify(result[key])));
                 redis.set(key, JSON.stringify(result[key]));
             }
         }
