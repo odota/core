@@ -121,9 +121,11 @@ module.exports = function buildSets(cb) {
             console.log('error occured during buildSets: %s', err);
             return cb(err);
         }
+        console.log('saving sets to redis');
         for (var key in result) {
             if (key === "retrievers") {
                 var r = result.retrievers;
+                console.log(r);
                 redis.set("ratingPlayers", JSON.stringify(r.ratingPlayers));
                 redis.set("bots", JSON.stringify(r.bots));
                 redis.set("retrievers", JSON.stringify(r.retrievers));
@@ -138,6 +140,7 @@ module.exports = function buildSets(cb) {
                 redis.set(key, JSON.stringify(result[key]));
             }
         }
+        console.log('set build complete');
         return cb(err);
     });
 };
