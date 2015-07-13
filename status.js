@@ -16,14 +16,14 @@ module.exports = function getStatus(cb) {
         yasp_players: function(cb) {
             db.players.count({
                 last_visited: {
-                    $gt: 0
+                    $gt: new Date(0)
                 }
             }, cb);
         },
         full_history_players: function(cb) {
             db.players.count({
                 full_history_time: {
-                    $gt: 0
+                    $gt: new Date(0)
                 }
             }, cb);
         },
