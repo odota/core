@@ -181,7 +181,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 //compute abandons
                 player.abandons = 0;
                 for (var key in player.aggData.leaver_status.counts){
-                    console.log(key);
                     if (Number(key) >=2){
                         player.abandons+=player.aggData.leaver_status.counts[key];
                     }
