@@ -333,8 +333,8 @@ table tfoot * {
     vertical-align: super;
 }
 .toggle-button.collapsed {
-    background-color: #646464;
-    border-color: #555;
+    background-color: #545454;
+    border-color: #333;
 }
 #match_statistics tbody,
 #positions tbody {
