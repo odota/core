@@ -252,24 +252,18 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-var server = app.listen(config.PORT, function() {
-    console.log('[WEB] listening on %s', config.PORT);
-});
-require('./socket.js')(server);
-/*
-//if (config.NODE_ENV === "test") {
-var server = app.listen(config.PORT, function() {
-    console.log('[WEB] listening on %s', config.PORT);
-});
-require('./socket.js')(server);
-}
-else{
-sticky(function() {
+if (config.NODE_ENV === "test" || true) {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
     });
     require('./socket.js')(server);
-    return server;
-});
 }
-*/
+else {
+    sticky(4, function() {
+        var server = app.listen(config.PORT, function() {
+            console.log('[WEB] listening on %s', config.PORT);
+        });
+        require('./socket.js')(server);
+        return server;
+    });
+}

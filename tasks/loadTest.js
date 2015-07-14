@@ -2,7 +2,7 @@ var db = require('../db');
 var async = require('async');
 var request = require('request');
 
-var host = "yasp.co";
+var host = "localhost:5000";
 
 db.players.distinct("account_id",function(err, results){
     console.log(results.length);
