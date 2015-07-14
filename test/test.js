@@ -458,7 +458,7 @@ describe("web", function() {
         });
     })
     describe("player page tests", function() {
-        var tests = ["", "matches", "advanced", "histograms", "counts", "asdf"];
+        var tests = ["", "matches", "histograms", "counts", "asdf"];
         tests.forEach(function(t) {
             it('/players/:valid/' + t, function(done) {
                 supertest(app).get('/players/88367253/' + t).expect(200).end(function(err, res) {

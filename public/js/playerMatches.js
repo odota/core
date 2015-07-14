@@ -18,7 +18,7 @@ module.exports = function drawMatches(data, options) {
             window.formatHtml();
         },
         paging: options ? options.paging : true,
-        pageLength: 50,
+        pageLength: 20,
         lengthChange: false,
         //stateSave: true,
         searching: false,
@@ -52,7 +52,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'player_win',
                 title: 'Result',
                 render: function(data, type, row) {
-                    return '<span class="' + (data ? "green" : "red") + '">' + ((data) ? "Win" : "Loss") + '</span>';
+                    return '<span class="' + (data ? "text-success" : "text-danger") + '">' + ((data) ? "Win" : "Loss") + '</span>';
                 }
             },
             {
@@ -144,6 +144,9 @@ module.exports = function drawMatches(data, options) {
                     return data;
                 },
             }
+            //hd
+            //td
+            //hh
             //disabled parse status due to it not updating in player caches
             /*
             {

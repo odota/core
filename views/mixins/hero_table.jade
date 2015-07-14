@@ -1,38 +1,37 @@
-mixin hero_table(rows, full)
+mixin hero_table(rows, short)
   h3 Heroes
   table.table#heroes
     thead
       tr
         th Hero
-        th Hero Name
         th Played As
         th Win%
-        if full
-          th Played With
-          th Win % 
-          th Played Against
-          th Win %
-        th.last_played Last
+        if !short
+          th: abbr(title="Number of games with this hero on the team") Played With
+          th Win% 
+          th: abbr(title="Number of games with this hero on the opposing team") Played Against
+          th Win%
+        th.fromNow Last
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
         td.hero
-          img(src=hero.img, title=hero.localized_name)
-        td=hero.localized_name
+          img.user(src=hero.img, title=hero.localized_name)
+          =hero.localized_name
         td=h.games
         td
           - var pct = h ? 100*h.win/h.games : 0
           .progress
-            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
-        if full
+            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+        if !short
           td=h.with_games
           td
             - var pct = h ? 100*h.with_win/h.with_games : 0
             .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
           td=h.against_games
           td
             - var pct = h ? 100*h.against_win/h.against_games : 0
             .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
         td=h.last_played

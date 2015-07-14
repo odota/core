@@ -20,15 +20,11 @@ block playercontent
     hr
     .row
       .col-md-12
-        h3 Heroes
-        table.table#heroes
-        //+hero_table(player.heroes_arr, true)
+        +hero_table(player.heroes_list)
     hr
     .row
       .col-md-12
-        h3 Players
-        table.table#teammates
-        //+teammate_table(player.teammates)
+        +teammate_table(player.teammate_list)
     hr
     .row
       .col-md-12
@@ -43,10 +39,40 @@ block playercontent
 append footer_assets
   script.
     var matches = !{JSON.stringify(player.data.slice(0,10))};
-    var heroes = !{JSON.stringify(player.heroes_list)};
-    var teammates = !{JSON.stringify(player.teammate_list)};
+    //var heroes = !{JSON.stringify(player.heroes_list)};
+    //var teammates = !{JSON.stringify(player.teammate_list)};
     var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
     playerMatches(matches, {paging: false});
-    drawHeroes(heroes);
-    drawTeammates(teammates);
+    //drawHeroes(heroes);
+    //drawTeammates(teammates);
     ratingsChart(ratings);
+    var builds = $('#heroes').dataTable({
+        "paging": true,
+        "order": [
+            [1, "desc"]
+        ],
+        "columnDefs": [{
+            targets: "fromNow",
+            render: function(data, type) {
+                if (type === "display") {
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
+    });
+    var builds = $('#teammates').dataTable({
+        "paging": true,
+        "order": [
+            [1, "desc"]
+        ],
+        "columnDefs": [{
+            targets: "fromNow",
+            render: function(data, type) {
+                if (type === "display") {
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
+    });

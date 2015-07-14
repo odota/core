@@ -65,7 +65,7 @@ append footer_assets
           for (var i = 0; i < data[prop].length; i++) {
           var seqnum = "<td>" + data[prop][i].match_seq_num + "</td>";
           var match_id = "<td><a href='/matches/" + data[prop][i].match_id + "'>" + data[prop][i].match_id + "</a></td>";
-          var time = "<td class='fromNow' data-time='" + (data[prop][i].start_time + data[prop][i].duration) + "'></td>";
+          var time = "<td>"+ moment.unix(data[prop][i].start_time + data[prop][i].duration).fromNow() + "</td>";
               $("<tr>" + match_id + time + "</tr>").appendTo($("#" + prop + " tbody"));
           }
           formatHtml();
