@@ -331,10 +331,11 @@ table tfoot * {
 .toggle-button {
     display: inline;
     vertical-align: super;
+    border-color: #CCC;
 }
 .toggle-button.collapsed {
     background-color: #545454;
-    border-color: #333;
+    border-color: rgba(0, 0, 0, 0);
 }
 #match_statistics tbody,
 #positions tbody {
