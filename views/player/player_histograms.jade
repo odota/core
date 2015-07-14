@@ -10,12 +10,12 @@ block playercontent
           var histogramData = {};
         each val, key in player.aggData
           if key in histograms
-            - var collapsed = key != "duration"
+            - var collapsed = key !== "duration"
             button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 2px", class=collapsed ? "collapsed" : "") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
         each val, key in player.aggData
           if key in histograms
             - var avg = val.sum/val.n
-            - var collapsed = key != "duration"
+            - var collapsed = key !== "duration"
             section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
               h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
                 small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
