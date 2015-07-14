@@ -1,10 +1,4 @@
 module.exports = function ratingsChart(ratings) {
-    //sort ratings by time
-    ratings = ratings.sort(function(a, b) {
-        return new Date(a.time) - new Date(b.time);
-    });
-    $("#solo").append(ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A");
-    $("#party").append(ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A");
     var times = ratings.map(function(r) {
         return new Date(r.time);
     });
