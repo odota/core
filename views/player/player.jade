@@ -6,7 +6,7 @@ block content
       if player.avatarmedium
         .col-md-1
            img(src='#{player.avatarmedium}').img-thumbnail
-      .col-md-6
+      .col-md-5
         h1.inline-header= player.personaname || player.account_id
         a(href=player.profileurl || "#", target="_blank")
           i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
@@ -14,11 +14,13 @@ block content
         if player.cheese
           i.flaticon-1.medium-cheese(style="display:inline-block")
           div.text-right x#{player.cheese}
-      .col-md-4
+      .col-md-5
         h3 Record 
+          br
           small.green#win #{player.aggData.win}
           small -
-          small.red#lose #{player.aggData.lose}
+          small.red#lose #{player.aggData.lose} 
+          small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.aggData.games - (player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])} abandons)
         - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
         .progress
           .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%

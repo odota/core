@@ -19,8 +19,8 @@ module.exports = function createHistogram(counts, win_counts, label) {
         //increment the max by 1 to account for zero bucket
         max += 1;
     }
-    //maximum of 80 bins
-    var bins = ~~Math.min(80, max);
+    //cap the number of bins
+    var bins = ~~Math.min(50, max);
     //param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
     var scalef = bins / max;
     //prefill hash with number of bins

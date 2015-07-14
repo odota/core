@@ -1,25 +1,82 @@
 extend player
 
 block playercontent
-  .counts
-    .row
-      - var counts = {"leaver_status":1,"game_mode":1,"lobby_type":1,"lane_role":1,"region":1,"patch":1}
-      each val, key in counts
-        .col-md-6
-          h3=key.split("_").join(" ")
-            small  (#{player.aggData[key].n} matches)
-          table.table
+  .row
+    - var counts = {"leaver_status":1,"game_mode":1,"lobby_type":1,"lane_role":1,"region":1,"patch":1}
+    each val, key in counts
+      .col-md-6
+        h3=key.split("_").join(" ")
+          small  (#{player.aggData[key].n} matches)
+        table.table
+          tr
+            th Category
+            th Matches
+            th Win%
+          each val2, key2 in player.aggData[key].counts
             tr
-              th Category
-              th Matches
-              th Win%
-            each val2, key2 in player.aggData[key].counts
-              tr
-                td=constants[key] ? constants[key][key2].name || constants[key][key2] : key2
-                td=val2
-                td
-                  - var pct = 100*player.aggData[key].win_counts[key2]/val2
-                  .progress
-                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+              td=constants[key] ? constants[key][key2].name || constants[key][key2] : key2
+              td=val2
+              td
+                - var pct = 100*player.aggData[key].win_counts[key2]/val2
+                .progress
+                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+  hr
+  +ad("banner2")
+  hr
+  .row
+    .col-md-6
+      h3 Multi Kills 
+        small (#{player.aggData.multi_kills.n} matches)
+      table.table
+        thead
+          tr
+            th Type
+            th Count
+        tbody
+          each val, key in constants.multi_kills
+            tr
+              td #{val} (#{key})
+              td=player.aggData.multi_kills.counts[key] || 0
+
+    .col-md-6
+      h3 Kill Streaks 
+        small (#{player.aggData.kill_streaks.n} matches)
+      table.table
+        thead
+          tr
+            th Type
+            th Count
+        tbody
+          each val, key in constants.kill_streaks
+            tr
+              td #{val} (#{key})
+              td=player.aggData.kill_streaks.counts[key] || 0
+
+  .row
+    .col-md-6
+      h3 Observers 
+        small (#{player.aggData.obs.n} matches)
+      #map.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+    .col-md-6
+      h3 Sentries 
+        small (#{player.aggData.sen.n} matches)
+      #map2.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+    
+append footer_assets
+  script.
+    var posData = !{JSON.stringify(player.posData)};
+    adjustHeatmapData(posData, 300/127);
+    var heatmap = h337.create({
+      container: document.getElementById('map'),
+      radius: 15
+    });
+    var heatmap2 = h337.create({
+      container: document.getElementById('map2'),
+      radius: 15
+    });
+    heatmap.setData(posData[0]["obs"]);
+    heatmap2.setData(posData[0]["sen"]);
           
 append footer_assets

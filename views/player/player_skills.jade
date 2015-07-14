@@ -1,0 +1,52 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
+  .row
+    .col-md-12
+      h3 Skills 
+        small (#{player.aggData.hero_hits.n} matches)
+      table.table#accuracy
+        thead
+          tr
+            th Ability
+            th Ability Name
+            th Casts
+            th Hits
+            th Hit%
+        tbody
+          each val, key in player.aggData.ability_uses.counts
+            - var ability = constants.abilities[key]
+            - var casts = val
+            - var hits = player.aggData.hero_hits.counts[key] || 0
+            tr
+              if ability
+                td
+                  img.ability(src=ability.img, title=key)
+                td= ability.dname
+              else
+                td=key
+                td=key
+              td=casts
+              td=hits
+              td=(hits/casts*100 || 0).toFixed(2)
+     
+append footer_assets
+  script.
+    var accuracy = $('#accuracy').dataTable({
+        //"searching": false,
+        "paging": false,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback": function() {
+            window.tooltips();
+        },
+        "columnDefs": [{
+            "targets": [0],
+            "orderData": [1]
+            }, {
+            "targets": [1],
+            //visible: false
+            }]
+    });

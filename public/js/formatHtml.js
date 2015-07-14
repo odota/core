@@ -56,14 +56,11 @@ module.exports = function formatHtml() {
     $('.format').each(function() {
         var orig = $(this).text();
         var result = format(orig);
-        //don't reformat since it's not a number
+        //don't reformat since it's not a number anymore
         $(this).text(result).removeClass("format");
     });
-    $('.fromNow').each(function() {
-        $(this).text(moment.unix($(this).attr('data-time')).fromNow());
-    });
     $('.format-seconds').each(function() {
-        //format the data attribute rather than the text so we don't lose the original value if want to reformat (like when paging in datatables)
+        //format the data attribute rather than the text so we don't lose the original value if we want to reformat (like when paging in datatables)
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
 }

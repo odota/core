@@ -25,8 +25,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "counts": {
             "name": "Counts"
         },
-        "advanced": {
-            "name": "Advanced"
+        "items": {
+            "name": "Items"
+        },
+        "skills": {
+            "name": "Skills"
         },
         "wordcloud": {
             "name": "Word Cloud"
@@ -198,7 +201,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             var tm = teammates[id];
             id = Number(id);
             //don't include if anonymous or if few games together
-            if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 7) {
+            if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 5) {
                 teammates_arr.push(tm);
             }
         }
