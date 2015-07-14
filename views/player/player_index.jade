@@ -39,12 +39,13 @@ block playercontent
 append footer_assets
   script.
     var matches = !{JSON.stringify(player.data.slice(0,10))};
-    //var heroes = !{JSON.stringify(player.heroes_list)};
-    //var teammates = !{JSON.stringify(player.teammate_list)};
-    var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
     playerMatches(matches, {paging: false});
-    //drawHeroes(heroes);
-    //drawTeammates(teammates);
+    //-
+      var heroes = !{JSON.stringify(player.heroes_list)};
+      var teammates = !{JSON.stringify(player.teammate_list)};
+      drawHeroes(heroes);
+      drawTeammates(teammates);
+    var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
     ratingsChart(ratings);
     var builds = $('#heroes').dataTable({
         "paging": true,
