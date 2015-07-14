@@ -17,9 +17,9 @@ block content
       .col-md-5
         h3 Record 
           br
-          small.green#win #{player.aggData.win}
+          small.text-success#win #{player.aggData.win}
           small -
-          small.red#lose #{player.aggData.lose} 
+          small.text-danger#lose #{player.aggData.lose} 
           small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.aggData.games - (player.aggData.leaver_status.counts[0]+player.aggData.leaver_status.counts[1])} abandons)
         - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
         .progress

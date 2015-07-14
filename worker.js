@@ -37,9 +37,8 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    jobs.process('api', processApi);
+    //jobs.process('api', processApi);
     jobs.process('mmr', processMmr);
-    jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);

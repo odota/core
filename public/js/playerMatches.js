@@ -52,7 +52,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'player_win',
                 title: 'Result',
                 render: function(data, type, row) {
-                    return '<span class="' + (data ? "green" : "red") + '">' + ((data) ? "Win" : "Loss") + '</span>';
+                    return '<span class="' + (data ? "text-success" : "text-danger") + '">' + ((data) ? "Win" : "Loss") + '</span>';
                 }
             },
             {
