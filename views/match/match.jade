@@ -30,9 +30,9 @@ block content
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            td.fromNow(data-time=match.start_time + match.duration)
+            td= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
-            td=constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
+            td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
   .row
     .col-md-12
       .addthis_sharing_toolbox.pull-right
