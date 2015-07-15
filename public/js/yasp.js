@@ -14,7 +14,7 @@ require('../../node_modules/datatables/media/js/jquery.dataTables.js');
 //require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
 require('../../node_modules/qTip2/dist/jquery.qtip.js');
 require('../../node_modules/select2/dist/js/select2.full.js');
-//require('bootstrap');
+require('bootstrap');
 require('wordcloud');
 //require('../../node_modules/webcomponents.js/webcomponents.js');
 window.c3 = require('c3');

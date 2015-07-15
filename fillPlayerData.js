@@ -20,6 +20,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
         console.timeEnd("inflate");
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
+        //TODO keywords like json and compare shouldnt count
         var selectExists = Boolean(Object.keys(options.query.select).length);
         //sort results by match_id
         options.query.sort = options.query.sort || {

@@ -11,6 +11,7 @@ var async = require('async');
 
 //don't need these handlers when kue supports job ttl in 0.9?
 //ttl fails jobs rather than requeuing them
+jobs.watchStuckJobs();
 process.on('SIGTERM', function() {
     clearActiveJobs(function(err) {
         process.exit(err || 1);
@@ -36,9 +37,8 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    jobs.process('api', processApi);
+    //jobs.process('api', processApi);
     jobs.process('mmr', processMmr);
-    jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);

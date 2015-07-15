@@ -343,12 +343,6 @@ table tfoot * {
 .small-hero-icon {
     zoom: .5;
 }
-.green {
-    color: #5cb85c;
-}
-.red {
-    color: #d9534f;
-}
 .hidden {
     display: none;
 }

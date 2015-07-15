@@ -2,7 +2,8 @@ extend layout
 
 block content
   //pre=JSON.stringify(live)
-  h1 Live (Coming at some point... maybe)
+  h1 Professional
+  h3 Live (Coming at some point... maybe)
   table.table#live
     thead
       tr
@@ -10,7 +11,7 @@ block content
     each match in live || []
       tr
         td=match.match_id
-  h1 Recent
+  h3 Recent
   table.table#pro_matches
 
 append footer_assets

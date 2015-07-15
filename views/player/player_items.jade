@@ -1,0 +1,65 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
+  .row
+    .col-md-12
+      h3 Items 
+        small (#{player.aggData.purchase_time.n} matches)
+      table.table#builds
+        thead
+          tr
+            th Item
+            th Item Name
+            th: abbr(title="Number of times this item was built") Built
+            th: abbr(title="Number of matches where this item was built") Matches
+            th.time: abbr(title="Average (mean) time this item was built at") Avg Timing
+            th: abbr(title="Percentage of matches this item was built in") Use%
+            th: abbr(title="Percentage of matches won where this item was built") Win%
+
+        tbody
+          each val, key in player.aggData.purchase_time.counts
+            - var item = constants.items[key]
+            if item
+              tr 
+                td: img.item(src=item.img, title=key)
+                td= item.dname
+                td=player.aggData.purchase.counts[key]
+                td=player.aggData.item_usage.counts[key]
+                td=val/player.aggData.purchase.counts[key]
+                td
+                  - var pct = 100*player.aggData.item_usage.counts[key]/player.aggData.item_usage.n
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+                td
+                  - var pct = 100*player.aggData.item_win.counts[key]/player.aggData.item_usage.counts[key]
+                  .progress
+                    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+
+append footer_assets
+  script.
+    var builds = $('#builds').dataTable({
+        //"searching": false,
+        "paging": false,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback": function() {
+            window.tooltips();
+        },
+        "columnDefs": [{
+            "targets": 0,
+            "orderData": [1]
+            }, {
+            "targets": [1],
+            //visible: false
+            }, {
+            targets: "time",
+            render: function(data, type) {
+                if (type === "display") {
+                    return formatSeconds(data);
+                }
+                return data;
+            }
+        }]
+    });

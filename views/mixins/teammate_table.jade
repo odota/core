@@ -1,12 +1,17 @@
-mixin teammate_table(rows)
-  h3 Teammates
+mixin teammate_table(rows, short)
+  h3 Players
   table.table#teammates
     thead
       tr
         th Name
-        th Games
+        th Matches
         th Win%
-        th.last_played Last
+        if !short
+          th: abbr(title="Number of games with this player on the team") Played With
+          th Win%
+          th: abbr(title="Number of games with this player on the opposing team") Played Against
+          th Win%
+        th.fromNow Last
     each teammate in rows
       tr
         td
@@ -16,5 +21,16 @@ mixin teammate_table(rows)
         td
          - var pct = teammate ? 100*teammate.win/teammate.games : 0
          .progress
-           .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+           .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+        if !short
+        td= teammate.with_games
+          td
+           - var pct = teammate ? 100*teammate.with_win/teammate.games : 0
+           .progress
+             .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+          td= teammate.against_games
+          td
+           - var pct = teammate ? 100*teammate.against_win/teammate.games : 0
+           .progress
+             .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
         td=teammate.last_played

@@ -25,12 +25,20 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "counts": {
             "name": "Counts"
         },
-        "advanced": {
-            "name": "Advanced"
+        "items": {
+            "name": "Items"
+        },
+        "skills": {
+            "name": "Skills"
         },
         "wordcloud": {
             "name": "Word Cloud"
         },
+        /*
+        "rating": {
+            "name": "Rating"
+        },
+        */
         "compare": {
             "name": "Compare"
         }
@@ -165,6 +173,18 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 var teammate_ids = lists.all_teammate_list || [];
                 //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates
                 //TODO how to use caches when the only defined field is compare?  all form fields get submitted
+                //sort ratings by time
+                player.ratings = player.ratings || [];
+                player.ratings.sort(function(a, b) {
+                    return new Date(a.time) - new Date(b.time);
+                });
+                //compute abandons
+                player.abandons = 0;
+                for (var key in player.aggData.leaver_status.counts){
+                    if (Number(key) >=2){
+                        player.abandons+=player.aggData.leaver_status.counts[key];
+                    }
+                }
                 console.timeEnd("player " + req.params.account_id);
                 if (req.query.json) {
                     return res.json(result.player);
@@ -198,7 +218,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             var tm = teammates[id];
             id = Number(id);
             //don't include if anonymous or if few games together
-            if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 7) {
+            if (id !== player.account_id && id !== constants.anonymous_account_id && tm.games >= 5) {
                 teammates_arr.push(tm);
             }
         }

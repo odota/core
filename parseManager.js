@@ -1,4 +1,5 @@
 var processParse = require('./processParse');
+var processApi = require('./processApi');
 var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
@@ -61,6 +62,7 @@ function start() {
                 });
             }
             //TODO jobs with filename it must be parsed by localhost (on master)!
+            jobs.process('request', processApi);
             //process requests
             jobs.process('request_parse', function(job, cb) {
                 console.log("starting request_parse job: %s", job.id);
