@@ -143,12 +143,10 @@ module.exports = function drawMatches(data, options) {
                 render: function(data, type) {
                     return data;
                 },
-            }
+            },
             //hd
             //td
             //hh
-            //disabled parse status due to it not updating in player caches
-            /*
             {
                 data: 'parse_status',
                 title: 'Status',
@@ -156,7 +154,7 @@ module.exports = function drawMatches(data, options) {
                     return constants.parse_status[data] ? constants.parse_status[data] : data;
                 }
             }
-            */
+
             ]
     });
 };

@@ -10,7 +10,6 @@ block playercontent
         thead
           tr
             th Ability
-            th Ability Name
             th Casts
             th Hits
             th Hit%
@@ -20,33 +19,29 @@ block playercontent
             - var casts = val
             - var hits = player.aggData.hero_hits.counts[key] || 0
             tr
-              if ability
-                td
+              td
+                if ability
                   img.ability(src=ability.img, title=key)
-                td= ability.dname
-              else
-                td=key
-                td=key
+                  =ability.dname
+                else
+                  =key
               td=casts
               td=hits
-              td=(hits/casts*100 || 0).toFixed(2)
-     
+              td
+                - var pct = 100*hits/casts
+                .progress
+                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct, 100)}%") #{pct.toFixed(2)}
+
 append footer_assets
   script.
     var accuracy = $('#accuracy').dataTable({
         //"searching": false,
-        "paging": false,
+        //"paging": false,
         "order": [
-            [2, "desc"]
+            [1, "desc"]
         ],
         "drawCallback": function() {
             window.tooltips();
         },
-        "columnDefs": [{
-            "targets": [0],
-            "orderData": [1]
-            }, {
-            "targets": [1],
-            //visible: false
-            }]
+        "columnDefs": []
     });

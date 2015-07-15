@@ -7,46 +7,37 @@ block playercontent
   //pre=JSON.stringify(player.aggData)
 
   .row
-    .col-md-12.table-responsive
+    .col-md-12
       h3 Recent
       table.table#matches
       
-  hr
-  .row
-    .col-md-12
+      hr
       +ad("banner3")
-    
-  if typeof player.account_id === "number"
-    hr
-    .row
-      .col-md-12
-        +hero_table(player.heroes_list)
-    hr
-    .row
-      .col-md-12
-        +teammate_table(player.teammate_list)
-    hr
-    .row
-      .col-md-12
-        h3 Rating 
-          small To display MMR on profile, 
-            a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
-        h3
-          span.label.label-info#solo Solo: 
-          span.label.label-warning#party Party: 
-        #ratings
+      hr
 
+      if typeof player.account_id === "number"
+        .row
+          .col-md-12
+            +hero_table(player.heroes_list)
+        hr
+        .row
+          .col-md-12
+            +teammate_table(player.teammate_list)
+        hr
+        .row
+          .col-md-12
+            h3 Rating 
+              small To display MMR on profile, 
+                a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+            #ratings
+      
 append footer_assets
   script.
     var matches = !{JSON.stringify(player.data.slice(0,10))};
-    //var heroes = !{JSON.stringify(player.heroes_list)};
-    //var teammates = !{JSON.stringify(player.teammate_list)};
-    var ratings = !{JSON.stringify(player.ratings ? player.ratings : [])};
     playerMatches(matches, {paging: false});
-    //drawHeroes(heroes);
-    //drawTeammates(teammates);
+    var ratings = !{JSON.stringify(player.ratings)};
     ratingsChart(ratings);
-    var builds = $('#heroes').dataTable({
+    $('#heroes').dataTable({
         "paging": true,
         "order": [
             [1, "desc"]
@@ -61,7 +52,7 @@ append footer_assets
             }
         }]
     });
-    var builds = $('#teammates').dataTable({
+    $('#teammates').dataTable({
         "paging": true,
         "order": [
             [1, "desc"]
@@ -76,3 +67,9 @@ append footer_assets
             }
         }]
     });
+//-
+  script.
+    var heroes = !{JSON.stringify(player.heroes_list)};
+    var teammates = !{JSON.stringify(player.teammate_list)};
+    drawHeroes(heroes);
+    drawTeammates(teammates);

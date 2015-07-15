@@ -61,7 +61,8 @@ function getPageData(start, options, cb) {
             //retry adding the skill data a set number of times
             results[match_id] = results[match_id] || 0;
             if (results[match_id] < 3 && !added[match_id]) {
-                redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, options.skill);
+                //TODO since skill data is "added on" it's not saved in player caches
+                //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
                 db.matches.update({
                     match_id: match_id
                 }, {
@@ -72,6 +73,8 @@ function getPageData(start, options, cb) {
                     //if num, we modified a match in db
                     if (num) {
                         //add to set of matches for which we were able to add skill data
+                        //cache skill data in redis
+                        redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, options.skill);
                         added[match_id] = 1;
                     }
                     else {
