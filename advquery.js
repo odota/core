@@ -224,7 +224,6 @@ function filter(matches, filters) {
             //TODO implement more filters
             //filter: specific regions
             //filter: endgame item
-            //filter: kill differential
             //filter: max gold/xp advantage
             //more filters from parse data
     };

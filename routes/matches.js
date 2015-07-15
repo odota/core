@@ -88,7 +88,6 @@ function prepareMatch(match_id, cb) {
                         computeMatchData(match);
                         renderMatch(match);
                         //Add to cache if match is parsed
-                        //TODO: this prevents reparses from showing immediately
                         if (match.parse_status === 2 && config.NODE_ENV !== "development") {
                             redis.setex(key, 3600, JSON.stringify(match));
                         }
