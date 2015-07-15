@@ -11,18 +11,22 @@ var zlib = require('zlib');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //check if match is a reinsert/reparse
-    //TODO potential race condition
-    //we should findandmodify here to ensure the match is atomically checked and added
-    //otherwise it's possible that we do the aggregation twice if two separate process find that the match doesn't exist
-    db.matches.find({
-        match_id: match.match_id
-    }, function(err, docs) {
+    //insert the match into db, then based on the existing document determine whether to do aggregations
+    db.matches.findAndModify({
+        query: {
+            match_id: match.match_id
+        },
+        update: {
+            $set: match
+        },
+        upsert: true
+    }, function(err, doc) {
         if (err) {
             return cb(err);
         }
-        var reInsert = docs.length && options.type === "api";
+        var reInsert = doc && options.type === "api";
         //determine if we're reparsing this match
-        var reParse = docs.length && docs[0].parsed_data && options.type === "parsed";
+        var reParse = doc && doc.parsed_data && options.type === "parsed";
         //console.log("reInsert: %s, reParse: %s", reInsert, reParse);
         if (reInsert || reParse) {
             //we already aggregated this match
@@ -35,23 +39,27 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         //if player cache doesn't exist, skip
                         //if insignificant, skip
                         var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-                        if (cache && isSignificant(constants, match)) {
-                            //m.players[0] should be this player
-                            //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match object
-                            var match_copy = JSON.parse(JSON.stringify(match));
-                            match_copy.all_players = match.players.slice(0);
-                            match_copy.players = [p];
-                            //some data fields require computeMatchData in order to aggregate correctly
-                            computeMatchData(match_copy);
-                            //do aggregations on fields based on type
-                            cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                        if (cache) {
+                            //do aggregations only if significant
+                            if (isSignificant(constants, match)) {
+                                //m.players[0] should be this player
+                                //m.all_players should be all players
+                                //duplicate this data into a copy to avoid corrupting original match object
+                                var match_copy = JSON.parse(JSON.stringify(match));
+                                match_copy.all_players = match.players.slice(0);
+                                match_copy.players = [p];
+                                //some data fields require computeMatchData in order to aggregate correctly
+                                computeMatchData(match_copy);
+                                //do aggregations on fields based on type
+                                cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                            }
+                            //add match to array
                             var ids = {};
                             //deduplicate matches by id
                             cache.data.forEach(function(m) {
                                 ids[m.match_id] = m;
                             });
-                            //update this match with latest state (parse_status may have changed)
+                            //update this match with latest state (parse_status/skill may have changed)
                             ids[match_copy.match_id] = reduceMatch(match_copy);
                             cache.data = [];
                             for (var key in ids) {

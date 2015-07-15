@@ -61,6 +61,8 @@ function getPageData(start, options, cb) {
             //retry adding the skill data a set number of times
             results[match_id] = results[match_id] || 0;
             if (results[match_id] < 3 && !added[match_id]) {
+                //TODO since skill data is "added on" it's not saved in player caches
+                //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
                 db.matches.update({
                     match_id: match_id
                 }, {
