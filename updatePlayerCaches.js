@@ -42,6 +42,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         match_copy.players = [p];
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
+                        //do aggregations only if significant and we didn't do them already
+                        if (isSignificant(constants, match) && !reInsert && !reParse) {
+                            //do aggregations on fields based on type
+                            cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                        }
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id
@@ -53,11 +58,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         cache.data = [];
                         for (var key in ids) {
                             cache.data.push(ids[key]);
-                        }
-                        //do aggregations only if significant and we didn't do them already
-                        if (isSignificant(constants, match) && !reInsert && !reParse) {
-                            //do aggregations on fields based on type
-                            cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
                         redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                     }
