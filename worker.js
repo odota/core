@@ -78,25 +78,3 @@ function clearActiveJobs(cb) {
             });
         });
     }
-    /*
-        //TODO implement better service outage check
-    function apiStatus() {
-        db.matches.findOne({}, {
-            fields: {
-                _id: 1
-            },
-            sort: {
-                match_seq_num: -1
-            }
-        }, function(err, match) {
-            var elapsed = (new Date() - db.matches.id(match._id).getTimestamp());
-            console.log(elapsed);
-            if (elapsed > 15 * 60 * 1000) {
-                redis.set("apiDown", 1);
-            }
-            else {
-                redis.set("apiDown", 0);
-            }
-        });
-    }
-    */

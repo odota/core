@@ -35,27 +35,18 @@ module.exports = function processParse(job, cb) {
                     return cb(err);
                 }
                 match_id = match_id || parsed_data.match_id;
-                job.data.payload.match_id = match_id;
-                job.data.payload.parsed_data = parsed_data;
-                job.data.payload.parse_status = 2;
-                //run aggregations on parsed data fields
-                updatePlayerCaches(match, {
-                    type: "parsed"
-                }, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    updateDb();
-                });
+                match.match_id = match_id;
+                match.parsed_data = parsed_data;
+                match.parse_status = 2;
+                updateDb();
             });
         }
 
         function updateDb() {
             job.update();
-            db.matches.update({
-                match_id: match_id
-            }, {
-                $set: job.data.payload,
+            //run aggregations on parsed data fields
+            updatePlayerCaches(match, {
+                type: "parsed"
             }, function(err) {
                 console.timeEnd("parse " + match_id);
                 return cb(err);
