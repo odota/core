@@ -94,11 +94,7 @@ function scanApi(seq_num) {
                         cb();
                     }
                 }, function(err) {
-                    if (err) {
-                        console.log("failed to insert match from scanApi %s", JSON.stringify(match));
-                        return cb(err);
-                    }
-                    else if (match.parse_status === 0 || match.parse_status === 3) {
+                    if (match.parse_status === 0 || match.parse_status === 3) {
                         insertMatch(match, function(err) {
                             close(err, cb);
                         });
@@ -108,6 +104,10 @@ function scanApi(seq_num) {
                     }
 
                     function close(err, cb) {
+                        if (err) {
+                            console.log("failed to insert match from scanApi %s", JSON.stringify(match));
+                            return cb(err);
+                        }
                         redis.set("match_seq_num", next_seq_num);
                         return cb(err);
                     }

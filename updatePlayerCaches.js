@@ -43,7 +43,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
                         //do aggregations only if significant and we didn't do them already
-                        if (isSignificant(constants, match) && !reInsert && !reParse) {
+                        //console.log(isSignificant(constants, match_copy), reInsert, reParse);
+                        if (isSignificant(constants, match_copy) && !reInsert && !reParse) {
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
