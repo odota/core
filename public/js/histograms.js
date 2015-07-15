@@ -8,7 +8,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
     else if (label === "hour") {
         max = 24;
     }
-    else if (label === "month"){
+    else if (label === "month") {
         max = 12;
     }
     else {
@@ -20,7 +20,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
         max += 1;
     }
     //cap the number of bins
-    var bins = ~~Math.min(50, max);
+    var bins = ~~Math.min(40, max);
     //param to scale the x-axis by, e.g., gpms are divided by 10 for binning, durations divided by 60
     var scalef = bins / max;
     //prefill hash with number of bins
@@ -40,7 +40,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
         else if (label === "hour") {
             bucket = moment(key, 'X').hour();
         }
-        else if (label === "month"){
+        else if (label === "month") {
             bucket = moment(key, 'X').month();
         }
         if (hash[bucket]) {
@@ -63,6 +63,11 @@ module.exports = function createHistogram(counts, win_counts, label) {
             type: 'bar',
             color: function(color, d) {
                 return computeColor(color, d, hash);
+            },
+            labels: {
+                format: function(v, id, ind, j){
+                    return (hash[ind] && hash[ind].win ? hash[ind].win / hash[ind].games * 100 : 0).toFixed(0) + "%";
+                },
             }
         },
         bar: {
@@ -73,7 +78,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
         axis: {
             x: {
                 //TODO: make a better label out of the key
-                label: label,
+                //label: label,
                 tick: {
                     format: function(t) {
                         //readjust the tick value by the scale factor for display
@@ -91,7 +96,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
                 }
             },
             y: {
-                label: 'Matches'
+                //label: 'Matches'
             }
         },
         tooltip: {
@@ -119,7 +124,7 @@ module.exports = function createHistogram(counts, win_counts, label) {
             })
         };
     }
-    else if (label==="month"){
+    else if (label === "month") {
         options.axis.x = {
             type: "category",
             categories: moment.months()
