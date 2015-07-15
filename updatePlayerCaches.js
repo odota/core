@@ -11,6 +11,9 @@ var zlib = require('zlib');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //check if match is a reinsert/reparse
+    //TODO potential race condition
+    //we should findandmodify here to ensure the match is atomically checked and added
+    //otherwise it's possible that we do the aggregation twice if two separate process find that the match doesn't exist
     db.matches.find({
         match_id: match.match_id
     }, function(err, docs) {
@@ -49,7 +52,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 ids[m.match_id] = m;
                             });
                             //update this match with latest state (parse_status may have changed)
-                            ids[match_copy.id] = reduceMatch(match_copy);
+                            ids[match_copy.match_id] = reduceMatch(match_copy);
                             cache.data = [];
                             for (var key in ids) {
                                 cache.data.push(ids[key]);
