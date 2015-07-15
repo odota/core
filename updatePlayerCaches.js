@@ -44,14 +44,15 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                             var ids = {};
+                            //deduplicate matches by id
                             cache.data.forEach(function(m) {
-                                ids[m.match_id] = true;
+                                ids[m.match_id] = m;
                             });
-                            if (!ids[match_copy.match_id]) {
-                                //push onto array if we don't have this match already
-                                //reduce the match
-                                var reduced = reduceMatch(match_copy);
-                                cache.data.push(reduced);
+                            //update this match with latest state (parse_status may have changed)
+                            ids[match_copy.id] = reduceMatch(match_copy);
+                            cache.data = [];
+                            for (var key in ids) {
+                                cache.data.push(ids[key]);
                             }
                             redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         }
