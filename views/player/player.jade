@@ -6,8 +6,8 @@ block content
       a(href=player.profileurl || "#", target="_blank")
         if player.avatarmedium
           img(src='#{player.avatarmedium}').img-thumbnail
-        else
-          i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
+        //else
+          //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
     .col-md-5
       h1.inline-header #{player.personaname || player.account_id} 
         small

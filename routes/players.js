@@ -170,9 +170,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
             var player = result.player;
             var aggData = player.aggData;
             async.parallel({
+                //the array of teammates under the filter condition
                 teammate_list: function(cb) {
                     generateTeammateArray(aggData.teammates, player, cb);
                 },
+                //the array of teammates cached (no filter)
                 all_teammate_list: function(cb) {
                     generateTeammateArray(player.all_teammates, player, cb);
                 }
@@ -183,7 +185,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 player.teammate_list = lists.teammate_list;
                 var teammate_ids = lists.all_teammate_list || [];
                 //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates.  There are currently two fields that could have separate tag entries (with_account_id and compare)
-                //TODO how to use caches when the only defined field is compare?  all form fields get submitted, including "significant", which defaults to a nonempty value
                 //sort ratings by time
                 player.ratings = player.ratings || [];
                 player.ratings.sort(function(a, b) {

@@ -15,21 +15,20 @@ block playercontent
       +ad("banner3")
       hr
 
-      if typeof player.account_id === "number"
-        .row
-          .col-md-12
-            +hero_table(player.heroes_list)
-        hr
-        .row
-          .col-md-12
-            +teammate_table(player.teammate_list)
-        hr
-        .row
-          .col-md-12
-            h3 Rating 
-              small To display MMR on profile, 
-                a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
-            #ratings
+      .row
+        .col-md-12
+          +hero_table(player.heroes_list)
+      hr
+      .row
+        .col-md-12
+          +teammate_table(player.teammate_list)
+      hr
+      .row
+        .col-md-12
+          h3 Rating 
+            small To display MMR on profile, 
+              a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+          #ratings
       
 append footer_assets
   script.

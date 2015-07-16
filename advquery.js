@@ -61,20 +61,16 @@ function advQuery(query, cb) {
         if (key in queries) {
             query.select[key] = queries[query.select[key]];
         }
-        else if (query.select[key].constructor === Array) {
-            query.select[key] = [].concat(query.select[key]).map(function(e) {
-                return Number(e);
-            });
-        }
-        else if (typeof query.select[key] === "string") {
-            query.select[key] = Number(query.select[key]);
-        }
         if (mongoAble[key]) {
             query.mongo_select[key] = query.select[key];
             //raise the limit since we're restricting the result set
             max = 20000;
         }
         else {
+            //array and numberify
+            query.select[key] = [].concat(query.select[key]).map(function(e) {
+                return Number(e);
+            });
             query.js_select[key] = query.select[key];
         }
     }
@@ -186,34 +182,31 @@ function filter(matches, filters) {
         isRadiant: function(m, key) {
             return Number(m.players[0].isRadiant) === key;
         },
+        lane_role: function(m, key) {
+            return m.players[0].parsedPlayer.lane_role === key;
+        },
         //GETFULLPLAYERDATA: we need to iterate over match.all_players
         //ensure all array elements fit the condition
-        //with_account_id: player id was also in the game
-        with_account_id: function(m, key) {
-            return key.every(function(k) {
+        included_account_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return p.account_id === k;
                 });
             });
         },
-        //teammate_hero_id
-        teammate_hero_id: function(m, key) {
-            return key.every(function(k) {
+        with_hero_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
                 });
             });
         },
-        //against_hero_id
-        against_hero_id: function(m, key) {
-            return key.every(function(k) {
+        against_hero_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
                 });
             });
-        },
-        lane_role: function(m, key) {
-            return m.players[0].parsedPlayer.lane_role === key;
         }
     };
     //TODO implement more filters, including from parse data
@@ -226,8 +219,10 @@ function filter(matches, filters) {
         //verify the match passes each filter test
         for (var key in filters) {
             if (conditions[key]) {
-                //failed a test
-                include = include && conditions[key](matches[i], filters[key]);
+                //earlier, we arrayified everything
+                //pass the first element, as well as the full array
+                //check that it passes all filters
+                include = include && conditions[key](matches[i], filters[key][0], filters[key]);
             }
         }
         //if we passed, push it
