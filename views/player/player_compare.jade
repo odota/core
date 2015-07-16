@@ -1,16 +1,16 @@
 extend player
 
 block playercontent
-  h2 Compare
-
+  h2 Compare 
+    small Comparing medians against #{compare_data[0].aggData.games} matches
   //pre=JSON.stringify(data[1].aggData)
   table.table
     thead
       tr
-        td
+        td Stat
         each player in compare_data.slice(1)
           td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
-          td Percentile (#{compare_data[0].aggData.games} matches)
+          td Percentile
     tbody
       each val, key in histograms
         - var val = compare_data[0].aggData[key]

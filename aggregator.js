@@ -2,6 +2,7 @@ var constants = require('./constants.json');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
+var isSignificant = utility.isSignificant;
 module.exports = function aggregator(matches, fields, existing) {
     var types = {
         "heroes": {
@@ -410,7 +411,7 @@ module.exports = function aggregator(matches, fields, existing) {
         "sentries_purchased": {
             type: "parsed",
             agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry*2 || 0) : undefined, m);
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry * 2 || 0) : undefined, m);
             }
         },
         "gems_purchased": {
@@ -500,11 +501,13 @@ module.exports = function aggregator(matches, fields, existing) {
     }
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
-        var p = m.players[0];
-        for (var key in fields) {
-            //execute the aggregation function for each specified field
-            if (types[key]) {
-                types[key].agg(key, m, p);
+        if (isSignificant(constants, m)) {
+            var p = m.players[0];
+            for (var key in fields) {
+                //execute the aggregation function for each specified field
+                if (types[key]) {
+                    types[key].agg(key, m, p);
+                }
             }
         }
     }

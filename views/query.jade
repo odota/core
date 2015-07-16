@@ -78,11 +78,12 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value) Any Lobby
             each entry in constants.lobby_type
               option(value=entry.id, selected=(Number(q.lobby_type)===entry.id))=entry.name
-        .form-group
-          label: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
-          select.form-control(name="significant")
-            option(value, selected=q["significant"]!==1) Include All Matches
-            option(value="1",  selected=q["significant"]===1) Significant Matches
+        //-
+          .form-group
+            label: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
+            select.form-control(name="significant")
+              option(value, selected=q["significant"]!==1) Include All Matches
+              option(value="1",  selected=q["significant"]===1) Significant Matches
     if compare
       .row
         .col-md-12

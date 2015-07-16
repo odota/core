@@ -46,17 +46,11 @@ function advQuery(query, cb) {
     query.mongo_select = {};
     query.js_select = {};
     //default limit
-    var max = 500;
+    var max = 1000;
     //map to limit
     var mongoAble = {
-        "players.account_id": 20000,
-        "leagueid": max
-    };
-    var multiples = {
-        "with_account_id": 1,
-        "teammate_hero_id": 1,
-        "against_hero_id": 1,
-        "compare": 1
+        "players.account_id": 1,
+        "leagueid": 1
     };
     var queries = {
         "gtzero": {
@@ -64,28 +58,24 @@ function advQuery(query, cb) {
         }
     };
     for (var key in query.select) {
-        if (query.select[key] === "") {
-            delete query.select[key];
+        if (key in queries) {
+            query.select[key] = queries[query.select[key]];
+        }
+        else if (query.select[key].constructor === Array) {
+            query.select[key] = [].concat(query.select[key]).map(function(e) {
+                return Number(e);
+            });
+        }
+        else if (typeof query.select[key] === "string") {
+            query.select[key] = Number(query.select[key]);
+        }
+        if (mongoAble[key]) {
+            query.mongo_select[key] = query.select[key];
+            //raise the limit since we're restricting the result set
+            max = 20000;
         }
         else {
-            if (key in multiples) {
-                query.select[key] = [].concat(query.select[key]).map(function(e) {
-                    return Number(e);
-                });
-            }
-            else if (key in queries) {
-                query.select[key] = queries[query.select[key]];
-            }
-            else if (typeof query.select[key] === "string") {
-                query.select[key] = Number(query.select[key]);
-            }
-            if (mongoAble[key]) {
-                query.mongo_select[key] = query.select[key];
-                max = Math.max(mongoAble[key], max);
-            }
-            else {
-                query.js_select[key] = query.select[key];
-            }
+            query.js_select[key] = query.select[key];
         }
     }
     //js_agg, aggregations to do with js
@@ -128,6 +118,7 @@ function advQuery(query, cb) {
                     //check mongo query, if starting with player, this means we select a single player, otherwise select all players
                     for (var key in query.mongo_select) {
                         var split = key.split(".");
+                        //break apart the query and determine whether we are trying to get a single player for this match
                         if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
                             pass = false;
                         }

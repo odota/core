@@ -390,7 +390,7 @@ function generateGraphData(match) {
         xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
     }
     else {
-        //older matches need this data summed at view time, unless we migrate it
+        //TODO older matches need this data summed at view time, unless we migrate it
         for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
             var goldtotal = 0;
             var xptotal = 0;

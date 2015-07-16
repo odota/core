@@ -42,13 +42,13 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         match_copy.players = [p];
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
-                        //do aggregations only if significant and we didn't do them already
-                        //console.log(isSignificant(constants, match_copy), reInsert, reParse);
-                        if (isSignificant(constants, match_copy) && !reInsert && !reParse) {
+                        //do aggregations only we didn't do them already
+                        if (!reInsert && !reParse) {
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
                         //TODO it may be more performant to just push the match now and then deduplicate at view time (taking the last entry of each match_id to get state changes)
+                        //however this means we need to resave the cache on every load in order to keep it from getting bloated
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id
