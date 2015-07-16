@@ -205,6 +205,7 @@ app.route('/professional').get(function(req, res, next) {
             start_time: 1,
             parse_status: 1
         },
+        //pass something non-null to skip getting parsed data
         js_agg: {},
         sort: {
             match_id: -1

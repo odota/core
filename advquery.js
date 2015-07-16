@@ -7,7 +7,9 @@ var isSignificant = utility.isSignificant;
 var async = require('async');
 var aggregator = require('./aggregator');
 var constants = require('./constants.json');
-
+/**
+ * This function expects query.select keys for js aggregations to be in an array
+ **/
 function advQuery(query, cb) {
     var default_project = {
         start_time: 1,
@@ -45,32 +47,15 @@ function advQuery(query, cb) {
     //select,the query received, build the mongo query and the filter based on this
     query.mongo_select = {};
     query.js_select = {};
-    //default limit
-    var max = 1000;
-    //map to limit
     var mongoAble = {
         "players.account_id": 1,
         "leagueid": 1
     };
-    var queries = {
-        "gtzero": {
-            $gt: 0
-        }
-    };
     for (var key in query.select) {
-        if (key in queries) {
-            query.select[key] = queries[query.select[key]];
-        }
         if (mongoAble[key]) {
             query.mongo_select[key] = query.select[key];
-            //raise the limit since we're restricting the result set
-            max = 20000;
         }
         else {
-            //array and numberify
-            query.select[key] = [].concat(query.select[key]).map(function(e) {
-                return Number(e);
-            });
             query.js_select[key] = query.select[key];
         }
     }
@@ -78,7 +63,6 @@ function advQuery(query, cb) {
     //do all aggregations if null, so we need parsed data
     var bGetParsedPlayerData = Boolean(!query.js_agg);
     //limit, pass to mongodb, cap the number of matches to return in mongo
-    query.limit = (!query.limit || query.limit > max) ? max : query.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
     //js_limit, the number of results to return in a page, filtered by js

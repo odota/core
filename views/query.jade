@@ -10,7 +10,8 @@ h3.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
   form#query(action="" method="GET")
-    //pre=JSON.stringify(q)
+    if process.env.NODE_ENV==="development"
+      pre=JSON.stringify(q)
     //pre=JSON.stringify(all_teammate_list)
     .row
       .col-md-4
