@@ -65,7 +65,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "tower_kills": 1,
         "neutral_kills": 1,
         "courier_kills": 1,
-        "tps_purchased":1,
+        "tps_purchased": 1,
         "observers_purchased": 1,
         "sentries_purchased": 1,
         "gems_purchased": 1,
@@ -78,7 +78,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
     };
     if (info === "compare") {
         var account_ids = ["all", req.params.account_id.toString()];
-        var compareIds = req.query.compare;
+        var compareIds = req.query.compare_account_id;
         compareIds = compareIds ? [].concat(compareIds) : [];
         account_ids = account_ids.concat(compareIds).slice(0, 6);
         async.map(account_ids, function(account_id, cb) {
@@ -184,7 +184,28 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 }
                 player.teammate_list = lists.teammate_list;
                 var teammate_ids = lists.all_teammate_list || [];
-                //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates.  There are currently two fields that could have separate tag entries (with_account_id and compare)
+                //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
+                var ids = {};
+                teammate_ids.forEach(function(t) {
+                    ids[t.account_id] = 1;
+                });
+                for (var key in req.query) {
+                    if (key.indexOf("account_id") !== -1) {
+                        console.log(req.query[key]);
+                        req.query[key].forEach(function(id) {
+                            //iterate through array
+                            //check for duplicates
+                            //append to teammate_ids
+                            if (!ids[id]) {
+                                teammate_ids.unshift({
+                                    account_id: Number(id),
+                                    personaname: id
+                                });
+                            }
+                            ids[id] = 1;
+                        });
+                    }
+                }
                 //sort ratings by time
                 player.ratings = player.ratings || [];
                 player.ratings.sort(function(a, b) {

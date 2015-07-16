@@ -17,7 +17,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var cachedTeammates;
     var exceptions = 0;
     var keywords = {
-        "compare": 1,
+        "compare_account_id": 1,
         "json": 1
     };
     for (var key in options.query.select) {
