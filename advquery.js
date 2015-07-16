@@ -215,18 +215,20 @@ function filter(matches, filters) {
         },
         //against_hero_id
         against_hero_id: function(m, key) {
-                return key.every(function(k) {
-                    return m.all_players.some(function(p) {
-                        return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
-                    });
+            return key.every(function(k) {
+                return m.all_players.some(function(p) {
+                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
                 });
-            }
-            //TODO implement more filters
-            //filter: specific regions
-            //filter: endgame item
-            //filter: max gold/xp advantage
-            //more filters from parse data
+            });
+        },
+        lane_role: function(m, key) {
+            return m.players[0].parsedPlayer.lane_role === key;
+        }
     };
+    //TODO implement more filters, including from parse data
+    //filter: specific regions
+    //filter: item was built
+    //filter: max gold/xp advantage
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
         var include = true;
@@ -368,8 +370,8 @@ function getParsedPlayerData(matches, doAction, cb) {
                 "parsed_data": 1,
                 "parsed_data.version": 1,
                 "parsed_data.chat": 1,
-                "parsed_data.radiant_gold_adv":1,
-                "parsed_data.radiant_xp_adv":1,
+                "parsed_data.radiant_gold_adv": 1,
+                "parsed_data.radiant_xp_adv": 1,
                 "parsed_data.players": {
                     $slice: [parseSlot, 1]
                 },

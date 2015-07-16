@@ -25,7 +25,7 @@
              =player.hero_id
           td #{p.pick_order} 
           //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
-          td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
+          td #{constants.lane_ids[p.lane] || "-"} (#{constants.lane_role[p.lane_role] || "-"})
           td #{(p.lane_efficiency*100).toFixed(2)}
           td #{p.lh[10] || "-"}
           td #{p.stuns.toFixed(2)}

@@ -132,23 +132,23 @@ function computeMatchData(match) {
                     var lane_roles = {
                         "1": function() {
                             //bot
-                            return radiant ? "Safe" : "Off";
+                            return radiant ? 1 : 3;
                         },
                         "2": function() {
                             //mid
-                            return "Mid";
+                            return 2;
                         },
                         "3": function() {
                             //top
-                            return radiant ? "Off" : "Safe";
+                            return radiant ? 3 : 1;
                         },
                         "4": function() {
                             //rjung
-                            return "Jungle";
+                            return 4;
                         },
                         "5": function() {
                             //djung
-                            return "Jungle";
+                            return 4;
                         }
                     };
                     parsedPlayer.lane_role = lane_roles[parsedPlayer.lane] ? lane_roles[parsedPlayer.lane]() : undefined;

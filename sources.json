@@ -108,6 +108,12 @@
     "4": "Radiant Jungle",
     "5": "Dire Jungle"
   },
+  "lane_role": {
+    "1": "Safe",
+    "2": "Mid",
+    "3": "Off",
+    "4": "Jungle"
+  },
   "player_colors": {
     "0": "#2E6AE6",
     "1": "#5DE6AD",

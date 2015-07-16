@@ -41,9 +41,9 @@ block content
     .row
       .col-md-12
         if !(player.account_id in trackedPlayers)
-          .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse. (Parsing resumes on next visit)
+          .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse. (Parsing will resume on login)
         if (!player.full_history_time)
-          .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history is requested on login)
+          .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history will be requested on login)
 
   //-
     hr

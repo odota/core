@@ -42,39 +42,46 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         .form-group  
           label Faction
           select.form-control(name="isRadiant")
-            option(value) All Factions
+            option(value) Any Faction
             option(value="1", selected=(q["isRadiant"]===1)) Radiant
             option(value="0", selected=(q["isRadiant"]===0)) Dire
         .form-group  
           label Result
           select.form-control(name="win")
-            option(value) All Results
+            option(value) Any Result
             option(value="1", selected=(q["win"]===1)) Wins
             option(value="0", selected=(q["win"]===0)) Losses
+        .form-group  
+          label Lane/Role
+          select.form-control(name="lane_role")
+            option(value) Any Lane
+            each val, key in constants.lane_role
+              option(value=key, selected=(Number(q["lane_role"])===Number(key)))=val
+            
       .col-md-4
         h4 Match Parameters
         .form-group
           label Patch
           select.form-control(name="patch")
-            option(value) All Patches
+            option(value) Any Patch
             each entry, i in constants.patch
               option(value=i, selected=(Number(q.patch)===i))=entry.name
         .form-group
           label Game Mode
           select.form-control(name="game_mode")
-            option(value) All Modes
+            option(value) Any Mode
             each entry in constants.game_mode
               option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
         .form-group
           label Lobby Type
           select.form-control(name="lobby_type")
-            option(value) All Lobbies
+            option(value) Any Lobby
             each entry in constants.lobby_type
               option(value=entry.id, selected=(Number(q.lobby_type)===entry.id))=entry.name
         .form-group
           label: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
           select.form-control(name="significant")
-            option(value, selected=q["significant"]!==1) All Matches
+            option(value, selected=q["significant"]!==1) Include All Matches
             option(value="1",  selected=q["significant"]===1) Significant Matches
     if compare
       .row
