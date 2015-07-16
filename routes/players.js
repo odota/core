@@ -190,8 +190,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     ids[t.account_id] = 1;
                 });
                 for (var key in req.query) {
-                    if (key.indexOf("account_id") !== -1) {
-                        console.log(req.query[key]);
+                    if (key.indexOf("account_id") !== -1 && req.query[key].constructor === Array) {
                         req.query[key].forEach(function(id) {
                             //iterate through array
                             //check for duplicates
