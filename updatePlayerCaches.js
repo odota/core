@@ -48,6 +48,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
+                        //TODO it may be more performant to just push the match now and then deduplicate at view time (taking the last entry of each match_id to get state changes)
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id

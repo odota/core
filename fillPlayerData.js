@@ -15,13 +15,18 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var cache;
     var player;
     var cachedTeammates;
+    var exceptions = 0;
+    if (options.query.select.compare){
+        //TODO this doesn't quite work since the form submits all fields
+        //we need to ignore empty values, but significant defaults to a nonempty value
+        exceptions+=1;
+    }
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
         console.timeEnd("inflate");
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
-        //TODO keywords like json and compare shouldnt count
-        var selectExists = Boolean(Object.keys(options.query.select).length);
+        var selectExists = Boolean(Object.keys(options.query.select).length > exceptions);
         //sort results by match_id
         options.query.sort = options.query.sort || {
             match_id: -1

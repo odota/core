@@ -68,8 +68,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
     };
     if (info === "compare") {
         var account_ids = ["all", req.params.account_id.toString()];
-        var additional = req.query.compare ? [].concat(req.query.compare) : [];
-        account_ids = account_ids.concat(additional).slice(0, 6);
+        var compareIds = req.query.compare;
+        compareIds = compareIds ? [].concat(compareIds) : [];
+        account_ids = account_ids.concat(compareIds).slice(0, 6);
         async.map(account_ids, function(account_id, cb) {
             var qCopy = JSON.parse(JSON.stringify(req.query));
             //pass a copy to avoid premature mutation
@@ -171,8 +172,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 }
                 player.teammate_list = lists.teammate_list;
                 var teammate_ids = lists.all_teammate_list || [];
-                //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates
-                //TODO how to use caches when the only defined field is compare?  all form fields get submitted
+                //TODO add custom tagged elements to teammate_ids, but ensure there are no duplicates.  There are currently two fields that could have separate tag entries (with_account_id and compare)
+                //TODO how to use caches when the only defined field is compare?  all form fields get submitted, including "significant", which defaults to a nonempty value
                 //sort ratings by time
                 player.ratings = player.ratings || [];
                 player.ratings.sort(function(a, b) {
@@ -180,9 +181,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 });
                 //compute abandons
                 player.abandons = 0;
-                for (var key in player.aggData.leaver_status.counts){
-                    if (Number(key) >=2){
-                        player.abandons+=player.aggData.leaver_status.counts[key];
+                for (var key in player.aggData.leaver_status.counts) {
+                    if (Number(key) >= 2) {
+                        player.abandons += player.aggData.leaver_status.counts[key];
                     }
                 }
                 console.timeEnd("player " + req.params.account_id);
