@@ -3,7 +3,7 @@ extend match
 block match_content
     .row
       .col-md-12
-        h2 Purchases
+        h3 Purchases
         table.table.table-hover.summable
            each player, i in match.players
              if !(i%10)
@@ -38,6 +38,6 @@ block match_content
         hr
         +ad("banner2")
         hr
-        h2.inline-header Build Times
+        h3.inline-header Build Times
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#purchases", aria-expanded="true") Toggle Table
         include timelines_purchases_table

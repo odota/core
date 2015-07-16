@@ -19,6 +19,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     if (options.query.select.compare){
         //TODO this doesn't quite work since the form submits all fields
         //we need to ignore empty values, but significant defaults to a nonempty value
+        //should ignore json as well
         exceptions+=1;
     }
     redis.get("player:" + account_id, function(err, result) {

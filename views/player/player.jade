@@ -3,13 +3,27 @@ extend /layout
 block content
   if typeof player.account_id === "number"
     .row.match-top 
-      if player.avatarmedium
-        .col-md-1
-           img(src='#{player.avatarmedium}').img-thumbnail
-      .col-md-5
-        h1.inline-header= player.personaname || player.account_id
+      .col-md-1
         a(href=player.profileurl || "#", target="_blank")
-          i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
+          if player.avatarmedium
+            img(src='#{player.avatarmedium}').img-thumbnail
+          else
+            i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
+      .col-md-5
+        h1.inline-header #{player.personaname || player.account_id} 
+          small
+            a(href="?json=1" title="View as JSON")
+                i.fa.fa-download
+          br
+          small
+            - var ratings = player.ratings
+            span.label.label-info#solo Solo: #{ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A"}
+            span.label.label-warning#party Party: #{ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A"}
+        if (user && user.account_id === player.account_id)
+          .checkbox
+            label
+              input.pref#theme(type="checkbox", checked=user.light_theme)
+              | Use Light Theme
       .col-md-1
         if player.cheese
           i.flaticon-1.medium-cheese(style="display:inline-block")
@@ -24,23 +38,13 @@ block content
         - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
         .progress
           .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
-          
-        h3
-          - var ratings = player.ratings
-          span.label.label-info#solo Solo: #{ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A"}
-          span.label.label-warning#party Party: #{ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A"}
-    hr
     .row
       .col-md-12
         if !(player.account_id in trackedPlayers)
           .alert.alert-danger This user has not visited recently, so their matches are not automatically queued for parse. (Parsing resumes on next visit)
         if (!player.full_history_time)
           .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history is requested on login)
-        if (user && user.account_id === player.account_id)
-          .checkbox
-            label
-              input.pref#theme(type="checkbox", checked=user.light_theme)
-              | Use Light Theme
+
   //-
     hr
     table.table.table-condensed
@@ -54,13 +58,11 @@ block content
           td=(player.last_summaries_update ? moment(player.last_summaries_update).fromNow() : "never")
           
   .row(style="margin-top:1em;")
-    .col-md-10.table-responsive
+    .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
           li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
-    .col-md-2
-      a(href="?json=1" class="btn btn-success") Download JSON
   include /query
   hr
   block playercontent
