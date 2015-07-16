@@ -463,7 +463,7 @@ function runParse(job, cb) {
                 parsed_data.radiant_xp_adv.push(xptotal);
             }
             var sorted = parsed_data.players.slice().sort(function(a, b) {
-                return a.parsedPlayer.pick_time - b.parsedPlayer.pick_time;
+                return a.pick_time - b.pick_time;
             });
             sorted.forEach(function(player, i) {
                 pick_map[player.origIndex] = i + 1;

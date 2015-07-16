@@ -1,5 +1,7 @@
 var utility = require('./utility');
 var mode = utility.mode;
+var max = utility.max;
+var min = utility.min;
 var generatePositionData = utility.generatePositionData;
 var isRadiant = utility.isRadiant;
 var constants = require('./constants.json');
@@ -32,6 +34,20 @@ function computeMatchData(match) {
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
+            // aggregate all the words in these matches for a single player (don't do this for single match display)
+            if (match.parsed_data.chat.length) {
+                if (match.all_players) {
+                    // aggregation of all words in all chat this player has experienced
+                    match.all_word_counts = count_words(match, null);
+                    // aggregation of only the words in all chat this player said themselves
+                    match.my_word_counts = count_words(match, match.players[0]);
+                }
+                //save full word list for sentiment analysis
+                match.chat_words = match.parsed_data.chat.map(function(message) {
+                    return message.key;
+                }).join(' ');
+            }
+            //compute player-level data and set parsedPlayer
             match.players.forEach(function(player, ind) {
                 //mapping 0 to 0, 128 to 5, etc.
                 //if we projected only one player, then use slot 0
@@ -157,8 +173,13 @@ function computeMatchData(match) {
                         parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
-                if (parsedPlayer.stuns) {
-                    parsedPlayer.stuns = ~~parsedPlayer.stuns;
+                //compute throw/comeback levels
+                if (match.parsed_data.radiant_gold_adv) {
+                    var radiant_gold_advantage = match.parsed_data.radiant_gold_adv;
+                    parsedPlayer.throw = match.radiant_win !== isRadiant(player) ? (isRadiant(player) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
+                    parsedPlayer.comeback = match.radiant_win === isRadiant(player) ? (isRadiant(player) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
+                    parsedPlayer.loss = match.radiant_win !== isRadiant(player) ? (isRadiant(player) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
+                    parsedPlayer.stomp = match.radiant_win === isRadiant(player) ? (isRadiant(player) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
                 }
                 //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
                 /*
@@ -170,19 +191,6 @@ function computeMatchData(match) {
                 */
                 player.parsedPlayer = parsedPlayer;
             });
-            // aggregate all the words in these matches for a single player (don't do this for single match display)
-            if (match.parsed_data.chat) {
-                if (match.all_players) {
-                    // aggregation of all words in all chat this player has experienced
-                    match.all_word_counts = count_words(match, null);
-                    // aggregation of only the words in all chat this player said themselves
-                    match.my_word_counts = count_words(match, match.players[0]);
-                }
-                //save full word list for sentiment analysis
-                match.chat_words = match.parsed_data.chat.map(function(message) {
-                    return message.key;
-                }).join(' ');
-            }
         }
     }
     catch (e) {
@@ -377,9 +385,9 @@ function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
-    if (match.parsed_data.radiant_gold_adv) {
-        goldDifference.concat(match.parsed_data.radiant_gold_adv);
-        xpDifference.concat(match.parsed_data.radiant_xp_adv);
+    if (match.parsed_data.radiant_gold_adv.length) {
+        goldDifference = goldDifference.concat(match.parsed_data.radiant_gold_adv);
+        xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
     }
     else {
         //older matches need this data summed at view time, unless we migrate it

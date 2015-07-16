@@ -243,7 +243,8 @@ module.exports = function aggregator(matches, fields, existing) {
         "stuns": {
             type: "parsed",
             agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.stuns, m);
+                //double invert to convert the float to an int so we can bucket better
+                standardAgg(key, ~~p.parsedPlayer.stuns, m);
             }
         },
         "courier_kills": {
@@ -393,22 +394,67 @@ module.exports = function aggregator(matches, fields, existing) {
             agg: function(key, m, p) {
                 standardAgg(key, m.my_word_counts, m);
             }
-        }
-        /*
-        "my_word_total": {
+        },
+        "tps_purchased": {
             type: "parsed",
             agg: function(key, m, p) {
-                var count;
-                if (m.my_word_counts) {
-                    count = 0;
-                    for (var key2 in m.my_word_counts) {
-                        count += m.my_word_counts[key2];
-                    }
-                }
-                standardAgg(key, count, m);
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.tpscroll || 0) : undefined, m);
+            }
+        },
+        "observers_purchased": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_observer || 0) : undefined, m);
+            }
+        },
+        "sentries_purchased": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry*2 || 0) : undefined, m);
+            }
+        },
+        "gems_purchased": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.gem || 0) : undefined, m);
+            }
+        },
+        "rapiers_purchased": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.rapier || 0) : undefined, m);
+            }
+        },
+        "pick_order": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.pick_order, m);
+            }
+        },
+        "throw": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.throw, m);
+            }
+        },
+        "comeback": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.comeback, m);
+            }
+        },
+        "stomp": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.stomp, m);
+            }
+        },
+        "loss": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.loss, m);
             }
         }
-        */
     };
     if (typeof fields === "string") {
         console.log("aggregating %s", fields);

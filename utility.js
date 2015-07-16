@@ -370,6 +370,14 @@ function reduceMatch(match) {
     });
     return match;
 }
+
+function max(array) {
+    return Math.max.apply(null, array);
+}
+
+function min(array) {
+    return Math.min.apply(null, array);
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -383,5 +391,7 @@ module.exports = {
     generatePositionData: generatePositionData,
     getParseSchema: getParseSchema,
     isSignificant: isSignificant,
-    reduceMatch: reduceMatch
+    reduceMatch: reduceMatch,
+    max: max,
+    min: min
 };

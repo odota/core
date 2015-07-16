@@ -368,6 +368,8 @@ function getParsedPlayerData(matches, doAction, cb) {
                 "parsed_data": 1,
                 "parsed_data.version": 1,
                 "parsed_data.chat": 1,
+                "parsed_data.radiant_gold_adv":1,
+                "parsed_data.radiant_xp_adv":1,
                 "parsed_data.players": {
                     $slice: [parseSlot, 1]
                 },

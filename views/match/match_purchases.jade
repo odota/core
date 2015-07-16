@@ -10,13 +10,14 @@ block match_content
                thead
                  tr
                    th Hero
-                   th: abbr(title="Town Portal Scroll purchases") TP
-                   th: abbr(title="Observer Ward purchases") OBS
-                   th: abbr(title="Sentry Ward purchases (x2)") SEN
-                   th: abbr(title="Smoke of Deceit purchases") SMK
-                   th: abbr(title="Dust of Appearance purchases (x2)") DST
-                   th: abbr(title="Gem of True Sight purchases") GEM
-                   th: abbr(title="Buyback purchases") BB
+                   th: abbr(title="Town Portal Scroll purchases") TPs
+                   th: abbr(title="Observer Ward purchases") Observers
+                   th: abbr(title="Sentry Ward purchases (x2)") Sentries
+                   th: abbr(title="Smoke of Deceit purchases") Smokes
+                   th: abbr(title="Dust of Appearance purchases (x2)") Dusts
+                   th: abbr(title="Gem of True Sight purchases") Gems
+                   th: abbr(title="Divine Rapier purchases") Rapiers
+                   th: abbr(title="Buyback purchases") Buybacks
  
              tr(class = player.isRadiant ? "success" : "danger")
                - var hero = constants.heroes[player.hero_id]

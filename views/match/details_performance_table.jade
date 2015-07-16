@@ -5,13 +5,14 @@
         thead
           tr
             th Hero
-            th: abbr(title="Order in which the player picked") PICK
-            th: abbr(title="Lane based on early game position") POS
-            th: abbr(title="Percentage of lane gold obtained at 10 minutes") EFF@10
+            th: abbr(title="Order in which the player picked") Pick
+            //th Pick Time
+            th: abbr(title="Lane based on early game position") Position
+            th: abbr(title="Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes") EFF@10
             th: abbr(title="Last hits at 10 minutes") LH@10
-            th: abbr(title="Seconds of disable on enemy heroes") STUN
-            th: abbr(title="Number of times the player pinged") PINGS
-            //th: abbr(title="Number of times the player clicked") CLICKS
+            th: abbr(title="Seconds of disable on enemy heroes") Stuns
+            th: abbr(title="Number of times the player pinged") Pings
+            //th: abbr(title="Number of times the player clicked") Clicks
             th: abbr(title="Largest instance of damage on a hero") Biggest Hit
             th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hits)
             th: abbr(title="Items used") Item Use
@@ -26,7 +27,8 @@
              img(src=hero.img, title=hero.localized_name)
            else
              =player.hero_id
-          td #{p.pick_order} (<span class="format-seconds" data-format-seconds=#{p.pick_time}></span>)
+          td #{p.pick_order} 
+          //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
           td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
           td #{(p.lane_efficiency*100).toFixed(2)}
           td #{p.lh[10] || "-"}
