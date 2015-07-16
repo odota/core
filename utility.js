@@ -265,11 +265,13 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 11,
+        "version": 12,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
         "chat": [],
+        "radiant_gold_adv": [],
+        "radiant_xp_adv": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "steam_id": "",
