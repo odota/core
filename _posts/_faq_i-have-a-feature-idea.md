@@ -5,4 +5,4 @@
   "author": "Admin"
 }}}
 
-Start a thread on GitHub if you'd like to work on a feature or report a bug.
+Open an issue on GitHub(https://github.com/yasp-dota/yasp/issues) if you'd like to work on a feature or report a bug.
