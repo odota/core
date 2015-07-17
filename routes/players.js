@@ -155,10 +155,10 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 compareIds = compareIds ? [].concat(compareIds) : [];
                 account_ids = account_ids.concat(compareIds).slice(0, 6);
                 async.map(account_ids, function(account_id, cb) {
-                    //pass a copy to avoid premature mutation
+                    //pass a copy of the original query
                     fillPlayerData(account_id, {
                         query: {
-                            select: qCopy
+                            select: JSON.parse(JSON.stringify(qCopy))
                         }
                     }, function(err, player) {
                         console.log("computing averages %s", player.account_id);
