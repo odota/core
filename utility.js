@@ -354,7 +354,7 @@ function generatePositionData(d, p) {
 }
 
 function isSignificant(constants, m) {
-    //TODO detect no stats recorded?
+    console.log(m.game_mode, m.lobby_type);
     return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
 }
 
