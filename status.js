@@ -2,8 +2,6 @@ var async = require('async');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
-var moment = require('moment');
-var kue = r.kue;
 var jobs = r.jobs;
 module.exports = function getStatus(cb) {
     async.series({
@@ -43,6 +41,11 @@ module.exports = function getStatus(cb) {
             redis.get("donators", function(err, res) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;
                 cb(err, res);
+            });
+        },
+        cached_players: function(cb) {
+            redis.keys("player:*", function(err, result) {
+                cb(err, result.length);
             });
         },
         matches_last_day: function(cb) {
