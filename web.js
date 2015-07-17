@@ -115,57 +115,6 @@ app.route('/request').get(function(req, res) {
         rc_public: rc_public
     });
 });
-app.use('/ratings', function(req, res, next) {
-    db.players.find({
-        "ratings": {
-            $ne: null
-        }
-    }, {
-        fields: {
-            "cache": 0
-        }
-    }, function(err, docs) {
-        if (err) {
-            return next(err);
-        }
-        docs.forEach(function(d) {
-            d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
-            d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
-            d.time = d.ratings[d.ratings.length - 1].time;
-        });
-        docs.sort(function(a, b) {
-            return b.soloCompetitiveRank - a.soloCompetitiveRank;
-        });
-        res.render("ratings", {
-            ratings: docs
-        });
-    });
-});
-//TODO hopefully we can get rid of this and go to single-theme design
-app.route('/preferences').post(function(req, res) {
-    if (req.user) {
-        for (var key in req.body) {
-            //convert string to boolean
-            req.body[key] = req.body[key] === "true";
-        }
-        db.players.update({
-            account_id: req.user.account_id
-        }, {
-            $set: req.body
-        }, function(err, num) {
-            var success = !(err || !num);
-            res.json({
-                prefs: req.body,
-                sync: success
-            });
-        });
-    }
-    else {
-        res.json({
-            sync: false
-        });
-    }
-});
 app.route('/status').get(function(req, res, next) {
     status(function(err, result) {
         if (err) {
@@ -236,6 +185,33 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+
+//TODO hopefully we can get rid of this and go to single-theme design
+app.route('/preferences').post(function(req, res) {
+    if (req.user) {
+        for (var key in req.body) {
+            //convert string to boolean
+            req.body[key] = req.body[key] === "true";
+        }
+        db.players.update({
+            account_id: req.user.account_id
+        }, {
+            $set: req.body
+        }, function(err, num) {
+            var success = !(err || !num);
+            res.json({
+                prefs: req.body,
+                sync: success
+            });
+        });
+    }
+    else {
+        res.json({
+            sync: false
+        });
+    }
+});
+
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;

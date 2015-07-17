@@ -14,15 +14,28 @@ block playercontent
       hr
       +ad("banner3")
       hr
-      
-      +hero_table(player.heroes_list)
+
+      .row
+        .col-md-12
+          +hero_table(player.heroes_list)
       hr
-      +teammate_table(player.teammate_list)
+      .row
+        .col-md-12
+          +teammate_table(player.teammate_list)
+      hr
+      .row
+        .col-md-12
+          h3 Rating 
+            small To display MMR on profile, 
+              a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+          #ratings
       
 append footer_assets
   script.
     var matches = !{JSON.stringify(player.data.slice(0,10))};
     playerMatches(matches, {paging: false});
+    var ratings = !{JSON.stringify(player.ratings)};
+    ratingsChart(ratings);
     $('#heroes').dataTable({
         "paging": true,
         "order": [

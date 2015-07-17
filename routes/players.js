@@ -5,6 +5,7 @@ var config = require('../config');
 var constants = require('../constants.json');
 var queries = require("../queries");
 var fillPlayerData = require('../fillPlayerData');
+var db = require('../db');
 players.get('/:account_id/:info?', function(req, res, next) {
     var playerPages = {
         "index": {
@@ -34,11 +35,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "wordcloud": {
             "name": "Word Cloud"
         },
-        /*
         "rating": {
             "name": "Rating"
         },
-        */
         "compare": {
             "name": "Compare"
         }
@@ -140,6 +139,31 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 }
             });
             compare_data = results;
+            render();
+        });
+    }
+    else if (info === "rating") {
+        db.players.find({
+            "ratings": {
+                $ne: null
+            }
+        }, function(err, docs) {
+            if (err) {
+                return next(err);
+            }
+            docs.forEach(function(d) {
+                d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
+                d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
+                d.time = d.ratings[d.ratings.length - 1].time;
+            });
+            docs.sort(function(a, b) {
+                return b.soloCompetitiveRank - a.soloCompetitiveRank;
+            });
+            //compute rating counts and store in redis
+            //TODO compute this user's ranking/percentile
+            //do for both solo and party?
+            //generate a histogram
+            //generate some fake rating data to test
             render();
         });
     }
