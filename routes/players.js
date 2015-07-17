@@ -146,6 +146,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     player.abandons += player.aggData.leaver_status.counts[key];
                 }
             }
+            var ratings = player.ratings;
+            player.soloRating = ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : null;
+            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitiveRank : null;
             if (info === "compare") {
                 var account_ids = ["all", req.params.account_id.toString()];
                 var compareIds = req.query.compare_account_id;
@@ -214,9 +217,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
             }
             else if (info === "rating") {
                 console.time("computing ratings");
-                var ratings = player.ratings;
-                player.soloRating = ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : null;
-                player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitiveRank : null;
                 db.players.find({
                     "ratings": {
                         $ne: null
