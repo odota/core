@@ -1,4 +1,5 @@
 extend /layout
+include /mixins/progress_bar
 
 block content
   .row.match-top 
@@ -34,9 +35,8 @@ block content
         small -
         small.text-danger#lose #{player.aggData.lose} 
         small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandons)
-      - var pct = (player.aggData.win / player.aggData.games * 100).toFixed(2)
-      .progress
-        .progress-bar.progress-bar-success#winbar(style="width:#{pct}%") #{pct}%
+      +progress_bar(player.aggData.win, player.aggData.games)
+
   .row
     .col-md-12
       if !(player.account_id in trackedPlayers)

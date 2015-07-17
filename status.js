@@ -6,7 +6,7 @@ var moment = require('moment');
 var kue = r.kue;
 var jobs = r.jobs;
 module.exports = function getStatus(cb) {
-    async.parallel({
+    async.series({
         matches: function(cb) {
             db.matches.count({}, cb);
         },
