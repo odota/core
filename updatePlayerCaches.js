@@ -17,7 +17,9 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         $set: match
     }, {
         //TODO if we use this function for updating skill in player caches we don't want to upsert or overwrite the cache.data match
-        upsert: true
+        upsert: true,
+        //explicitly declare we want the pre-modification document
+        "new": false
     }, function(err, doc) {
         if (err) {
             return cb(err);

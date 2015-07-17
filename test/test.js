@@ -482,7 +482,7 @@ describe("web", function() {
         */
     });
     describe("parsed match page tests", function() {
-        var tests = ["", "performances", "purchases", "chat"];
+        var tests = ["", "performances", "purchases", "chat", "asdf"];
         tests.forEach(function(t) {
             it('/matches/:valid_parsed/' + t, function(done) {
                 supertest(app).get('/matches/1193091757/' + t).expect(200).expect(new RegExp(t, "i")).end(function(err, res) {
@@ -490,10 +490,6 @@ describe("web", function() {
                 });
             });
         });
-        it('/matches/:valid_parsed/:invalid', function(done) {
-            supertest(app).get('/matches/1193091757/asdf').expect(200).expect(/Match/).end(function(err, res) {
-                done(err);
-            });
         });
     });
     describe("api tests", function() {
