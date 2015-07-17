@@ -1,80 +1,14 @@
 extend player
 
-include /mixins/hero_table
-include /mixins/teammate_table
-
 block playercontent
-  //pre=JSON.stringify(player.aggData)
-
   .row
     .col-md-12
-      h3 Recent
-      table.table#matches
-      
-      hr
-      +ad("banner3")
-      hr
-
-      .row
-        .col-md-12
-          +hero_table(player.heroes_list)
-      hr
-      .row
-        .col-md-12
-          +teammate_table(player.teammate_list)
-      hr
-      .row
-        .col-md-12
-          h3 Rating 
-            small To display MMR on profile, 
-              a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
-          #ratings
+      h3 Rating 
+        small To display MMR on profile, 
+          a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+      #ratings
       
 append footer_assets
   script.
-    var matches = !{JSON.stringify(player.data.slice(0,10))};
-    playerMatches(matches, {paging: false});
     var ratings = !{JSON.stringify(player.ratings)};
     ratingsChart(ratings);
-    $('#heroes').dataTable({
-        "paging": true,
-        "order": [
-            [1, "desc"]
-        ],
-        "columnDefs": [{
-            targets: "fromNow",
-            render: function(data, type) {
-                if (type === "display") {
-                    if (!Number(data)){
-                        return "never";
-                    }
-                    return moment.unix(data).fromNow();
-                }
-                return data;
-            }
-        }]
-    });
-    $('#teammates').dataTable({
-        "paging": true,
-        "order": [
-            [1, "desc"]
-        ],
-        "columnDefs": [{
-            targets: "fromNow",
-            render: function(data, type) {
-                if (type === "display") {
-                    if (!Number(data)){
-                        return "never";
-                    }
-                    return moment.unix(data).fromNow();
-                }
-                return data;
-            }
-        }]
-    });
-//-
-  script.
-    var heroes = !{JSON.stringify(player.heroes_list)};
-    var teammates = !{JSON.stringify(player.teammate_list)};
-    drawHeroes(heroes);
-    drawTeammates(teammates);

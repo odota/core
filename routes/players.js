@@ -35,11 +35,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "wordcloud": {
             "name": "Word Cloud"
         },
-        "rating": {
-            "name": "Rating"
-        },
         "compare": {
             "name": "Compare"
+        },
+        "rating": {
+            "name": "Rating"
         }
     };
     var info = playerPages[req.params.info] ? req.params.info : "index";
@@ -69,6 +69,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "sentries_purchased": 1,
         "gems_purchased": 1,
         "rapiers_purchased": 1,
+        "pings": 1,
         "pick_order": 1,
         "throw": 1,
         "comeback": 1,
@@ -159,8 +160,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
             docs.sort(function(a, b) {
                 return b.soloCompetitiveRank - a.soloCompetitiveRank;
             });
-            //compute rating counts and store in redis
             //TODO compute this user's ranking/percentile
+            //compute rating counts and store in redis
             //do for both solo and party?
             //generate a histogram
             //generate some fake rating data to test

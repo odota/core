@@ -85,7 +85,6 @@ block match_content
                            img.item(src=item.img, title=constants.item_ids[val])
       
       if match.picks_bans
-        hr
         h3.inline-header Picks/Bans
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#picks-bans", aria-expanded="true") Toggle Table
         #picks-bans.table-responsive.collapse.in
@@ -123,7 +122,6 @@ block match_content
                           else
                             =ability.ability
                             
-      hr
       .row.margin-bottom
         .col-md-7
           h3 Buildings
