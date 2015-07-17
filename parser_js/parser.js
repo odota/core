@@ -8,4 +8,8 @@ process.stdin.on('readable', function() {
     //this script reads from stdin and outputs JSON objects to stdout
     //optimally, we release a npm package capable of parsing that can be used both here and for parsing in the browser
     //should provide methods for accepting a stream or a file
+    //parser emits events when it parses a certain message
+    //user listens for events and acts based on the event
+    //use node events module
+    //webpack into a browser-compatible version
 });
