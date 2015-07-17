@@ -32,10 +32,6 @@ function scanSkill() {
         if (err) {
             console.log(err);
         }
-        if (Object.keys(results).length > 1000000) {
-            //reset to prevent memory leak
-            process.exit(0);
-        }
         //start over
         scanSkill();
     });
@@ -58,42 +54,16 @@ function getPageData(start, options, cb) {
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
             var match_id = m.match_id;
-            //TODO currently the results hash tracks the number of tries per id, but we only attempt to insert/retry if a match shows up in the api again, so it's not really doing anything
-            //this means we can potentially lose skill data for matches that aren't in db when they show up in skill scan
-            //to fix this we need to first add all of this page to the results, saving the skill and the number of tries
-            //then we need to periodically iterate through the entire results hash and update skill where we can
-            //retry adding the skill data a set number of times
-            results[match_id] = results[match_id] || 0;
-            if (results[match_id] < 3 && !added[match_id]) {
-                //TODO since skill data is "added on" it's not saved in player caches
-                //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
-                db.matches.update({
-                    match_id: match_id
-                }, {
-                    $set: {
-                        skill: options.skill
-                    }
-                }, function(err, num) {
-                    //if num, we modified a match in db
-                    if (num) {
-                        //add to set of matches for which we were able to add skill data
-                        //cache skill data in redis
-                        redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, options.skill);
-                        added[match_id] = 1;
-                    }
-                    else {
-                        //add to retry count
-                        results[match_id] += 1;
-                    }
-                    cb(err);
-                });
+            if (!results[match_id]) {
+                tryInsertSkill({
+                    match_id: match_id,
+                    skill: options.skill
+                }, 0);
+                //don't wait for callback, since it may need to be retried
             }
-            else {
-                //already got skill for this match
-                cb();
-            }
+            cb();
         }, function(err) {
-            console.log("matches: %s, skill_added: %s", Object.keys(results).length, Object.keys(added).length);
+            console.log("matches to retry: %s, skill_added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);
@@ -103,5 +73,40 @@ function getPageData(start, options, cb) {
                 getPageData(start, options, cb);
             }
         });
+    });
+}
+
+function tryInsertSkill(data, retries) {
+    var match_id = data.match_id;
+    var skill = data.skill;
+    if (retries > 5) {
+        delete results[match_id];
+        return;
+    }
+    results[match_id] = 1;
+    db.matches.update({
+        match_id: match_id
+    }, {
+        $set: {
+            skill: skill
+        }
+    }, function(err, num) {
+        if (err) {
+            return console.log(err);
+        }
+        //if num, we modified a match in db
+        if (num) {
+            //TODO since skill data is "added on" it's not saved in player caches
+            //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
+            //cache skill data in redis
+            added[match_id] = 1;
+            redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, skill);
+        }
+        else {
+            //try again later
+            return setTimeout(function() {
+                return tryInsertSkill(data, retries + 1);
+            }, 60 * 1000);
+        }
     });
 }
