@@ -22,9 +22,8 @@ block content
           a(href="?json=1" title="View as JSON")
             i.fa.fa-download
       div.lead
-          - var ratings = player.ratings
-          span.label.label-info#solo: abbr(title="Solo MMR") #{ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A"}
-          span.label.label-warning#party: abbr(title="Party MMR") #{ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A"}
+          span.label.label-info#solo: abbr(title="Solo MMR") #{player.soloRating || "N/A"}
+          span.label.label-warning#party: abbr(title="Party MMR") #{player.partyRating || "N/A"}
     .col-md-1
       if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")
@@ -46,4 +45,3 @@ block content
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
   include /query
   block playercontent
-  hr

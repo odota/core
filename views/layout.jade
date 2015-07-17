@@ -9,7 +9,9 @@ block sticky_content
         if banner_msg
           .alert.alert-success.text-center(role="alert") !{banner_msg}
         +ad("banner1")
+        hr
         block content
+        hr
         +ad("banner3")
     .sticky_footer_row
       include footer
