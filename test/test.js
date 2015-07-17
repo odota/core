@@ -22,7 +22,6 @@ var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
-var unparsed = require('../tasks/unparsed');
 var updateNames = require('../tasks/updateNames');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
@@ -193,55 +192,7 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
-            },
-            /*
-            function(cb) {
-            console.log('downloading replays');
-
-            function dl(filename, cb) {
-                //keep only the match id segment as the filename
-                var arr = filename.split(".");
-                arr[0] = arr[0].split("_")[0];
-                var path = replay_dir + arr.join(".");
-   
-                console.log("downloading: %s", filename, path);
-                //currently disabled caching of replays, get a fresh copy with each test
-                if (fs.existsSync(path) && false) {
-                    cb();
-                }
-                else {
-                    var failed = false;
-                    var to = setTimeout(function() {
-                        failed = true;
-                        console.log("download took too long, retrying");
-                        dl(filename, cb);
-                    }, 10000);
-
-                    var inStream = request({
-                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
-                        });
-
-                    inStream.pipe(fs.createWriteStream(path)).on('error', function(err) {
-                        console.log(err);
-                        console.log('retrying dl %s', filename);
-                        failed = true;
-                        dl(filename, cb);
-                    }).on('finish', function() {
-                        if (!failed) {
-                            console.log("completed %s", filename);
-                            clearTimeout(to);
-                            cb();
-                        }
-                    });
-                }
-
             }
-            var files = ['1151783218.dem.bz2', '1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
-            async.each(files, dl, function(err) {
-                cb(err);
-            });
-        }
-                        */
         ], function(err) {
         done(err);
     });
@@ -317,13 +268,6 @@ describe("worker", function() {
 });
 describe("tasks", function() {
     this.timeout(wait);
-    it('unparsed', function(done) {
-        unparsed(function(err, num) {
-            //todo why isn't this picking up any matches?
-            //searches db for parse_status:0 and adds them to queue
-            done(err);
-        });
-    });
     it('updateNames', function(done) {
         updateNames(function(err, num) {
             done(err);
@@ -458,10 +402,10 @@ describe("web", function() {
         });
     })
     describe("player page tests", function() {
-        var tests = ["", "matches", "histograms", "counts", "asdf"];
+        var tests = ["", "matches", "histograms", "counts", "compare", "asdf"];
         tests.forEach(function(t) {
             it('/players/:valid/' + t, function(done) {
-                supertest(app).get('/players/88367253/' + t).expect(200).end(function(err, res) {
+                supertest(app).get('/players/83684080/' + t).expect(200).end(function(err, res) {
                     done(err);
                 });
             });

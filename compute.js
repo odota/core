@@ -34,18 +34,14 @@ function computeMatchData(match) {
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
-            // aggregate all the words in these matches for a single player (don't do this for single match display)
             if (match.parsed_data.chat.length) {
                 if (match.all_players) {
+                    // aggregate all the words in these matches for each player_match (don't do this for single match display)
                     // aggregation of all words in all chat this player has experienced
                     match.all_word_counts = count_words(match, null);
                     // aggregation of only the words in all chat this player said themselves
                     match.my_word_counts = count_words(match, match.players[0]);
                 }
-                //save full word list for sentiment analysis
-                match.chat_words = match.parsed_data.chat.map(function(message) {
-                    return message.key;
-                }).join(' ');
             }
             //compute player-level data and set parsedPlayer
             match.players.forEach(function(player, ind) {
@@ -286,7 +282,11 @@ function renderMatch(match) {
             });
         }
     });
-    match.sentiment = sentiment(match.chat_words, {
+    //make a list of messages and join them all together for sentiment analysis
+    var chat_words = match.parsed_data.chat.map(function(message) {
+        return message.key;
+    }).join(' ');
+    match.sentiment = sentiment(chat_words, {
         "report": -2,
         "commend": 2,
         "noob": -2,

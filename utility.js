@@ -364,7 +364,6 @@ function reduceMatch(match) {
     delete match.parsed_data;
     delete match.my_word_counts;
     delete match.all_word_counts;
-    delete match.chat_words;
     match.players.forEach(function(p) {
         delete p.parsedPlayer;
     });
