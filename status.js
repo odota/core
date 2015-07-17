@@ -13,7 +13,7 @@ module.exports = function getStatus(cb) {
         players: function(cb) {
             db.players.count({}, cb);
         },
-        yasp_players: function(cb) {
+        user_players: function(cb) {
             db.players.count({
                 last_visited: {
                     $gt: new Date(0)
