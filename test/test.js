@@ -527,7 +527,6 @@ describe("web", function() {
                 });
             });
         });
-    });
 });
 var io = require('socket.io-client');
 describe("unit test", function() {
