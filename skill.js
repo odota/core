@@ -58,6 +58,10 @@ function getPageData(start, options, cb) {
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
             var match_id = m.match_id;
+            //TODO currently the results hash tracks the number of tries per id, but we only attempt to insert/retry if a match shows up in the api again, so it's not really doing anything
+            //this means we can potentially lose skill data for matches that aren't in db when they show up in skill scan
+            //to fix this we need to first add all of this page to the results, saving the skill and the number of tries
+            //then we need to periodically iterate through the entire results hash and update skill where we can
             //retry adding the skill data a set number of times
             results[match_id] = results[match_id] || 0;
             if (results[match_id] < 3 && !added[match_id]) {
