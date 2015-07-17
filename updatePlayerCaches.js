@@ -12,13 +12,11 @@ var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //insert the match into db, then based on the existing document determine whether to do aggregations
     db.matches.findAndModify({
-        query: {
-            match_id: match.match_id
-        },
-        update: {
-            $set: match
-        },
-        //TODO if we choose to use this function for updating skill we don't want to upsert or overwrite the cache.data match
+        match_id: match.match_id
+    }, {
+        $set: match
+    }, {
+        //TODO if we use this function for updating skill in player caches we don't want to upsert or overwrite the cache.data match
         upsert: true
     }, function(err, doc) {
         if (err) {

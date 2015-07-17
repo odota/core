@@ -68,6 +68,7 @@ Starting YASP
 * Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
 * Build `npm run build`
 * Launch in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`.  Alternatively launch in regular mode: `npm start`
+* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
 * The full list of services can be found in the Procfile.  You can run individual microservices using Foreman: `nf start {process name}`.  However, they will all try to start on port 5000 when run individually, so you may need to pass the `-p` argument to set the port explicitly.
 * Developers: If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
 * Tests: Tests are run with the Mocha framework.  `npm test` to run the full test suite.
@@ -77,6 +78,20 @@ Sample Data
 * Load the test players and matches: `mongo dota migrations/loader.js`
 * https://github.com/yasp-dota/testfiles/blob/master/dota.zip contains a database dump that can be imported using mongorestore if a larger data set is desired.
 
-Lessons and Rules
+History
 ----
-* Never async.parallel database calls.
+* Project started in August 2014
+* Originally forked from Rjacksonm1/matchurls, started in July 2013
+
+Core Development
+----
+* howardc93
+* albertcui
+* nickhh
+
+Contributors
+----
+* mvthen
+* McHearty
+* coreymaher
+* Aehrraid
