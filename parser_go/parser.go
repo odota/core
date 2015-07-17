@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	//"os"
 	"path/filepath"
 
 	"github.com/dotabuff/manta"
@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	for _, arg := range os.Args[1:] {
+
+        var arg string = "../testfiles/1560726098_source2.dem"
 		parser, err := manta.NewParserFromFile(arg)
 		if err != nil {
 			panic(err)
@@ -20,7 +21,6 @@ func main() {
 			fmt.Printf("%s (%s) | %s: %s\n", filepath.Base(arg), m.GetMessagename(), m.GetParam1(), m.GetParam2())
 			return nil
 		})
-
 		parser.Start()
-	}
+
 }
