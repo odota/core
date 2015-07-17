@@ -6,6 +6,7 @@ mixin hero_table(rows, short)
     thead
       tr
         th Hero
+        th.fromNow Last
         th Played As
         th Win%
         if !short
@@ -13,13 +14,13 @@ mixin hero_table(rows, short)
           th Win% 
           th: abbr(title="Number of games with this hero on the opposing team") Played Against
           th Win%
-        th.fromNow Last
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
         td.hero
           img.user(src=hero.img, title=hero.localized_name)
           =hero.localized_name
+        td=h.last_played
         td=h.games
         td
           +progress_bar(h.win, h.games)
@@ -30,4 +31,3 @@ mixin hero_table(rows, short)
           td=h.against_games
           td
             +progress_bar(h.against_win, h.against_games)
-        td=h.last_played
