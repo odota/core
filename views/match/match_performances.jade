@@ -34,32 +34,32 @@ block match_content
                   - var ability = constants.abilities[p.max_hero_hit.inflictor]
                   - var item = constants.items[p.max_hero_hit.inflictor]
                   - var hero = constants.hero_names[p.max_hero_hit.key]
-                  div.img-text
+                  span.img-text
                     if ability
-                      span: img.ability(src=ability.img, title=p.max_hero_hit.inflictor)
+                      span: img.img-small(src=ability.img, title=p.max_hero_hit.inflictor)
                     else if item
-                      span: img.item(src=item.img, title=p.max_hero_hit.inflictor)
+                      span: img.img-small(src=item.img, title=p.max_hero_hit.inflictor)
                     else
                       span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
                     div #{p.max_hero_hit.value}                    
                   if hero
-                    span: img.kill(src=hero.img, title=hero.localized_name)
+                    span.img-text: img.img-small(src=hero.img, title=hero.localized_name)
                   else
                     =p.max_hero_hit.key
                   
                 td.table-img
                   each ability in p.ability_uses_arr
-                    div.img-text
-                      img.ability(src=ability.img, title=ability.name)
+                    span.img-text
+                      img.img-small(src=ability.img, title=ability.name)
                       div #{ability.val}
                       div (#{ability.hero_hits || 0})
                 td.table-img
                   each item in p.item_uses_arr
-                    div.img-text
-                      img.item(src=item.img, title=item.name)
+                    span.img-text
+                      img.img-small(src=item.img, title=item.name)
                       div #{item.val}
                 td.table-img
                   each item in p.damage_inflictor_arr
-                    div.img-text
-                      img(class=item.className src=item.img, title=item.name)
+                    span.img-text
+                      img.img-small(class=item.className src=item.img, title=item.name)
                       div.format #{item.val}        

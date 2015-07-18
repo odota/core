@@ -8,7 +8,7 @@ mixin picks_bans_row(picks_bans, team_int)
         - var is_pick = pick.is_pick
         - var hero = constants.heroes[hero_id]
         if hero
-          div.img-text
+          span.img-text
             img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
             div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
         else
@@ -55,7 +55,7 @@ block match_content
                  td.hero
                    - var hero = constants.heroes[player.hero_id]
                    if hero
-                     img(src=hero.img, title=hero.localized_name)
+                     img.img-md(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
                  td= player.level
@@ -75,14 +75,14 @@ block match_content
                      if (index.slice(0, 5)==="item_")
                        - var item = constants.items[constants.item_ids[val]]
                        if item
-                         img.item(src=item.img, title=constants.item_ids[val])
+                         img.img-small(src=item.img, title=constants.item_ids[val])
                    if (player.hero_id === 80 && player.additional_units)
                      br
                      each val, index in player.additional_units[0]
                        if (index.slice(0, 5)==="item_")
                          - var item = constants.items[constants.item_ids[val]]                             
                          if item
-                           img.item(src=item.img, title=constants.item_ids[val])
+                           img.img-small(src=item.img, title=constants.item_ids[val])
       
       if match.picks_bans
         h3.inline-header Picks/Bans
@@ -118,7 +118,7 @@ block match_content
                         - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
                         td
                           if abilityData
-                            img.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
+                            img.img-md(src=abilityData.img, title=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
                             

@@ -6,6 +6,8 @@ block content
     .col-md-12
       if !(player.account_id in trackedPlayers)
         .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing will resume on login)
+      else
+        .alert.alert-success This user is tracked!  Their matches are automatically parsed.
       if (!player.full_history_time)
         .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history will be requested on login)
         

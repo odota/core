@@ -59,7 +59,7 @@ block match_content
 
       h3.inline-header Death Map
       button.btn.btn-xs.btn-dark.toggle-button#show_all Show All Deaths
-      #map.mapContainer.mapContainer-small
+      #map.mapContainer
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .icons
           each entry, ind in teamfights
@@ -103,27 +103,27 @@ block match_content
                     td
                       each val, key in player.ability_uses || {}
                         - var ability = constants.abilities[key]
-                        div.img-text
+                        span.img-text
                           if ability
-                            img.ability(src=ability.img, title=key)
+                            img.img-small(src=ability.img, title=key)
                           else
                             //=key
                           div #{val}
                     td
                       each val, key in player.item_uses || {}
                         - var item = constants.items[key]
-                        div.img-text
+                        span.img-text
                           if item
-                            img.item(src=item.img, title=key)
+                            img.img-small(src=item.img, title=key)
                             div #{val}
                           else
                             =key
                     td
                       each val, key in player.kills || {}
                         - var hero = constants.hero_names[key]
-                        div.img-text
+                        span.img-text
                           if hero
-                            img.dmg(src=hero.img, title=hero.localized_name)
+                            img.img-small(src=hero.img, title=hero.localized_name)
                             div #{val}
                           else
                             //=key
