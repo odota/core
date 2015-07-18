@@ -247,14 +247,6 @@ table tfoot * {
 .label-info {
     margin-right: 5px;
 }
-.tag-header {
-    margin-bottom: 10px;
-}
-.tag-list {
-    border-radius: 4px;
-    padding: 2px 5px;
-    margin-left: -10px;
-}
 .theme-blue {
     color: #BBF0FD;
 }
@@ -286,8 +278,7 @@ table tfoot * {
 .hidden {
     display: none;
 }
-/* Sticky footer styles
--------------------------------------------------- */
+/* Sticky footer styles*/
 
 .sticky_footer_row {
     display: table-row;
@@ -311,4 +302,14 @@ h4,
 
 .icon-bar {
   background-color: #fff;
+}
+
+/* tweak progress bar heights */
+.progress {
+    height: 21px;
+}
+.progress .progress-bar
+{
+    font-size: 14px;
+    line-height: 21px;
 }

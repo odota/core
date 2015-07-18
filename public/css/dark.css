@@ -1,7 +1,9 @@
 footer {
   background-color: #000;
 }
-
+.c3 {
+    color: #000;
+}
 .c3 path,
 .c3 line {
     stroke: rgb(199, 199, 199) !important;
@@ -13,16 +15,12 @@ footer {
 .c3-legend-item {
     fill: rgb(199, 199, 199);
 }
-.c3 {
-    color: #000;
-}
 
 #match_statistics tbody, #positions tbody {
     color: rgb(199, 199, 199);
 }
 
 /* tool-tip pop-up styles */
-
 abbr.blackunderline {
     /* change from default of #777 */
     border-bottom: 1px dotted #000000;
@@ -59,18 +57,4 @@ abbr.blackunderline {
 .table>thead>tr>td.danger,
 .table>thead>tr>th.danger {
     background-color: #712C2C;
-}
-
-.tag-list {
-    color: #fff;
-}
-.tag-list:hover,
-.tag-list:focus,
-.tags a span:hover,
-.tags a span:focus {
-    color: #BBF0FD;
-}
-.tag-key a:hover,
-.tag-key a:focus {
-    color: #BBF0FD;
 }
