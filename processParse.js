@@ -262,27 +262,27 @@ function runParse(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
-                //count damage dealt to a real hero with this inflictor
-                var inf = {
-                    type: "damage_inflictor",
-                    time: e.time,
-                    unit: e.unit,
-                    key: e.inflictor,
-                    value: e.value
-                };
-                getSlot(inf);
-                //biggest hit on a hero
-                var m = {
-                    type: "max_hero_hit",
-                    time: e.time,
-                    max: true,
-                    inflictor: e.inflictor,
-                    unit: e.unit,
-                    key: e.key,
-                    value: e.value
-                };
-                //don't count self-damage as a max_hero_hit
-                if (m.key !== m.unit) {
+                //don't count self-damage for the following
+                if (e.key !== e.unit) {
+                    //count damage dealt to a real hero with this inflictor
+                    var inf = {
+                        type: "damage_inflictor",
+                        time: e.time,
+                        unit: e.unit,
+                        key: e.inflictor,
+                        value: e.value
+                    };
+                    getSlot(inf);
+                    //biggest hit on a hero
+                    var m = {
+                        type: "max_hero_hit",
+                        time: e.time,
+                        max: true,
+                        inflictor: e.inflictor,
+                        unit: e.unit,
+                        key: e.key,
+                        value: e.value
+                    };
                     getSlot(m);
                 }
             }
