@@ -78,12 +78,7 @@ h3 img {
     position: relative;
     top: 0px;
     left: 0px;
-    width: 600px;
-    height: 600px;
-}
-.mapContainer-small {
-    width: 300px;
-    height: 300px;
+    width: 100%;
 }
 .map {
     width: 100%;

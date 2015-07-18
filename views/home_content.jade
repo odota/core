@@ -113,16 +113,3 @@ append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
     generateCharts(graphData);
-  script.
-    var heatmap = h337.create({
-        container: document.getElementById('map'),
-        radius: 15
-      });
-      var posData = !{JSON.stringify(match.posData)}
-      adjustHeatmapData(posData, 600/127, null, 25);
-      $(".activate").on("mouseover", function(){
-        var pData = posData[Number($(this).attr('data-index'))]
-        var data = pData[$(this).attr('data-type')];
-        heatmap.setData(data);
-        heatmap.repaint();
-      })

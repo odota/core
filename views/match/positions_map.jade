@@ -1,4 +1,3 @@
-
 .row
   .col-md-7
     h2 Map
@@ -31,3 +30,21 @@
               td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
               td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
               td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
+              
+  script.
+    var heatmap = h337.create({
+      container: document.getElementById('map'),
+      radius: 15
+    });
+
+    // scale points by 600/127 units to fit to size of map
+    // offset points by 25 units to increase visibility
+    var posData = !{JSON.stringify(match.posData)}
+    adjustHeatmapData(posData, document.getElementById('map').clientWidth/127, null, 25);
+
+    $(".activate").on("mouseover", function(){
+      var pData = posData[Number($(this).attr('data-index'))]
+      var data = pData[$(this).attr('data-type')];
+      heatmap.setData(data);
+      heatmap.repaint();
+    })

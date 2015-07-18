@@ -60,7 +60,7 @@ module.exports = function drawProMatches(data) {
             },
             {
                 data: 'start_time',
-                title: 'Played',
+                title: 'Ended',
                 render: function(data, type, row) {
                     if (type === 'sort') {
                         return data + row.duration; // Sort by unix timestamp
