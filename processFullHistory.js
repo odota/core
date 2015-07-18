@@ -56,10 +56,13 @@ module.exports = function processFullHistory(job, cb) {
                 }
                 console.log("%s matches found, %s already in db, %s to add", arr.length, docs.length, arr.length - docs.length);
                 //iterate through db results, delete match_id key if exists
+                //disabled duplicate checking to allow updating matches with users who enabled third party data
+                /*
                 for (var i = 0; i < docs.length; i++) {
                     var match_id = docs[i].match_id;
                     delete player.match_ids[match_id];
                 }
+                */
                 //iterate through keys, make api_details requests
                 async.eachLimit(Object.keys(player.match_ids), parallelism, function(match_id, cb) {
                     //process api jobs directly with parallelism
