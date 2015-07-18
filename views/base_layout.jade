@@ -27,7 +27,7 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
     
-    //- yasp js bundle, dynamically inserts external js/css
+    //- yasp js bundle, dynamically inserts external library js/css
     script(src="/public/build/yasp.min.js")    
     
     //-
@@ -48,14 +48,27 @@ html
       var constants = !{JSON.stringify(clientConstants)};
           
     block head
-
-  //home extends unsticky
-  block unsticky_content
-  //layout extends sticky
-  block sticky_content
+  body.frame
+    include navbar
+    block page_content
   //stuff to include after page load
   block footer_assets
   script.
+    //check adblocker
+    window.onload = function(){
+      setTimeout(function() { 
+        // We are targeting the first banner ad of AdSense
+        var ad = document.querySelector("ins.adsbygoogle");
+        
+        // If the ad contains no innerHTML, ad blockers are at work
+        if (ad && ad.innerHTML.replace(/\s/g, "").length == 0) {
+          // Since ad blocks hide ads using CSS too
+          ad.style.cssText = 'display:block !important'; 
+          // You can put any text, image or even IFRAME tags here
+          ad.innerHTML = "<div class='alert alert-info text-center' role='alert'>Blocking ads?  Please consider disabling your ad blocker or donating to help keep YASP running.</div>";
+        }
+      }, 2000); // The ad blocker check is performed 2 seconds after the page load 
+    }; 
     //by default, run formatting functions on all pages at page end
     tooltips();
     formatHtml();
