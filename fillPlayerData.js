@@ -9,48 +9,25 @@ var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var zlib = require('zlib');
+var preprocessQuery = require('./preprocessQuery');
+var filter = require('./filter');
+var aggregator = require('./aggregator');
 module.exports = function fillPlayerData(account_id, options, cb) {
     //options.info, the tab the player is on
     //options.query, the query object to use in advQuery
     var cache;
     var player;
     var cachedTeammates;
-    var exceptions = 0;
-    var keywords = {
-        "compare_account_id": 1,
-        "json": 1
-    };
-    for (var key in options.query.select) {
-        if (options.query.select[key] === "") {
-            delete options.query.select[key];
-        }
-        else {
-            options.query.select[key] = [].concat(options.query.select[key]).map(function(e) {
-                return Number(e);
-            });
-        }
-        if (key in keywords) {
-            exceptions += 1;
-        }
-    }
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
         console.timeEnd("inflate");
-        cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
-        var selectExists = Boolean(Object.keys(options.query.select).length > exceptions);
         player = {
             account_id: account_id,
             personaname: account_id
         };
-        //console.log("cache conditions %s, %s, %s, %s", options.info !== "matches", cache, !selectExists, !options.query.js_agg);
-        var cacheAble = cache && !selectExists;
-        if (cacheAble) {
+        if (cache) {
             console.log("player cache hit %s", player.account_id);
-            //sort cached matches by descending match id
-            cache.data.sort(function(a, b) {
-                return b.match_id - a.match_id;
-            });
             console.time("retrieving skill data");
             //cache does not contain skill data since it's added after the original insert!
             //we can do db lookups for skill data (or only go until we hit a match with skill data)
@@ -67,7 +44,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 });
             }, function(err) {
                 console.timeEnd("retrieving skill data");
-                processResults(err, cache);
+                preprocessQuery(options.query);
+                cachedTeammates = aggregator(cache.data, null).teammates;
+                var filtered = filter(cache.data, options.query.js_select);
+                processResults(err, {
+                    data: filtered,
+                    aggData: aggregator(filtered, null),
+                    unfiltered: cache.data
+                });
             });
         }
         else {
@@ -82,10 +66,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             else {
                 options.query.limit = 1000;
             }
-            //sort results by match_id
-            options.query.sort = options.query.sort || {
-                match_id: -1
-            };
             advQuery(options.query, processResults);
         }
 
@@ -93,34 +73,24 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             if (err) {
                 return cb(err);
             }
+            //resave cache
+            cache = {
+                data: results.unfiltered
+            };
+            console.log("saving player cache %s", player.account_id);
+            console.time("deflate");
+            redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+            console.timeEnd("deflate");
             console.log("results: %s", results.data.length);
+            //sort matches by descending match id
+            results.data.sort(function(a, b) {
+                return b.match_id - a.match_id;
+            });
             //reduce matches to only required data for display
-            results.data = results.data.map(reduceMatch);
-            player.data = results.data;
+            player.data = results.data.map(reduceMatch);
             player.aggData = results.aggData;
-            if (!selectExists && !options.query.js_agg) {
-                //resave cache if no query and full aggregations
-                cache = {
-                    aggData: results.aggData,
-                    data: results.data
-                };
-                console.log("saving player cache %s", player.account_id);
-                redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                finish(err);
-            }
-            else {
-                //don't save the cache if there was a query
-                console.log("not saving player cache %s", player.account_id);
-                finish(err);
-            }
-        }
-
-        function finish(err) {
-            if (err) {
-                return cb(err);
-            }
+            //convert heroes hash to array and sort
             var aggData = player.aggData;
-            //convert hashes to arrays and sort them for display
             if (aggData.heroes) {
                 var heroes_arr = [];
                 var heroes = aggData.heroes;

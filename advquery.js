@@ -7,58 +7,11 @@ var isSignificant = utility.isSignificant;
 var async = require('async');
 var aggregator = require('./aggregator');
 var constants = require('./constants.json');
-/**
- * This function expects query.select keys for js aggregations to be in an array
- **/
+var preprocessQuery = require('./preprocessQuery');
+var filter = require('./filter');
+
 function advQuery(query, cb) {
-    var default_project = {
-        start_time: 1,
-        match_id: 1,
-        cluster: 1,
-        game_mode: 1,
-        duration: 1,
-        radiant_win: 1,
-        parse_status: 1,
-        first_blood_time: 1,
-        lobby_type: 1,
-        leagueid: 1,
-        radiant_name: 1,
-        dire_name: 1,
-        players: 1,
-        skill: 1
-    };
-    query.project = query.project || default_project;
-    //only project the fields we need
-    query.project["players.account_id"] = 1;
-    query.project["players.hero_id"] = 1;
-    query.project["players.level"] = 1;
-    query.project["players.kills"] = 1;
-    query.project["players.deaths"] = 1;
-    query.project["players.assists"] = 1;
-    query.project["players.gold_per_min"] = 1;
-    query.project["players.xp_per_min"] = 1;
-    query.project["players.hero_damage"] = 1;
-    query.project["players.tower_damage"] = 1;
-    query.project["players.hero_healing"] = 1;
-    query.project["players.player_slot"] = 1;
-    query.project["players.last_hits"] = 1;
-    query.project["players.denies"] = 1;
-    query.project["players.leaver_status"] = 1;
-    //select,the query received, build the mongo query and the filter based on this
-    query.mongo_select = {};
-    query.js_select = {};
-    var mongoAble = {
-        "players.account_id": 1,
-        "leagueid": 1
-    };
-    for (var key in query.select) {
-        if (mongoAble[key]) {
-            query.mongo_select[key] = query.select[key];
-        }
-        else {
-            query.js_select[key] = query.select[key];
-        }
-    }
+    preprocessQuery(query);
     //js_agg, aggregations to do with js
     //do all aggregations if null, so we need parsed data
     var bGetParsedPlayerData = Boolean(!query.js_agg);
@@ -131,90 +84,12 @@ function advQuery(query, cb) {
                 aggData: aggData,
                 page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
                 data: filtered,
-                unfiltered_count: matches.length
+                unfiltered: matches
             };
             console.timeEnd('computing aggregations');
             cb(err, result);
         });
     });
-}
-
-function filter(matches, filters) {
-    //accept a hash of filters, run all the filters in the hash in series
-    //console.log(filters);
-    var conditions = {
-        //filter: significant, remove unbalanced game modes/lobbies
-        significant: function(m, key) {
-            return Number(isSignificant(constants, m)) === key;
-        },
-        //filter: player won
-        win: function(m, key) {
-            return Number(m.player_win) === key;
-        },
-        patch: function(m, key) {
-            return m.patch === key;
-        },
-        game_mode: function(m, key) {
-            return m.game_mode === key;
-        },
-        lobby_type: function(m, key) {
-            return m.lobby_type === key;
-        },
-        hero_id: function(m, key) {
-            return m.players[0].hero_id === key;
-        },
-        isRadiant: function(m, key) {
-            return Number(m.players[0].isRadiant) === key;
-        },
-        lane_role: function(m, key) {
-            return m.players[0].parsedPlayer.lane_role === key;
-        },
-        //GETFULLPLAYERDATA: we need to iterate over match.all_players
-        //ensure all array elements fit the condition
-        included_account_id: function(m, key, arr) {
-            return arr.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return p.account_id === k;
-                });
-            });
-        },
-        with_hero_id: function(m, key, arr) {
-            return arr.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
-                });
-            });
-        },
-        against_hero_id: function(m, key, arr) {
-            return arr.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
-                });
-            });
-        }
-    };
-    //TODO implement more filters, including from parse data
-    //filter: specific regions
-    //filter: item was built
-    //filter: max gold/xp advantage
-    var filtered = [];
-    for (var i = 0; i < matches.length; i++) {
-        var include = true;
-        //verify the match passes each filter test
-        for (var key in filters) {
-            if (conditions[key]) {
-                //earlier, we arrayified everything
-                //pass the first element, as well as the full array
-                //check that it passes all filters
-                include = include && conditions[key](matches[i], filters[key][0], filters[key]);
-            }
-        }
-        //if we passed, push it
-        if (include) {
-            filtered.push(matches[i]);
-        }
-    }
-    return filtered;
 }
 /*
 function sort(matches, sorts) {
@@ -317,7 +192,6 @@ function getFullPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-
 }
     */
 function getParsedPlayerData(matches, doAction, cb) {
