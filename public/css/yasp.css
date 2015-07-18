@@ -93,12 +93,8 @@ footer {
     padding: 1.3em 0 0 1em;
 }
 
-td {
-    vertical-align: middle !important;
-}
-
-td>img.user {
-    margin-right: .5em;
+.user {
+    margin: 2px;
 }
 
 .attribVal {
@@ -368,4 +364,5 @@ h4,
 td,
 th {
     text-align: center;
+    vertical-align: center !important;
 }
