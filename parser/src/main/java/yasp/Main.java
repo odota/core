@@ -165,7 +165,7 @@ public class Main {
 			entry.slot=player1;
 			entry.key=String.valueOf(value);
 			es.output(entry);
-		}             
+		}
 		else if (type.equals("CHAT_MESSAGE_BUYBACK")){
 			//currently using combat log buyback
 			//System.err.format("%s,%s%n", time, u);
