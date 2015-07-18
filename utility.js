@@ -265,11 +265,13 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 11,
+        "version": 12,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
         "chat": [],
+        "radiant_gold_adv": [],
+        "radiant_xp_adv": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
                 "steam_id": "",
@@ -352,8 +354,7 @@ function generatePositionData(d, p) {
 }
 
 function isSignificant(constants, m) {
-    //TODO detect no stats recorded?
-    return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
+    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced);
 }
 
 function reduceMatch(match) {
@@ -362,11 +363,18 @@ function reduceMatch(match) {
     delete match.parsed_data;
     delete match.my_word_counts;
     delete match.all_word_counts;
-    delete match.chat_words;
     match.players.forEach(function(p) {
         delete p.parsedPlayer;
     });
     return match;
+}
+
+function max(array) {
+    return Math.max.apply(null, array);
+}
+
+function min(array) {
+    return Math.min.apply(null, array);
 }
 module.exports = {
     tokenize: tokenize,
@@ -381,5 +389,7 @@ module.exports = {
     generatePositionData: generatePositionData,
     getParseSchema: getParseSchema,
     isSignificant: isSignificant,
-    reduceMatch: reduceMatch
+    reduceMatch: reduceMatch,
+    max: max,
+    min: min
 };

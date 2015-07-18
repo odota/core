@@ -75,7 +75,6 @@ Starting YASP
 
 Sample Data
 ----
-* Load the test players and matches: `mongo dota migrations/loader.js`
 * https://github.com/yasp-dota/testfiles/blob/master/dota.zip contains a database dump that can be imported using mongorestore if a larger data set is desired.
 
 History
@@ -88,10 +87,3 @@ Core Development
 * howardc93
 * albertcui
 * nickhh
-
-Contributors
-----
-* mvthen
-* McHearty
-* coreymaher
-* Aehrraid

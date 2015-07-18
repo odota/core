@@ -35,7 +35,6 @@ module.exports = function processParse(job, cb) {
                     return cb(err);
                 }
                 match_id = match_id || parsed_data.match_id;
-                match.match_id = match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
                 updateDb();
@@ -436,13 +435,47 @@ function runParse(job, cb) {
             processTeamfights();
             console.log("processing multi-kill-streaks...");
             processMultiKillStreaks();
+            //compute data that requires all parsed players
+            //pick order, radiant advantage per minute
+            //determine pick order based on last time value of hero_log
+            //determine a pick_time for each parsed player
+            //duplicate, sort
+            //create hash of indices by iterating through sorted array and mapping original index to order
+            //insert back into originals, indexing by player slot
+            var pick_map = {};
+            for (var i = 0; i < parsed_data.players[0].times.length; i++) {
+                var goldtotal = 0;
+                var xptotal = 0;
+                parsed_data.players.forEach(function(p, j) {
+                    //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
+                    if (j<5) {
+                        goldtotal += p.gold[i];
+                        xptotal += p.xp[i];
+                    }
+                    else {
+                        xptotal -= p.xp[i];
+                        goldtotal -= p.gold[i];
+                    }
+                    p.origIndex = j;
+                    p.pick_time = p.hero_log[p.hero_log.length - 1].time;
+                });
+                parsed_data.radiant_gold_adv.push(goldtotal);
+                parsed_data.radiant_xp_adv.push(xptotal);
+            }
+            var sorted = parsed_data.players.slice().sort(function(a, b) {
+                return a.pick_time - b.pick_time;
+            });
+            sorted.forEach(function(player, i) {
+                pick_map[player.origIndex] = i + 1;
+            });
+            parsed_data.players.forEach(function(player) {
+                player.pick_order = pick_map[player.origIndex];
+            });
             console.timeEnd(message);
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
-            //TODO compute data that requires all parsed players
-            //pick order, radiant advantage per minute
             exit(error);
         });
     });

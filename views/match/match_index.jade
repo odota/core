@@ -17,7 +17,7 @@ mixin picks_bans_row(picks_bans, team_int)
 block match_content
   .row
     .col-md-12
-      h2.inline-header Basic
+      h3.inline-header Basic
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#index", aria-expanded="true") Toggle Table
       #index.table-responsive.collapse.in
           table.table.table-hover.summable
@@ -85,8 +85,7 @@ block match_content
                            img.item(src=item.img, title=constants.item_ids[val])
       
       if match.picks_bans
-        hr
-        h2.inline-header Picks/Bans
+        h3.inline-header Picks/Bans
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#picks-bans", aria-expanded="true") Toggle Table
         #picks-bans.table-responsive.collapse.in
           table.table.table-hover
@@ -96,10 +95,10 @@ block match_content
               tr.danger
                 +picks_bans_row(match.picks_bans, 1)
 
-      h2.inline-header Skill Builds
+      h3.inline-header Skill Builds
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
       #skills.table-responsive.collapse.in
-          table.table.table-hover
+          table.table.table-hover.table-condensed
             thead
               tr
                 th Hero
@@ -117,16 +116,15 @@ block match_content
                     if player.ability_upgrades
                       each ability in player.ability_upgrades
                         - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                        td.abilities
+                        td
                           if abilityData
                             img.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
                             
-      hr
       .row.margin-bottom
         .col-md-7
-          h2 Buildings
+          h3 Buildings
           #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
             img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
         .col-md-5

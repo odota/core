@@ -1,6 +1,9 @@
 var db = require('../db');
 var async = require('async');
 var queueReq = require('../operations').queueReq;
+/**
+ * Finds all distinct account ids in matches and requests Steam data for each
+ **/
 module.exports = function(cb) {
     db.matches.distinct('players.account_id', {}, function(err, array) {
         if (err) {

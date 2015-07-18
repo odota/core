@@ -3,6 +3,63 @@ extend match
 block match_content
   .row
     .col-md-12
-        h2.inline-header Performances
+        h3.inline-header Performances
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#performance", aria-expanded="true") Toggle Table
         include details_performance_table
+        hr
+        +ad("banner2")
+        hr
+        h3 Utilization
+        table.table.table-hover
+          each player, i in match.players
+            if !(i%10)
+              thead
+                tr
+                  th Hero
+                  th: abbr(title="Largest instance of damage on a hero") Biggest Hit
+                  th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hits)
+                  th: abbr(title="Items used") Item Use
+                  th: abbr(title="Damage dealt to heroes by skills/abilities") Damage Inflictors
+          
+            if !truncate || truncate.indexOf(i) > -1
+              tr(class = player.isRadiant ? "success" : "danger")
+                - var hero = constants.heroes[player.hero_id]
+                - var p = player.parsedPlayer
+                td.hero
+                 if hero
+                   img(src=hero.img, title=hero.localized_name)
+                 else
+                   =player.hero_id
+                td.table-img
+                  - var ability = constants.abilities[p.max_hero_hit.inflictor]
+                  - var item = constants.items[p.max_hero_hit.inflictor]
+                  - var hero = constants.hero_names[p.max_hero_hit.key]
+                  div.img-text
+                    if ability
+                      span: img.ability(src=ability.img, title=p.max_hero_hit.inflictor)
+                    else if item
+                      span: img.item(src=item.img, title=p.max_hero_hit.inflictor)
+                    else
+                      span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
+                    div #{p.max_hero_hit.value}                    
+                  if hero
+                    span: img.kill(src=hero.img, title=hero.localized_name)
+                  else
+                    =p.max_hero_hit.key
+                  
+                td.table-img
+                  each ability in p.ability_uses_arr
+                    div.img-text
+                      img.ability(src=ability.img, title=ability.name)
+                      div #{ability.val}
+                      div (#{ability.hero_hits || 0})
+                td.table-img
+                  each item in p.item_uses_arr
+                    div.img-text
+                      img.item(src=item.img, title=item.name)
+                      div #{item.val}
+                td.table-img
+                  each item in p.damage_inflictor_arr
+                    div.img-text
+                      img(class=item.className src=item.img, title=item.name)
+                      div.format #{item.val}        
