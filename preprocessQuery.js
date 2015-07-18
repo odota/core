@@ -10,6 +10,10 @@ module.exports = function(query) {
         "players.account_id": 1,
         "leagueid": 1
     };
+    var exceptions = {
+        "json": 1,
+        "compare_account_id": 1
+    };
     for (var key in query.select) {
         if (query.select[key] === "") {
             delete query.select[key];
@@ -27,7 +31,7 @@ module.exports = function(query) {
                 //get the first element
                 query.mongo_select[key] = query.select[key][0];
             }
-            else {
+            else if (!exceptions[key]){
                 //expects an array
                 query.js_select[key] = query.select[key];
             }

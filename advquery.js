@@ -11,7 +11,8 @@ var preprocessQuery = require('./preprocessQuery');
 var filter = require('./filter');
 
 function advQuery(query, cb) {
-    preprocessQuery(query);
+    //mongo_select
+    //js_select
     //js_agg, aggregations to do with js
     //do all aggregations if null, so we need parsed data
     var bGetParsedPlayerData = Boolean(!query.js_agg);
@@ -30,7 +31,7 @@ function advQuery(query, cb) {
     };
     //console.log(query);
     console.time('querying database');
-    // console.log(options);
+    //console.log(options);
     db.matches.find(query.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);

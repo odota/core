@@ -18,15 +18,17 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var cache;
     var player;
     var cachedTeammates;
+    preprocessQuery(options.query);
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+        cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         console.timeEnd("inflate");
         player = {
             account_id: account_id,
             personaname: account_id
         };
-        if (cache) {
+        if (cache && !Object.keys(options.query.js_select).length) {
             console.log("player cache hit %s", player.account_id);
             console.time("retrieving skill data");
             //cache does not contain skill data since it's added after the original insert!
@@ -44,12 +46,11 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 });
             }, function(err) {
                 console.timeEnd("retrieving skill data");
-                preprocessQuery(options.query);
-                cachedTeammates = aggregator(cache.data, null).teammates;
-                var filtered = filter(cache.data, options.query.js_select);
+                //var filtered = filter(cache.data, options.query.js_select);
+                //var aggData = aggregator(filtered, null);
                 processResults(err, {
-                    data: filtered,
-                    aggData: aggregator(filtered, null),
+                    data: cache.data,
+                    aggData: cache.aggData,
                     unfiltered: cache.data
                 });
             });
@@ -59,7 +60,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             //convert account id to number and search db with it
             //don't do this if the account id is not a number (all or professional)
             if (!isNaN(Number(account_id))) {
-                options.query.select["players.account_id"] = Number(account_id);
+                options.query.mongo_select["players.account_id"] = Number(account_id);
                 //set a larger limit since we are only getting one player's matches
                 options.query.limit = 20000;
             }
@@ -73,21 +74,24 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             if (err) {
                 return cb(err);
             }
-            //resave cache
-            cache = {
-                data: results.unfiltered
-            };
-            console.log("saving player cache %s", player.account_id);
-            console.time("deflate");
-            redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-            console.timeEnd("deflate");
+            //reduce matches to only required data for display, also shrinks the data for cache resave
+            player.data = results.data.map(reduceMatch);
+            if (!Object.keys(options.query.js_select).length) {
+                //resave cache
+                cache = {
+                    data: results.data,
+                    aggData: results.aggData
+                };
+                console.log("saving player cache %s", player.account_id);
+                console.time("deflate");
+                redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                console.timeEnd("deflate");
+            }
             console.log("results: %s", results.data.length);
             //sort matches by descending match id
             results.data.sort(function(a, b) {
                 return b.match_id - a.match_id;
             });
-            //reduce matches to only required data for display
-            player.data = results.data.map(reduceMatch);
             player.aggData = results.aggData;
             //convert heroes hash to array and sort
             var aggData = player.aggData;

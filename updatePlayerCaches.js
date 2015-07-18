@@ -38,6 +38,17 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         match_copy.players = [p];
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
+                        //check for doc.players containing this match_id (do aggregation for new inserts where player was formerly anonymous)
+                        var playerInMatch = doc.players.some(function(player) {
+                            player.account_id === p.account_id;
+                        });
+                        var reInsert = doc && options.type === "api" && playerInMatch;
+                        //determine if we're reparsing this match		
+                        var reParse = doc && doc.parsed_data && options.type === "parsed";
+                        if (!reInsert && !reParse && cache.aggData) {
+                            //do aggregations on fields based on type		
+                            cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                        }
                         //TODO it may be more performant to just push the match now and then deduplicate at view time (taking the last entry of each match_id to get state changes)
                         //add match to array
                         var ids = {};
@@ -46,7 +57,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             ids[m.match_id] = m;
                         });
                         //update this match with latest state (parse_status/skill may have changed)
-                        ids[match_copy.match_id] = match_copy;
+                        ids[match_copy.match_id] = reduceMatch(match_copy);
                         cache.data = [];
                         for (var key in ids) {
                             cache.data.push(ids[key]);
