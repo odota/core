@@ -1,7 +1,7 @@
 //external css
 require('../../node_modules/c3/c3.css');
 require('../../node_modules/cal-heatmap/cal-heatmap.css');
-//require('../../node_modules/bootstrap/dist/css/bootstrap.css');
+require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../node_modules/select2/dist/css/select2.css');
 require('../../node_modules/select2-bootstrap-theme/dist/select2-bootstrap.css');
 require('../../node_modules/qTip2/dist/jquery.qtip.css');

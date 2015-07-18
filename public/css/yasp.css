@@ -1,12 +1,4 @@
-/*
-@media (min-width: 1200px) {
-    .container {
-        width: 1230px;
-    }
-}
-*/
 /* ads */
-
 .leaderboard {
     margin: 0 auto;
     display: block;
@@ -20,7 +12,6 @@
 }
 html,
 body {
-    font-family: 'Roboto Slab', sans-serif;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -46,7 +37,7 @@ h3 img {
 .img-text {
     float: left;
     text-align: center;
-    font-size: 10px;
+    font-size: 11px;
 }
 .img-small {
     margin-right: 1px;
@@ -71,13 +62,6 @@ h3 img {
 .pickban {
     margin: 0px;
     height: 25px;
-}
-td.abilities {
-    padding: 8px 1px !important;
-}
-td.abilities img {
-    height: 35px;
-    width: 35px;
 }
 .navbar-default {
     background-color: #BBF0FD;
@@ -228,67 +212,36 @@ td>img.user {
 .player-color {
     border-left: 10px solid;
 }
-.blog-panel hr {
-    border-color: #000;
-}
-.blog-panel h1,
-.blog-panel h2,
-.blog-panel h3 {
-    color: black;
-}
-.blog-panel .panel-body a {
-    color: #337ab7;
-}
-option {
-    color: black;
-}
-.select2-search-choice *,
-.select2-drop * {
-    color: black;
-}
 div .dataTables_processing {
     /*set z-index for processing indicator*/
-    
     z-index: 60000;
 }
-.rating {
-    margin-left: 5px;
-    margin-right: 5px;
-}
 /* Use sans-serif on tables*/
-
+/*
 table tbody *,
 table tfoot * {
     font-family: Arial, sans-serif;
 }
+*/
 #heatmap-table {
     height: 500px;
 }
 /* Blog */
-
 #panel-chart {
     padding: 10px;
-}
-.panel-body {
-    background-color: #f5f5f5;
 }
 .panel-title {
     text-transform: none;
     font-size: 15px;
     letter-spacing: 0px;
 }
-.blog-preview {
-    background-color: #fff;
-}
 .blog-heading {
     font-size: 20px !important;
-    color: #337ab7;
 }
 .blog-panel {
     margin-bottom: 30px;
 }
 .blog-date {
-    color: #777;
     margin-bottom: 0px;
 }
 .label-info {
@@ -298,22 +251,9 @@ table tfoot * {
     margin-bottom: 10px;
 }
 .tag-list {
-    background-color: #5BC0DE;
     border-radius: 4px;
-    color: #fff;
     padding: 2px 5px;
     margin-left: -10px;
-}
-.tag-list:hover,
-.tag-list:focus,
-.tags a span:hover,
-.tags a span:focus {
-    color: #BBF0FD;
-}
-.tag-key a:hover,
-.tag-key a:focus {
-    color: #BBF0FD;
-    background-color: #f5f5f5 !important;
 }
 .theme-blue {
     color: #BBF0FD;
@@ -367,52 +307,8 @@ h4,
 .btn,
 .navbar a {
   text-transform: uppercase;
-  font-family: "Roboto Slab", Arial, sans-serif;
-  letter-spacing: 2px;
 }
 
-a.list-group-item:hover,
-a.list-group-item:focus {
-  color: #BBF0FD;
-  background-color: #FFF;
-}
 .icon-bar {
   background-color: #fff;
-}
-.navbar a {
-  color: #fff;
-  font-size: 14px;
-}
-.navbar-bold.affix {
-  background-color: #d46054;
-}
-.navbar-bold {
-  background-color: #f68076;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-.navbar-bold li a:hover,
-.navbar-bold li.active {
-  background-color: #d46054;
-}
-.navbar-brand:hover,
-.navbar-brand:focus {
-  background-color: #BBF0FD;
-}
-.navbar-brand:hover strong,
-.navbar-brand:focus strong {
-  color: #000;
-}
-#navbar .nav>li>a:hover,
-#navbar .nav>li>a:focus {
-  background-color: #BBF0FD;
-}
-.navbar-fixed-top {
-  transition: background 1s ease 0s;
-}
-.navbar-fixed-top.opaque {
-  background-color: rgb(37, 41, 42);
-  transition: background-color 1s ease 0s;
-}
-a:hover {
-  color: #000;
 }

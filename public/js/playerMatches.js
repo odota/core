@@ -57,7 +57,7 @@ module.exports = function drawMatches(data, options) {
             },
             {
                 data: 'game_mode',
-                title: 'Game Mode',
+                title: 'Mode',
                 render: function(data, type) {
                     return constants.game_mode[data] ? constants.game_mode[data].name : data;
                 }
@@ -87,7 +87,7 @@ module.exports = function drawMatches(data, options) {
             },
             {
                 data: 'start_time',
-                title: 'Played',
+                title: 'Ended',
                 render: function(data, type, row) {
                     if (type === 'sort') {
                         return data + row.duration; // Sort by unix timestamp

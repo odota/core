@@ -1,30 +1,34 @@
-body {
-    color: rgb(199, 199, 199);
-    background-color: #303030;
-}
-a {
-    color: #BBF0FD;
-}
-a.navbar-brand strong,
-h1,
-h2 {
-    color: #BBF0FD;
-}
-.table-hover>tbody>tr:hover {
-    background-color: #616161;
-}
-thead {		
-    background-color: #424242;		
-}
-
 footer {
   background-color: #000;
 }
-.nav-tabs>li.active>a,
-.nav-tabs>li.active>a:focus,
-.nav-tabs>li.active>a:hover {
-    background-color: rgb(86, 86, 86);
+
+.c3 path,
+.c3 line {
+    stroke: rgb(199, 199, 199) !important;
 }
+.c3-axis-y .tick,
+.c3-axis-x .tick,
+.c3-axis-x-label,
+.c3-axis-y-label,
+.c3-legend-item {
+    fill: rgb(199, 199, 199);
+}
+.c3 {
+    color: #000;
+}
+
+#match_statistics tbody, #positions tbody {
+    color: rgb(199, 199, 199);
+}
+
+/* tool-tip pop-up styles */
+
+abbr.blackunderline {
+    /* change from default of #777 */
+    border-bottom: 1px dotted #000000;
+}
+
+/* tweak the table success/danger colors */
 .success,
 .table>tbody>tr.success>td,
 .table>tbody>tr.success>th,
@@ -40,13 +44,7 @@ footer {
 .table>thead>tr>th.success {
     background-color: #488446;
 }
-.table-hover>tbody>tr.success:hover>td,
-.table-hover>tbody>tr.success:hover>th,
-.table-hover>tbody>tr:hover>.success,
-.table-hover>tbody>tr>td.success:hover,
-.table-hover>tbody>tr>th.success:hover {
-    background-color: #1C8E18;
-}
+
 .danger,
 .table>tbody>tr.danger>td,
 .table>tbody>tr.danger>th,
@@ -62,82 +60,17 @@ footer {
 .table>thead>tr>th.danger {
     background-color: #712C2C;
 }
-.table-hover>tbody>tr.danger:hover>td,
-.table-hover>tbody>tr.danger:hover>th,
-.table-hover>tbody>tr:hover>.danger,
-.table-hover>tbody>tr>td.danger:hover,
-.table-hover>tbody>tr>th.danger:hover {
-    background-color: #930808;
-}
-.table>tbody>tr>td,
-.table>tbody>tr>th,
-.table>tfoot>tr>td,
-.table>tfoot>tr>th,
-.table>thead>tr>td,
-.table>thead>tr>th {
-    border-color: #848484;
-}
-.nav-tabs>li.active>a,
-.nav-tabs>li.active>a:focus,
-.nav-tabs>li.active>a:hover {
-    background-color: rgb(199, 199, 199);
-}
-.alert-warning {
-    color: #000000;
-    background-color: #B5A449;
-    border-color: #846F42;
-}
-.alert-warning strong {
-    color: #000;
-}
-.c3 path,
-.c3 line {
-    stroke: rgb(199, 199, 199) !important;
-}
-.c3-axis-y .tick,
-.c3-axis-x .tick,
-.c3-axis-x-label,
-.c3-axis-y-label,
-.c3-legend-item {
-    fill: rgb(199, 199, 199);
-}
-.c3 {
-    color: #000;
-}
-div.dataTables_processing {
-    background: inherit !important;
-}
 
-div.container.well.well-lg {
-    background-color: rgb(63, 63, 63);
+.tag-list {
+    color: #fff;
 }
-/*#accordion h4.panel-title > a,*/
-/*#accordion .panel-collapse {*/
-/*    background-color: black;*/
-/*}*/
-
-#accordion .panel-title,
-#accordion .panel-body,
-#accordion .panel-body li {
-    color: black;
+.tag-list:hover,
+.tag-list:focus,
+.tags a span:hover,
+.tags a span:focus {
+    color: #BBF0FD;
 }
-.blog-preview p,
-.blog-preview li,
-.tag-key>p.lead {
-    color: black;
-}
-
-.panel-body a {
-    color: #337ab7;
-}
-
-#match_statistics tbody, #positions tbody {
-    color: rgb(199, 199, 199);
-}
-
-/* tool-tip pop-up styles */
-
-abbr.blackunderline {
-    /* change from default of #777 */
-    border-bottom: 1px dotted #000000;
+.tag-key a:hover,
+.tag-key a:focus {
+    color: #BBF0FD;
 }
