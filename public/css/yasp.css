@@ -364,5 +364,5 @@ h4,
 td,
 th {
     text-align: center;
-    vertical-align: center !important;
+    vertical-align: middle !important;
 }
