@@ -46,6 +46,9 @@ append footer_assets
             targets: "fromNow",
             render: function(data, type) {
                 if (type === "display") {
+                    if (!Number(data)){
+                        return "never";
+                    }
                     return moment.unix(data).fromNow();
                 }
                 return data;
@@ -61,6 +64,9 @@ append footer_assets
             targets: "fromNow",
             render: function(data, type) {
                 if (type === "display") {
+                    if (!Number(data)){
+                        return "never";
+                    }
                     return moment.unix(data).fromNow();
                 }
                 return data;
