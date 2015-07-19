@@ -25,6 +25,7 @@ module.exports = function processParse(job, cb) {
         //match object should now contain replay url, and should also be persisted to db
         if (match.start_time < moment().subtract(7, 'days').format('X') && !match.fileName) {
             //expired, can't parse even if we have url, but parseable if we have a filename
+            //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
             //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
             //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
             return cb(err);
