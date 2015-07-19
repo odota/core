@@ -1,9 +1,10 @@
 doctype html
 html
   head
-    title= title || "YASP - Dota 2 Replay Parsing and Statistics"
-    meta(name="description", content="YASP: Another (Dota) Stats Page")
-    meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
+    - var default_title = "YASP - Dota 2 Replay Parsing and Statistics"
+    title= title || default_title
+    meta(name="description", content=default_title)
+    meta(property="og:site_name", content=default_title)
     meta(charset='utf-8')
     meta(name="viewport" content="width=device-width, initial-scale=1")
     //- Favicons
@@ -31,7 +32,7 @@ html
     script(src="/public/build/yasp.min.js")
     
     //can npm install bootswatch to bundle darkly
-    //van npm install material-design-lite to bundle material
+    //can npm install material-design-lite to bundle material
     //-
       <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
       <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
@@ -69,7 +70,7 @@ html
           // Since ad blocks hide ads using CSS too
           ad.style.cssText = 'display:block !important'; 
           // You can put any text, image or even IFRAME tags here
-          ad.innerHTML = "<div class='alert alert-info text-center' role='alert'>Blocking ads?  Please consider disabling your ad blocker or donating to help keep YASP running.</div>";
+          ad.innerHTML = "<div class='alert alert-info text-center' role='alert'>Blocking ads?  Please consider disabling your ad blocker or donating to help keep the service running.</div>";
         }
       }, 2000); // The ad blocker check is performed 2 seconds after the page load 
     }; 

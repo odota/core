@@ -26,7 +26,7 @@ module.exports = function drawMatches(data, options) {
         columns: [
             {
                 data: 'match_id',
-                title: 'Match ID',
+                title: 'ID',
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
@@ -151,7 +151,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data;
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || "";
                 }
             }
 

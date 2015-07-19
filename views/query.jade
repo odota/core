@@ -1,13 +1,4 @@
-//temporary select2 fix due to weird 100px hardcode in 4.0.0 beta
-style.
-  .select2-container,
-  .select2-search__field 
-  {
-    color: black;
-    width: 100% !important;
-    padding: 0;
-  }
-h3.inline-header Filter
+h2.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
   form#query(action="" method="GET")
@@ -99,19 +90,15 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
 script.
     $("#included_account_id").select2({
         tags: true,
-        theme: "bootstrap",
         maximumSelectionSize: 10
     });
     $("#with_hero_id").select2({
-        theme: "bootstrap",
         maximumSelectionSize: 5
     });
     $("#enemy_hero_id").select2({
-        theme: "bootstrap",
         maximumSelectionSize: 5
     });
     $("#compare_account_id").select2({
         tags: true,
-        theme: "bootstrap",
         maximumSelectionSize: 5
     });

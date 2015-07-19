@@ -24,10 +24,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         if (err) {
             return cb(err);
         }
-        var reInsert = doc && options.type === "api";
-        //determine if we're reparsing this match
-        var reParse = doc && doc.parsed_data && options.type === "parsed";
-        //console.log("reInsert: %s, reParse: %s", reInsert, reParse);
         async.each(match.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
                     //if player cache doesn't exist, skip
@@ -42,13 +38,18 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         match_copy.players = [p];
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
-                        //do aggregations only we didn't do them already
-                        if (!reInsert && !reParse) {
-                            //do aggregations on fields based on type
+                        //check for doc.players containing this match_id (do aggregation for new inserts where player was formerly anonymous)
+                        var playerInMatch = doc.players.some(function(player) {
+                            player.account_id === p.account_id;
+                        });
+                        var reInsert = doc && options.type === "api" && playerInMatch;
+                        //determine if we're reparsing this match		
+                        var reParse = doc && doc.parsed_data && options.type === "parsed";
+                        if (!reInsert && !reParse && cache.aggData) {
+                            //do aggregations on fields based on type		
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
                         //TODO it may be more performant to just push the match now and then deduplicate at view time (taking the last entry of each match_id to get state changes)
-                        //however this means we need to resave the cache on every load in order to keep it from getting bloated
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id

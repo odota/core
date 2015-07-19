@@ -28,6 +28,8 @@ module.exports = function processApi(job, cb) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
             job.progress(100, 100, "Received basic match data.");
+            //we want to try to parse this match
+            match.parse_status = 0;
             if (match.request) {
                 insertMatchProgress(match, job, function(err) {
                     cb(err);
