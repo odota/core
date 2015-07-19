@@ -10,12 +10,18 @@ block playercontent
           var histogramData = {};
         each val, key in player.aggData
           if key in histograms
+            - var collapsed = true
+            button.btn.btn-xs.btn-dark.toggle-button.bright-border(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+        each val, key in player.aggData
+          if key in histograms
             - var avg = val.sum/val.n
-            h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
-              small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
-            script.
-              histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
-            div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
+            - var collapsed = true
+            section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
+              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+                small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
+              script.
+                histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
+              div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
           
 append footer_assets
   script.
@@ -25,3 +31,4 @@ append footer_assets
         var win_counts = histogramData[key].win_counts;
         createHistogram(counts, win_counts, key);
     });
+    $("#histogram-container-toggle-duration").click();
