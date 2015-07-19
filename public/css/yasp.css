@@ -62,12 +62,6 @@ h3 img {
     height: 25px;
 }
 
-.navbar-default {
-    background-color: #BBF0FD;
-    border: none;
-    border-radius: 0px;
-}
-
 .tooltip-inner {
     white-space: normal;
 }
@@ -226,22 +220,6 @@ div .dataTables_processing {
     z-index: 60000;
 }
 
-
-/* Use sans-serif on tables*/
-
-
-/*
-table tbody *,
-table tfoot * {
-    font-family: Arial, sans-serif;
-}
-*/
-
-#heatmap-table {
-    height: 500px;
-}
-
-
 /* Blog */
 
 #panel-chart {
@@ -363,3 +341,11 @@ th {
     text-align: center;
     vertical-align: middle !important;
 }
+
+/* Use sans-serif on tables*/
+/*
+table tbody *,
+table tfoot * {
+    font-family: Arial, sans-serif;
+}
+*/
