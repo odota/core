@@ -5,18 +5,15 @@
         thead
           tr
             th Hero
-            th: abbr(title="Order in which the player picked") PICK
-            th: abbr(title="Lane based on early game position") POS
-            th: abbr(title="Percentage of lane gold obtained at 10 minutes") EFF@10
+            th: abbr(title="Order in which the player picked") Pick
+            //th Pick Time
+            th: abbr(title="Lane based on early game position") Position
+            th: abbr(title="Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes") EFF@10
             th: abbr(title="Last hits at 10 minutes") LH@10
-            th: abbr(title="Seconds of disable on enemy heroes") STUN
-            th: abbr(title="Number of times the player pinged") PINGS
-            //th: abbr(title="Number of times the player clicked") CLICKS
-            th: abbr(title="Largest instance of damage on a hero") Biggest Hit
-            th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hits)
-            th: abbr(title="Items used") Item Use
-            th: abbr(title="Damage dealt to heroes by skills/abilities") Damage Inflictors
-    
+            th: abbr(title="Seconds of disable on enemy heroes") Stuns
+            th: abbr(title="Number of times the player pinged") Pings
+            //th: abbr(title="Number of times the player clicked") Clicks
+
       if !truncate || truncate.indexOf(i) > -1
         tr(class = player.isRadiant ? "success" : "danger")
           - var hero = constants.heroes[player.hero_id]
@@ -26,43 +23,12 @@
              img(src=hero.img, title=hero.localized_name)
            else
              =player.hero_id
-          td #{p.pick_order} (<span class="format-seconds" data-format-seconds=#{p.pick_time}></span>)
-          td #{constants.lane_ids[p.lane] || "-"} (#{p.lane_role})
+          td #{p.pick_order} 
+          //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
+          td #{constants.lane_ids[p.lane] || "-"} (#{constants.lane_role[p.lane_role] || "-"})
           td #{(p.lane_efficiency*100).toFixed(2)}
           td #{p.lh[10] || "-"}
           td #{p.stuns.toFixed(2)}
           td #{p.pings[0] || "-"}
           //td #{p.clicks[0] || "-"}
-          td.table-img
-            - var ability = constants.abilities[p.max_hero_hit.inflictor]
-            - var item = constants.items[p.max_hero_hit.inflictor]
-            - var hero = constants.hero_names[p.max_hero_hit.key]
-            div.img-text
-              if ability
-                span: img.ability(src=ability.img, title=p.max_hero_hit.inflictor)
-              else if item
-                span: img.item(src=item.img, title=p.max_hero_hit.inflictor)
-              else
-                span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
-              div #{p.max_hero_hit.value}                    
-            if hero
-              span: img.kill(src=hero.img, title=hero.localized_name)
-            else
-              =p.max_hero_hit.key
-            
-          td.table-img
-            each ability in p.ability_uses_arr
-              div.img-text
-                img.ability(src=ability.img, title=ability.name)
-                div #{ability.val}
-                div (#{ability.hero_hits || 0})
-          td.table-img
-            each item in p.item_uses_arr
-              div.img-text
-                img.item(src=item.img, title=item.name)
-                div #{item.val}
-          td.table-img
-            each item in p.damage_inflictor_arr
-              div.img-text
-                img(class=item.className src=item.img, title=item.name)
-                div.format #{item.val}
+        

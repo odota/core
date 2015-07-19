@@ -1,5 +1,7 @@
 var utility = require('./utility');
 var mode = utility.mode;
+var max = utility.max;
+var min = utility.min;
 var generatePositionData = utility.generatePositionData;
 var isRadiant = utility.isRadiant;
 var constants = require('./constants.json');
@@ -32,149 +34,8 @@ function computeMatchData(match) {
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
-            match.players.forEach(function(player, ind) {
-                //mapping 0 to 0, 128 to 5, etc.
-                //if we projected only one player, then use slot 0
-                if (match.parsed_data.players.length === 1) {
-                    player.parseSlot = 0;
-                }
-                var p = match.parsed_data.players[player.parseSlot];
-                if (p.kills_log) {
-                    //remove meepo/meepo kills
-                    if (player.hero_id === 82) {
-                        p.kills_log = p.kills_log.filter(function(k) {
-                            return k.key !== "npc_dota_hero_meepo";
-                        });
-                    }
-                }
-                if (p.hero_log && p.hero_log.length) {
-                    p.pick_time = p.hero_log[p.hero_log.length - 1].time;
-                }
-                if (p.kills) {
-                    p.neutral_kills = 0;
-                    p.tower_kills = 0;
-                    p.courier_kills = 0;
-                    p.lane_kills = 0;
-                    p.hero_kills = 0;
-                    p.observer_kills = 0;
-                    p.sentry_kills = 0;
-                    for (var key in p.kills) {
-                        if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
-                            p.lane_kills += p.kills[key];
-                        }
-                        if (key.indexOf("observer") !== -1) {
-                            p.observer_kills += p.kills[key];
-                        }
-                        if (key.indexOf("sentry") !== -1) {
-                            p.sentry_kills += p.kills[key];
-                        }
-                        if (key.indexOf("npc_dota_hero") === 0) {
-                            p.hero_kills += p.kills[key];
-                        }
-                        if (key.indexOf("npc_dota_neutral") === 0) {
-                            p.neutral_kills += p.kills[key];
-                        }
-                        if (key.indexOf("_tower") !== -1) {
-                            p.tower_kills += p.kills[key];
-                        }
-                        if (key.indexOf("courier") !== -1) {
-                            p.courier_kills += p.kills[key];
-                        }
-                    }
-                }
-                if (p.buyback_log) {
-                    p.buyback_count = p.buyback_log.length;
-                }
-                if (p.item_uses) {
-                    p.observer_uses = p.item_uses.ward_observer || 0;
-                    p.sentry_uses = p.item_uses.ward_sentry || 0;
-                }
-                if (p.gold) {
-                    //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
-                    //var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
-                    //6.84 change
-                    var tenMinute = (40 * 60 + 45 * 20 + 74 * 2) + (600 / 0.6) + 625;
-                    p.lane_efficiency = (p.gold[10] || 0) / tenMinute;
-                }
-                //convert position hashes to heatmap array of x,y,value
-                var d = {
-                    "obs": true,
-                    "sen": true,
-                    //"pos": true,
-                    "lane_pos": true
-                };
-                p.posData = generatePositionData(d, p);
-                //p.explore = p.posData.pos.length / 128 / 128;
-                //compute lanes
-                var lanes = [];
-                for (var i = 0; i < p.posData.lane_pos.length; i++) {
-                    var dp = p.posData.lane_pos[i];
-                    for (var j = 0; j < dp.value; j++) {
-                        lanes.push(constants.lanes[dp.y][dp.x]);
-                    }
-                }
-                if (lanes.length) {
-                    p.lane = mode(lanes);
-                    var radiant = player.isRadiant;
-                    var lane_roles = {
-                        "1": function() {
-                            //bot
-                            return radiant ? "Safe" : "Off";
-                        },
-                        "2": function() {
-                            //mid
-                            return "Mid";
-                        },
-                        "3": function() {
-                            //top
-                            return radiant ? "Off" : "Safe";
-                        },
-                        "4": function() {
-                            //rjung
-                            return "Jungle";
-                        },
-                        "5": function() {
-                            //djung
-                            return "Jungle";
-                        }
-                    };
-                    p.lane_role = lane_roles[p.lane] ? lane_roles[p.lane]() : undefined;
-                }
-                //compute hashes of purchase time sums and counts from logs
-                if (p.purchase_log) {
-                    //remove ward dispenser and recipes
-                    p.purchase_log = p.purchase_log.filter(function(purchase) {
-                        return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
-                    });
-                    p.purchase_time = {};
-                    p.item_win = {};
-                    p.item_usage = {};
-                    for (var i = 0; i < p.purchase_log.length; i++) {
-                        var k = p.purchase_log[i].key;
-                        var time = p.purchase_log[i].time;
-                        if (!p.purchase_time[k]) {
-                            p.purchase_time[k] = 0;
-                        }
-                        p.purchase_time[k] += time;
-                        p.item_usage[k] = 1;
-                        p.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
-                    }
-                }
-                if (p.stuns) {
-                    p.stuns = ~~p.stuns;
-                }
-                //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
-                /*
-                for (var key in p.kill_streaks) {
-                    if (Number(key) > 10) {
-                        p.kill_streaks["10"] += p.kill_streaks[key];
-                    }
-                }
-                */
-                player.parsedPlayer = p;
-            });
             // aggregate all the words in these matches for a single player (don't do this for single match display)
-            if (match.parsed_data.chat) {
+            if (match.parsed_data.chat.length) {
                 if (match.all_players) {
                     // aggregation of all words in all chat this player has experienced
                     match.all_word_counts = count_words(match, null);
@@ -186,23 +47,149 @@ function computeMatchData(match) {
                     return message.key;
                 }).join(' ');
             }
-            //TODO this and biggest throw/comeback rely on all players parsed data and could be computed at insertion time
-            //determine pick order based on last time value of hero_log
-            //if tied, break ties arbitrarily
-            //duplicate, sort, iterate and put index
-            //create hash of indices
-            //insert back into originals, indexing by player slot
-            var pick_map = {};
-            var sorted = match.players.slice().sort(function(a, b) {
-                return a.parsedPlayer.pick_time - b.parsedPlayer.pick_time;
-            });
-            sorted.forEach(function(player, i) {
-                if (player.parsedPlayer.pick_time) {
-                    pick_map[player.player_slot] = i + 1;
+            //compute player-level data and set parsedPlayer
+            match.players.forEach(function(player, ind) {
+                //mapping 0 to 0, 128 to 5, etc.
+                //if we projected only one player, then use slot 0
+                if (match.parsed_data.players.length === 1) {
+                    player.parseSlot = 0;
                 }
-            });
-            match.players.forEach(function(player) {
-                player.parsedPlayer.pick_order = pick_map[player.player_slot];
+                var parsedPlayer = match.parsed_data.players[player.parseSlot];
+                if (parsedPlayer.kills_log) {
+                    //remove meepo/meepo kills
+                    if (player.hero_id === 82) {
+                        parsedPlayer.kills_log = parsedPlayer.kills_log.filter(function(k) {
+                            return k.key !== "npc_dota_hero_meepo";
+                        });
+                    }
+                }
+                if (parsedPlayer.kills) {
+                    parsedPlayer.neutral_kills = 0;
+                    parsedPlayer.tower_kills = 0;
+                    parsedPlayer.courier_kills = 0;
+                    parsedPlayer.lane_kills = 0;
+                    parsedPlayer.hero_kills = 0;
+                    parsedPlayer.observer_kills = 0;
+                    parsedPlayer.sentry_kills = 0;
+                    for (var key in parsedPlayer.kills) {
+                        if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
+                            parsedPlayer.lane_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("observer") !== -1) {
+                            parsedPlayer.observer_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("sentry") !== -1) {
+                            parsedPlayer.sentry_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("npc_dota_hero") === 0) {
+                            parsedPlayer.hero_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("npc_dota_neutral") === 0) {
+                            parsedPlayer.neutral_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("_tower") !== -1) {
+                            parsedPlayer.tower_kills += parsedPlayer.kills[key];
+                        }
+                        if (key.indexOf("courier") !== -1) {
+                            parsedPlayer.courier_kills += parsedPlayer.kills[key];
+                        }
+                    }
+                }
+                if (parsedPlayer.buyback_log) {
+                    parsedPlayer.buyback_count = parsedPlayer.buyback_log.length;
+                }
+                if (parsedPlayer.item_uses) {
+                    parsedPlayer.observer_uses = parsedPlayer.item_uses.ward_observer || 0;
+                    parsedPlayer.sentry_uses = parsedPlayer.item_uses.ward_sentry || 0;
+                }
+                if (parsedPlayer.gold) {
+                    //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
+                    //var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
+                    //6.84 change
+                    var tenMinute = (40 * 60 + 45 * 20 + 74 * 2) + (600 / 0.6) + 625;
+                    parsedPlayer.lane_efficiency = (parsedPlayer.gold[10] || 0) / tenMinute;
+                }
+                //convert position hashes to heatmap array of x,y,value
+                var d = {
+                    "obs": true,
+                    "sen": true,
+                    //"pos": true,
+                    "lane_pos": true
+                };
+                parsedPlayer.posData = generatePositionData(d, parsedPlayer);
+                //p.explore = p.posData.pos.length / 128 / 128;
+                //compute lanes
+                var lanes = [];
+                for (var i = 0; i < parsedPlayer.posData.lane_pos.length; i++) {
+                    var dp = parsedPlayer.posData.lane_pos[i];
+                    for (var j = 0; j < dp.value; j++) {
+                        lanes.push(constants.lanes[dp.y][dp.x]);
+                    }
+                }
+                if (lanes.length) {
+                    parsedPlayer.lane = mode(lanes);
+                    var radiant = player.isRadiant;
+                    var lane_roles = {
+                        "1": function() {
+                            //bot
+                            return radiant ? 1 : 3;
+                        },
+                        "2": function() {
+                            //mid
+                            return 2;
+                        },
+                        "3": function() {
+                            //top
+                            return radiant ? 3 : 1;
+                        },
+                        "4": function() {
+                            //rjung
+                            return 4;
+                        },
+                        "5": function() {
+                            //djung
+                            return 4;
+                        }
+                    };
+                    parsedPlayer.lane_role = lane_roles[parsedPlayer.lane] ? lane_roles[parsedPlayer.lane]() : undefined;
+                }
+                //compute hashes of purchase time sums and counts from logs
+                if (parsedPlayer.purchase_log) {
+                    //remove ward dispenser and recipes
+                    parsedPlayer.purchase_log = parsedPlayer.purchase_log.filter(function(purchase) {
+                        return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
+                    });
+                    parsedPlayer.purchase_time = {};
+                    parsedPlayer.item_win = {};
+                    parsedPlayer.item_usage = {};
+                    for (var i = 0; i < parsedPlayer.purchase_log.length; i++) {
+                        var k = parsedPlayer.purchase_log[i].key;
+                        var time = parsedPlayer.purchase_log[i].time;
+                        if (!parsedPlayer.purchase_time[k]) {
+                            parsedPlayer.purchase_time[k] = 0;
+                        }
+                        parsedPlayer.purchase_time[k] += time;
+                        parsedPlayer.item_usage[k] = 1;
+                        parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
+                    }
+                }
+                //compute throw/comeback levels
+                if (match.parsed_data.radiant_gold_adv) {
+                    var radiant_gold_advantage = match.parsed_data.radiant_gold_adv;
+                    parsedPlayer.throw = match.radiant_win !== isRadiant(player) ? (isRadiant(player) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
+                    parsedPlayer.comeback = match.radiant_win === isRadiant(player) ? (isRadiant(player) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
+                    parsedPlayer.loss = match.radiant_win !== isRadiant(player) ? (isRadiant(player) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
+                    parsedPlayer.stomp = match.radiant_win === isRadiant(player) ? (isRadiant(player) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
+                }
+                //code to cap killstreaks, but don't need to do (don't count streaks beyond 10, since the 10-streak will have been counted?)
+                /*
+                for (var key in p.kill_streaks) {
+                    if (Number(key) > 10) {
+                        p.kill_streaks["10"] += p.kill_streaks[key];
+                    }
+                }
+                */
+                player.parsedPlayer = parsedPlayer;
             });
         }
     }
@@ -398,22 +385,29 @@ function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
-    for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
-        var goldtotal = 0;
-        var xptotal = 0;
-        match.players.forEach(function(elem, j) {
-            var p = elem.parsedPlayer;
-            if (elem.isRadiant) {
-                goldtotal += p.gold[i];
-                xptotal += p.xp[i];
-            }
-            else {
-                xptotal -= p.xp[i];
-                goldtotal -= p.gold[i];
-            }
-        });
-        goldDifference.push(goldtotal);
-        xpDifference.push(xptotal);
+    if (match.parsed_data.radiant_gold_adv.length) {
+        goldDifference = goldDifference.concat(match.parsed_data.radiant_gold_adv);
+        xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
+    }
+    else {
+        //older matches need this data summed at view time, unless we migrate it
+        for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
+            var goldtotal = 0;
+            var xptotal = 0;
+            match.players.forEach(function(elem, j) {
+                var p = elem.parsedPlayer;
+                if (elem.isRadiant) {
+                    goldtotal += p.gold[i];
+                    xptotal += p.xp[i];
+                }
+                else {
+                    xptotal -= p.xp[i];
+                    goldtotal -= p.gold[i];
+                }
+            });
+            goldDifference.push(goldtotal);
+            xpDifference.push(xptotal);
+        }
     }
     var time = ["time"].concat(match.parsed_data.players[0].times);
     var data = {
@@ -460,7 +454,7 @@ function generateIncomeData(match) {
         cats: categories,
         goldCols: columns,
         gold_reasons: gold_reasons
-    }
+    };
 }
 module.exports = {
     renderMatch: renderMatch,

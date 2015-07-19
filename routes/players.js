@@ -64,7 +64,17 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "stuns": 1,
         "tower_kills": 1,
         "neutral_kills": 1,
-        "courier_kills": 1
+        "courier_kills": 1,
+        "tps_purchased":1,
+        "observers_purchased": 1,
+        "sentries_purchased": 1,
+        "gems_purchased": 1,
+        "rapiers_purchased": 1,
+        "pick_order": 1,
+        "throw": 1,
+        "comeback": 1,
+        "stomp": 1,
+        "loss": 1
     };
     if (info === "compare") {
         var account_ids = ["all", req.params.account_id.toString()];

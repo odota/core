@@ -7,9 +7,13 @@ append head
 block content
   .row.match-top
     .col-md-5
-      h1 Match #{match.match_id}
+      h1 Match #{match.match_id} 
+        small
+          a(href="?json=1" title="View as JSON")
+              i.fa.fa-download
         br
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+
     .col-md-7.table-responsive
       table.table.table-condensed
         thead
@@ -33,9 +37,7 @@ block content
             td= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
             td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
-  .row
-    .col-md-12
-      .addthis_sharing_toolbox.pull-right
+            
   .row
     .col-md-10.table-responsive
       ul.nav.nav-tabs
@@ -43,7 +45,7 @@ block content
           li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
     .col-md-2
-      a(href="?json=1" class="btn btn-success") Download JSON
+      .addthis_sharing_toolbox.pull-right
 
   .match
     block match_content

@@ -12,7 +12,6 @@ var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
-var ready = false;
 var a = [];
 var port = config.PORT;
 var server = app.listen(port, function() {
@@ -108,9 +107,64 @@ async.each(a, function(i, cb) {
         }
     }
 }, function() {
-    //all accounts ready!
-    ready = true;
+    //start listening
+    app.get('/', function(req, res, next) {
+        //console.log(process.memoryUsage());
+        if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+            //reject request if doesnt have key
+            return next("invalid key");
+        }
+        res.locals.to = setTimeout(function() {
+            next("retriever timeout");
+        }, 25000);
+        var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
+        if (req.query.match_id) {
+            getGCReplayUrl(r, req.query.match_id, function(err, data) {
+                res.locals.data = data;
+                return next(err);
+            });
+        }
+        else if (req.query.account_id) {
+            var idx = accountToIdx[req.query.account_id] || r;
+            getPlayerProfile(idx, req.query.account_id, function(err, data) {
+                res.locals.data = data;
+                return next(err);
+            });
+        }
+        else {
+            res.locals.data = genStats();
+            return next();
+        }
+    });
+    app.use(function(req, res) {
+        clearTimeout(res.locals.to);
+        res.json(res.locals.data);
+    });
+    app.use(function(err, req, res, next) {
+        return res.status(500).json({
+            error: err
+        });
+    });
 });
+
+function genStats() {
+    var stats = {};
+    for (var key in steamObj) {
+        stats[key] = {
+            steamID: key,
+            replays: steamObj[key].replays,
+            profiles: steamObj[key].profiles,
+            friends: Object.keys(steamObj[key].friends).length
+        };
+    }
+    var data = {
+        replayRequests: replayRequests,
+        uptime: (new Date() - launch) / 1000,
+        accounts: stats,
+        accountToIdx: accountToIdx
+    };
+    return data;
+}
 
 function getPlayerProfile(idx, account_id, cb) {
     account_id = Number(account_id);
@@ -140,64 +194,4 @@ function getGCReplayUrl(idx, match_id, cb) {
 
 function selfDestruct() {
     process.exit(0);
-}
-app.get('/', function(req, res, next) {
-    //console.log(process.memoryUsage());
-    if (!ready) {
-        return next("retriever not ready");
-    }
-    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-        //reject request if doesnt have key
-        return next("invalid key");
-    }
-    res.locals.to = setTimeout(function() {
-        next("retriever timeout");
-    }, 25000);
-    var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
-    if (req.query.match_id) {
-        getGCReplayUrl(r, req.query.match_id, function(err, data) {
-            res.locals.data = data;
-            return next(err);
-        });
-    }
-    else if (req.query.account_id) {
-        var idx = accountToIdx[req.query.account_id] || r;
-        getPlayerProfile(idx, req.query.account_id, function(err, data) {
-            res.locals.data = data;
-            return next(err);
-        });
-    }
-    else {
-        res.locals.data = genStats();
-        return next();
-    }
-});
-app.use(function(req, res) {
-    clearTimeout(res.locals.to);
-    res.json(res.locals.data);
-});
-app.use(function(err, req, res, next) {
-    return res.status(500).json({
-        error: err
-    });
-});
-
-function genStats() {
-    var stats = {};
-    for (var key in steamObj) {
-        stats[key] = {
-            steamID: key,
-            replays: steamObj[key].replays,
-            profiles: steamObj[key].profiles,
-            friends: Object.keys(steamObj[key].friends).length
-        };
-    }
-    var data = {
-        ready: ready,
-        replayRequests: replayRequests,
-        uptime: (new Date() - launch) / 1000,
-        accounts: stats,
-        accountToIdx: accountToIdx
-    };
-    return data;
 }
