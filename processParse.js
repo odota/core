@@ -10,6 +10,7 @@ var utility = require('./utility');
 var updatePlayerCaches = require('./updatePlayerCaches');
 var r = require('./redis');
 var redis = r.client;
+var moment = require('moment');
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
 module.exports = function processParse(job, cb) {
@@ -22,11 +23,11 @@ module.exports = function processParse(job, cb) {
             return cb(err);
         }
         //match object should now contain replay url, and should also be persisted to db
-        if (match.parse_status === 1) {
+        if (match.start_time < moment().subtract(7, 'days').format('X') && !match.fileName) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //TODO improve current socket test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't care
-            console.log("parse: replay expired");
-            updateDb();
+            //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
+            //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+            return cb(err);
         }
         else {
             runParse(job, function(err, parsed_data) {

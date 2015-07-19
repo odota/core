@@ -151,7 +151,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data;
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || "";
                 }
             }
 
