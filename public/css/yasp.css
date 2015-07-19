@@ -22,17 +22,12 @@ body {
     width: 100%;
 }
 
-body.frame {
+.frame {
     display: table;
 }
 
 .match-top {
     margin-top: 1.5em;
-}
-
-.match-top h1 {
-    font-size: 38px;
-    font-weight: 700;
 }
 
 h3 img {
@@ -220,6 +215,7 @@ div .dataTables_processing {
     z-index: 60000;
 }
 
+
 /* Blog */
 
 #panel-chart {
@@ -233,7 +229,7 @@ div .dataTables_processing {
 }
 
 .blog-heading {
-    font-size: 20px !important;
+    font-size: 20px;
 }
 
 .blog-panel {
@@ -269,16 +265,14 @@ div .dataTables_processing {
     display: inline;
     vertical-align: super;
 }
+
 .bright-border {
     border-color: #ccc;
 }
+
 .toggle-button.collapsed {
     background-color: #545454;
-    border-color: rgba(0, 0, 0, 0);
-}
-#match_statistics tbody,
-#positions tbody {
-    color: black;
+    border-color: rgb(0, 0, 0);
 }
 
 .glow {
@@ -335,14 +329,34 @@ h4,
     line-height: 21px;
 }
 
+
 /*center tables*/
+
 td,
 th {
     text-align: center;
     vertical-align: middle !important;
 }
 
+
+/*temporary select2 fixes*/
+
+.select2-container,
+.select2-search__field {
+    color: black;
+    width: 100% !important;
+    padding: 0;
+    height: 35px;
+}
+
+.select2-container {
+    margin-bottom: 10px;
+}
+
+
 /* Use sans-serif on tables*/
+
+
 /*
 table tbody *,
 table tfoot * {

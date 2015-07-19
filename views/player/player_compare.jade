@@ -9,7 +9,7 @@ block playercontent
       tr
         td Stat
         each player in compare_data.slice(1)
-          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
+          td #{player.account_id === "all" ? "All Matches" : player.personaname} (#{player.aggData.games} matches)
           td Percentile
     tbody
       each val, key in histograms
