@@ -78,8 +78,6 @@ module.exports = function processFullHistory(job, cb) {
                             return cb();
                         }
                         var match = body.result;
-                        //don't automatically parse full history reqs, mark them skipped
-                        match.parse_status = 3;
                         insertMatch(match, function(err) {
                             cb(err);
                         });
