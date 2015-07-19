@@ -34,7 +34,7 @@ module.exports = function processParse(job, cb) {
                     console.log("match_id %s, error %s", match_id, err);
                     return cb(err);
                 }
-                match_id = match_id || parsed_data.match_id;
+                match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
                 updateDb();
