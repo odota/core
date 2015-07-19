@@ -15,5 +15,4 @@ db.matches.find({}).each(function(doc) {
     console.log(err);
 }).success(function() {
     console.log("repair done");
-    process.exit(0);
 });
