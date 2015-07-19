@@ -1,10 +1,9 @@
 extend layout
+include /mixins/match_table
 
 block content
-  //pre=JSON.stringify(live)
   h1 Professional
-  h3 Recent
-  table.table#pro_matches
+  +match_table(recent)
 
 append footer_assets
   script.

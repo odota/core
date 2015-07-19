@@ -3,7 +3,7 @@ extend player
 block playercontent
     - var times={"duration":1,"first_blood_time":1}
     .row
-      .col-md-6
+      .col-md-12
         h3 Records
         table.table.table-condensed
           tr
@@ -11,6 +11,9 @@ block playercontent
             th Hero
             th Record
             th Set
+            th Games
+            th Total
+            th Mean
           each val, key in player.aggData
             if key in histograms
               - var avg = val.sum/val.n
@@ -24,19 +27,6 @@ block playercontent
                     val.max_match.hero_id
                 td(class=(key in times ? "format-seconds" : ""), data-format-seconds=val.max) #{val.max}
                 td: a(href=val.max_match.match_id ? "/matches/"+ val.max_match.match_id : "#") #{val.max_match.start_time ? moment.unix(val.max_match.start_time).fromNow() : "never"}
-      .col-md-6
-        h3 Totals
-        table.table.table-condensed
-          tr
-            th Stat
-            th Games
-            th Total
-            th Mean
-          each val, key in player.aggData
-            if key in histograms
-              - var avg = val.sum/val.n
-              tr
-                td #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
                 td #{val.n}
                 td(class=(key in times ? "format-seconds" : "format"), data-format-seconds=val.sum) #{val.sum}
                 td(class=(key in times ? "format-seconds" : ""), data-format-seconds=avg) #{avg.toFixed(2)}

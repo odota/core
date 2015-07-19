@@ -4,12 +4,12 @@ block playercontent
   h2 Compare 
     small Comparing medians against #{compare_data[0].aggData.games} matches
   //pre=JSON.stringify(data[1].aggData)
-  table.table
+  table.table.table-condensed.table-striped
     thead
       tr
         td Stat
         each player in compare_data.slice(1)
-          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
+          td #{player.account_id === "all" ? "All Matches" : player.personaname} (#{player.aggData.games} matches)
           td Percentile
     tbody
       each val, key in histograms

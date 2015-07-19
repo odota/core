@@ -10,7 +10,7 @@
       h4 Start parsing my matches
     div &nbsp;
     a.btn.btn-default.btn-lg(href="/request")
-      h4 Parse a single match by ID (no login required)
+      h4 Parse a match by ID<br>(no login required)
     
 section.main
   a.arrow-wrap(href='#philosophy')
@@ -42,19 +42,19 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
           .icon-circle
             img.circle-margin(src='../public/images/tools2.png')
           h4 Open source.
-          p All of YASP's code is open source and available on GitHub for contributors to improve and modify.     
+          p All of our code is open source and available on GitHub for contributors to improve and modify.     
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/barchart.png')
           h4 Go beyond the API.
-          p YASP parses replays to provide statistics unavailable through the API or game client.
+          p We parse replays to provide statistics unavailable through the API or game client.
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/present.png')
           h4 Free of charge.
-          p YASP is supported by volunteer developers and community contributions, making it completely free for users.
+          p We're supported by volunteer developers and community contributions, meaning we don't need to charge users anything.
 
 #match_statistics.callout
     .container.bottom-padding
@@ -100,7 +100,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
     .vert
       .col-md-12.text-center.bottom-padding
         h2 And more to come!
-        h3 We are constantly developing and improving YASP. <br>
+        h3 We're constantly working to add features and improvements. <br>
            | <a href="https://github.com/yasp-dota/yasp/issues" target="_blank"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls" target="_blank">build it yourself!</a>
         br
         hr
@@ -113,16 +113,3 @@ append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
     generateCharts(graphData);
-  script.
-    var heatmap = h337.create({
-        container: document.getElementById('map'),
-        radius: 15
-      });
-      var posData = !{JSON.stringify(match.posData)}
-      adjustHeatmapData(posData, 600/127, null, 25);
-      $(".activate").on("mouseover", function(){
-        var pData = posData[Number($(this).attr('data-index'))]
-        var data = pData[$(this).attr('data-type')];
-        heatmap.setData(data);
-        heatmap.repaint();
-      })

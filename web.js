@@ -132,7 +132,7 @@ app.route('/faq').get(function(req, res) {
 });
 app.route('/professional').get(function(req, res, next) {
     advQuery({
-        select: {
+        mongo_select: {
             leagueid: {
                 $gt: 0
             }

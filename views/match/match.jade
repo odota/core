@@ -20,21 +20,19 @@ block content
           tr
             td
               abbr(title=constants.tooltips.status) Status
-            td Version
-            td Game Mode
+            td Mode
             td Region
             td Duration
-            td Played
+            td Ended
             td Patch
             td Skill
         tbody
           tr
             td= constants.parse_status[match.parse_status]
-            td= match.parsed_data ? match.parsed_data.version : "N/A"
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            td= moment.unix(match.start_time + match.duration).fromNow()
+            td: abbr(title=moment.unix(match.start_time+match.duration).format())= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
             td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
             
@@ -42,7 +40,8 @@ block content
     .col-md-10.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
-          li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
+          - var disableTab = !match.parsed_data.version && key!=="index"
+          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? 'This data will be available when the match is parsed.' : ''))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
     .col-md-2
       .addthis_sharing_toolbox.pull-right

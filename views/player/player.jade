@@ -5,9 +5,11 @@ block content
   .row
     .col-md-12
       if !(player.account_id in trackedPlayers)
-        .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing will resume on login)
+        .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes shortly after login)
+      else
+        .alert.alert-success This user is tracked!  Matches they play are automatically parsed.
       if (!player.full_history_time)
-        .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history will be requested on login)
+        .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history requested on login)
         
   .row.match-top 
     .col-md-1
@@ -27,7 +29,7 @@ block content
     .col-md-1
       if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")
-        div.text-right x#{player.cheese}
+        span(style="margin-left:.5em") x#{player.cheese}
     .col-md-4
       h3 Record 
         br
