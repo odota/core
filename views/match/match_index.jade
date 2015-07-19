@@ -76,14 +76,14 @@ block match_content
                      if (index.slice(0, 5)==="item_")
                        - var item = constants.items[constants.item_ids[val]]
                        if item
-                         img.img-small(src=item.img, title=constants.item_ids[val])
+                         img.img-small.item(src=item.img, title=constants.item_ids[val])
                    if (player.hero_id === 80 && player.additional_units)
                      br
                      each val, index in player.additional_units[0]
                        if (index.slice(0, 5)==="item_")
                          - var item = constants.items[constants.item_ids[val]]                             
                          if item
-                           img.img-small(src=item.img, title=constants.item_ids[val])
+                           img.img-small.ability(src=item.img, title=constants.item_ids[val])
   .row
     .col-md-12      
       if match.picks_bans
@@ -121,7 +121,7 @@ block match_content
                         - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
                         td
                           if abilityData
-                            img.img-md(src=abilityData.img, title=constants.ability_ids[ability.ability])
+                            img.img-md.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
                             

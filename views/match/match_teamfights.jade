@@ -105,7 +105,7 @@ block match_content
                         - var ability = constants.abilities[key]
                         span.img-text
                           if ability
-                            img.img-small(src=ability.img, title=key)
+                            img.img-small.ability(src=ability.img, title=key)
                           else
                             //=key
                           div #{val}
@@ -114,7 +114,7 @@ block match_content
                         - var item = constants.items[key]
                         span.img-text
                           if item
-                            img.img-small(src=item.img, title=key)
+                            img.img-small.item(src=item.img, title=key)
                             div #{val}
                           else
                             =key
