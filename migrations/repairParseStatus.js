@@ -1,6 +1,10 @@
 var db = require('../db');
-db.matches.find({}).each(function(doc) {
-    if (doc.parsed_data && doc.parse_status !== 2) {
+db.matches.find({
+    "parsed_data.version": {
+        $gt: 0
+    }
+}).each(function(doc) {
+    if (doc.parse_status !== 2) {
         db.matches.update({
             match_id: doc.match_id
         }, {
