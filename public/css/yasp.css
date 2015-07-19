@@ -361,6 +361,10 @@ td.text-left {
     margin-bottom: 10px;
 }
 
+.table>thead>tr>th,
+.table>tbody>tr>td {
+    border-bottom: 1px solid grey;
+}
 
 /* Use sans-serif on tables*/
 
