@@ -16,7 +16,7 @@ mixin teammate_table(rows, short)
           th Win%
     each teammate in rows
       tr
-        td
+        td.text-left
           img.img-md(src=teammate.avatar)
           if (teammate.last_visited)
             img.user(src='/public/images/favicon-16x16.png', title="YASP User")

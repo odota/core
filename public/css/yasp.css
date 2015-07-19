@@ -338,6 +338,10 @@ th {
     vertical-align: middle !important;
 }
 
+td.text-left {
+    text-align:left;
+}
+
 
 /*temporary select2 fixes*/
 

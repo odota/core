@@ -17,7 +17,7 @@ mixin hero_table(rows, short)
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
-        td
+        td.text-left
           img.img-md(src=hero.img, title=hero.localized_name)
           =hero.localized_name
         td=h.last_played
