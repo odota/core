@@ -300,6 +300,10 @@ div .dataTables_processing {
     height: auto;
 }
 
+h1,h2,h3 {
+    font-weight: 700;
+}
+
 
 /* use special fonts in certain elements */
 
@@ -339,7 +343,7 @@ th {
 }
 
 td.text-left {
-    text-align:left;
+    text-align: left;
 }
 
 
