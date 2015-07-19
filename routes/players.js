@@ -26,6 +26,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "counts": {
             "name": "Counts"
         },
+        "totals":{
+            "name":"Totals"
+        },
         "items": {
             "name": "Items"
         },
