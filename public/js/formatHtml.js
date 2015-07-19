@@ -63,4 +63,6 @@ module.exports = function formatHtml() {
         //format the data attribute rather than the text so we don't lose the original value if we want to reformat (like when paging in datatables)
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
+    //disable clicks on disabled elements
+    $('.disabled').click(function() { return false; });
 }

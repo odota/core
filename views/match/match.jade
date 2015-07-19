@@ -40,7 +40,8 @@ block content
     .col-md-10.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
-          li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
+          - var disableTab = !match.parsed_data.version && key!=="index"
+          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? 'This data will be available when the match is parsed.' : ''))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
     .col-md-2
       .addthis_sharing_toolbox.pull-right
