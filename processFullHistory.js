@@ -10,7 +10,7 @@ var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(15*steam_hosts.length, api_keys.length);
+var parallelism = Math.min(15 * steam_hosts.length, api_keys.length);
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
     //if test or only want 500 of any hero, use the short array
@@ -56,13 +56,13 @@ module.exports = function processFullHistory(job, cb) {
                 }
                 console.log("%s matches found, %s already in db, %s to add", arr.length, docs.length, arr.length - docs.length);
                 //iterate through db results, delete match_id key if exists
-                //disabled duplicate checking to allow updating matches with users who enabled third party data
-                /*
-                for (var i = 0; i < docs.length; i++) {
-                    var match_id = docs[i].match_id;
-                    delete player.match_ids[match_id];
+                //pass an option to allow force updating matches with users who enabled third party data
+                if (job.readd) {
+                    for (var i = 0; i < docs.length; i++) {
+                        var match_id = docs[i].match_id;
+                        delete player.match_ids[match_id];
+                    }
                 }
-                */
                 //iterate through keys, make api_details requests
                 async.eachLimit(Object.keys(player.match_ids), parallelism, function(match_id, cb) {
                     //process api jobs directly with parallelism
