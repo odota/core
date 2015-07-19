@@ -61,13 +61,13 @@ function start() {
                     url: process.env.PARSER_URL
                 });
             }
-            //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
             jobs.process('request', processApi);
             //process requests
             jobs.process('request_parse', function(job, cb) {
                 console.log("starting request_parse job: %s", job.id);
-                job.parser_url = parsers[0];
-                processParse(job, cb);
+                getParserUrl(job, function() {
+                    processParse(job, cb);
+                });
             });
             //process regular parses
             jobs.process('parse', function(job, cb) {

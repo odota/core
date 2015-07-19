@@ -8,14 +8,17 @@ module.exports = function getReplayUrl(match, cb) {
     db.matches.findOne({
         match_id: match.match_id
     }, function(err, doc) {
-        if (match.url || match.fileName) { //if there's already a url or filename, for custom jobs!
+        if (err){
+            return cb(err);
+        }
+        if (match.fileName) { 
+            //if there's already a filename, we don't need a url
+            //this is for custom jobs!
+            //we can't just return if there is a URL since the url may be invalid (too old)
             return cb(err);
         }
         if (match.start_time < moment().subtract(7, 'days').format('X')) {
             console.log("replay expired, not getting replay url");
-            //set status to 1 if match doesn't have parsed data
-            //this ensures we don't mark formerly parsed matches as unavailable on reparses
-            match.parse_status = (doc && doc.parsed_data) ? doc.parse_status : 1;
             return cb(err);
         }
         if (!err && doc && doc.url) {

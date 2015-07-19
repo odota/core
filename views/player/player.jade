@@ -2,6 +2,15 @@ extend /layout
 include /mixins/progress_bar
 
 block content
+  .row
+    .col-md-12
+      if !(player.account_id in trackedPlayers)
+        .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes shortly after login)
+      else
+        .alert.alert-success This user is tracked!  Matches they play are automatically parsed.
+      if (!player.full_history_time)
+        .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history requested on login)
+        
   .row.match-top 
     .col-md-1
       a(href=player.profileurl || "#", target="_blank")
@@ -9,26 +18,19 @@ block content
           img(src='#{player.avatarmedium}').img-thumbnail
         //else
           //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
-    .col-md-5
+    .col-md-6
       h1.inline-header #{player.personaname || player.account_id} 
         small
           a(href="?json=1" title="View as JSON")
-              i.fa.fa-download
-        br
-        small
-          - var ratings = player.ratings
-          span.label.label-info#solo Solo: #{ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : "N/A"}
-          span.label.label-warning#party Party: #{ratings[0] ? ratings[ratings.length - 1].competitiveRank : "N/A"}
-      if (user && user.account_id ===Number(player.account_id))
-        .checkbox
-          label
-            input.pref#theme(type="checkbox", checked=user.light_theme)
-            | Use Light Theme
+            i.fa.fa-download
+      div.lead
+          span.label.label-info#solo: abbr(title="Solo MMR") #{player.soloRating || "N/A"}
+          span.label.label-warning#party: abbr(title="Party MMR") #{player.partyRating || "N/A"}
     .col-md-1
       if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")
-        div.text-right x#{player.cheese}
-    .col-md-5
+        span(style="margin-left:.5em") x#{player.cheese}
+    .col-md-4
       h3 Record 
         br
         small.text-success#win #{player.aggData.win}
@@ -36,14 +38,7 @@ block content
         small.text-danger#lose #{player.aggData.lose} 
         small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandons)
       +progress_bar(player.aggData.win, player.aggData.games)
-
-  .row
-    .col-md-12
-      if !(player.account_id in trackedPlayers)
-        .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing will resume on login)
-      if (!player.full_history_time)
-        .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history will be requested on login)
-        
+      
   .row(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
@@ -51,24 +46,4 @@ block content
           li(class= (route === key ? 'active' : ''))
               a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
   include /query
-  hr
   block playercontent
-  hr
-  
-append footer_assets
-  script.
-    $(".pref").change(function() {
-        $.post(
-            "/preferences", {
-                light_theme: $("#theme").is(":checked"),
-            },
-            function(data) {
-                if (data.sync) {
-                    location.reload(true);
-                }
-                else {
-                    $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                }
-                $(".sync").fadeOut(3000);
-            });
-    });

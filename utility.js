@@ -135,6 +135,15 @@ function generateJob(type, payload) {
                 payload: payload
             };
         },
+        "readdhistory": function() {
+            payload.attempts = 1;
+            return {
+                title: [type, payload.account_id].join(),
+                type: type,
+                readd: true,
+                payload: payload
+            };
+        },
         "mmr": function() {
             payload.attempts = 1;
             return {

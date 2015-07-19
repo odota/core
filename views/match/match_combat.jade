@@ -7,9 +7,8 @@ block match_content
       .row
         .col-md-6
           h3.inline-header Kill/Death
-          #kills.table-responsive
+          table-responsive
             table.table.table-hover
-
               thead
                 tr
                   th Hero
@@ -46,7 +45,7 @@ block match_content
 
         .col-md-6
           h3.inline-header Damage Done/Taken
-          #kills.table-responsive
+          table-responsive
             table.table.table-hover
               thead
                 tr
@@ -161,8 +160,8 @@ block match_content
                             if entry.time < i && entry.time >= i-bucket
                               - var dmg = constants.hero_names[entry.key]                 
                               if dmg
-                                div.img-text
-                                  img.dmg(src=dmg.img, title=dmg.localized_name)
+                                span.img-text
+                                  img.img-small(src=dmg.img, title=dmg.localized_name)
                                   div.format-seconds(data-format-seconds=entry.time)=entry.time
                               else
                                 //=entry.key          
