@@ -1,9 +1,12 @@
+include /mixins/progress_bar
+
 mixin hero_table(rows, short)
   h3 Heroes
   table.table#heroes
     thead
       tr
         th Hero
+        th.fromNow Last
         th Played As
         th Win%
         if !short
@@ -11,27 +14,20 @@ mixin hero_table(rows, short)
           th Win% 
           th: abbr(title="Number of games with this hero on the opposing team") Played Against
           th Win%
-        th.fromNow Last
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
         td.hero
           img.user(src=hero.img, title=hero.localized_name)
           =hero.localized_name
+        td=h.last_played
         td=h.games
         td
-          - var pct = h ? 100*h.win/h.games : 0
-          .progress
-            .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+          +progress_bar(h.win, h.games)
         if !short
           td=h.with_games
           td
-            - var pct = h ? 100*h.with_win/h.with_games : 0
-            .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+            +progress_bar(h.with_win, h.with_games)
           td=h.against_games
           td
-            - var pct = h ? 100*h.against_win/h.against_games : 0
-            .progress
-              .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
-        td=h.last_played
+            +progress_bar(h.against_win, h.against_games)

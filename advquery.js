@@ -7,7 +7,9 @@ var isSignificant = utility.isSignificant;
 var async = require('async');
 var aggregator = require('./aggregator');
 var constants = require('./constants.json');
-
+/**
+ * This function expects query.select keys for js aggregations to be in an array
+ **/
 function advQuery(query, cb) {
     var default_project = {
         start_time: 1,
@@ -45,54 +47,22 @@ function advQuery(query, cb) {
     //select,the query received, build the mongo query and the filter based on this
     query.mongo_select = {};
     query.js_select = {};
-    //default limit
-    var max = 500;
-    //map to limit
     var mongoAble = {
-        "players.account_id": 20000,
-        "leagueid": max
-    };
-    var multiples = {
-        "with_account_id": 1,
-        "teammate_hero_id": 1,
-        "against_hero_id": 1,
-        "compare": 1
-    };
-    var queries = {
-        "gtzero": {
-            $gt: 0
-        }
+        "players.account_id": 1,
+        "leagueid": 1
     };
     for (var key in query.select) {
-        if (query.select[key] === "") {
-            delete query.select[key];
+        if (mongoAble[key]) {
+            query.mongo_select[key] = query.select[key];
         }
         else {
-            if (key in multiples) {
-                query.select[key] = [].concat(query.select[key]).map(function(e) {
-                    return Number(e);
-                });
-            }
-            else if (key in queries) {
-                query.select[key] = queries[query.select[key]];
-            }
-            else if (typeof query.select[key] === "string") {
-                query.select[key] = Number(query.select[key]);
-            }
-            if (mongoAble[key]) {
-                query.mongo_select[key] = query.select[key];
-                max = Math.max(mongoAble[key], max);
-            }
-            else {
-                query.js_select[key] = query.select[key];
-            }
+            query.js_select[key] = query.select[key];
         }
     }
     //js_agg, aggregations to do with js
     //do all aggregations if null, so we need parsed data
     var bGetParsedPlayerData = Boolean(!query.js_agg);
     //limit, pass to mongodb, cap the number of matches to return in mongo
-    query.limit = (!query.limit || query.limit > max) ? max : query.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
     //js_limit, the number of results to return in a page, filtered by js
@@ -128,6 +98,7 @@ function advQuery(query, cb) {
                     //check mongo query, if starting with player, this means we select a single player, otherwise select all players
                     for (var key in query.mongo_select) {
                         var split = key.split(".");
+                        //break apart the query and determine whether we are trying to get a single player for this match
                         if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
                             pass = false;
                         }
@@ -195,34 +166,31 @@ function filter(matches, filters) {
         isRadiant: function(m, key) {
             return Number(m.players[0].isRadiant) === key;
         },
+        lane_role: function(m, key) {
+            return m.players[0].parsedPlayer.lane_role === key;
+        },
         //GETFULLPLAYERDATA: we need to iterate over match.all_players
         //ensure all array elements fit the condition
-        //with_account_id: player id was also in the game
-        with_account_id: function(m, key) {
-            return key.every(function(k) {
+        included_account_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return p.account_id === k;
                 });
             });
         },
-        //teammate_hero_id
-        teammate_hero_id: function(m, key) {
-            return key.every(function(k) {
+        with_hero_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
                 });
             });
         },
-        //against_hero_id
-        against_hero_id: function(m, key) {
-            return key.every(function(k) {
+        against_hero_id: function(m, key, arr) {
+            return arr.every(function(k) {
                 return m.all_players.some(function(p) {
                     return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
                 });
             });
-        },
-        lane_role: function(m, key) {
-            return m.players[0].parsedPlayer.lane_role === key;
         }
     };
     //TODO implement more filters, including from parse data
@@ -235,8 +203,10 @@ function filter(matches, filters) {
         //verify the match passes each filter test
         for (var key in filters) {
             if (conditions[key]) {
-                //failed a test
-                include = include && conditions[key](matches[i], filters[key]);
+                //earlier, we arrayified everything
+                //pass the first element, as well as the full array
+                //check that it passes all filters
+                include = include && conditions[key](matches[i], filters[key][0], filters[key]);
             }
         }
         //if we passed, push it

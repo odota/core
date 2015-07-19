@@ -7,7 +7,8 @@
             th Hero
             th: abbr(title="Order in which the player picked") Pick
             //th Pick Time
-            th: abbr(title="Lane based on early game position") Position
+            th: abbr(title="Lane based on early game position") Lane
+            th: abbr(title="Role based on lane position") Role
             th: abbr(title="Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes") EFF@10
             th: abbr(title="Last hits at 10 minutes") LH@10
             th: abbr(title="Seconds of disable on enemy heroes") Stuns
@@ -25,7 +26,8 @@
              =player.hero_id
           td #{p.pick_order} 
           //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
-          td #{constants.lane_ids[p.lane] || "-"} (#{constants.lane_role[p.lane_role] || "-"})
+          td #{constants.lane_ids[p.lane] || "-"}
+          td #{constants.lane_role[p.lane_role] || "-"}
           td #{(p.lane_efficiency*100).toFixed(2)}
           td #{p.lh[10] || "-"}
           td #{p.stuns.toFixed(2)}

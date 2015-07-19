@@ -10,54 +10,56 @@ h3.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
   form#query(action="" method="GET")
-    //pre=JSON.stringify(q)
+    if process.env.NODE_ENV==="development"
+      pre=JSON.stringify(q)
     //pre=JSON.stringify(all_teammate_list)
     .row
       .col-md-4
         h4 Synergies
         .form-group
           abbr(title="Select a teammate or enter an account ID")
-            label The Players Included (Account ID)
-          select.form-control(name="with_account_id", multiple, data-placeholder="Included: Any Player")#with_account_id
+            label The Players Included
+          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player")#included_account_id
             each entry in teammate_ids
-              option(value=entry.account_id, selected=q.with_account_id && q.with_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
+              option(value=entry.account_id, selected=q.included_account_id && q.included_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
         .form-group
           label The Team Included
-          select.form-control(name="teammate_hero_id" multiple, data-placeholder="Team: Any Hero")#teammate_hero_id
+          select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
             each entry in constants.alpha_heroes
-              option(value=entry.id, selected=q.teammate_hero_id && q.teammate_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
+              option(value=entry.id, selected=q.with_hero_id && q.with_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
           label The Enemies Included
           select.form-control(name="against_hero_id" multiple, data-placeholder="Enemy: Any Hero")#enemy_hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
+              
       .col-md-4
         h4 Personal Parameters
         .form-group
           label Hero
-          select.form-control(name="hero_id" placeholder="Played Any Hero")#hero_id
+          select.form-control(name="hero_id")#hero_id
             option(value) Any Hero
             each entry in constants.alpha_heroes
-              option(value=entry.id, selected=(Number(q.hero_id)===entry.id))=entry.localized_name
+              option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group  
           label Faction
           select.form-control(name="isRadiant")
             option(value) Any Faction
-            option(value="1", selected=(q["isRadiant"]===1)) Radiant
-            option(value="0", selected=(q["isRadiant"]===0)) Dire
+            option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
+            option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
         .form-group  
           label Result
           select.form-control(name="win")
             option(value) Any Result
-            option(value="1", selected=(q["win"]===1)) Wins
-            option(value="0", selected=(q["win"]===0)) Losses
+            option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
+            option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
         .form-group  
           label Lane/Role
           select.form-control(name="lane_role")
             option(value) Any Lane
             each val, key in constants.lane_role
-              option(value=key, selected=(Number(q["lane_role"])===Number(key)))=val
-            
+              option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
+
       .col-md-4
         h4 Match Parameters
         .form-group
@@ -65,45 +67,41 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(name="patch")
             option(value) Any Patch
             each entry, i in constants.patch
-              option(value=i, selected=(Number(q.patch)===i))=entry.name
+              option(value=i, selected=(q["patch"] && q["patch"][0]===i))=entry.name
         .form-group
           label Game Mode
           select.form-control(name="game_mode")
             option(value) Any Mode
             each entry in constants.game_mode
-              option(value=entry.id, selected=(Number(q.game_mode)===entry.id))=entry.name
+              option(value=entry.id, selected=(q.game_mode && q.game_mode[0]===entry.id))=entry.name
         .form-group
           label Lobby Type
           select.form-control(name="lobby_type")
             option(value) Any Lobby
             each entry in constants.lobby_type
-              option(value=entry.id, selected=(Number(q.lobby_type)===entry.id))=entry.name
-        .form-group
-          label: abbr(title="Excludes match types different from 'normal Dota,' such as 1v1 Mid, Diretide, Greeviling, ARDM, Ability Draft, etc.") Significant
-          select.form-control(name="significant")
-            option(value, selected=q["significant"]!==1) Include All Matches
-            option(value="1",  selected=q["significant"]===1) Significant Matches
+              option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
+
     if compare
       .row
         .col-md-12
           .form-group
             abbr(title="Select a teammate or enter an account ID")
-              label Compare With (Account ID)
-            select.form-control(name="compare", multiple)#compare
+              label Compare With
+            select.form-control(name="compare_account_id", multiple)#compare_account_id
               each entry in teammate_ids
-                option(value=entry.account_id, selected=q.compare && q.compare.indexOf(entry.account_id)!==-1)=entry.personaname
-            
+                option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
+
     .row
       .col-md-12.text-center
         button.btn.btn-yasp(type="submit") Do the Thing
 
 script.
-    $("#with_account_id").select2({
+    $("#included_account_id").select2({
         tags: true,
         theme: "bootstrap",
         maximumSelectionSize: 10
     });
-    $("#teammate_hero_id").select2({
+    $("#with_hero_id").select2({
         theme: "bootstrap",
         maximumSelectionSize: 5
     });
@@ -111,7 +109,7 @@ script.
         theme: "bootstrap",
         maximumSelectionSize: 5
     });
-    $("#compare").select2({
+    $("#compare_account_id").select2({
         tags: true,
         theme: "bootstrap",
         maximumSelectionSize: 5

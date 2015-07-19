@@ -34,13 +34,9 @@ block playercontent
               td=player.aggData.item_uses.counts[key] ? (player.aggData.item_uses.counts[key]/player.aggData.item_usage.counts[key]).toFixed(2) : ""
               td=val/player.aggData.purchase.counts[key]
               td
-                - var pct = 100*player.aggData.item_usage.counts[key]/player.aggData.item_usage.n
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+                +progress_bar(player.aggData.item_usage.counts[key],player.aggData.item_usage.n)
               td
-                - var pct = 100*player.aggData.item_win.counts[key]/player.aggData.item_usage.counts[key]
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+                +progress_bar(player.aggData.item_win.counts[key],player.aggData.item_usage.counts[key])
 
 append footer_assets
   script.

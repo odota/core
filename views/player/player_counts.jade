@@ -17,9 +17,7 @@ block playercontent
               td=constants[key] ? (constants[key][key2] ? constants[key][key2].name || constants[key][key2] : JSON.stringify(constants[key])) : key2
               td=val2
               td
-                - var pct = 100*player.aggData[key].win_counts[key2]/val2
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
+                +progress_bar(player.aggData[key].win_counts[key2], val2)
   hr
   +ad("banner2")
   hr

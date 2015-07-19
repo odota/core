@@ -16,11 +16,22 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var player;
     var cachedTeammates;
     var exceptions = 0;
-    if (options.query.select.compare){
-        //TODO this doesn't quite work since the form submits all fields
-        //we need to ignore empty values, but significant defaults to a nonempty value
-        //should ignore json as well
-        exceptions+=1;
+    var keywords = {
+        "compare_account_id": 1,
+        "json": 1
+    };
+    for (var key in options.query.select) {
+        if (options.query.select[key] === "") {
+            delete options.query.select[key];
+        }
+        else {
+            options.query.select[key] = [].concat(options.query.select[key]).map(function(e) {
+                return Number(e);
+            });
+        }
+        if (key in keywords) {
+            exceptions += 1;
+        }
     }
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
@@ -28,29 +39,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         console.timeEnd("inflate");
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var selectExists = Boolean(Object.keys(options.query.select).length > exceptions);
-        //sort results by match_id
-        options.query.sort = options.query.sort || {
-            match_id: -1
-        };
-        if (account_id === "all" || account_id === "professional" || Number(account_id) === constants.anonymous_account_id) {
-            if (Number(account_id) === constants.anonymous_account_id) {
-                account_id = "anonymous";
-            }
-            /*
-            if (account_id === "professional") {
-                options.query.select.leagueid = {
-                    $gt: 0
-                };
-            }
-            */
-            options.query.select["players.account_id"] = "";
-        }
-        else {
-            //convert account id to number
-            account_id = Number(account_id);
-            options.query.select["players.account_id"] = account_id;
-        }
-        options.query.select["significant"] = options.query.select["significant"] === "" ? "" : 1;
         player = {
             account_id: account_id,
             personaname: account_id
@@ -84,6 +72,20 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         }
         else {
             console.log("player cache miss %s", player.account_id);
+            //convert account id to number and search db with it
+            //don't do this if the account id is not a number (all or professional)
+            if (!isNaN(Number(account_id))) {
+                options.query.select["players.account_id"] = Number(account_id);
+                //set a larger limit since we are only getting one player's matches
+                options.query.limit = 20000;
+            }
+            else {
+                options.query.limit = 1000;
+            }
+            //sort results by match_id
+            options.query.sort = options.query.sort || {
+                match_id: -1
+            };
             advQuery(options.query, processResults);
         }
 

@@ -12,14 +12,14 @@ var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //insert the match into db, then based on the existing document determine whether to do aggregations
     db.matches.findAndModify({
-        query: {
-            match_id: match.match_id
-        },
-        update: {
-            $set: match
-        },
-        //TODO if we choose to use this function for updating skill we don't want to upsert or overwrite the cache.data match
-        upsert: true
+        match_id: match.match_id
+    }, {
+        $set: match
+    }, {
+        //TODO if we use this function for updating skill in player caches we don't want to upsert or overwrite the cache.data match
+        upsert: true,
+        //explicitly declare we want the pre-modification document
+        "new": false
     }, function(err, doc) {
         if (err) {
             return cb(err);
@@ -42,13 +42,13 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         match_copy.players = [p];
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
-                        //do aggregations only if significant and we didn't do them already
-                        //console.log(isSignificant(constants, match_copy), reInsert, reParse);
-                        if (isSignificant(constants, match_copy) && !reInsert && !reParse) {
+                        //do aggregations only we didn't do them already
+                        if (!reInsert && !reParse) {
                             //do aggregations on fields based on type
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
                         //TODO it may be more performant to just push the match now and then deduplicate at view time (taking the last entry of each match_id to get state changes)
+                        //however this means we need to resave the cache on every load in order to keep it from getting bloated
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id

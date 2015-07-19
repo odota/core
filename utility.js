@@ -354,8 +354,7 @@ function generatePositionData(d, p) {
 }
 
 function isSignificant(constants, m) {
-    //TODO detect no stats recorded?
-    return Boolean(constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type].balanced);
+    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced);
 }
 
 function reduceMatch(match) {
@@ -364,7 +363,6 @@ function reduceMatch(match) {
     delete match.parsed_data;
     delete match.my_word_counts;
     delete match.all_word_counts;
-    delete match.chat_words;
     match.players.forEach(function(p) {
         delete p.parsedPlayer;
     });

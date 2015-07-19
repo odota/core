@@ -4,7 +4,6 @@ include mixins/ads
 block sticky_content
   body.frame(style="margin-top:70px;")
     include navbar
-    .sticky_footer_row
     .sticky_footer_row.expand
       .container
         if banner_msg
@@ -14,6 +13,7 @@ block sticky_content
         +ad("banner3")
     .sticky_footer_row
       include footer
+
   script.
       //check adblocker
       window.onload = function(){

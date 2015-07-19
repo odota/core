@@ -10,7 +10,7 @@
       h4 Start parsing my matches
     div &nbsp;
     a.btn.btn-default.btn-lg(href="/request")
-      h4 Parse a match by id
+      h4 Parse a single match by ID (no login required)
     
 section.main
   a.arrow-wrap(href='#philosophy')
@@ -69,9 +69,9 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
           h3 Purchases
           include match/timelines_purchases_table.jade
         .col-md-8.col-md-offset-2.text-center
-          h3 View detailed skill/item usage and timelines of item purchases. Also see <a href="/matches/#{match.match_id}/timelines" target="_blank">timelines of kills</a>,
-            | <a href="/matches/#{match.match_id}/details" target="_blank">gold and xp breakdowns</a>,
-            | <a href="/matches/#{match.match_id}/teamfights" target="_blank">teamfight recaps</a> and more.
+          h3 View timelines of item purchases.<br>
+            | Also see <a href="/matches/#{match.match_id}/combat" target="_blank">timelines of kills</a>,
+            | <a href="/matches/#{match.match_id}/teamfights" target="_blank">teamfight recaps</a>, and more.
 .featurette.dark
   .container
     .vert
@@ -83,7 +83,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
             h3 Gold
             #chart-gold
         .col-md-8.col-md-offset-2.text-center.bottom-padding
-          h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, last hits, and income changed over the game.
+          h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, and last hits changed over the game.
 #positions.blurb.bright
   .container
     .col-md-12.text-center
@@ -105,12 +105,9 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
         br
         hr
         br
-        h2 The generous Dota 2 <br> community
-        h1 keeps us running
+        h3 Funded by contributions from the generous Dota 2 community
         br
         hr
-        h2(style="margin-bottom:25px;") Found us helpful?
-        include cheese_block
 
 append footer_assets
   script.

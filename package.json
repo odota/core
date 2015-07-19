@@ -17,8 +17,8 @@
     "getmissing": "nf run node runner.js getmissing",
     "webpack": "webpack -p",
     "watch": "webpack --watch",
-    "build": "npm install && npm run webpack && npm run maven && npm run constants",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
+    "build": "npm install && npm run maven && npm run webpack && npm run constants",
     "yasp-parser": "sudo nf export -o /etc/init/ parser && sudo restart foreman",
     "yasp-core": "sudo nf export -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman"
   },
