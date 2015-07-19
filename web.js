@@ -131,12 +131,8 @@ app.route('/faq').get(function(req, res) {
     });
 });
 app.route('/professional').get(function(req, res, next) {
-    //TODO implement live match pages
-    //individual live match page for each match
-    //interval check api
-    //for each match, if time changed, update redis, push to clients
     advQuery({
-        select: {
+        mongo_select: {
             leagueid: {
                 $gt: 0
             }
@@ -168,6 +164,10 @@ app.route('/professional').get(function(req, res, next) {
             recent: data2.data
         });
         /*
+        //implement live match pages
+        //individual live match page for each match
+        //interval check api
+        //for each match, if time changed, update redis, push to clients
         utility.getData(utility.generateJob("api_live").url, function(err, data) {
                 if (err) {
                     return next(err);

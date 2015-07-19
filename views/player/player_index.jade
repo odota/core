@@ -2,19 +2,17 @@ extend player
 
 include /mixins/hero_table
 include /mixins/teammate_table
+include /mixins/match_table
 
 block playercontent
   //pre=JSON.stringify(player.aggData)
 
   .row
     .col-md-12
-      h3 Recent
-      table.table#matches
-      
+      +match_table(player.data)
       hr
       +ad("banner3")
       hr
-      
       +hero_table(player.heroes_list)
       +teammate_table(player.teammate_list)
       

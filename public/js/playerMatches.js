@@ -26,7 +26,7 @@ module.exports = function drawMatches(data, options) {
         columns: [
             {
                 data: 'match_id',
-                title: 'Match ID',
+                title: 'ID',
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
@@ -57,7 +57,7 @@ module.exports = function drawMatches(data, options) {
             },
             {
                 data: 'game_mode',
-                title: 'Game Mode',
+                title: 'Mode',
                 render: function(data, type) {
                     return constants.game_mode[data] ? constants.game_mode[data].name : data;
                 }
@@ -87,7 +87,7 @@ module.exports = function drawMatches(data, options) {
             },
             {
                 data: 'start_time',
-                title: 'Played',
+                title: 'Ended',
                 render: function(data, type, row) {
                     if (type === 'sort') {
                         return data + row.duration; // Sort by unix timestamp
@@ -151,7 +151,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data;
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || "";
                 }
             }
 

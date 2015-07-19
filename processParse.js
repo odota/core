@@ -10,6 +10,7 @@ var utility = require('./utility');
 var updatePlayerCaches = require('./updatePlayerCaches');
 var r = require('./redis');
 var redis = r.client;
+var moment = require('moment');
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
 module.exports = function processParse(job, cb) {
@@ -22,11 +23,12 @@ module.exports = function processParse(job, cb) {
             return cb(err);
         }
         //match object should now contain replay url, and should also be persisted to db
-        if (match.parse_status === 1) {
+        if (match.start_time < moment().subtract(7, 'days').format('X') && !match.fileName) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //TODO improve current socket test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't care
-            console.log("parse: replay expired");
-            updateDb();
+            //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
+            //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
+            //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+            return cb(err);
         }
         else {
             runParse(job, function(err, parsed_data) {
@@ -34,7 +36,7 @@ module.exports = function processParse(job, cb) {
                     console.log("match_id %s, error %s", match_id, err);
                     return cb(err);
                 }
-                match_id = match_id || parsed_data.match_id;
+                match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
                 updateDb();
@@ -262,27 +264,27 @@ function runParse(job, cb) {
                     type: "hero_hits"
                 };
                 getSlot(h);
-                //count damage dealt to a real hero with this inflictor
-                var inf = {
-                    type: "damage_inflictor",
-                    time: e.time,
-                    unit: e.unit,
-                    key: e.inflictor,
-                    value: e.value
-                };
-                getSlot(inf);
-                //biggest hit on a hero
-                var m = {
-                    type: "max_hero_hit",
-                    time: e.time,
-                    max: true,
-                    inflictor: e.inflictor,
-                    unit: e.unit,
-                    key: e.key,
-                    value: e.value
-                };
-                //don't count self-damage as a max_hero_hit
-                if (m.key !== m.unit) {
+                //don't count self-damage for the following
+                if (e.key !== e.unit) {
+                    //count damage dealt to a real hero with this inflictor
+                    var inf = {
+                        type: "damage_inflictor",
+                        time: e.time,
+                        unit: e.unit,
+                        key: e.inflictor,
+                        value: e.value
+                    };
+                    getSlot(inf);
+                    //biggest hit on a hero
+                    var m = {
+                        type: "max_hero_hit",
+                        time: e.time,
+                        max: true,
+                        inflictor: e.inflictor,
+                        unit: e.unit,
+                        key: e.key,
+                        value: e.value
+                    };
                     getSlot(m);
                 }
             }
