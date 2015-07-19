@@ -23,7 +23,7 @@ module.exports = function drawProMatches(data) {
         columns: [
             {
                 data: 'match_id',
-                title: 'Match ID',
+                title: 'ID',
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
