@@ -20,9 +20,9 @@ func main() {
 //things we need
 //entities for player interval data
 //entities for wards
-//every tick, check for new wards
+//every second, check for new wards
 //maintain a hash table of seen ward handles, output if we see a new ward
-//every minute, output playerresource entity state (gold/lh/xp)
+//output playerresource entity state (gold/lh/xp/x/y)
 //CDOTAUserMsg_LocationPing for pings
 //CDOTAUserMsg_ChatEvent for chat events, objectives
 //CDemoFileInfo for epilogue, player names

@@ -1,0 +1,1 @@
+node js_parser/parser.js < ./testfiles/1560726098_source2.dem 
