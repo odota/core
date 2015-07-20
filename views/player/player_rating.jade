@@ -10,8 +10,8 @@ block playercontent
         span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
         span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
       h4
-        span.label.label-info Solo Peak: #{Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;}))}
-        span.label.label-warning Party Peak: #{Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;}))}
+        span.label.label-info Solo Peak: #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0)}
+        span.label.label-warning Party Peak: #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0)}
        
       #ratings
       
