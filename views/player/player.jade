@@ -36,7 +36,7 @@ block content
         small.text-success#win #{player.aggData.win}
         small -
         small.text-danger#lose #{player.aggData.lose} 
-        small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandons)
+        small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
       +progress_bar(player.aggData.win, player.aggData.games)
       
   .row(style="margin-top:1em;")
