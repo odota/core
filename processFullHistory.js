@@ -57,6 +57,7 @@ module.exports = function processFullHistory(job, cb) {
                 console.log("%s matches found, %s already in db, %s to add", arr.length, docs.length, arr.length - docs.length);
                 //iterate through db results, delete match_id key if exists
                 //pass an option to allow force updating matches with users who enabled third party data (skip deleting existing matches from list)
+                //TODO as an optimization, diff the list of matches that this user has (players.account_id) (so only reinsert matches where they were previously anonymous)
                 if (!job.readd) {
                     for (var i = 0; i < docs.length; i++) {
                         var match_id = docs[i].match_id;
