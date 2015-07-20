@@ -1,9 +1,9 @@
 module.exports = function drawProMatches(data) {
     $('#pro_matches').dataTable({
-        "order": [
-                [0, "desc"]
-            ],
-        "data": data,
+        order: [
+            [0, 'desc']
+        ],
+        data: data,
         /*
         serverSide: true,
         ajax: {
@@ -13,7 +13,7 @@ module.exports = function drawProMatches(data) {
             }
         },
         */
-        "drawCallback": function() {
+        drawCallback: function() {
             window.tooltips();
             window.formatHtml();
         },
@@ -41,21 +41,21 @@ module.exports = function drawProMatches(data) {
                 data: 'radiant_name',
                 title: 'Radiant',
                 render: function(data, type) {
-                    return data ? data : "Unknown";
+                    return data ? data : 'Unknown';
                 }
             },
             {
                 data: 'dire_name',
                 title: 'Dire',
                 render: function(data, type) {
-                    return data ? data : "Unknown";
+                    return data ? data : 'Unknown';
                 }
             },
             {
                 data: 'duration',
                 title: 'Duration',
                 render: function(data, type) {
-                    return moment().startOf('day').seconds(data).format("H:mm:ss");
+                    return moment().startOf('day').seconds(data).format('H:mm:ss');
                 }
             },
             {
@@ -72,8 +72,9 @@ module.exports = function drawProMatches(data) {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data  || "";
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || '';
                 }
-            }]
+            }
+        ]
     });
 };

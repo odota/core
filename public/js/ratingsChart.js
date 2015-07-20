@@ -1,28 +1,22 @@
 module.exports = function ratingsChart(ratings) {
-    var times = ratings.map(function(r) {
-        return new Date(r.time);
-    });
-    var solo = ratings.map(function(r) {
-        return r.soloCompetitiveRank;
-    });
-    var party = ratings.map(function(r) {
-        return r.competitiveRank;
-    });
+    const times = ratings.map((r) => new Date(r.time));
+    const solo = ratings.map((r) => r.soloCompetitiveRank);
+    const party = ratings.map((r) => r.competitiveRank);
     c3.generate({
-        bindto: "#ratings",
+        bindto: '#ratings',
         data: {
             columns: [
           ['Solo'].concat(solo),
           ['Party'].concat(party)
           ],
-            type: "spline"
+            type: 'spline'
         },
         axis: {
             x: {
-                label: "Date",
+                label: 'Date',
                 tick: {
                     format: function(x) {
-                        return moment(times[x]).format("MMM DD YYYY");
+                        return moment(times[x]).format('MMM DD YYYY');
                     }
                 }
             },
@@ -34,4 +28,4 @@ module.exports = function ratingsChart(ratings) {
             enabled: true
         }
     });
-}
+};

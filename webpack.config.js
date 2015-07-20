@@ -11,6 +11,10 @@ module.exports = {
     module: {
         loaders: [
             {
+                test: /\.js$/,
+                loader: ['babel']
+            },
+            {
                 test: /\.css$/,
                 loader: "style-loader!css-loader"
             },
@@ -21,15 +25,15 @@ module.exports = {
             {
                 test: /\.(ttf|eot|svg|jpg|gif|png)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader?name=[hash].[ext]"
-                },
+            },
             {
                 test: /\.(json)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "json-loader"
-                }
+            }
         ]
     },
     plugins: [
-new webpack.ProvidePlugin({
+        new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"

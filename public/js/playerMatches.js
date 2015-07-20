@@ -1,9 +1,9 @@
 module.exports = function drawMatches(data, options) {
     $('#matches').dataTable({
-        "order": [
-                [0, "desc"]
-            ],
-        "data": data,
+        order: [
+            [0, 'desc']
+        ],
+        data: data,
         /*
         serverSide: true,
         ajax: {
@@ -13,14 +13,14 @@ module.exports = function drawMatches(data, options) {
             }
         },
         */
-        "drawCallback": function() {
+        drawCallback: function() {
             window.tooltips();
             window.formatHtml();
         },
         paging: options ? options.paging : true,
         pageLength: 20,
         lengthChange: false,
-        //stateSave: true,
+        // stateSave: true,
         searching: false,
         processing: true,
         columns: [
@@ -31,13 +31,12 @@ module.exports = function drawMatches(data, options) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
             },
-
             {
                 data: 'players[0].hero_id',
                 title: 'Hero',
                 orderData: [2],
                 render: function(data, type) {
-                    return constants.heroes[data] ? "<img src='" + constants.heroes[data].img + "' title=\"" + constants.heroes[data].localized_name + "\"/>" : data;
+                    return constants.heroes[data] ? '<img src="' + constants.heroes[data].img + '\" title=\"' + constants.heroes[data].localized_name + '\"/>' : data;
                 }
             },
             {
@@ -52,7 +51,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'player_win',
                 title: 'Result',
                 render: function(data, type, row) {
-                    return '<span class="' + (data ? "text-success" : "text-danger") + '">' + ((data) ? "Win" : "Loss") + '</span>';
+                    return '<span class="' + (data ? 'text-success' : 'text-danger') + '">' + ((data) ? 'Win' : 'Loss') + '</span>';
                 }
             },
             {
@@ -66,7 +65,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'skill',
                 title: 'Skill',
                 render: function(data, type) {
-                    return constants.skill[data] ? constants.skill[data] : "N/A";
+                    return constants.skill[data] ? constants.skill[data] : 'N/A';
                 }
             },
             /*
@@ -82,7 +81,7 @@ module.exports = function drawMatches(data, options) {
                 data: 'duration',
                 title: 'Duration',
                 render: function(data, type) {
-                    return moment().startOf('day').seconds(data).format("H:mm:ss");
+                    return moment().startOf('day').seconds(data).format('H:mm:ss');
                 }
             },
             {
@@ -142,19 +141,18 @@ module.exports = function drawMatches(data, options) {
                 title: 'XPM',
                 render: function(data, type) {
                     return data;
-                },
+                }
             },
-            //hd
-            //td
-            //hh
+            // hd
+            // td
+            // hh
             {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data || "";
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || '';
                 }
             }
-
-            ]
+        ]
     });
 };

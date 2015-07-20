@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nf start",
     "dev": "nf -j Procfile.dev start",
-    "test": "rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "test": "eslint public && rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "update": "npm-check-updates -u -f '/^((?!JSONStream).)*$/'",
     "unparsed": "nf run node runner.js unparsed",
     "updateNames": "nf run node runner.js updateNames",
@@ -76,9 +76,12 @@
     "wordcloud": ""
   },
   "devDependencies": {
+    "babel-eslint": "^3.1.23",
     "coveralls": "2.11.2",
     "css-loader": "^0.15.2",
     "database-cleaner": "~0.9.1",
+    "eslint": "^0.24.1",
+    "eslint-config-airbnb": "0.0.6",
     "file-loader": "^0.8.4",
     "istanbul": "~0.3.17",
     "json-loader": "^0.5.2",
