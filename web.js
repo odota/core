@@ -186,7 +186,7 @@ app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
 
-//TODO hopefully we can get rid of this and go to single-theme design
+/*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
         for (var key in req.body) {
@@ -211,7 +211,7 @@ app.route('/preferences').post(function(req, res) {
         });
     }
 });
-
+*/
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
