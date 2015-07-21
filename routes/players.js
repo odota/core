@@ -26,8 +26,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "counts": {
             "name": "Counts"
         },
-        "totals":{
-            "name":"Totals"
+        "totals": {
+            "name": "Totals"
         },
         "items": {
             "name": "Items"
@@ -191,7 +191,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     if (err) {
                         return next(err);
                     }
-                    console.log("computing percentiles");
+                    console.time("computing percentiles");
                     //compute percentile for each stat
                     //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
                     results.forEach(function(r, i) {
@@ -199,21 +199,18 @@ players.get('/:account_id/:info?', function(req, res, next) {
                             var avg = results[i].aggData[key].avg;
                             var allCounts = results[0].aggData[key].counts;
                             var gt = 0;
-                            var lt = 0;
-                            if (avg) {
-                                for (var value in allCounts) {
-                                    var valueCount = allCounts[value];
-                                    if (avg >= Number(value)) {
-                                        gt += valueCount;
-                                    }
-                                    else {
-                                        lt += valueCount;
-                                    }
+                            var total = 0;
+                            for (var value in allCounts) {
+                                var valueCount = allCounts[value];
+                                if (avg >= Number(value)) {
+                                    gt += valueCount;
                                 }
-                                results[i].aggData[key].percentile = gt / (gt + lt);
+                                total += valueCount;
                             }
+                            results[i].aggData[key].percentile = total ? (gt / total) : 0;
                         }
                     });
+                    console.timeEnd("computing percentiles");
                     compare_data = results;
                     render();
                 });

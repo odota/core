@@ -67,6 +67,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             else {
                 options.query.limit = 1000;
             }
+            options.query.sort = {
+                match_id: -1
+            };
             advQuery(options.query, processResults);
         }
 
