@@ -21,7 +21,7 @@ module.exports = function drawHeroes(data) {
                     if (type === 'filter') {
                         return constants.heroes[data].localized_name;
                     } else {
-                        return `<img src='" + constants.heroes[data].img + "' title=\"" + constants.heroes[data].localized_name + "\"/>`;
+                        return `<img src="${constants.heroes[data].img}" title="${constants.heroes[data].localized_name}"/>`;
                     }
                 }
             },

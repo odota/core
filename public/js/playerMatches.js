@@ -22,23 +22,17 @@ module.exports = function drawMatches(data, options) {
         columnDefs: [
             {
                 'targets': 'fromNow',
-                render: function(data, type) {
-                    if (type === 'display') {
-                        return moment.unix(data).fromNow();
-                    }
-                    return data;
+                render(data, type) {
+                    return (type === 'display') ? moment.unix(data).fromNow() : data;
                 }
             },
             {
                 'targets': 'seconds',
-                render: function(data, type) {
-                    if (type === 'display') {
-                        return window.formatSeconds(data);
-                    }
-                    return data;
+                render(data, type) {
+                    return (type === 'display') ? window.formatSeconds(data) : data;
                 }
             }
-            ]
+        ]
     });
 };
 const columns_deprecated = {
@@ -46,7 +40,7 @@ const columns_deprecated = {
         {
             data: 'match_id',
             title: 'ID',
-            render: function(data, type) {
+            render(data, type) {
                 return '<a href="/matches/' + data + '">' + data + '</a>';
             }
         },
@@ -54,28 +48,28 @@ const columns_deprecated = {
             data: 'players[0].hero_id',
             title: 'Hero Name',
             visible: false,
-            render: function(data, type) {
+            render(data, type) {
                 return constants.heroes[data] ? constants.heroes[data].localized_name : data;
             }
         },
         {
             data: 'player_win',
             title: 'Result',
-            render: function(data, type, row) {
+            render(data, type, row) {
                 return '<span class="' + (data ? 'text-success' : 'text-danger') + '">' + ((data) ? 'Win' : 'Loss') + '</span>';
             }
         },
         {
             data: 'game_mode',
             title: 'Mode',
-            render: function(data, type) {
+            render(data, type) {
                 return constants.game_mode[data] ? constants.game_mode[data].name : data;
             }
         },
         {
             data: 'skill',
             title: 'Skill',
-            render: function(data, type) {
+            render(data, type) {
                 return constants.skill[data] ? constants.skill[data] : 'N/A';
             }
         },
@@ -91,48 +85,48 @@ const columns_deprecated = {
         {
             data: 'duration',
             title: 'Duration',
-            render: function(data, type) {
+            render(data, type) {
                 return moment().startOf('day').seconds(data).format('H:mm:ss');
             }
         },
         {
             data: 'start_time',
             title: 'Ended',
-            render: function(data, type, row) {
+            render(data, type, row) {
                 if (type === 'sort') {
                     return data + row.duration; // Sort by unix timestamp
                 }
                 return moment.unix(data + row.duration).fromNow();
             }
-            },
+        },
         {
             data: 'players[0].kills',
             title: 'K',
-            render: function(data, type) {
+            render(data, type) {
                 return data;
             }
-            },
+        },
         {
             data: 'players[0].deaths',
             title: 'D',
-            render: function(data, type) {
+            render(data, type) {
                 return data;
             }
-            },
+        },
         {
             data: 'players[0].assists',
             title: 'A',
             render: function(data, type) {
                 return data;
             }
-            },
+        },
         {
             data: 'players[0].last_hits',
             title: 'LH',
             render: function(data, type) {
                 return data;
             }
-            },
+        },
             /*
             {
                 data: 'players[0].denies',
@@ -148,7 +142,7 @@ const columns_deprecated = {
             render: function(data, type) {
                 return data;
             }
-            },
+        },
             /*
             {
                 data: 'players[0].xp_per_min',
