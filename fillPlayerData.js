@@ -74,6 +74,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             if (err) {
                 return cb(err);
             }
+            //sort matches by descending match id
+            results.data.sort(function(a, b) {
+                return b.match_id - a.match_id;
+            });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
             if (!Object.keys(options.query.js_select).length) {
@@ -88,10 +92,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 console.timeEnd("deflate");
             }
             console.log("results: %s", results.data.length);
-            //sort matches by descending match id
-            results.data.sort(function(a, b) {
-                return b.match_id - a.match_id;
-            });
             player.aggData = results.aggData;
             //convert heroes hash to array and sort
             var aggData = player.aggData;
