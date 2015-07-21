@@ -15,8 +15,5 @@ block blogcontent
 block taglegend
 	.well.sidebar-nav
 		p.lead Tags
-		ul.nav.nav-list
-			- each tag in getTags()
-				li
-					a(href=tagURL(tag)) 
-						span.panel.tag-list #{tag}
+		each tag in getTags()
+		  div: a(href=tagURL(tag)) #{tag}
