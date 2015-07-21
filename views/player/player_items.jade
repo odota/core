@@ -13,8 +13,8 @@ block playercontent
             th: abbr(title="Number of times this item was built") Built
             th: abbr(title="Number of matches where this item was built") Matches
             th: abbr(title="Number of times this item was used") Uses
-            th: abbr(title="Average number of times this item was used in each match") Uses/Match
-            th.time: abbr(title="Average (mean) time this item was built at") Avg Timing
+            th: abbr(title="Mean number of times this item was used in matches where it was built") Uses/Match
+            th.time: abbr(title="Mean time this item was built at") Avg Timing
             th: abbr(title="Percentage of matches this item was built in") Build%
             th: abbr(title="Percentage of matches won where this item was built") Win%
 
@@ -24,7 +24,7 @@ block playercontent
             tr 
               td
                 if item
-                  img.item(src=item.img, title=key)
+                  img.img-small.item(src=item.img, title=key)
                   =item.dname
                 else
                   =key
@@ -34,13 +34,9 @@ block playercontent
               td=player.aggData.item_uses.counts[key] ? (player.aggData.item_uses.counts[key]/player.aggData.item_usage.counts[key]).toFixed(2) : ""
               td=val/player.aggData.purchase.counts[key]
               td
-                - var pct = 100*player.aggData.item_usage.counts[key]/player.aggData.item_usage.n
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+                +progress_bar(player.aggData.item_usage.counts[key],player.aggData.item_usage.n)
               td
-                - var pct = 100*player.aggData.item_win.counts[key]/player.aggData.item_usage.counts[key]
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}
+                +progress_bar(player.aggData.item_win.counts[key],player.aggData.item_usage.counts[key])
 
 append footer_assets
   script.

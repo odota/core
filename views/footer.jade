@@ -1,7 +1,22 @@
 footer.footer
   .container
-    if !home
-      include cheese_block
+    .row
+      .col-md-4.text-center
+        p Buy Cheese. Help Pay for Our Servers.
+        p Reaching the goal each day keeps us running.
+      .col-md-4.text-center
+        .meter_wrapper
+          h3(style="font-weight:700; margin-top: 0;") Daily Cheese Goal
+          .meter
+            span(style="width: #{cheese_goal}%;")
+          if cheese_goal >= 50 && cheese_goal < 100
+            small Getting there...
+          else if cheese_goal === 100
+            small Woo!!! We did it! Thanks guys!
+      .col-md-4.text-center
+        span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
+        a(href="/carry", target="_blank")
+          button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
     .row(style="font-size: .8em;")
       .col-md-4
         ul
@@ -24,3 +39,25 @@ footer.footer
          a(href="https://twitter.com/yasp_dota" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true") Follow @yasp_dota
          script.
            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+    .row.text-center
+      if (user)
+        .checkbox
+          label
+            input.pref#theme(type="checkbox", checked=user.light_theme)
+            | Use Light Theme
+        script.
+          $(".pref").change(function() {
+              $.post(
+                  "/preferences", {
+                      light_theme: $("#theme").is(":checked"),
+                  },
+                  function(data) {
+                      if (data.sync) {
+                          location.reload(true);
+                      }
+                      else {
+                          $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                      }
+                      $(".sync").fadeOut(3000);
+                  });
+          });

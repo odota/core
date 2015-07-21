@@ -10,7 +10,7 @@
       h4 Start parsing my matches
     div &nbsp;
     a.btn.btn-default.btn-lg(href="/request")
-      h4 Parse a match by id
+      h4 Parse a match by ID<br>(no login required)
     
 section.main
   a.arrow-wrap(href='#philosophy')
@@ -42,19 +42,19 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
           .icon-circle
             img.circle-margin(src='../public/images/tools2.png')
           h4 Open source.
-          p All of YASP's code is open source and available on GitHub for contributors to improve and modify.     
+          p All of our code is open source and available on GitHub for contributors to improve and modify.     
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/barchart.png')
           h4 Go beyond the API.
-          p YASP parses replays to provide statistics unavailable through the API or game client.
+          p We parse replays to provide statistics unavailable through the API or game client.
       .col-md-4.text-center.team-text
         .featurette-item
           .icon-circle
             img.circle-margin(src='../public/images/present.png')
           h4 Free of charge.
-          p YASP is supported by volunteer developers and community contributions, making it completely free for users.
+          p We're supported by volunteer developers and community contributions, meaning we don't need to charge users anything.
 
 #match_statistics.callout
     .container.bottom-padding
@@ -69,9 +69,9 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
           h3 Purchases
           include match/timelines_purchases_table.jade
         .col-md-8.col-md-offset-2.text-center
-          h3 View detailed skill/item usage and timelines of item purchases. Also see <a href="/matches/#{match.match_id}/timelines" target="_blank">timelines of kills</a>,
-            | <a href="/matches/#{match.match_id}/details" target="_blank">gold and xp breakdowns</a>,
-            | <a href="/matches/#{match.match_id}/teamfights" target="_blank">teamfight recaps</a> and more.
+          h3 View timelines of item purchases.<br>
+            | Also see <a href="/matches/#{match.match_id}/combat" target="_blank">timelines of kills</a>,
+            | <a href="/matches/#{match.match_id}/teamfights" target="_blank">teamfight recaps</a>, and more.
 .featurette.dark
   .container
     .vert
@@ -83,7 +83,7 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
             h3 Gold
             #chart-gold
         .col-md-8.col-md-offset-2.text-center.bottom-padding
-          h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, last hits, and income changed over the game.
+          h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, and last hits changed over the game.
 #positions.blurb.bright
   .container
     .col-md-12.text-center
@@ -100,32 +100,16 @@ paper-fab-menu.fab(icon='dashboard', closeicon='close', duration='0.3')
     .vert
       .col-md-12.text-center.bottom-padding
         h2 And more to come!
-        h3 We are constantly developing and improving YASP. <br>
+        h3 We're constantly working to add features and improvements. <br>
            | <a href="https://github.com/yasp-dota/yasp/issues" target="_blank"> Request a feature</a> or <a href="https://github.com/yasp-dota/yasp/pulls" target="_blank">build it yourself!</a>
         br
         hr
         br
-        h2 The generous Dota 2 <br> community
-        h1 keeps us running
+        h3 Funded by contributions from the generous Dota 2 community
         br
         hr
-        h2(style="margin-bottom:25px;") Found us helpful?
-        include cheese_block
 
 append footer_assets
   script.
     var graphData = !{JSON.stringify(match.graphData)};
     generateCharts(graphData);
-  script.
-    var heatmap = h337.create({
-        container: document.getElementById('map'),
-        radius: 15
-      });
-      var posData = !{JSON.stringify(match.posData)}
-      adjustHeatmapData(posData, 600/127, null, 25);
-      $(".activate").on("mouseover", function(){
-        var pData = posData[Number($(this).attr('data-index'))]
-        var data = pData[$(this).attr('data-type')];
-        heatmap.setData(data);
-        heatmap.repaint();
-      })

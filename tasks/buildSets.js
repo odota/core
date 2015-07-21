@@ -114,7 +114,7 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            //TODO isolate failures of each set build
+            //TODO isolate set building and service discovery
             console.log('error occured during buildSets: %s', err);
             return cb(err);
         }

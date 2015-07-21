@@ -4,10 +4,10 @@ block playercontent
   .histograms.match
     .row
       .col-md-12
-        h2 Histograms
         - var times={"duration":1,"first_blood_time":1}
         script.
           var histogramData = {};
+        h3 Show
         each val, key in player.aggData
           if key in histograms
             - var collapsed = true

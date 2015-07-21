@@ -22,7 +22,6 @@ var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 var fs = require('fs');
 var request = require('request');
-var unparsed = require('../tasks/unparsed');
 var updateNames = require('../tasks/updateNames');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
@@ -193,55 +192,7 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
-            },
-            /*
-            function(cb) {
-            console.log('downloading replays');
-
-            function dl(filename, cb) {
-                //keep only the match id segment as the filename
-                var arr = filename.split(".");
-                arr[0] = arr[0].split("_")[0];
-                var path = replay_dir + arr.join(".");
-   
-                console.log("downloading: %s", filename, path);
-                //currently disabled caching of replays, get a fresh copy with each test
-                if (fs.existsSync(path) && false) {
-                    cb();
-                }
-                else {
-                    var failed = false;
-                    var to = setTimeout(function() {
-                        failed = true;
-                        console.log("download took too long, retrying");
-                        dl(filename, cb);
-                    }, 10000);
-
-                    var inStream = request({
-                            url: 'http://cdn.rawgit.com/yasp-dota/testfiles/master/' + filename
-                        });
-
-                    inStream.pipe(fs.createWriteStream(path)).on('error', function(err) {
-                        console.log(err);
-                        console.log('retrying dl %s', filename);
-                        failed = true;
-                        dl(filename, cb);
-                    }).on('finish', function() {
-                        if (!failed) {
-                            console.log("completed %s", filename);
-                            clearTimeout(to);
-                            cb();
-                        }
-                    });
-                }
-
             }
-            var files = ['1151783218.dem.bz2', '1193091757.dem', '1181392470_1v1.dem', '1189263979_ardm.dem', 'invalid.dem'];
-            async.each(files, dl, function(err) {
-                cb(err);
-            });
-        }
-                        */
         ], function(err) {
         done(err);
     });
@@ -317,13 +268,6 @@ describe("worker", function() {
 });
 describe("tasks", function() {
     this.timeout(wait);
-    it('unparsed', function(done) {
-        unparsed(function(err, num) {
-            //todo why isn't this picking up any matches?
-            //searches db for parse_status:0 and adds them to queue
-            done(err);
-        });
-    });
     it('updateNames', function(done) {
         updateNames(function(err, num) {
             done(err);
@@ -408,19 +352,19 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/status', function(done) {
-            supertest(app).get('/status')
+        it('/professional', function(done) {
+            supertest(app).get('/professional')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(200).expect(/Status/).end(function(err, res) {
                     done(err);
                 });
         });
-        it('/ratings', function(done) {
-            supertest(app).get('/ratings')
+        it('/status', function(done) {
+            supertest(app).get('/status')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
-                .expect(200).expect(/Ratings/).end(function(err, res) {
+                .expect(200).expect(/Status/).end(function(err, res) {
                     done(err);
                 });
         });
@@ -458,10 +402,10 @@ describe("web", function() {
         });
     })
     describe("player page tests", function() {
-        var tests = ["", "matches", "histograms", "counts", "asdf"];
+        var tests = ["", "matches", "histograms", "counts", "compare", "asdf"];
         tests.forEach(function(t) {
             it('/players/:valid/' + t, function(done) {
-                supertest(app).get('/players/88367253/' + t).expect(200).end(function(err, res) {
+                supertest(app).get('/players/83684080/' + t).expect(200).end(function(err, res) {
                     done(err);
                 });
             });
@@ -491,43 +435,43 @@ describe("web", function() {
                 });
             });
         });
+    });
+});
+describe("api tests", function() {
+    //todo supertest these?
+    describe("/api/matches", function() {
+        it('should return JSON', function(done) {
+            request.get(process.env.ROOT_URL + '/api/matches?draw=2&select%5Bplayers.account_id%5D=88367253&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                JSON.parse(body);
+                done(err);
+            });
         });
     });
-    describe("api tests", function() {
-        //todo supertest these?
-        describe("/api/matches", function() {
-            it('should return JSON', function(done) {
-                request.get(process.env.ROOT_URL + '/api/matches?draw=2&select%5Bplayers.account_id%5D=88367253&columns%5B0%5D%5Bdata%5D=match_id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=game_mode&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=cluster&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=duration&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start_time&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=true&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=parse_status&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=true&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=10&search%5Bvalue%5D=&search%5Bregex%5D=false&_=1422621884994', function(err, resp, body) {
-                    assert(resp.statusCode === 200);
-                    JSON.parse(body);
-                    done(err);
-                });
+    describe("/api/items", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
             });
         });
-        describe("/api/items", function() {
-            it('should 200', function(done) {
-                request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
-                    assert(resp.statusCode === 200);
-                    done(err);
-                });
+    });
+    describe("/api/abilities", function() {
+        it('should 200', function(done) {
+            request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
+                assert(resp.statusCode === 200);
+                done(err);
             });
         });
-        describe("/api/abilities", function() {
-            it('should 200', function(done) {
-                request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
-                    assert(resp.statusCode === 200);
-                    done(err);
-                });
+    });
+    describe("/preferences", function() {
+        it('should return JSON', function(done) {
+            request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
+                JSON.parse(body);
+                done(err);
             });
         });
-        describe("/preferences", function() {
-            it('should return JSON', function(done) {
-                request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
-                    JSON.parse(body);
-                    done(err);
-                });
-            });
-        });
+    });
 });
 var io = require('socket.io-client');
 describe("unit test", function() {

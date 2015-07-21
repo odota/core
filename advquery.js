@@ -7,92 +7,16 @@ var isSignificant = utility.isSignificant;
 var async = require('async');
 var aggregator = require('./aggregator');
 var constants = require('./constants.json');
+var preprocessQuery = require('./preprocessQuery');
+var filter = require('./filter');
 
 function advQuery(query, cb) {
-    var default_project = {
-        start_time: 1,
-        match_id: 1,
-        cluster: 1,
-        game_mode: 1,
-        duration: 1,
-        radiant_win: 1,
-        parse_status: 1,
-        first_blood_time: 1,
-        lobby_type: 1,
-        leagueid: 1,
-        radiant_name: 1,
-        dire_name: 1,
-        players: 1,
-        skill: 1
-    };
-    query.project = query.project || default_project;
-    //only project the fields we need
-    query.project["players.account_id"] = 1;
-    query.project["players.hero_id"] = 1;
-    query.project["players.level"] = 1;
-    query.project["players.kills"] = 1;
-    query.project["players.deaths"] = 1;
-    query.project["players.assists"] = 1;
-    query.project["players.gold_per_min"] = 1;
-    query.project["players.xp_per_min"] = 1;
-    query.project["players.hero_damage"] = 1;
-    query.project["players.tower_damage"] = 1;
-    query.project["players.hero_healing"] = 1;
-    query.project["players.player_slot"] = 1;
-    query.project["players.last_hits"] = 1;
-    query.project["players.denies"] = 1;
-    query.project["players.leaver_status"] = 1;
-    //select,the query received, build the mongo query and the filter based on this
-    query.mongo_select = {};
-    query.js_select = {};
-    //default limit
-    var max = 500;
-    //map to limit
-    var mongoAble = {
-        "players.account_id": 20000,
-        "leagueid": max
-    };
-    var multiples = {
-        "with_account_id": 1,
-        "teammate_hero_id": 1,
-        "against_hero_id": 1,
-        "compare": 1
-    };
-    var queries = {
-        "gtzero": {
-            $gt: 0
-        }
-    };
-    for (var key in query.select) {
-        if (query.select[key] === "") {
-            delete query.select[key];
-        }
-        else {
-            if (key in multiples) {
-                query.select[key] = [].concat(query.select[key]).map(function(e) {
-                    return Number(e);
-                });
-            }
-            else if (key in queries) {
-                query.select[key] = queries[query.select[key]];
-            }
-            else if (typeof query.select[key] === "string") {
-                query.select[key] = Number(query.select[key]);
-            }
-            if (mongoAble[key]) {
-                query.mongo_select[key] = query.select[key];
-                max = Math.max(mongoAble[key], max);
-            }
-            else {
-                query.js_select[key] = query.select[key];
-            }
-        }
-    }
+    //mongo_select
+    //js_select
     //js_agg, aggregations to do with js
     //do all aggregations if null, so we need parsed data
     var bGetParsedPlayerData = Boolean(!query.js_agg);
     //limit, pass to mongodb, cap the number of matches to return in mongo
-    query.limit = (!query.limit || query.limit > max) ? max : query.limit;
     //skip, pass to mongodb
     //sort, pass to mongodb
     //js_limit, the number of results to return in a page, filtered by js
@@ -107,7 +31,7 @@ function advQuery(query, cb) {
     };
     //console.log(query);
     console.time('querying database');
-    // console.log(options);
+    //console.log(options);
     db.matches.find(query.mongo_select, monk_options, function(err, matches) {
         if (err) {
             return cb(err);
@@ -128,6 +52,7 @@ function advQuery(query, cb) {
                     //check mongo query, if starting with player, this means we select a single player, otherwise select all players
                     for (var key in query.mongo_select) {
                         var split = key.split(".");
+                        //break apart the query and determine whether we are trying to get a single player for this match
                         if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
                             pass = false;
                         }
@@ -160,91 +85,12 @@ function advQuery(query, cb) {
                 aggData: aggData,
                 page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
                 data: filtered,
-                unfiltered_count: matches.length
+                unfiltered: matches
             };
             console.timeEnd('computing aggregations');
             cb(err, result);
         });
     });
-}
-
-function filter(matches, filters) {
-    //accept a hash of filters, run all the filters in the hash in series
-    //console.log(filters);
-    var conditions = {
-        //filter: significant, remove unbalanced game modes/lobbies
-        significant: function(m, key) {
-            return Number(isSignificant(constants, m)) === key;
-        },
-        //filter: player won
-        win: function(m, key) {
-            return Number(m.player_win) === key;
-        },
-        patch: function(m, key) {
-            return m.patch === key;
-        },
-        game_mode: function(m, key) {
-            return m.game_mode === key;
-        },
-        lobby_type: function(m, key) {
-            return m.lobby_type === key;
-        },
-        hero_id: function(m, key) {
-            return m.players[0].hero_id === key;
-        },
-        isRadiant: function(m, key) {
-            return Number(m.players[0].isRadiant) === key;
-        },
-        //GETFULLPLAYERDATA: we need to iterate over match.all_players
-        //ensure all array elements fit the condition
-        //with_account_id: player id was also in the game
-        with_account_id: function(m, key) {
-            return key.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return p.account_id === k;
-                });
-            });
-        },
-        //teammate_hero_id
-        teammate_hero_id: function(m, key) {
-            return key.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
-                });
-            });
-        },
-        //against_hero_id
-        against_hero_id: function(m, key) {
-            return key.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
-                });
-            });
-        },
-        lane_role: function(m, key) {
-            return m.players[0].parsedPlayer.lane_role === key;
-        }
-    };
-    //TODO implement more filters, including from parse data
-    //filter: specific regions
-    //filter: item was built
-    //filter: max gold/xp advantage
-    var filtered = [];
-    for (var i = 0; i < matches.length; i++) {
-        var include = true;
-        //verify the match passes each filter test
-        for (var key in filters) {
-            if (conditions[key]) {
-                //failed a test
-                include = include && conditions[key](matches[i], filters[key]);
-            }
-        }
-        //if we passed, push it
-        if (include) {
-            filtered.push(matches[i]);
-        }
-    }
-    return filtered;
 }
 /*
 function sort(matches, sorts) {
@@ -347,7 +193,6 @@ function getFullPlayerData(matches, doAction, cb) {
         }
         cb(err);
     });
-
 }
     */
 function getParsedPlayerData(matches, doAction, cb) {

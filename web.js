@@ -115,32 +115,77 @@ app.route('/request').get(function(req, res) {
         rc_public: rc_public
     });
 });
-app.use('/ratings', function(req, res, next) {
-    db.players.find({
-        "ratings": {
-            $ne: null
-        }
-    }, {
-        fields: {
-            "cache": 0
-        }
-    }, function(err, docs) {
+app.route('/status').get(function(req, res, next) {
+    status(function(err, result) {
         if (err) {
             return next(err);
         }
-        docs.forEach(function(d) {
-            d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
-            d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
-            d.time = d.ratings[d.ratings.length - 1].time;
-        });
-        docs.sort(function(a, b) {
-            return b.soloCompetitiveRank - a.soloCompetitiveRank;
-        });
-        res.render("ratings", {
-            ratings: docs
+        res.render("status", {
+            result: result
         });
     });
 });
+app.route('/faq').get(function(req, res) {
+    res.render("faq", {
+        questions: poet.helpers.postsWithTag("faq").reverse()
+    });
+});
+app.route('/professional').get(function(req, res, next) {
+    advQuery({
+        mongo_select: {
+            leagueid: {
+                $gt: 0
+            }
+        },
+        project: {
+            players: {
+                $slice: 1
+            },
+            match_id: 1,
+            leagueid: 1,
+            radiant_name: 1,
+            dire_name: 1,
+            game_mode: 1,
+            duration: 1,
+            start_time: 1,
+            parse_status: 1
+        },
+        //pass something non-null to skip getting parsed data
+        js_agg: {},
+        sort: {
+            match_id: -1
+        },
+        limit: 100
+    }, function(err, data2) {
+        if (err) {
+            return next(err);
+        }
+        res.render('professional', {
+            recent: data2.data
+        });
+        /*
+        //implement live match pages
+        //individual live match page for each match
+        //interval check api
+        //for each match, if time changed, update redis, push to clients
+        utility.getData(utility.generateJob("api_live").url, function(err, data) {
+                if (err) {
+                    return next(err);
+                }
+                res.render('professional', {
+                    live: data.result.games,
+                    recent: data2.data
+                });
+        });
+        */
+    });
+});
+app.use('/matches', require('./routes/matches'));
+app.use('/players', require('./routes/players'));
+app.use('/api', require('./routes/api'));
+app.use('/', require('./routes/auth'));
+app.use('/', require('./routes/donate'));
+
 //TODO hopefully we can get rid of this and go to single-theme design
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -166,75 +211,7 @@ app.route('/preferences').post(function(req, res) {
         });
     }
 });
-app.route('/status').get(function(req, res, next) {
-    status(function(err, result) {
-        if (err) {
-            return next(err);
-        }
-        res.render("status", {
-            result: result
-        });
-    });
-});
-app.route('/faq').get(function(req, res) {
-    res.render("faq", {
-        questions: poet.helpers.postsWithTag("faq").reverse()
-    });
-});
-app.route('/professional').get(function(req, res, next) {
-    //TODO implement live match pages
-    //individual live match page for each match
-    //interval check api
-    //for each match, if time changed, update redis, push to clients
-    advQuery({
-        select: {
-            leagueid: {
-                $gt: 0
-            }
-        },
-        project: {
-            players: {
-                $slice: 1
-            },
-            match_id: 1,
-            leagueid: 1,
-            radiant_name: 1,
-            dire_name: 1,
-            game_mode: 1,
-            duration: 1,
-            start_time: 1,
-            parse_status: 1
-        },
-        js_agg: {},
-        sort: {
-            match_id: -1
-        },
-        limit: 100
-    }, function(err, data2) {
-        if (err) {
-            return next(err);
-        }
-        res.render('professional', {
-            recent: data2.data
-        });
-        /*
-        utility.getData(utility.generateJob("api_live").url, function(err, data) {
-                if (err) {
-                    return next(err);
-                }
-                res.render('professional', {
-                    live: data.result.games,
-                    recent: data2.data
-                });
-        });
-        */
-    });
-});
-app.use('/matches', require('./routes/matches'));
-app.use('/players', require('./routes/players'));
-app.use('/api', require('./routes/api'));
-app.use('/', require('./routes/auth'));
-app.use('/', require('./routes/donate'));
+
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;

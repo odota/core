@@ -15,7 +15,7 @@ function fillPlayerNames(players, cb) {
         player_hash[p.account_id] = p;
     });
     var player_ids = players.map(function(p) {
-        return p.account_id;
+        return Number(p.account_id);
     });
     db.players.find({
         account_id: {

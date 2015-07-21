@@ -8,7 +8,7 @@ mixin picks_bans_row(picks_bans, team_int)
         - var is_pick = pick.is_pick
         - var hero = constants.heroes[hero_id]
         if hero
-          div.img-text
+          span.img-text
             img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
             div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
         else
@@ -42,7 +42,8 @@ block match_content
             tbody
               each player, i in match.players
                tr(class = player.player_slot<64 ? "success" : "danger")
-                 td
+                 td.text-left
+                   img.img-md(src=player.avatar)
                    if (player.last_visited)
                      img.user(src='/public/images/favicon-16x16.png', title="YASP User")
                    if (player.account_id === constants.anonymous_account_id)
@@ -55,7 +56,7 @@ block match_content
                  td.hero
                    - var hero = constants.heroes[player.hero_id]
                    if hero
-                     img(src=hero.img, title=hero.localized_name)
+                     img.img-md(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
                  td= player.level
@@ -70,22 +71,22 @@ block match_content
                  td.format= player.hero_damage
                  td.format= player.tower_damage
                  td.format= player.hero_healing
-                 td.table-img
+                 td.text-left
                    each val, index in player
                      if (index.slice(0, 5)==="item_")
                        - var item = constants.items[constants.item_ids[val]]
                        if item
-                         img.item(src=item.img, title=constants.item_ids[val])
+                         img.img-small.item(src=item.img, title=constants.item_ids[val])
                    if (player.hero_id === 80 && player.additional_units)
                      br
                      each val, index in player.additional_units[0]
                        if (index.slice(0, 5)==="item_")
                          - var item = constants.items[constants.item_ids[val]]                             
                          if item
-                           img.item(src=item.img, title=constants.item_ids[val])
-      
+                           img.img-small.ability(src=item.img, title=constants.item_ids[val])
+  .row
+    .col-md-12      
       if match.picks_bans
-        hr
         h3.inline-header Picks/Bans
         button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#picks-bans", aria-expanded="true") Toggle Table
         #picks-bans.table-responsive.collapse.in
@@ -95,7 +96,8 @@ block match_content
                 +picks_bans_row(match.picks_bans, 0)
               tr.danger
                 +picks_bans_row(match.picks_bans, 1)
-
+  .row
+    .col-md-12
       h3.inline-header Skill Builds
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
       #skills.table-responsive.collapse.in
@@ -119,11 +121,10 @@ block match_content
                         - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
                         td
                           if abilityData
-                            img.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
+                            img.img-md.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
                           else
                             =ability.ability
                             
-      hr
       .row.margin-bottom
         .col-md-7
           h3 Buildings
