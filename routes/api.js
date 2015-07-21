@@ -2,6 +2,7 @@ var express = require('express');
 var api = express.Router();
 var constants = require('../constants');
 var advQuery = require('../advquery');
+var preprocessQuery = require('../preprocessQuery');
 api.get('/items', function(req, res) {
     res.json(constants.items[req.query.name]);
 });
@@ -17,10 +18,11 @@ api.get('/matches', function(req, res, next) {
     var js_sort = req.query.js_sort || makeSort(req.query.order, req.query.columns) || {};
     var js_limit = Number(req.query.length) || 1;
     var js_skip = Number(req.query.start) || 0;
+    preprocessQuery(select);
     advQuery({
         select: select,
         project: null, //just project default fields
-        limit: limit,
+        limit: Math.min(limit, 100),
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,

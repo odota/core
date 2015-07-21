@@ -1,152 +1,120 @@
-/*
-@media (min-width: 1200px) {
-    .container {
-        width: 1230px;
-    }
-}
-*/
 /* ads */
 
 .leaderboard {
     margin: 0 auto;
     display: block;
 }
+
 .skyscraper {
     margin: 2em auto;
     display: block;
 }
+
 .margin-bottom {
     margin-bottom: 1.5em;
 }
+
 html,
 body {
-    font-family: 'Roboto Slab', sans-serif;
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
 }
-body.frame {
+
+.frame {
     display: table;
 }
+
 .match-top {
     margin-top: 1.5em;
 }
-.match-top h1 {
-    font-size: 38px;
-    font-weight: 700;
-}
+
 h3 img {
     padding-right: 1em;
 }
-.table-img {
-    white-space: nowrap;
-    min-width: 150px;
-}
+
 .img-text {
     float: left;
     text-align: center;
-    font-size: 10px;
+    font-size: 11px;
 }
+
 .img-small {
+    margin-left: 1px;
     margin-right: 1px;
     height: 25px;
 }
-.ability {
-    margin-right: 1px;
-    height: 25px
+
+.img-md {
+    margin-left: 2px;
+    margin-right: 2px;
+    height: 30px;
 }
-.item {
-    margin-right: 1px;
-    height: 25px;
-}
-.kill {
-    margin-right: 1px;
-    height: 25px;
-}
-.dmg {
-    margin-right: 1px;
-    height: 25px;
-}
+
 .pickban {
     margin: 0px;
     height: 25px;
 }
-td.abilities {
-    padding: 8px 1px !important;
-}
-td.abilities img {
-    height: 35px;
-    width: 35px;
-}
-.navbar-default {
-    background-color: #BBF0FD;
-    border: none;
-    border-radius: 0px;
-}
-.hero img {
-    width: 50px;
-}
+
 .tooltip-inner {
     white-space: normal;
 }
+
 .mapContainer {
     position: relative;
     top: 0px;
     left: 0px;
-    width: 600px;
-    height: 600px;
+    width: 100%;
 }
-.mapContainer-small {
-    width: 300px;
-    height: 300px;
-}
+
 .map {
     width: 100%;
 }
+
 .icon {
     width: 15px;
 }
+
 footer {
     background-color: #BBF0FD;
     width: 100%;
     padding: 1.3em 0 0 1em;
 }
-td {
-    vertical-align: middle !important;
+
+.user {
+    margin: 2px;
 }
-td>img.user {
-    margin-right: .5em;
-}
+
 .attribVal {
     color: #f5c433;
     font-weight: bolder;
 }
+
 .big {
     font-size: 80px;
 }
-.large-cheese {
-    font-size: 70px;
-    border: 5px solid rgb(189, 155, 20);
-    border-radius: 50%;
-    background-color: yellow;
-    padding: 6px 15px 8px;
-}
+
 .medium-cheese {
     font-size: 40px;
-    border: 3px solid rgb(189, 155, 20);
-    border-radius: 50%;
-    background-color: yellow;
-    padding: 3px 11px;
+    text-shadow: 0 0 10px yellow;
+    /*border: 3px solid rgb(189, 155, 20);*/
+    /*background-color: lightyellow;*/
+    /*border-radius: 50%;*/
+    /*padding: 3px 11px;*/
 }
+
+
 /* Cheese Goal Bar */
 
 .meter_wrapper {
     margin-bottom: 1em;
 }
+
 .meter_wrapper > p {
     font-size: 1.3em;
 }
+
 .meter {
     height: 20px;
     width: 80%;
@@ -159,6 +127,7 @@ td>img.user {
     padding: 4px;
     box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
 }
+
 .meter > span {
     display: block;
     height: 100%;
@@ -168,6 +137,7 @@ td>img.user {
     position: relative;
     overflow: hidden;
 }
+
 .meter > span:after {
     content: "";
     position: absolute;
@@ -185,185 +155,155 @@ td>img.user {
     border-bottom-left-radius: 20px;
     overflow: hidden;
 }
+
 .progress-bar {
     color: #FFF;
-    text-shadow: 0px 0px 3px #000;
+    text-shadow: 0px 0px 5px #000000;
 }
+
 .progress_text {
     margin: 0 auto;
 }
+
 .progress {
     margin: 0 auto;
 }
+
 #messages {
     margin: 3em auto 20em;
 }
+
 #loading {
     height: 8em;
     margin: 0 auto;
 }
+
 .btn-dark {
     color: #fff;
     background-color: #848484;
     border-color: #848484;
 }
+
 .btn-yasp {
     color: #000;
     background-color: #BBF0FD;
     border-color: #BBF0FD;
 }
+
 .btn-yasp:hover,
 .btn-yasp:focus {
     color: #fff;
     background-color: #31b0d5;
     border-color: #269abc;
 }
+
 .wards button {
     display: block;
     margin: 10em auto;
 }
+
 .charts button {
     margin-right: .5em;
 }
+
 .player-color {
     border-left: 10px solid;
 }
-.blog-panel hr {
-    border-color: #000;
-}
-.blog-panel h1,
-.blog-panel h2,
-.blog-panel h3 {
-    color: black;
-}
-.blog-panel .panel-body a {
-    color: #337ab7;
-}
-option {
-    color: black;
-}
-.select2-search-choice *,
-.select2-drop * {
-    color: black;
-}
+
 div .dataTables_processing {
     /*set z-index for processing indicator*/
-    
     z-index: 60000;
 }
-.rating {
-    margin-left: 5px;
-    margin-right: 5px;
-}
-/* Use sans-serif on tables*/
 
-table tbody *,
-table tfoot * {
-    font-family: Arial, sans-serif;
-}
-#heatmap-table {
-    height: 500px;
-}
+
 /* Blog */
 
 #panel-chart {
     padding: 10px;
 }
-.panel-body {
-    background-color: #f5f5f5;
-}
+
 .panel-title {
     text-transform: none;
     font-size: 15px;
     letter-spacing: 0px;
 }
-.blog-preview {
-    background-color: #fff;
-}
+
 .blog-heading {
-    font-size: 20px !important;
-    color: #337ab7;
+    font-size: 20px;
 }
+
 .blog-panel {
     margin-bottom: 30px;
 }
+
 .blog-date {
-    color: #777;
     margin-bottom: 0px;
 }
+
 .label-info {
     margin-right: 5px;
 }
-.tag-header {
-    margin-bottom: 10px;
-}
-.tag-list {
-    background-color: #5BC0DE;
-    border-radius: 4px;
-    color: #fff;
-    padding: 2px 5px;
-    margin-left: -10px;
-}
-.tag-list:hover,
-.tag-list:focus,
-.tags a span:hover,
-.tags a span:focus {
-    color: #BBF0FD;
-}
-.tag-key a:hover,
-.tag-key a:focus {
-    color: #BBF0FD;
-    background-color: #f5f5f5 !important;
-}
+
 .theme-blue {
     color: #BBF0FD;
 }
+
 .panel-chart {
     color: blue;
 }
+
 .bottom-padding {
     padding-bottom: 5%;
 }
+
 .inline-header {
     display: inline-block;
     margin-right: .5em;
 }
+
 .toggle-button {
     display: inline;
     vertical-align: super;
 }
+
 .bright-border {
     border-color: #ccc;
 }
+
 .toggle-button.collapsed {
     background-color: #545454;
-    border-color: rgba(0, 0, 0, 0);
+    border-color: rgb(0, 0, 0);
 }
 
-#match_statistics tbody,
-#positions tbody {
-    color: black;
-}
 .glow {
     border: 3px solid rgb(86, 180, 239);
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05) inset, 0px 0px 8px rgba(82, 168, 236, 0.6);
 }
+
 .small-hero-icon {
-    zoom: .5;
+    zoom: .75;
 }
+
 .hidden {
     display: none;
 }
-/* Sticky footer styles
--------------------------------------------------- */
+
+
+/* Sticky footer styles*/
 
 .sticky_footer_row {
     display: table-row;
     height: 1px;
 }
+
 .sticky_footer_row.expand {
     height: auto;
 }
+
+h1,h2,h3 {
+    font-weight: 700;
+}
+
 
 /* use special fonts in certain elements */
 
@@ -374,53 +314,64 @@ h4,
 .lead,
 .btn,
 .navbar a {
-  text-transform: uppercase;
-  font-family: "Roboto Slab", Arial, sans-serif;
-  letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-a.list-group-item:hover,
-a.list-group-item:focus {
-  color: #BBF0FD;
-  background-color: #FFF;
-}
 .icon-bar {
-  background-color: #fff;
+    background-color: #fff;
 }
-.navbar a {
-  color: #fff;
-  font-size: 14px;
+
+
+/* tweak progress bar heights */
+
+.progress {
+    height: 21px;
 }
-.navbar-bold.affix {
-  background-color: #d46054;
+
+.progress .progress-bar {
+    font-size: 14px;
+    line-height: 21px;
 }
-.navbar-bold {
-  background-color: #f68076;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+
+/*center tables*/
+
+td,
+th {
+    text-align: center;
+    vertical-align: middle !important;
 }
-.navbar-bold li a:hover,
-.navbar-bold li.active {
-  background-color: #d46054;
+
+td.text-left {
+    text-align: left;
 }
-.navbar-brand:hover,
-.navbar-brand:focus {
-  background-color: #BBF0FD;
+
+
+/*temporary select2 fixes*/
+
+.select2-container,
+.select2-search__field {
+    color: black;
+    width: 100% !important;
+    padding: 0;
+    height: 35px;
 }
-.navbar-brand:hover strong,
-.navbar-brand:focus strong {
-  color: #000;
+
+.select2-container {
+    margin-bottom: 10px;
 }
-#navbar .nav>li>a:hover,
-#navbar .nav>li>a:focus {
-  background-color: #BBF0FD;
+
+.table>thead>tr>th,
+.table>tbody>tr>td {
+    border-bottom: 1px solid grey;
 }
-.navbar-fixed-top {
-  transition: background 1s ease 0s;
+
+/* Use sans-serif on tables*/
+
+
+/*
+table tbody *,
+table tfoot * {
+    font-family: Arial, sans-serif;
 }
-.navbar-fixed-top.opaque {
-  background-color: rgb(37, 41, 42);
-  transition: background-color 1s ease 0s;
-}
-a:hover {
-  color: #000;
-}
+*/

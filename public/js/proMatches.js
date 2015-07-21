@@ -1,5 +1,5 @@
 module.exports = function drawProMatches(data) {
-    $('#pro_matches').dataTable({
+    $('#matches').dataTable({
         order: [
             [0, 'desc']
         ],
@@ -23,7 +23,7 @@ module.exports = function drawProMatches(data) {
         columns: [
             {
                 data: 'match_id',
-                title: 'Match ID',
+                title: 'ID',
                 render: function(data, type) {
                     return '<a href="/matches/' + data + '">' + data + '</a>';
                 }
@@ -60,7 +60,7 @@ module.exports = function drawProMatches(data) {
             },
             {
                 data: 'start_time',
-                title: 'Played',
+                title: 'Ended',
                 render: function(data, type, row) {
                     if (type === 'sort') {
                         return data + row.duration; // Sort by unix timestamp

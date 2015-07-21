@@ -10,7 +10,7 @@ var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(15 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(12 * steam_hosts.length, api_keys.length);
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
     //if test or only want 500 of any hero, use the short array
@@ -36,16 +36,9 @@ module.exports = function processFullHistory(job, cb) {
             updatePlayer(null, player, cb);
         }
         else {
-            //process this player's matches
-            //convert hash to array
-            var arr = [];
-            for (var key in player.match_ids) {
-                arr.push(Number(key));
-            }
+            //check what matches the player is already associated with
             db.matches.find({
-                match_id: {
-                    $in: arr
-                }
+                "players.account_id": player.account_id
             }, {
                 fields: {
                     "match_id": 1
@@ -54,14 +47,12 @@ module.exports = function processFullHistory(job, cb) {
                 if (err) {
                     return cb(err);
                 }
-                console.log("%s matches found, %s already in db, %s to add", arr.length, docs.length, arr.length - docs.length);
-                //iterate through db results, delete match_id key if exists
-                //pass an option to allow force updating matches with users who enabled third party data (skip deleting existing matches from list)
-                if (!job.readd) {
-                    for (var i = 0; i < docs.length; i++) {
-                        var match_id = docs[i].match_id;
-                        delete player.match_ids[match_id];
-                    }
+                console.log("%s matches found, %s already in db, %s to add", Object.keys(player.match_ids).length, docs.length, Object.keys(player.match_ids).length - docs.length);
+                //iterate through db results, delete match_id key if this player has this match already
+                //will re-request and update matches where this player was previously anonymous
+                for (var i = 0; i < docs.length; i++) {
+                    var match_id = docs[i].match_id;
+                    delete player.match_ids[match_id];
                 }
                 //iterate through keys, make api_details requests
                 async.eachLimit(Object.keys(player.match_ids), parallelism, function(match_id, cb) {

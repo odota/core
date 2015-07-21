@@ -1,10 +1,10 @@
 extend player
+include /mixins/match_table
 
 block playercontent
   .row
     .col-md-12.table-responsive
-      h3 Matches
-      table.table#matches
+      +match_table(player.data)
 
 append footer_assets
   script.

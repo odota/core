@@ -21,17 +21,15 @@ block playercontent
             tr
               td
                 if ability
-                  img.ability(src=ability.img, title=key)
+                  img.img-small.ability(src=ability.img, title=key)
                   =ability.dname
                 else
                   =key
               td=casts
               td=hits
               td
-                - var pct = 100*hits/casts
-                .progress
-                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct, 100)}%") #{pct.toFixed(2)}
-
+                +progress_bar(hits, casts)
+                
 append footer_assets
   script.
     var accuracy = $('#accuracy').dataTable({

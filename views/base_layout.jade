@@ -1,9 +1,10 @@
 doctype html
 html
   head
-    title= title || "YASP - Dota 2 Replay Parsing and Statistics"
-    meta(name="description", content="YASP: Another (Dota) Stats Page")
-    meta(property="og:site_name", content="YASP - Another (Dota) Stats Page")
+    - var default_title = "YASP - Dota 2 Replay Parsing and Statistics"
+    title= title || default_title
+    meta(name="description", content=default_title)
+    meta(property="og:site_name", content=default_title)
     meta(charset='utf-8')
     meta(name="viewport" content="width=device-width, initial-scale=1")
     //- Favicons
@@ -26,31 +27,53 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-      
-    //- yasp js bundle, dynamically inserts external js/css
+    
+    //- yasp js bundle, dynamically inserts external library js/css
     script(src="/public/build/yasp.min.js")
     
-    //- yasp css
+    //can npm install bootswatch to bundle darkly
+    //can npm install material-design-lite to bundle material
+    //-
+      <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
+      <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
     link(rel='stylesheet', href="/public/css/flaticon.css")
-    link(rel='stylesheet', href="/public/css/font.css")
+    //link(rel='stylesheet', href="/public/css/font.css")
+    if !(user && user.light_theme)
+      <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     link(rel='stylesheet', href="/public/css/yasp.css")
     if !(user && user.light_theme)
       link(rel='stylesheet', href="/public/css/dark.css")
-      
+
+
     //constants for client side rendering
     - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status,"skill":constants.skill, "player_colors": constants.player_colors};
     script.
       var constants = !{JSON.stringify(clientConstants)};
           
     block head
-
-  //home extends unsticky
-  block unsticky_content
-  //layout extends sticky
-  block sticky_content
+  body.frame
+    include navbar
+    block page_content
   //stuff to include after page load
   block footer_assets
   script.
+    //check adblocker
+    window.onload = function(){
+      setTimeout(function() { 
+        // We are targeting the first banner ad of AdSense
+        var ad = document.querySelector("ins.adsbygoogle");
+        
+        // If the ad contains no innerHTML, ad blockers are at work
+        if (ad && ad.innerHTML.replace(/\s/g, "").length == 0) {
+          // Since ad blocks hide ads using CSS too
+          ad.style.cssText = 'display:block !important'; 
+          // You can put any text, image or even IFRAME tags here
+          ad.innerHTML = "<div class='alert alert-info text-center' role='alert'>Blocking ads?  Please consider disabling your ad blocker or donating to help keep the service running.</div>";
+        }
+      }, 2000); // The ad blocker check is performed 2 seconds after the page load 
+    }; 
     //by default, run formatting functions on all pages at page end
     tooltips();
     formatHtml();
