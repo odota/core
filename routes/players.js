@@ -218,6 +218,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     render();
                 });
             }
+            /*
             else if (info === "rating") {
                 console.time("computing ratings");
                 db.players.find({
@@ -264,6 +265,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     render();
                 });
             }
+            */
             else {
                 render();
             }
