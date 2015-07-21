@@ -9,7 +9,7 @@ block playercontent
 
   .row
     .col-md-12
-      +match_table(player.data)
+      +match_table(player.data.slice(0,10))
       hr
       +ad("banner3")
       hr
@@ -18,7 +18,6 @@ block playercontent
       
 append footer_assets
   script.
-    var matches = !{JSON.stringify(player.data.slice(0,10))};
     playerMatches(matches, {paging: false});
     $('#heroes').dataTable({
         "paging": true,
@@ -58,6 +57,7 @@ append footer_assets
     });
 //-
   script.
+    var matches = !{JSON.stringify(player.data.slice(0,10))};
     var heroes = !{JSON.stringify(player.heroes_list)};
     var teammates = !{JSON.stringify(player.teammate_list)};
     drawHeroes(heroes);

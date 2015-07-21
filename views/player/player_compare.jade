@@ -13,14 +13,12 @@ block playercontent
           td Percentile
     tbody
       each val, key in histograms
-        - var val = compare_data[0].aggData[key]
-        if val.n
-          tr
-            td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-            each player in compare_data.slice(1)
-              td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "-"
-              td
-                +progress_bar(player.aggData[key].percentile, 1)
+        tr
+          td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+          each player in compare_data.slice(1)
+            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "-"
+            td
+              +progress_bar(player.aggData[key].percentile, 1)
   #chart
 //-
   append footer_assets

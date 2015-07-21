@@ -1,3 +1,4 @@
 node_modules
 webpack.config.js
 public/js/ga.js
+public/build

@@ -464,14 +464,6 @@ describe("api tests", function() {
             });
         });
     });
-    describe("/preferences", function() {
-        it('should return JSON', function(done) {
-            request.post(process.env.ROOT_URL + '/preferences', {}, function(err, resp, body) {
-                JSON.parse(body);
-                done(err);
-            });
-        });
-    });
 });
 var io = require('socket.io-client');
 describe("unit test", function() {
