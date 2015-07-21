@@ -1,5 +1,5 @@
 module.exports = function drawProMatches(data) {
-    $('#matches').dataTable({
+    $('#pro_matches').dataTable({
         "order": [
                 [0, "desc"]
             ],
