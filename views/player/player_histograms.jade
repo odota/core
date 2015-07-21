@@ -11,7 +11,7 @@ block playercontent
         each val, key in player.aggData
           if key in histograms
             - var collapsed = true
-            button.btn.btn-xs.btn-dark.toggle-button.bright-border(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+            button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
         each val, key in player.aggData
           if key in histograms
             - var avg = val.sum/val.n

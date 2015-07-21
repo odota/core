@@ -266,11 +266,11 @@ div .dataTables_processing {
     vertical-align: super;
 }
 
-.bright-border {
+.bright-border-collapsible {
     border-color: #ccc;
 }
 
-.toggle-button.collapsed {
+.bright-border-collapsible.collapsed {
     background-color: #545454;
     border-color: rgb(0, 0, 0);
 }
