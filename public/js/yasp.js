@@ -24,16 +24,16 @@ window.moment = require('moment');
 window.numeral = require('numeral');
 // yasp utility functions
 window.pad = function pad(n, width, z) {
-    z = z || '0';
-    n = String(n);
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    const zz = z || '0';
+    const nn = String(n);
+    return nn.length >= width ? nn : new Array(width - nn.length + 1).join(zz) + nn;
 };
 // adjust each x/y coordinate by the provided scale factor
 // if max is provided, use that, otherwise, use local max of data
 // shift all values by the provided shift
 window.adjustHeatmapData = function adjustHeatmapData(posData, scalef, max, shift) {
     posData.forEach(function(d) {
-        for (var key in d) {
+        for (let key in d) {
             d[key] = scaleAndExtrema(d[key], scalef, max, shift);
         }
     });
@@ -55,19 +55,18 @@ window.adjustHeatmapData = function adjustHeatmapData(posData, scalef, max, shif
 };
 
 window.format = function format(input) {
-    input = ~~(Number(input));
-    if (input === 0 || isNaN(input)) {
+    const num = ~~(Number(input));
+    if (num === 0 || isNaN(num)) {
         return '-';
     }
-    return (Math.abs(input) < 1000) ? input : window.numeral(input).format('0.0a');
+    return (Math.abs(num) < 1000) ? num : window.numeral(num).format('0.0a');
 };
 
 window.formatSeconds = function formatSeconds(input) {
-    var absTime = Math.abs(input);
-    var minutes = ~~(absTime / 60);
-    var seconds = window.pad(~~(absTime % 60), 2);
-    var time = ((input < 0) ? '-' : '');
-    time += minutes + ':' + seconds;
+    const absTime = Math.abs(input);
+    const minutes = ~~(absTime / 60);
+    const seconds = window.pad(~~(absTime % 60), 2);
+    const time = ((input < 0) ? '-' : '') + minutes + ':' + seconds;
     return time;
 };
     // extend jquery to serialize form data to JSON

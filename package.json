@@ -35,8 +35,8 @@
     "c3": "^0.4.10",
     "cal-heatmap": "^3.5.2",
     "compression": "^1.5.1",
-    "cookie-session": "^1.2.0",
     "connect-redis": "^2.4.0",
+    "cookie-session": "^1.2.0",
     "d3": "^3.5.6",
     "datatables": "^1.10.7",
     "datatables-bootstrap3-plugin": "^0.4.0",
@@ -73,7 +73,7 @@
     "steam": "0.6.8",
     "sticky-session": "^0.1.0",
     "winston": "1.0.1",
-    "wordcloud": ""
+    "wordcloud": "^1.0.1"
   },
   "devDependencies": {
     "babel-eslint": "^3.1.23",
