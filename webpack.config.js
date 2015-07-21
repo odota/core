@@ -1,4 +1,6 @@
 var webpack = require('webpack');
+var path = require('path');
+
 module.exports = {
     entry: {
         'yasp': './public/js/yasp.js'
@@ -12,7 +14,10 @@ module.exports = {
         loaders: [
             {
                 test: /\.js$/,
-                loader: ['babel']
+                loaders: ['babel'],
+                include: [
+                    path.resolve(__dirname, 'public')
+                ]
             },
             {
                 test: /\.css$/,
