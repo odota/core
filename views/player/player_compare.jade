@@ -2,9 +2,9 @@ extend player
 
 block playercontent
   h2 Compare 
-    small Comparing medians against #{compare_data[0].aggData.games} matches
+    small Comparing player medians against #{compare_data[0].aggData.games} recent matches
   //pre=JSON.stringify(data[1].aggData)
-  table.table.table-condensed.table-striped
+  table.table.table-condensed
     thead
       tr
         td Stat
@@ -13,14 +13,13 @@ block playercontent
           td Percentile
     tbody
       each val, key in histograms
-        - var val = compare_data[0].aggData[key]
-        if val.n
-          tr
-            td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
-            each player in compare_data.slice(1)
-              td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "-"
-              td
-                +progress_bar(player.aggData[key].percentile, 1)
+        tr
+          td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+          each player in compare_data.slice(1)
+            td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : 0
+            td
+              //pre= JSON.stringify(compare_data[0].aggData[key].counts, null, 2)
+              +progress_bar(player.aggData[key].percentile, 1)
   #chart
 //-
   append footer_assets

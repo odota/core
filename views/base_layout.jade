@@ -6,7 +6,7 @@ html
     meta(name="description", content=default_title)
     meta(property="og:site_name", content=default_title)
     meta(charset='utf-8')
-    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="viewport" content="width=device-width, initial-scale=0.6")
     //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='60x60', href='/public/images/apple-touch-icon-60x60.png')
@@ -40,11 +40,11 @@ html
 
     link(rel='stylesheet', href="/public/css/flaticon.css")
     //link(rel='stylesheet', href="/public/css/font.css")
-    if !(user && user.light_theme)
-      <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
+    //if !(user && user.light_theme)
+    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     link(rel='stylesheet', href="/public/css/yasp.css")
-    if !(user && user.light_theme)
-      link(rel='stylesheet', href="/public/css/dark.css")
+    //if !(user && user.light_theme)
+    link(rel='stylesheet', href="/public/css/dark.css")
 
 
     //constants for client side rendering

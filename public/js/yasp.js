@@ -63,29 +63,12 @@ window.format = function format(input) {
     return (Math.abs(input) < 1000 ? ~~(input) : numeral(input).format('0.0a'));
 };
 window.formatSeconds = function formatSeconds(input) {
-        var absTime = Math.abs(input);
-        var minutes = ~~(absTime / 60);
-        var seconds = pad(~~(absTime % 60), 2);
-        var time = ((input < 0) ? "-" : "");
-        time += minutes + ":" + seconds;
-        return time;
-    };
-    //extend jquery to serialize form data to JSON
-$.fn.serializeObject = function() {
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        }
-        else {
-            o[this.name] = this.value || '';
-        }
-    });
-    return o;
+    var absTime = Math.abs(input);
+    var minutes = ~~(absTime / 60);
+    var seconds = pad(~~(absTime % 60), 2);
+    var time = ((input < 0) ? "-" : "");
+    time += minutes + ":" + seconds;
+    return time;
 };
 window.tooltips = require('./tooltips.js');
 window.formatHtml = require("./formatHtml.js");
@@ -96,9 +79,7 @@ window.playerMatches = require('./playerMatches.js');
 window.drawHeroes = require('./drawHeroes.js');
 window.drawTeammates = require('./drawTeammates.js');
 window.proMatches = require('./proMatches.js');
-window.playerTrendsTables = require('./playerTrendsTables.js');
 window.ratingsChart = require('./ratingsChart.js');
-//window.statusHandler = require('./statusHandler.js');
 window.generateCharts = require('./charts.js');
 window.timeline = require('./timeline.js');
 require('./ga.js');

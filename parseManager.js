@@ -29,13 +29,11 @@ function start() {
                 });
             });
             cluster.on("exit", function(worker, code) {
-                if (code !== 0) {
-                    console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
-                    //give this new worker the parser url of the one that crashed
-                    cluster.fork({
-                        PARSER_URL: urls[worker.process.pid]
-                    });
-                }
+                console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
+                //give this new worker the parser url of the one that crashed
+                cluster.fork({
+                    PARSER_URL: urls[worker.process.pid]
+                });
             });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {

@@ -34,30 +34,31 @@ footer.footer
           li Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a> and <a href="http://css101.deviantart.com/">css101</a>.
           li Dota 2 and all Dota 2 related images belong to Valve. 
           li Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
-    //-
+    //- twitter button
       .row.text-center
          a(href="https://twitter.com/yasp_dota" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true") Follow @yasp_dota
          script.
            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-    .row.text-center
-      if (user)
-        .checkbox
-          label
-            input.pref#theme(type="checkbox", checked=user.light_theme)
-            | Use Light Theme
-        script.
-          $(".pref").change(function() {
-              $.post(
-                  "/preferences", {
-                      light_theme: $("#theme").is(":checked"),
-                  },
-                  function(data) {
-                      if (data.sync) {
-                          location.reload(true);
-                      }
-                      else {
-                          $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
-                      }
-                      $(".sync").fadeOut(3000);
-                  });
-          });
+    //- light theme selector
+      .row.text-center
+        if (user)
+          .checkbox
+            label
+              input.pref#theme(type="checkbox", checked=user.light_theme)
+              | Use Light Theme
+          script.
+            $(".pref").change(function() {
+                $.post(
+                    "/preferences", {
+                        light_theme: $("#theme").is(":checked"),
+                    },
+                    function(data) {
+                        if (data.sync) {
+                            location.reload(true);
+                        }
+                        else {
+                            $(".page-header").after("<div role='alert' class='sync alert alert-warning'>Failed to update preferences. Try again later.</div>");
+                        }
+                        $(".sync").fadeOut(3000);
+                    });
+            });

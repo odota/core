@@ -14,7 +14,7 @@ block playercontent
             th: abbr(title="Number of matches where this item was built") Matches
             th: abbr(title="Number of times this item was used") Uses
             th: abbr(title="Mean number of times this item was used in matches where it was built") Uses/Match
-            th.time: abbr(title="Mean time this item was built at") Avg Timing
+            th.seconds: abbr(title="Mean time this item was built at") Avg Timing
             th: abbr(title="Percentage of matches this item was built in") Build%
             th: abbr(title="Percentage of matches won where this item was built") Win%
 
@@ -50,7 +50,7 @@ append footer_assets
             window.tooltips();
         },
         "columnDefs": [{
-            targets: "time",
+            targets: "seconds",
             render: function(data, type) {
                 if (type === "display") {
                     return formatSeconds(data);
