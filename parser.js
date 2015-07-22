@@ -8,20 +8,10 @@ var app = express();
 var capacity = require('os').cpus().length;
 var port = config.PARSER_PORT;
 var domain = require('domain');
-
-var serverDomain = domain.create();
-
-serverDomain.run(function() {
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSER] listening at http://%s:%s', host, port);
-    })
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[PARSER] listening at http://%s:%s', host, port);
 });
-
-serverDomain.on('error', function(err){
-    console.log("SERVER DOMAIN ERROR", err);
-});
-
 app.get('/', function(req, res, next) {
     var fileName = req.query.fileName;
     var url = req.query.url;

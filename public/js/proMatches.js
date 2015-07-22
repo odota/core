@@ -55,7 +55,10 @@ module.exports = function drawProMatches(data) {
                 data: 'duration',
                 title: 'Duration',
                 render: function(data, type) {
-                    return moment().startOf('day').seconds(data).format('H:mm:ss');
+                    if (type === 'display') {
+                        return formatSeconds(data);
+                    }
+                    return data;
                 }
             },
             {

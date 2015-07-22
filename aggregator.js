@@ -245,7 +245,7 @@ module.exports = function aggregator(matches, fields, existing) {
             type: "parsed",
             agg: function(key, m, p) {
                 //double invert to convert the float to an int so we can bucket better
-                standardAgg(key, ~~p.parsedPlayer.stuns, m);
+                standardAgg(key, ("stuns" in p.parsedPlayer) ? ~~p.parsedPlayer.stuns : undefined, m);
             }
         },
         "courier_kills": {

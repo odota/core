@@ -79,7 +79,7 @@ function getPageData(start, options, cb) {
 function tryInsertSkill(data, retries) {
     var match_id = data.match_id;
     var skill = data.skill;
-    if (retries > 5) {
+    if (retries > 3) {
         delete results[match_id];
         return;
     }
