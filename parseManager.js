@@ -29,29 +29,17 @@ function start() {
                     processParse(job, null, cb);
                 });
             });
-            var urls = {};
-            cluster.on('fork', function(worker) {
-                worker.on('message', function(msg) {
-                    console.log(msg);
-                    //a new worker is running, keep track of what url it's using
-                    urls[worker.id] = msg.url;
-                    console.log(urls);
-                });
-            });
-            cluster.on("exit", function(worker, code) {
-                console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
-                //give this new worker the parser url of the one that crashed
-                //remove the record
-                cluster.fork({
-                    PARSER_URL: urls[worker.id]
-                });
-                delete urls[worker.id];
-            });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
-                    cluster.fork({
+                    var worker = cluster.fork({
                         PARSER_URL: parsers[i]
+                    });
+                    worker.on("exit", function() {
+                        console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
+                        cluster.fork({
+                            PARSER_URL: parsers[i]
+                        });
                     });
                 }
             }
@@ -65,11 +53,6 @@ function start() {
 
         function runWorker() {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-            if (process.send) {
-                process.send({
-                    url: process.env.PARSER_URL
-                });
-            }
             //process regular parses
             jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
