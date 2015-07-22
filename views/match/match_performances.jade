@@ -30,7 +30,7 @@ block match_content
                    img(src=hero.img, title=hero.localized_name)
                  else
                    =player.hero_id
-                td.table-img
+                td.nowrap
                   - var ability = constants.abilities[p.max_hero_hit.inflictor]
                   - var item = constants.items[p.max_hero_hit.inflictor]
                   - var hero = constants.hero_names[p.max_hero_hit.key]

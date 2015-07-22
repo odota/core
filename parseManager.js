@@ -63,17 +63,17 @@ function start() {
             }
             jobs.process('request', processApi);
             //process requests
-            jobs.process('request_parse', function(job, cb) {
+            jobs.process('request_parse', function(job, ctx, cb) {
                 console.log("starting request_parse job: %s", job.id);
                 getParserUrl(job, function() {
-                    processParse(job, cb);
+                    processParse(job, ctx, cb);
                 });
             });
             //process regular parses
-            jobs.process('parse', function(job, cb) {
+            jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 getParserUrl(job, function() {
-                    processParse(job, cb);
+                    processParse(job, ctx, cb);
                 });
             });
         }
