@@ -34,6 +34,8 @@ function start() {
                 cluster.fork({
                     PARSER_URL: urls[worker.process.pid]
                 });
+                //remove the record
+                delete urls[worker.process.pid];
             });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
