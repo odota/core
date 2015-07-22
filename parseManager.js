@@ -20,9 +20,9 @@ function start() {
         if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
             //process requests on master thread in order to avoid parse worker shutdowns affecting them
-            jobs.process('request', 2, processApi);
+            jobs.process('request', 4, processApi);
             //process requests
-            jobs.process('request_parse', 2, function(job, ctx, cb) {
+            jobs.process('request_parse', 4, function(job, ctx, cb) {
                 console.log("starting request_parse job: %s", job.id);
                 getParserUrl(job, function() {
                     //pass an empty ctx since we don't want to shut down the master thread if the parse fails
@@ -44,8 +44,6 @@ function start() {
                 cluster.fork({
                     PARSER_URL: urls[worker.process.pid]
                 });
-                //remove the record
-                delete urls[worker.process.pid];
             });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
