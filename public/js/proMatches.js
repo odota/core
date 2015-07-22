@@ -56,7 +56,7 @@ module.exports = function drawProMatches(data) {
                 title: 'Duration',
                 render: function(data, type) {
                     if (type === 'display') {
-                        return formatSeconds(data);
+                        return window.formatSeconds(data);
                     }
                     return data;
                 }

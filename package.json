@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nf start",
     "dev": "nf -j Procfile.dev start",
-    "test": "eslint public && rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "lint": "eslint public",
+    "test": "npm run lint && rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "update": "npm-check-updates -u -f '/^((?!JSONStream).)*$/'",
     "buildSets": "nf run node runner.js buildSets",
     "constants": "nf run node runner.js constants",
