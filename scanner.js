@@ -105,7 +105,7 @@ function scanApi(seq_num) {
 
                     function close(err, cb) {
                         if (err) {
-                            console.log("failed to insert match from scanApi %s", JSON.stringify(match));
+                            console.log("failed to insert match from scanApi %s", match.match_id);
                             return cb(err);
                         }
                         redis.set("match_seq_num", next_seq_num);

@@ -71,7 +71,7 @@ block match_content
                  td.format= player.hero_damage
                  td.format= player.tower_damage
                  td.format= player.hero_healing
-                 td.text-left
+                 td.text-left.nowrap
                    each val, index in player
                      if (index.slice(0, 5)==="item_")
                        - var item = constants.items[constants.item_ids[val]]

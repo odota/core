@@ -375,3 +375,7 @@ table tfoot * {
     font-family: Arial, sans-serif;
 }
 */
+
+.nowrap {
+    white-space: nowrap;
+}
