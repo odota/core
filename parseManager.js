@@ -32,15 +32,7 @@ function start() {
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
-                    var worker = cluster.fork({
-                        PARSER_URL: parsers[i]
-                    });
-                    worker.on("exit", function() {
-                        console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
-                        worker = cluster.fork({
-                            PARSER_URL: parsers[i]
-                        });
-                    });
+                    spawnWorker(i);
                 }
             }
             else {
@@ -49,6 +41,16 @@ function start() {
         }
         else {
             runWorker();
+        }
+
+        function spawnWorker(i) {
+            var worker = cluster.fork({
+                PARSER_URL: parsers[i]
+            });
+            worker.on("exit", function() {
+                console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
+                spawnWorker(i);
+            });
         }
 
         function runWorker() {
