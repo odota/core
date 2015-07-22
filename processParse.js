@@ -486,12 +486,9 @@ function runParse(job, cb) {
     function exit(err) {
         if (!exited) {
             exited = true;
-            //TODO: graceful shutdown
-            //best is probably to have processparse running via cluster threads
-            //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread
             console.log(err);
-            cb(err.message || err, parsed_data);
+            cb(err.message || err);
+            process.exit(1);
         }
     }
 
