@@ -41,8 +41,12 @@ function start() {
             cluster.on("exit", function(worker, code) {
                 console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
                 //give this new worker the parser url of the one that crashed
+                var recovered = urls[worker.process.pid];
+                //remove the record
+                delete urls[worker.process.pid];
+                console.log(recovered);
                 cluster.fork({
-                    PARSER_URL: urls[worker.process.pid]
+                    PARSER_URL: recovered
                 });
             });
             if (config.NODE_ENV !== "test") {
