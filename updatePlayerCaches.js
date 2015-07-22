@@ -40,7 +40,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         computeMatchData(match_copy);
                         //check for doc.players containing this match_id (do aggregation for new inserts where player was formerly anonymous)
                         var playerInMatch = doc && doc.players && doc.players.some(function(player) {
-                            player.account_id === p.account_id;
+                            return player.account_id === p.account_id;
                         });
                         var reInsert = doc && options.type === "api" && playerInMatch;
                         //determine if we're reparsing this match		
