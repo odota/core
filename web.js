@@ -236,7 +236,7 @@ if (config.NODE_ENV === "test" || true) {
     require('./socket.js')(server);
 }
 else {
-    sticky(4, function() {
+    sticky(function() {
         var server = app.listen(config.PORT, function() {
             console.log('[WEB] listening on %s', config.PORT);
         });
