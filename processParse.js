@@ -496,7 +496,7 @@ function runParse(job, ctx, cb) {
                     process.exit(1);
                 });
             }
-            cb(err ? err.message || JSON.stringify(err) : err, parsed_data);
+            cb(err.message || err.code || err, parsed_data);
         }
     }
 
