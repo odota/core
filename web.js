@@ -25,7 +25,6 @@ var queries = require('./queries');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
-var sticky = require('sticky-session');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -228,18 +227,9 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-if (config.NODE_ENV === "test") {
+if (config.NODE_ENV === "test" || true) {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
     });
     require('./socket.js')(server);
-}
-else {
-    var server = require('http').createServer(app);
-    sticky(function() {
-        require('./socket.js')(server);
-        return server;
-    }).listen(config.PORT, function(){
-        console.log('[WEB] listening on %s', config.PORT);
-    });
 }
