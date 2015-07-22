@@ -185,7 +185,6 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
-
 /*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -236,11 +235,9 @@ if (config.NODE_ENV === "test") {
     require('./socket.js')(server);
 }
 else {
-    sticky(function() {
-        var server = app.listen(config.PORT, function() {
-            console.log('[WEB] listening on %s', config.PORT);
-        });
-        require('./socket.js')(server);
-        return server;
+    var server = require('http').createServer(app);
+    require('./socket.js')(server);
+    sticky(server).listen(config.PORT, function(){
+        console.log("listening on port %s", config.PORT);
     });
 }
