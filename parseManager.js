@@ -37,7 +37,7 @@ function start() {
                     });
                     worker.on("exit", function() {
                         console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
-                        cluster.fork({
+                        worker = cluster.fork({
                             PARSER_URL: parsers[i]
                         });
                     });
