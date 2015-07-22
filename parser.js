@@ -67,8 +67,8 @@ app.get('/', function(req, res, next) {
     });
     d.on('error', function(err) {
         try {
-            parser.kill();
-            bz.kill();
+            parser.kill('SIGKILL');
+            bz.kill('SIGKILL');
             parser = null;
             bz = null;
         }

@@ -490,7 +490,7 @@ function runParse(job, ctx, cb) {
             if (err && config.NODE_ENV !== "test" && ctx) {
                 //gracefully shut down worker and let master respawn a new one
                 ctx.pause(1000, function(err) {
-                    if (err){
+                    if (err) {
                         console.log(err);
                     }
                     process.exit(1);
