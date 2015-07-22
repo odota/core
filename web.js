@@ -236,8 +236,10 @@ if (config.NODE_ENV === "test") {
 }
 else {
     var server = require('http').createServer(app);
-    require('./socket.js')(server);
-    sticky(server).listen(config.PORT, function(){
-        console.log("listening on port %s", config.PORT);
+    sticky(function() {
+        require('./socket.js')(server);
+        return server;
+    }).listen(config.PORT, function(){
+        console.log('[WEB] listening on %s', config.PORT);
     });
 }

@@ -17,18 +17,18 @@ function start() {
         }
         var parsers = JSON.parse(result);
         var capacity = parsers.length;
-        //process requests on master thread in order to avoid parse worker shutdowns affecting them
-        jobs.process('request', 2, processApi);
-        //process requests
-        jobs.process('request_parse', 2, function(job, ctx, cb) {
-            console.log("starting request_parse job: %s", job.id);
-            getParserUrl(job, function() {
-                //pass an empty ctx since we don't want to shut down the master thread if the parse fails
-                processParse(job, null, cb);
-            });
-        });
         if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
+            //process requests on master thread in order to avoid parse worker shutdowns affecting them
+            jobs.process('request', 2, processApi);
+            //process requests
+            jobs.process('request_parse', 2, function(job, ctx, cb) {
+                console.log("starting request_parse job: %s", job.id);
+                getParserUrl(job, function() {
+                    //pass an empty ctx since we don't want to shut down the master thread if the parse fails
+                    processParse(job, null, cb);
+                });
+            });
             var urls = {};
             cluster.on('fork', function(worker) {
                 worker.on('message', function(msg) {
