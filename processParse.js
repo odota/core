@@ -11,6 +11,7 @@ var updatePlayerCaches = require('./updatePlayerCaches');
 var r = require('./redis');
 var redis = r.client;
 var moment = require('moment');
+var config = require('./config');
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
 module.exports = function processParse(job, cb) {
@@ -36,7 +37,6 @@ module.exports = function processParse(job, cb) {
                     console.log("match_id %s, error %s", match_id, err);
                     return cb(err);
                 }
-                
                 match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
@@ -451,7 +451,7 @@ function runParse(job, cb) {
                 var xptotal = 0;
                 parsed_data.players.forEach(function(p, j) {
                     //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                    if (j<5) {
+                    if (j < 5) {
                         goldtotal += p.gold[i];
                         xptotal += p.xp[i];
                     }
@@ -487,8 +487,10 @@ function runParse(job, cb) {
         if (!exited) {
             exited = true;
             console.log(err);
-            cb(err.message || err);
-            process.exit(1);
+            cb(err.message || JSON.stringify(err));
+            if (err && config.NODE_ENV !== "test") {
+                process.exit(1);
+            }
         }
     }
 
