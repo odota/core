@@ -1,9 +1,11 @@
+import CalHeatMap from 'cal-heatmap';
+
 module.exports = function createCalHeatmap(data) {
     const start = new Date(Number(Object.keys(data)[0]) * 1000 || '2011-01-01');
     const range = moment().diff(moment(start), 'months') + 2;
     console.log(start, range);
     // create cal-heatmap from start_time
-    const cal = new window.CalHeatMap();
+    const cal = new CalHeatMap();
     cal.init({
         // start: new Date(moment().subtract(1, 'year')),
         start: start,

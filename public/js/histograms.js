@@ -155,7 +155,8 @@ module.exports = function createHistogram(counts, winCounts, label) {
         tooltip: {
             format: {
                 value: function(value, ratio, id, ind) {
-                    return value + ' (' + (hash[ind] && hash[ind].win ? hash[ind].win / hash[ind].games * 100 : 0).toFixed(2) + '% won)';
+                    const winPercentage = (hash[ind] && hash[ind].win ? hash[ind].win / hash[ind].games * 100 : 0).toFixed(2);
+                    return `${value} (${winPercentage}'% won)`;
                 }
             }
         }

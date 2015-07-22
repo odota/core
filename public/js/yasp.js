@@ -18,7 +18,6 @@ require('../../node_modules/select2/dist/js/select2.full.js');
 require('bootstrap');
 require('wordcloud');
 window.c3 = require('c3');
-window.CalHeatMap = require('cal-heatmap');
 window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
 window.moment = require('moment');
 window.numeral = require('numeral');

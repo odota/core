@@ -38,7 +38,7 @@ module.exports = function drawHeroes(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {
@@ -54,7 +54,7 @@ module.exports = function drawHeroes(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {
@@ -70,7 +70,7 @@ module.exports = function drawHeroes(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {

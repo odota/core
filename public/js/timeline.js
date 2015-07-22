@@ -1,13 +1,12 @@
 module.exports = function timeline(objectives) {
-    const items = [];
-    objectives.forEach((entry) => {
+    const items = objectives.map((entry) => {
         const bar = {};
         const time = window.formatSeconds(entry.time);
-        const img = entry.hero_img ? `<img src='` + entry.hero_img + `' width=30 />` : entry.team ? 'The Dire' : 'The Radiant';
+        const img = entry.hero_img ? `<img src="${entry.hero_img}" width=30 />` : entry.team ? 'The Dire' : 'The Radiant';
         bar.start = moment().startOf('day').seconds(entry.time).toDate();
-        bar.content = `<div style='font-size:10px;'>` + img + entry.objective + time + `</div>`;
+        bar.content = `<div style='font-size:10px;'>${img}${entry.objective}${time}</div>`;
         bar.group = entry.team;
-        items.push(bar);
+        return bar;
     });
     // TODO set backgrounds as additional items pushed
     const groups = [

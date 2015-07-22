@@ -158,9 +158,9 @@ module.exports = function buildMap() {
     // determine ancient display by match winner
     bits.forEach((bit, i) => {
         const d = buildingData[i];
-        d.src = 'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/';
-        d.src += buildingData[i].id.slice(0, 1) === 't' ? 'tower' : 'racks';
-        d.src += buildingData[i].id.slice(-1) === 'r' ? '_radiant.png' : '_dire.png';
+        const building = buildingData[i].id.slice(0, 1) === 't' ? 'tower' : 'racks';
+        const side = buildingData[i].id.slice(-1) === 'r' ? '_radiant' : '_dire';
+        d.src = `'https://raw.githubusercontent.com/kronusme/dota2-api/master/images/map/'${building}${side}.png`;
         d.class = buildingData[i].id.slice(0, 1) === 'a' ? '' : 'icon';
         d.style += bits[i] === '1' ? '' : 'opacity: 0.2;';
         $('#map').append(($('<img>', d)));

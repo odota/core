@@ -15,7 +15,7 @@ module.exports = function drawTeammates(data) {
                 data: 'account_id',
                 title: 'Name',
                 render: function(data, type, row) {
-                    return '<a href="/players/' + data + '">' + row.personaname + '</a>';
+                    return `<a href="/players/${data}">${row.personaname}</a>`;
                 }
             },
             {
@@ -31,7 +31,7 @@ module.exports = function drawTeammates(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {
@@ -47,7 +47,7 @@ module.exports = function drawTeammates(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {
@@ -63,7 +63,7 @@ module.exports = function drawTeammates(data) {
                     elt.addClass(pct >= 50 ? 'progress-bar-success' : 'progress-bar-danger');
                     elt.css('width', pct + '%');
                     elt.text(pct.toFixed(2));
-                    return '<div class="progress">' + elt[0].outerHTML + '</div>';
+                    return `<div class="progress">${elt[0].outerHTML}</div>`;
                 }
             },
             {
