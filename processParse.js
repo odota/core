@@ -487,7 +487,7 @@ function runParse(job, cb) {
         if (!exited) {
             exited = true;
             console.log(err);
-            cb(err ? err.message || JSON.stringify(err) : err);
+            cb(err ? err.message || JSON.stringify(err) : err, parsed_data);
             if (err && config.NODE_ENV !== "test") {
                 process.exit(1);
             }
