@@ -34,20 +34,18 @@ function start() {
                 worker.on('message', function(msg) {
                     console.log(msg);
                     //a new worker is running, keep track of what url it's using
-                    urls[msg.pid] = msg.url;
+                    urls[worker.id] = msg.url;
                     console.log(urls);
                 });
             });
             cluster.on("exit", function(worker, code) {
-                console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
+                console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
                 //give this new worker the parser url of the one that crashed
-                var recovered = urls[worker.process.pid];
                 //remove the record
-                delete urls[worker.process.pid];
-                console.log(recovered);
                 cluster.fork({
-                    PARSER_URL: recovered
+                    PARSER_URL: urls[worker.id]
                 });
+                delete urls[worker.id];
             });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
@@ -69,7 +67,6 @@ function start() {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
             if (process.send) {
                 process.send({
-                    pid: process.pid,
                     url: process.env.PARSER_URL
                 });
             }
