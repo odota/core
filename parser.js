@@ -34,6 +34,7 @@ app.get('/', function(req, res, next) {
             stdio: ['pipe', 'pipe', 'pipe'],
             encoding: 'utf8'
         });
+        bz = spawn("bunzip2");
         if (fileName) {
             inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
@@ -56,7 +57,6 @@ app.get('/', function(req, res, next) {
                     }));
                 }
             });
-            bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
@@ -64,17 +64,17 @@ app.get('/', function(req, res, next) {
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
         });
+        //clean up the children
+        parser.on('close', function() {
+            parser.kill();
+        });
+        bz.on('close', function() {
+            bz.kill();
+        });
     });
     d.on('error', function(err) {
-        try {
-            parser.kill('SIGKILL');
-            bz.kill('SIGKILL');
-            parser = null;
-            bz = null;
-        }
-        catch (e) {
-            console.log(e);
-        }
+        parser.kill();
+        bz.kill();
         outStream.end(JSON.stringify({
             "type": "error",
             "key": err

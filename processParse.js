@@ -377,56 +377,6 @@ function runParse(job, ctx, cb) {
         inStream = request(target);
         outStream = JSONStream.parse();
         inStream.pipe(outStream);
-        /*
-        //following is currently run by external process
-        parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                outStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }));
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    outStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }));
-                }
-            });
-            bz = spawn("bunzip2");
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        else {
-            throw new Error("no parse input");
-        }
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parser.on('exit', function(code) {
-            outStream.write(JSON.stringify({
-                "type": "exit",
-                "key": code
-            }));
-        });
-        parser.stdout.pipe(outStream);
-        */
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             console.log("beginning post-processing");
