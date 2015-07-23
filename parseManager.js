@@ -65,6 +65,8 @@ function start() {
         }
 
         function getParserUrl(job, cb) {
+            //TODO currently we run all the processparse with parallelism determined at start time
+            //we should have the ability to detect failing parse workers and not use them/adjust parallelism
             job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
             //node <0.12 doesn't have RR cluster scheduling, so remote parse worker crashes may cause us to lose a request.
             //process parse requests on localhost to avoid issue
