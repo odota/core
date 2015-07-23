@@ -109,6 +109,6 @@ module.exports = function getStatus(cb) {
         }
     }, function(err, results){
         console.timeEnd('status');
-        cb(err), results;
+        cb(err, results);
     });
 };
