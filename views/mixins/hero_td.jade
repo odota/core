@@ -4,7 +4,7 @@ mixin hero_td(player)
   td(class=player.isRadiant ? "success" : "danger")
     .img-text(style="float:initial;")
       if hero
-        img(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
+        img.img-md(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
       else
         =player.hero_id
       div

@@ -45,6 +45,11 @@ h3 img {
     height: 2em;
 }
 
+.img-md {
+    margin: 1px;
+    height: 2.5em;
+}
+
 .pickban {
     margin: 0px;
     height: 1.8em;
