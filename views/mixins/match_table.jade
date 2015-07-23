@@ -24,7 +24,7 @@ mixin match_table(matches)
           td: a(href="/matches/"+match.match_id)=match.match_id
           td
             if hero
-              img.img-md(src=hero.img, title=hero.localized_name)
+              img.img-small(src=hero.img, title=hero.localized_name)
             else
               =match.players[0].hero_id
           td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "Won" : "Lost"
