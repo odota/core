@@ -6,29 +6,37 @@ var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-//TODO config changes aren't reflected on first restart since this grabs the parser list immediately before worker can update it
-start();
+var buildSets = require('./tasks/buildSets');
+var parsers;
+if (config.NODE_ENV !== "test" && cluster.isMaster) {
+    buildSets(function() {
+        start();
+    });
+}
+else {
+    start();
+}
 
 function start() {
     redis.get("parsers", function(err, result) {
         if (err || !result) {
-            console.log("no parsers in redis!");
+            console.log('failed to get parsers from redis, retrying');
             return setTimeout(start, 10000);
         }
-        var parsers = JSON.parse(result);
+        parsers = JSON.parse(result);
         var capacity = parsers.length;
         if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
             //process requests on master thread in order to avoid parse worker shutdowns affecting them
-            jobs.process('request', numCPUs, processApi);
-            jobs.process('request_parse', numCPUs, function(job, ctx, cb) {
+            jobs.process('request', capacity, processApi);
+            jobs.process('request_parse', capacity, function(job, ctx, cb) {
                 console.log("starting request_parse job: %s", job.id);
                 getParserUrl(job, function() {
                     //pass an empty ctx since we don't want to shut down the master thread if the parse fails
                     processParse(job, null, cb);
                 });
             });
-            if (config.NODE_ENV !== "test") {
+            if (config.NODE_ENV !== "test" && false) {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
                     spawnWorker(i);
@@ -55,10 +63,10 @@ function start() {
         function runWorker() {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
             //process regular parses
-            jobs.process('parse', function(job, ctx, cb) {
+            jobs.process('parse', capacity, function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 getParserUrl(job, function() {
-                    processParse(job, ctx, cb);
+                    processParse(job, null, cb);
                 });
             });
         }
