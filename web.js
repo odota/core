@@ -227,13 +227,14 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-if (config.NODE_ENV === "test") {
+if (config.NODE_ENV === "test" || true) {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
     });
     require('./socket.js')(server);
 }
 else {
+    /*
     var net = require('net');
     var cluster = require('cluster');
     var port = config.PORT;
@@ -257,6 +258,7 @@ else {
             spawn(i);
         }
         var worker_index = function(ip, len) {
+            console.log(ip);
             var s = '';
             for (var i = 0, _len = ip.length; i < _len; i++) {
                 if (parseInt(ip[i], 10)) {
@@ -272,7 +274,6 @@ else {
             // We received a connection and need to pass it to the appropriate
             // worker. Get the worker for this connection's source IP and pass
             // it the connection.
-            console.log(worker_index(connection.remoteAddress, num_processes));
             var worker = workers[worker_index(connection.remoteAddress, num_processes)];
             worker.send('sticky-session:connection', connection);
         }).listen(port);
@@ -293,4 +294,5 @@ else {
             connection.resume();
         });
     }
+    */
 }
