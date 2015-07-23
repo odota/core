@@ -64,12 +64,12 @@ app.get('/', function(req, res, next) {
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
         });
-        //clean up the children
+        //clean up the streams
         parser.on('close', function() {
-            parser.kill();
+            parser.stdio = null;
         });
         bz.on('close', function() {
-            bz.kill();
+            bz.stdio = null;
         });
     });
     d.on('error', function(err) {
