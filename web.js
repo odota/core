@@ -227,9 +227,70 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-if (config.NODE_ENV === "test" || true) {
+if (config.NODE_ENV === "test") {
     var server = app.listen(config.PORT, function() {
         console.log('[WEB] listening on %s', config.PORT);
     });
     require('./socket.js')(server);
+}
+else {
+    var net = require('net');
+    var cluster = require('cluster');
+    var port = config.PORT;
+    var num_processes = require('os').cpus().length;
+    if (cluster.isMaster) {
+        // This stores our workers. We need to keep them to be able to reference
+        // them based on source IP address. It's also useful for auto-restart,
+        // for example.
+        var workers = [];
+        // Helper function for spawning worker at index 'i'.
+        var spawn = function(i) {
+            workers[i] = cluster.fork();
+            // Optional: Restart worker on exit
+            workers[i].on('exit', function(worker, code, signal) {
+                console.log('respawning worker', i);
+                spawn(i);
+            });
+        };
+        // Spawn workers.
+        for (var i = 0; i < num_processes; i++) {
+            spawn(i);
+        }
+        var worker_index = function(ip, len) {
+            var s = '';
+            for (var i = 0, _len = ip.length; i < _len; i++) {
+                if (parseInt(ip[i], 10)) {
+                    s += ip[i];
+                }
+            }
+            return Number(s) % len || 0;
+        };
+        // Create the outside facing server listening on our port.
+        var server = net.createServer({
+            pauseOnConnect: true
+        }, function(connection) {
+            // We received a connection and need to pass it to the appropriate
+            // worker. Get the worker for this connection's source IP and pass
+            // it the connection.
+            console.log(worker_index(connection.remoteAddress, num_processes));
+            var worker = workers[worker_index(connection.remoteAddress, num_processes)];
+            worker.send('sticky-session:connection', connection);
+        }).listen(port);
+    }
+    else {
+        // Here you might use middleware, attach routes, etc.
+        // Don't expose our internal server to the outside.
+        var server = app.listen(0, 'localhost');
+        require('./socket')(server);
+        // Listen to messages sent from the master. Ignore everything else.
+        process.on('message', function(message, connection) {
+            if (message !== 'sticky-session:connection') {
+                return;
+            }
+            // Emulate a connection event on the server by emitting the
+            // event with the connection the master sent us.
+            server.emit('connection', connection);
+            connection.resume();
+        });
+    }
 }
