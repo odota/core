@@ -6,21 +6,26 @@ var spawn = require('child_process').spawn;
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
+var cluster = require('cluster');
 var port = config.PARSER_PORT;
 var domain = require('domain');
-var server = app.listen(port, function() {
-    var host = server.address().address;
-    console.log('[PARSER] listening at http://%s:%s', host, port);
-});
-app.get('/', function(req, res, next) {
-    var fileName = req.query.fileName;
-    var url = req.query.url;
-    var inStream;
-    var bz;
-    var outStream = res;
-    var d = domain.create();
-    var parser;
-    d.run(function() {
+if (cluster.isMaster) {
+    // Fork workers.
+    for (var i = 0; i < capacity; i++) {
+        cluster.fork();
+    }
+    cluster.on('exit', function(worker, code, signal) {
+        cluster.fork();
+    });
+}
+else {
+    app.get('/', function(req, res, next) {
+        var fileName = req.query.fileName;
+        var url = req.query.url;
+        var inStream;
+        var bz;
+        var outStream = res;
+        var parser;
         if (!fileName && !url) {
             return outStream.json({
                 capacity: capacity
@@ -69,17 +74,13 @@ app.get('/', function(req, res, next) {
         });
         */
     });
-    d.on('error', function(err) {
-        parser.kill();
-        bz.kill();
-        outStream.end(JSON.stringify({
-            "type": "error",
-            "key": err
-        }));
+    app.use(function(err, req, res, next) {
+        return res.status(500).json({
+            error: err
+        });
     });
-});
-app.use(function(err, req, res, next) {
-    return res.status(500).json({
-        error: err
+    var server = app.listen(port, function() {
+        var host = server.address().address;
+        console.log('[PARSER] listening at http://%s:%s', host, port);
     });
-});
+}
