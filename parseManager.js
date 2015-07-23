@@ -32,7 +32,7 @@ function start() {
             jobs.process('request_parse', numCPUs, function(job, ctx, cb) {
                 console.log("starting request_parse job: %s", job.id);
                 //process requests locally to avoid losing parses when remote workers crash
-                job.parser_url = "localhost:5200";
+                job.parser_url = "http://localhost:5200?key="+config.RETRIEVER_SECRET;
                 processParse(job, null, cb);
             });
             if (config.NODE_ENV !== "test") {
