@@ -31,7 +31,7 @@ app.get('/', function(req, res, next) {
         "parser/target/stats-0.1.0.jar"
     ], {
             //we want want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'pipe'],
+            stdio: ['pipe', 'pipe', 'ignore'],
             encoding: 'utf8'
         });
         bz = spawn("bunzip2");
@@ -61,12 +61,16 @@ app.get('/', function(req, res, next) {
             bz.stdout.pipe(parser.stdin);
         }
         parser.stdout.pipe(outStream);
+        /*
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
             parser.stderr.resume();
         });
+        */
     });
     d.on('error', function(err) {
+        parser.kill();
+        bz.kill();
         outStream.end(JSON.stringify({
             "type": "error",
             "key": err
