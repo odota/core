@@ -36,7 +36,7 @@ function start() {
                     processParse(job, null, cb);
                 });
             });
-            if (config.NODE_ENV !== "test" && false) {
+            if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
                     forkWorker(i);
