@@ -66,6 +66,11 @@ function start() {
 
         function getParserUrl(job, cb) {
             job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
+            //node <0.12 doesn't have RR cluster scheduling, so remote parse worker crashes may cause us to lose a request.
+            //process parse requests on localhost to avoid issue
+            if (job.payload.request) {
+                job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
+            }
             cb();
         }
     });
