@@ -1,3 +1,5 @@
+include /mixins/hero_td
+
 #purchases.table-responsive.collapse.in
   table.table.table-hover
     each player, ind in match.players
@@ -12,11 +14,7 @@
               th= i/60+"'"
       if !truncate || truncate.indexOf(ind) > -1
           tr(class = player.isRadiant ? "success" : "danger")
-            td.hero
-              if hero
-                img(src=hero.img, title=hero.localized_name)
-              else
-                =player.hero_id              
+            +hero_td(player)
             - for (var i = 0; i <= match.duration + bucket; i+=bucket)
               td
                 each entry in p.purchase_log || []

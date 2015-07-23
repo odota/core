@@ -19,14 +19,11 @@ block match_content
             - var hero = constants.heroes[p.hero_id]
             - var slot_color = constants.player_colors[p.player_slot]
             - var team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant ? "success" : "danger"
+            - p.personaname = p.personaname || (team==="success" ? "The Radiant" : "The Dire")
             tr(class=team)
               td.format-seconds(data-format-seconds=entry.time)
               td=entry.key ? constants.barracks_value[entry.key] + " " + objective : objective
-              td
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =team==="success" ? "The Radiant" : "The Dire"
+              +hero_td(p)
               
     .col-md-6
       h2 Runes
@@ -42,11 +39,7 @@ block match_content
            tr(class = player.isRadiant ? "success" : "danger")
              - var hero = constants.heroes[player.hero_id]
              - var p = player.parsedPlayer
-             td.hero
-              if hero
-                img(src=hero.img, title=hero.localized_name)
-              else
-                =player.hero_id
+             +hero_td(player)
              each val, key in constants.runes
                td #{p.runes[key] || "-"}
       +ad("skyscraper")

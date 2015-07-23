@@ -23,13 +23,8 @@ block match_content
           
             if !truncate || truncate.indexOf(i) > -1
               tr(class = player.isRadiant ? "success" : "danger")
-                - var hero = constants.heroes[player.hero_id]
                 - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+                +hero_td(player)
                 td.nowrap
                   - var ability = constants.abilities[p.max_hero_hit.inflictor]
                   - var item = constants.items[p.max_hero_hit.inflictor]
