@@ -4,7 +4,7 @@
   "version": "3.1.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "nf start",
     "dev": "nf -j Procfile.dev start",
     "test": "rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "update": "npm-check-updates -u -f '/^((?!JSONStream).)*$/'",
@@ -14,7 +14,8 @@
     "watch": "webpack --watch",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
-    "yasp-core": "pm2 restart pm2.json",
+    "yasp-core": "sudo nf export -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman",
+    "yasp-core-pm2": "pm2 restart pm2.json",
     "yasp-parser": "PARSER_PORT=5200 pm2 restart parser.js"
   },
   "repository": {
