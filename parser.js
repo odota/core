@@ -63,13 +63,7 @@ app.get('/', function(req, res, next) {
         parser.stdout.pipe(outStream);
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
-        });
-        //clean up the streams
-        parser.on('exit', function() {
-            parser = null;
-        });
-        bz.on('exit', function() {
-            bz = null;
+            parser.stderr.resume();
         });
     });
     d.on('error', function(err) {
