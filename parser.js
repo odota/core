@@ -65,11 +65,11 @@ app.get('/', function(req, res, next) {
             console.log(data.toString());
         });
         //clean up the streams
-        parser.on('close', function() {
-            parser.stdio = null;
+        parser.on('exit', function() {
+            parser = null;
         });
-        bz.on('close', function() {
-            bz.stdio = null;
+        bz.on('exit', function() {
+            bz = null;
         });
     });
     d.on('error', function(err) {
