@@ -73,8 +73,6 @@ app.get('/', function(req, res, next) {
     d.on('error', function(err) {
         parser.kill();
         bz.kill();
-        parser = null;
-        bz = null;
         outStream.end(JSON.stringify({
             "type": "error",
             "key": err
