@@ -29,12 +29,6 @@ function start() {
             console.log("[PARSEMANAGER] starting master");
             //process requests on master thread in order to avoid parse worker shutdowns affecting them
             jobs.process('request', numCPUs, processApi);
-            jobs.process('request_parse', numCPUs, function(job, ctx, cb) {
-                console.log("starting request_parse job: %s", job.id);
-                //process requests locally to avoid losing parses when remote workers crash
-                job.parser_url = "http://localhost:5200?key="+config.RETRIEVER_SECRET;
-                processParse(job, null, cb);
-            });
             if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
