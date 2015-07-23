@@ -28,15 +28,8 @@ function start() {
         if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
             //process requests on master thread in order to avoid parse worker shutdowns affecting them
-            jobs.process('request', capacity, processApi);
-            jobs.process('request_parse', capacity, function(job, ctx, cb) {
-                console.log("starting request_parse job: %s", job.id);
-                getParserUrl(job, function() {
-                    //pass an empty ctx since we don't want to shut down the master thread if the parse fails
-                    processParse(job, null, cb);
-                });
-            });
-            if (config.NODE_ENV !== "test" && false) {
+            jobs.process('request', numCPUs, processApi);
+            if (config.NODE_ENV !== "test") {
                 for (var i = 0; i < capacity; i++) {
                     //fork a worker for each available parse core
                     forkWorker(i);
@@ -63,7 +56,7 @@ function start() {
         function runWorker() {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
             //process regular parses
-            jobs.process('parse', capacity, function(job, ctx, cb) {
+            jobs.process('parse', 1, function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 getParserUrl(job, function() {
                     processParse(job, null, cb);
@@ -73,6 +66,11 @@ function start() {
 
         function getParserUrl(job, cb) {
             job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
+            //node <0.12 doesn't have RR cluster scheduling, so remote parse worker crashes may cause us to lose a request.
+            //process parse requests on localhost to avoid issue
+            if (job.payload.request) {
+                job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
+            }
             cb();
         }
     });
