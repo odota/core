@@ -34,14 +34,13 @@ app.get('/', function(req, res, next) {
             stdio: ['pipe', 'pipe', 'ignore'],
             encoding: 'utf8'
         });
-        bz = spawn("bunzip2", {
-            stdio: ['pipe', 'pipe', 'ignore']
-        });
         if (fileName) {
             inStream = fs.createReadStream(fileName);
             inStream.pipe(parser.stdin);
         }
         else if (url) {
+            bz = spawn("bunzip2");
+            bz.stderr.resume();
             inStream = progress(request.get({
                 url: url,
                 encoding: null,
