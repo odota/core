@@ -13,7 +13,7 @@ var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
 var a = [];
-var port = config.PORT;
+var port = config.RETRIEVER_PORT || config.PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);

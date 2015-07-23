@@ -1,6 +1,5 @@
 var processApi = require('./processApi');
 var processFullHistory = require('./processFullHistory');
-var processMmr = require('./processMmr');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
@@ -38,7 +37,6 @@ d.on('error', function(err) {
 d.run(function() {
     console.log("[WORKER] starting worker");
     //jobs.process('api', processApi);
-    jobs.process('mmr', processMmr);
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);

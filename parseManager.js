@@ -72,6 +72,9 @@ function start() {
         }
 
         function getParserUrl(job, cb) {
+            //TODO currently we run all the processparse in a single thread with parallelism determined at start time
+            //we should have the ability to detect failing parse workers and not use them/adjust parallelism
+            //we're also randomly choosing a parse worker, which reduces throughput when the cores operate at different speeds
             job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
             cb();
         }

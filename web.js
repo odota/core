@@ -227,9 +227,10 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
+var port = config.WEB_PORT || config.PORT;
 if (config.NODE_ENV === "test" || true) {
-    var server = app.listen(config.PORT, function() {
-        console.log('[WEB] listening on %s', config.PORT);
+    var server = app.listen(port, function() {
+        console.log('[WEB] listening on %s', port);
     });
     require('./socket.js')(server);
 }
@@ -237,7 +238,6 @@ else {
     /*
     var net = require('net');
     var cluster = require('cluster');
-    var port = config.PORT;
     var num_processes = require('os').cpus().length;
     if (cluster.isMaster) {
         // This stores our workers. We need to keep them to be able to reference
