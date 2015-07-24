@@ -28,18 +28,18 @@ block content
 
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
-  script(src="/socket.io/socket.io.js")
+  //script(src="/socket.io/socket.io.js")
   script.
     var match_id;
     var socket;
     var onloadCallback = function() {
         grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
+    /*
     function submit(response){
       var field = document.getElementById("match_id");
       match_id = field.value;
       field.value = "";
-      console.log(match_id);
       if (!socket){
         //set up the handlers
         socket = io.connect();
@@ -71,5 +71,54 @@ append footer_assets
         $("#request").hide('slow');
         $("#messages").empty();
         $("#progContainer").show('slow');
-
+    }
+    */
+    function submit(response){
+      var field = document.getElementById("match_id");
+      match_id = field.value;
+      field.value = "";    
+      $.ajax({
+      method: "POST",
+      url: "/request_job",
+      data: { match_id: match_id, response:response }
+      })
+      .done(function( msg ) {
+        console.log(msg);
+        if (msg.error){
+          $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
+          $("#loading").css("display", "none");
+          document.getElementById("bar").style.width = "0%";
+          $("#request").show('slow');
+          grecaptcha.reset();        
+        }
+        else{
+        setInterval(function(){
+        $.ajax({
+          url: "/request_job?id="+msg.job.id
+        })
+        .done(function( msg ) {
+          if (!msg.job){
+          //job doesn't exist, we're done
+          window.location.assign("/matches/"+match_id);
+          }
+          else{
+          var prog = msg.job.progress;
+          console.log(prog);
+          document.getElementById("bar").style.width = prog + "%";
+          document.getElementById("bar").innerHTML = prog + "%";
+          $("#loading").css("display", "block");
+        }
+        });
+        }, 1000);
+      }
+      });
+      $("#request").hide('slow');
+      $("#messages").empty();
+      $("#progContainer").show('slow');
+    //post the match id, recaptcha response via ajax
+    //endpoint may return error
+    //otherwise endpoint returns job id
+    //ajax poll for job progress
+    //display error if job failed
+    //redirect when job disappears
     }

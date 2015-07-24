@@ -1,6 +1,9 @@
 var config = require('./config');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
+var request = require('request');
+var queueReq = require('./operations').queueReq;
 var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
@@ -184,6 +187,58 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+//post/get a request
+app.route('/request_job').post(function(req, res) {
+    request.post("https://www.google.com/recaptcha/api/siteverify", {
+        form: {
+            secret: rc_secret,
+            response: req.body.response
+        }
+    }, function(err, resp, body) {
+        try {
+            body = JSON.parse(body);
+        }
+        catch (err) {
+            res.render({
+                error: err
+            });
+        }
+        var match_id = req.body.match_id;
+        match_id = Number(match_id);
+        if (!body.success && config.NODE_ENV !== "test"
+            // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
+            && !config.DISABLE_RECAPTCHA) {
+            console.log('failed recaptcha');
+            res.json({
+                error: "Recaptcha Failed!"
+            });
+        }
+        else if (!match_id) {
+            console.log("invalid match id");
+            res.json({
+                error: "Invalid Match ID!"
+            });
+        }
+        else {
+            queueReq("request", {
+                match_id: match_id,
+                request: true
+            }, function(err, job) {
+                res.json({
+                    error: err,
+                    job: job
+                });
+            });
+        }
+    });
+}).get(function(req, res) {
+    kue.Job.get(req.query.id, function(err, job) {
+        res.json({
+            error: err,
+            job: job ? job.toJSON() : null
+        });
+    });
+});
 /*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -230,16 +285,9 @@ module.exports = app;
 var port = config.WEB_PORT || config.PORT;
 var num_processes = require('os').cpus().length;
 var cluster = require('cluster');
-if (config.NODE_ENV === "test" || true) {
-    //just start a server in test env
-    var server = app.listen(port, function() {
-        console.log('[WEB] listening on %s', port);
-    });
-    require('./socket.js')(server);
-}
-else if (false) {
+if (true) {
     //vanilla node clustering, doesn't work with socket.io
-    if (cluster.isMaster) {
+    if (cluster.isMaster && config.NODE_ENV !== "test") {
         var workers = [];
         var spawn = function(i) {
             workers[i] = cluster.fork();
@@ -258,10 +306,10 @@ else if (false) {
         var server = app.listen(port, function() {
             console.log('[WEB] listening on %s', port);
         });
-        require('./socket.js')(server);
+        //require('./socket.js')(server);
     }
 }
-else if (false) {
+else {
     //sticky session clustering, required to work with socket.io
     var net = require('net');
     if (cluster.isMaster) {
