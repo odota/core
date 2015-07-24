@@ -25,7 +25,9 @@
          "script": "worker.js"
       },
       {
-         "script": "web.js"
+         "script": "web.js",
+         "exec_mode": "cluster",
+         "instances": 0
       }
    ]
 }

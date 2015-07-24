@@ -228,17 +228,42 @@ app.use(function(err, req, res, next) {
 });
 module.exports = app;
 var port = config.WEB_PORT || config.PORT;
+var num_processes = require('os').cpus().length;
+var cluster = require('cluster');
 if (config.NODE_ENV === "test" || true) {
+    //just start a server in test env
     var server = app.listen(port, function() {
         console.log('[WEB] listening on %s', port);
     });
     require('./socket.js')(server);
 }
-else {
-    /*
+else if (false) {
+    //vanilla node clustering, doesn't work with socket.io
+    if (cluster.isMaster) {
+        var workers = [];
+        var spawn = function(i) {
+            workers[i] = cluster.fork();
+            // Optional: Restart worker on exit
+            workers[i].on('exit', function(worker, code, signal) {
+                console.log('respawning worker', i);
+                spawn(i);
+            });
+        };
+        // Spawn workers.
+        for (var i = 0; i < num_processes; i++) {
+            spawn(i);
+        }
+    }
+    else {
+        var server = app.listen(port, function() {
+            console.log('[WEB] listening on %s', port);
+        });
+        require('./socket.js')(server);
+    }
+}
+else if (false) {
+    //sticky session clustering, required to work with socket.io
     var net = require('net');
-    var cluster = require('cluster');
-    var num_processes = require('os').cpus().length;
     if (cluster.isMaster) {
         // This stores our workers. We need to keep them to be able to reference
         // them based on source IP address. It's also useful for auto-restart,
@@ -294,5 +319,4 @@ else {
             connection.resume();
         });
     }
-    */
 }

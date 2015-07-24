@@ -18,7 +18,7 @@ block content
             .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
           else
             // if the DISABLE_RECAPTCHA env var has been set, bypass the recaptcha
-            button(onclick="submit()") Request Parse
+            button.btn.btn-default(onclick="submit()") Request Parse
       #progContainer(style="display:none")
         h3 Progress
         img(src="/public/images/loading.gif", style="display:none")#loading
