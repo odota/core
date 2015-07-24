@@ -30,20 +30,15 @@ html
     
     //- yasp js bundle, dynamically inserts external library js/css
     script(src="/public/build/yasp.min.js")
-    
-    //can npm install bootswatch to bundle darkly
-    //can npm install material-design-lite to bundle material
+    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
+    //can npm install material-design-lite to bundle mdl
     //-
       <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
       <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     link(rel='stylesheet', href="/public/css/flaticon.css")
-    //link(rel='stylesheet', href="/public/css/font.css")
-    //if !(user && user.light_theme)
-    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     link(rel='stylesheet', href="/public/css/yasp.css")
-    //if !(user && user.light_theme)
     link(rel='stylesheet', href="/public/css/dark.css")
 
     //constants for client side rendering
