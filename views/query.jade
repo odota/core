@@ -1,17 +1,3 @@
-style.
-  /*temporary select2 fixes*/
-  
-  .select2-container,
-  .select2-search__field {
-      color: black;
-      width: 100% !important;
-      padding: 0;
-      height: 35px;
-  }
-  
-  .select2-container {
-      margin-bottom: 10px;
-  }
 h2.inline-header Filter
 button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
 #filter_collapse.collapse
@@ -102,17 +88,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         button.btn.btn-yasp(type="submit") Do the Thing
 
 script.
-    $("#included_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 10
+    $("#included_account_id").selectize({
+        create: true,
+        maxItems: 10
     });
-    $("#with_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#with_hero_id").selectize({
+        maxItems: 5
     });
-    $("#enemy_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#enemy_hero_id").selectize({
+        maxItems: 5
     });
-    $("#compare_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 5
+    $("#compare_account_id").selectize({
+        create: true,
+        maxItems: 5
     });
