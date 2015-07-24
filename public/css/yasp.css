@@ -38,22 +38,22 @@ h3 img {
 .img-text {
     float: left;
     text-align: center;
-    font-size: 0.7em;
+    font-size: 11px;
 }
 
 .img-small {
     margin: 1px;
-    height: 2em;
+    height: 24px;
 }
 
 .img-md {
     margin: 1px;
-    height: 2.5em;
+    height: 28px;
 }
 
 .pickban {
     margin: 0px;
-    height: 1.8em;
+    height: 24px;
 }
 
 .tooltip-inner {
@@ -342,6 +342,7 @@ table tfoot * {
 */
 
 .nowrap {
+    min-width: 100px;
     white-space: nowrap;
 }
 
