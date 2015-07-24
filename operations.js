@@ -29,16 +29,14 @@ function insertMatch(match, cb) {
         }
         else {
             if (match.request) {
-                return queueReq("request_parse", match, function(err, job2) {
-                    cb(err, job2);
-                });
+                //process requests with higher priority, one attempt only
+                match.priority = "high";
+                match.attempts = 1;
             }
-            else {
-                //queue it and finish
-                return queueReq("parse", match, function(err, job2) {
-                    cb(err, job2);
-                });
-            }
+            //queue it and finish
+            return queueReq("parse", match, function(err, job2) {
+                cb(err, job2);
+            });
         }
     });
 }

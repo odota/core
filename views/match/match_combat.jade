@@ -13,23 +13,13 @@ block match_content
                 tr
                   th Hero
                   each player, ind in match.players.slice(match.players.length/2, match.players.length)
-                    th(class = player.isRadiant ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
-
+                    +hero_td(player)
               tbody
                 each player, ind in match.players.slice(0,match.players.length/2)
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
                   tr
-                    td.hero(class = player.isRadiant ? "success" : "danger")
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
+                      +hero_td(player)   
                       each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                         - var hero1 = constants.heroes[player.hero_id]
                         - var hero2 = constants.heroes[player2.hero_id]
@@ -51,22 +41,13 @@ block match_content
                 tr
                   th Hero
                   each player, ind in match.players.slice(match.players.length/2, match.players.length)
-                    th(class = player.isRadiant ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id
+                    +hero_td(player)
               tbody
                 each player, ind in match.players.slice(0,match.players.length/2)
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
                   tr
-                    td.hero(class = player.isRadiant ? "success" : "danger")
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
+                      +hero_td(player)     
                       each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                         - var hero1 = constants.heroes[player.hero_id]
                         - var hero2 = constants.heroes[player2.hero_id]
@@ -98,11 +79,7 @@ block match_content
               tr(class = player.isRadiant ? "success" : "danger")
                 - var hero = constants.heroes[player.hero_id]
                 - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+                +hero_td(player)
                 each val,key in constants.multi_kills
                   td #{p.multi_kills[key] || "-"}
        .col-md-6
@@ -121,11 +98,7 @@ block match_content
               tr(class = player.isRadiant ? "success" : "danger")
                 - var hero = constants.heroes[player.hero_id]
                 - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+                +hero_td(player)
                 each val, key in constants.kill_streaks
                   td #{p.kill_streaks[key] || "-"}
       hr
@@ -149,11 +122,7 @@ block match_content
                         th= i/60+"'"
                 if !truncate || truncate.indexOf(ind) > -1
                     tr(class = player.isRadiant ? "success" : "danger")
-                      td.hero
-                        if hero
-                          img(src=hero.img, title=hero.localized_name)
-                        else
-                          =player.hero_id              
+                      +hero_td(player)            
                       - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                         td
                           each entry in p.kills_log || []

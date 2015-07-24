@@ -100,7 +100,7 @@ skill: node index.js
         * The parser produces a stream of JSON objects to STDOUT, which the HTTP server returns to the client.
     * parseManager: This reads Redis to find the currently available list of parse workers.  A single endpoint may appear multiple times (as many cores as it has).
         * This uses the Node cluster module to fork as many workers as there are available parsing cores.
-        * Each one processes requests, request_parse, and parse jobs in Kue.
+        * Each one processes parse jobs in Kue.
         * Processing a job entails:
             * Get the replay URL: `getReplayUrl` takes care of this.  It will refuse to get a URL if match.start_time is older than the replay expire time (7 days).
             * Send a request to a parse worker.

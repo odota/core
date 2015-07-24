@@ -6,7 +6,7 @@ html
     meta(name="description", content=default_title)
     meta(property="og:site_name", content=default_title)
     meta(charset='utf-8')
-    meta(name="viewport" content="width=device-width, initial-scale=0.6")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
     //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='60x60', href='/public/images/apple-touch-icon-60x60.png')
@@ -45,7 +45,6 @@ html
     link(rel='stylesheet', href="/public/css/yasp.css")
     //if !(user && user.light_theme)
     link(rel='stylesheet', href="/public/css/dark.css")
-
 
     //constants for client side rendering
     - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status,"skill":constants.skill, "player_colors": constants.player_colors};

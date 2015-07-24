@@ -11,9 +11,10 @@ var updatePlayerCaches = require('./updatePlayerCaches');
 var r = require('./redis');
 var redis = r.client;
 var moment = require('moment');
+var config = require('./config');
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
-module.exports = function processParse(job, cb) {
+module.exports = function processParse(job, ctx, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
     console.time("parse " + match_id);
@@ -31,12 +32,11 @@ module.exports = function processParse(job, cb) {
             return cb(err);
         }
         else {
-            runParse(job, function(err, parsed_data) {
+            runParse(job, ctx, function(err, parsed_data) {
                 if (err) {
                     console.log("match_id %s, error %s", match_id, err);
                     return cb(err);
                 }
-                
                 match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
@@ -57,7 +57,7 @@ module.exports = function processParse(job, cb) {
     });
 };
 
-function runParse(job, cb) {
+function runParse(job, ctx, cb) {
     console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
@@ -377,56 +377,6 @@ function runParse(job, cb) {
         inStream = request(target);
         outStream = JSONStream.parse();
         inStream.pipe(outStream);
-        /*
-        //following is currently run by external process
-        parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                outStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }));
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    outStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }));
-                }
-            });
-            bz = spawn("bunzip2");
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        else {
-            throw new Error("no parse input");
-        }
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parser.on('exit', function(code) {
-            outStream.write(JSON.stringify({
-                "type": "exit",
-                "key": code
-            }));
-        });
-        parser.stdout.pipe(outStream);
-        */
         outStream.on('root', handleStream);
         outStream.on('end', function() {
             console.log("beginning post-processing");
@@ -451,7 +401,7 @@ function runParse(job, cb) {
                 var xptotal = 0;
                 parsed_data.players.forEach(function(p, j) {
                     //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                    if (j<5) {
+                    if (j < 5) {
                         goldtotal += p.gold[i];
                         xptotal += p.xp[i];
                     }
@@ -486,12 +436,17 @@ function runParse(job, cb) {
     function exit(err) {
         if (!exited) {
             exited = true;
-            //TODO: graceful shutdown
-            //best is probably to have processparse running via cluster threads
-            //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread
             console.log(err);
-            cb(err.message || err, parsed_data);
+            if (err && config.NODE_ENV !== "test" && ctx) {
+                //gracefully shut down worker and let master respawn a new one
+                ctx.pause(1000, function(err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    process.exit(1);
+                });
+            }
+            cb(err.message || err.code || err, parsed_data);
         }
     }
 

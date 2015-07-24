@@ -43,7 +43,7 @@ block match_content
               each player, i in match.players
                tr(class = player.player_slot<64 ? "success" : "danger")
                  td.text-left
-                   img.img-md(src=player.avatar)
+                   //img.img-small(src=player.avatar)
                    if (player.last_visited)
                      img.user(src='/public/images/favicon-16x16.png', title="YASP User")
                    if (player.account_id === constants.anonymous_account_id)
@@ -56,7 +56,7 @@ block match_content
                  td.hero
                    - var hero = constants.heroes[player.hero_id]
                    if hero
-                     img.img-md(src=hero.img, title=hero.localized_name)
+                     img.img-small(src=hero.img, title=hero.localized_name)
                    else
                      =player.hero_id
                  td= player.level
@@ -71,7 +71,7 @@ block match_content
                  td.format= player.hero_damage
                  td.format= player.tower_damage
                  td.format= player.hero_healing
-                 td.text-left
+                 td.text-left.nowrap
                    each val, index in player
                      if (index.slice(0, 5)==="item_")
                        - var item = constants.items[constants.item_ids[val]]

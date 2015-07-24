@@ -37,24 +37,22 @@ h3 img {
 .img-text {
     float: left;
     text-align: center;
-    font-size: 11px;
+    font-size: 0.7em;
 }
 
 .img-small {
-    margin-left: 1px;
-    margin-right: 1px;
-    height: 25px;
+    margin: 1px;
+    height: 2em;
 }
 
 .img-md {
-    margin-left: 2px;
-    margin-right: 2px;
-    height: 30px;
+    margin: 1px;
+    height: 2.5em;
 }
 
 .pickban {
     margin: 0px;
-    height: 25px;
+    height: 1.8em;
 }
 
 .tooltip-inner {
@@ -300,7 +298,9 @@ div .dataTables_processing {
     height: auto;
 }
 
-h1,h2,h3 {
+h1,
+h2,
+h3 {
     font-weight: 700;
 }
 
@@ -366,6 +366,7 @@ td.text-left {
     border-bottom: 1px solid grey;
 }
 
+
 /* Use sans-serif on tables*/
 
 
@@ -375,3 +376,7 @@ table tfoot * {
     font-family: Arial, sans-serif;
 }
 */
+
+.nowrap {
+    white-space: nowrap;
+}

@@ -17,13 +17,8 @@
 
       if !truncate || truncate.indexOf(i) > -1
         tr(class = player.isRadiant ? "success" : "danger")
-          - var hero = constants.heroes[player.hero_id]
           - var p = player.parsedPlayer
-          td.hero
-           if hero
-             img(src=hero.img, title=hero.localized_name)
-           else
-             =player.hero_id
+          +hero_td(player)
           td #{p.pick_order} 
           //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
           td #{constants.lane_ids[p.lane] || "-"}

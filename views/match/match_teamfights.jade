@@ -32,17 +32,18 @@ block match_content
       h3
         abbr(title="Rows are colored by winner, determined by gold swing.") Fights
         small   Click a row to display
-      table.table.table-condensed.table-hover#teamfights
+      table.table.table-condensed.table-hover
         thead
-          th #
-          th Start
-          th Length
-          th Radiant (Deaths)
-          th Dire (Deaths)
-          th: abbr(title="Net gold advantage for Radiant") Gold Swing
-          th: abbr(title="Net XP advantage for Radiant") XP Swing
-          th
-        tbody
+          tr
+            th #
+            th Start
+            th Length
+            th: abbr(title="Radiant participation/Dire participation") Style
+            th: abbr(title="Radiant kills/Dire kills") Outcome
+            th: abbr(title="Net gold advantage for Radiant") Gold
+            th: abbr(title="Net XP advantage for Radiant") XP
+            th
+        tbody#teamfights
           - var i = 0
           each entry, ind in teamfights
             - i = i + 1
@@ -50,8 +51,8 @@ block match_content
               td=i
               td.format-seconds(data-format-seconds=entry.start)
               td.format-seconds(data-format-seconds=entry.end-entry.start)
-              td #{entry.radiant_participation} (#{entry.radiant_deaths})
-              td #{entry.dire_participation} (#{entry.dire_deaths})
+              td #{entry.radiant_participation}v#{entry.dire_participation}
+              td #{entry.dire_deaths}-#{entry.radiant_deaths}
               td=entry.radiant_gold_delta
               td=entry.radiant_xp_delta
               td
@@ -73,26 +74,21 @@ block match_content
           thead#header
             tr
               th Hero
-              th(style="font-size:30px;"): abbr(title="Died") !{"&#128128;"}
-              th(style="font-size:30px;"): abbr(title="Bought Back") !{"&#128176;"}
+              th Death
+              th Buyback
               th Level
               th Skills
               th Items
               th Kills
               th Damage
-              th Gold Change
-              th XP Change
+              th Gold
+              th XP
             each entry, ind in teamfights
               tbody(id=ind)
                 each player, num in entry.players
                   //color and fade based on team and participation
                   tr(class=player.participate ? (player.isRadiant ? "success" : "danger") : "")
-                    - var hero = constants.heroes[player.hero_id]
-                    td
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id
+                    +hero_td(player)
                     td
                       if player.deaths
                         div(style="font-size:30px;") !{"&#128128;"}

@@ -6,31 +6,26 @@ var spawn = require('child_process').spawn;
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
+var cluster = require('cluster');
 var port = config.PARSER_PORT;
 var domain = require('domain');
-
-var serverDomain = domain.create();
-
-serverDomain.run(function() {
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSER] listening at http://%s:%s', host, port);
-    })
-});
-
-serverDomain.on('error', function(err){
-    console.log("SERVER DOMAIN ERROR", err);
-});
-
-app.get('/', function(req, res, next) {
-    var fileName = req.query.fileName;
-    var url = req.query.url;
-    var inStream;
-    var bz;
-    var outStream = res;
-    var d = domain.create();
-    var parser;
-    d.run(function() {
+if (cluster.isMaster && config.NODE_ENV!=="test") {
+    // Fork workers.
+    for (var i = 0; i < capacity; i++) {
+        cluster.fork();
+    }
+    cluster.on('exit', function(worker, code, signal) {
+        cluster.fork();
+    });
+}
+else {
+    app.get('/', function(req, res, next) {
+        var fileName = req.query.fileName;
+        var url = req.query.url;
+        var inStream;
+        var bz;
+        var outStream = res;
+        var parser;
         if (!fileName && !url) {
             return outStream.json({
                 capacity: capacity
@@ -41,7 +36,7 @@ app.get('/', function(req, res, next) {
         "parser/target/stats-0.1.0.jar"
     ], {
             //we want want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'pipe'],
+            stdio: ['pipe', 'pipe', 'ignore'],
             encoding: 'utf8'
         });
         if (fileName) {
@@ -49,6 +44,8 @@ app.get('/', function(req, res, next) {
             inStream.pipe(parser.stdin);
         }
         else if (url) {
+            bz = spawn("bunzip2");
+            bz.stderr.resume();
             inStream = progress(request.get({
                 url: url,
                 encoding: null,
@@ -66,26 +63,24 @@ app.get('/', function(req, res, next) {
                     }));
                 }
             });
-            bz = spawn("bunzip2");
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
         parser.stdout.pipe(outStream);
+        /*
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
+            parser.stderr.resume();
+        });
+        */
+    });
+    app.use(function(err, req, res, next) {
+        return res.status(500).json({
+            error: err
         });
     });
-    d.on('error', function(err) {
-        parser.kill();
-        bz.kill();
-        outStream.end(JSON.stringify({
-            "type": "error",
-            "key": err
-        }));
+    var server = app.listen(port, function() {
+        var host = server.address().address;
+        console.log('[PARSER] listening at http://%s:%s', host, port);
     });
-});
-app.use(function(err, req, res, next) {
-    return res.status(500).json({
-        error: err
-    });
-});
+}

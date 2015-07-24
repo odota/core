@@ -69,7 +69,8 @@ function scanApi(seq_num) {
                     match.parse_status = 0;
                 }
                 async.each(match.players, function(p, cb) {
-                    if (p.account_id in trackedPlayers) {
+                    //TODO: when able to parse source 2 games, remove this check 
+                    if (p.account_id in trackedPlayers && match.engine!==1) {
                         //queued
                         redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
@@ -105,7 +106,7 @@ function scanApi(seq_num) {
 
                     function close(err, cb) {
                         if (err) {
-                            console.log("failed to insert match from scanApi %s", JSON.stringify(match));
+                            console.log("failed to insert match from scanApi %s", match.match_id);
                             return cb(err);
                         }
                         redis.set("match_seq_num", next_seq_num);
