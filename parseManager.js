@@ -54,8 +54,9 @@ function start() {
 
         function runWorker(i) {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
+            //process requests (api call, waits for parse to complete)
             jobs.process('request', processApi);
-            //process regular parses
+            //process parses
             jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 job.parser_url = getParserUrl(job);

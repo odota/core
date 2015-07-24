@@ -47,8 +47,9 @@ function insertMatchProgress(match, job, cb) {
             return cb(err);
         }
         if (!job2) {
+            //succeeded in API, but cant parse this replay
             job.progress(100, 100, "This replay is unavailable.");
-            cb(err);
+            cb();
         }
         else {
             //wait for parse to finish
