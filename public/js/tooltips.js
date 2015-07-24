@@ -2,7 +2,7 @@ module.exports = function tooltips() {
     $('[title]').qtip({
         style: "qtip-dark"
     });
-    $('img .item').qtip({
+    $('img.item').qtip({
         content: {
             text: function(event, api) {
                 $.ajax({
@@ -45,7 +45,7 @@ module.exports = function tooltips() {
         },
         style: "qtip-dark"
     });
-    $('img .ability').qtip({
+    $('img.ability').qtip({
         content: {
             text: function(event, api) {
                 $.ajax({
