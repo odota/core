@@ -240,19 +240,13 @@ if (config.NODE_ENV === "test" || true) {
 else if (false) {
     //vanilla node clustering, doesn't work with socket.io
     if (cluster.isMaster) {
-        var workers = [];
-        var spawn = function(i) {
-            workers[i] = cluster.fork();
-            // Optional: Restart worker on exit
-            workers[i].on('exit', function(worker, code, signal) {
-                console.log('respawning worker', i);
-                spawn(i);
-            });
-        };
-        // Spawn workers.
+        // Fork workers.
         for (var i = 0; i < num_processes; i++) {
-            spawn(i);
+            cluster.fork();
         }
+        cluster.on('exit', function(worker, code, signal) {
+            cluster.fork();
+        });
     }
     else {
         var server = app.listen(port, function() {
