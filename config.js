@@ -15,6 +15,7 @@ var defaults = {
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
+    //set the specific *_PORT values in .env or in process environment.  Otherwise fallback to PORT
     "WEB_PORT": 0,
     "RETRIEVER_PORT": 0,
     "PARSER_PORT": 0,

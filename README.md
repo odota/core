@@ -76,7 +76,7 @@ Sample Data
 Developer's Guide
 ----
 * YASP is built using a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
-* Descriptions of each service, listed in `Procfile` and `pm2.json`:
+* Descriptions of each service, listed in `Procfile`:
     * web: This serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
