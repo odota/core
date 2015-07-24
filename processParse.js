@@ -192,9 +192,8 @@ function runParse(job, ctx, cb) {
             }
         },
         "kills": function(e) {
-            getSlot(e);
             /*
-            //logging objectives via combat log
+            //log objectives via combat log
             var logs = ["_tower", "_rax", "_fort", "_roshan"];
             var isObjective = logs.some(function(s) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
@@ -204,10 +203,21 @@ function runParse(job, ctx, cb) {
                 parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
             */
+            //count kill by this unit
+            getSlot(e);
             if (e.target_hero && !e.target_illusion) {
                 //log this hero kill
                 e.type = "kills_log";
                 populate(e);
+                //reverse and count as killed by
+                //if the killed unit isn't a hero, we don't care about killed_by
+                var r = {
+                    time: e.time,
+                    unit: e.key,
+                    key: e.unit,
+                    type: "killed_by"
+                };
+                getSlot(r);
                 //check teamfight state
                 curr_teamfight = curr_teamfight || {
                     start: e.time - teamfight_cooldown,
@@ -232,31 +242,21 @@ function runParse(job, ctx, cb) {
                 curr_teamfight.last_death = e.time;
                 curr_teamfight.deaths += 1;
             }
-            //reverse and log killed by
-            //if the damaged unit isn't a hero, it won't be counted (no slot)
-            //the key is a source, so it should be a hero
-            var r = {
-                time: e.time,
-                unit: e.key,
-                key: e.unit,
-                type: "killed_by"
-            };
-            getSlot(r);
         },
         "damage": function(e) {
             //count damage dealt to unit
             getSlot(e);
-            //reverse and count as damage taken (see comment for reversed kill)
-            var r = {
-                time: e.time,
-                unit: e.key,
-                key: e.unit,
-                value: e.value,
-                type: "damage_taken"
-            };
-            getSlot(r);
             //check if this damage happened to a real hero
             if (e.target_hero && !e.target_illusion) {
+                //reverse and count as damage taken (see comment for reversed kill)
+                var r = {
+                    time: e.time,
+                    unit: e.key,
+                    key: e.unit,
+                    value: e.value,
+                    type: "damage_taken"
+                };
+                getSlot(r);
                 //count a hit on a real hero with this inflictor
                 var h = {
                     time: e.time,
