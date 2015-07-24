@@ -346,21 +346,6 @@ td.text-left {
     text-align: left;
 }
 
-
-/*temporary select2 fixes*/
-
-.select2-container,
-.select2-search__field {
-    color: black;
-    width: 100% !important;
-    padding: 0;
-    height: 35px;
-}
-
-.select2-container {
-    margin-bottom: 10px;
-}
-
 .table>thead>tr>th,
 .table>tbody>tr>td {
     border-bottom: 1px solid grey;
@@ -379,4 +364,8 @@ table tfoot * {
 
 .nowrap {
     white-space: nowrap;
+}
+
+.rating {
+    margin-right: 5px;
 }
