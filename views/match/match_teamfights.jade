@@ -49,8 +49,9 @@ block match_content
             - i = i + 1
             tr(target=ind, class=entry.radiant_gold_delta > 0 ? "success" : "danger")
               td=i
+              //td= moment().startOf('day').seconds(entry.start).format("H:mm:ss")
               td.format-seconds(data-format-seconds=entry.start)
-              td.format-seconds(data-format-seconds=entry.end-entry.start)
+              td= moment().startOf('day').seconds(entry.end-entry.start).format("H:mm:ss")
               td #{entry.radiant_participation}v#{entry.dire_participation}
               td #{entry.dire_deaths}-#{entry.radiant_deaths}
               td=entry.radiant_gold_delta

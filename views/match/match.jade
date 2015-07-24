@@ -15,7 +15,7 @@ block content
               i.fa.fa-download
         br
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-
+ 
     .col-md-7.table-responsive
       table.table.table-condensed
         thead
@@ -26,7 +26,6 @@ block content
             th Region
             th Duration
             th Ended
-            th Patch
             th Skill
         tbody
           tr
@@ -34,8 +33,7 @@ block content
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            td: abbr(title=moment.unix(match.start_time+match.duration).format())= moment.unix(match.start_time + match.duration).fromNow()
-            td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
+            td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, hh:mm:ss"))= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
             
   .row

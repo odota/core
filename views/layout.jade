@@ -2,14 +2,11 @@ extend base_layout
 include mixins/ads
 
 block page_content
-  .sticky_footer_row.expand
-    .container
-      +ad("banner1")
-      hr
-      if banner_msg
-        .alert.alert-success.text-center(role="alert") !{banner_msg}
-      block content
-      hr
-      +ad("banner3")
-  .sticky_footer_row
-    include footer
+  .container
+    +ad("banner1")
+    hr
+    if banner_msg
+      .alert.alert-success.text-center(role="alert") !{banner_msg}
+    block content
+    hr
+    +ad("banner3")

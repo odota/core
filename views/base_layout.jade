@@ -6,7 +6,7 @@ html
     meta(name="description", content=default_title)
     meta(property="og:site_name", content=default_title)
     meta(charset='utf-8')
-    meta(name="viewport" content="width=device-width, initial-scale=1")
+    //meta(name="viewport" content="width=device-width, initial-scale=1")
     //- Favicons
     link(rel='apple-touch-icon', sizes='57x57', href='/public/images/apple-touch-icon-57x57.png')
     link(rel='apple-touch-icon', sizes='60x60', href='/public/images/apple-touch-icon-60x60.png')
@@ -39,12 +39,14 @@ html
 
     link(rel='stylesheet', href="/public/css/flaticon.css")
     link(rel='stylesheet', href="/public/css/yasp.css")
-    link(rel='stylesheet', href="/public/css/dark.css")
-          
+    //constants for client side rendering
+    script.
+      var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
     block head
-  body.frame
+  body
     include navbar
     block page_content
+    include footer
   //stuff to include after page load
   block footer_assets
   script.
@@ -63,6 +65,8 @@ html
         }
       }, 2000); // The ad blocker check is performed 2 seconds after the page load 
     }; 
+    //make footer sticky
+    $('body').css('margin-bottom', $('.footer').height());
     //by default, run formatting functions on all pages at page end
     tooltips();
     formatHtml();
