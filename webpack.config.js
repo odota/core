@@ -1,4 +1,6 @@
 var webpack = require('webpack');
+var path = require('path');
+
 module.exports = {
     entry: {
         'yasp': './public/js/yasp.js'
@@ -11,6 +13,13 @@ module.exports = {
     module: {
         loaders: [
             {
+                test: /\.js$/,
+                loaders: ['babel'],
+                include: [
+                    path.resolve(__dirname, 'public')
+                ]
+            },
+            {
                 test: /\.css$/,
                 loader: "style-loader!css-loader"
             },
@@ -21,15 +30,15 @@ module.exports = {
             {
                 test: /\.(ttf|eot|svg|jpg|gif|png)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader?name=[hash].[ext]"
-                },
+            },
             {
                 test: /\.(json)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "json-loader"
-                }
+            }
         ]
     },
     plugins: [
-new webpack.ProvidePlugin({
+        new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"

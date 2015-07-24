@@ -1,0 +1,26 @@
+{
+    "extends": "eslint-config-airbnb",
+    "env": {
+        "browser": true,
+        "mocha": true,
+        "node": true
+    },
+    "rules": {
+        "indent" : [2, 4],
+        "no-else-return": [0],
+        "func-names": 0,
+        "no-nested-ternary": [0],
+        "no-console": [0],
+        "no-shadow": [0],
+        "no-unused-vars": [0],
+        "guard-for-in": [0],
+        "camelcase": [0]
+    },
+    "globals":  {
+        "$": true,
+        "c3": true,
+        "moment": true,
+        "constants": true,
+        "vis": true
+    }
+}

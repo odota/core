@@ -56,15 +56,26 @@ module.exports = function constants(cb) {
         //items, already keyed by name
         var items = constants.items.itemdata;
         constants.item_ids = {};
-        for (var key in items) {
+        var key;
+        for (key in items) {
             constants.item_ids[items[key].id] = key;
             items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
         }
         constants.items = items;
+        // add cmb, costDiv to items similar to cmb in abilities
+        for (key in items) {
+            var mcImg = '<img alt="Mana Cost" title="Mana Cost" class="manaImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png" width="16" height="16" border="0" />';
+            var cdImg = '<img alt="Cooldown" title="Cooldown" class="cooldownImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png" width="16" height="16" border="0" />';
+            var goldImg = '<img alt="Gold Cost" title="Gold Cost" class="goldImg" src="http://cdn.dota2.com/apps/dota2/images/tooltips/gold.png" width="16" height="16" border="0" />';
+            var mcDiv = items[key].mc ? '<div>'+ mcImg + '<span> ' + items[key].mc + '</span>' + '</div>' : '';
+            var cdDiv = items[key].cd ? '<div>'+ cdImg + '<span> ' + items[key].cd + '</span>' + '</div>' : '';
+            constants.items[key].costDiv = '<div>' + goldImg + '<span> ' + items[key].cost + '</span>' + '</div>';
+            constants.items[key].cmb = mcDiv + cdDiv;
+        }
         //abilities, already keyed by name
         var abilities = constants.abilities.abilitydata;
-        for (var key2 in abilities) {
-            abilities[key2].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
+        for (key in abilities) {
+            abilities[key].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key + "_md.png";
         }
         abilities.nevermore_shadowraze2 = abilities.nevermore_shadowraze1;
         abilities.nevermore_shadowraze3 = abilities.nevermore_shadowraze1;
