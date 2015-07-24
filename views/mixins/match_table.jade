@@ -1,4 +1,9 @@
 mixin match_table(matches)
+  //-
+    //constants for client side rendering
+    - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status,"skill":constants.skill, "player_colors": constants.player_colors};
+    script.
+      var constants = !{JSON.stringify(clientConstants)};
   h3 Matches
   table.table.table-condensed#matches
     thead

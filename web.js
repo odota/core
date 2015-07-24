@@ -160,7 +160,7 @@ app.route('/professional').get(function(req, res, next) {
             return next(err);
         }
         res.render('professional', {
-            recent: data2.data
+            matches: data2.data
         });
         /*
         //implement live match pages

@@ -80,7 +80,6 @@ window.buildMap = require('./buildMap.js');
 window.playerMatches = require('./playerMatches.js');
 window.drawHeroes = require('./drawHeroes.js');
 window.drawTeammates = require('./drawTeammates.js');
-window.proMatches = require('./proMatches.js');
 window.ratingsChart = require('./ratingsChart.js');
 window.generateCharts = require('./charts.js');
 window.timeline = require('./timeline.js');
