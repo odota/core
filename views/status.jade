@@ -46,7 +46,7 @@ block content
               td(id="kue_"+key)=val
 
 append footer_assets
-  script(src="/socket.io/socket.io.js")
+  //script(src="/socket.io/socket.io.js")
   script.
     var data = !{JSON.stringify(result)}
     statusHandler(data);

@@ -466,6 +466,7 @@ describe("api tests", function() {
         });
     });
 });
+/*
 var io = require('socket.io-client');
 describe("unit test", function() {
     this.timeout(wait);
@@ -491,6 +492,7 @@ describe("unit test", function() {
         });
     });
 });
+*/
 //deprecated tests
 /*
 describe("GET /upload", function() {
