@@ -1,0 +1,7 @@
+{
+   "apps": [
+      {
+         "script": "parser.js"
+      }
+   ]
+}

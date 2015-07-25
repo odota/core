@@ -18,7 +18,7 @@
     "yasp-core": "sudo nf -j Procfile.prod export -o /etc/init/ web,worker,parser,parseManager,scanner,skill,mmr && sudo restart foreman",
     "yasp-core-startup": "sudo pm2 startup ubuntu",
     "yasp-core-pm2": "pm2 startOrReload pm2.json",
-    "yasp-parser": "PARSER_PORT=5200 pm2 startOrReload parser"
+    "yasp-parser": "PARSER_PORT=5200 pm2 startOrRestart pm2-parser.json"
   },
   "repository": {
     "type": "git",
