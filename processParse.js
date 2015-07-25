@@ -366,6 +366,7 @@ function runParse(job, ctx, cb) {
     var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
     console.log("target:%s", target);
     outStream = ndjson.parse();
+    outStream.on('data', handleStream);
     outStream.on('end', function() {
         exit(error);
     });
@@ -375,7 +376,6 @@ function runParse(job, ctx, cb) {
             url: target
         });
         inStream.pipe(outStream);
-        outStream.on('data', handleStream);
     });
 
     function exit(err) {
@@ -419,23 +419,22 @@ function runParse(job, ctx, cb) {
         if (streamTypes[e.type]) {
             streamTypes[e.type](e);
         }
-        else {
+        else if (types[e.type]) {
             entries.push(e);
+        }
+        else {
+            //no event handler for this type, don't push it to event buffer
+            console.log("no event handler for type %s", e.type);
         }
     }
 
     function processEventBuffer() {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
-            if (types[e.type]) {
-                //adjust time by zero value to get actual game time
-                e.time -= game_zero;
-                types[e.type](e);
-            }
-            else {
-                //no event handler for this type
-                console.log("no event handler for type %s", e.type);
-            }
+            //adjust time by zero value to get actual game time
+            //we can only do this once we have a complete event buffer since the game start time is sent at some point in the stream
+            e.time -= game_zero;
+            types[e.type](e);
         }
     }
 
