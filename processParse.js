@@ -80,7 +80,7 @@ function runParse(job, ctx, cb) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            console.log(e);
+            //console.log(e);
         },
         "hero_log": function(e) {
             //get hero name by id
