@@ -15,7 +15,7 @@
     "watch": "webpack --watch",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
-    "yasp-core": "sudo nf -j Procfile.prod export -o /etc/init/ web,worker,parser,parseManager,scanner,skill && sudo restart foreman",
+    "yasp-core": "sudo nf -j Procfile.prod export -o /etc/init/ web,worker,parser,parseManager,scanner,skill,mmr && sudo restart foreman",
     "yasp-core-startup": "pm2 startup ubuntu",
     "yasp-core-pm2": "pm2 startOrReload pm2.json",
     "yasp-parser": "PARSER_PORT=5200 pm2 startOrReload parser.js"
