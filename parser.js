@@ -23,18 +23,24 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
 else {
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
-        //TODO verify the POST is from github and is a push to master
-        console.log(req.body);
-        //run the deployment command
-        exec('npm run deploy-parser', function(error, stdout, stderr) {
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
-            if (error) {
-                console.log('exec error: ' + error);
-            }
-        });
+        var err;
+        //TODO verify the POST is from github/secret holder
+        if (req.body.ref === "refs/heads/master") {
+            console.log(req.body);
+            //run the deployment command
+            exec('npm run deploy-parser', function(error, stdout, stderr) {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
+                if (error) {
+                    console.log('exec error: ' + error);
+                }
+            });
+        }
+        else {
+            err = "not passing deploy conditions";
+        }
         res.json({
-            error: null
+            error: err
         });
     });
     app.get('/', function(req, res, next) {
