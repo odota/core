@@ -379,6 +379,10 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
+        if (exited) {
+            console.error(err);
+            return;
+        }
         //exit the domain to go back to regular error handling
         d.exit();
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
