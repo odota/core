@@ -365,17 +365,17 @@ function runParse(job, ctx, cb) {
     var fileName = job.data.payload.fileName;
     var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
     console.log("target:%s", target);
+    inStream = request({
+        url: target
+    });
+    outStream = ndjson.parse();
+    outStream.on('end', function() {
+        exit(error);
+    });
     d.on('error', exit);
     d.run(function() {
-        inStream = request({
-            url: target
-        });
-        outStream = ndjson.parse();
         inStream.pipe(outStream);
         outStream.on('data', handleStream);
-        outStream.on('end', function() {
-            exit(error);
-        });
     });
 
     function exit(err) {
@@ -427,9 +427,9 @@ function runParse(job, ctx, cb) {
     function processEventBuffer() {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
-            //adjust time by zero value to get actual game time
-            e.time -= game_zero;
             if (types[e.type]) {
+                //adjust time by zero value to get actual game time
+                e.time -= game_zero;
                 types[e.type](e);
             }
             else {
