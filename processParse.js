@@ -95,11 +95,10 @@ function runParse(job, ctx, cb) {
             name_to_slot[e.key] = e.slot;
         },
         "error": function(e) {
-            error = "error: " + e.key;
+            error = "Error from parser: " + e.key;
         },
         "progress": function(e) {
             job.progress(e.key, 100);
-            //console.log(e);
         },
         "epilogue": function() {
             error = null;
@@ -368,9 +367,10 @@ function runParse(job, ctx, cb) {
     console.log("target:%s", target);
     d.on('error', exit);
     d.run(function() {
+        //TODO possibly leaking resources if request timeout?
         inStream = request({
             url: target,
-            timeout: 60000
+            timeout: 180000
         });
         outStream = ndjson.parse();
         inStream.pipe(outStream);
@@ -381,10 +381,9 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
-        //TODO possibly leaking resources if request timeout?
+        console.log("exiting %s with error %s", job.data.payload.match_id, err);
         if (exited) {
-            console.log('worker already tried to exit!');
-            console.log(err);
+            console.log('already tried to exit match %s', job.data.payload.match_id);
             return;
         }
         exited = true;
@@ -397,7 +396,7 @@ function runParse(job, ctx, cb) {
         }
         if (!err) {
             parsed_data = utility.getParseSchema();
-            var message = "time spent on post-processing";
+            var message = "time spent on post-processing match " + job.data.payload.match_id;
             console.time(message);
             console.log("processing event buffer...");
             processEventBuffer();
@@ -413,7 +412,7 @@ function runParse(job, ctx, cb) {
             }
         }
         else {
-            console.log("error occurred, can't post-process");
+            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
         }
         return cb(err ? (err.message || err.code || err) : null, parsed_data);
     }
