@@ -23,9 +23,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         if (err) {
             return cb(err);
         }
-        //clear the cache for this match
-        redis.del("match:" + match.match_id, function() {
-            async.each(match.players, function(p, cb) {
+        async.each(match.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
                     //if player cache doesn't exist, skip
                     //if insignificant, skip
@@ -96,7 +94,12 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                 });
             },
             //done with all 10 players
-            cb);
-        });
+            function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                //clear the cache for this match
+                redis.del("match:" + match.match_id, cb);
+            });
     });
 };
