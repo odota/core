@@ -3,8 +3,7 @@ var fs = require('fs');
 var getReplayUrl = require('./getReplayUrl');
 var request = require('request');
 var domain = require('domain');
-var JSONStream = require('JSONStream');
-//var JSONStream = require('json-stream');
+var ndjson = require('ndjson');
 var constants = require('./constants.json');
 var utility = require('./utility');
 var updatePlayerCaches = require('./updatePlayerCaches');
@@ -40,12 +39,11 @@ module.exports = function processParse(job, ctx, cb) {
                 match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
-                updateDb();
+                return updateDb();
             });
         }
 
         function updateDb() {
-            job.update();
             //run aggregations on parsed data fields
             updatePlayerCaches(match, {
                 type: "parsed"
@@ -375,9 +373,9 @@ function runParse(job, ctx, cb) {
         var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log("target:%s", target);
         inStream = request(target);
-        outStream = JSONStream.parse();
+        outStream = ndjson.parse();
         inStream.pipe(outStream);
-        outStream.on('root', handleStream);
+        outStream.on('data', handleStream);
         outStream.on('end', function() {
             exit(error);
         });
@@ -412,7 +410,7 @@ function runParse(job, ctx, cb) {
         else {
             console.log("error occurred, can't post-process");
         }
-        return cb((err ? (err.message || err.code || err) : null), parsed_data);
+        return cb(err ? (err.message || err.code || err) : null, parsed_data);
     }
 
     function handleStream(e) {

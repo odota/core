@@ -53,13 +53,13 @@ else {
                 outStream.write(JSON.stringify({
                     "type": "progress",
                     "key": state.percent
-                }));
+                })+"\n");
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
                     outStream.write(JSON.stringify({
                         "type": "error",
                         "key": response.statusCode
-                    }));
+                    })+"\n");
                 }
             });
             inStream.pipe(bz.stdin);
