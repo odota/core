@@ -26,7 +26,7 @@ block content
         tbody
           each match in result.last_added
             tr
-              td=match.match_id
+              td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
     .col-md-3
       h3 Last Parsed
@@ -38,7 +38,7 @@ block content
         tbody
           each match in result.last_parsed
             tr
-              td=match.match_id
+              td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
     .col-md-3
       h3 Queue
