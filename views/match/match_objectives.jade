@@ -18,9 +18,9 @@ block match_content
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
             - var slot_color = constants.player_colors[p.player_slot]
-            - var team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant ? "success" : "danger"
-            - p.personaname = p.personaname || (team==="success" ? "The Radiant" : "The Dire")
-            tr(class=team)
+            - p.team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant
+            - p.personaname = p.personaname
+            tr(class=p.team ? "success" : "danger")
               td.format-seconds(data-format-seconds=entry.time)
               td=entry.key ? constants.barracks_value[entry.key] + " " + objective : objective
               +hero_td(p)

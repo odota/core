@@ -30,31 +30,23 @@ html
     
     //- yasp js bundle, dynamically inserts external library js/css
     script(src="/public/build/yasp.min.js")
-    
-    //can npm install bootswatch to bundle darkly
-    //can npm install material-design-lite to bundle material
+    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
+    //can npm install material-design-lite to bundle mdl
     //-
       <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
       <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     link(rel='stylesheet', href="/public/css/flaticon.css")
-    //link(rel='stylesheet', href="/public/css/font.css")
-    //if !(user && user.light_theme)
-    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     link(rel='stylesheet', href="/public/css/yasp.css")
-    //if !(user && user.light_theme)
-    link(rel='stylesheet', href="/public/css/dark.css")
-
     //constants for client side rendering
-    - var clientConstants = {"game_mode": constants.game_mode,"lobby_type": constants.lobby_type,"heroes": constants.heroes,"parse_status": constants.parse_status,"skill":constants.skill, "player_colors": constants.player_colors};
     script.
-      var constants = !{JSON.stringify(clientConstants)};
-          
+      var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
     block head
-  body.frame
+  body
     include navbar
     block page_content
+    include footer
   //stuff to include after page load
   block footer_assets
   script.
@@ -73,6 +65,8 @@ html
         }
       }, 2000); // The ad blocker check is performed 2 seconds after the page load 
     }; 
+    //make footer sticky
+    $('body').css('margin-bottom', $('.footer').height());
     //by default, run formatting functions on all pages at page end
     tooltips();
     formatHtml();

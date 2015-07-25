@@ -6,14 +6,6 @@ block playercontent
       h3 Rating 
         small To display MMR on profile, 
           a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
-      //-
-        h4
-          span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
-          span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
-      h4
-        span.label.label-info Solo Peak: #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0)}
-        span.label.label-warning Party Peak: #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0)}
-       
       #ratings
       
 
