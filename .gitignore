@@ -2,7 +2,7 @@ bower_components
 .env
 node_modules
 replays*
-*.log
+*.log*
 sentry
 servers
 *.dem

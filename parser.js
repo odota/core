@@ -21,9 +21,7 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
     });
 }
 else {
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
+    app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
         //TODO verify the POST is from github and is a push to master
         console.log(req.body);
@@ -34,6 +32,9 @@ else {
             if (error) {
                 console.log('exec error: ' + error);
             }
+        });
+        res.json({
+            error: null
         });
     });
     app.get('/', function(req, res, next) {
