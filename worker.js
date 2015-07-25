@@ -7,7 +7,6 @@ var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
 var domain = require('domain');
 var async = require('async');
-
 //don't need these handlers when kue supports job ttl in 0.9?
 //ttl fails jobs rather than requeuing them
 jobs.watchStuckJobs();
@@ -38,6 +37,8 @@ d.run(function() {
     console.log("[WORKER] starting worker");
     //updatenames queues an api request
     //jobs.process('api', processApi);
+    //process requests (api call, waits for parse to complete)
+    jobs.process('request', processApi);
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);
@@ -59,21 +60,21 @@ function invokeInterval(func, delay) {
 }
 
 function clearActiveJobs(cb) {
-        jobs.active(function(err, ids) {
-            if (err) {
-                return cb(err);
-            }
-            async.mapSeries(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.log("cleared active jobs");
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (job) {
+                    console.log("requeued job %s", id);
+                    job.inactive();
+                }
                 cb(err);
             });
+        }, function(err) {
+            console.log("cleared active jobs");
+            cb(err);
         });
-    }
+    });
+}

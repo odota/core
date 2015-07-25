@@ -382,11 +382,6 @@ function runParse(job, ctx, cb) {
 
     function exit(err) {
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
-        if (exited) {
-            console.log('already tried to exit match %s', job.data.payload.match_id);
-            return;
-        }
-        exited = true;
         if (err && config.NODE_ENV !== "test" && ctx) {
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function() {
@@ -394,7 +389,10 @@ function runParse(job, ctx, cb) {
                 process.exit(1);
             });
         }
-        if (!err) {
+        if (err) {
+            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
+        }
+        else {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match " + job.data.payload.match_id;
             console.time(message);
@@ -411,9 +409,6 @@ function runParse(job, ctx, cb) {
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
-        }
-        else {
-            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
         }
         return cb(err ? (err.message || err.code || err) : null, parsed_data);
     }
