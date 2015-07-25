@@ -7,7 +7,10 @@
          "script": "mmr.js"
       },
       {
-         "script": "parser.js"
+         "script": "parser.js",
+         "env": {
+            "PARSER_PORT": 5200
+         }
       },
       {
          "script": "parseManager.js"
@@ -20,6 +23,9 @@
       },
       {
          "script": "web.js",
+         "env": {
+            "WEB_PORT": 5000
+         },
          "exec_mode": "cluster",
          "instances": 0
       }
