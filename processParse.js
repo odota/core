@@ -367,10 +367,8 @@ function runParse(job, ctx, cb) {
     console.log("target:%s", target);
     d.on('error', exit);
     d.run(function() {
-        //TODO possibly leaking resources if request timeout?
         inStream = request({
-            url: target,
-            timeout: 180000
+            url: target
         });
         outStream = ndjson.parse();
         inStream.pipe(outStream);
