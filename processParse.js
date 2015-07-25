@@ -59,6 +59,7 @@ function runParse(job, ctx, cb) {
     console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
+    var exited = false;
     var error = "incomplete";
     var d = domain.create();
     //parse state
@@ -94,19 +95,14 @@ function runParse(job, ctx, cb) {
             name_to_slot[e.key] = e.slot;
         },
         "error": function(e) {
-            error = e.key;
-            console.log(e);
-        },
-        "exit": function(e) {
-            error = e.key;
-            console.log(e);
+            error = "error: " + e.key;
         },
         "progress": function(e) {
             job.progress(e.key, 100);
             //console.log(e);
         },
         "epilogue": function() {
-            error = false;
+            error = null;
         }
     };
     var types = {
@@ -366,12 +362,12 @@ function runParse(job, ctx, cb) {
             populate(e);
         }
     };
+    var url = job.data.payload.url;
+    var fileName = job.data.payload.fileName;
+    var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
+    console.log("target:%s", target);
     d.on('error', exit);
     d.run(function() {
-        var url = job.data.payload.url;
-        var fileName = job.data.payload.fileName;
-        var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
-        console.log("target:%s", target);
         inStream = request(target);
         outStream = ndjson.parse();
         inStream.pipe(outStream);
@@ -382,6 +378,12 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
+        if (exited) {
+            //can this fire multiple times?
+            console.log('worker already tried to exit!');
+            return;
+        }
+        exited = true;
         if (err && config.NODE_ENV !== "test" && ctx) {
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function() {
@@ -391,7 +393,6 @@ function runParse(job, ctx, cb) {
         }
         if (!err) {
             parsed_data = utility.getParseSchema();
-            console.log("beginning post-processing");
             var message = "time spent on post-processing";
             console.time(message);
             console.log("processing event buffer...");

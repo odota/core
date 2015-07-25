@@ -70,11 +70,6 @@ else {
             console.log(data.toString());
         });
     });
-    app.use(function(err, req, res, next) {
-        return res.status(500).json({
-            error: err
-        });
-    });
     var server = app.listen(port, function() {
         var host = server.address().address;
         console.log('[PARSER] listening at http://%s:%s', host, port);
