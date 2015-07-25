@@ -16,7 +16,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
     }, {
         $set: match
     }, {
-        //TODO if we use this function for updating skill in player caches we don't want to upsert or add to cache.data
         upsert: true,
         //explicitly declare we want the pre-modification document
         "new": false
@@ -31,40 +30,42 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                     if (cache) {
                         var match_copy = JSON.parse(JSON.stringify(match));
+                        //m.players[0] should be this player
+                        //m.all_players should be all players
+                        //duplicate this data into a copy to avoid corrupting original match object
+                        match_copy.all_players = match.players.slice(0);
+                        match_copy.players = [p];
+                        //some data fields require computeMatchData in order to aggregate correctly
+                        computeMatchData(match_copy);
+                        //check for doc.players containing this match_id
+                        //we could need to run aggregation if we are reinserting a match but this player used to be anonymous
+                        var playerInMatch = doc && doc.players && doc.players.some(function(player) {
+                            return player.account_id === p.account_id;
+                        });
+                        var reInsert = doc && options.type === "api" && playerInMatch;
+                        //determine if we're reparsing this match		
+                        var reParse = doc && doc.parsed_data && options.type === "parsed";
+                        if (!reInsert && !reParse && cache.aggData) {
+                            //do aggregations on fields based on type		
+                            cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                        }
                         //add match to array
                         var ids = {};
                         //deduplicate matches by id
                         cache.data.forEach(function(m) {
                             ids[m.match_id] = m;
                         });
-                        //update skill for display
-                        if (options.type === "skill") {
-                            //we just want to update the skill and then resave the cache
-                            ids[match_copy.match_id].skill = match_copy.skill;
+                        //reduce match for display
+                        //if we want to cache full data, we don't want to get rid of player.parsedPlayer
+                        reduceMatch(match_copy);
+                        var orig = ids[match_copy.match_id];
+                        if (!orig) {
+                            orig = match_copy;
                         }
                         else {
-                            //m.players[0] should be this player
-                            //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match object
-                            match_copy.all_players = match.players.slice(0);
-                            match_copy.players = [p];
-                            //some data fields require computeMatchData in order to aggregate correctly
-                            computeMatchData(match_copy);
-                            //check for doc.players containing this match_id
-                            //we could need to run aggregation if we are reinserting a match but this player used to be anonymous
-                            var playerInMatch = doc && doc.players && doc.players.some(function(player) {
-                                return player.account_id === p.account_id;
-                            });
-                            var reInsert = doc && options.type === "api" && playerInMatch;
-                            //determine if we're reparsing this match		
-                            var reParse = doc && doc.parsed_data && options.type === "parsed";
-                            if (!reInsert && !reParse && cache.aggData) {
-                                //do aggregations on fields based on type		
-                                cache.aggData = aggregator([match_copy], options.type, cache.aggData);
-                            }
-                            //TODO we don't want to wipe parse_status or skill from the cache if they already exist
-                            reduceMatch(match_copy); //reduce match for display, remove if we want to cache full matches
-                            ids[match_copy.match_id] = match_copy;
+                            //update parse_status if it is 2
+                            orig.parse_status = match_copy.parse_status === 2 ? match_copy.parse_status : orig.parse_status;
+                            //if we want to cache full data, we need to update orig.players, but we don't want to overwrite a parsed version with an unparsed one
                         }
                         cache.data = [];
                         for (var key in ids) {
