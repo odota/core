@@ -106,12 +106,12 @@ function runParse(job, ctx, cb) {
         "progress": function(e) {
             job.progress(e.key, 100);
             //console.log(e);
+        },
+        "epilogue": function() {
+            error = false;
         }
     };
     var types = {
-        "epilogue": function() {
-            error = false;
-        },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
         },
