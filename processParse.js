@@ -368,7 +368,10 @@ function runParse(job, ctx, cb) {
     console.log("target:%s", target);
     d.on('error', exit);
     d.run(function() {
-        inStream = request(target);
+        inStream = request({
+            url: target,
+            timeout: 60000
+        });
         outStream = ndjson.parse();
         inStream.pipe(outStream);
         outStream.on('data', handleStream);
@@ -378,8 +381,8 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
+        //TODO possibly leaking resources if request timeout?
         if (exited) {
-            //can this fire multiple times?
             console.log('worker already tried to exit!');
             return;
         }
