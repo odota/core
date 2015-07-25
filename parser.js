@@ -2,7 +2,10 @@ var config = require('./config');
 var express = require('express');
 var request = require('request');
 var fs = require('fs');
-var spawn = require('child_process').spawn;
+var cp = require('child_process');
+var spawn = cp.spawn;
+var exec = cp.exec;
+var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
@@ -18,6 +21,21 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
     });
 }
 else {
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.post('/deploy', function(req, res) {
+        //TODO verify the POST is from github and is a push to master
+        console.log(req.body);
+        //run the deployment command
+        exec('npm run deploy-parser', function(error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error) {
+                console.log('exec error: ' + error);
+            }
+        });
+    });
     app.get('/', function(req, res, next) {
         var fileName = req.query.fileName;
         var url = req.query.url;
@@ -53,13 +71,13 @@ else {
                 outStream.write(JSON.stringify({
                     "type": "progress",
                     "key": state.percent
-                })+"\n");
+                }) + "\n");
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
                     outStream.write(JSON.stringify({
                         "type": "error",
                         "key": response.statusCode
-                    })+"\n");
+                    }) + "\n");
                 }
             });
             inStream.pipe(bz.stdin);
