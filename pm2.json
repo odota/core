@@ -1,0 +1,33 @@
+{
+   "apps": [
+      {
+         "script": "skill.js"
+      },
+      {
+         "script": "mmr.js"
+      },
+      {
+         "script": "retriever.js"
+      },
+      {
+         "script": "parser.js"
+      },
+      {
+         "script": "proxy.js"
+      },
+      {
+         "script": "parseManager.js"
+      },
+      {
+         "script": "scanner.js"
+      },
+      {
+         "script": "worker.js"
+      },
+      {
+         "script": "web.js",
+         "exec_mode": "cluster",
+         "instances": 0
+      }
+   ]
+}

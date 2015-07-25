@@ -4,6 +4,7 @@ var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 module.exports = function getStatus(cb) {
+    console.time('status');
     async.series({
         matches: function(cb) {
             db.matches.count({}, cb);
@@ -106,5 +107,8 @@ module.exports = function getStatus(cb) {
                 });
             });
         }
-    }, cb);
+    }, function(err, results){
+        console.timeEnd('status');
+        cb(err, results);
+    });
 };

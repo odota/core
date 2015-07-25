@@ -1,3 +1,4 @@
+require('dotenv').load();
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever
@@ -14,9 +15,11 @@ var defaults = {
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
-    "PORT": 5000, //this value must be set in .env to make nf set it in process.env over a preset PORT env var!
-    "RETRIEVER_PORT": 5100,
-    "PARSER_PORT": 5200,
+    //set the specific *_PORT values in .env or in process environment.  Otherwise fallback to PORT
+    "WEB_PORT": 0,
+    "RETRIEVER_PORT": 0,
+    "PARSER_PORT": 0,
+    "PROXY_PORT": 0,
     "MONGO_URL": "mongodb://localhost/dota",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
@@ -33,7 +36,6 @@ var defaults = {
     "AWS_SECRET_ACCESS_KEY": "",
     "STEAM_GUARD_CODE": ""
 };
-//nf puts values in .env into process.env
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults) {
     process.env[key] = process.env[key] || defaults[key];

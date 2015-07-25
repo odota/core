@@ -10,7 +10,8 @@ app.use(function(req, res) {
 app.listen(process.env.PORT);
 */
 //mirrors steam api
+var config = require('./config');
 var httpProxy = require('http-proxy');
 httpProxy.createProxyServer({
     target: 'http://api.steampowered.com'
-}).listen(process.env.PORT);
+}).listen(config.PROXY_PORT || config.PORT);

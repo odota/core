@@ -88,17 +88,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         button.btn.btn-yasp(type="submit") Do the Thing
 
 script.
-    $("#included_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 10
+    $("#included_account_id").selectize({
+        create: true,
+        maxItems: 10
     });
-    $("#with_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#with_hero_id").selectize({
+        maxItems: 5
     });
-    $("#enemy_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#enemy_hero_id").selectize({
+        maxItems: 5
     });
-    $("#compare_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 5
+    $("#compare_account_id").selectize({
+        create: true,
+        maxItems: 5
     });
