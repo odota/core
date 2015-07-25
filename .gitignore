@@ -15,3 +15,4 @@ parser/target
 Thumbs.db
 public/build
 testfiles
+ecosystem.json
