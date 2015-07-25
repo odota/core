@@ -373,14 +373,14 @@ function runParse(job, ctx, cb) {
         outStream = ndjson.parse();
         outStream.on('data', handleStream);
         outStream.on('end', function() {
-            //exit the domain to go back to regular error handling
-            d.exit();
             exit(error);
         });
         inStream.pipe(outStream);
     });
 
     function exit(err) {
+        //exit the domain to go back to regular error handling
+        d.exit();
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
         if (err && config.NODE_ENV !== "test" && ctx) {
             //gracefully shut down worker and let master respawn a new one
