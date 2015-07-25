@@ -32,7 +32,7 @@ var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
     clearActiveJobs(function(err2) {
-        process.exit(err2 || err || 1);
+        process.exit(1);
     });
 });
 d.run(function() {

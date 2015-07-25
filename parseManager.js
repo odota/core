@@ -27,7 +27,6 @@ function start() {
         var capacity = parsers.length;
         if (cluster.isMaster) {
             console.log("[PARSEMANAGER] starting master");
-            //process requests on master thread in order to avoid parse worker shutdowns affecting them
             jobs.process('request', numCPUs, processApi);
             for (var i = 0; i < capacity; i++) {
                 if (config.NODE_ENV !== "test" && false) {
@@ -56,7 +55,7 @@ function start() {
 
         function runWorker(i) {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-            //process regular parses
+            //process parses
             jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 getParserUrl(job, i, function() {

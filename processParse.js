@@ -61,7 +61,6 @@ function runParse(job, ctx, cb) {
     console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
-    var exited;
     var error = "incomplete";
     var d = domain.create();
     //parse state
@@ -434,20 +433,17 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
-        if (!exited) {
-            exited = true;
-            console.log(err);
-            if (err && config.NODE_ENV !== "test" && ctx) {
-                //gracefully shut down worker and let master respawn a new one
-                ctx.pause(1000, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    process.exit(1);
-                });
-            }
-            cb(err.message || err.code || err, parsed_data);
+        if (err && config.NODE_ENV !== "test" && ctx) {
+            //gracefully shut down worker and let master respawn a new one
+            ctx.pause(1000, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                process.exit(1);
+            });
         }
+        //can this fire multiple times?
+        cb(err.message || err.code || err, parsed_data);
     }
 
     function handleStream(e) {
