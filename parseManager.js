@@ -27,12 +27,12 @@ function start() {
         if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             for (var i = 0; i < capacity; i++) {
-                if (false) {
+                if (true) {
                     //fork a worker for each available parse core
                     forkWorker(i);
                 }
                 else {
-                    //run workers in parallel in a single thread (saves more memory)
+                    //run workers in parallel in a single thread (uses less memory)
                     runWorker(i);
                 }
             }
@@ -59,7 +59,7 @@ function start() {
                 //TODO check if the assigned url is active
                 //if not, use ctx to pause and cb(err) (this consumes a retry)
                 //keep checking status and resume the worker when the parse worker is alive again
-                processParse(job, null, cb);
+                processParse(job, ctx, cb);
             });
 
             function getParserUrl(job) {

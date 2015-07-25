@@ -387,7 +387,8 @@ function runParse(job, ctx, cb) {
         //exit the domain to go back to regular error handling
         d.exit();
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
-        if (err && config.NODE_ENV !== "test" && ctx) {
+        if (err && config.NODE_ENV !== "test" && true) {
+            //do this if we are running one thread per worker
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function() {
                 console.log("shutting down worker");
