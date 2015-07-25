@@ -412,7 +412,7 @@ function runParse(job, ctx, cb) {
         else {
             console.log("error occurred, can't post-process");
         }
-        return cb((err ? (err.message || err.code) : err), parsed_data);
+        return cb((err ? (err.message || err.code || err) : null), parsed_data);
     }
 
     function handleStream(e) {
