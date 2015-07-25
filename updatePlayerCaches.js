@@ -56,11 +56,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         cache.data.forEach(function(m) {
                             ids[m.match_id] = m;
                         });
+                        //TODO do something similar for skill
                         //update this match with latest state, specific fields only
                         if (ids[match_copy.match_id]) {
                             ids[match_copy.match_id].parse_status = match_copy.parse_status;
                             ids[match_copy.match_id].parsed_data = match_copy.parsed_data;
-                            ids[match_copy.match_id].skill = match_copy.skill;
                         }
                         else {
                             //insert, didn't exist
