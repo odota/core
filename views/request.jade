@@ -18,7 +18,7 @@ block content
             .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
           else
             // if the DISABLE_RECAPTCHA env var has been set, bypass the recaptcha
-            button(onclick="submit()") Request Parse
+            button.btn.btn-default(onclick="submit()") Request Parse
       #progContainer(style="display:none")
         h3 Progress
         img(src="/public/images/loading.gif", style="display:none")#loading
@@ -28,49 +28,103 @@ block content
 
 append footer_assets
   script(src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit",async,defer)
-  // script(src="https://www.google.com/recaptcha/api.js",async,defer)
-  script(src="/socket.io/socket.io.js")
+  //script(src="/socket.io/socket.io.js")
   script.
     var match_id;
     var socket;
+    var checker;
     var onloadCallback = function() {
         grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
     function submit(response){
       var field = document.getElementById("match_id");
       match_id = field.value;
-      field.value = "";
-      console.log(match_id);
-      if (!socket){
-        //set up the handlers
-        socket = io.connect();
-        socket.on('err', function(data){
+      field.value = "";    
+      $.ajax({
+      method: "POST",
+      url: "/request_job",
+      data: { match_id: match_id, response:response }
+      })
+      .done(function( msg ) {
+        console.log(msg);
+        if (msg.error){
+          showError(msg.error);
+        }
+        else{
+        checker = setInterval(function(){poll(msg.job.id)}, 2000);
+      }
+      });
+      $("#request").hide('slow');
+      $("#messages").empty();
+      $("#progContainer").show('slow');
+    }
+    function showError(data){
           $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
           $("#loading").css("display", "none");
           document.getElementById("bar").style.width = "0%";
           $("#request").show('slow');
+          console.log("clearing interval %s", checker);
+          clearInterval(checker);
           grecaptcha.reset();
-        });
-        socket.on('log', function(data){
-          $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
-          $("#loading").css("display", "block");
-        });
-        socket.on('prog', function(prog){
-          document.getElementById("bar").style.width = prog + "%";
-          document.getElementById("bar").innerHTML = prog + "%";
-          $("#loading").css("display", "block");
-        });
-        socket.on('complete', function(){
-          // redir to match page (?)
-          window.location.assign("/matches/"+match_id);
-        });
-        }
-        socket.emit('request', {
-          match_id: match_id,
-          response: response
-        });
-        $("#request").hide('slow');
-        $("#messages").empty();
-        $("#progContainer").show('slow');
-
     }
+    function poll(job_id){
+          $.ajax({
+            url: "/request_job?id="+job_id
+          })
+          .done(function( msg ) {
+            if (!msg.job){
+            //job doesn't exist, we're done
+            window.location.assign("/matches/"+match_id);
+            }
+            else if(msg.job.error){
+              showError(msg.job.error);
+            }
+            else{
+              var prog = msg.job.progress;
+              console.log(prog);
+              document.getElementById("bar").style.width = prog + "%";
+              document.getElementById("bar").innerHTML = prog + "%";
+              $("#loading").css("display", "block");
+            }
+          });
+      }
+  //-
+    script.
+      /*
+      function submit(response){
+        var field = document.getElementById("match_id");
+        match_id = field.value;
+        field.value = "";
+        if (!socket){
+          //set up the handlers
+          socket = io.connect();
+          socket.on('err', function(data){
+            $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
+            $("#loading").css("display", "none");
+            document.getElementById("bar").style.width = "0%";
+            $("#request").show('slow');
+            grecaptcha.reset();
+          });
+          socket.on('log', function(data){
+            $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
+            $("#loading").css("display", "block");
+          });
+          socket.on('prog', function(prog){
+            document.getElementById("bar").style.width = prog + "%";
+            document.getElementById("bar").innerHTML = prog + "%";
+            $("#loading").css("display", "block");
+          });
+          socket.on('complete', function(){
+            // redir to match page (?)
+            window.location.assign("/matches/"+match_id);
+          });
+          }
+          socket.emit('request', {
+            match_id: match_id,
+            response: response
+          });
+          $("#request").hide('slow');
+          $("#messages").empty();
+          $("#progContainer").show('slow');
+      }
+      */

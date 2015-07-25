@@ -1,6 +1,5 @@
 var processApi = require('./processApi');
 var processFullHistory = require('./processFullHistory');
-var processMmr = require('./processMmr');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
@@ -32,13 +31,13 @@ var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
     clearActiveJobs(function(err2) {
-        process.exit(err2 || err || 1);
+        process.exit(1);
     });
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
+    //updatenames queues an api request
     //jobs.process('api', processApi);
-    jobs.process('mmr', processMmr);
     jobs.process('fullhistory', processFullHistory);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);

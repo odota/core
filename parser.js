@@ -7,9 +7,8 @@ var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
-var port = config.PARSER_PORT;
-var domain = require('domain');
-if (cluster.isMaster && config.NODE_ENV!=="test") {
+var port = config.PARSER_PORT || config.PORT;
+if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
         cluster.fork();
@@ -35,8 +34,8 @@ else {
         "-Xmx64m",
         "parser/target/stats-0.1.0.jar"
     ], {
-            //we want want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'ignore'],
+            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
+            stdio: ['pipe', 'pipe', 'pipe'],
             encoding: 'utf8'
         });
         if (fileName) {
@@ -54,29 +53,21 @@ else {
                 outStream.write(JSON.stringify({
                     "type": "progress",
                     "key": state.percent
-                }));
+                })+"\n");
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
                     outStream.write(JSON.stringify({
                         "type": "error",
                         "key": response.statusCode
-                    }));
+                    })+"\n");
                 }
             });
             inStream.pipe(bz.stdin);
             bz.stdout.pipe(parser.stdin);
         }
         parser.stdout.pipe(outStream);
-        /*
         parser.stderr.on('data', function(data) {
             console.log(data.toString());
-            parser.stderr.resume();
-        });
-        */
-    });
-    app.use(function(err, req, res, next) {
-        return res.status(500).json({
-            error: err
         });
     });
     var server = app.listen(port, function() {

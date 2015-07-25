@@ -2,16 +2,7 @@ extend /layout
 include /mixins/progress_bar
 
 block content
-  .row
-    .col-md-12
-      if !(player.account_id in trackedPlayers)
-        .alert.alert-danger This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)
-      else
-        .alert.alert-success This user is tracked!  Matches they play are automatically parsed.
-      if (!player.full_history_time)
-        .alert.alert-warning This user does not have full match history yet.  Some matches may be missing.  (Full history requested on this user's next login)
-
-  .row.match-top
+  .row.match-top 
     .col-md-1
       a(href=player.profileurl || "#", target="_blank")
         if player.avatarmedium
@@ -21,11 +12,39 @@ block content
     .col-md-6
       h3.inline-header(style="margin-top:0;margin-bottom:4px;") #{player.personaname || player.account_id}
         small
-          a(href="?json=1" title="View as JSON")
-            i.fa.fa-download
-      div.lead
-          span.label.label-info#solo: abbr(title="Solo MMR") #{player.soloRating || "N/A"}
-          span.label.label-warning#party: abbr(title="Party MMR") #{player.partyRating || "N/A"}
+          //-
+            a(href="?json=1" title="View as JSON")
+              i.fa.fa-download
+      .lead
+          span.text-info.rating: abbr(title="Solo MMR")
+            i.fa.fa-area-chart
+            | #{player.soloRating || "N/A"}
+          span.text-warning.rating: abbr(title="Party MMR")
+            i.fa.fa-area-chart
+            | #{player.partyRating || "N/A"}
+          span.text-info.rating: abbr(title="Highest Solo MMR")
+            i.fa.fa-star
+            | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
+          span.text-warning.rating: abbr(title="Highest Party MMR")
+            i.fa.fa-star
+            | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
+          if !(player.account_id in trackedPlayers)
+            span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
+              i.fa.fa-eye-slash
+          else
+            span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
+              i.fa.fa-eye
+          if (!player.full_history_time)
+            span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
+              i.fa.fa-exclamation-triangle
+          else
+            span.text-success.rating: abbr(title="Full history has been processed for this user.")
+              i.fa.fa-check
+        //-
+          h4
+            span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
+            span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
+
     .col-md-1
       if player.cheese
         i.flaticon-1.medium-cheese(style="display:inline-block")

@@ -52,15 +52,16 @@ append footer_assets
       
       var scale = 300/max;
 
-      //scale the words, min 10, max 500
+      //scale the words, min 10, max 400
       word_list.forEach(function(w){
-        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 500));
+        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 400));
       });
       
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){
         return b[1] - a[1];
       });
+      console.log(word_list);
 
       
       WordCloud(document.getElementById(cloud_dom_id), { list: word_list } );
