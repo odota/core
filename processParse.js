@@ -365,15 +365,15 @@ function runParse(job, ctx, cb) {
     var fileName = job.data.payload.fileName;
     var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
     console.log("target:%s", target);
-    inStream = request({
-        url: target
-    });
     outStream = ndjson.parse();
     outStream.on('end', function() {
         exit(error);
     });
     d.on('error', exit);
     d.run(function() {
+        inStream = request({
+            url: target
+        });
         inStream.pipe(outStream);
         outStream.on('data', handleStream);
     });
