@@ -361,19 +361,21 @@ function runParse(job, ctx, cb) {
             populate(e);
         }
     };
-    var url = job.data.payload.url;
-    var fileName = job.data.payload.fileName;
-    var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
-    console.log("target:%s", target);
-    outStream = ndjson.parse();
-    outStream.on('data', handleStream);
-    outStream.on('end', function() {
-        exit(error);
-    });
     d.on('error', exit);
     d.run(function() {
+        var url = job.data.payload.url;
+        var fileName = job.data.payload.fileName;
+        var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
+        console.log("target:%s", target);
         inStream = request({
             url: target
+        });
+        outStream = ndjson.parse();
+        outStream.on('data', handleStream);
+        outStream.on('end', function() {
+            //exit the domain to go back to regular error handling
+            d.exit();
+            exit(error);
         });
         inStream.pipe(outStream);
     });
@@ -402,6 +404,7 @@ function runParse(job, ctx, cb) {
             processTeamfights();
             console.log("processing multi-kill-streaks...");
             processMultiKillStreaks();
+            console.log("processing all players data");
             processAllPlayers();
             console.timeEnd(message);
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
@@ -461,7 +464,7 @@ function runParse(job, ctx, cb) {
                     goldtotal -= p.gold[i];
                 }
                 p.origIndex = j;
-                p.pick_time = p.hero_log[p.hero_log.length - 1].time;
+                p.pick_time = p.hero_log.length ? p.hero_log[p.hero_log.length - 1].time : Number.MAX_VALUE;
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);

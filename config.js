@@ -29,7 +29,8 @@ var defaults = {
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com",
     "ROLE": "", //for specifying a node type
-    "DISABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page
+    "DISABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page,
+    "DISABLE_PRO_PARSING": "", // set to disable parsing pro matches from sequential API
     //the following are deprecated
     "AWS_S3_BUCKET": "",
     "AWS_ACCESS_KEY_ID": "",
