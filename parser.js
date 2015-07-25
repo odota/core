@@ -8,8 +8,7 @@ var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PARSER_PORT || config.PORT;
-var domain = require('domain');
-if (cluster.isMaster && config.NODE_ENV!=="test") {
+if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
         cluster.fork();

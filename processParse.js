@@ -61,7 +61,6 @@ function runParse(job, ctx, cb) {
     console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
-    var exited;
     var error = "incomplete";
     var d = domain.create();
     //parse state
@@ -74,8 +73,9 @@ function runParse(job, ctx, cb) {
     var teamfights = [];
     var intervalState = {};
     var teamfight_cooldown = 15;
-    var parsed_data = utility.getParseSchema();
-    //event handlers
+    var parsed_data;
+    //capture events streamed from parser and set up state for post-processing
+    //these events are generally not pushed to event buffer (except hero_log)
     var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
@@ -95,9 +95,6 @@ function runParse(job, ctx, cb) {
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
         },
-        "match_id": function(e) {
-            parsed_data.match_id = e.value;
-        },
         "error": function(e) {
             error = e.key;
             console.log(e);
@@ -114,6 +111,9 @@ function runParse(job, ctx, cb) {
     var types = {
         "epilogue": function() {
             error = false;
+        },
+        "match_id": function(e) {
+            parsed_data.match_id = e.value;
         },
         "steam_id": function(e) {
             populate(e);
@@ -379,6 +379,20 @@ function runParse(job, ctx, cb) {
         inStream.pipe(outStream);
         outStream.on('root', handleStream);
         outStream.on('end', function() {
+            exit(error);
+        });
+    });
+
+    function exit(err) {
+        if (err && config.NODE_ENV !== "test" && ctx) {
+            //gracefully shut down worker and let master respawn a new one
+            ctx.pause(1000, function() {
+                console.log("shutting down worker");
+                process.exit(1);
+            });
+        }
+        if (!err) {
+            parsed_data = utility.getParseSchema();
             console.log("beginning post-processing");
             var message = "time spent on post-processing";
             console.time(message);
@@ -388,66 +402,17 @@ function runParse(job, ctx, cb) {
             processTeamfights();
             console.log("processing multi-kill-streaks...");
             processMultiKillStreaks();
-            //compute data that requires all parsed players
-            //pick order, radiant advantage per minute
-            //determine pick order based on last time value of hero_log
-            //determine a pick_time for each parsed player
-            //duplicate, sort
-            //create hash of indices by iterating through sorted array and mapping original index to order
-            //insert back into originals, indexing by player slot
-            var pick_map = {};
-            for (var i = 0; i < parsed_data.players[0].times.length; i++) {
-                var goldtotal = 0;
-                var xptotal = 0;
-                parsed_data.players.forEach(function(p, j) {
-                    //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                    if (j < 5) {
-                        goldtotal += p.gold[i];
-                        xptotal += p.xp[i];
-                    }
-                    else {
-                        xptotal -= p.xp[i];
-                        goldtotal -= p.gold[i];
-                    }
-                    p.origIndex = j;
-                    p.pick_time = p.hero_log[p.hero_log.length - 1].time;
-                });
-                parsed_data.radiant_gold_adv.push(goldtotal);
-                parsed_data.radiant_xp_adv.push(xptotal);
-            }
-            var sorted = parsed_data.players.slice().sort(function(a, b) {
-                return a.pick_time - b.pick_time;
-            });
-            sorted.forEach(function(player, i) {
-                pick_map[player.origIndex] = i + 1;
-            });
-            parsed_data.players.forEach(function(player) {
-                player.pick_order = pick_map[player.origIndex];
-            });
+            processAllPlayers();
             console.timeEnd(message);
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
-            exit(error);
-        });
-    });
-
-    function exit(err) {
-        if (!exited) {
-            exited = true;
-            console.log(err);
-            if (err && config.NODE_ENV !== "test" && ctx) {
-                //gracefully shut down worker and let master respawn a new one
-                ctx.pause(1000, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    process.exit(1);
-                });
-            }
-            cb(err.message || err.code || err, parsed_data);
         }
+        else {
+            console.log("error occurred, can't post-process");
+        }
+        return cb(err.message || err.code || err, parsed_data);
     }
 
     function handleStream(e) {
@@ -472,6 +437,45 @@ function runParse(job, ctx, cb) {
                 console.log("no event handler for type %s", e.type);
             }
         }
+    }
+
+    function processAllPlayers() {
+        //compute data that requires all parsed players
+        //pick order, radiant advantage per minute
+        //determine pick order based on last time value of hero_log
+        //determine a pick_time for each parsed player
+        //duplicate, sort
+        //create hash of indices by iterating through sorted array and mapping original index to order
+        //insert back into originals, indexing by player slot
+        var pick_map = {};
+        for (var i = 0; i < parsed_data.players[0].times.length; i++) {
+            var goldtotal = 0;
+            var xptotal = 0;
+            parsed_data.players.forEach(function(p, j) {
+                //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
+                if (j < 5) {
+                    goldtotal += p.gold[i];
+                    xptotal += p.xp[i];
+                }
+                else {
+                    xptotal -= p.xp[i];
+                    goldtotal -= p.gold[i];
+                }
+                p.origIndex = j;
+                p.pick_time = p.hero_log[p.hero_log.length - 1].time;
+            });
+            parsed_data.radiant_gold_adv.push(goldtotal);
+            parsed_data.radiant_xp_adv.push(xptotal);
+        }
+        var sorted = parsed_data.players.slice().sort(function(a, b) {
+            return a.pick_time - b.pick_time;
+        });
+        sorted.forEach(function(player, i) {
+            pick_map[player.origIndex] = i + 1;
+        });
+        parsed_data.players.forEach(function(player) {
+            player.pick_order = pick_map[player.origIndex];
+        });
     }
 
     function processTeamfights() {
