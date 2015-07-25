@@ -367,7 +367,7 @@ function runParse(job, ctx, cb) {
             populate(e);
         }
     };
-    d.once('error', exit);
+    d.on('error', exit);
     d.run(function() {
         var url = job.data.payload.url;
         var fileName = job.data.payload.fileName;
@@ -433,7 +433,6 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
-        console.log(err);
         if (err && config.NODE_ENV !== "test" && ctx) {
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function(err) {
@@ -443,6 +442,7 @@ function runParse(job, ctx, cb) {
                 process.exit(1);
             });
         }
+        //can this fire multiple times?
         cb(err.message || err.code || err, parsed_data);
     }
 
