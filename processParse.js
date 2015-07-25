@@ -384,6 +384,7 @@ function runParse(job, ctx, cb) {
         //TODO possibly leaking resources if request timeout?
         if (exited) {
             console.log('worker already tried to exit!');
+            console.log(err);
             return;
         }
         exited = true;
