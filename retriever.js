@@ -57,7 +57,7 @@ async.each(a, function(i, cb) {
     });
     Steam.on("loggedOn", function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", Steam.steamID);
-        //Steam.setPersonaName("[YASP] " + Steam.steamID);
+        Steam.setPersonaName("[YASP] " + Steam.steamID);
         steamObj[Steam.steamID] = Steam;
         Steam.replays = 0;
         Steam.profiles = 0;
