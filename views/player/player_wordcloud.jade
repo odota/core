@@ -48,14 +48,27 @@ append footer_assets
         }
       }
       
-      max = max > 1000 ? 1000 : max;
-      
-      var scale = 300/max;
-
-      //scale the words, min 10, max 400
+      //howard's implementation
+      var max_size = 600;
+      var min_size = 10;
+      var scale = max_size/Math.log(max);
       word_list.forEach(function(w){
-        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 400));
+        //original count for debugging
+        w[2] = w[1];
+        //take the log of each count and scale them up to top_size
+        //use log since words such as "gg" tend to dominate
+        w[1] = Math.max(Math.log(w[1])*scale, min_size);
       });
+      
+      /*
+        //albert's implementation
+        max = max > 1000 ? 1000 : max;
+        var scale = 300/max;
+        //scale the words, min 10, max 400
+        word_list.forEach(function(w){
+          w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 400));
+        });
+      */
       
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){
