@@ -3,7 +3,7 @@ include /mixins/progress_bar
 
 block content
   .row.match-top
-    .col-md-7.col-sm-9.col-xs-7
+    .col-xs-9
       div(style="display:flex;")
         a(href=player.profileurl || "#", target="_blank")(style="display:inline-block; margin-right:10px;")
           if player.avatarmedium
@@ -26,6 +26,10 @@ block content
               else
                 span.text-success.rating: abbr(title="Full history has been processed for this user.")
                   i.fa.fa-check
+              if player.cheese
+                span
+                  i.flaticon-1.small-cheese(style="display:inline-block")
+                  small(style="margin-left:.5em") x #{' '} #{player.cheese}
           .lead(style="font-size:1em")
               span.text-info.rating: abbr(title="Solo MMR")
                 i.fa.fa-area-chart
@@ -44,17 +48,12 @@ block content
             span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
             span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
 
-    .col-md-1.col-sm-1.col-xs-2
-      if player.cheese
-        div
-          i.flaticon-1.medium-cheese(style="display:inline-block")
-          div(style="margin-left:.5em") x#{player.cheese}
-    .col-md-4.col-sm-2.col-xs-3
+    .col-xs-3
       h4(style="margin-top:0;text-align:center;")
         span.text-success#win(style="margin:0 4px;") #{(player.aggData.win)}
         span -
         span.text-danger#lose(style="margin:0 4px;") #{player.aggData.lose}
-        small.visible-md-inline-block.visible-lg-inline-block(style="font-size:80%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
+        small.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
       +progress_bar(player.aggData.win, player.aggData.games)
 
   .row(style="margin-top:1em;")
