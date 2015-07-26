@@ -28,6 +28,7 @@ module.exports = function processParse(job, ctx, cb) {
             //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
             //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
             //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+            console.log("replay too old, url expired");
             return cb(err);
         }
         else {

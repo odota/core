@@ -67,7 +67,7 @@ Starting YASP
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
 * Build `npm run build`
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services with Foreman.
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services.
 
 Sample Data
 ----
@@ -76,7 +76,7 @@ Sample Data
 Developer's Guide
 ----
 * YASP is built using a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
-* Descriptions of each service, listed in `Procfile`:
+* Descriptions of each service:
     * web: This serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
@@ -99,6 +99,8 @@ Developer's Guide
             * `min_players=10`
             * `hero_id=X`
             * By permuting all three skill levels with the list of heroes, we can get up to 500 matches for each combination.
+    * mmr: Processes MMR requests
+    * fullhistory: Processes full history requests
 * Pipeline: Generally parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
     * Request: Requests are processed from the Request page via socket.io.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
@@ -107,9 +109,9 @@ Developer's Guide
 * Player/match caching: We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
 * A client side bundle of JS is built (and minified in production) using Webpack.  If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
-* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
+* Tools recommended for developers on the command line: `sudo npm install -g mocha pm2`
     * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
-    * `foreman` is used to manage services.  It takes care of reading `.env` and assigning ports to services.  Installing it allows you to run individual services.
+    * `pm2` is used to manage services.  Use `pm2 {filename}` in order to run individual services.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
 ```

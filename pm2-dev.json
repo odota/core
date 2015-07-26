@@ -27,6 +27,18 @@
          "instances": 0
       },
       {
+         "script": "retriever.js",
+         "env": {
+            "RETRIEVER_PORT": 5100
+         }
+      },
+      {
+         "script": "proxy.js",
+         "env": {
+            "PROXY_PORT": 5300
+         }
+      },
+      {
          "script": "parser.js",
          "env": {
             "PARSER_PORT": 5200

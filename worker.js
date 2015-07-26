@@ -1,5 +1,4 @@
 var processApi = require('./processApi');
-var processFullHistory = require('./processFullHistory');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
@@ -7,6 +6,7 @@ var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
 var domain = require('domain');
 var async = require('async');
+var numCPUs = require('os').cpus().length;
 //don't need these handlers when kue supports job ttl in 0.9?
 //ttl fails jobs rather than requeuing them
 jobs.watchStuckJobs();
@@ -38,8 +38,7 @@ d.run(function() {
     //updatenames queues an api request
     //jobs.process('api', processApi);
     //process requests (api call, waits for parse to complete)
-    jobs.process('request', processApi);
-    jobs.process('fullhistory', processFullHistory);
+    jobs.process('request', numCPUs, processApi);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
