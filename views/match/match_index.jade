@@ -20,12 +20,11 @@ block match_content
       h3.inline-header Basic
       button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#index", aria-expanded="true") Toggle Table
       #index.table-responsive.collapse.in
-          table.table.table-hover.summable
+          table.table.table-hover.summable.table-condensed
             thead
               tr
-                th Player
-                th Rating
                 th Hero
+                th Rating
                 th LV
                 th K
                 th D
@@ -42,23 +41,12 @@ block match_content
             tbody
               each player, i in match.players
                tr(class = player.player_slot<64 ? "success" : "danger")
-                 td.text-left
-                   img.img-md(src=player.avatar)
+                 +hero_td(player)
+                 td
+                   //img.img-small(src=player.avatar)
                    if (player.last_visited)
                      img.user(src='/public/images/favicon-16x16.png', title="YASP User")
-                   if (player.account_id === constants.anonymous_account_id)
-                     ="Anonymous"
-                   else if (!player.account_id)
-                     ="Bot"
-                   else
-                     a(href='/players/#{player.account_id}')= player.personaname || player.account_id
-                 td #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
-                 td.hero
-                   - var hero = constants.heroes[player.hero_id]
-                   if hero
-                     img.img-md(src=hero.img, title=hero.localized_name)
-                   else
-                     =player.hero_id
+                   | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
                  td= player.level
                  td= player.kills
                  td.negative= player.deaths
@@ -110,20 +98,15 @@ block match_content
             tbody
               - each player, i in match.players
                 tr(class = player.player_slot<64 ? "success" : "danger")
-                  - var hero = constants.heroes[player.hero_id]
-                  td
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id
-                    if player.ability_upgrades
-                      each ability in player.ability_upgrades
-                        - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
-                        td
-                          if abilityData
-                            img.img-small.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
-                          else
-                            =ability.ability
+                  +hero_td(player)
+                  if player.ability_upgrades
+                    each ability in player.ability_upgrades
+                      - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                      td
+                        if abilityData
+                          img.img-md.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
+                        else
+                          =ability.ability
                             
       .row.margin-bottom
         .col-md-7

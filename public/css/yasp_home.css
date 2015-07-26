@@ -1,15 +1,3 @@
-@media all {
-    .table-responsive {
-        border: inherit;
-    }
-}
-
-@media(max-width: 768px) {
-    .navbar > .container {
-        background-color: black;
-    }
-}
-
 h1.home {
     font-size: 50px;
 }
@@ -73,9 +61,9 @@ img.grayscale {
     text-align: center;
 }
 .header .btn-lg {
-    font-size: 28px;
+    font-size: 24px;
     border-color: #eeeeee;
-    padding: 15px;
+    padding: 10px;
     background-color: transparent;
     color: #ffffff;
 }
@@ -270,11 +258,6 @@ img.grayscale {
     font-size: 68px;
 }
 
-#match_statistics tfoot,
-#match_statistics thead {
-    color: white;
-    background-color: transparent;
-}
 .callout {
     color: #ffffff;
     padding-top: 7%;
@@ -299,11 +282,6 @@ img.grayscale {
     margin: 10px;
 }
 
-.medium-cheese {
-    color: rgb(124, 124, 124);
-}
-
-footer a:hover,
 .featurette.dark a:hover {
   color: #337ab7;
 }

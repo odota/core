@@ -6,30 +6,20 @@ block match_content
       h2 Combat
       .row
         .col-md-6
-          h3.inline-header Kill/Death
+          h3.inline-header: abbr(title="Data recorded from combat log.  Includes Aegis and Reincarnation deaths.") Kill/Death
           table-responsive
-            table.table.table-hover
+            table.table.table-hover.table-condensed
               thead
                 tr
                   th Hero
                   each player, ind in match.players.slice(match.players.length/2, match.players.length)
-                    th(class = player.isRadiant ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
-
+                    +hero_td(player)
               tbody
                 each player, ind in match.players.slice(0,match.players.length/2)
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
                   tr
-                    td.hero(class = player.isRadiant ? "success" : "danger")
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
+                      +hero_td(player)   
                       each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                         - var hero1 = constants.heroes[player.hero_id]
                         - var hero2 = constants.heroes[player2.hero_id]
@@ -41,32 +31,23 @@ block match_content
 
                         td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger"))
                           abbr.blackunderline(title=hero1name+" killed "+hero2name+" "+p1+" time"+(p1===1?"":"s")+".<br>"+hero2name+" killed "+hero1name+" "+p2+" time"+(p2===1?"":"s")+".")
-                            span(class="") #{p1} / #{p2}
+                            span(class="") #{p1}/#{p2}
 
         .col-md-6
-          h3.inline-header Damage Done/Taken
+          h3.inline-header: abbr(title="Data recorded from combat log.  Values may not match those given in the API.") Damage Done/Taken
           table-responsive
-            table.table.table-hover
+            table.table.table-hover.table-condensed
               thead
                 tr
                   th Hero
                   each player, ind in match.players.slice(match.players.length/2, match.players.length)
-                    th(class = player.isRadiant ? "success" : "danger")
-                      - var hero = constants.heroes[player.hero_id]
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id
+                    +hero_td(player)
               tbody
                 each player, ind in match.players.slice(0,match.players.length/2)
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
                   tr
-                    td.hero(class = player.isRadiant ? "success" : "danger")
-                      if hero
-                        img(src=hero.img, title=hero.localized_name)
-                      else
-                        =player.hero_id      
+                      +hero_td(player)     
                       each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
                         - var hero1 = constants.heroes[player.hero_id]
                         - var hero2 = constants.heroes[player2.hero_id]
@@ -79,7 +60,7 @@ block match_content
                         td(class=(p1===p2 ? "" : p1>p2 ? "success" : "danger"))
                           abbr.blackunderline(title=hero1name+" did "+p1+" damage to "+hero2name+".<br>"+hero2name+" did "+p2+" damage to "+hero1name+".")
                             span(class="format") #{p1}
-                            span=" / "
+                            span="/"
                             span(class="format") #{p2}
       .row
        .col-md-6
@@ -92,17 +73,13 @@ block match_content
                 tr
                   th Hero
                   each val,key in constants.multi_kills
-                    th #{val} (#{key})
+                    th: abbr(title=val) #{key}
 
             tbody
               tr(class = player.isRadiant ? "success" : "danger")
                 - var hero = constants.heroes[player.hero_id]
                 - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+                +hero_td(player)
                 each val,key in constants.multi_kills
                   td #{p.multi_kills[key] || "-"}
        .col-md-6
@@ -115,17 +92,13 @@ block match_content
                 tr
                   th Hero
                   each val, key in constants.kill_streaks
-                    th: abbr(title=val) #{key!=="10"?key:"10+"}
+                    th: abbr(title=val) #{key}
 
             tbody
               tr(class = player.isRadiant ? "success" : "danger")
                 - var hero = constants.heroes[player.hero_id]
                 - var p = player.parsedPlayer
-                td.hero
-                 if hero
-                   img(src=hero.img, title=hero.localized_name)
-                 else
-                   =player.hero_id
+                +hero_td(player)
                 each val, key in constants.kill_streaks
                   td #{p.kill_streaks[key] || "-"}
       hr
@@ -149,11 +122,7 @@ block match_content
                         th= i/60+"'"
                 if !truncate || truncate.indexOf(ind) > -1
                     tr(class = player.isRadiant ? "success" : "danger")
-                      td.hero
-                        if hero
-                          img(src=hero.img, title=hero.localized_name)
-                        else
-                          =player.hero_id              
+                      +hero_td(player)            
                       - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                         td
                           each entry in p.kills_log || []

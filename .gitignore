@@ -2,7 +2,7 @@ bower_components
 .env
 node_modules
 replays*
-*.log
+*.log*
 sentry
 servers
 *.dem
@@ -15,3 +15,4 @@ parser/target
 Thumbs.db
 public/build
 testfiles
+ecosystem.json

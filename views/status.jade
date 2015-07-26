@@ -24,6 +24,10 @@ block content
             th Match ID
             th Ended
         tbody
+          each match in result.last_added
+            tr
+              td: a(href="/matches/"+match.match_id)= match.match_id
+              td=moment.unix(match.start_time + match.duration).fromNow()
     .col-md-3
       h3 Last Parsed
       table.table#last_parsed
@@ -32,6 +36,10 @@ block content
             th Match ID
             th Ended
         tbody
+          each match in result.last_parsed
+            tr
+              td: a(href="/matches/"+match.match_id)= match.match_id
+              td=moment.unix(match.start_time + match.duration).fromNow()
     .col-md-3
       h3 Queue
       table.table
@@ -46,32 +54,33 @@ block content
               td(id="kue_"+key)=val
 
 append footer_assets
-  script(src="/socket.io/socket.io.js")
-  script.
-    var data = !{JSON.stringify(result)}
-    statusHandler(data);
-    var socket = io.connect();
-    socket.on('status', statusHandler);
-    function statusHandler(data){
-    console.log(data);
-    for (var prop in data) {
-      if (prop==="kue"){
-        for (var key in data[prop]){
-            $("#kue_" + key).html(data[prop][key]);
+  //-
+    script(src="/socket.io/socket.io.js")
+    script.
+      var data = !{JSON.stringify(result)}
+      statusHandler(data);
+      var socket = io.connect();
+      socket.on('status', statusHandler);
+      function statusHandler(data){
+      console.log(data);
+      for (var prop in data) {
+        if (prop==="kue"){
+          for (var key in data[prop]){
+              $("#kue_" + key).html(data[prop][key]);
+          }
+        }
+        else if (typeof data[prop] === "object") {
+            $("#" + prop + " tbody").empty();
+            for (var i = 0; i < data[prop].length; i++) {
+            var seqnum = "<td>" + data[prop][i].match_seq_num + "</td>";
+            var match_id = "<td><a href='/matches/" + data[prop][i].match_id + "'>" + data[prop][i].match_id + "</a></td>";
+            var time = "<td>"+ moment.unix(data[prop][i].start_time + data[prop][i].duration).fromNow() + "</td>";
+                $("<tr>" + match_id + time + "</tr>").appendTo($("#" + prop + " tbody"));
+            }
+            formatHtml();
+        }
+        else {
+            $("#" + prop).html(data[prop]);
         }
       }
-      else if (typeof data[prop] === "object") {
-          $("#" + prop + " tbody").empty();
-          for (var i = 0; i < data[prop].length; i++) {
-          var seqnum = "<td>" + data[prop][i].match_seq_num + "</td>";
-          var match_id = "<td><a href='/matches/" + data[prop][i].match_id + "'>" + data[prop][i].match_id + "</a></td>";
-          var time = "<td>"+ moment.unix(data[prop][i].start_time + data[prop][i].duration).fromNow() + "</td>";
-              $("<tr>" + match_id + time + "</tr>").appendTo($("#" + prop + " tbody"));
-          }
-          formatHtml();
       }
-      else {
-          $("#" + prop).html(data[prop]);
-      }
-    }
-    }

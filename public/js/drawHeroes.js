@@ -1,4 +1,4 @@
-module.exports =    function drawHeroes(data) {
+module.exports = function drawHeroes(data) {
         $('#heroes').dataTable({
             "searching": false,
             "paging": true,

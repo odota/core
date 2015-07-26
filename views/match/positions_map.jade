@@ -5,9 +5,8 @@
       img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 
   .col-md-5
-    h2 Positions
-      br
-      small Hover over table cell for map
+    h2 Positions 
+      small Hover on cell for map
     .table-responsive
       table.table.table-hover
         thead
@@ -22,29 +21,26 @@
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
             tr(class = player.isRadiant ? "success" : "danger")
-              td.hero
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
+              +hero_td(player)
               td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
               td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
               td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
               
   script.
+    var width = document.getElementById('map').clientWidth;
     var heatmap = h337.create({
       container: document.getElementById('map'),
-      radius: 15
+      radius: 15*(width/600)
     });
 
     // scale points by 600/127 units to fit to size of map
     // offset points by 25 units to increase visibility
     var posData = !{JSON.stringify(match.posData)}
-    adjustHeatmapData(posData, document.getElementById('map').clientWidth/127, null, 25);
+    adjustHeatmapData(posData, width/127, null, 25);
 
     $(".activate").on("mouseover", function(){
       var pData = posData[Number($(this).attr('data-index'))]
       var data = pData[$(this).attr('data-type')];
+      console.log("mouseover", pData, data);
       heatmap.setData(data);
-      heatmap.repaint();
     })

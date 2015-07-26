@@ -3,17 +3,17 @@ var fs = require('fs');
 var getReplayUrl = require('./getReplayUrl');
 var request = require('request');
 var domain = require('domain');
-var JSONStream = require('JSONStream');
-//var JSONStream = require('json-stream');
+var ndjson = require('ndjson');
 var constants = require('./constants.json');
 var utility = require('./utility');
 var updatePlayerCaches = require('./updatePlayerCaches');
 var r = require('./redis');
 var redis = r.client;
 var moment = require('moment');
+var config = require('./config');
 // do you want to print debugging statements for processing multi-kill-streaks?
 var print_multi_kill_streak_debugging = false;
-module.exports = function processParse(job, cb) {
+module.exports = function processParse(job, ctx, cb) {
     var match_id = job.data.payload.match_id;
     var match = job.data.payload;
     console.time("parse " + match_id);
@@ -28,10 +28,11 @@ module.exports = function processParse(job, cb) {
             //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
             //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
             //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+            console.log("replay too old, url expired");
             return cb(err);
         }
         else {
-            runParse(job, function(err, parsed_data) {
+            runParse(job, ctx, function(err, parsed_data) {
                 if (err) {
                     console.log("match_id %s, error %s", match_id, err);
                     return cb(err);
@@ -39,12 +40,11 @@ module.exports = function processParse(job, cb) {
                 match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
-                updateDb();
+                return updateDb();
             });
         }
 
         function updateDb() {
-            job.update();
             //run aggregations on parsed data fields
             updatePlayerCaches(match, {
                 type: "parsed"
@@ -56,11 +56,11 @@ module.exports = function processParse(job, cb) {
     });
 };
 
-function runParse(job, cb) {
+function runParse(job, ctx, cb) {
     console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
     var inStream;
     var outStream;
-    var exited;
+    var exited = false;
     var error = "incomplete";
     var d = domain.create();
     //parse state
@@ -73,14 +73,15 @@ function runParse(job, cb) {
     var teamfights = [];
     var intervalState = {};
     var teamfight_cooldown = 15;
-    var parsed_data = utility.getParseSchema();
-    //event handlers
+    var parsed_data;
+    //capture events streamed from parser and set up state for post-processing
+    //these events are generally not pushed to event buffer (except hero_log)
     var streamTypes = {
         "state": function(e) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            console.log(e);
+            //console.log(e);
         },
         "hero_log": function(e) {
             //get hero name by id
@@ -94,25 +95,19 @@ function runParse(job, cb) {
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
         },
-        "match_id": function(e) {
-            parsed_data.match_id = e.value;
-        },
         "error": function(e) {
-            error = e.key;
-            console.log(e);
-        },
-        "exit": function(e) {
-            error = e.key;
-            console.log(e);
+            error = "Error from parser: " + e.key;
         },
         "progress": function(e) {
             job.progress(e.key, 100);
-            //console.log(e);
+        },
+        "epilogue": function() {
+            error = null;
         }
     };
     var types = {
-        "epilogue": function() {
-            error = false;
+        "match_id": function(e) {
+            parsed_data.match_id = e.value;
         },
         "steam_id": function(e) {
             populate(e);
@@ -191,9 +186,8 @@ function runParse(job, cb) {
             }
         },
         "kills": function(e) {
-            getSlot(e);
             /*
-            //logging objectives via combat log
+            //log objectives via combat log
             var logs = ["_tower", "_rax", "_fort", "_roshan"];
             var isObjective = logs.some(function(s) {
                 return (e.key.indexOf(s) !== -1 && !e.target_illusion);
@@ -203,10 +197,21 @@ function runParse(job, cb) {
                 parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
             }
             */
+            //count kill by this unit
+            getSlot(e);
             if (e.target_hero && !e.target_illusion) {
                 //log this hero kill
                 e.type = "kills_log";
                 populate(e);
+                //reverse and count as killed by
+                //if the killed unit isn't a hero, we don't care about killed_by
+                var r = {
+                    time: e.time,
+                    unit: e.key,
+                    key: e.unit,
+                    type: "killed_by"
+                };
+                getSlot(r);
                 //check teamfight state
                 curr_teamfight = curr_teamfight || {
                     start: e.time - teamfight_cooldown,
@@ -231,31 +236,21 @@ function runParse(job, cb) {
                 curr_teamfight.last_death = e.time;
                 curr_teamfight.deaths += 1;
             }
-            //reverse and log killed by
-            //if the damaged unit isn't a hero, it won't be counted (no slot)
-            //the key is a source, so it should be a hero
-            var r = {
-                time: e.time,
-                unit: e.key,
-                key: e.unit,
-                type: "killed_by"
-            };
-            getSlot(r);
         },
         "damage": function(e) {
             //count damage dealt to unit
             getSlot(e);
-            //reverse and count as damage taken (see comment for reversed kill)
-            var r = {
-                time: e.time,
-                unit: e.key,
-                key: e.unit,
-                value: e.value,
-                type: "damage_taken"
-            };
-            getSlot(r);
             //check if this damage happened to a real hero
             if (e.target_hero && !e.target_illusion) {
+                //reverse and count as damage taken (see comment for reversed kill)
+                var r = {
+                    time: e.time,
+                    unit: e.key,
+                    key: e.unit,
+                    value: e.value,
+                    type: "damage_taken"
+                };
+                getSlot(r);
                 //count a hit on a real hero with this inflictor
                 var h = {
                     time: e.time,
@@ -373,63 +368,40 @@ function runParse(job, cb) {
         var fileName = job.data.payload.fileName;
         var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
         console.log("target:%s", target);
-        inStream = request(target);
-        outStream = JSONStream.parse();
-        inStream.pipe(outStream);
-        /*
-        //following is currently run by external process
-        parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.one-jar.jar"
-    ], {
-            //we want want to ignore stderr if we're not dumping it to /dev/null from clarity already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
+        inStream = request({
+            url: target
         });
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
+        outStream = ndjson.parse();
+        outStream.on('data', handleStream);
+        outStream.on('end', function() {
+            exit(error);
+        });
+        inStream.pipe(outStream);
+    });
+
+    function exit(err) {
+        if (exited) {
+            console.error(err);
+            return;
         }
-        else if (url) {
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                outStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }));
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    outStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }));
-                }
+        exited = true;
+        //exit the domain to go back to regular error handling
+        d.exit();
+        console.log("exiting %s with error %s", job.data.payload.match_id, err);
+        if (err && config.NODE_ENV !== "test" && true) {
+            //do this if we are running one thread per worker
+            //gracefully shut down worker and let master respawn a new one
+            ctx.pause(1000, function() {
+                console.log("shutting down worker");
+                process.exit(1);
             });
-            bz = spawn("bunzip2");
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
+        }
+        if (err) {
+            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
         }
         else {
-            throw new Error("no parse input");
-        }
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parser.on('exit', function(code) {
-            outStream.write(JSON.stringify({
-                "type": "exit",
-                "key": code
-            }));
-        });
-        parser.stdout.pipe(outStream);
-        */
-        outStream.on('root', handleStream);
-        outStream.on('end', function() {
-            console.log("beginning post-processing");
-            var message = "time spent on post-processing";
+            parsed_data = utility.getParseSchema();
+            var message = "time spent on post-processing match " + job.data.payload.match_id;
             console.time(message);
             console.log("processing event buffer...");
             processEventBuffer();
@@ -437,69 +409,27 @@ function runParse(job, cb) {
             processTeamfights();
             console.log("processing multi-kill-streaks...");
             processMultiKillStreaks();
-            //compute data that requires all parsed players
-            //pick order, radiant advantage per minute
-            //determine pick order based on last time value of hero_log
-            //determine a pick_time for each parsed player
-            //duplicate, sort
-            //create hash of indices by iterating through sorted array and mapping original index to order
-            //insert back into originals, indexing by player slot
-            var pick_map = {};
-            for (var i = 0; i < parsed_data.players[0].times.length; i++) {
-                var goldtotal = 0;
-                var xptotal = 0;
-                parsed_data.players.forEach(function(p, j) {
-                    //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                    if (j<5) {
-                        goldtotal += p.gold[i];
-                        xptotal += p.xp[i];
-                    }
-                    else {
-                        xptotal -= p.xp[i];
-                        goldtotal -= p.gold[i];
-                    }
-                    p.origIndex = j;
-                    p.pick_time = p.hero_log[p.hero_log.length - 1].time;
-                });
-                parsed_data.radiant_gold_adv.push(goldtotal);
-                parsed_data.radiant_xp_adv.push(xptotal);
-            }
-            var sorted = parsed_data.players.slice().sort(function(a, b) {
-                return a.pick_time - b.pick_time;
-            });
-            sorted.forEach(function(player, i) {
-                pick_map[player.origIndex] = i + 1;
-            });
-            parsed_data.players.forEach(function(player) {
-                player.pick_order = pick_map[player.origIndex];
-            });
+            console.log("processing all players data");
+            processAllPlayers();
             console.timeEnd(message);
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
-            exit(error);
-        });
-    });
-
-    function exit(err) {
-        if (!exited) {
-            exited = true;
-            //TODO: graceful shutdown
-            //best is probably to have processparse running via cluster threads
-            //then we can just crash this thread and master can respawn a new worker
-            //we need to use kue's pause to stop processing jobs, then crash the thread
-            console.log(err);
-            cb(err.message || err, parsed_data);
         }
+        return cb(err ? (err.message || err.code || err) : null, parsed_data);
     }
 
     function handleStream(e) {
         if (streamTypes[e.type]) {
             streamTypes[e.type](e);
         }
-        else {
+        else if (types[e.type]) {
             entries.push(e);
+        }
+        else {
+            //no event handler for this type, don't push it to event buffer
+            console.log("no event handler for type %s", e.type);
         }
     }
 
@@ -507,15 +437,49 @@ function runParse(job, cb) {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
+            //we can only do this once we have a complete event buffer since the game start time is sent at some point in the stream
             e.time -= game_zero;
-            if (types[e.type]) {
-                types[e.type](e);
-            }
-            else {
-                //no event handler for this type
-                console.log("no event handler for type %s", e.type);
-            }
+            types[e.type](e);
         }
+    }
+
+    function processAllPlayers() {
+        //compute data that requires all parsed players
+        //pick order, radiant advantage per minute
+        //determine pick order based on last time value of hero_log
+        //determine a pick_time for each parsed player
+        //duplicate, sort
+        //create hash of indices by iterating through sorted array and mapping original index to order
+        //insert back into originals, indexing by player slot
+        var pick_map = {};
+        for (var i = 0; i < parsed_data.players[0].times.length; i++) {
+            var goldtotal = 0;
+            var xptotal = 0;
+            parsed_data.players.forEach(function(p, j) {
+                //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
+                if (j < 5) {
+                    goldtotal += p.gold[i];
+                    xptotal += p.xp[i];
+                }
+                else {
+                    xptotal -= p.xp[i];
+                    goldtotal -= p.gold[i];
+                }
+                p.origIndex = j;
+                p.pick_time = p.hero_log.length ? p.hero_log[p.hero_log.length - 1].time : Number.MAX_VALUE;
+            });
+            parsed_data.radiant_gold_adv.push(goldtotal);
+            parsed_data.radiant_xp_adv.push(xptotal);
+        }
+        var sorted = parsed_data.players.slice().sort(function(a, b) {
+            return a.pick_time - b.pick_time;
+        });
+        sorted.forEach(function(player, i) {
+            pick_map[player.origIndex] = i + 1;
+        });
+        parsed_data.players.forEach(function(player) {
+            player.pick_order = pick_map[player.origIndex];
+        });
     }
 
     function processTeamfights() {

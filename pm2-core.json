@@ -1,0 +1,36 @@
+{
+   "apps": [
+      {
+         "script": "skill.js"
+      },
+      {
+         "script": "mmr.js"
+      },
+      {
+         "script": "parseManager.js"
+      },
+      {
+         "script": "scanner.js"
+      },
+      {
+         "script": "worker.js"
+      },
+      {
+         "script": "fullhistory.js"
+      },
+      {
+         "script": "web.js",
+         "env": {
+            "WEB_PORT": 5000
+         },
+         "exec_mode": "cluster",
+         "instances": 0
+      },
+      {
+         "script": "parser.js",
+         "env": {
+            "PARSER_PORT": 5200
+         }
+      }
+   ]
+}

@@ -4,7 +4,7 @@ block match_content
   .row
     .col-md-8
       h2 Chat
-      table.table.table-hover.table-responsive
+      table.table.table-hover.table-responsive.table-condensed
         thead
           tr
             th Player
@@ -15,13 +15,9 @@ block match_content
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
-            - var slot_color = constants.player_colors[p.player_slot]
+            - p.personaname = p.personaname || entry.unit
             tr(class=p.isRadiant ? "success" : "danger")
-              td 
-                if hero
-                  img(src=hero.img, title=hero.localized_name, style="border-left-color:#{slot_color}").player-color
-                else
-                  =entry.unit
+              +hero_td(p)
               td.format-seconds(data-format-seconds=entry.time)=entry.time
               td=entry.key
     .col-md-4

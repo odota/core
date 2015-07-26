@@ -22,11 +22,7 @@ block match_content
            tr(class = player.isRadiant ? "success" : "danger")
              - var hero = constants.heroes[player.hero_id]
              - var p = player.parsedPlayer
-             td.hero
-              if hero
-                img(src=hero.img, title=hero.localized_name)
-              else
-                =player.hero_id
+             +hero_td(player)
              td #{p.hero_kills || "-"}
              td #{p.lane_kills || "-"}
              td #{p.neutral_kills || "-"}
@@ -47,11 +43,7 @@ block match_content
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
             tr(class = player.isRadiant ? "success" : "danger")
-              td.hero
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
+              +hero_td(player)
               - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                 td #{p.lh[i/60]}
       hr
@@ -72,13 +64,9 @@ block match_content
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id
-                    each val, key in constants.gold_reasons
-                      td #{p.gold_reasons[key] || "-"}
+                  +hero_td(player)
+                  each val, key in constants.gold_reasons
+                    td #{p.gold_reasons[key] || "-"}
     
         .col-md-4.table-responsive
           h3 XP
@@ -95,13 +83,9 @@ block match_content
                 tr(class = player.isRadiant ? "success" : "danger")
                   - var hero = constants.heroes[player.hero_id]
                   - var p = player.parsedPlayer
-                  td.hero
-                    if hero
-                      img(src=hero.img, title=hero.localized_name)
-                    else
-                      =player.hero_id
-                    each val, key in constants.xp_reasons
-                      td #{p.xp_reasons[key] || "-"}
+                  +hero_td(player)
+                  each val, key in constants.xp_reasons
+                    td #{p.xp_reasons[key] || "-"}
       h3 Income Sources
       #chart-gold-breakdown
       hr

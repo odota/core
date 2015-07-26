@@ -4,6 +4,7 @@ var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 module.exports = function getStatus(cb) {
+    console.time('status');
     async.series({
         matches: function(cb) {
             db.matches.count({}, cb);
@@ -58,11 +59,13 @@ module.exports = function getStatus(cb) {
                 cb(err, result.length);
             });
         },
+        /*
         requested_last_day: function(cb) {
             redis.keys("requested_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
+        */
         last_added: function(cb) {
             db.matches.find({}, {
                 sort: {
@@ -106,5 +109,8 @@ module.exports = function getStatus(cb) {
                 });
             });
         }
-    }, cb);
+    }, function(err, results){
+        console.timeEnd('status');
+        cb(err, results);
+    });
 };

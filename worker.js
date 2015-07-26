@@ -1,6 +1,4 @@
 var processApi = require('./processApi');
-var processFullHistory = require('./processFullHistory');
-var processMmr = require('./processMmr');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
@@ -8,7 +6,7 @@ var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
 var domain = require('domain');
 var async = require('async');
-
+var numCPUs = require('os').cpus().length;
 //don't need these handlers when kue supports job ttl in 0.9?
 //ttl fails jobs rather than requeuing them
 jobs.watchStuckJobs();
@@ -32,14 +30,15 @@ var d = domain.create();
 d.on('error', function(err) {
     console.log(err.stack);
     clearActiveJobs(function(err2) {
-        process.exit(err2 || err || 1);
+        process.exit(1);
     });
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
+    //updatenames queues an api request
     //jobs.process('api', processApi);
-    jobs.process('mmr', processMmr);
-    jobs.process('fullhistory', processFullHistory);
+    //process requests (api call, waits for parse to complete)
+    jobs.process('request', numCPUs, processApi);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
@@ -60,21 +59,21 @@ function invokeInterval(func, delay) {
 }
 
 function clearActiveJobs(cb) {
-        jobs.active(function(err, ids) {
-            if (err) {
-                return cb(err);
-            }
-            async.mapSeries(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.log("cleared active jobs");
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (job) {
+                    console.log("requeued job %s", id);
+                    job.inactive();
+                }
                 cb(err);
             });
+        }, function(err) {
+            console.log("cleared active jobs");
+            cb(err);
         });
-    }
+    });
+}

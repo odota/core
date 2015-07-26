@@ -35,7 +35,7 @@ function generateJob(type, payload) {
         },
         "api_history": function() {
             return {
-                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : ""),
+                url: api_url + "/IDOTA2Match_570/GetMatchHistory/V001/?key=" + api_key + (payload.account_id ? "&account_id=" + payload.account_id : "") + (payload.matches_requested ? "&matches_requested=" + payload.matches_requested : "") + (payload.hero_id ? "&hero_id=" + payload.hero_id : "") + (payload.leagueid ? "&league_id=" + payload.leagueid : ""),
                 title: [type, payload.account_id].join(),
                 type: "api",
                 payload: payload
@@ -91,16 +91,6 @@ function generateJob(type, payload) {
             };
         },
         "parse": function() {
-            return {
-                title: [type, payload.match_id].join(),
-                type: type,
-                fileName: payload.fileName,
-                url: payload.url,
-                payload: payload
-            };
-        },
-        "request_parse": function() {
-            payload.attempts = 1;
             return {
                 title: [type, payload.match_id].join(),
                 type: type,

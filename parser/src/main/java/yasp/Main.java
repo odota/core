@@ -566,8 +566,6 @@ Integer timeIdx;
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
 		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
-		//flush the log if it was buffered	
-		es.flush();
 		long tMatch = System.currentTimeMillis() - tStart;
 		System.err.format("total time taken: %s\n", (tMatch) / 1000.0);
 	}

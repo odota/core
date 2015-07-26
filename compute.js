@@ -349,6 +349,8 @@ function renderMatch(match) {
             player.hero_id = p.hero_id;
             player.player_slot = p.player_slot;
             player.isRadiant = isRadiant(p);
+            player.personaname = p.personaname;
+            player.account_id = p.account_id;
             player.participate = player.deaths > 0 || player.damage > 0;
             p.teamfights_participated = p.teamfights_participated || 0;
             p.teamfights_participated += player.participate ? 1 : 0;

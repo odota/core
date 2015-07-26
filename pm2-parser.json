@@ -1,0 +1,10 @@
+{
+   "apps": [
+      {
+         "script": "parser.js",
+         "env": {
+            "PARSER_PORT":5200
+         }
+      }
+   ]
+}
