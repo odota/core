@@ -49,23 +49,24 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //do aggregations on fields based on type		
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
-                        //add match to array
-                        var ids = {};
                         //deduplicate matches by id
+                        var ids = {};
                         cache.data.forEach(function(m) {
                             ids[m.match_id] = m;
                         });
                         //reduce match for display
-                        //if we want to cache full data, we don't want to get rid of player.parsedPlayer
+                        //TODO if we want to cache full data, we don't want to get rid of player.parsedPlayer
                         reduceMatch(match_copy);
                         var orig = ids[match_copy.match_id];
                         if (!orig) {
-                            orig = match_copy;
+                            ids[match_copy.match_id] = match_copy;
                         }
                         else {
-                            //update parse_status if it is 2
+                            //check if we can update old values
+                            //use new parse status if 2
                             orig.parse_status = match_copy.parse_status === 2 ? match_copy.parse_status : orig.parse_status;
-                            //if we want to cache full data, we need to update orig.players, but we don't want to overwrite a parsed version with an unparsed one
+                            //use new players[] if parse_status===2
+                            orig.players = match_copy.parse_status === 2 ? match_copy.players : orig.players;
                         }
                         cache.data = [];
                         for (var key in ids) {
