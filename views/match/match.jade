@@ -20,8 +20,7 @@ block content
       table.table.table-condensed
         thead
           tr
-            th
-              abbr(title=constants.tooltips.status) Status
+            //th: abbr(title=constants.tooltips.status) Status
             th Mode
             th Region
             th Duration
@@ -29,7 +28,7 @@ block content
             th Skill
         tbody
           tr
-            td= constants.parse_status[match.parse_status]
+            //td= constants.parse_status[match.parse_status]
             td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
             td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
