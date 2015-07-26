@@ -2,60 +2,59 @@ extend /layout
 include /mixins/progress_bar
 
 block content
-  .row.match-top 
-    .col-md-1
-      a(href=player.profileurl || "#", target="_blank")
-        if player.avatarmedium
-          img(src='#{player.avatarmedium}').img-thumbnail
-        //else
-          //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
-    .col-md-6
-      h3.inline-header(style="margin-top:0;margin-bottom:4px;") #{player.personaname || player.account_id}
-        small
-          //-
-            a(href="?json=1" title="View as JSON")
-              i.fa.fa-download
-      .lead
-          span.text-info.rating: abbr(title="Solo MMR")
-            i.fa.fa-area-chart
-            | #{player.soloRating || "N/A"}
-          span.text-warning.rating: abbr(title="Party MMR")
-            i.fa.fa-area-chart
-            | #{player.partyRating || "N/A"}
-          span.text-info.rating: abbr(title="Highest Solo MMR")
-            i.fa.fa-star
-            | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
-          span.text-warning.rating: abbr(title="Highest Party MMR")
-            i.fa.fa-star
-            | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
-          if !(player.account_id in trackedPlayers)
-            span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
-              i.fa.fa-eye-slash
-          else
-            span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
-              i.fa.fa-eye
-          if (!player.full_history_time)
-            span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
-              i.fa.fa-exclamation-triangle
-          else
-            span.text-success.rating: abbr(title="Full history has been processed for this user.")
-              i.fa.fa-check
+  .row.match-top
+    .col-md-7.col-sm-9.col-xs-7
+      div(style="display:flex;")
+        a(href=player.profileurl || "#", target="_blank")(style="display:inline-block; margin-right:10px;")
+          if player.avatarmedium
+            img(src='#{player.avatarmedium}').img-thumbnail
+          //else
+            //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
+        div
+          h4(style="margin:0 0 5px 0;")
+            span(style='margin-right: 5px;') #{player.personaname || player.account_id}
+            div(style="display:inline-block;")
+              if !(player.account_id in trackedPlayers)
+                span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
+                  i.fa.fa-eye-slash
+              else
+                span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
+                  i.fa.fa-eye
+              if (!player.full_history_time)
+                span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
+                  i.fa.fa-exclamation-triangle
+              else
+                span.text-success.rating: abbr(title="Full history has been processed for this user.")
+                  i.fa.fa-check
+          .lead(style="font-size:1em")
+              span.text-info.rating: abbr(title="Solo MMR")
+                i.fa.fa-area-chart
+                | #{player.soloRating || "N/A"}
+              span.text-warning.rating: abbr(title="Party MMR")
+                i.fa.fa-area-chart
+                | #{player.partyRating || "N/A"}
+              span.text-info.rating: abbr(title="Highest Solo MMR")
+                i.fa.fa-star
+                | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
+              span.text-warning.rating: abbr(title="Highest Party MMR")
+                i.fa.fa-star
+                | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
         //-
           h4
             span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
             span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
 
-    .col-md-1
+    .col-md-1.col-sm-1.col-xs-2
       if player.cheese
-        i.flaticon-1.medium-cheese(style="display:inline-block")
-        span(style="margin-left:.5em") x#{player.cheese}
-    .col-md-4
-      h3(style="margin-top:0;") Record
-        br
-        small.text-success#win #{player.aggData.win}
-        small -
-        small.text-danger#lose #{player.aggData.lose}
-        small (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
+        div
+          i.flaticon-1.medium-cheese(style="display:inline-block")
+          div(style="margin-left:.5em") x#{player.cheese}
+    .col-md-4.col-sm-2.col-xs-3
+      h4(style="margin-top:0;text-align:center;")
+        span.text-success#win(style="margin:0 4px;") #{(player.aggData.win)}
+        span -
+        span.text-danger#lose(style="margin:0 4px;") #{player.aggData.lose}
+        small.visible-md-inline-block.visible-lg-inline-block(style="font-size:80%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
       +progress_bar(player.aggData.win, player.aggData.games)
 
   .row(style="margin-top:1em;")
