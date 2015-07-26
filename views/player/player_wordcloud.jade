@@ -8,14 +8,16 @@ block playercontent
         small (#{player.aggData.all_word_counts.n} matches)
 
       h3="Words said by this player in all chat"
-      canvas(width=1000, height=800)#mywordcounts
+      #mywordcontainer
+        canvas()#mywordcounts
       
       hr
       +ad("banner2")
       hr
       
       h3="Words read by this player in all chat"
-      canvas(width=1000, height=800)#allwordcounts
+      #allwordcontainer
+        canvas()#allwordcounts
         
 append footer_assets
 
@@ -38,18 +40,21 @@ append footer_assets
       var word_list = [];
       var max = 0;
       
-    for (var key in word_counts){
-      
-        if (!isStopWord(key)){
-          word_list.push([key, word_counts[key]]);
-          if (word_counts[key] > max) {
-            max = word_counts[key];
+      for (var key in word_counts){
+          if (!isStopWord(key)){
+            word_list.push([key, word_counts[key]]);
+            if (word_counts[key] > max) {
+              max = word_counts[key];
+            }
           }
         }
-      }
+      var element = document.getElementById(cloud_dom_id);
+      var parent = element.parentElement;
+      element.width = parent.clientWidth;
+      element.height = parent.clientWidth*0.75;
       
       //howard's implementation
-      var max_size = 600;
+      var max_size = element.clientWidth/3;
       var min_size = 10;
       var scale = max_size/Math.log(max);
       word_list.forEach(function(w){
@@ -74,10 +79,10 @@ append footer_assets
       word_list = word_list.sort(function(a,b){
         return b[1] - a[1];
       });
-      console.log(word_list);
-
       
-      WordCloud(document.getElementById(cloud_dom_id), { list: word_list } );
+      console.log(word_list);
+      
+      WordCloud(element, { list: word_list } );
     }
 
     var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};
