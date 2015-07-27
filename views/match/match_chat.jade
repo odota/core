@@ -4,7 +4,7 @@ block match_content
   .row
     .col-md-8
       h2 Chat
-      table.table.table-hover.table-responsive.table-condensed
+      table.table.table-hover.table-condensed
         thead
           tr
             th Player
@@ -19,7 +19,7 @@ block match_content
             tr(class=p.isRadiant ? "success" : "danger")
               +hero_td(p)
               td.format-seconds(data-format-seconds=entry.time)=entry.time
-              td=entry.key
+              td(style="word-break: break-all;")=entry.key
     .col-md-4
       .row
         .col-md-12
