@@ -109,9 +109,9 @@ Developer's Guide
 * Player/match caching: We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
 * A client side bundle of JS is built (and minified in production) using Webpack.  If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
-* Tools recommended for developers on the command line: `sudo npm install -g mocha pm2`
+* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
     * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
-    * `pm2` is used to manage services.  Use `pm2 {filename}` in order to run individual services.
+    * `foreman` is used to run services individually.  The executable name is `nf`.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
 ```
