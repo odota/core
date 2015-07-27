@@ -42,16 +42,17 @@ inStream.on('data', function(data) {
 });
 inStream.on('end', function() {
     console.log(bb);
-    bb.offset = 0;
+    //prepare to read buffer
+    bb.flip();
     //first 8 bytes=header
-    var header = bb.readString(8);
+    var header = readString(8);
     console.log("header: %s", header);
     if (header.toString() !== "PBDEMS2\0") {
         throw "invalid header";
     }
     //next 8 bytes: appear to be two int32s related to the size of the demo file
-    var size1 = bb.readUint32();
-    var size2 = bb.readUint32();
+    var size1 = readUint32();
+    var size2 = readUint32();
     console.log(size1, size2);
     var stop = false;
     var count = 0;
@@ -74,8 +75,7 @@ inStream.on('end', function() {
         var command = readVarint32();
         var tick = readVarint32();
         var size = readVarint32();
-        var buf = bb.slice(bb.offset, bb.offset + size).toBuffer();
-        bb.offset += size;
+        var buf = readBytes(size);
         console.log(command, tick, size);
         // Extract the type and compressed flag out of the command
         //msgType: = int32(command & ^ dota.EDemoCommands_DEM_IsCompressed)
@@ -122,6 +122,7 @@ inStream.on('end', function() {
         var msg = {
             tick: tick,
             typeId: msgType,
+            size: size,
             isCompressed: msgCompressed,
             data: buf
         };
@@ -130,37 +131,24 @@ inStream.on('end', function() {
     }
 
     function readVarint32() {
-        var tmp = readByte();
-        if (tmp >= 0) {
-            return tmp;
-        }
-        var result = tmp & 0x7f;
-        if ((tmp = readByte()) >= 0) {
-            result |= tmp << 7;
-        }
-        else {
-            result |= (tmp & 0x7f) << 7;
-            if ((tmp = readByte()) >= 0) {
-                result |= tmp << 14;
-            }
-            else {
-                result |= (tmp & 0x7f) << 14;
-                if ((tmp = readByte()) >= 0) {
-                    result |= tmp << 21;
-                }
-                else {
-                    result |= (tmp & 0x7f) << 21;
-                    result |= (tmp = readByte()) << 28;
-                    if (tmp < 0) {
-                        throw "malformed varint detected";
-                    }
-                }
-            }
-        }
-        return result;
+        return bb.readVarint32();
+    }
+
+    function readString(size) {
+        return bb.readString(size);
+    }
+
+    function readUint32() {
+        return bb.readUint32();
     }
 
     function readByte() {
         return bb.readByte();
+    }
+
+    function readBytes(size) {
+        var buf = bb.slice(bb.offset, bb.offset + size).toBuffer();
+        bb.offset += size;
+        return buf;
     }
 });
