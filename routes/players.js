@@ -301,7 +301,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             var tm = teammates[id];
             id = Number(id);
             //don't include if anonymous or if few games together
-            if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && tm.games >= 5) {
+            if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.with_games >= 5 || tm.against_games >=3)) {
                 teammates_arr.push(tm);
             }
         }
