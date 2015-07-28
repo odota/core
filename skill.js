@@ -58,7 +58,8 @@ function getPageData(start, options, cb) {
             if (!results[match_id]) {
                 tryInsertSkill({
                     match_id: match_id,
-                    players: m.players,
+                    //don't set as players to avoid overwriting match details
+                    player_ids: m.players,
                     skill: options.skill
                 }, 0);
                 //don't wait for callback, since it may need to be retried
