@@ -32,6 +32,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             console.log("player cache hit %s", player.account_id);
             //var filtered = filter(cache.data, options.query.js_select);
             //var aggData = aggregator(filtered, null);
+            //unpack cache.data into an array
+            var arr = [];
+            for (var key in cache.data){
+                arr.push(cache.data[key]);
+            }
+            cache.data = arr;
             processResults(err, {
                 data: cache.data,
                 aggData: cache.aggData,
@@ -67,9 +73,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
             if (!cache && !Object.keys(options.query.js_select).length && player.account_id !== constants.anonymous_account_id) {
+                //pack data into hash for cache
+                var ids = {};
+                results.data.forEach(function(m){
+                    ids[m.match_id] = m;
+                });
                 //save cache
                 cache = {
-                    data: results.data,
+                    data: ids,
                     aggData: results.aggData
                 };
                 console.log("saving player cache %s", player.account_id);

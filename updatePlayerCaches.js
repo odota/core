@@ -50,17 +50,12 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 //do aggregations on fields based on type		
                                 cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                             }
-                            //deduplicate matches by id
-                            var ids = {};
-                            cache.data.forEach(function(m) {
-                                ids[m.match_id] = m;
-                            });
                             //reduce match for display
                             //TODO if we want to cache full data, we don't want to get rid of player.parsedPlayer
                             reduceMatch(match_copy);
-                            var orig = ids[match_copy.match_id];
+                            var orig = cache.data[match_copy.match_id];
                             if (!orig) {
-                                ids[match_copy.match_id] = match_copy;
+                                cache.data[match_copy.match_id] = match_copy;
                             }
                             else {
                                 //check if we can update old values
@@ -69,18 +64,12 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 //use new players[] if parse_status===2
                                 orig.players = match_copy.parse_status === 2 ? match_copy.players : orig.players;
                             }
-                            cache.data = [];
-                            for (var key in ids) {
-                                cache.data.push(ids[key]);
-                            }
                         }
                         else {
-                            //don't add to cache.data if inserting skill data, just loop through and update
-                            cache.data.forEach(function(m) {
-                                if (m.match_id === match_copy.match_id) {
-                                    m.skill = match_copy.skill;
-                                }
-                            });
+                            //update only, if type===skill
+                            if (cache.data[match_copy.match_id]) {
+                                cache.data[match_copy.match_id].skill = match_copy.skill;
+                            }
                         }
                         redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                     }
@@ -110,7 +99,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return cb(err);
                 }
                 //clear the cache for this match
-                redis.del("match:" + match.match_id, function(err){
+                redis.del("match:" + match.match_id, function(err) {
                     return cb(err, doc);
                 });
             });
