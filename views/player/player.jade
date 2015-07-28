@@ -48,15 +48,17 @@ block content
             span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
             span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
 
-    .col-xs-3
-      h4(style="margin-top:0;text-align:center;")
+    .col-xs-3(style='text-align:center;')
+      div(style="display:inline-block;margin-top:0;font-size:19px;")
         span.text-success#win(style="margin:0 4px;") #{(player.aggData.win)}
         span -
         span.text-danger#lose(style="margin:0 4px;") #{player.aggData.lose}
-        small.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA, #{player.abandons} abandoned)
+        span -
+        small(style="margin:0 4px;font-size:100%") #{player.abandons}
+        span.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA)
       +progress_bar(player.aggData.win, player.aggData.games)
 
-  .row(style="margin-top:1em;")
+  .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs

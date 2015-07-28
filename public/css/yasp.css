@@ -88,6 +88,10 @@ h3 img {
     text-shadow: 0 0 1px yellow;
 }
 
+.player-tabs .nav > li > a {
+    padding: 5px 10px;
+}
+
 
 /* Cheese Goal Bar */
 
