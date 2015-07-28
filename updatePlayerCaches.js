@@ -12,7 +12,7 @@ var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //insert the match into db, then based on the existing document determine whether to do aggregations
     db.matches.findAndModify({
-        match_id: Number(match.match_id)
+        match_id: match.match_id
     }, {
         $set: match
     }, {
