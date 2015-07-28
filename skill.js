@@ -4,12 +4,13 @@ var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var constants = require("./constants.json");
+var updatePlayerCaches = require('./updatePlayerCaches');
 var results = {};
 var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(4 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(2 * steam_hosts.length, api_keys.length);
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
 var permute = [];
@@ -57,6 +58,7 @@ function getPageData(start, options, cb) {
             if (!results[match_id]) {
                 tryInsertSkill({
                     match_id: match_id,
+                    players: m.players,
                     skill: options.skill
                 }, 0);
                 //don't wait for callback, since it may need to be retried
@@ -78,32 +80,26 @@ function getPageData(start, options, cb) {
 
 function tryInsertSkill(data, retries) {
     var match_id = data.match_id;
-    var skill = data.skill;
     if (retries > 3) {
         delete results[match_id];
         return;
     }
     results[match_id] = 1;
-    db.matches.update({
-        match_id: match_id
+    updatePlayerCaches({
+        match_id: data.match_id,
+        skill: data.skill
     }, {
-        $set: {
-            skill: skill
-        }
-    }, function(err, num) {
-        if (err) {
-            return console.log(err);
-        }
-        //if num, we modified a match in db
-        if (num) {
-            //TODO since skill data is "added on" it's not saved in player caches
-            //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
-            //cache skill data in redis
+        type: "skill",
+        //pass players in options since we don't want to insert skill players (overwrites details)
+        players: data.players
+    }, function(err) {
+        //TODO pass back something to indicate that db was updated (nModified), so we can decide whether or not to retry, currently we only try once
+        if (!err) {
             added[match_id] = 1;
-            redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, skill);
+            delete results[match_id];
+            return;
         }
         else {
-            //try again later
             return setTimeout(function() {
                 return tryInsertSkill(data, retries + 1);
             }, 60 * 1000);
