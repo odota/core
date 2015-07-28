@@ -35,7 +35,7 @@ function scanSkill() {
         }
         //go through results and update db/caches
         //set limit to prevent running out of memory due to too many dbops
-        async.eachLimit(Object.keys(results), 1000, function(match_id, cb) {
+        async.eachLimit(Object.keys(results), 3000, function(match_id, cb) {
             var data = results[match_id];
             updatePlayerCaches({
                 match_id: data.match_id,
