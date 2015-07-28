@@ -24,6 +24,10 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         if (err) {
             return cb(err);
         }
+        if (options.type==="skill" && !doc){
+            //shortcut, if type is skill and we didn't add skill data, we don't need to do anything else
+            return cb(err);
+        }
         async.each(match.players || options.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
                     //if player cache doesn't exist, skip
