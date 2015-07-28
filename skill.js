@@ -1,4 +1,5 @@
 var utility = require('./utility');
+var invokeInterval = utility.invokeInterval;
 var async = require('async');
 var db = require('./db');
 var r = require('./redis');
@@ -24,6 +25,7 @@ for (var i = 0; i < heroes.length; i++) {
 }
 //permute = [{skill:1,hero_id:1}];
 scanSkill();
+invokeInterval(addSkillData, 10 * 1000);
 
 function scanSkill() {
     async.eachLimit(permute, parallelism, function(object, cb) {
@@ -34,33 +36,39 @@ function scanSkill() {
         if (err) {
             console.log(err);
         }
-        //go through results and update db/caches
-        //set limit to prevent running out of memory due to too many dbops
-        async.eachLimit(Object.keys(results), 5000, function(id, cb) {
-            var data = results[id];
-            //console.log(data);
-            updatePlayerCaches({
-                match_id: data.match_id,
-                skill: data.skill
-            }, {
-                type: "skill",
-                //pass players in options since we don't want to insert skill players (overwrites details)
-                players: data.players
-            }, function(err, doc) {
-                if (doc){
-                    //if doc exists, we modified an existing doc, so we added skill data
-                    added[id]=1;
-                }
-                return cb(err);
-            });
-        }, function(err) {
-            if (err) {
-                console.error(err);
+    }, function(err) {
+        if (err) {
+            console.error(err);
+        }
+        scanSkill();
+    });
+}
+
+function addSkillData(cb) {
+    console.log('adding skill data');
+    //go through results and update db/caches
+    //set limit to prevent running out of memory due to too many dbops
+    async.eachLimit(Object.keys(results), 5000, function(id, cb) {
+        var data = results[id];
+        //console.log(data);
+        updatePlayerCaches({
+            match_id: data.match_id,
+            skill: data.skill
+        }, {
+            type: "skill",
+            //pass players in options since we don't want to insert skill players (overwrites details)
+            players: data.players
+        }, function(err, doc) {
+            if (doc) {
+                //if doc exists, we modified an existing doc, so we added skill data
+                added[id] = 1;
             }
-            //start over
-            results = {};
-            scanSkill();
+            delete results[id];
+            return cb(err);
         });
+    }, function(err) {
+        console.log("completed add pass");
+        return cb(err);
     });
 }
 
@@ -80,14 +88,15 @@ function getPageData(start, options, cb) {
         //data is in data.result.matches
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
-            results[m.match_id] = {
+            var data = {
                 match_id: m.match_id,
                 players: m.players,
                 skill: options.skill
             };
+            results[m.match_id] = data;
             cb();
         }, function(err) {
-            console.log("matches found in pass: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
+            console.log("matches found: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);

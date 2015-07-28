@@ -366,6 +366,20 @@ function max(array) {
 function min(array) {
     return Math.min.apply(null, array);
 }
+
+function invokeInterval(func, delay) {
+    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
+    (function foo() {
+        console.log("running %s", func.name);
+        func(function(err) {
+            if (err) {
+                //log the error, but wait until next interval to retry
+                console.log(err);
+            }
+            setTimeout(foo, delay);
+        });
+    })();
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -381,5 +395,6 @@ module.exports = {
     isSignificant: isSignificant,
     reduceMatch: reduceMatch,
     max: max,
-    min: min
+    min: min,
+    invokeInterval: invokeInterval
 };
