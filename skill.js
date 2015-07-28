@@ -9,7 +9,7 @@ var results = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(3 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(2 * steam_hosts.length, api_keys.length);
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
 var permute = [];
@@ -29,10 +29,32 @@ function scanSkill() {
         //use api_skill
         var start = null;
         getPageData(start, object, cb);
-    }, function() {
-        //start over
-        results = {};
-        scanSkill();
+    }, function(err) {
+        if (err) {
+            console.log(err);
+        }
+        //go through results and update db/caches
+        //set limit to prevent running out of memory due to too many dbops
+        async.eachLimit(Object.keys(results), 1000, function(match_id, cb) {
+            var data = results[match_id];
+            updatePlayerCaches({
+                match_id: data.match_id,
+                skill: data.skill
+            }, {
+                type: "skill",
+                //pass players in options since we don't want to insert skill players (overwrites details)
+                players: data.players
+            }, function(err) {
+                return cb(err);
+            });
+        }, function(err) {
+            if (err) {
+                console.error(err);
+            }
+            //start over
+            results = {};
+            scanSkill();
+        });
     });
 }
 
@@ -53,22 +75,12 @@ function getPageData(start, options, cb) {
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
             var match_id = m.match_id;
-            results[match_id] = 1;
-            var data = {
+            results[match_id] = {
                 match_id: match_id,
                 players: m.players,
                 skill: options.skill
             };
-            updatePlayerCaches({
-                match_id: data.match_id,
-                skill: data.skill
-            }, {
-                type: "skill",
-                //pass players in options since we don't want to insert skill players (overwrites details)
-                players: data.players
-            }, function(err) {
-                return cb(err);
-            });
+            cb();
         }, function(err) {
             console.log("matches found in pass: %s", Object.keys(results).length);
             //repeat until results_remaining===0
