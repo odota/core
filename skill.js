@@ -33,13 +33,7 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        if (err) {
-            console.log(err);
-        }
-    }, function(err) {
-        if (err) {
-            console.error(err);
-        }
+        console.error(err);
         scanSkill();
     });
 }
