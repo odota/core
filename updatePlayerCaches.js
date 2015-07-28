@@ -110,7 +110,9 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return cb(err);
                 }
                 //clear the cache for this match
-                redis.del("match:" + match.match_id, cb);
+                redis.del("match:" + match.match_id, function(err){
+                    return cb(err, doc);
+                });
             });
     });
 };

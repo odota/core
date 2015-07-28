@@ -6,6 +6,7 @@ var redis = r.client;
 var constants = require("./constants.json");
 var updatePlayerCaches = require('./updatePlayerCaches');
 var results = {};
+var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
@@ -35,8 +36,9 @@ function scanSkill() {
         }
         //go through results and update db/caches
         //set limit to prevent running out of memory due to too many dbops
-        async.eachLimit(Object.keys(results), 5000, function(match_id, cb) {
-            var data = results[match_id];
+        async.eachLimit(Object.keys(results), 5000, function(id, cb) {
+            var data = results[id];
+            //console.log(data);
             updatePlayerCaches({
                 match_id: data.match_id,
                 skill: data.skill
@@ -44,7 +46,11 @@ function scanSkill() {
                 type: "skill",
                 //pass players in options since we don't want to insert skill players (overwrites details)
                 players: data.players
-            }, function(err) {
+            }, function(err, doc) {
+                if (doc){
+                    //if doc exists, we modified an existing doc, so we added skill data
+                    added[id]=1;
+                }
                 return cb(err);
             });
         }, function(err) {
@@ -74,15 +80,14 @@ function getPageData(start, options, cb) {
         //data is in data.result.matches
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
-            var match_id = m.match_id;
-            results[match_id] = {
-                match_id: match_id,
+            results[m.match_id] = {
+                match_id: m.match_id,
                 players: m.players,
                 skill: options.skill
             };
             cb();
         }, function(err) {
-            console.log("matches found in pass: %s", Object.keys(results).length);
+            console.log("matches found in pass: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);
