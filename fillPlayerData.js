@@ -66,7 +66,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            if (!cache && !Object.keys(options.query.js_select).length) {
+            if (!cache && !Object.keys(options.query.js_select).length && player.account_id !== constants.anonymous_account_id) {
                 //save cache
                 cache = {
                     data: results.data,

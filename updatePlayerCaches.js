@@ -10,7 +10,6 @@ var redis = r.client;
 var zlib = require('zlib');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
-    var modified = 0;
     //insert the match into db, then based on the existing document determine whether to do aggregations
     db.matches.findAndModify({
         match_id: match.match_id
@@ -80,7 +79,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             cache.data.forEach(function(m) {
                                 if (m.match_id === match_copy.match_id) {
                                     m.skill = match_copy.skill;
-                                    modified+=1;
                                 }
                             });
                         }
@@ -112,9 +110,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return cb(err);
                 }
                 //clear the cache for this match
-                redis.del("match:" + match.match_id, function(err){
-                    return cb(err, modified);
-                });
+                redis.del("match:" + match.match_id, cb);
             });
     });
 };

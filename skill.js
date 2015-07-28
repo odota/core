@@ -88,10 +88,12 @@ function tryInsertSkill(data, retries) {
     results[match_id] = 1;
     updatePlayerCaches(data, {
         type: "skill"
-    }, function(err, num) {
-        //how to determine if modified data (retry or not?)
-        if (!err && !num) {
+    }, function(err) {
+        //TODO pass back something to indicate that db was updated (nModified), so we can decide whether or not to retry, currently we only try once
+        if (!err) {
             added[match_id] = 1;
+            delete results[match_id];
+            return;
         }
         else {
             return setTimeout(function() {
