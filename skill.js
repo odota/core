@@ -58,8 +58,7 @@ function getPageData(start, options, cb) {
             if (!results[match_id]) {
                 tryInsertSkill({
                     match_id: match_id,
-                    //don't set as players to avoid overwriting match details
-                    player_ids: m.players,
+                    players: m.players,
                     skill: options.skill
                 }, 0);
                 //don't wait for callback, since it may need to be retried
@@ -86,8 +85,13 @@ function tryInsertSkill(data, retries) {
         return;
     }
     results[match_id] = 1;
-    updatePlayerCaches(data, {
-        type: "skill"
+    updatePlayerCaches({
+        match_id: data.match_id,
+        skill: data.skill
+    }, {
+        type: "skill",
+        //pass players in options since we don't want to insert skill players (overwrites details)
+        players: data.players
     }, function(err) {
         //TODO pass back something to indicate that db was updated (nModified), so we can decide whether or not to retry, currently we only try once
         if (!err) {

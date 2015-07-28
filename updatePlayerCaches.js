@@ -24,7 +24,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         if (err) {
             return cb(err);
         }
-        async.each(match.players || match.player_ids, function(p, cb) {
+        async.each(match.players || options.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
                     //if player cache doesn't exist, skip
                     var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
