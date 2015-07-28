@@ -30,29 +30,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         };
         if (cache && !Object.keys(options.query.js_select).length) {
             console.log("player cache hit %s", player.account_id);
-            console.time("retrieving skill data");
-            //cache does not contain skill data since it's added after the original insert!
-            //we can do db lookups for skill data (or only go until we hit a match with skill data)
-            //or store skill data in redis for fast lookups?
-            async.each(cache.data, function(match, cb) {
-                redis.get("skill:" + match.match_id, function(err, result) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    if (result) {
-                        match.skill = Number(result);
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.timeEnd("retrieving skill data");
-                //var filtered = filter(cache.data, options.query.js_select);
-                //var aggData = aggregator(filtered, null);
-                processResults(err, {
-                    data: cache.data,
-                    aggData: cache.aggData,
-                    unfiltered: cache.data
-                });
+            //var filtered = filter(cache.data, options.query.js_select);
+            //var aggData = aggregator(filtered, null);
+            processResults(err, {
+                data: cache.data,
+                aggData: cache.aggData,
+                unfiltered: cache.data
             });
         }
         else {
@@ -83,8 +66,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            if (!Object.keys(options.query.js_select).length) {
-                //resave cache
+            if (!cache && !Object.keys(options.query.js_select).length) {
+                //save cache
                 cache = {
                     data: results.data,
                     aggData: results.aggData

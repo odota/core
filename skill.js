@@ -4,6 +4,7 @@ var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var constants = require("./constants.json");
+var updatePlayerCaches = require('./updatePlayerCaches');
 var results = {};
 var added = {};
 var config = require('./config.js');
@@ -57,6 +58,7 @@ function getPageData(start, options, cb) {
             if (!results[match_id]) {
                 tryInsertSkill({
                     match_id: match_id,
+                    players: m.players,
                     skill: options.skill
                 }, 0);
                 //don't wait for callback, since it may need to be retried
@@ -78,32 +80,19 @@ function getPageData(start, options, cb) {
 
 function tryInsertSkill(data, retries) {
     var match_id = data.match_id;
-    var skill = data.skill;
     if (retries > 3) {
         delete results[match_id];
         return;
     }
     results[match_id] = 1;
-    db.matches.update({
-        match_id: match_id
-    }, {
-        $set: {
-            skill: skill
-        }
+    updatePlayerCaches(data, {
+        type: "skill"
     }, function(err, num) {
-        if (err) {
-            return console.log(err);
-        }
-        //if num, we modified a match in db
-        if (num) {
-            //TODO since skill data is "added on" it's not saved in player caches
-            //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
-            //cache skill data in redis
+        //how to determine if modified data (retry or not?)
+        if (!err && !num) {
             added[match_id] = 1;
-            redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, skill);
         }
         else {
-            //try again later
             return setTimeout(function() {
                 return tryInsertSkill(data, retries + 1);
             }, 60 * 1000);
