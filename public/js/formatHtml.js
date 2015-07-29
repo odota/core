@@ -2,14 +2,16 @@ module.exports = function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {
+            //Total: {},
             Radiant: {},
             Dire: {}
         };
         var negatives = {};
         var tbody = $(table).find('tbody');
+        //var target = sums.Total;
         tbody.children().each(function(i, row) {
             row = $(row);
-            var target = (row.hasClass('success')) ? sums.Radiant : sums.Dire;
+            var target = $(row).hasClass("radiant") ? sums.Radiant : sums.Dire;
             //iterate through cells
             row.children().each(function(j, cell) {
                 cell = $(cell);
@@ -39,6 +41,7 @@ module.exports = function formatHtml() {
                     td.addClass('format');
                 }
                 td.text(sum[index]);
+                
                 //mark if this team  "won" this category
                 var other = (key === "Radiant") ? "Dire" : "Radiant";
                 var greaterThan = sum[index] > sums[other][index];
@@ -47,6 +50,7 @@ module.exports = function formatHtml() {
                 if (greaterThan) {
                     td.addClass((key === "Radiant") ? 'success' : 'danger');
                 }
+                
                 tr.append(td);
             }
             tfoot.append(tr);

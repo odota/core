@@ -196,7 +196,7 @@ h3 img {
 }
 
 .player-color {
-    border-left: 10px solid;
+    border-left: 5px solid;
 }
 
 div .dataTables_processing {
@@ -265,8 +265,8 @@ div .dataTables_processing {
 }
 
 .glow {
-    border: 3px solid rgb(86, 180, 239);
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05) inset, 0px 0px 8px rgba(82, 168, 236, 0.6);
+  border: 2px solid rgb(86, 180, 239);
+  border-radius: 10px;
 }
 
 .small-hero-icon {
@@ -325,12 +325,6 @@ td.text-left {
     text-align: left;
 }
 
-.table>thead>tr>th,
-.table>tbody>tr>td {
-    border-bottom: 1px solid grey;
-}
-
-
 /* Use sans-serif on tables*/
 
 
@@ -350,42 +344,6 @@ table tfoot * {
     margin-right: 5px;
 }
 
-
-/* tweak the table success/danger colors */
-
-.success,
-.table>tbody>tr.success>td,
-.table>tbody>tr.success>th,
-.table>tbody>tr>td.success,
-.table>tbody>tr>th.success,
-.table>tfoot>tr.success>td,
-.table>tfoot>tr.success>th,
-.table>tfoot>tr>td.success,
-.table>tfoot>tr>th.success,
-.table>thead>tr.success>td,
-.table>thead>tr.success>th,
-.table>thead>tr>td.success,
-.table>thead>tr>th.success {
-    background-color: #488446;
-}
-
-.danger,
-.table>tbody>tr.danger>td,
-.table>tbody>tr.danger>th,
-.table>tbody>tr>td.danger,
-.table>tbody>tr>th.danger,
-.table>tfoot>tr.danger>td,
-.table>tfoot>tr.danger>th,
-.table>tfoot>tr>td.danger,
-.table>tfoot>tr>th.danger,
-.table>thead>tr.danger>td,
-.table>thead>tr.danger>th,
-.table>thead>tr>td.danger,
-.table>thead>tr>th.danger {
-    background-color: #712C2C;
-}
-
-
 /*make c3 show up better on dark background*/
 
 .c3 {
@@ -403,4 +361,10 @@ table tfoot * {
 .c3-axis-y-label,
 .c3-legend-item {
     fill: rgb(199, 199, 199);
+}
+
+/* make links take text-success/danger colors*/
+.text-success a,
+.text-danger a {
+    color: inherit;
 }

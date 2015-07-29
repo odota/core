@@ -9,7 +9,7 @@ var redis = require('../redis').client;
 var db = require('../db');
 var matchPages = {
     index: {
-        name: "Basic"
+        name: "Overview"
     },
     performances: {
         name: "Performances"

@@ -16,10 +16,10 @@ block match_content
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
             - p.personaname = p.personaname || entry.unit
-            tr(class=p.isRadiant ? "success" : "danger")
+            tr
               +hero_td(p)
               td.format-seconds(data-format-seconds=entry.time)=entry.time
-              td(style="word-break: break-all;")=entry.key
+              td.text-left(style="word-break: break-all;")=entry.key
     .col-md-4
       .row
         .col-md-12
