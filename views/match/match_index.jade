@@ -22,20 +22,20 @@ block match_content
           +data_table_header(i, match)
             tr
               th Hero
-              th Rating
-              th LV
-              th K
-              th D
-              th A
-              th LH
-              th DN
-              th GOLD
-              th GPM
-              th XPM
-              th HD
-              th TD
-              th HH
-              th Items
+              th: abbr(title="Valve's match making rating") Rating
+              th: abbr(title="Level of hero") LV
+              th: abbr(title="Number of kills by hero") K
+              th: abbr(title="Number of deaths of hero") D
+              th: abbr(title="Number of assists by hero") A
+              th: abbr(title="Number of last hits by hero") LHs
+              th: abbr(title="Number of denied enemy creeps by hero") DN
+              th: abbr(title="Amount of gold amassed") GOLD
+              th: abbr(title="Gold received by hero per minute") GPM
+              th: abbr(title="Experience gained by hero per minute") XPM
+              th: abbr(title="Amount of damage dealt to enemy heroes") HD
+              th: abbr(title="Amount of tower damage dealt") TD
+              th: abbr(title="Amount of health healed") HH
+              th: abbr(title="Items built") Items
           tr(class=player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td
