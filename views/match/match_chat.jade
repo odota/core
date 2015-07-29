@@ -3,8 +3,7 @@ extend match
 block match_content
   .row
     .col-md-8
-      h2 Chat
-      table.table.table-hover.table-condensed
+      +data_table({id:"chat", heading:"Chat"})
         thead
           tr
             th Player
