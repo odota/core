@@ -65,10 +65,9 @@ Tech
 Starting YASP
 ----
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
-* Create .env file with required config values in KEY=VALUE format (see config.js) `touch .env`
+* Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
 * Build `npm run build`
-* The full list of services can be found in the Procfile.  You can run individual microservices using Foreman: `nf start {process name}`.  However, they will all try to start on port 5000 when run individually, so you may need to pass the `-p` argument to set the port explicitly.
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart YASP): `npm run dev`.  Alternatively launch in regular mode: `npm start`
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services.
 
 Sample Data
 ----
@@ -77,19 +76,6 @@ Sample Data
 Developer's Guide
 ----
 * YASP is built using a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
-* The `Procfile` defines the distinct available services.  You can run any of them indvidually using Foreman.  Here is an example `Procfile`:
-```
-web: node index.js
-retriever: node index.js
-parser: node index.js
-worker: node index.js
-parseManager: node index.js
-scanner: node index.js
-proxy: node index.js
-skill: node index.js
-```
-* Notice that all of the services use index.js as an entry point.  `index.js` runs the proper JS file based on the environment variable `ROLE`, or defaults to the JS file with the name of the service.
-* Procfile.dev is identical to Procfile, but runs the services using `nodemon`, so file changes are automatically picked up and restart the server for ease of development.
 * Descriptions of each service:
     * web: This serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
@@ -100,7 +86,7 @@ skill: node index.js
         * The parser produces a stream of JSON objects to STDOUT, which the HTTP server returns to the client.
     * parseManager: This reads Redis to find the currently available list of parse workers.  A single endpoint may appear multiple times (as many cores as it has).
         * This uses the Node cluster module to fork as many workers as there are available parsing cores.
-        * Each one processes requests, request_parse, and parse jobs in Kue.
+        * Each one processes parse jobs in Kue.
         * Processing a job entails:
             * Get the replay URL: `getReplayUrl` takes care of this.  It will refuse to get a URL if match.start_time is older than the replay expire time (7 days).
             * Send a request to a parse worker.
@@ -113,6 +99,8 @@ skill: node index.js
             * `min_players=10`
             * `hero_id=X`
             * By permuting all three skill levels with the list of heroes, we can get up to 500 matches for each combination.
+    * mmr: Processes MMR requests
+    * fullhistory: Processes full history requests
 * Pipeline: Generally parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
     * Request: Requests are processed from the Request page via socket.io.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
@@ -123,10 +111,20 @@ skill: node index.js
 * A client side bundle of JS is built (and minified in production) using Webpack.  If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
 * Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
     * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
-    * `foreman` is used to manage services.  It takes care of reading `.env` and assigning ports to services.  Installing it allows you to run individual services.
+    * `foreman` is used to run services individually.  The executable name is `nf`.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
-
+```
+//constants are currently built pre-run and written to file
+//web requires constants
+//worker requires constants (fullhistory needs to iterate through heroes)
+//parseManager requires constants (processparse needs to map combat log names to hero ids)
+//buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
+//scanner requires buildSets in order to avoid leaking players, retries until available
+//parseManager requires getRetrievers to get replay url, retries until available
+//parseManager requires getParsers, since we need to set concurrency before starting, retries until available
+//retriever, parser, proxy are independent
+```
 History
 ----
 * Project started in August 2014

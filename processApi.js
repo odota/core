@@ -17,7 +17,7 @@ module.exports = function processApi(job, cb) {
         else if (body.response) {
             logger.info("summaries response");
             async.mapSeries(body.response.players, insertPlayer, function(err) {
-                cb(err, body.response.players);
+                return cb(err, body.response.players);
             });
         }
         else if (payload.match_id) {
@@ -27,7 +27,7 @@ module.exports = function processApi(job, cb) {
             for (var prop in payload) {
                 match[prop] = (prop in match) ? match[prop] : payload[prop];
             }
-            job.progress(100, 100, "Received basic match data.");
+            job.progress(0, 100, "Received basic match data.");
             //we want to try to parse this match
             match.parse_status = 0;
             if (match.request) {

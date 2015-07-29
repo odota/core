@@ -8,15 +8,19 @@ block playercontent
         small (#{player.aggData.all_word_counts.n} matches)
 
       h3="Words said by this player in all chat"
-      canvas(width=1000, height=800)#mywordcounts
+      #mywordcontainer
+        canvas()#mywordcounts
       
       hr
       +ad("banner2")
       hr
       
       h3="Words read by this player in all chat"
-      canvas(width=1000, height=800)#allwordcounts
-        
+      #allwordcontainer
+        canvas()#allwordcounts
+      
+      #tooltip
+      
 append footer_assets
 
   script.
@@ -38,32 +42,52 @@ append footer_assets
       var word_list = [];
       var max = 0;
       
-    for (var key in word_counts){
-      
-        if (!isStopWord(key)){
-          word_list.push([key, word_counts[key]]);
-          if (word_counts[key] > max) {
-            max = word_counts[key];
+      for (var key in word_counts){
+          if (!isStopWord(key)){
+            word_list.push([key, word_counts[key]]);
+            if (word_counts[key] > max) {
+              max = word_counts[key];
+            }
           }
         }
-      }
+      var element = document.getElementById(cloud_dom_id);
+      var parent = element.parentElement;
+      element.width = parent.clientWidth;
+      element.height = parent.clientWidth*0.75;
       
-      max = max > 1000 ? 1000 : max;
-      
-      var scale = 300/max;
-
-      //scale the words, min 10, max 500
+      //howard's implementation
+      var max_size = element.clientWidth/5;
+      var min_size = 9;
+      var scale = max_size/Math.log(max);
+      //var scale = max_size/max;
       word_list.forEach(function(w){
-        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 600));
+        //original count for debugging
+        w[2] = w[1];
+        //take the log of each count and scale them up to top_size
+        //use log since words such as "gg" tend to dominate
+        w[1] = Math.max(Math.log(w[1])*scale, min_size);
+        //w[1] = Math.max(w[1]*scale, min_size);
+
       });
+      
+      /*
+        //albert's implementation
+        max = max > 1000 ? 1000 : max;
+        var scale = 300/max;
+        //scale the words, min 10, max 400
+        word_list.forEach(function(w){
+          w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 400));
+        });
+      */
       
       //sort the list to ensure most frequent words get displayed
       word_list = word_list.sort(function(a,b){
         return b[1] - a[1];
       });
-
       
-      WordCloud(document.getElementById(cloud_dom_id), { list: word_list } );
+      console.log(word_list);
+      
+      WordCloud(element, { list: word_list });
     }
 
     var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};

@@ -14,16 +14,17 @@
     margin-bottom: 1.5em;
 }
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
+html {
+    min-height: 100%;
+    position: relative;
 }
 
-.frame {
-    display: table;
+footer {
+    position: absolute;
+    bottom: 0;
+    background-color: #000;
+    width: 100%;
+    padding: 1.3em 0 0 1em;
 }
 
 .match-top {
@@ -41,20 +42,18 @@ h3 img {
 }
 
 .img-small {
-    margin-left: 1px;
-    margin-right: 1px;
-    height: 25px;
+    margin: 1px;
+    height: 24px;
 }
 
 .img-md {
-    margin-left: 2px;
-    margin-right: 2px;
-    height: 30px;
+    margin: 1px;
+    height: 28px;
 }
 
 .pickban {
     margin: 0px;
-    height: 25px;
+    height: 24px;
 }
 
 .tooltip-inner {
@@ -76,12 +75,6 @@ h3 img {
     width: 15px;
 }
 
-footer {
-    background-color: #BBF0FD;
-    width: 100%;
-    padding: 1.3em 0 0 1em;
-}
-
 .user {
     margin: 2px;
 }
@@ -98,10 +91,6 @@ footer {
 .medium-cheese {
     font-size: 40px;
     text-shadow: 0 0 10px yellow;
-    /*border: 3px solid rgb(189, 155, 20);*/
-    /*background-color: lightyellow;*/
-    /*border-radius: 50%;*/
-    /*padding: 3px 11px;*/
 }
 
 
@@ -288,19 +277,9 @@ div .dataTables_processing {
     display: none;
 }
 
-
-/* Sticky footer styles*/
-
-.sticky_footer_row {
-    display: table-row;
-    height: 1px;
-}
-
-.sticky_footer_row.expand {
-    height: auto;
-}
-
-h1,h2,h3 {
+h1,
+h2,
+h3 {
     font-weight: 700;
 }
 
@@ -346,25 +325,11 @@ td.text-left {
     text-align: left;
 }
 
-
-/*temporary select2 fixes*/
-
-.select2-container,
-.select2-search__field {
-    color: black;
-    width: 100% !important;
-    padding: 0;
-    height: 35px;
-}
-
-.select2-container {
-    margin-bottom: 10px;
-}
-
 .table>thead>tr>th,
 .table>tbody>tr>td {
     border-bottom: 1px solid grey;
 }
+
 
 /* Use sans-serif on tables*/
 
@@ -375,3 +340,67 @@ table tfoot * {
     font-family: Arial, sans-serif;
 }
 */
+
+.nowrap {
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.rating {
+    margin-right: 5px;
+}
+
+
+/* tweak the table success/danger colors */
+
+.success,
+.table>tbody>tr.success>td,
+.table>tbody>tr.success>th,
+.table>tbody>tr>td.success,
+.table>tbody>tr>th.success,
+.table>tfoot>tr.success>td,
+.table>tfoot>tr.success>th,
+.table>tfoot>tr>td.success,
+.table>tfoot>tr>th.success,
+.table>thead>tr.success>td,
+.table>thead>tr.success>th,
+.table>thead>tr>td.success,
+.table>thead>tr>th.success {
+    background-color: #488446;
+}
+
+.danger,
+.table>tbody>tr.danger>td,
+.table>tbody>tr.danger>th,
+.table>tbody>tr>td.danger,
+.table>tbody>tr>th.danger,
+.table>tfoot>tr.danger>td,
+.table>tfoot>tr.danger>th,
+.table>tfoot>tr>td.danger,
+.table>tfoot>tr>th.danger,
+.table>thead>tr.danger>td,
+.table>thead>tr.danger>th,
+.table>thead>tr>td.danger,
+.table>thead>tr>th.danger {
+    background-color: #712C2C;
+}
+
+
+/*make c3 show up better on dark background*/
+
+.c3 {
+    color: #000;
+}
+
+.c3-axis path,
+.c3-axis line {
+    stroke: rgb(199, 199, 199);
+}
+
+.c3-axis-y .tick,
+.c3-axis-x .tick,
+.c3-axis-x-label,
+.c3-axis-y-label,
+.c3-legend-item {
+    fill: rgb(199, 199, 199);
+}

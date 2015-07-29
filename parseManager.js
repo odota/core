@@ -1,84 +1,77 @@
 var processParse = require('./processParse');
-var processApi = require('./processApi');
 var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-//wait to begin parsing to allow parsers to be put in redis
-setTimeout(start, 5000);
+var buildSets = require('./tasks/buildSets');
+var parsers;
+if (config.NODE_ENV !== "test" && cluster.isMaster) {
+    buildSets(function() {
+        start();
+    });
+}
+else {
+    start();
+}
 
 function start() {
     redis.get("parsers", function(err, result) {
         if (err || !result) {
-            console.log("no parsers in redis!");
+            console.log('failed to get parsers from redis, retrying');
             return setTimeout(start, 10000);
         }
-        var parsers = JSON.parse(result);
+        parsers = JSON.parse(result);
         var capacity = parsers.length;
-        if (cluster.isMaster) {
+        if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
-            var urls = {};
-            cluster.on('fork', function(worker) {
-                worker.on('message', function(msg) {
-                    console.log(msg);
-                    //a new worker is running, keep track of what url it's using
-                    urls[msg.pid] = msg.url;
-                    console.log(urls);
-                });
-            });
-            cluster.on("exit", function(worker, code) {
-                console.log("Worker crashed! Spawning a replacement of worker %s", worker.process.pid);
-                //give this new worker the parser url of the one that crashed
-                cluster.fork({
-                    PARSER_URL: urls[worker.process.pid]
-                });
-            });
-            if (config.NODE_ENV !== "test") {
-                for (var i = 0; i < capacity; i++) {
+            for (var i = 0; i < capacity; i++) {
+                if (true) {
                     //fork a worker for each available parse core
-                    cluster.fork({
-                        PARSER_URL: parsers[i]
-                    });
+                    forkWorker(i);
                 }
-            }
-            else {
-                runWorker();
+                else {
+                    //run workers in parallel in a single thread (uses less memory)
+                    runWorker(i);
+                }
             }
         }
         else {
-            runWorker();
+            runWorker(0);
         }
 
-        function runWorker() {
+        function forkWorker(i) {
+            var worker = cluster.fork({
+                PARSER_URL: parsers[i]
+            });
+            worker.on("exit", function() {
+                console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
+                forkWorker(i);
+            });
+        }
+
+        function runWorker(i) {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-            if (process.send) {
-                process.send({
-                    pid: process.pid,
-                    url: process.env.PARSER_URL
-                });
-            }
-            jobs.process('request', processApi);
-            //process requests
-            jobs.process('request_parse', function(job, cb) {
-                console.log("starting request_parse job: %s", job.id);
-                getParserUrl(job, function() {
-                    processParse(job, cb);
-                });
-            });
-            //process regular parses
-            jobs.process('parse', function(job, cb) {
+            jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
-                getParserUrl(job, function() {
-                    processParse(job, cb);
-                });
+                job.parser_url = getParserUrl(job);
+                //TODO check if the assigned url is active
+                //if not, use ctx to pause and cb(err) (this consumes a retry)
+                //keep checking status and resume the worker when the parse worker is alive again
+                processParse(job, ctx, cb);
             });
-        }
 
-        function getParserUrl(job, cb) {
-            job.parser_url = process.env.PARSER_URL || parsers[Math.floor(Math.random() * parsers.length)];
-            cb();
+            function getParserUrl(job) {
+                //node <0.12 doesn't have RR cluster scheduling, so parsing on remote workers may cause us to lose a request if the remote is crashed by another job using the same core/thread
+                //for now, process parse requests on localhost to avoid issue
+                /*
+                if (job.data.payload.request) {
+                    return job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
+                }
+                */
+                return process.env.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
+            }
         }
     });
 }

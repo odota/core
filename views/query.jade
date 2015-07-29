@@ -9,12 +9,6 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .col-md-4
         h4 Synergies
         .form-group
-          abbr(title="Select a teammate or enter an account ID")
-            label The Players Included
-          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player")#included_account_id
-            each entry in teammate_ids
-              option(value=entry.account_id, selected=q.included_account_id && q.included_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
-        .form-group
           label The Team Included
           select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
             each entry in constants.alpha_heroes
@@ -24,6 +18,12 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(name="against_hero_id" multiple, data-placeholder="Enemy: Any Hero")#enemy_hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
+        .form-group
+          abbr(title="Select a teammate or enter an account ID")
+            label The Players Included
+          select.form-control(name="included_account_id", multiple, data-placeholder="Included: Any Player")#included_account_id
+            each entry in teammate_ids
+              option(value=entry.account_id, selected=q.included_account_id && q.included_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
               
       .col-md-4
         h4 Personal Parameters
@@ -88,17 +88,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         button.btn.btn-yasp(type="submit") Do the Thing
 
 script.
-    $("#included_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 10
+    $("#included_account_id").selectize({
+        create: true,
+        maxItems: 10
     });
-    $("#with_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#with_hero_id").selectize({
+        maxItems: 5
     });
-    $("#enemy_hero_id").select2({
-        maximumSelectionSize: 5
+    $("#enemy_hero_id").selectize({
+        maxItems: 5
     });
-    $("#compare_account_id").select2({
-        tags: true,
-        maximumSelectionSize: 5
+    $("#compare_account_id").selectize({
+        create: true,
+        maxItems: 5
     });

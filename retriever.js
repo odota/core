@@ -13,11 +13,7 @@ var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
 var a = [];
-var port = config.PORT;
-var server = app.listen(port, function() {
-    var host = server.address().address;
-    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-});
+var port = config.RETRIEVER_PORT || config.PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
@@ -61,7 +57,7 @@ async.each(a, function(i, cb) {
     });
     Steam.on("loggedOn", function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", Steam.steamID);
-        //Steam.setPersonaName("[YASP] " + Steam.steamID);
+        Steam.setPersonaName("[YASP] " + Steam.steamID);
         steamObj[Steam.steamID] = Steam;
         Steam.replays = 0;
         Steam.profiles = 0;
@@ -108,6 +104,10 @@ async.each(a, function(i, cb) {
     }
 }, function() {
     //start listening
+    var server = app.listen(port, function() {
+        var host = server.address().address;
+        console.log('[RETRIEVER] listening at http://%s:%s', host, port);
+    });
     app.get('/', function(req, res, next) {
         //console.log(process.memoryUsage());
         if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {

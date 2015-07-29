@@ -55,7 +55,10 @@ module.exports = function drawProMatches(data) {
                 data: 'duration',
                 title: 'Duration',
                 render: function(data, type) {
-                    return moment().startOf('day').seconds(data).format("H:mm:ss");
+                    if (type === 'display') {
+                        return formatSeconds(data);
+                    }
+                    return data;
                 }
             },
             {
@@ -72,7 +75,7 @@ module.exports = function drawProMatches(data) {
                 data: 'parse_status',
                 title: 'Status',
                 render: function(data, type) {
-                    return constants.parse_status[data] ? constants.parse_status[data] : data  || "";
+                    return constants.parse_status[data] ? constants.parse_status[data] : data || "";
                 }
             }]
     });

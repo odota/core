@@ -1,6 +1,9 @@
 var config = require('./config');
 var rc_public = config.RECAPTCHA_PUBLIC_KEY;
+var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
+var request = require('request');
+var queueReq = require('./operations').queueReq;
 var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
@@ -25,7 +28,6 @@ var queries = require('./queries');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
-var sticky = require('sticky-session');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -161,7 +163,7 @@ app.route('/professional').get(function(req, res, next) {
             return next(err);
         }
         res.render('professional', {
-            recent: data2.data
+            matches: data2.data
         });
         /*
         //implement live match pages
@@ -185,7 +187,58 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
-
+//post/get a request
+app.route('/request_job').post(function(req, res) {
+    request.post("https://www.google.com/recaptcha/api/siteverify", {
+        form: {
+            secret: rc_secret,
+            response: req.body.response
+        }
+    }, function(err, resp, body) {
+        try {
+            body = JSON.parse(body);
+        }
+        catch (err) {
+            res.render({
+                error: err
+            });
+        }
+        var match_id = req.body.match_id;
+        match_id = Number(match_id);
+        if (!body.success && config.NODE_ENV !== "test"
+            // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
+            && !config.DISABLE_RECAPTCHA) {
+            console.log('failed recaptcha');
+            res.json({
+                error: "Recaptcha Failed!"
+            });
+        }
+        else if (!match_id) {
+            console.log("invalid match id");
+            res.json({
+                error: "Invalid Match ID!"
+            });
+        }
+        else {
+            queueReq("request", {
+                match_id: match_id,
+                request: true
+            }, function(err, job) {
+                res.json({
+                    error: err,
+                    job: job
+                });
+            });
+        }
+    });
+}).get(function(req, res) {
+    kue.Job.get(req.query.id, function(err, job) {
+        res.json({
+            error: err,
+            job: job ? job.toJSON() : null
+        });
+    });
+});
 /*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
@@ -229,18 +282,22 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-if (config.NODE_ENV === "test" || true) {
-    var server = app.listen(config.PORT, function() {
-        console.log('[WEB] listening on %s', config.PORT);
+var port = config.WEB_PORT || config.PORT;
+var num_processes = require('os').cpus().length;
+var cluster = require('cluster');
+//vanilla node clustering, doesn't work with socket.io
+//disable this if block for single web process or pm2 clustering
+if (cluster.isMaster && config.NODE_ENV !== "test" && false) {
+    for (var i = 0; i < num_processes; i++) {
+        cluster.fork();
+    }
+    cluster.on('exit', function(worker, code, signal) {
+        cluster.fork();
     });
-    require('./socket.js')(server);
 }
 else {
-    sticky(4, function() {
-        var server = app.listen(config.PORT, function() {
-            console.log('[WEB] listening on %s', config.PORT);
-        });
-        require('./socket.js')(server);
-        return server;
+    var server = app.listen(port, function() {
+        console.log('[WEB] listening on %s', port);
     });
+    //require('./socket.js')(server);
 }

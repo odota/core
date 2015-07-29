@@ -3,7 +3,8 @@ process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.KUE_USER = "user";
 process.env.KUE_PASS = "pass";
-process.env.PORT = 5000;
+process.env.WEB_PORT = 5000;
+process.env.PARSER_PORT = 5200;
 process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
 process.env.STEAM_API_KEY = "fakekey";
@@ -465,6 +466,7 @@ describe("api tests", function() {
         });
     });
 });
+/*
 var io = require('socket.io-client');
 describe("unit test", function() {
     this.timeout(wait);
@@ -490,6 +492,7 @@ describe("unit test", function() {
         });
     });
 });
+*/
 //deprecated tests
 /*
 describe("GET /upload", function() {

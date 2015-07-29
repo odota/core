@@ -1,8 +1,10 @@
-web: nodemon index.js
-retriever: nodemon index.js
-parser: nodemon index.js
-worker: nodemon index.js
-parseManager: nodemon index.js
-scanner: nodemon index.js
-proxy: nodemon index.js
-skill: nodemon index.js
+web: WEB_PORT=5000 nodemon web.js
+retriever: RETRIEVER_PORT=5100 nodemon retriever.js
+parser: PARSER_PORT=5200 nodemon parser.js
+proxy: PROXY_PORT=5300 nodemon proxy.js
+worker: nodemon worker.js
+parseManager: nodemon parseManager.js
+scanner: nodemon scanner.js
+skill: nodemon skill.js
+mmr: nodemon mmr.js
+fullhistory: nodemon fullhistory.js

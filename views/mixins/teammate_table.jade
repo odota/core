@@ -17,7 +17,7 @@ mixin teammate_table(rows, short)
     each teammate in rows
       tr
         td.text-left
-          img.img-md(src=teammate.avatar)
+          img.img-small(src=teammate.avatar)
           if (teammate.last_visited)
             img.user(src='/public/images/favicon-16x16.png', title="YASP User")
           a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
