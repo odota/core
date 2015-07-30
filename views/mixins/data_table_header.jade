@@ -3,5 +3,5 @@ mixin data_table_header(i, match)
     //empty row to force striping to line up
     tr
     tr
-      td.lead.text-left(class=i ? "text-danger":"text-success")= i ? "Dire" : "Radiant"
+      td.lead(class=i ? "text-danger":"text-success")= i ? "Dire" : "Radiant"
     block
