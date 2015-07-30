@@ -24,7 +24,6 @@ var async = require('async');
 //need to construct stringtables
 //need to construct sendtables
 //read the protobufs and build a dota object for reference
-//convert to camel case or no?
 var builder = ProtoBuf.newBuilder();
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/base_gcmessages.proto'), builder);
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/gcsdk_gcmessages.proto'), builder);
@@ -159,42 +158,21 @@ inStream.once('readable', function() {
     }
 
     function readByte(cb) {
-        var buf = inStream.read(1);
-        if (buf) {
-            cb(null, ByteBuffer.wrap(buf).readByte());
-        }
-        else {
-            inStream.once('readable', function() {
-                return readByte(cb);
-            });
-        }
+        readBytes(1, function(err, buf) {
+            cb(err, ByteBuffer.wrap(buf).readByte());
+        });
     }
 
     function readString(size, cb) {
-        if (!size) {
-            return cb(null, new Buffer(""));
-        }
-        var buf = inStream.read(size);
-        if (buf) {
-            cb(null, ByteBuffer.wrap(buf).readString(size));
-        }
-        else {
-            inStream.once('readable', function() {
-                return readString(size, cb);
-            });
-        }
+        readBytes(size, function(err, buf) {
+            cb(err, ByteBuffer.wrap(buf).readString(size));
+        });
     }
 
     function readUint32(cb) {
-        var buf = inStream.read(4);
-        if (buf) {
-            cb(null, ByteBuffer.wrap(buf).readUint32());
-        }
-        else {
-            inStream.once('readable', function() {
-                return readUint32(cb);
-            });
-        }
+        readBytes(4, function(err, buf) {
+            cb(err, ByteBuffer.wrap(buf).readUint32());
+        });
     }
 
     function readBytes(size, cb) {
@@ -203,7 +181,7 @@ inStream.once('readable', function() {
         }
         var buf = inStream.read(size);
         if (buf) {
-            cb(null, ByteBuffer.wrap(buf).toBuffer());
+            cb(null, buf);
         }
         else {
             inStream.once('readable', function() {
