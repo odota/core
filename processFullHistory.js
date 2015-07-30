@@ -9,8 +9,7 @@ var urllib = require('url');
 var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
-var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(16 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(10, api_keys.length);
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
     //if test or only want 500 of any hero, use the short array

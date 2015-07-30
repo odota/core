@@ -5,7 +5,7 @@ var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-var buildSets = require('./tasks/buildSets');
+var buildSets = require('./buildSets');
 var parsers;
 if (config.NODE_ENV !== "test" && cluster.isMaster) {
     buildSets(function() {
