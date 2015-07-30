@@ -1,5 +1,7 @@
 extend base_layout
 include /mixins/hero_td
+include /mixins/data_table
+include /mixins/data_table_header
 
 block head
   //link(rel="import" href="/public/paper-fab-menu.html")
@@ -74,7 +76,6 @@ block page_content
               hr
         .row
           .col-md-12.text-center.bottom-padding
-            h3 Purchases
             include match/timelines_purchases_table
           .col-md-8.col-md-offset-2.text-center
             h3 View timelines of item purchases.<br>
@@ -92,6 +93,7 @@ block page_content
               #chart-gold
           .col-md-8.col-md-offset-2.text-center.bottom-padding
             h3 See <a href="/matches/#{match.match_id}/graphs" target="_blank">charts</a> of how gold, XP, and last hits changed over the game.
+
   #positions.blurb.bright
     .container
       .col-md-12.text-center

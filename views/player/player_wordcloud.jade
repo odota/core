@@ -18,7 +18,9 @@ block playercontent
       h3="Words read by this player in all chat"
       #allwordcontainer
         canvas()#allwordcounts
-        
+      
+      #tooltip
+      
 append footer_assets
 
   script.
@@ -54,15 +56,18 @@ append footer_assets
       element.height = parent.clientWidth*0.75;
       
       //howard's implementation
-      var max_size = element.clientWidth/3;
-      var min_size = 10;
+      var max_size = element.clientWidth/5;
+      var min_size = 9;
       var scale = max_size/Math.log(max);
+      //var scale = max_size/max;
       word_list.forEach(function(w){
         //original count for debugging
         w[2] = w[1];
         //take the log of each count and scale them up to top_size
         //use log since words such as "gg" tend to dominate
         w[1] = Math.max(Math.log(w[1])*scale, min_size);
+        //w[1] = Math.max(w[1]*scale, min_size);
+
       });
       
       /*
@@ -82,7 +87,7 @@ append footer_assets
       
       console.log(word_list);
       
-      WordCloud(element, { list: word_list } );
+      WordCloud(element, { list: word_list });
     }
 
     var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};

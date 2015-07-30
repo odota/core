@@ -5,21 +5,19 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "pm2-dev start pm2-dev.json --timestamp",
-    "dev-foreman": "nf -j Procfile.dev start",
-    "yasp-core-foreman": "sudo nf -j Procfile.prod export -o /etc/init/ web,worker,parser,parseManager,scanner,skill,mmr && sudo restart foreman",
+    "dev": "nf -j Procfile.dev start",
     "test": "rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "update": "npm-check-updates -u -f '/^((?!steam).)*$/'",
-    "buildSets": "nf run node runner.js buildSets",
-    "constants": "nf run node runner.js constants",
+    "buildSets": "node runner.js buildSets",
+    "constants": "node runner.js constants",
     "webpack": "webpack -p",
     "watch": "webpack --watch",
     "maven": "mvn -q -f parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
-    "startup": "sudo pm2 startup ubuntu",
+    "startup": "sudo pm2 startup ubuntu -u yasp",
     "deploy-core": "pm2 startOrReload pm2-core.json",
-    "deploy-parser": "git pull origin master && npm install && npm run maven && pm2 startOrRestart pm2-parser.json"
+    "deploy-parser": "git pull origin master && npm run build && pm2 startOrRestart pm2-parser.json"
   },
   "repository": {
     "type": "git",

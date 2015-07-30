@@ -4,6 +4,8 @@ var jobs = r.jobs;
 var kue = r.kue;
 var updateNames = require('./tasks/updateNames');
 var buildSets = require('./tasks/buildSets');
+var utility = require('./utility');
+var invokeInterval = utility.invokeInterval;
 var domain = require('domain');
 var async = require('async');
 var numCPUs = require('os').cpus().length;
@@ -43,20 +45,6 @@ d.run(function() {
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
 });
-
-function invokeInterval(func, delay) {
-    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function foo() {
-        console.log("running %s", func.name);
-        func(function(err) {
-            if (err) {
-                //log the error, but wait until next interval to retry
-                console.log(err);
-            }
-            setTimeout(foo, delay);
-        });
-    })();
-}
 
 function clearActiveJobs(cb) {
     jobs.active(function(err, ids) {

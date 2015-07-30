@@ -1,30 +1,25 @@
 .row
   .col-md-7
-    h2 Map
+    h3 Map 
+      small Hover over a table cell for map
     #map.table-responsive
       img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 
   .col-md-5
-    h2 Positions 
-      small Hover on cell for map
-    .table-responsive
-      table.table.table-hover
-        thead
+    +data_table({id:"positions", summable: true, heading:"Positions"})
+      each player, ind in match.players
+        - var p = player.parsedPlayer
+        +data_table_header(ind, match)      
           tr
             th Hero
             th: abbr(title="Lane based on early game position") Lane
             th: abbr(title="# of Observer Wards placed during the game") Observer
             th: abbr(title="# of Sentry Wards placed during the game") Sentry
-
-        tbody
-          each player, ind in match.players
-            - var hero = constants.heroes[player.hero_id]
-            - var p = player.parsedPlayer
-            tr(class = player.isRadiant ? "success" : "danger")
-              +hero_td(player)
-              td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
-              td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
-              td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
+        tr(class = player.isRadiant ? "radiant" : "dire")
+          +hero_td(player)
+          td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
+          td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
+          td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
               
   script.
     var width = document.getElementById('map').clientWidth;
