@@ -11,7 +11,7 @@ block match_content
             th Achieved By
         tbody
           each entry in match.parsed_data.objectives || []
-            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
             - var objective = constants.objectives[entry.subtype] || entry.subtype
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
