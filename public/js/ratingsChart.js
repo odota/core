@@ -1,4 +1,4 @@
-module.exports = function ratingsChart(ratings) {
+module.exports = function ratingsChart(ratings, whichTime) {
     var times = ratings.map(function(r) {
         return new Date(r.time);
     });
@@ -8,30 +8,65 @@ module.exports = function ratingsChart(ratings) {
     var party = ratings.map(function(r) {
         return r.competitiveRank;
     });
-    c3.generate({
-        bindto: "#ratings",
-        data: {
+    console.log(times);
+    if (whichTime) {
+      c3.generate({
+          bindto: "#ratings",
+          data: {
+              columns: [
+            ['Solo'].concat(solo),
+            ['Party'].concat(party)
+            ],
+              type: "spline"
+          },
+          axis: {
+              x: {
+                  label: "Date",
+                  tick: {
+                      format: function(x) {
+                          return moment(times[x]).format("MMM DD YYYY");
+                      }
+                  }
+              },
+              y: {
+                  label: 'Rating'
+              }
+          },
+          zoom: {
+              enabled: true
+          }
+      });
+    }
+    else {
+      //somehow get the MMRs per day, and average them to concatenate to Solo and Party
+      c3.generate({
+          bindto: "#ratings",
+          data:{
+            x: 'date',
             columns: [
-          ['Solo'].concat(solo),
-          ['Party'].concat(party)
-          ],
+              ['date'].concat(times),
+              ['Solo'].concat(solo),
+              ['Party'].concat(party)
+            ],
             type: "spline"
-        },
-        axis: {
-            x: {
-                label: "Date",
-                tick: {
+          },
+          axis: {
+              x: {
+                  label: 'Date',
+                  type: 'timeseries',
+                  tick: {
                     format: function(x) {
-                        return moment(times[x]).format("MMM DD YYYY");
+                        return moment(x).format("MMM DD YYYY");
                     }
-                }
-            },
-            y: {
+                  }
+              },
+              y: {
                 label: 'Rating'
-            }
-        },
-        zoom: {
+              }
+          },
+          zoom:{
             enabled: true
-        }
-    });
+          }
+      });
+    }
 }

@@ -6,10 +6,17 @@ block playercontent
       h3 Rating 
         small To display MMR on profile, 
           a.alert-link(href="http://steamcommunity.com/profiles/"+ (bots[0] ? bots[0].steamID : "")) add a tracker.
+      button(onclick='toggle()').
+        THIS IS THE FINAL COUNTDOWN
       #ratings
       
 
 append footer_assets
   script.
     var ratings = !{JSON.stringify(player.ratings)};
-    ratingsChart(ratings);
+    var whichTime = true;
+    var toggle = function(){
+      whichTime = !whichTime;
+      ratingsChart(ratings, whichTime);
+    };
+    ratingsChart(ratings, whichTime);
