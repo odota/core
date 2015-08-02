@@ -49,15 +49,21 @@ else {
         });
     });
     app.get('/', function(req, res, next) {
-        if (req.query.fileName && req.query.url) {
+        if (!req.query.fileName && !req.query.url) {
             return res.json({
                 capacity: capacity
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            parsed_data = parsed_data || {};
-            parsed_data.error = err;
-            res.json(parsed_data);
+            if (err) {
+                return res.json({
+                    error: err
+                });
+            }
+            if (err && config.NODE_ENV !== "test") {
+                throw err;
+            }
+            return res.json(parsed_data);
         });
     });
     var server = app.listen(port, function() {
@@ -75,6 +81,7 @@ function runParse(data, cb) {
     var parseStream;
     var bz;
     var parser;
+    var d = domain.create();
     //parse state
     var entries = [];
     var name_to_slot = {};
@@ -86,50 +93,54 @@ function runParse(data, cb) {
     var intervalState = {};
     var teamfight_cooldown = 15;
     var parsed_data;
-    //set up pipe chain
-    parser = spawn("java", ["-jar",
+    d.run(function() {
+        //set up pipe chain
+        parser = spawn("java", ["-jar",
         "-Xmx64m",
         "parser/target/stats-0.1.0.jar"
     ], {
-        //we may want to ignore stderr if we're not dumping it to /dev/null from java already
-        stdio: ['pipe', 'pipe', 'pipe'],
-        encoding: 'utf8'
-    });
-    parseStream = ndjson.parse();
-    if (fileName) {
-        inStream = fs.createReadStream(fileName);
-        inStream.pipe(parser.stdin);
-    }
-    else if (url) {
-        bz = spawn("bunzip2");
-        bz.stderr.resume();
-        inStream = progress(request.get({
-            url: url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state) {
-            parseStream.write(JSON.stringify({
-                "type": "progress",
-                "key": state.percent
-            }) + "\n");
-        }).on('response', function(response) {
-            if (response.statusCode !== 200) {
-                parseStream.write(JSON.stringify({
-                    "type": "error",
-                    "key": response.statusCode
-                }) + "\n");
-            }
+            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
         });
-        inStream.pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
-    }
-    parser.stdout.pipe(parseStream);
-    parser.stderr.on('data', function(data) {
-        console.log(data.toString());
+        parseStream = ndjson.parse();
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
+            inStream.pipe(parser.stdin);
+        }
+        else if (url) {
+            bz = spawn("bunzip2");
+            inStream = progress(request.get({
+                url: url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state) {
+                parseStream.write(JSON.stringify({
+                    "type": "progress",
+                    "key": state.percent
+                }) + "\n");
+            }).on('response', function(response) {
+                if (response.statusCode !== 200) {
+                    parseStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": response.statusCode
+                    }) + "\n");
+                }
+            });
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        }
+        parser.stdout.pipe(parseStream);
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
+        });
+        parseStream.on('data', handleStream);
+        parseStream.on('end', function() {
+            exit(error);
+        });
     });
-    parseStream.on('data', handleStream);
-    parseStream.on('end', function() {
-        exit(error);
+    d.on('error', function(err) {
+        exit(err);
     });
     //capture events streamed from parser and set up state for post-processing
     //these events are generally not pushed to event buffer (except hero_log)
