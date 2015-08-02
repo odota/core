@@ -66,7 +66,6 @@ function runParse(job, ctx, cb) {
             return cb(err || resp.statusCode || "http request error");
         }
         body = JSON.parse(body);
-        console.log(body.error);
         return cb(body.error, body);
     });
 }
