@@ -50,14 +50,8 @@ else {
     });
     app.get('/', function(req, res, next) {
         runParse(req.query, function(err, parsed_data) {
-            if (err) {
-                res.json({
-                    error: err
-                });
-            }
-            else {
-                res.json(parsed_data);
-            }
+            parsed_data.error = err;
+            res.json(parsed_data);
         });
     });
     var server = app.listen(port, function() {

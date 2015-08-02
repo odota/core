@@ -66,12 +66,6 @@ function runParse(job, ctx, cb) {
             return cb(err || resp.statusCode);
         }
         body = JSON.parse(body);
-        //make sure body is a valid parsed data blob
-        if (body.version) {
-            return cb(err, body);
-        }
-        else {
-            return cb(body);
-        }
+        return cb(body.error, body);
     });
 }
