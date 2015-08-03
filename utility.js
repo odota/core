@@ -273,7 +273,7 @@ function getParseSchema() {
                 "gold": [],
                 "lh": [],
                 "xp": [],
-                "pos_log": [],
+                //"pos_log": [],
                 "obs_log": [],
                 "sen_log": [],
                 "hero_log": [],

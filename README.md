@@ -71,7 +71,7 @@ Starting YASP
 
 Sample Data
 ----
-* https://github.com/yasp-dota/testfiles/blob/master/dota.zip contains a database dump that can be imported using mongorestore if a larger data set is desired.
+* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump that can be imported using mongorestore if a larger data set is desired.
 
 Developer's Guide
 ----
@@ -109,9 +109,10 @@ Developer's Guide
 * Player/match caching: We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
 * A client side bundle of JS is built (and minified in production) using Webpack.  If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
-* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
+* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman nodemon`
     * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
     * `foreman` is used to run services individually.  The executable name is `nf`.
+    * `nodemon` watches the server files and restarts the server when changes are detected.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
 ```

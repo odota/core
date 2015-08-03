@@ -34,6 +34,7 @@ else {
                 if (error) {
                     console.log('exec error: ' + error);
                 }
+                process.exit(0);
             });
         }
         else {

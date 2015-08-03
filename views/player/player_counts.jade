@@ -7,14 +7,16 @@ block playercontent
       .col-md-6
         h3=key.split("_").join(" ")
           small  (#{player.aggData[key].n} matches)
-        table.table
-          tr
-            th Category
-            th Matches
-            th Win%
-          each val2, key2 in player.aggData[key].counts
+        table.table.table-striped
+          thead
             tr
-              td=constants[key] ? (constants[key][key2] ? constants[key][key2].name || constants[key][key2] : JSON.stringify(constants[key])) : key2
-              td=val2
-              td
-                +progress_bar(player.aggData[key].win_counts[key2], val2)
+              th Category
+              th Matches
+              th Win%
+          tbody
+            each val2, key2 in player.aggData[key].counts
+              tr
+                td=constants[key] ? (constants[key][key2] ? constants[key][key2].name || constants[key][key2] : JSON.stringify(constants[key])) : key2
+                td=val2
+                td
+                  +progress_bar(player.aggData[key].win_counts[key2], val2)

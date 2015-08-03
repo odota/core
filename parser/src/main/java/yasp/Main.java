@@ -193,6 +193,8 @@ public class Main {
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getPrefix());
 		entry.key =  String.valueOf(message.getText());
+		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
+		//entry.slot = message.getClient();
 		entry.type = "chat";
 		es.output(entry);
 	}

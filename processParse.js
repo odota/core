@@ -325,16 +325,12 @@ function runParse(job, ctx, cb) {
                 }
                 e.interval = false;
                 //add to positions
+                //not currently storing pos data
                 // if (e.x && e.y) {
                 //     e.type = "pos";
                 //     e.key = [e.x, e.y];
                 //     e.posData = true;
-                //     //not currently storing pos data
                 //     //populate(e);
-                //     if (e.time < 600) {
-                //         e.type = "lane_pos";
-                //         populate(e);
-                //     }
                 // }
             }
             // store player position for the first 10 minutes
@@ -380,13 +376,6 @@ function runParse(job, ctx, cb) {
     });
 
     function exit(err) {
-        if (exited) {
-            console.error(err);
-            return;
-        }
-        exited = true;
-        //exit the domain to go back to regular error handling
-        d.exit();
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
         if (err && config.NODE_ENV !== "test" && true) {
             //do this if we are running one thread per worker
@@ -398,6 +387,7 @@ function runParse(job, ctx, cb) {
         }
         if (err) {
             console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
+            console.log(err.stack);
         }
         else {
             parsed_data = utility.getParseSchema();
@@ -491,8 +481,10 @@ function runParse(job, ctx, cb) {
         teamfights.forEach(function(tf) {
             tf.players.forEach(function(p, ind) {
                 //record player's start/end xp for level change computation
-                p.xp_start = intervalState[tf.start][ind].xp;
-                p.xp_end = intervalState[tf.end][ind].xp;
+                if (intervalState[tf.start] && intervalState[tf.end]) {
+                    p.xp_start = intervalState[tf.start][ind].xp;
+                    p.xp_end = intervalState[tf.end][ind].xp;
+                }
             });
         });
         for (var i = 0; i < entries.length; i++) {

@@ -63,7 +63,7 @@ function scanApi(seq_num) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.eachSeries(resp, function(match, cb) {
+            async.each(resp, function(match, cb) {
                 if (match.leagueid && !config.DISABLE_PRO_PARSING) {
                     //parse tournament games
                     match.parse_status = 0;
@@ -108,7 +108,6 @@ function scanApi(seq_num) {
                             console.log("failed to insert match from scanApi %s", match.match_id);
                             return cb(err);
                         }
-                        redis.set("match_seq_num", next_seq_num);
                         return cb(err);
                     }
                 });
@@ -118,6 +117,7 @@ function scanApi(seq_num) {
                     return scanApi(seq_num);
                 }
                 else {
+                    redis.set("match_seq_num", next_seq_num);
                     //completed inserting matches
                     //wait 100ms for each match less than 100
                     var delay = (100 - resp.length) * 100;

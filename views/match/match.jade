@@ -1,14 +1,16 @@
 extend /layout
 include /mixins/hero_td
+include /mixins/data_table
+include /mixins/data_table_header
 
 append head
     meta(property="og:title", content="Match #{match.match_id}")
     | <!-- This page generated at #{moment(Date.now()).format('MMMM Do YYYY, h:mm:ss a')} -->
     
 block content
-  .row.match-top
+  .row
     .col-md-5
-      h1 Match #{match.match_id} 
+      h2 Match #{match.match_id} 
         small
           //-
             a(href="?json=1" title="View as JSON")
@@ -17,6 +19,7 @@ block content
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
  
     .col-md-7.table-responsive
+      h2
       table.table.table-condensed
         thead
           tr
@@ -34,8 +37,8 @@ block content
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, hh:mm:ss"))= moment.unix(match.start_time + match.duration).fromNow()
             td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
-            
-  .row
+    
+  .row(style="margin-top:1em;")
     .col-md-10.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
