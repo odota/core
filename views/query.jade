@@ -29,17 +29,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group
-          select.form-control(name="isRadiant")#game-side
+          select.form-control(name="isRadiant")#isRadiant
             option(value) Any Faction
             option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
             option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
         .form-group
-          select.form-control(name="win")#game-result
+          select.form-control(name="game_result")#game_result
             option(value) Any Result
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
         .form-group
-          select.form-control(name="lane_role")#game-role
+          select.form-control(name="lane_role")#lane_role
             option(value) Any Lane
             each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
@@ -47,17 +47,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .col-md-4
         h4 Match Parameters
         .form-group
-          select.form-control(name="patch")#game-patch
+          select.form-control(name="patch")#patch
             option(value) Any Patch
             each entry, i in constants.patch
               option(value=i, selected=(q["patch"] && q["patch"][0]===i))=entry.name
         .form-group
-          select.form-control(name="game_mode")#game-mode
+          select.form-control(name="game_mode")#game_mode
             option(value) Any Game Mode
             each entry in constants.game_mode
               option(value=entry.id, selected=(q.game_mode && q.game_mode[0]===entry.id))=entry.name
         .form-group
-          select.form-control(name="lobby_type")#lobby-type
+          select.form-control(name="lobby_type")#lobby_type
             option(value) Any Lobby Type
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
@@ -66,9 +66,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
       .row
         .col-md-12
           .form-group
-            abbr(title="Select a teammate or enter an account ID")
-              label Compare With
-            select.form-control(name="compare_account_id", multiple)#compare_account_id
+            select.form-control(name="compare_account_id", multiple, data-placeholder="Compare with: Player Name or SteamID")#compare_account_id
               each entry in teammate_ids
                 option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
 
@@ -95,9 +93,10 @@ script.
         create: true,
         sortField: 'text'
     });
-    $("#game-side").selectize();
-    $("#game-result").selectize();
-    $("#game-role").selectize();
-    $("#game-patch").selectize();
-    $("#game-mode").selectize();
-    $("#lobby-type").selectize();
+    $("#isRadiant").selectize();
+    $("#game_result").selectize();
+    $("#lane_role").selectize();
+    $("#patch").selectize();
+    $("#game_mode").selectize();
+    $("#lobby_type").selectize();
+    $("#compare_account_id").selectize();
