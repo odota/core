@@ -29,8 +29,7 @@ block match_content
   .row
     .col-md-4
       //pre=JSON.stringify(match.parsed_data.teamfights)
-      h3
-        abbr(title="Rows are colored by winner, determined by gold swing.") Fights 
+      h3 Fights 
         small Click a row to display
       table.table.table-condensed.table-hover
         thead
@@ -47,15 +46,21 @@ block match_content
           - var i = 0
           each entry, ind in teamfights
             - i = i + 1
-            tr(target=ind, class=entry.radiant_gold_delta > 0 ? "success" : "danger")
+            tr(target=ind)
               td=i
               //td= moment().startOf('day').seconds(entry.start).format("mm:ss")
               td.format-seconds(data-format-seconds=entry.start)
               td= moment().startOf('day').seconds(entry.end-entry.start).format("m:ss")
-              td #{entry.radiant_participation}v#{entry.dire_participation}
-              td #{entry.dire_deaths}-#{entry.radiant_deaths}
-              td=entry.radiant_gold_delta
-              td=entry.radiant_xp_delta
+              td
+                span.text-success #{entry.radiant_participation}
+                span="v"
+                span.text-danger #{entry.dire_participation}
+              td 
+                span(class=entry.radiant_deaths>entry.dire_deaths ? "" : "text-success") #{entry.dire_deaths}
+                span="-"
+                span(class=entry.radiant_deaths>entry.dire_deaths ? "text-danger" : "") #{entry.radiant_deaths}
+              td(class=entry.radiant_gold_delta>0?"text-success":"text-danger")=entry.radiant_gold_delta
+              td(class=entry.radiant_xp_delta>0?"text-success":"text-danger")=entry.radiant_xp_delta
               td
                 i.fa
 
@@ -69,66 +74,67 @@ block match_content
               i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
 
     .col-md-8
-      h3 Details
-      .table-responsive
-        table.table.table-hover
-          thead#header
-            tr
-              th Hero
-              th Death
-              th Buyback
-              th Level
-              th Skills
-              th Items
-              th Kills
-              th Damage
-              th Gold
-              th XP
-            each entry, ind in teamfights
-              tbody(id=ind)
-                each player, num in entry.players
-                  //color and fade based on team and participation
-                  tr(class=player.participate ? (player.isRadiant ? "success" : "danger") : "")
-                    +hero_td(player)
-                    td
-                      if player.deaths
-                        div(style="font-size:30px;") !{"&#128128;"}
-                    td
-                      if player.buybacks
-                       div(style="font-size:30px;") !{"&#128176;"}
-                    td(style="white-space: nowrap;") #{player.level_start}<i class="fa fa-long-arrow-right"></i>#{player.level_end}
-                    td
-                      each val, key in player.ability_uses || {}
-                        - var ability = constants.abilities[key]
-                        span.img-text
-                          if ability
-                            img.img-small.ability(src=ability.img, title=key)
-                          else
-                            //=key
-                          div #{val}
-                    td
-                      each val, key in player.item_uses || {}
-                        - var item = constants.items[key]
-                        span.img-text
-                          if item
-                            img.img-small.item(src=item.img, title=key)
-                            div #{val}
-                          else
-                            =key
-                    td
-                      each val, key in player.kills || {}
-                        - var hero = constants.hero_names[key]
-                        span.img-text
-                          if hero
-                            img.img-small(src=hero.img, title=hero.localized_name)
-                            div #{val}
-                          else
-                            //=key
-                    //td=player.deaths
-                    //td=player.buybacks
-                    td=player.damage
-                    td=player.gold_delta
-                    td=player.xp_delta
+      each entry, ind in teamfights
+        +data_table({id:"recap-"+ind, summable: true, heading:"Recap"})
+          each player, num in entry.players
+            +data_table_header(num, entry)
+              tr
+                th Hero
+                th Joined
+                th Death
+                th Buyback
+                th Level
+                th Damage
+                th Gold
+                th XP
+                th Skills
+                th Items
+                th Kills
+            tr(class=player.isRadiant ? "radiant" : "dire")
+              +hero_td(player)
+              td
+                if player.participate
+                  div(style="font-size:30px;") !{"&#10003;"}
+              td
+                if player.deaths
+                  div(style="font-size:30px;") !{"&#128128;"}
+              td
+                if player.buybacks
+                 div(style="font-size:30px;") !{"&#128176;"}
+              td(style="white-space: nowrap;") #{player.level_start}<i class="fa fa-long-arrow-right"></i>#{player.level_end}
+              //td=player.deaths
+              //td=player.buybacks
+              td=player.damage
+              td=player.gold_delta
+              td=player.xp_delta
+              td
+                each val, key in player.ability_uses || {}
+                  - var ability = constants.abilities[key]
+                  span.img-text
+                    if ability
+                      img.img-small.ability(src=ability.img, title=key)
+                    else
+                      //=key
+                    div #{val}
+              td
+                each val, key in player.item_uses || {}
+                  - var item = constants.items[key]
+                  span.img-text
+                    if item
+                      img.img-small.item(src=item.img, title=key)
+                      div #{val}
+                    else
+                      =key
+              td
+                each val, key in player.kills || {}
+                  - var hero = constants.hero_names[key]
+                  span.img-text
+                    if hero
+                      img.img-small(src=hero.img, title=hero.localized_name)
+                      div #{val}
+                    else
+                      //=key
+
 
   if parsed_data.version >= 10
     .row
@@ -166,7 +172,7 @@ block match_content
                     tr
   
                       if first
-                        td(class = (player_num <= 5 ? "success" : "danger"), rowspan=num_rows)
+                        td(class = (player_num <= 5 ? "text-success" : "text-danger"), rowspan=num_rows)
   
                           if hero
                             img(src=hero.img, title=hero.localized_name)
@@ -189,7 +195,7 @@ block match_content
   
                       - var num_kills_in_row = first ? kills_in_first_row : kills_in_other_rows
                       - for (var kill_num_in_row = 0; kill_num_in_row < num_kills_in_row; kill_num_in_row++)
-                        td(class = (player_num <= 5 ? "danger" : "success"))
+                        td(class = (player_num <= 5 ? "text-danger" : "text-success"))
                           - kill_num = kill_num + 1
                           - var kill = streak[kill_num]
   
@@ -200,10 +206,9 @@ block match_content
                           else
                             = killed_id
   
-                          div Kill #{kill_num + 1}
-                            span=" ("
+                          div 
+                            //span Kill #{kill_num + 1} 
                             span.format-seconds(data-format-seconds=kill.time)
-                            span )
   
                           - var multi_id = kill.multi_kill_id
                           - var multi_size = player.multi_kill_id_vals[multi_id]
@@ -215,7 +220,6 @@ block match_content
                               abbr(title=popup) #{multi_name}
                           else
                             div(style="visibility: hidden;")="-"
-  
                           - var tf_id = kill.team_fight_id
                           if tf_id
                             - var tf_name = "Teamfight " + tf_id
@@ -236,13 +240,12 @@ append footer_assets
       $(this).siblings().removeClass("glow");
       $(this).siblings().find("i").removeClass("fa-eye");
       $(this).find("i").addClass("fa-eye");
-      var table = $("#" + show);
+      var table = $("#recap-" + show);
       var icons = $("i[fight='" + show + "']")
-      table.show();
-      table.siblings().hide();
+      table.show('slow');
+      table.siblings().hide('slow');
       all_icons.hide();
       icons.show();
-      $("#header").show();
     })
     $("#show_all").click(function(event) {
       all_icons.show();

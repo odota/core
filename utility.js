@@ -172,9 +172,7 @@ function getData(url, cb) {
         }, function(err, res, body) {
             if (err || res.statusCode !== 200 || !body) {
                 if (body && body.error) {
-                    //body contained an error (probably from retriever)
-                    //TODO don't retry if failed to get rating, replay salt, etc.
-                    //can retry if retriever not ready
+                    //body contained error (probably from retriever)
                     //non-retryable
                     return cb(body);
                 }
@@ -182,6 +180,7 @@ function getData(url, cb) {
                 return getData(url, cb);
             }
             else if (body.result) {
+                //steam api usually returns data with body.result
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
                     //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                     //non-retryable
@@ -193,6 +192,7 @@ function getData(url, cb) {
                     return getData(url, cb);
                 }
             }
+            //TODO steam api can return !body.result, this is a retryable error, right now we just send a null body.result back
             return cb(null, body);
         });
     }, delay);
@@ -273,7 +273,7 @@ function getParseSchema() {
                 "gold": [],
                 "lh": [],
                 "xp": [],
-                "pos_log": [],
+                //"pos_log": [],
                 "obs_log": [],
                 "sen_log": [],
                 "hero_log": [],
@@ -366,6 +366,20 @@ function max(array) {
 function min(array) {
     return Math.min.apply(null, array);
 }
+
+function invokeInterval(func, delay) {
+    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
+    (function foo() {
+        console.log("running %s", func.name);
+        func(function(err) {
+            if (err) {
+                //log the error, but wait until next interval to retry
+                console.log(err);
+            }
+            setTimeout(foo, delay);
+        });
+    })();
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -381,5 +395,6 @@ module.exports = {
     isSignificant: isSignificant,
     reduceMatch: reduceMatch,
     max: max,
-    min: min
+    min: min,
+    invokeInterval: invokeInterval
 };

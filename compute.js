@@ -230,6 +230,7 @@ function count_words(match, player_filter) {
  * Renders display-only data for a match
  **/
 function renderMatch(match) {
+    //TODO we should probably handle fields not existing in the template instead of trying to fill them all out here
     var schema = utility.getParseSchema();
     //fill in version 0 if not present
     schema.version = 0;
@@ -248,29 +249,31 @@ function renderMatch(match) {
         var p = player.parsedPlayer;
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
         targets.forEach(function(target) {
-            var t = [];
-            for (var key in p[target]) {
-                var a = constants.abilities[key];
-                var i = constants.items[key];
-                var def = {
-                    img: "/public/images/default_attack.png"
-                };
-                def = a || i || def;
-                var result = {
-                    img: def.img,
-                    name: key === "undefined" ? "Auto Attack/Other" : key,
-                    val: p[target][key],
-                    className: a ? "ability" : i ? "item" : "img-small"
-                };
-                if (p.hero_hits) {
-                    result.hero_hits = p.hero_hits[key];
+            if (p[target]) {
+                var t = [];
+                for (var key in p[target]) {
+                    var a = constants.abilities[key];
+                    var i = constants.items[key];
+                    var def = {
+                        img: "/public/images/default_attack.png"
+                    };
+                    def = a || i || def;
+                    var result = {
+                        img: def.img,
+                        name: key === "undefined" ? "Auto Attack/Other" : key,
+                        val: p[target][key],
+                        className: a ? "ability" : i ? "item" : "img-small"
+                    };
+                    if (p.hero_hits) {
+                        result.hero_hits = p.hero_hits[key];
+                    }
+                    t.push(result);
                 }
-                t.push(result);
+                t.sort(function(a, b) {
+                    return b.val - a.val;
+                });
+                p[target + "_arr"] = t;
             }
-            t.sort(function(a, b) {
-                return b.val - a.val;
-            });
-            p[target + "_arr"] = t;
         });
         //filter interval data to only be >= 0
         if (p.times) {

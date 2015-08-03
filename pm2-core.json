@@ -7,12 +7,6 @@
          "script": "mmr.js"
       },
       {
-         "script": "parser.js",
-         "env": {
-            "PARSER_PORT": 5200
-         }
-      },
-      {
          "script": "parseManager.js"
       },
       {
@@ -20,6 +14,9 @@
       },
       {
          "script": "worker.js"
+      },
+      {
+         "script": "fullhistory.js"
       },
       {
          "script": "web.js",

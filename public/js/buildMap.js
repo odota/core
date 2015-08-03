@@ -94,7 +94,7 @@ module.exports = function buildMap() {
         style: "position: absolute; top: 25%; left: 74%;"
         }, {
         id: "bmmd",
-        style: "position: absolute; top: 26%; left: 76%;"
+        style: "position: absolute; top: 26%; left: 75%;"
         }, {
         id: "brtd",
         style: "position: absolute; top: 12%; left: 72%;"
@@ -124,6 +124,7 @@ module.exports = function buildMap() {
         d.src += buildingData[i].id.slice(-1) === "r" ? '_radiant.png' : '_dire.png';
         d.class = buildingData[i].id.slice(0, 1) === "a" ? "" : "icon";
         d.style += bits[i] === "1" ? "" : "opacity: 0.2;";
+        d.style += "zoom: "+document.getElementById("map").clientWidth/600+";";
         $('#map').append(($('<img>', d)));
     }
 }

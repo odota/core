@@ -28,6 +28,7 @@ module.exports = function processParse(job, ctx, cb) {
             //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
             //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
             //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+            console.log("replay too old, url expired");
             return cb(err);
         }
         else {
@@ -80,7 +81,7 @@ function runParse(job, ctx, cb) {
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
-            console.log(e);
+            //console.log(e);
         },
         "hero_log": function(e) {
             //get hero name by id
@@ -324,16 +325,12 @@ function runParse(job, ctx, cb) {
                 }
                 e.interval = false;
                 //add to positions
+                //not currently storing pos data
                 // if (e.x && e.y) {
                 //     e.type = "pos";
                 //     e.key = [e.x, e.y];
                 //     e.posData = true;
-                //     //not currently storing pos data
                 //     //populate(e);
-                //     if (e.time < 600) {
-                //         e.type = "lane_pos";
-                //         populate(e);
-                //     }
                 // }
             }
             // store player position for the first 10 minutes
@@ -361,38 +358,38 @@ function runParse(job, ctx, cb) {
             populate(e);
         }
     };
-    var url = job.data.payload.url;
-    var fileName = job.data.payload.fileName;
-    var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
-    console.log("target:%s", target);
-    outStream = ndjson.parse();
-    outStream.on('end', function() {
-        exit(error);
-    });
     d.on('error', exit);
     d.run(function() {
+        var url = job.data.payload.url;
+        var fileName = job.data.payload.fileName;
+        var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
+        console.log("target:%s", target);
         inStream = request({
             url: target
         });
-        inStream.pipe(outStream);
+        outStream = ndjson.parse();
         outStream.on('data', handleStream);
+        outStream.on('end', function() {
+            exit(error);
+        });
+        inStream.pipe(outStream);
     });
 
     function exit(err) {
         console.log("exiting %s with error %s", job.data.payload.match_id, err);
-        if (exited) {
-            console.log('already tried to exit match %s', job.data.payload.match_id);
-            return;
-        }
-        exited = true;
-        if (err && config.NODE_ENV !== "test" && ctx) {
+        if (err && config.NODE_ENV !== "test" && true) {
+            //do this if we are running one thread per worker
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function() {
                 console.log("shutting down worker");
                 process.exit(1);
             });
         }
-        if (!err) {
+        if (err) {
+            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
+            console.log(err.stack);
+        }
+        else {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match " + job.data.payload.match_id;
             console.time(message);
@@ -402,15 +399,13 @@ function runParse(job, ctx, cb) {
             processTeamfights();
             console.log("processing multi-kill-streaks...");
             processMultiKillStreaks();
+            console.log("processing all players data");
             processAllPlayers();
             console.timeEnd(message);
             //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             if (print_multi_kill_streak_debugging) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
-        }
-        else {
-            console.log("error occurred, can't post-process match %s", job.data.payload.match_id);
         }
         return cb(err ? (err.message || err.code || err) : null, parsed_data);
     }
@@ -419,23 +414,22 @@ function runParse(job, ctx, cb) {
         if (streamTypes[e.type]) {
             streamTypes[e.type](e);
         }
-        else {
+        else if (types[e.type]) {
             entries.push(e);
+        }
+        else {
+            //no event handler for this type, don't push it to event buffer
+            console.log("no event handler for type %s", e.type);
         }
     }
 
     function processEventBuffer() {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
-            if (types[e.type]) {
-                //adjust time by zero value to get actual game time
-                e.time -= game_zero;
-                types[e.type](e);
-            }
-            else {
-                //no event handler for this type
-                console.log("no event handler for type %s", e.type);
-            }
+            //adjust time by zero value to get actual game time
+            //we can only do this once we have a complete event buffer since the game start time is sent at some point in the stream
+            e.time -= game_zero;
+            types[e.type](e);
         }
     }
 
@@ -462,7 +456,7 @@ function runParse(job, ctx, cb) {
                     goldtotal -= p.gold[i];
                 }
                 p.origIndex = j;
-                p.pick_time = p.hero_log[p.hero_log.length - 1].time;
+                p.pick_time = p.hero_log.length ? p.hero_log[p.hero_log.length - 1].time : Number.MAX_VALUE;
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);
@@ -487,8 +481,10 @@ function runParse(job, ctx, cb) {
         teamfights.forEach(function(tf) {
             tf.players.forEach(function(p, ind) {
                 //record player's start/end xp for level change computation
-                p.xp_start = intervalState[tf.start][ind].xp;
-                p.xp_end = intervalState[tf.end][ind].xp;
+                if (intervalState[tf.start] && intervalState[tf.end]) {
+                    p.xp_start = intervalState[tf.start][ind].xp;
+                    p.xp_end = intervalState[tf.end][ind].xp;
+                }
             });
         });
         for (var i = 0; i < entries.length; i++) {

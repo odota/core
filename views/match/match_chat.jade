@@ -3,8 +3,7 @@ extend match
 block match_content
   .row
     .col-md-8
-      h2 Chat
-      table.table.table-hover.table-responsive.table-condensed
+      +data_table({id:"chat", heading:"Chat"})
         thead
           tr
             th Player
@@ -12,14 +11,14 @@ block match_content
             th Message
         tbody
           each entry in match.parsed_data.chat || []
-            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-5
+            - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
             - p.personaname = p.personaname || entry.unit
-            tr(class=p.isRadiant ? "success" : "danger")
+            tr
               +hero_td(p)
               td.format-seconds(data-format-seconds=entry.time)=entry.time
-              td=entry.key
+              td.text-left(style="word-break: break-all;")=entry.key
     .col-md-4
       .row
         .col-md-12
