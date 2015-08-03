@@ -34,7 +34,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
             option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
         .form-group
-          select.form-control(name="game_result")#game_result
+          select.form-control(name="win")#win
             option(value) Any Result
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
@@ -94,7 +94,7 @@ script.
         sortField: 'text'
     });
     $("#isRadiant").selectize();
-    $("#game_result").selectize();
+    $("#win").selectize();
     $("#lane_role").selectize();
     $("#patch").selectize();
     $("#game_mode").selectize();

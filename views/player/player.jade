@@ -50,9 +50,9 @@ block content
 
     .col-xs-3(style='text-align:center;')
       div(style="display:inline-block;margin-top:0;font-size:19px;")
-        span.text-success#win(style="margin:0 4px;") #{(player.aggData.win)}
+        span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
         span -
-        span.text-danger#lose(style="margin:0 4px;") #{player.aggData.lose}
+        span.text-danger(style="margin:0 4px;") #{player.aggData.lose}
         span -
         small(style="margin:0 4px;font-size:100%") #{player.abandons}
         span.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA)
