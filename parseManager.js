@@ -27,7 +27,7 @@ function start() {
         if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             for (var i = 0; i < capacity; i++) {
-                if (true) {
+                if (false) {
                     //fork a worker for each available parse core
                     forkWorker(i);
                 }
