@@ -381,6 +381,7 @@ function runParse(job, ctx, cb) {
             //do this if we are running one thread per worker
             //gracefully shut down worker and let master respawn a new one
             ctx.pause(1000, function() {
+                cb(err);
                 console.log("shutting down worker");
                 process.exit(1);
             });
