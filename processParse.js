@@ -65,7 +65,12 @@ function runParse(job, ctx, cb) {
         if (err || resp.statusCode !== 200) {
             return cb(err || resp.statusCode || "http request error");
         }
-        body = JSON.parse(body);
+        try {
+            body = JSON.parse(body);
+        }
+        catch (e) {
+            return cb(e);
+        }
         return cb(body.error, body);
     });
 }
