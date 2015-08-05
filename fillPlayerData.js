@@ -85,7 +85,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 };
                 console.log("saving player cache %s", player.account_id);
                 console.time("deflate");
-                redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                redis.setex("player:" + player.account_id, 60 * 60 * 24, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                 console.timeEnd("deflate");
             }
             console.log("results: %s", results.data.length);
