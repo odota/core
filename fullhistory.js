@@ -4,7 +4,7 @@ var jobs = r.jobs;
 var cluster = require('cluster');
 var config = require('./config');
 var steam_hosts = config.STEAM_API_HOST.split(",");
-if (cluster.isMaster && config.NODE_ENV !== "test") {
+if (cluster.isMaster && config.NODE_ENV !== "test" && false) {
     console.log("[FULLHISTORY] starting master");
     for (var i = 0; i < steam_hosts.length; i++) {
         cluster.fork();
