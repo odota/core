@@ -54,7 +54,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 options.query.limit = 20000;
             }
             else {
-                options.query.limit = 1000;
+                options.query.limit = 200;
             }
             options.query.sort = {
                 match_id: -1

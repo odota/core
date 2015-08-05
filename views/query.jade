@@ -72,16 +72,16 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
             option(value) Any Lobby
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
-
-    if compare
-      .row
-        .col-md-12
-          .form-group
-            abbr(title="Select a teammate or enter an account ID")
-              label Compare With
-            select.form-control(name="compare_account_id", multiple)#compare_account_id
-              each entry in teammate_ids
-                option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
+    //-
+      if compare
+        .row
+          .col-md-12
+            .form-group
+              abbr(title="Select a teammate or enter an account ID")
+                label Compare With
+              select.form-control(name="compare_account_id", multiple)#compare_account_id
+                each entry in teammate_ids
+                  option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
 
     .row
       .col-md-12.text-center
