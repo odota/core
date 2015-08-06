@@ -32,7 +32,7 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        console.error(err);
+        console.log(err);
         scanSkill();
     });
 }

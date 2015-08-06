@@ -82,6 +82,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             redis.setex("player:" + p.account_id, Number(ttl), zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
+                    cb(err);
                     /*
                     //temporarily disable inserting new players into db
                     db.players.update({
@@ -99,7 +100,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         cb(err);
                     });
                     */
-                    cb(err);
                 });
             },
             //done with all 10 players
@@ -107,7 +107,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                 if (err) {
                     return cb(err);
                 }
-                //clear the cache for this match
+                //clear the match cache
                 redis.del("match:" + match.match_id, function(err) {
                     return cb(err, doc);
                 });
