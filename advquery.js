@@ -61,8 +61,9 @@ function advQuery(query, cb) {
                         }
                     }
                     if (pass) {
-                        m.players = [p];
-                        expanded_matches.push(JSON.parse(JSON.stringify(m)));
+                        var match_copy = JSON.parse(JSON.stringify(m));
+                        match_copy.players = [p];
+                        expanded_matches.push(match_copy);
                     }
                 }
             }

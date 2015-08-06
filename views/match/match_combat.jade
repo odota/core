@@ -94,7 +94,7 @@ block match_content
   hr
   .row
     .col-md-12
-      +data_table({id:"kill_times", heading:"kill_times"})
+      +data_table({id:"kill_times", heading:"Kill Times"})
         - var bucket = 300
         each player, ind in match.players
           - var p = player.parsedPlayer
