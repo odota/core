@@ -9,7 +9,7 @@ wget http://replay123.valve.net/570/1336271164_1831063607.dem.bz2 -qO- | bunzip2
 wget https://github.com/yasp-dota/testfiles/raw/master/1232307498_cyrillic.dem -qO- | bunzip2 | java -jar parser/target/stats-0.1.0.one-jar.jar
 
 #6.84
-mvn -f parser/pom.xml package && java -jar parser/target/stats-0.1.0.one-jar.jar < testfiles/1436943655_684.dem      
+mvn -f parser/pom.xml package && java -jar parser/target/stats-0.1.0.jar < testfiles/1436943655_684.dem      
 
  db.matches.find({
     'players.account_id': 88367253
