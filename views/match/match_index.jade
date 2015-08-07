@@ -22,18 +22,18 @@ block match_content
           +data_table_header(i, match)
             tr
               th Hero
-              th: abbr(title="Solo MMR") Rating
+              th: abbr(title="Solo MMR of player") Rating
               th: abbr(title="Level of hero") LV
               th: abbr(title="Number of kills by hero") K
               th: abbr(title="Number of deaths of hero") D
               th: abbr(title="Number of assists by hero") A
-              th: abbr(title="Number of last hits by hero") LHs
+              th: abbr(title="Number of last hits by hero") LH
               th: abbr(title="Number of denied creeps") DN
               th: abbr(title="Total gold farmed") GOLD
-              th: abbr(title="Gold received by hero per minute") GPM
+              th: abbr(title="Gold farmed by hero per minute") GPM
               th: abbr(title="Experience gained by hero per minute") XPM
-              th: abbr(title="Amount of damage dealt to enemy heroes") HD
-              th: abbr(title="Amount of tower damage dealt") TD
+              th: abbr(title="Amount of damage dealt to heroes") HD
+              th: abbr(title="Amount of damage dealt to towers") TD
               th: abbr(title="Amount of health restored to heroes") HH
               th: abbr(title="Items built") Items
           tr(class=player.isRadiant ? "radiant" : "dire")
