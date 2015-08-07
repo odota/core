@@ -22,18 +22,30 @@ module.exports = function processParse(job, ctx, cb) {
         //match object should now contain replay url, and should also be persisted to db
         if (match.start_time < moment().subtract(7, 'days').format('X') && !match.fileName) {
             //expired, can't parse even if we have url, but parseable if we have a filename
-            //TODO jobs with filename (submitted via kue)  must be parsed by localhost (on master)!
+            //TODO jobs with filename (submitted via kue) must be parsed by localhost (on master)!
             //TODO improve current request test: we have no url in db and replay is expired on socket request, so that request fails, but our current test doesn't verify the parse succeeded
             //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
             console.log("replay too old, url expired");
+            console.timeEnd("parse " + match_id);
             return cb(err);
         }
         else {
-            runParse(job, ctx, function(err, parsed_data) {
-                if (err) {
-                    console.log("match_id %s, error %s", match_id, err);
-                    return cb(err);
+            console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
+            var url = job.data.payload.url;
+            var fileName = job.data.payload.fileName;
+            var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
+            console.log("target: %s", target);
+            request({
+                url: target,
+                json: true
+            }, function(err, resp, body) {
+                if (err || resp.statusCode !== 200 || !body) {
+                    return cb(err || resp.statusCode || "http request error");
                 }
+                if (body.error) {
+                    return cb(body.error);
+                }
+                var parsed_data = body;
                 match.match_id = match_id || parsed_data.match_id;
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
@@ -52,25 +64,3 @@ module.exports = function processParse(job, ctx, cb) {
         }
     });
 };
-
-function runParse(job, ctx, cb) {
-    console.log("[PARSER] parsing from %s", job.data.payload.url || job.data.payload.fileName);
-    var url = job.data.payload.url;
-    var fileName = job.data.payload.fileName;
-    var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
-    console.log("target:%s", target);
-    request({
-        url: target
-    }, function(err, resp, body) {
-        if (err || resp.statusCode !== 200) {
-            return cb(err || resp.statusCode || "http request error");
-        }
-        try {
-            body = JSON.parse(body);
-        }
-        catch (e) {
-            return cb(e);
-        }
-        return cb(body.error, body);
-    });
-}
