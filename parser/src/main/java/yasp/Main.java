@@ -1,5 +1,4 @@
 package yasp;
-import skadistats.clarity.wire.proto.Netmessages;
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,8 @@ import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEven
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
-import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
-import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
+import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
+import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -58,9 +57,6 @@ public class Main {
 
 	//@OnMessage(GeneratedMessage.class)
 	public void onMessage(Context ctx, GeneratedMessage message) {
-		if (message instanceof Netmessages.CSVCMsg_VoiceData) {
-			return;
-		}
 		System.err.println(message.getClass().getName());
 		System.out.println(message.toString());
 	}

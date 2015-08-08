@@ -46,6 +46,15 @@
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>sonatype.oss.snapshots</id>
+      <name>Sonatype OSS Snapshot Repository</name>
+      <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
   </repositories>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
