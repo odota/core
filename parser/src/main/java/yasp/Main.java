@@ -186,9 +186,6 @@ public class Main {
 		}
 	}
 	
-	//TODO: overhead events, maybe can count crits/misses, etc.
-	//CDOTAUserMsg_OverheadEvent
-	
 	@OnMessage(CUserMessageSayText2.class)
 	public void onAllChat(Context ctx, CUserMessageSayText2 message) {
 		Entry entry = new Entry(time);
@@ -200,8 +197,10 @@ public class Main {
 		entry.type = "chat";
 		es.output(entry);
 	}
+	
 	@OnMessage(CDemoFileInfo.class)
 	public void onFileInfo(Context ctx, CDemoFileInfo message){
+		//TODO emit stun data every second as part of interval, collect in parser.js
 		Entity ps = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 		//System.err.println(ps);
 		//load endgame stats
@@ -431,8 +430,8 @@ public class Main {
 		}
 	}
 
-boolean grpInit = false;
-Integer timeIdx;
+	boolean grpInit = false;
+	Integer timeIdx;
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
