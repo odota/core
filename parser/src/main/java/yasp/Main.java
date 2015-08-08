@@ -6,7 +6,7 @@ import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.GameEventDescriptor;
-import skadistats.clarity.model.GameRulesStateType;
+import skadistats.clarity.model.s1.GameRulesStateType;
 import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
