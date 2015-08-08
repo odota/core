@@ -89,22 +89,3 @@ block match_content
                 span.img-text
                   img.img-small(class=item.className src=item.img, title=item.name)
                   div.format #{item.val}
-  //-                    
-    script.
-      var width = document.getElementById('map').clientWidth;
-      var heatmap = h337.create({
-        container: document.getElementById('map'),
-        radius: 15*(width/600)
-      });
-    
-      // scale points by 600/127 units to fit to size of map
-      // offset points by 25 units to increase visibility
-      var posData = !{JSON.stringify(match.posData)};
-      adjustHeatmapData(posData, width/127, null, 25);
-    
-      $(".activate").on("mouseover", function(){
-        var pData = posData[Number($(this).attr('data-index'))]
-        var data = pData[$(this).attr('data-type')];
-        console.log("mouseover", pData, data);
-        heatmap.setData(data);
-      })

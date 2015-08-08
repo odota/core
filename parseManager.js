@@ -5,7 +5,7 @@ var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-var buildSets = require('./tasks/buildSets');
+var buildSets = require('./buildSets');
 var parsers;
 if (config.NODE_ENV !== "test" && cluster.isMaster) {
     buildSets(function() {
@@ -27,7 +27,7 @@ function start() {
         if (cluster.isMaster && config.NODE_ENV !== "test") {
             console.log("[PARSEMANAGER] starting master");
             for (var i = 0; i < capacity; i++) {
-                if (true) {
+                if (false) {
                     //fork a worker for each available parse core
                     forkWorker(i);
                 }

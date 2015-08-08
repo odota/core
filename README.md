@@ -6,7 +6,6 @@ YASP - YASP: Another Stats Page
 [![Dependency Status](https://david-dm.org/yasp-dota/yasp.svg)](https://david-dm.org/yasp-dota/yasp)
 [![devDependency Status](https://david-dm.org/yasp-dota/yasp/dev-status.svg)](https://david-dm.org/yasp-dota/yasp#info=devDependencies)
 [![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stories in Ready](https://badge.waffle.io/yasp-dota/yasp.svg?label=ready&title=Ready)](http://waffle.io/yasp-dota/yasp)
 
 Features
 ----
@@ -47,14 +46,13 @@ Features
   * Laning
   * Ward maps
   * Word clouds (text said and read in all chat)
-* Pro Games: See the latest professional matches (automatically parsed)
-* Live matches: (Under construction)
-* Comparison Tool: Compare players to each other and compute a percentile against all YASP users
+* Pro Games: Professional matches are automatically parsed
+* Comparison Tool: Computes a percentile for a player against all users
 * Rating Tracker: Keep track of MMR by adding a Steam account as a friend
-* Modular: YASP is built with a microservice architecture, with pieces that can be reused in other projects
+* Modular: Microservice architecture, with pieces that can be used independently
 * Scalable: Designed to scale to thousands of users.
-* Free: YASP puts no features behind paywalls.  All data is available for free to users.
-* Open Source: YASP encourages contributions from the Dota 2 developer community.
+* Free: No "premium" features.  All data is available for free to users.
+* Open Source: All code is publicly available for feedback and contributions from the Dota 2 developer community.
 
 Tech
 ----
@@ -62,7 +60,7 @@ Tech
 * Storage: MongoDB/Redis
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
-Starting YASP
+Quickstart
 ----
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
@@ -75,7 +73,7 @@ Sample Data
 
 Developer's Guide
 ----
-* YASP is built using a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
+* The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
 * Descriptions of each service:
     * web: This serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
@@ -115,17 +113,16 @@ Developer's Guide
     * `nodemon` watches the server files and restarts the server when changes are detected.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
-```
-//constants are currently built pre-run and written to file
-//web requires constants
-//worker requires constants (fullhistory needs to iterate through heroes)
-//parseManager requires constants (processparse needs to map combat log names to hero ids)
-//buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
-//scanner requires buildSets in order to avoid leaking players, retries until available
-//parseManager requires getRetrievers to get replay url, retries until available
-//parseManager requires getParsers, since we need to set concurrency before starting, retries until available
-//retriever, parser, proxy are independent
-```
+* constants are currently built pre-run and written to file
+* web requires constants
+* fullhistory requires constants (needs to iterate through heroes)
+* parser requires constants
+* buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
+* scanner requires buildSets in order to avoid leaking players, retries until available
+* parseManager requires getRetrievers to get replay url, retries until available
+* parseManager requires getParsers, since we need to set concurrency before starting, retries until available
+* retriever, proxy are independent
+
 History
 ----
 * Project started in August 2014

@@ -24,7 +24,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         if (err) {
             return cb(err);
         }
-        if (options.type==="skill" && !doc){
+        if (options.type === "skill" && !doc) {
             //we didn't add skill data, return immediately
             return cb(err);
         }
@@ -75,8 +75,14 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 cache.data[match_copy.match_id].skill = match_copy.skill;
                             }
                         }
-                        redis.setex("player:" + p.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                        redis.ttl("player:" + p.account_id, function(err, ttl) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            redis.setex("player:" + p.account_id, Number(ttl), zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                        });
                     }
+                    cb(err);
                     /*
                     //temporarily disable inserting new players into db
                     db.players.update({
@@ -94,7 +100,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         cb(err);
                     });
                     */
-                    cb(err);
                 });
             },
             //done with all 10 players
@@ -102,7 +107,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                 if (err) {
                     return cb(err);
                 }
-                //clear the cache for this match
+                //clear the match cache
                 redis.del("match:" + match.match_id, function(err) {
                     return cb(err, doc);
                 });

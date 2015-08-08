@@ -51,11 +51,11 @@ block match_content
       +data_table({id:"gold", summable:true, heading:"Gold"})
         each player, i in match.players
           +data_table_header(i, match)
-            tr(class = player.isRadiant ? "radiant" : "dire")
+            tr
               th Hero
               each val, key in constants.gold_reasons
                 th: abbr(title=val.tooltip)=val.name
-          tr
+          tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
             +hero_td(player)
