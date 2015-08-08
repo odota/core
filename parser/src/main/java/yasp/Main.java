@@ -19,11 +19,12 @@ import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
-import skadistats.clarity.wire.proto.S1UserMessages.CUserMsg_SayText2;
-import skadistats.clarity.wire.proto.DotaUserMessages.CDOTAUserMsg_ChatEvent;
-import skadistats.clarity.wire.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
-import skadistats.clarity.wire.proto.DotaUserMessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
+//TODO support both s1 and s2?
+import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
+import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
+import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
+import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
@@ -188,13 +189,14 @@ public class Main {
 	//TODO: overhead events, maybe can count crits/misses, etc.
 	//CDOTAUserMsg_OverheadEvent
 	
-	@OnMessage(CUserMsg_SayText2.class)
-	public void onAllChat(Context ctx, CUserMsg_SayText2 message) {
+	@OnMessage(CUserMessageSayText2.class)
+	public void onAllChat(Context ctx, CUserMessageSayText2 message) {
 		Entry entry = new Entry(time);
-		entry.unit =  String.valueOf(message.getPrefix());
-		entry.key =  String.valueOf(message.getText());
+		//entry.unit =  String.valueOf(message.getPrefix());
+		//entry.key =  String.valueOf(message.getText());
 		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
 		//entry.slot = message.getClient();
+		System.err.println(message);
 		entry.type = "chat";
 		es.output(entry);
 	}
