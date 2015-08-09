@@ -1,26 +1,22 @@
-#purchases.table-responsive.collapse.in
-  table.table.table-hover
-    each player, ind in match.players
-      - var hero = constants.heroes[player.hero_id]
-      - var p = player.parsedPlayer
-      if !(ind%5)
-        thead
-          tr
-            th Hero
-            - var bucket = 300
-            - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-              th= i/60+"'"
-      if !truncate || truncate.indexOf(ind) > -1
-          tr(class = player.isRadiant ? "success" : "danger")
-            +hero_td(player)
-            - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-              td
-                each entry in p.purchase_log || []
-                  if entry.time < i && entry.time >= i-bucket
-                    - var item = constants.items[entry.key]                 
-                    if item
-                      span.img-text
-                        img.img-small.item(src=item.img, title=entry.key)
-                        div.format-seconds(data-format-seconds=entry.time)=entry.time
-                    else
-                      =entry.key
++data_table({id:"build_times",heading:"Build Times"})
+  - var bucket = 300
+  each player, ind in match.players
+    - var p = player.parsedPlayer
+    +data_table_header(ind, match) 
+      th Hero
+      - for (var d = 0; d <= match.duration + bucket; d+=bucket)
+        th= d/60+"'"
+    if !truncate || truncate.indexOf(ind) > -1
+      tr(class = player.isRadiant ? "radiant" : "dire")
+        +hero_td(player)
+        - for (var d = 0; d <= match.duration + bucket; d+=bucket)
+          td
+            each entry in p.purchase_log || []
+              if entry.time < d && entry.time >= d-bucket
+                - var item = constants.items[entry.key]                 
+                if item
+                  span.img-text
+                    img.img-small.item(src=item.img, title=entry.key)
+                    div.format-seconds(data-format-seconds=entry.time)=entry.time
+                else
+                  =entry.key

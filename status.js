@@ -59,11 +59,13 @@ module.exports = function getStatus(cb) {
                 cb(err, result.length);
             });
         },
+        /*
         requested_last_day: function(cb) {
             redis.keys("requested_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
+        */
         last_added: function(cb) {
             db.matches.find({}, {
                 sort: {

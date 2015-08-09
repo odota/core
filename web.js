@@ -285,79 +285,19 @@ module.exports = app;
 var port = config.WEB_PORT || config.PORT;
 var num_processes = require('os').cpus().length;
 var cluster = require('cluster');
-if (true) {
-    //vanilla node clustering, doesn't work with socket.io
-    if (cluster.isMaster && config.NODE_ENV !== "test") {
-        for (var i = 0; i < num_processes; i++) {
-            cluster.fork();
-        }
-        cluster.on('exit', function(worker, code, signal) {
-            cluster.fork();
-        });
+//vanilla node clustering, doesn't work with socket.io
+//disable this if block for single web process or pm2 clustering
+if (cluster.isMaster && config.NODE_ENV !== "test" && false) {
+    for (var i = 0; i < num_processes; i++) {
+        cluster.fork();
     }
-    else {
-        var server = app.listen(port, function() {
-            console.log('[WEB] listening on %s', port);
-        });
-        //require('./socket.js')(server);
-    }
+    cluster.on('exit', function(worker, code, signal) {
+        cluster.fork();
+    });
 }
 else {
-    //sticky session clustering, required to work with socket.io
-    var net = require('net');
-    if (cluster.isMaster) {
-        // This stores our workers. We need to keep them to be able to reference
-        // them based on source IP address. It's also useful for auto-restart,
-        // for example.
-        var workers = [];
-        // Helper function for spawning worker at index 'i'.
-        var spawn = function(i) {
-            workers[i] = cluster.fork();
-            // Optional: Restart worker on exit
-            workers[i].on('exit', function(worker, code, signal) {
-                console.log('respawning worker', i);
-                spawn(i);
-            });
-        };
-        // Spawn workers.
-        for (var i = 0; i < num_processes; i++) {
-            spawn(i);
-        }
-        var worker_index = function(ip, len) {
-            console.log(ip);
-            var s = '';
-            for (var i = 0, _len = ip.length; i < _len; i++) {
-                if (parseInt(ip[i], 10)) {
-                    s += ip[i];
-                }
-            }
-            return Number(s) % len || 0;
-        };
-        // Create the outside facing server listening on our port.
-        var server = net.createServer({
-            pauseOnConnect: true
-        }, function(connection) {
-            // We received a connection and need to pass it to the appropriate
-            // worker. Get the worker for this connection's source IP and pass
-            // it the connection.
-            var worker = workers[worker_index(connection.remoteAddress, num_processes)];
-            worker.send('sticky-session:connection', connection);
-        }).listen(port);
-    }
-    else {
-        // Here you might use middleware, attach routes, etc.
-        // Don't expose our internal server to the outside.
-        var server = app.listen(0, 'localhost');
-        require('./socket')(server);
-        // Listen to messages sent from the master. Ignore everything else.
-        process.on('message', function(message, connection) {
-            if (message !== 'sticky-session:connection') {
-                return;
-            }
-            // Emulate a connection event on the server by emitting the
-            // event with the connection the master sent us.
-            server.emit('connection', connection);
-            connection.resume();
-        });
-    }
+    var server = app.listen(port, function() {
+        console.log('[WEB] listening on %s', port);
+    });
+    //require('./socket.js')(server);
 }

@@ -5,7 +5,7 @@ block content
     .col-md-8
       h1 Request a Parse
       h3
-        small We can only parse public matches where the replay hasn't expired.
+        small We can only parse replays of public matches within the last 7 days.
       ol
         li Enter a match ID.
         li Prove your humanity.
@@ -32,47 +32,10 @@ append footer_assets
   script.
     var match_id;
     var socket;
+    var checker;
     var onloadCallback = function() {
         grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
-    /*
-    function submit(response){
-      var field = document.getElementById("match_id");
-      match_id = field.value;
-      field.value = "";
-      if (!socket){
-        //set up the handlers
-        socket = io.connect();
-        socket.on('err', function(data){
-          $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-          $("#loading").css("display", "none");
-          document.getElementById("bar").style.width = "0%";
-          $("#request").show('slow');
-          grecaptcha.reset();
-        });
-        socket.on('log', function(data){
-          $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
-          $("#loading").css("display", "block");
-        });
-        socket.on('prog', function(prog){
-          document.getElementById("bar").style.width = prog + "%";
-          document.getElementById("bar").innerHTML = prog + "%";
-          $("#loading").css("display", "block");
-        });
-        socket.on('complete', function(){
-          // redir to match page (?)
-          window.location.assign("/matches/"+match_id);
-        });
-        }
-        socket.emit('request', {
-          match_id: match_id,
-          response: response
-        });
-        $("#request").hide('slow');
-        $("#messages").empty();
-        $("#progContainer").show('slow');
-    }
-    */
     function submit(response){
       var field = document.getElementById("match_id");
       match_id = field.value;
@@ -85,40 +48,83 @@ append footer_assets
       .done(function( msg ) {
         console.log(msg);
         if (msg.error){
-          $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
-          $("#loading").css("display", "none");
-          document.getElementById("bar").style.width = "0%";
-          $("#request").show('slow');
-          grecaptcha.reset();        
+          showError(msg.error);
         }
         else{
-        setInterval(function(){
-        $.ajax({
-          url: "/request_job?id="+msg.job.id
-        })
-        .done(function( msg ) {
-          if (!msg.job){
-          //job doesn't exist, we're done
-          window.location.assign("/matches/"+match_id);
-          }
-          else{
-          var prog = msg.job.progress;
-          console.log(prog);
-          document.getElementById("bar").style.width = prog + "%";
-          document.getElementById("bar").innerHTML = prog + "%";
-          $("#loading").css("display", "block");
-        }
-        });
-        }, 1000);
+        checker = setInterval(function(){poll(msg.job.id)}, 2000);
       }
       });
       $("#request").hide('slow');
       $("#messages").empty();
       $("#progContainer").show('slow');
-    //post the match id, recaptcha response via ajax
-    //endpoint may return error
-    //otherwise endpoint returns job id
-    //ajax poll for job progress
-    //display error if job failed
-    //redirect when job disappears
     }
+    function showError(data){
+          $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
+          $("#loading").css("display", "none");
+          document.getElementById("bar").style.width = "0%";
+          $("#request").show('slow');
+          console.log("clearing interval %s", checker);
+          clearInterval(checker);
+          grecaptcha.reset();
+    }
+    function poll(job_id){
+          $.ajax({
+            url: "/request_job?id="+job_id
+          })
+          .done(function( msg ) {
+            if (!msg.job){
+            //job doesn't exist, we're done
+            window.location.assign("/matches/"+match_id);
+            }
+            else if(msg.job.error){
+              showError(msg.job.error);
+            }
+            else{
+              var prog = msg.job.progress;
+              console.log(prog);
+              document.getElementById("bar").style.width = prog + "%";
+              document.getElementById("bar").innerHTML = prog + "%";
+              $("#loading").css("display", "block");
+            }
+          });
+      }
+  //-
+    script.
+      /*
+      function submit(response){
+        var field = document.getElementById("match_id");
+        match_id = field.value;
+        field.value = "";
+        if (!socket){
+          //set up the handlers
+          socket = io.connect();
+          socket.on('err', function(data){
+            $("#messages").append("<div class='alert alert-danger' role='alert'>" + data + "</div>");
+            $("#loading").css("display", "none");
+            document.getElementById("bar").style.width = "0%";
+            $("#request").show('slow');
+            grecaptcha.reset();
+          });
+          socket.on('log', function(data){
+            $("#messages").append("<div class='alert alert-info' role='alert'>" + data + "</div>");
+            $("#loading").css("display", "block");
+          });
+          socket.on('prog', function(prog){
+            document.getElementById("bar").style.width = prog + "%";
+            document.getElementById("bar").innerHTML = prog + "%";
+            $("#loading").css("display", "block");
+          });
+          socket.on('complete', function(){
+            // redir to match page (?)
+            window.location.assign("/matches/"+match_id);
+          });
+          }
+          socket.emit('request', {
+            match_id: match_id,
+            response: response
+          });
+          $("#request").hide('slow');
+          $("#messages").empty();
+          $("#progContainer").show('slow');
+      }
+      */

@@ -6,7 +6,6 @@ YASP - YASP: Another Stats Page
 [![Dependency Status](https://david-dm.org/yasp-dota/yasp.svg)](https://david-dm.org/yasp-dota/yasp)
 [![devDependency Status](https://david-dm.org/yasp-dota/yasp/dev-status.svg)](https://david-dm.org/yasp-dota/yasp#info=devDependencies)
 [![Join the chat at https://gitter.im/yasp-dota/yasp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasp-dota/yasp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stories in Ready](https://badge.waffle.io/yasp-dota/yasp.svg?label=ready&title=Ready)](http://waffle.io/yasp-dota/yasp)
 
 Features
 ----
@@ -47,14 +46,13 @@ Features
   * Laning
   * Ward maps
   * Word clouds (text said and read in all chat)
-* Pro Games: See the latest professional matches (automatically parsed)
-* Live matches: (Under construction)
-* Comparison Tool: Compare players to each other and compute a percentile against all YASP users
+* Pro Games: Professional matches are automatically parsed
+* Comparison Tool: Computes a percentile for a player against all users
 * Rating Tracker: Keep track of MMR by adding a Steam account as a friend
-* Modular: YASP is built with a microservice architecture, with pieces that can be reused in other projects
+* Modular: Microservice architecture, with pieces that can be used independently
 * Scalable: Designed to scale to thousands of users.
-* Free: YASP puts no features behind paywalls.  All data is available for free to users.
-* Open Source: YASP encourages contributions from the Dota 2 developer community.
+* Free: No "premium" features.  All data is available for free to users.
+* Open Source: All code is publicly available for feedback and contributions from the Dota 2 developer community.
 
 Tech
 ----
@@ -62,21 +60,21 @@ Tech
 * Storage: MongoDB/Redis
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
-Starting YASP
+Quickstart
 ----
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
 * Build `npm run build`
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services with Foreman.
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services.
 
 Sample Data
 ----
-* https://github.com/yasp-dota/testfiles/blob/master/dota.zip contains a database dump that can be imported using mongorestore if a larger data set is desired.
+* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump that can be imported using mongorestore if a larger data set is desired.
 
 Developer's Guide
 ----
-* YASP is built using a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
-* Descriptions of each service, listed in `Procfile`:
+* The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
+* Descriptions of each service:
     * web: This serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
@@ -99,6 +97,8 @@ Developer's Guide
             * `min_players=10`
             * `hero_id=X`
             * By permuting all three skill levels with the list of heroes, we can get up to 500 matches for each combination.
+    * mmr: Processes MMR requests
+    * fullhistory: Processes full history requests
 * Pipeline: Generally parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
     * Request: Requests are processed from the Request page via socket.io.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
@@ -107,22 +107,22 @@ Developer's Guide
 * Player/match caching: We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
 * A client side bundle of JS is built (and minified in production) using Webpack.  If you want to make changes to client side JS, you will want to run the watch script `npm run watch` in order to automatically rebuild after making changes.
-* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman`
+* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman nodemon`
     * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
-    * `foreman` is used to manage services.  It takes care of reading `.env` and assigning ports to services.  Installing it allows you to run individual services.
+    * `foreman` is used to run services individually.  The executable name is `nf`.
+    * `nodemon` watches the server files and restarts the server when changes are detected.
 * Tests:  `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
-```
-//constants are currently built pre-run and written to file
-//web requires constants
-//worker requires constants (fullhistory needs to iterate through heroes)
-//parseManager requires constants (processparse needs to map combat log names to hero ids)
-//buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
-//scanner requires buildSets in order to avoid leaking players, retries until available
-//parseManager requires getRetrievers to get replay url, retries until available
-//parseManager requires getParsers, since we need to set concurrency before starting, retries until available
-//retriever, parser, proxy are independent
-```
+* constants are currently built pre-run and written to file
+* web requires constants
+* fullhistory requires constants (needs to iterate through heroes)
+* parser requires constants
+* buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
+* scanner requires buildSets in order to avoid leaking players, retries until available
+* parseManager requires getRetrievers to get replay url, retries until available
+* parseManager requires getParsers, since we need to set concurrency before starting, retries until available
+* retriever, proxy are independent
+
 History
 ----
 * Project started in August 2014

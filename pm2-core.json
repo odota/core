@@ -7,15 +7,6 @@
          "script": "mmr.js"
       },
       {
-         "script": "retriever.js"
-      },
-      {
-         "script": "parser.js"
-      },
-      {
-         "script": "proxy.js"
-      },
-      {
          "script": "parseManager.js"
       },
       {
@@ -25,7 +16,13 @@
          "script": "worker.js"
       },
       {
+         "script": "fullhistory.js"
+      },
+      {
          "script": "web.js",
+         "env": {
+            "WEB_PORT": 5000
+         },
          "exec_mode": "cluster",
          "instances": 0
       }

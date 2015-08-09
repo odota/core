@@ -193,6 +193,8 @@ public class Main {
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getPrefix());
 		entry.key =  String.valueOf(message.getText());
+		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
+		//entry.slot = message.getClient();
 		entry.type = "chat";
 		es.output(entry);
 	}
@@ -566,8 +568,6 @@ Integer timeIdx;
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
 		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
-		//flush the log if it was buffered	
-		es.flush();
 		long tMatch = System.currentTimeMillis() - tStart;
 		System.err.format("total time taken: %s\n", (tMatch) / 1000.0);
 	}

@@ -1,13 +1,14 @@
 var processApi = require('./processApi');
-var processFullHistory = require('./processFullHistory');
 var r = require('./redis');
 var jobs = r.jobs;
 var kue = r.kue;
 var updateNames = require('./tasks/updateNames');
-var buildSets = require('./tasks/buildSets');
+var buildSets = require('./buildSets');
+var utility = require('./utility');
+var invokeInterval = utility.invokeInterval;
 var domain = require('domain');
 var async = require('async');
-
+var numCPUs = require('os').cpus().length;
 //don't need these handlers when kue supports job ttl in 0.9?
 //ttl fails jobs rather than requeuing them
 jobs.watchStuckJobs();
@@ -36,43 +37,31 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
+    //updatenames queues an api request
     //jobs.process('api', processApi);
-    jobs.process('fullhistory', processFullHistory);
+    //process requests (api call, waits for parse to complete)
+    jobs.process('request', numCPUs, processApi);
     invokeInterval(buildSets, 60 * 1000);
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
 });
 
-function invokeInterval(func, delay) {
-    //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function foo() {
-        console.log("running %s", func.name);
-        func(function(err) {
-            if (err) {
-                //log the error, but wait until next interval to retry
-                console.log(err);
-            }
-            setTimeout(foo, delay);
-        });
-    })();
-}
-
 function clearActiveJobs(cb) {
-        jobs.active(function(err, ids) {
-            if (err) {
-                return cb(err);
-            }
-            async.mapSeries(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.log("cleared active jobs");
+    jobs.active(function(err, ids) {
+        if (err) {
+            return cb(err);
+        }
+        async.mapSeries(ids, function(id, cb) {
+            kue.Job.get(id, function(err, job) {
+                if (job) {
+                    console.log("requeued job %s", id);
+                    job.inactive();
+                }
                 cb(err);
             });
+        }, function(err) {
+            console.log("cleared active jobs");
+            cb(err);
         });
-    }
+    });
+}

@@ -39,7 +39,8 @@ function advQuery(query, cb) {
         console.timeEnd('querying database');
         console.time('expanding matches');
         var expanded_matches = [];
-        matches.forEach(function(m) {
+        for (var i = 0; i < matches.length; i++) {
+            var m = matches[i];
             if (m.players) {
                 //get all_players and primary player
                 m.all_players = m.players.slice(0);
@@ -47,23 +48,26 @@ function advQuery(query, cb) {
                 //use the mongodb select criteria to filter the player list
                 //create a new match with this primary player
                 //all players for tournament games, otherwise player matching select criteria
-                m.players.forEach(function(p) {
+                for (var j = 0; j < m.players.length; j++) {
+                    var p = m.players[j];
                     var pass = true;
                     //check mongo query, if starting with player, this means we select a single player, otherwise select all players
                     for (var key in query.mongo_select) {
                         var split = key.split(".");
                         //break apart the query and determine whether we are trying to get a single player for this match
                         if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
+                            //if the query starts with "players" and the property of this player doesn't match, don't add it to expanded matches
                             pass = false;
                         }
                     }
                     if (pass) {
-                        m.players = [p];
-                        expanded_matches.push(JSON.parse(JSON.stringify(m)));
+                        var match_copy = JSON.parse(JSON.stringify(m));
+                        match_copy.players = [p];
+                        expanded_matches.push(match_copy);
                     }
-                });
+                }
             }
-        });
+        }
         matches = expanded_matches;
         console.timeEnd('expanding matches');
         console.time("retrieving parsed data");

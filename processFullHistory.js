@@ -10,7 +10,7 @@ var generateJob = utility.generateJob;
 var config = require('./config');
 var api_keys = config.STEAM_API_KEY.split(",");
 var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(15 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(10 * steam_hosts.length, api_keys.length);
 module.exports = function processFullHistory(job, cb) {
     var player = job.data.payload;
     //if test or only want 500 of any hero, use the short array
@@ -105,6 +105,10 @@ module.exports = function processFullHistory(job, cb) {
                 console.log("non-retryable error");
                 return cb(err);
             }
+            //if !body.result, try again
+            if (!body.result) {
+                return getApiMatchPage(player, url, cb);
+            }
             //response for match history for single player
             var resp = body.result.matches;
             var start_id = 0;
@@ -117,7 +121,7 @@ module.exports = function processFullHistory(job, cb) {
             var rem = body.result.results_remaining;
             if (rem === 0) {
                 //no more pages
-                cb(err);
+                return cb(err);
             }
             else {
                 //paginate through to max 500 games if necessary with start_at_match_id=
@@ -125,7 +129,7 @@ module.exports = function processFullHistory(job, cb) {
                 parse.query.start_at_match_id = (start_id - 1);
                 parse.search = null;
                 url = urllib.format(parse);
-                getApiMatchPage(player, url, cb);
+                return getApiMatchPage(player, url, cb);
             }
         });
     }

@@ -63,22 +63,20 @@ function scanApi(seq_num) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.eachSeries(resp, function(match, cb) {
-                if (match.leagueid) {
+            async.each(resp, function(match, cb) {
+                if (match.leagueid && !config.DISABLE_PRO_PARSING) {
                     //parse tournament games
                     match.parse_status = 0;
                 }
                 async.each(match.players, function(p, cb) {
                     //TODO: when able to parse source 2 games, remove this check 
-                    if (p.account_id in trackedPlayers && match.engine!==1) {
+                    if (p.account_id in trackedPlayers && match.engine !== 1) {
                         //queued
                         redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
-                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 0;
                     }
                     if (p.account_id in userPlayers && match.parse_status !== 0) {
                         //skipped, but only if not already queued
-                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 3;
                     }
                     if (p.account_id in ratingPlayers && match.lobby_type === 7) {
@@ -96,6 +94,7 @@ function scanApi(seq_num) {
                     }
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
+                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         insertMatch(match, function(err) {
                             close(err, cb);
                         });
@@ -109,7 +108,6 @@ function scanApi(seq_num) {
                             console.log("failed to insert match from scanApi %s", match.match_id);
                             return cb(err);
                         }
-                        redis.set("match_seq_num", next_seq_num);
                         return cb(err);
                     }
                 });
@@ -119,6 +117,7 @@ function scanApi(seq_num) {
                     return scanApi(seq_num);
                 }
                 else {
+                    redis.set("match_seq_num", next_seq_num);
                     //completed inserting matches
                     //wait 100ms for each match less than 100
                     var delay = (100 - resp.length) * 100;

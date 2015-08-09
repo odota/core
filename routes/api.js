@@ -22,7 +22,7 @@ api.get('/matches', function(req, res, next) {
     advQuery({
         select: select,
         project: null, //just project default fields
-        limit: Math.min(limit, 100),
+        limit: Math.min(limit, 100) || 100,
         js_agg: js_agg,
         js_limit: js_limit,
         js_skip: js_skip,

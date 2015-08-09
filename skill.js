@@ -1,15 +1,17 @@
 var utility = require('./utility');
+var invokeInterval = utility.invokeInterval;
 var async = require('async');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var constants = require("./constants.json");
+var updatePlayerCaches = require('./updatePlayerCaches');
 var results = {};
 var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
-var steam_hosts = config.STEAM_API_HOST.split(",");
-var parallelism = Math.min(4 * steam_hosts.length, api_keys.length);
+var parallelism = Math.min(10, api_keys.length);
+//TODO use cluster to spawn a separate worker for each skill level?
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
 var permute = [];
@@ -21,6 +23,7 @@ for (var i = 0; i < heroes.length; i++) {
         });
     }
 }
+//permute = [{skill:1,hero_id:1}];
 scanSkill();
 
 function scanSkill() {
@@ -29,10 +32,7 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        if (err) {
-            console.log(err);
-        }
-        //start over
+        console.log(err);
         scanSkill();
     });
 }
@@ -53,17 +53,29 @@ function getPageData(start, options, cb) {
         //data is in data.result.matches
         var matches = data.result.matches;
         async.each(matches, function(m, cb) {
-            var match_id = m.match_id;
-            if (!results[match_id]) {
-                tryInsertSkill({
-                    match_id: match_id,
-                    skill: options.skill
-                }, 0);
-                //don't wait for callback, since it may need to be retried
-            }
-            cb();
+            var data = {
+                match_id: m.match_id,
+                players: m.players,
+                skill: options.skill
+            };
+            //results[m.match_id] = 1;
+            updatePlayerCaches({
+                match_id: data.match_id,
+                skill: data.skill
+            }, {
+                type: "skill",
+                //pass players in options since we don't want to insert skill players (overwrites details)
+                players: data.players
+            }, function(err, doc) {
+                if (doc) {
+                    //if doc exists, we modified an existing doc, so we added skill data
+                    added[data.match_id] = 1;
+                }
+                //delete results[data.match_id];
+                return cb(err);
+            });
         }, function(err) {
-            console.log("matches to retry: %s, skill_added: %s", Object.keys(results).length, Object.keys(added).length);
+            console.log("waiting for insert: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);
@@ -73,40 +85,5 @@ function getPageData(start, options, cb) {
                 getPageData(start, options, cb);
             }
         });
-    });
-}
-
-function tryInsertSkill(data, retries) {
-    var match_id = data.match_id;
-    var skill = data.skill;
-    if (retries > 3) {
-        delete results[match_id];
-        return;
-    }
-    results[match_id] = 1;
-    db.matches.update({
-        match_id: match_id
-    }, {
-        $set: {
-            skill: skill
-        }
-    }, function(err, num) {
-        if (err) {
-            return console.log(err);
-        }
-        //if num, we modified a match in db
-        if (num) {
-            //TODO since skill data is "added on" it's not saved in player caches
-            //right now we store the skill data in redis so we can lookup skill data on-the-fly when viewing player profiles
-            //cache skill data in redis
-            added[match_id] = 1;
-            redis.setex("skill:" + match_id, 60 * 60 * 24 * 7, skill);
-        }
-        else {
-            //try again later
-            return setTimeout(function() {
-                return tryInsertSkill(data, retries + 1);
-            }, 60 * 1000);
-        }
     });
 }

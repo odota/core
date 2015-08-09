@@ -1,12 +1,11 @@
 var processParse = require('./processParse');
-var processApi = require('./processApi');
 var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
-var buildSets = require('./tasks/buildSets');
+var buildSets = require('./buildSets');
 var parsers;
 if (config.NODE_ENV !== "test" && cluster.isMaster) {
     buildSets(function() {
@@ -33,7 +32,7 @@ function start() {
                     forkWorker(i);
                 }
                 else {
-                    //run a job in parallel in a single thread for each parse core (saves more memory)
+                    //run workers in parallel in a single thread (uses less memory)
                     runWorker(i);
                 }
             }
@@ -54,24 +53,23 @@ function start() {
 
         function runWorker(i) {
             console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-            //process requests (api call, waits for parse to complete)
-            jobs.process('request', processApi);
-            //process parses
             jobs.process('parse', function(job, ctx, cb) {
                 console.log("starting parse job: %s", job.id);
                 job.parser_url = getParserUrl(job);
                 //TODO check if the assigned url is active
                 //if not, use ctx to pause and cb(err) (this consumes a retry)
                 //keep checking status and resume the worker when the parse worker is alive again
-                processParse(job, null, cb);
+                processParse(job, ctx, cb);
             });
 
             function getParserUrl(job) {
-                //node <0.12 doesn't have RR cluster scheduling, so parsing on remote workers may cause us to lose a request if the remote is crashed by another job using the same core/thread.
-                //process parse requests on localhost to avoid issue
+                //node <0.12 doesn't have RR cluster scheduling, so parsing on remote workers may cause us to lose a request if the remote is crashed by another job using the same core/thread
+                //for now, process parse requests on localhost to avoid issue
+                /*
                 if (job.data.payload.request) {
                     return job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
                 }
+                */
                 return process.env.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
             }
         }

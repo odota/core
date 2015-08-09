@@ -1,5 +1,4 @@
 var db = require('./db');
-var moment = require('moment');
 var r = require('./redis');
 var redis = r.client;
 var utility = require('./utility');
@@ -11,17 +10,12 @@ module.exports = function getReplayUrl(match, cb) {
         if (err){
             return cb(err);
         }
-        if (match.fileName) { 
-            //if there's already a filename, we don't need a url
+        if (match.fileName || match.url) { 
+            //if there's already a filename or url, we don't to retrieve
             //this is for custom jobs!
-            //we can't just return if there is a URL since the url may be invalid (too old)
             return cb(err);
         }
-        if (match.start_time < moment().subtract(7, 'days').format('X')) {
-            console.log("replay expired, not getting replay url");
-            return cb(err);
-        }
-        if (!err && doc && doc.url) {
+        if (doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;
             return cb(err);

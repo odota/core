@@ -2,7 +2,7 @@ extend /layout
 include /mixins/progress_bar
 
 block content
-  .row.match-top 
+  .row
     .col-md-1
       a(href=player.profileurl || "#", target="_blank")
         if player.avatarmedium
@@ -10,7 +10,7 @@ block content
         //else
           //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
     .col-md-6
-      h1.inline-header #{player.personaname || player.account_id} 
+      h3 #{player.personaname || player.account_id} 
         small
           //-
             a(href="?json=1" title="View as JSON")

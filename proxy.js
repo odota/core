@@ -14,4 +14,4 @@ var config = require('./config');
 var httpProxy = require('http-proxy');
 httpProxy.createProxyServer({
     target: 'http://api.steampowered.com'
-}).listen(config.PROXY_PORT || config.PORT);
+}).listen(config.OPENSHIFT_NODEJS_PORT || config.PROXY_PORT || config.PORT, config.OPENSHIFT_NODEJS_IP);

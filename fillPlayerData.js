@@ -30,29 +30,18 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         };
         if (cache && !Object.keys(options.query.js_select).length) {
             console.log("player cache hit %s", player.account_id);
-            console.time("retrieving skill data");
-            //cache does not contain skill data since it's added after the original insert!
-            //we can do db lookups for skill data (or only go until we hit a match with skill data)
-            //or store skill data in redis for fast lookups?
-            async.each(cache.data, function(match, cb) {
-                redis.get("skill:" + match.match_id, function(err, result) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    if (result) {
-                        match.skill = Number(result);
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.timeEnd("retrieving skill data");
-                //var filtered = filter(cache.data, options.query.js_select);
-                //var aggData = aggregator(filtered, null);
-                processResults(err, {
-                    data: cache.data,
-                    aggData: cache.aggData,
-                    unfiltered: cache.data
-                });
+            //var filtered = filter(cache.data, options.query.js_select);
+            //var aggData = aggregator(filtered, null);
+            //unpack cache.data into an array
+            var arr = [];
+            for (var key in cache.data){
+                arr.push(cache.data[key]);
+            }
+            cache.data = arr;
+            processResults(err, {
+                data: cache.data,
+                aggData: cache.aggData,
+                unfiltered: cache.data
             });
         }
         else {
@@ -65,7 +54,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 options.query.limit = 20000;
             }
             else {
-                options.query.limit = 1000;
+                options.query.limit = 200;
             }
             options.query.sort = {
                 match_id: -1
@@ -83,15 +72,20 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            if (!Object.keys(options.query.js_select).length) {
-                //resave cache
+            if (!cache && !Object.keys(options.query.js_select).length && player.account_id !== constants.anonymous_account_id) {
+                //pack data into hash for cache
+                var ids = {};
+                results.data.forEach(function(m){
+                    ids[m.match_id] = m;
+                });
+                //save cache
                 cache = {
-                    data: results.data,
+                    data: ids,
                     aggData: results.aggData
                 };
                 console.log("saving player cache %s", player.account_id);
                 console.time("deflate");
-                redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                redis.setex("player:" + player.account_id, 60 * 60 * 24, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                 console.timeEnd("deflate");
             }
             console.log("results: %s", results.data.length);

@@ -3,13 +3,14 @@ var async = require('async');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
 /**
- * Get all players who have visited and queue for full history
+ * Get all players who have visited and don't have full history, and queue for full history
  **/
 module.exports = function fullhistory(cb, short) {
     db.players.find({
         last_visited: {
             $ne: null
-        }
+        },
+        full_history_time: null
     }, {
         sort: {
             full_history_time: 1,
