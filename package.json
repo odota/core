@@ -36,7 +36,7 @@
     "d3": "^3.5.6",
     "datatables": "^1.10.7",
     "datatables-bootstrap3-plugin": "^0.4.0",
-    "dota2": "yasp-dota/node-dota2",
+    "dota2": "yasp-dota/node-dota2#steamv1",
     "dota2-minimap-hero-sprites": "~1.0.1",
     "dotenv": "^1.2.0",
     "express": "~4.13.3",

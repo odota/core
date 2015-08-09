@@ -21,9 +21,9 @@ async.each(a, function(i, cb) {
     var dotaReady = false;
     var relationshipReady = false;
     var client = new steam.SteamClient();
-    var steamUser = new steam.SteamUser(client);
-    var steamFriends = new steam.SteamFriends(client);
-    var Dota2 = new dota2.Dota2Client(client, true);
+    client.steamUser = new steam.SteamUser(client);
+    client.steamFriends = new steam.SteamFriends(client);
+    client.Dota2 = new dota2.Dota2Client(client, true);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -33,26 +33,26 @@ async.each(a, function(i, cb) {
     client.connect();
     client.on('connected', function() {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
-        steamUser.logOn(logOnDetails);
+        client.steamUser.logOn(logOnDetails);
     });
     client.on("logOnResponse", function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", client.steamID);
-        steamFriends.setPersonaName("[YASP] " + client.steamID);
+        client.steamFriends.setPersonaName("[YASP] " + client.steamID);
         steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
-        Dota2.launch();
-        steamFriends.on("relationships", function() {
+        client.Dota2.launch();
+        client.steamFriends.on("relationships", function() {
             //console.log(Steam.EFriendRelationship);
             console.log("searching for pending friend requests...");
             //friends is a object with key steam id and value relationship
             //console.log(Steam.friends);
-            for (var prop in client.friends) {
+            for (var prop in client.steamFriends.friends) {
                 //iterate through friends and accept requests/populate hash
                 var steamID = prop;
-                var relationship = client.friends[prop];
+                var relationship = client.steamFriends.friends[prop];
                 //friends that came in while offline
-                if (relationship === client.EFriendRelationship.PendingInvitee) {
+                if (relationship === steam.EFriendRelationship.RequestRecipient) {
                     client.addFriend(steamID);
                     console.log(steamID + " was added as a friend");
                 }
@@ -60,14 +60,14 @@ async.each(a, function(i, cb) {
             }
             console.log("finished searching");
         });
-        steamFriends.once("relationships", function() {
+        client.steamFriends.once("relationships", function() {
             //console.log("relationships obtained");
             relationshipReady = true;
             allDone();
         });
-        steamFriends.on("friend", function(steamID, relationship) {
+        client.steamFriends.on("friend", function(steamID, relationship) {
             //immediately accept incoming friend requests
-            if (relationship === client.EFriendRelationship.PendingInvitee) {
+            if (relationship === steam.EFriendRelationship.RequestRecipient) {
                 console.log("friend request received");
                 client.addFriend(steamID);
                 console.log("friend request accepted");
@@ -86,7 +86,7 @@ async.each(a, function(i, cb) {
         //reset
         process.exit(1);
     });
-    Dota2.once("ready", function() {
+    client.Dota2.once("ready", function() {
         //console.log("Dota 2 ready");
         dotaReady = true;
         allDone();
@@ -151,7 +151,7 @@ function genStats() {
             steamID: key,
             replays: steamObj[key].replays,
             profiles: steamObj[key].profiles,
-            friends: Object.keys(steamObj[key].friends).length
+            friends: Object.keys(steamObj[key].steamFriends.friends).length
         };
     }
     var data = {
