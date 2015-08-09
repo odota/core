@@ -55,6 +55,7 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
+            //TODO this function can be called more than once and we only want to send a response once
             if (err) {
                 return res.json({
                     error: err
