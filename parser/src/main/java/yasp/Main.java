@@ -54,6 +54,8 @@ public class Main {
 	Integer nameIdx;
 	Integer steamIdx;
 	boolean initialized = false;
+	boolean grpInit = false;
+	Integer timeIdx;
 
 	//@OnMessage(GeneratedMessage.class)
 	public void onMessage(Context ctx, GeneratedMessage message) {
@@ -426,8 +428,7 @@ public class Main {
 		}
 	}
 
-	boolean grpInit = false;
-	Integer timeIdx;
+
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
