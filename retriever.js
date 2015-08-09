@@ -21,7 +21,9 @@ async.each(a, function(i, cb) {
     var dotaReady = false;
     var relationshipReady = false;
     var client = new steam.SteamClient();
-    client.Dota2 = new dota2.Dota2Client(client, true);
+    var steamUser = new steam.SteamUser(client);
+    var steamFriends = new steam.SteamFriends(client);
+    var Dota2 = new dota2.Dota2Client(client, true);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -30,18 +32,16 @@ async.each(a, function(i, cb) {
     };
     client.connect();
     client.on('connected', function() {
-        var steamUser = new steam.SteamUser(client);
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
         steamUser.logOn(logOnDetails);
     });
     client.on("logOnResponse", function onSteamLogOn() {
         console.log("[STEAM] Logged on %s", client.steamID);
-        var steamFriends = new steam.SteamFriends(client);
         steamFriends.setPersonaName("[YASP] " + client.steamID);
         steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
-        client.Dota2.launch();
+        Dota2.launch();
         steamFriends.on("relationships", function() {
             //console.log(Steam.EFriendRelationship);
             console.log("searching for pending friend requests...");
@@ -86,7 +86,7 @@ async.each(a, function(i, cb) {
         //reset
         process.exit(1);
     });
-    client.Dota2.once("ready", function() {
+    Dota2.once("ready", function() {
         //console.log("Dota 2 ready");
         dotaReady = true;
         allDone();
