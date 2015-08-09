@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.Arrays;
 import com.google.gson.Gson;
 
-@UsesEntities
 public class Main {
 	private final Logger log = LoggerFactory.getLogger(Main.class.getPackage().getClass());
 	float INTERVAL = 1;
@@ -180,7 +179,7 @@ public class Main {
 	CHAT_MESSAGE_COURIER_RESPAWNED = 11;
 	*/
 		else{
-			//System.err.format("%s %s\n", time, u);
+			System.err.println(message);
 		}
 	}
 	
@@ -198,23 +197,6 @@ public class Main {
 	
 	@OnMessage(CDemoFileInfo.class)
 	public void onFileInfo(Context ctx, CDemoFileInfo message){
-		//TODO emit stun data every second as part of interval, collect in parser.js
-		Entity ps = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
-		//System.err.println(ps);
-		//load endgame stats
-		for (int i = 0; i < numPlayers; i++) {
-			Long steamid = (Long)ps.getState()[steamIdx+i];
-			steamid_to_slot.put(steamid, i);
-			if (stunIdx!=null){
-			String stuns = String.valueOf(ps.getState()[stunIdx+i]);
-			Entry entry = new Entry();
-			entry.slot=i;
-			entry.type="stuns";
-			entry.key=stuns;
-			es.output(entry);
-			}
-		}
-
 		//load epilogue
 		CDemoFileInfo info = message;
 		List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
@@ -238,7 +220,6 @@ public class Main {
 			entry.value = info.getGameInfo().getDota().getMatchId();
 			es.output(entry);
 		}
-
 		if (true){
 			//emit epilogue event
 			Entry entry = new Entry();
@@ -251,15 +232,15 @@ public class Main {
 	@OnCombatLogEntry
 	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
 		//System.err.println(cle);
-		//System.err.format("%s\n", cle);
 		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
 		//System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
 		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
+		//TODO dump the raw gameevent object as json, but need to use stringtables to lookup names
 		//TODO use DOTA_COMBATLOG_TYPES to determine type rather than our own strings
 		//TODO just dump all the fields that aren't null, let js take care of post-processing?  implement tostring that dumps json
-		//TODO would need js object mapping combat log names to BSON names
+		//TODO would need js object mapping combat log names to current BSON names ("damage", "healing"...)
 		switch(cle.getType()) {
 		case 0:
 			//damage
@@ -439,7 +420,7 @@ public class Main {
 			//dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
 			//System.err.println(grp);
-			//this should be game clock time (pauses don't increment it?)
+			//this should be game clock time (pauses don't increment it)
 			timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
 			grpInit = true;
 		}
@@ -459,56 +440,59 @@ public class Main {
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-		//TODO: slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
-		//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
-		//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
-		
-		//can do all these stats with each playerresource interval?
-		//m_iKills.0000
-		//m_iAssists.0000
-		//m_iDeaths.0000
-		//m_iTowerKills.0000
-		//m_iRoshanKills.0000
-		
-		//booleans to check at endgame
-		//m_bVoiceChatBanned.0000
-		//m_bHasRandomed.0000
-		//m_bHasRepicked.0000
-		
-		//gem, rapier time?
-		//TODO: https://github.com/yasp-dota/yasp/issues/333
-		
-		//time dead, count number of intervals where this value is >0?
-		//m_iRespawnSeconds.0000
+					//TODO: slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
+					//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
+					//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
+					
+					//can do all these stats with each playerresource interval?
+					//m_iKills.0000
+					//m_iAssists.0000
+					//m_iDeaths.0000
+					//m_iTowerKills.0000
+					//m_iRoshanKills.0000
+					
+					//booleans to check at endgame
+					//m_bVoiceChatBanned.0000
+					//m_bHasRandomed.0000
+					//m_bHasRepicked.0000
+					
+					//gem, rapier time?
+					//TODO: https://github.com/yasp-dota/yasp/issues/333
+					
+					//time dead, count number of intervals where this value is >0?
+					//m_iRespawnSeconds.0000
 					initialized = true;
 				}
-					for (int i = 0; i < numPlayers; i++) {
-						Integer hero = (Integer)pr.getState()[heroIdx+i];
-						if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
-							//hero_to_slot.put(hero, i);
-							slot_to_hero.put(i, hero);
-							Entry entry = new Entry(time);
-							entry.type="hero_log";
-							entry.slot=i;
-							entry.key=String.valueOf(hero);
-							es.output(entry);
-						}
-					
+				for (int i = 0; i < numPlayers; i++) {
+					Integer hero = (Integer)pr.getState()[heroIdx+i];
+					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
+						//hero_to_slot.put(hero, i);
+						slot_to_hero.put(i, hero);
 						Entry entry = new Entry(time);
-						entry.type = "interval";
-						entry.slot = i;
-						entry.gold=(Integer)pr.getState()[goldIdx+i];
-						entry.lh=(Integer)pr.getState()[lhIdx+i];
-						entry.xp=(Integer)pr.getState()[xpIdx+i];
-						int handle = (Integer)pr.getState()[handleIdx+i];
-						Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
-						if (e!=null){
-							entry.x=(Integer)e.getProperty("m_cellX");
-							entry.y=(Integer)e.getProperty("m_cellY");
-						}
+						entry.type="hero_log";
+						entry.slot=i;
+						entry.key=String.valueOf(hero);
 						es.output(entry);
 					}
+				
+					Entry entry = new Entry(time);
+					entry.type = "interval";
+					entry.slot = i;
+					entry.gold=(Integer)pr.getState()[goldIdx+i];
+					entry.lh=(Integer)pr.getState()[lhIdx+i];
+					entry.xp=(Integer)pr.getState()[xpIdx+i];
+					entry.stuns=(Float)pr.getState()[stunIdx+i];
+					Long steamid = (Long)pr.getState()[steamIdx+i];
+					steamid_to_slot.put(steamid, i);
+					int handle = (Integer)pr.getState()[handleIdx+i];
+					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
+					if (e!=null){
+						entry.x=(Integer)e.getProperty("m_cellX");
+						entry.y=(Integer)e.getProperty("m_cellY");
+					}
+					es.output(entry);
 				}
+			}
 			//log any new wards placed
 			//TODO: deduplicate code
 			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");

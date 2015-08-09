@@ -152,6 +152,7 @@ function runParse(data, cb) {
             //console.log(e);
         },
         "hero_log": function(e) {
+            //lookups are used to map combat log names to player slots
             //get hero name by id
             var h = constants.heroes[e.key];
             hero_to_slot[h ? h.name : e.key] = e.slot;
@@ -360,7 +361,6 @@ function runParse(data, cb) {
             //push a copy to chat
             parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
-        "stuns": populate,
         "interval": function(e) {
             //store hero state at each interval for teamfight lookup
             if (!intervalState[e.time]) {
@@ -377,6 +377,9 @@ function runParse(data, cb) {
                 curr_teamfight = null;
             }
             if (e.time >= 0) {
+                e.type = "stuns";
+                e.value = e.stuns;
+                populate(e);
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0) {
                     e.interval = true;
@@ -392,8 +395,8 @@ function runParse(data, cb) {
                     e.type = "lh";
                     e.value = e.lh;
                     populate(e);
+                    e.interval = false;
                 }
-                e.interval = false;
                 //add to positions
                 //not currently storing pos data
                 // if (e.x && e.y) {

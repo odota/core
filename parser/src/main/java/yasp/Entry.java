@@ -25,6 +25,7 @@ public class Entry {
     public Integer xp;
     public Integer x;
     public Integer y;
+    public Float stuns;
     public Entry(){
     }
     public Entry(Integer time){
