@@ -19,11 +19,12 @@ import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
 //TODO support both s1 and s2?
+//s1 all chat is called cusermsg_saytext2
+//s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
@@ -66,7 +67,7 @@ public class Main {
 	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
 		Entry entry = new Entry(time);
 		entry.type = "clicks";
-		//todo need to get the entity by index, and figure out the owner entity, then figure out the player controlling
+		//TODO need to get the entity by index, and figure out the owner entity, then figure out the player controlling
 		//assumes all clicks are made by the controlling player
 		entry.slot = (Integer)message.getEntindex()-2;
 		entry.key = String.valueOf(message.getOrderType());
@@ -123,13 +124,13 @@ public class Main {
 			entry.team = value;
 			entry.slot = player1;
 			es.output(entry);
-			//value (2/3 radiant/dire killed tower)
+			//value (2/3 radiant/dire killed tower, recently 0/1?)
 			//player1 = slot of player who killed tower (-1 if nonplayer)
 			//player/unit killed tower, but don't know which tower
 		}
 		else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
 			entry.team = player1;
-			//player1 = team that killed roshan?
+			//player1 = team that killed roshan? (2/3)
 			es.output(entry);
 		}
 		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
@@ -231,10 +232,11 @@ public class Main {
 
 	@OnCombatLogEntry
 	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
-		//System.err.println(cle);
+		//System.err.println(new Gson().toJson(cle.getGameEvent()));
 		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
 		//System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
 		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
+		//sets global time to time in this combat log entry
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
 		//TODO dump the raw gameevent object as json, but need to use stringtables to lookup names
@@ -349,8 +351,12 @@ public class Main {
 			break;
 		case 14:
 			//player stats
-			//TODO: don't really know what this does, attacker seems to be a hero, target can be an item or hero?!
-			//System.err.println(cle);
+			//TODO: don't really know what this does, following fields seem to be populated
+			//attackername
+			//targetname
+			//targetsourcename
+			//value (1-15)
+			System.err.println(cle);
 			entry.type = "player_stats";
 			entry.unit = cle.getAttackerName();
 			entry.key = cle.getTargetName();
@@ -382,6 +388,7 @@ public class Main {
 			//1 is tower?
 			//2 is rax?
 			//3 is ancient
+			//this is only really useful if we can get WHICH tower/rax was killed
 			entry.key = String.valueOf(cle.getValue());
 			//es.output(entry);
 			break;
@@ -395,16 +402,7 @@ public class Main {
 			entry.type="modifier_refresh";
 			break;
 		default:
-			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
-			if (type!=null){
-				entry.type = type.name();
-				System.err.format("%s (%s): %s\n", type.name(), type.ordinal(), cle.getGameEvent());
-				es.output(entry);
-			}
-			else{
-				System.err.format("unknown combat log type: %s\n", cle.getType());
-				System.err.println(cle);
-			}
+			System.err.println(cle);
 			break;
 		}
 	}
