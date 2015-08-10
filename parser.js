@@ -33,6 +33,11 @@ else {
             console.log(req.body);
             //run the deployment command
             exec('npm run deploy-parser', function(error, stdout, stderr) {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
+                if (error) {
+                    console.log('exec error: ' + error);
+                }
                 process.exit(0);
             });
         }
