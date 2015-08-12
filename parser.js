@@ -55,6 +55,10 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
+            if (res.headerSent){
+                //don't send multiple responses if exit() is called multiple times
+                return;
+            }
             if (err) {
                 return res.json({
                     error: err
