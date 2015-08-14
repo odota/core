@@ -29,26 +29,22 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         h4 Personal Parameters
         .form-group
           label Hero
-          select.form-control(name="hero_id")#hero_id
-            option(value) Any Hero
+          select.form-control(multiple name="hero_id" placeholder="Any Hero")#hero_id
             each entry in constants.alpha_heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group  
           label Faction
-          select.form-control(name="isRadiant")
-            option(value) Any Faction
+          select.form-control(multiple name="isRadiant" placeholder="Any Faction")#isRadiant
             option(value="1", selected=(q["isRadiant"] && q["isRadiant"][0]===1)) Radiant
             option(value="0", selected=(q["isRadiant"] && q["isRadiant"][0]===0)) Dire
         .form-group  
           label Result
-          select.form-control(name="win")
-            option(value) Any Result
+          select.form-control(multiple name="win" placeholder="Any Result")#win
             option(value="1", selected=(q["win"] && q["win"][0]===1)) Wins
             option(value="0", selected=(q["win"] && q["win"][0]===0)) Losses
         .form-group  
           label Lane/Role
-          select.form-control(name="lane_role")
-            option(value) Any Lane
+          select.form-control(multiple name="lane_role" placeholder="Any Lane")#lane_role
             each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
 
@@ -56,20 +52,17 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         h4 Match Parameters
         .form-group
           label Patch
-          select.form-control(name="patch")
-            option(value) Any Patch
+          select.form-control(multiple name="patch" placeholder="Any Patch")#patch
             each entry, i in constants.patch
               option(value=i, selected=(q["patch"] && q["patch"][0]===i))=entry.name
         .form-group
           label Game Mode
-          select.form-control(name="game_mode")
-            option(value) Any Mode
+          select.form-control(multiple name="game_mode" placeholder="Any Mode")#game_mode
             each entry in constants.game_mode
               option(value=entry.id, selected=(q.game_mode && q.game_mode[0]===entry.id))=entry.name
         .form-group
           label Lobby Type
-          select.form-control(name="lobby_type")
-            option(value) Any Lobby
+          select.form-control(multiple name="lobby_type" placeholder="Any Lobby")#lobby_type
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
     //-
@@ -102,3 +95,12 @@ script.
         create: true,
         maxItems: 5
     });
+    $("#hero_id").selectize({
+         sortField: 'text'
+    });
+    $("#isRadiant").selectize({maxItems: 1});
+    $("#win").selectize({maxItems: 1});
+    $("#lane_role").selectize({maxItems: 1});
+    $("#patch").selectize({maxItems: 1});
+    $("#game_mode").selectize({maxItems: 1});
+    $("#lobby_type").selectize({maxItems: 1});

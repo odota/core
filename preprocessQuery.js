@@ -15,26 +15,21 @@ module.exports = function(query) {
         "compare_account_id": 1
     };
     for (var key in query.select) {
-        if (query.select[key] === "") {
-            delete query.select[key];
+        //arrayify the element
+        query.select[key] = [].concat(query.select[key]).map(function(e) {
+            if (typeof e === "object") {
+                //just return the object if it's an array or object
+                return e;
+            }
+            //numberify this element
+            return Number(e);
+        });
+        if (mongoAble[key]) {
+            //get the first element
+            query.mongo_select[key] = query.select[key][0];
         }
-        else {
-            query.select[key] = [].concat(query.select[key]).map(function(e) {
-                if (typeof e === "object") {
-                    //just return the object if it's an array or object
-                    return e;
-                }
-                //numberify this element
-                return Number(e);
-            });
-            if (mongoAble[key]) {
-                //get the first element
-                query.mongo_select[key] = query.select[key][0];
-            }
-            else if (!exceptions[key]){
-                //expects an array
-                query.js_select[key] = query.select[key];
-            }
+        else if (!exceptions[key]) {
+            query.js_select[key] = query.select[key];
         }
     }
     var default_project = {
