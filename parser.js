@@ -15,6 +15,7 @@ var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PARSER_PORT || config.PORT;
+var shutdown = false;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
@@ -25,11 +26,17 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
     });
 }
 else {
+    var server = app.listen(port, function() {
+        var host = server.address().address;
+        console.log('[PARSER] listening at http://%s:%s', host, port);
+    });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
         var err;
         //TODO verify the POST is from github/secret holder
-        if (req.body.ref === "refs/heads/master") {
+        //TODO we may miss deploys if we are shutting down when we receive another push
+        if (req.body.ref === "refs/heads/master" && !shutdown) {
+            shutdown = true;
             console.log(req.body);
             //run the deployment command
             exec('npm run deploy-parser', function(error, stdout, stderr) {
@@ -55,7 +62,7 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            if (res.headerSent){
+            if (res.headersSent) {
                 //don't send multiple responses if exit() is called multiple times
                 return;
             }
@@ -69,10 +76,6 @@ else {
             }
             return res.json(parsed_data);
         });
-    });
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSER] listening at http://%s:%s', host, port);
     });
 }
 
