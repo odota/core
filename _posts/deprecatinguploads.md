@@ -16,6 +16,6 @@ With the upcoming release v1.5, we've made the decision to remove uploads.  Ther
 
 On the other hand, we've worked to improve the match request by ID experience, including the use of sockets for live updates!
 
-<script src="https://gist.github.com/howardc93/52410d3c534b36ffc128.js"></script>
+<script src="https://gist.github.com/howardchung/52410d3c534b36ffc128.js"></script>
 
 -Howard
