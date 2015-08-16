@@ -80,7 +80,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             if (err) {
                                 return cb(err);
                             }
-                            redis.setex("player:" + p.account_id, Number(ttl), zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex("player:" + p.account_id, Number(ttl) || 24 * 60 * 60, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
                     cb(err);

@@ -72,7 +72,7 @@ else {
                 });
             }
             if (err && config.NODE_ENV !== "test") {
-                throw err;
+                process.exit(1);
             }
             return res.json(parsed_data);
         });
@@ -438,7 +438,7 @@ function runParse(data, cb) {
 
     function exit(err) {
         if (err) {
-            console.log(err.stack);
+            console.error(err.stack);
         }
         else {
             parsed_data = utility.getParseSchema();
