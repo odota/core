@@ -62,7 +62,7 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            if (err && res.headersSent) {
+            if (err && !res.headersSent) {
                 return res.json({
                     error: err.message || err.code || err
                 });
