@@ -8,14 +8,13 @@
 Thanks go to all our users, especially those who donated!
 
 <!--more-->
-
-YASP has grown quite a bit since we first started this project.  There are two things that we consider our "core features":
+The site has grown quite a bit since we first started this project.  There are two things that we consider our "core features":
 * Replay parsing.  As far as we're aware, we are the only service that offers free replay parsing of Dota 2 matches.
 * Personal analytics.  We want to provide users with the tools to compute useful (and funny) stats about their own matches.
 
 To achieve the second goal, it's essential to get full match histories for users.
 
-Starting now, we'll be getting full match histories for all users who sign into YASP.
+Starting now, we'll be getting full match histories for all users who sign in.
 There may still be a delay (especially after we add lots of new users), but we'll eventually get to everyone.
 We now add new matches of all users, active or not, to our database.
 However, we continue to only automatically parse the matches containing an active user.

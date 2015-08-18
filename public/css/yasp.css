@@ -169,14 +169,14 @@ h3 img {
     border-color: #848484;
 }
 
-.btn-yasp {
+.btn-query {
     color: #000;
     background-color: #BBF0FD;
     border-color: #BBF0FD;
 }
 
-.btn-yasp:hover,
-.btn-yasp:focus {
+.btn-query:hover,
+.btn-query:focus {
     color: #fff;
     background-color: #31b0d5;
     border-color: #269abc;

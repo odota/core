@@ -41,7 +41,7 @@ block match_content
             td
               //img.img-small(src=player.avatar)
               if (player.last_visited)
-                img.user(src='/public/images/favicon-16x16.png', title="YASP User")
+                img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
               | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
             td= player.level
             td= player.kills

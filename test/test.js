@@ -349,7 +349,7 @@ describe("web", function() {
             supertest(app).get('/')
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
-                .expect(200).expect(/YASP/).end(function(err, res) {
+                .expect(200).end(function(err, res) {
                     done(err);
                 });
         });
@@ -570,12 +570,6 @@ describe("POST /upload", function() {
     it('/ should 200', function(done) {
     browser.visit('/', function(err) {
         browser.assert.status(200);
-        done(err);
-    });
-});
-it('/ should say YASP', function(done) {
-    browser.visit('/', function(err) {
-        browser.assert.text('body', /YASP/);
         done(err);
     });
 });

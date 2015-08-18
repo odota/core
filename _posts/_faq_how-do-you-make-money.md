@@ -5,13 +5,15 @@
   "author": "Admin"
 }}}
 
-YASP is a side project of a group of college students.  As such, we're not looking to make money off the site.
+This site is run as a side project of a couple of college students.
+As such, it doesn't need to turn a profit and we're not looking to make money from operating it.
+We're also happy to share our knowledge with the community by completely open-sourcing the entire site and stack we run it on.
 
-Here's how we're able to keep YASP running for free:
+Here's how we're able to keep paying the server bills:
 * Donations.  We sell <a href='/carry' target="_blank">Cheese</a> to users who want to help support the site.
-* Ads. These help subsidize server costs.
-* Efficient design.  We've separated out YASP into components that we can scale individually.  We end up not paying as much for resources we don't need.
-* Reducing load.  For example, we only automatically parse the replays of active users, since those are the matches most likely to be looked at.
-* Volunteers.  We don't need to pay employees as all developers are volunteers.
+* Ads. Running these helps subsidize server costs.
+* Efficient design.  The site is separated into components that we can scale individually.  We end up not paying as much for resources we don't need.
+* Reducing load.  We only parse the matches of users who have visited recently, in order to conserve resources for those who actually use the service.
+* Volunteer developers.  We don't need to pay employees as all developers are volunteers contributing in their free time.
 
-Anything that's left, we cover out-of-pocket!
+Anything that's left, the core dev team pays out-of-pocket!

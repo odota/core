@@ -1,6 +1,6 @@
 {{{ "title": "v2.0.0", "tags": ["release"], "date": "4-1-2015", "author": "Howard and Albert" }}}
 
-YASP is jumping a version number to v2.0.0!
+We're jumping a version number to v2.0.0!
 
 <!--more-->
 
@@ -25,10 +25,10 @@ YASP is jumping a version number to v2.0.0!
 * Using protobufjs for reduced build times
 * Enabled parsing on distributed hosts.  If you've got a server we could use, let us know!
 
-Like what we're doing? Please consider some [cheese](http://yasp.co/carry). While we're doing everything we can to cut costs, and take no profit for ourselves, hosting isn't cheap!
+Like what we're doing? Please consider some cheese. While we're doing everything we can to cut costs, and take no profit for ourselves, hosting isn't cheap!
 
-Can't afford any cheese? That's okay! Tell your friends about YASP :)
+Can't afford any cheese? That's okay! Tell your friends about the site :)
 
 Thank you, thank you, thank you for all your support! It's what keeps us going.
 
--Howard and Albert (The YASP Team!)
+-Howard and Albert (core devs)

@@ -11,10 +11,10 @@ Introducing advanced analysis of throws.
 
 With parsed data of all our users, we're able to analyze really what causes a throw.
 
-After many sleepless nights, the YASP team has figured out exactly that, and have developed a new metric: the 322 Level.
+After many sleepless nights, the dev team has figured out exactly that, and have developed a new metric: the 322 Level.
 
 Named in honor of Solo and his next-level attempt at revolutionizing the monetization of the professional Dota 2 scene, this statistic
-consists of many variables that only YASP's parsed data can provide. Here are a few of the aggregations and analyses included:
+consists of many variables that only our parsed data can provide. Here are a few of the aggregations and analyses included:
 
 * Number of couriers bought and fed
 * Aegis denies
