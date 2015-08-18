@@ -176,9 +176,9 @@ public class Main {
 		else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
 		}
 		/*
-	CHAT_MESSAGE_COURIER_LOST = 10;
-	CHAT_MESSAGE_COURIER_RESPAWNED = 11;
-	*/
+		CHAT_MESSAGE_COURIER_LOST = 10;
+		CHAT_MESSAGE_COURIER_RESPAWNED = 11;
+		*/
 		else{
 			System.err.println(message);
 		}
