@@ -34,7 +34,7 @@ function computeMatchData(match) {
             player.parsedPlayer = {};
         });
         if (match.parsed_data) {
-            if (match.parsed_data.chat.length) {
+            if (match.parsed_data.chat) {
                 if (match.all_players) {
                     // aggregate all the words in these matches for each player_match (don't do this for single match display)
                     // aggregation of all words in all chat this player has experienced
