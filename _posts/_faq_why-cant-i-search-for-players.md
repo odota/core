@@ -5,7 +5,7 @@
   "author": "Admin"
 }}}
 
-To save on storage costs, YASP doesn't have every match ever played.  We only add the matches of users who sign in.
+To save on storage costs, we don't index every match ever played.  We only add the matches of users who sign in.
 
 While we COULD implement a search function, you probably won't be able to find most matches if you search for an ID at random.
 

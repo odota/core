@@ -15,6 +15,7 @@ var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PARSER_PORT || config.PORT;
+var shutdown = false;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
@@ -25,11 +26,17 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
     });
 }
 else {
+    var server = app.listen(port, function() {
+        var host = server.address().address;
+        console.log('[PARSER] listening at http://%s:%s', host, port);
+    });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
         var err;
         //TODO verify the POST is from github/secret holder
-        if (req.body.ref === "refs/heads/master") {
+        //TODO we may miss deploys if we are shutting down when we receive another push
+        if (req.body.ref === "refs/heads/master" && !shutdown) {
+            shutdown = true;
             console.log(req.body);
             //run the deployment command
             exec('npm run deploy-parser', function(error, stdout, stderr) {
@@ -55,21 +62,17 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            //TODO this function can be called more than once and we only want to send a response once
-            if (err) {
+            if (err && !res.headersSent) {
                 return res.json({
-                    error: err
+                    error: err.message || err.code || err
                 });
             }
             if (err && config.NODE_ENV !== "test") {
-                throw err;
+                console.error(err.stack);
+                process.exit(1);
             }
             return res.json(parsed_data);
         });
-    });
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSER] listening at http://%s:%s', host, port);
     });
 }
 
@@ -94,55 +97,7 @@ function runParse(data, cb) {
     var intervalState = {};
     var teamfight_cooldown = 15;
     var parsed_data;
-    d.run(function() {
-        //set up pipe chain
-        parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "parser/target/stats-0.1.0.jar"
-    ], {
-            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        parseStream = ndjson.parse();
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            bz = spawn("bunzip2");
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                parseStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }) + "\n");
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    parseStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }) + "\n");
-                }
-            });
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        parser.stdout.pipe(parseStream);
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parseStream.on('data', handleStream);
-        parseStream.on('end', function() {
-            exit(error);
-        });
-    });
-    d.on('error', function(err) {
-        exit(err);
-    });
+    //parse logic
     //capture events streamed from parser and set up state for post-processing
     //these events are generally not pushed to event buffer (except hero_log)
     var streamTypes = {
@@ -432,12 +387,56 @@ function runParse(data, cb) {
             populate(e);
         }
     };
+    d.run(function() {
+        //set up pipe chain
+        parser = spawn("java", ["-jar",
+        "-Xmx64m",
+        "parser/target/stats-0.1.0.jar"
+    ], {
+            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+        parseStream = ndjson.parse();
+        if (fileName) {
+            inStream = fs.createReadStream(fileName);
+            inStream.pipe(parser.stdin);
+        }
+        else if (url) {
+            bz = spawn("bunzip2");
+            inStream = progress(request.get({
+                url: url,
+                encoding: null,
+                timeout: 30000
+            })).on('progress', function(state) {
+                parseStream.write(JSON.stringify({
+                    "type": "progress",
+                    "key": state.percent
+                }) + "\n");
+            }).on('response', function(response) {
+                if (response.statusCode !== 200) {
+                    parseStream.write(JSON.stringify({
+                        "type": "error",
+                        "key": response.statusCode
+                    }) + "\n");
+                }
+            });
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+        }
+        parser.stdout.pipe(parseStream);
+        parser.stderr.on('data', function(data) {
+            console.log(data.toString());
+        });
+        parseStream.on('data', handleStream);
+        parseStream.on('end', function() {
+            exit(error);
+        });
+    });
+    d.on('error', exit);
 
     function exit(err) {
-        if (err) {
-            console.log(err.stack);
-        }
-        else {
+        if (!err) {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match ";
             console.time(message);
@@ -455,7 +454,7 @@ function runParse(data, cb) {
                 fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
             }
         }
-        return cb(err ? (err.message || err.code || err) : null, parsed_data);
+        return cb(err, parsed_data);
     }
 
     function handleStream(e) {

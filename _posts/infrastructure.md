@@ -19,7 +19,7 @@ Thanks to his hard work, it's very fast, and we're usually able to complete a pa
 
 Infrastructure:
 We currently run on two primary nodes, affectionately named:
-yasp-core: Serves up the site, takes care of database operations, runs background worker tasks.
+core: Serves up the site, takes care of database operations, runs background worker tasks.
 parser1: Parses replays and emits a stream of JSON events over HTTP.  A 4-core parsing node can handle about 10000 replays a day.
 
 We also employ a host of smaller non-dedicated VMs for retrieving replay data and proxying requests.

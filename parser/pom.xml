@@ -31,7 +31,7 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.github.yasp-dota</groupId>
+            <groupId>com.github.skadistats</groupId>
             <artifactId>clarity</artifactId>
             <version>-SNAPSHOT</version>
         </dependency>

@@ -69,7 +69,7 @@ Quickstart
 
 Sample Data
 ----
-* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump that can be imported using mongorestore if a larger data set is desired.
+* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump if you want a medium-sized data set to work with.
 
 Developer's Guide
 ----
@@ -130,6 +130,6 @@ History
 
 Core Development
 ----
-* howardc93
+* howardchung
 * albertcui
 * nickhh

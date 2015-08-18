@@ -1,7 +1,5 @@
 var utility = require('./utility');
-var isSignificant = utility.isSignificant;
 var reduceMatch = utility.reduceMatch;
-var constants = require('./constants.json');
 var aggregator = require('./aggregator');
 var async = require('async');
 var db = require('./db');
@@ -18,7 +16,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
     }, {
         //don't upsert if inserting skill data
         upsert: options.type !== "skill",
-        //explicitly declare we want the pre-modification document
+        //explicitly declare we want the pre-modification document in the cb
         "new": false
     }, function(err, doc) {
         if (err) {
@@ -30,8 +28,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         }
         async.each(match.players || options.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
                     //if player cache doesn't exist, skip
-                    var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                    var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                     if (cache) {
                         var match_copy = JSON.parse(JSON.stringify(match));
                         if (options.type !== "skill") {
@@ -79,12 +80,12 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             if (err) {
                                 return cb(err);
                             }
-                            redis.setex("player:" + p.account_id, Number(ttl), zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
                     cb(err);
                     /*
-                    //temporarily disable inserting new players into db
+                    //temporarily disable inserting new players into db on match insert
                     db.players.update({
                         account_id: p.account_id
                     }, {
