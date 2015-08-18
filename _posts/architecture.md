@@ -22,7 +22,7 @@ Thus, the site is built with the following modular components:
 * Parser, in charge of downloading and parsing replays
 * Retriever, in charge of interfacing with the Steam GC to get replay salts and player MMRs
 
-We currently run web, worker, and parser on a single box we call yasp-core.
+We currently run web, worker, and parser on a single box we call `core`.
 However, the retrievers must be distributed on different hosts due to the IP limitation.
 
 Scaling:
