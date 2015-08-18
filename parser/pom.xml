@@ -31,9 +31,9 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.github.yasp-dota</groupId>
+            <groupId>com.github.skadistats</groupId>
             <artifactId>clarity</artifactId>
-            <version>fdc2405</version>
+            <version>-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
