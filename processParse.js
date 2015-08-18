@@ -28,11 +28,16 @@ module.exports = function processParse(job, ctx, cb) {
             var target = job.parser_url + "&url=" + url + "&fileName=" + (fileName ? fileName : "");
             console.log("target: %s", target);
             request({
-                url: target,
-                json: true
+                url: target
             }, function(err, resp, body) {
                 if (err || resp.statusCode !== 200 || !body) {
                     return cb(err || resp.statusCode || "http request error");
+                }
+                try {
+                    body = JSON.parse(body);
+                }
+                catch (e) {
+                    return cb(e);
                 }
                 if (body.error) {
                     return cb(body.error);
