@@ -20,17 +20,17 @@ import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
 //TODO support both s1 and s2?
 //s1 all chat is called cusermsg_saytext2
-//s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
+import skadistats.clarity.wire.s1.proto.Usermessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
+//s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
-import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
-import skadistats.clarity.wire.s1.proto.Usermessages.CUserMsg_SayText2;
 //import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
 //import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
 //import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
+import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
+import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -188,16 +188,27 @@ public class Main {
 		}
 	}
 	
+	@OnMessage(CUserMsg_SayText2.class)
+	public void onAllChatS1(Context ctx, CUserMsg_SayText2 message) {
+		Entry entry = new Entry(time);
+		entry.unit =  String.valueOf(message.getPrefix());
+		entry.key =  String.valueOf(message.getText());
+		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
+		//entry.slot = message.getClient();
+		entry.type = "chat";
+		es.output(entry);
+	}
+	
 	@OnMessage(CUserMessageSayText2.class)
-	public void onAllChat(Context ctx, CUserMessageSayText2 message) {
+	public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
 		Entry entry = new Entry(time);
 		//entry.unit =  String.valueOf(message.getPrefix());
 		//entry.key =  String.valueOf(message.getText());
 		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
 		//entry.slot = message.getClient();
 		System.err.println(message);
-		entry.type = "chat";
-		es.output(entry);
+		//entry.type = "chat";
+		//es.output(entry);
 	}
 	
 	@OnMessage(CDemoFileInfo.class)

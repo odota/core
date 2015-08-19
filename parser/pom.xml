@@ -30,7 +30,7 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.skadistats</groupId>
+            <groupId>com.github.skadistats</groupId>
             <artifactId>clarity</artifactId>
             <version>-SNAPSHOT</version>
         </dependency>
