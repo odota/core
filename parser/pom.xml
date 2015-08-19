@@ -5,7 +5,6 @@
     <version>0.1.0</version>
     <packaging>jar</packaging>
     <name>yasp-parser</name>
-    <description>Parser for YASP</description>
     <developers>
         <developer>
             <id>albertcui</id>
@@ -31,7 +30,7 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.github.skadistats</groupId>
+            <groupId>com.skadistats</groupId>
             <artifactId>clarity</artifactId>
             <version>-SNAPSHOT</version>
         </dependency>
