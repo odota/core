@@ -20,7 +20,7 @@ import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
 //TODO support both s1 and s2?
 //s1 all chat is called cusermsg_saytext2
-import skadistats.clarity.wire.s1.proto.Usermessages.CUserMsg_SayText2;
+import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 //s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
