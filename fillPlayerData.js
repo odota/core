@@ -72,6 +72,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
+            /*
             if (!cache && !Object.keys(options.query.js_select).length && player.account_id !== constants.anonymous_account_id) {
                 //pack data into hash for cache
                 var ids = {};
@@ -88,6 +89,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 redis.setex("player:" + player.account_id, 60 * 60 * 24, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                 console.timeEnd("deflate");
             }
+            */
             console.log("results: %s", results.data.length);
             player.aggData = results.aggData;
             //convert heroes hash to array and sort
