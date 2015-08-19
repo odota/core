@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.github.skadistats</groupId>
             <artifactId>clarity</artifactId>
-            <version>-SNAPSHOT</version>
+            <version>8b09c758</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
