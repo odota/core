@@ -16,9 +16,9 @@ var defaults = {
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
     //set the specific *_PORT values in .env or in process environment.  Otherwise fallback to PORT
-    "WEB_PORT": "",
-    "RETRIEVER_PORT": "",
-    "PARSER_PORT": "",
+    "WEB_PORT": "5000",
+    "RETRIEVER_PORT": "5100",
+    "PARSER_PORT": "5200",
     "PROXY_PORT": "",
     "MONGO_URL": "mongodb://localhost/dota",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
