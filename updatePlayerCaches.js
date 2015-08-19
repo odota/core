@@ -27,6 +27,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
+            return cb();
+            /*
                 redis.get("player:" + p.account_id, function(err, result) {
                     if (err) {
                         return cb(err);
@@ -84,7 +86,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         });
                     }
                     cb(err);
-                    /*
+
                     //temporarily disable inserting new players into db on match insert
                     db.players.update({
                         account_id: p.account_id
@@ -100,8 +102,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         }
                         cb(err);
                     });
-                    */
                 });
+                */
             },
             //done with all 10 players
             function(err) {
