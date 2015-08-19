@@ -5,7 +5,6 @@
   <artifactId>stats</artifactId>
   <name>yasp-parser</name>
   <version>0.1.0</version>
-  <description>Parser for YASP</description>
   <developers>
     <developer>
       <id>albertcui</id>
@@ -41,12 +40,6 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
