@@ -21,14 +21,14 @@ Howard's a software engineer (Duke University '15) and casual Dota 2 player.
 His favorite heroes are Nature's Prophet, Terrorblade, and Lycan, so he's probably that guy you hate in your pub matches.
 He also enjoys playing ultimate and board games.
 
-Howard works on the replay parsing/backend design, making sure the system can scale properly.  He also built the heatmap, word cloud, querying, and "played with" features.
+Howard works on the replay parsing/backend design, making sure the system can scale properly.  He also built the heatmap, word cloud, querying, comparison, rating tracker, histogram, and "played with" features.
 
 <div>
 <img src="https://avatars3.githubusercontent.com/u/3838552?v=3&s=150"/>
 </div>
 ###Albert Cui:
 * [albertcui.com](http://albertcui.com)
-* [/u/TripleA](http://reddit.com/user/TripleA)
+* [/u/TripleA](http://reddit.com/user/Triple_A)
 
 Albert came up with the original idea for the site and manages the server deployments.  He built the donation system and works on the frontend design.
 
