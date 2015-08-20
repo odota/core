@@ -17,7 +17,7 @@ var defaults = {
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
     //set the specific *_PORT values in .env or in process environment.  Otherwise fallback to PORT
     "WEB_PORT": "5000",
-    "RETRIEVER_PORT": "5100",
+    "RETRIEVER_PORT": "",
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",
     "MONGO_URL": "mongodb://localhost/dota",
