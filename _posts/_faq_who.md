@@ -5,9 +5,9 @@
   "author": "Admin"
 }}}
 
-Development began in August 2014, with a public release in January 2015.  
-
 The project is maintained by the core dev team, along with contributions from interested community developers.
+
+Development began in August 2014, with a public release in January 2015.  
 
 <div>
 <img src="https://avatars2.githubusercontent.com/u/3134520?v=3&s=150"/>
