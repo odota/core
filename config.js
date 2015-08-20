@@ -19,7 +19,7 @@ var defaults = {
     "WEB_PORT": "5000",
     "RETRIEVER_PORT": "5100",
     "PARSER_PORT": "5200",
-    "PROXY_PORT": "",
+    "PROXY_PORT": "5300",
     "MONGO_URL": "mongodb://localhost/dota",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
