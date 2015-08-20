@@ -309,7 +309,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return b.games - a.games;
         });
         //limit to 200 max players
-        teammates_arr = teammates.arr.slice(0,200);
+        teammates_arr = teammates_arr.slice(0,200);
         queries.fillPlayerNames(teammates_arr, function(err) {
             console.timeEnd('teammate list');
             cb(err, teammates_arr);
