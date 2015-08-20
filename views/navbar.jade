@@ -2,11 +2,11 @@
   .navbar(style="margin-bottom:0px")
     .navbar-header
       a.navbar-brand(href='/')
-        strong.theme-blue YASP  
+        strong.theme-blue YASP
         a.navbar-toggle(data-toggle='collapse', data-target='.navbar-collapse')
-          span.icon-bar        
-          span.icon-bar        
-          span.icon-bar 
+          span.icon-bar
+          span.icon-bar
+          span.icon-bar
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
         li: a(href="/request") Request
@@ -15,7 +15,7 @@
         li: a(href='/page/1') Blog
         li: a(href='/status') Status
         li: a(href='/carry') Carry
-        
+
       ul.nav.navbar-nav.navbar-right
         if user
           li: a(href="/players/"+user.account_id) Profile
