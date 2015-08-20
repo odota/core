@@ -1,5 +1,5 @@
 {{{
-  "title": "I want to develop a feature/I found a bug! What do I do?",
+  "title": "What do I do if I want to develop a feature/report a bug?",
   "tags": ["faq"],
   "date": "2-2-2015 12:08 AM",
   "author": "Admin"

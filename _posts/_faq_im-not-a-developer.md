@@ -1,5 +1,5 @@
 {{{
-  "title": "I can't code, but I still want to help!",
+  "title": "How can I help if I don't know how to code?",
   "tags": ["faq"],
   "date": "2-2-2015 12:09 AM",
   "author": "Admin"
