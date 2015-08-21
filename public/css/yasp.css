@@ -4,6 +4,18 @@
     max-width: 1170px;
 }
 
+
+.mdl-data-table tbody tr {
+    height: 0px;
+}
+
+.mdl-data-table tbody>tr.rotate>td {
+    transform: rotate(270deg);
+    vertical-align: middle;
+    padding: 0;
+    border: none;
+}
+
 /*---------- Ads */
 
 .leaderboard {
@@ -18,11 +30,11 @@
 
 /*---------- Team Colors */
 
-.radiant {
+.radiant, .radiant a {
     color: #00BC25;
 }
 
-.dire {
+.dire, .dire a {
     color: #CA1111;
 }
 
@@ -31,6 +43,10 @@
 .img-small {
     margin: 1px;
     height: 24px;
+}
+
+.player-color {
+    border-left: 5px solid;
 }
 
 /*---------- Map */

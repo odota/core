@@ -1,5 +1,5 @@
 mixin data_table_header(i, match)
   if !(i%(match.players.length/2))
-    tr
-      td.lead(class=i ? "radiant":"dire")= i ? "Dire" : "Radiant"
-    block
+    thead
+      tr
+        block

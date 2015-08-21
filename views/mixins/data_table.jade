@@ -7,5 +7,11 @@ mixin data_table(options, players)
       block
       if options.summable
         tr
-        tr
           td.lead= "Totals"
+
+mixin data_table_body(i, match)
+  if !(i%(match.players.length/2))
+    td(class=i ? "radiant":"dire", rowspan="#{match.players.length/2}")= i ? "Dire" : "Radiant"
+  else
+    td
+  block
