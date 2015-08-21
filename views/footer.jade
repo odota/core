@@ -1,10 +1,14 @@
-footer.footer
-  .container
-    .row
-      .col-md-4.text-center
+footer.mdl-mega-footer
+  //
+    .container
+      .row
+
+  .mdl-mega-footer__top-section
+    .mdl-grid
+      .mdl-cell.mdl-cell--4-col
         p Buy some cheese. Help pay for servers.
         p Reaching the goal each day keeps us running.
-      .col-md-4.text-center
+      .mdl-cell.mdl-cell--4-col
         .meter_wrapper
           h3(style="font-weight:700; margin-top: 0;") Daily Cheese Goal
           .meter
@@ -13,27 +17,25 @@ footer.footer
             small Getting there...
           else if cheese_goal === 100
             small Woo!!! We did it! Thanks guys!
-      .col-md-4.text-center
+      .mdl-cell.mdl-cell--4-col
         span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
         a(href="/carry", target="_blank")
           button.btn.btn-warning(style="margin-bottom:2em; margin-left: 2em;") Help Us Out
-    .row(style="font-size: .8em;")
-      .col-md-4
-        ul
-          li &copy; #{moment().get('year')} YASP. <a href='http://goo.gl/forms/NgwhEqx4lt'>Comments, suggestions</a>?
-          li This is a volunteer-based <a href='https://github.com/yasp-dota/yasp'>open source</a> project.
-          li Follow us on <a href='https://twitter.com/yasp_dota'>Twitter</a>.
-          li We use cookies for sessions, <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">ads</a> and analytics.
-      .col-md-4
-        ul
-          li Dota 2 API <a href='http://store.steampowered.com/'> powered by Steam</a>. 
-          li Match parsing powered by <a href='https://github.com/skadistats/clarity'> clarity</a>. 
-          li Thanks to <a href='https://twitter.com/medowar0'>Medowar</a> for additional server power!
-      .col-md-4
-        ul
-          li Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a> and <a href="http://css101.deviantart.com/">css101</a>.
-          li Dota 2 and all Dota 2 related images belong to Valve. 
-          li Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
+  .mdl-mega-footer__middle-section
+      ul
+        li &copy; #{moment().get('year')} YASP. <a href='http://goo.gl/forms/NgwhEqx4lt'>Comments, suggestions</a>?
+        li This is a volunteer-based <a href='https://github.com/yasp-dota/yasp'>open source</a> project.
+        li Follow us on <a href='https://twitter.com/yasp_dota'>Twitter</a>.
+        li We use cookies for sessions, <a href='https://support.google.com/adsense/answer/1348695?hl=en&ref_topic=1271507', target="_blank">ads</a> and analytics.
+      ul
+        li Dota 2 API <a href='http://store.steampowered.com/'> powered by Steam</a>. 
+        li Match parsing powered by <a href='https://github.com/skadistats/clarity'> clarity</a>. 
+        li Thanks to <a href='https://twitter.com/medowar0'>Medowar</a> for additional server power!
+  .mdl-mega-footer__bottom-section
+      ul
+        li Wallpapers by the talented <a href="http://dcneil.deviantart.com/">dcneil</a> and <a href="http://css101.deviantart.com/">css101</a>.
+        li Dota 2 and all Dota 2 related images belong to Valve. 
+        li Cheese icon made by <a href="http://www.belcu.com">Belc</a> from <a href="http://www.flaticon.com">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
     //- light theme selector
       .row.text-center
         if (user)
