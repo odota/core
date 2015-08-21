@@ -1,4 +1,22 @@
-/* Team Colors */
+/*---------- Layout */
+
+.container {
+    max-width: 1170px;
+}
+
+/*---------- Ads */
+
+.leaderboard {
+    margin: 0 auto;
+    display: block;
+}
+
+.skyscraper {
+    margin: 2em auto;
+    display: block;
+}
+
+/*---------- Team Colors */
 
 .radiant {
     color: #00BC25;
@@ -8,6 +26,22 @@
     color: #CA1111;
 }
 
-.container {
-    max-width: 1170px;
+/*---------- Images */
+
+.img-small {
+    margin: 1px;
+    height: 24px;
+}
+
+/*---------- Map */
+
+.mapContainer {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+
+.map {
+    width: 100%;
 }

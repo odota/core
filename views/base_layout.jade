@@ -28,8 +28,6 @@ html
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
     
-    //- our custom js bundle, dynamically inserts external library js/css
-    script(src="/public/build/yasp.min.js")
     //<link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     //can npm install material-design-lite to bundle mdl
     
@@ -38,6 +36,8 @@ html
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     //link(rel='stylesheet', href="/public/css/flaticon.css")
     link(rel='stylesheet', href="/public/css/yasp.css")
+    //- our custom js bundle, dynamically inserts external library js/css
+    script(src="/public/build/yasp.min.js")
     //constants for client side rendering
     script.
       var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
@@ -45,16 +45,14 @@ html
   body.mdl-base
     .mdl-layout.mdl-js-layout.mdl-layout--fixed-header
       // Header
-      header.mdl-layout__header.mdl-layout__header--scroll.mdl-color--primary
+      header.mdl-layout__header.mdl-color--primary.mdl-layout__header--scroll
         block header
       // Drawer
       .mdl-layout__drawer
         include drawer.jade
       main.mdl-layout__content
         block page_content
-        
-    
-      include footer
+        include footer
   //stuff to include after page load
   block footer_assets
   script.

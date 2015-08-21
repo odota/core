@@ -3,7 +3,7 @@ include data_table_header
 mixin data_table(options, players)
   h3.inline-header=options.heading
   .table-responsive.collapse.in(style="background-color:#333;", id=options.id)
-    table.table.table-condensed.table-striped(class=options.summable ? "summable" : "")
+    table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp(class=options.summable ? "summable" : "")
       block
       if options.summable
         tr

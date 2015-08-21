@@ -8,7 +8,7 @@ mixin picks_bans_row(picks_bans, team_int)
         - var is_pick = pick.is_pick
         - var hero = constants.heroes[hero_id]
         if hero
-          span.img-text(class=pick.team ? "text-danger" : "text-success")
+          span.img-text(class=pick.team ? "dire" : "radiant")
             img.img-small(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
             div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
         else
@@ -20,55 +20,58 @@ block match_content
       +data_table({id:"index",summable:true, heading: "Overview"})
         each player, i in match.players
           +data_table_header(i, match)
-            tr
-              th Hero
-              th: abbr(title="Solo MMR of player") Rating
-              th: abbr(title="Level of hero") LV
-              th: abbr(title="Number of kills by hero") K
-              th: abbr(title="Number of deaths of hero") D
-              th: abbr(title="Number of assists by hero") A
-              th: abbr(title="Number of last hits by hero") LH
-              th: abbr(title="Number of denied creeps") DN
-              th: abbr(title="Total gold farmed") GOLD
-              th: abbr(title="Gold farmed by hero per minute") GPM
-              th: abbr(title="Experience gained by hero per minute") XPM
-              th: abbr(title="Amount of damage dealt to heroes") HD
-              th: abbr(title="Amount of damage dealt to towers") TD
-              th: abbr(title="Amount of health restored to heroes") HH
-              th: abbr(title="Items built") Items
-          tr(class=player.isRadiant ? "radiant" : "dire")
-            +hero_td(player)
-            td
-              //img.img-small(src=player.avatar)
-              if (player.last_visited)
-                img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
-              | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
-            td= player.level
-            td= player.kills
-            td.negative= player.deaths
-            td= player.assists
-            td= player.last_hits
-            td= player.denies
-            td.format= player.total_gold
-            td= player.gold_per_min
-            td= player.xp_per_min
-            td.format= player.hero_damage
-            td.format= player.tower_damage
-            td.format= player.hero_healing
-            td.text-left
-              each val, index in player
-                if (index.slice(0, 5)==="item_")
-                  - var item = constants.items[constants.item_ids[val]]
-                  if item
-                    img.img-small.item(src=item.img, title=constants.item_ids[val])
-              if (player.hero_id === 80 && player.additional_units)
-                br
-                each val, index in player.additional_units[0]
+            thead
+              tr
+                th
+                th Hero
+                th: abbr(title="Solo MMR of player") Rating
+                th: abbr(title="Level of hero") LV
+                th: abbr(title="Number of kills by hero") K
+                th: abbr(title="Number of deaths of hero") D
+                th: abbr(title="Number of assists by hero") A
+                th: abbr(title="Number of last hits by hero") LH
+                th: abbr(title="Number of denied creeps") DN
+                th: abbr(title="Total gold farmed") GOLD
+                th: abbr(title="Gold farmed by hero per minute") GPM
+                th: abbr(title="Experience gained by hero per minute") XPM
+                th: abbr(title="Amount of damage dealt to heroes") HD
+                th: abbr(title="Amount of damage dealt to towers") TD
+                th: abbr(title="Amount of health restored to heroes") HH
+                th: abbr(title="Items built") Items
+          tbody
+            tr(class=player.isRadiant ? "radiant" : "dire")
+              +hero_td(player)
+              td
+                //img.img-small(src=player.avatar)
+                if (player.last_visited)
+                  img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
+                | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
+              td= player.level
+              td= player.kills
+              td.negative= player.deaths
+              td= player.assists
+              td= player.last_hits
+              td= player.denies
+              td.format= player.total_gold
+              td= player.gold_per_min
+              td= player.xp_per_min
+              td.format= player.hero_damage
+              td.format= player.tower_damage
+              td.format= player.hero_healing
+              td.text-left
+                each val, index in player
                   if (index.slice(0, 5)==="item_")
-                    - var item = constants.items[constants.item_ids[val]]                             
+                    - var item = constants.items[constants.item_ids[val]]
                     if item
-                      img.img-small.ability(src=item.img, title=constants.item_ids[val])
-                      
+                      img.img-small.item(src=item.img, title=constants.item_ids[val])
+                if (player.hero_id === 80 && player.additional_units)
+                  br
+                  each val, index in player.additional_units[0]
+                    if (index.slice(0, 5)==="item_")
+                      - var item = constants.items[constants.item_ids[val]]                             
+                      if item
+                        img.img-small.ability(src=item.img, title=constants.item_ids[val])
+                        
   if match.picks_bans
     .row
       .col-md-12      
