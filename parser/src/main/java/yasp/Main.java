@@ -11,7 +11,7 @@ import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
-import skadistats.clarity.processor.entities.UsesEntities;
+//import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
@@ -201,14 +201,14 @@ public class Main {
 	
 	@OnMessage(CUserMessageSayText2.class)
 	public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
+		//System.err.println(message);
 		Entry entry = new Entry(time);
-		//entry.unit =  String.valueOf(message.getPrefix());
-		//entry.key =  String.valueOf(message.getText());
+		entry.unit =  String.valueOf(message.getParam1());
+		entry.key =  String.valueOf(message.getParam2());
 		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
 		//entry.slot = message.getClient();
-		System.err.println(message);
-		//entry.type = "chat";
-		//es.output(entry);
+		entry.type = "chat";
+		es.output(entry);
 	}
 	
 	@OnMessage(CDemoFileInfo.class)
@@ -254,10 +254,8 @@ public class Main {
 		//sets global time to time in this combat log entry
 		time = Math.round(cle.getTimestamp());
 		Entry entry = new Entry(time);
-		//TODO dump the raw gameevent object as json, but need to use stringtables to lookup names
-		//TODO use DOTA_COMBATLOG_TYPES to determine type rather than our own strings
-		//TODO just dump all the fields that aren't null, let js take care of post-processing?  implement tostring that dumps json
-		//TODO would need js object mapping combat log names to current BSON names ("damage", "healing"...)
+		//TODO just dump all the fields of the combat log entry, let js take care of post-processing?  implement tostring that dumps json, but need to use stringtables to lookup names, and need to do string transforms?
+		//TODO would need cpnstants mapping combat log names to current BSON names ("damage", "healing"...)
 		switch(cle.getType()) {
 		case 0:
 			//damage
@@ -371,7 +369,7 @@ public class Main {
 			//targetname
 			//targetsourcename
 			//value (1-15)
-			System.err.println(cle);
+			//System.err.println(cle);
 			entry.type = "player_stats";
 			entry.unit = cle.getAttackerName();
 			entry.key = cle.getTargetName();
@@ -423,8 +421,8 @@ public class Main {
 	}
 
 
-	@UsesEntities
-	@OnTickStart
+	//@UsesEntities
+	//@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
@@ -453,24 +451,23 @@ public class Main {
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-					//TODO: slow data can be output to console, but not in replay?  maybe the protobufs need to be updated
+					//TODO: slow data can be output to console, but not in replay?
 					//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
+					
+					//booleans to check at endgame
 					//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
+					//m_bVoiceChatBanned.0000
+					//m_bHasRandomed.0000
+					//m_bHasRepicked.0000
 					
 					//can do all these stats with each playerresource interval?
 					//m_iKills.0000
 					//m_iAssists.0000
 					//m_iDeaths.0000
-					//m_iTowerKills.0000
-					//m_iRoshanKills.0000
-					
-					//booleans to check at endgame
-					//m_bVoiceChatBanned.0000
-					//m_bHasRandomed.0000
-					//m_bHasRepicked.0000
 					
 					//gem, rapier time?
 					//TODO: https://github.com/yasp-dota/yasp/issues/333
+					//need to dump inventory items for each player and possibly keep track of item entity handles
 					
 					//time dead, count number of intervals where this value is >0?
 					//m_iRespawnSeconds.0000

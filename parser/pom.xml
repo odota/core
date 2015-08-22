@@ -4,7 +4,7 @@
     <artifactId>stats</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <name>yasp-parser</name>
+    <name>stats</name>
     <developers>
         <developer>
             <id>albertcui</id>
