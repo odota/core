@@ -28,7 +28,7 @@ Howard works on the replay parsing/backend design, making sure the system can sc
 </div>
 ###Albert Cui:
 * [albertcui.com](http://albertcui.com)
-* [/u/TripleA](http://reddit.com/user/Triple_A)
+* [/u/Triple_A](http://reddit.com/user/Triple_A)
 
 Albert came up with the original idea for the site and manages the server deployments.  He built the donation system and works on the frontend design.
 
