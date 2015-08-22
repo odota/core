@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.yasp</groupId>
   <artifactId>stats</artifactId>
-  <name>yasp-parser</name>
+  <name>stats</name>
   <version>0.1.0</version>
   <developers>
     <developer>
