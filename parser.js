@@ -14,7 +14,7 @@ var constants = require('./constants.json');
 var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
-var port = config.PARSER_PORT || config.PORT;
+var port = config.PORT || config.PARSER_PORT;
 var shutdown = false;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
@@ -446,10 +446,6 @@ function runParse(data, cb) {
             console.log("processing all players data");
             processAllPlayers();
             console.timeEnd(message);
-            //if (process.env.NODE_ENV !== "production") fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
-            if (print_multi_kill_streak_debugging) {
-                fs.writeFileSync("./output_parsed_data.json", JSON.stringify(parsed_data));
-            }
         }
         return cb(err, parsed_data);
     }
