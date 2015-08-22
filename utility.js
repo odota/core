@@ -256,7 +256,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 12,
+        "version": 13,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -282,7 +282,7 @@ function getParseSchema() {
                 "kills_log": [],
                 "buyback_log": [],
                 //removed for taking up too much space
-                //"pos": {},
+                "pos": {},
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},

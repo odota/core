@@ -13,11 +13,13 @@
           tr
             th Hero
             th: abbr(title="Lane based on early game position") Lane
+            th Explored
             th: abbr(title="# of Observer Wards placed during the game") Observer
             th: abbr(title="# of Sentry Wards placed during the game") Sentry
         tr(class = player.isRadiant ? "radiant" : "dire")
           +hero_td(player)
           td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
+          td.activate(data-index=ind, data-type="pos") #{p.explore || "-"}
           td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
           td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
               

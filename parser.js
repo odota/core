@@ -350,14 +350,13 @@ function runParse(data, cb) {
                     populate(e);
                 }
                 e.interval = false;
-                //add to positions
-                //not currently storing pos data
-                // if (e.x && e.y) {
-                //     e.type = "pos";
-                //     e.key = [e.x, e.y];
-                //     e.posData = true;
-                //     //populate(e);
-                // }
+            }
+            //add to positions
+            if (e.x && e.y) {
+                e.type = "pos";
+                e.key = [e.x, e.y];
+                e.posData = true;
+                populate(e);
             }
             // store player position for the first 10 minutes
             if (e.time <= 600 && e.x && e.y) {
