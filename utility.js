@@ -173,7 +173,7 @@ function getData(url, cb) {
             timeout: 30000
         }, function(err, res, body) {
             if (body && body.error) {
-                //body contained error (probably from retriever)
+                //body contained specific error (probably from retriever)
                 //non-retryable
                 return cb(body);
             }
