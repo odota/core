@@ -1,7 +1,7 @@
-web: WEB_PORT=5000 nodemon web.js
-retriever: RETRIEVER_PORT=5100 nodemon retriever.js
-parser: PARSER_PORT=5200 nodemon parser.js
-proxy: PROXY_PORT=5300 nodemon proxy.js
+web: nodemon web.js
+retriever: nodemon retriever.js
+parser: nodemon parser.js
+proxy: nodemon proxy.js
 worker: nodemon worker.js
 parseManager: nodemon parseManager.js
 scanner: nodemon scanner.js
