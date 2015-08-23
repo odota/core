@@ -22,22 +22,33 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-        cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         console.timeEnd("inflate");
+        cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
+        var filter_exists = Object.keys(options.query.js_select).length;
         player = {
             account_id: account_id,
             personaname: account_id
         };
-        if (cache && !Object.keys(options.query.js_select).length) {
+        if (cache && !filter_exists) {
             console.log("player cache hit %s", player.account_id);
             //var filtered = filter(cache.data, options.query.js_select);
             //var aggData = aggregator(filtered, null);
             //unpack cache.data into an array
             var arr = [];
-            for (var key in cache.data){
+            for (var key in cache.data) {
                 arr.push(cache.data[key]);
             }
             cache.data = arr;
+            /*
+            //below code if we want to cache full matches (with parsed data)
+            var filtered = filter(cache.data, options.query.js_select);
+            cache.aggData = aggregator(filtered, null);
+            processResults(err, {
+                data: filtered,
+                aggData: cache.aggData,
+                unfiltered: cache.data
+            });
+            */
             processResults(err, {
                 data: cache.data,
                 aggData: cache.aggData,
@@ -72,16 +83,22 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            /*
-            if (!cache && !Object.keys(options.query.js_select).length && player.account_id !== constants.anonymous_account_id) {
+            //results.unfiltered.forEach(reduceMatch);
+            if (!cache && !filter_exists && player.account_id !== constants.anonymous_account_id) {
                 //pack data into hash for cache
-                var ids = {};
-                results.data.forEach(function(m){
-                    ids[m.match_id] = m;
+                var match_ids = {};
+                results.data.forEach(function(m) {
+                    match_ids[m.match_id] = m;
                 });
                 //save cache
+                /*
+                //code to save full matches (unfiltered, with parsed data)
                 cache = {
-                    data: ids,
+                    data: results.unfiltered,
+                };
+                */
+                cache = {
+                    data: match_ids,
                     aggData: results.aggData
                 };
                 console.log("saving player cache %s", player.account_id);
@@ -89,7 +106,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 redis.setex("player:" + player.account_id, 60 * 60 * 24, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                 console.timeEnd("deflate");
             }
-            */
             console.log("results: %s", results.data.length);
             player.aggData = results.aggData;
             //convert heroes hash to array and sort

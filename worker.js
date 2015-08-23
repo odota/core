@@ -37,11 +37,12 @@ d.on('error', function(err) {
 });
 d.run(function() {
     console.log("[WORKER] starting worker");
-    //updatenames queues an api request
-    //jobs.process('api', processApi);
     //process requests (api call, waits for parse to complete)
     jobs.process('request', numCPUs, processApi);
     invokeInterval(buildSets, 60 * 1000);
+    //updatenames queues an api request
+    //probably should have name updating occur in a separate service
+    //jobs.process('api', processApi);
     //invokeInterval(updateNames, 60 * 1000);
     //invokeInterval(constants, 15 * 60 * 1000);
 });
