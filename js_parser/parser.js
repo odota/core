@@ -7,12 +7,9 @@
 //use node events module
 //webpack into a browser-compatible version
 //-
-//dependencies
 //read .proto files with protobufjs, create an object to look up things like EDemoCommands?
 var ProtoBuf = require('protobufjs');
 var path = require('path');
-//Long.js, handle 64 bit types
-var Long = require('long');
 //https://github.com/dcodeIO/ByteBuffer.js, read types out of binary data
 var ByteBuffer = require("bytebuffer");
 //decompress with snappy
@@ -29,41 +26,6 @@ ProtoBuf.loadProtoFile(path.join(__dirname, './proto/dota_gcmessages_client.prot
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/demo.proto'), builder);
 var dota = builder.build();
 var inStream = process.stdin;
-//-
-//synchronous code
-var bb = new ByteBuffer();
-/*
-inStream.on('data', function(data) {
-    //tack on the data
-    bb.append(data);
-});
-inStream.on('end', function() {
-    console.log(bb);
-    //prepare to read buffer
-    bb.flip();
-    //first 8 bytes=header
-    var header = readStringSync(8);
-    console.log("header: %s", header);
-    if (header.toString() !== "PBDEMS2\0") {
-        throw "invalid header";
-    }
-    //next 8 bytes: appear to be two int32s related to the size of the demo file
-    var size1 = readUint32Sync();
-    var size2 = readUint32Sync();
-    console.log(size1, size2);
-    var stop = false;
-    var count = 0;
-    //next bytes are messages that need to be decoded
-    //read until stream is drained or stop on OnCDemoStop
-    while (!stop) {
-        var msg = readDemoMessageSync();
-        count += 1;
-        stop = count > 1000;
-    }
-});
-*/
-//-
-//async code
 inStream.once('readable', function() {
     async.series({
         "header": function(cb) {
@@ -286,7 +248,7 @@ function readDemoStringTables(msg) {
     }
     console.log(msg.tables);
 };
-
+/*
 function readGameSendTable(msg) {
     if (!this.netTables) {
         this.netTables = {};
@@ -304,7 +266,7 @@ function readGameSendTable(msg) {
         }
     }
 };
-
+*/
 function readGameCreateStringTable(msg) {
     if (!this.stringTables) {
         this.stringTables = {};
@@ -392,6 +354,38 @@ function readVarint32(cb) {
     });
 }
 
+//synchronous implementation
+/*
+var bb = new ByteBuffer();
+inStream.on('data', function(data) {
+    //tack on the data
+    bb.append(data);
+});
+inStream.on('end', function() {
+    console.log(bb);
+    //prepare to read buffer
+    bb.flip();
+    //first 8 bytes=header
+    var header = readStringSync(8);
+    console.log("header: %s", header);
+    if (header.toString() !== "PBDEMS2\0") {
+        throw "invalid header";
+    }
+    //next 8 bytes: appear to be two int32s related to the size of the demo file
+    var size1 = readUint32Sync();
+    var size2 = readUint32Sync();
+    console.log(size1, size2);
+    var stop = false;
+    var count = 0;
+    //next bytes are messages that need to be decoded
+    //read until stream is drained or stop on OnCDemoStop
+    while (!stop) {
+        var msg = readDemoMessageSync();
+        count += 1;
+        stop = count > 1000;
+    }
+});
+
 function readDemoMessageSync() {
     // Read a command header, which includes both the message type
     // well as a flag to determine whether or not whether or not the
@@ -408,7 +402,7 @@ function readDemoMessageSync() {
     var msgType = command & ~dota.EDemoCommands.DEM_IsCompressed;
     var msgCompressed = (command & dota.EDemoCommands.DEM_IsCompressed) === dota.EDemoCommands.DEM_IsCompressed;
     // Read the tick that the message corresponds with.
-    //tick: = p.reader.readVarUint32()
+    // tick: = p.reader.readVarUint32()
     // This appears to actually be an int32, where a -1 means pre-game.
     if (tick === 4294967295) {
         tick = 0;
@@ -450,3 +444,4 @@ function readBytesSync(size) {
     bb.offset += size;
     return buf;
 }
+*/

@@ -1,1 +1,1 @@
-node parser.js < ../testfiles/1560726098_source2.dem 
+node js_parser/parser.js < testfiles/1698148651_source2.dem
