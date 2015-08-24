@@ -7,7 +7,7 @@ block playercontent
         - var times={"duration":1,"first_blood_time":1}
         script.
           var histogramData = {};
-        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All Histograms
+        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()" style="margin-right: 3px") Show All Histograms
         each val, key in player.aggData
           if key in histograms
             - var collapsed = true
