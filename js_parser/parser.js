@@ -2,9 +2,8 @@
 //optimally, we release a parsing library as a npm package that can be used server-side and for parsing in the browser
 //the server side version should be run using node parser.js in order to allow parallelizing
 //library should provide methods for accepting a stream or a file
-//parser emits events when it parses a certain message
+//return an eventemitter, ee emits events when it parses a certain message
 //user listens for events and acts based on the event
-//use node events module
 //webpack into a browser-compatible version
 //-
 //read .proto files with protobufjs, create an object to look up things like EDemoCommands?
@@ -14,8 +13,11 @@ var path = require('path');
 var ByteBuffer = require("bytebuffer");
 //decompress with snappy
 var snappy = require('snappy');
-//emit events with events
-var events = require('events');
+//emit events for user to handle
+//client sets up listeners for each event
+//library should return the eventemitter for user to operate on
+var EventEmitter = require('events').EventEmitter;
+var ee = new EventEmitter();
 var async = require('async');
 //-
 //read the protobufs and build a dota object for reference
@@ -30,113 +32,141 @@ inStream.once('readable', function() {
     async.series({
         "header": function(cb) {
             readString(8, function(err, header) {
+                //verify the file magic number is correct
                 cb(err || header.toString() !== "PBDEMS2\0", header);
             });
         },
         //two uint32s related to replay size
         "size1": readUint32,
-        "size2": readUint32
-    }, function(err, result) {
+        "size2": readUint32,
+        "demo": function(cb) {
+            var stop = false;
+            var count = 0;
+            async.until(function() {
+                return stop;
+            }, function(cb) {
+                count += 1;
+                stop = count > 10;
+                readDemoMessage(function(err, msg) {
+                    //this is an example of looking up enum string by integer, may be more performant to construct our own map
+                    var name = "CDemo" + builder.lookup("EDemoCommands").getChild(msg.typeId).name.slice(4);
+                    var demoMessageData;
+                    if (dota[name]) {
+                        demoMessageData = dota[name].decode(msg.data);
+                        console.log(name);
+                    }
+                    else {
+                        console.log('no protobuf definition for %s', name);
+                    }
+                    //TODO more efficient to have user specify the events they care about first, so we can selectively emit events?
+                    //TODO emit an "Any" event that fires on any demo message?  do one for packets as well?
+                    ee.emit(name, demoMessageData);
+                    switch (msg.typeId) {
+                        //TODO reading entities, where are they stored?
+                        case -1:
+                            //DEM_Error = -1;
+                            err = msg;
+                            break;
+                        case 0:
+                            //DEM_Stop = 0;
+                            stop = true;
+                            break;
+                        case 1:
+                            //DEM_FileHeader = 1;
+                            break;
+                        case 2:
+                            //DEM_FileInfo = 2;
+                            break;
+                        case 3:
+                            //DEM_SyncTick = 3;
+                            break;
+                        case 4:
+                            //DEM_SendTables = 4;
+                            //TODO construct sendtables?  does source2 use this?
+                            break;
+                        case 5:
+                            //DEM_ClassInfo = 5;
+                            break;
+                        case 6:
+                            //DEM_StringTables = 6;
+                            //TODO need to construct stringtables to look up things like combat log names
+                            break;
+                        case 7:
+                            //DEM_Packet = 7;
+                            /*
+                            message CDemoPacket {
+                            	optional int32 sequence_in = 1;
+                            	optional int32 sequence_out_ack = 2;
+                            	optional bytes data = 3;
+                            }
+                            */
+                            //TODO parse the packets out of the demomessage
+                            //TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types
+                            break;
+                        case 8:
+                            //DEM_SignonPacket = 8;
+                            break;
+                        case 9:
+                            //DEM_ConsoleCmd = 9;
+                            break;
+                        case 10:
+                            //DEM_CustomData = 10;
+                            break;
+                        case 11:
+                            //DEM_CustomDataCallbacks = 11;
+                            break;
+                        case 12:
+                            //DEM_UserCmd = 12;
+                            break;
+                        case 13:
+                            //DEM_FullPacket = 13;
+                            /*
+                            message CDemoFullPacket {
+                            	optional CDemoStringTables string_table = 1;
+                            	optional CDemoPacket packet = 2;
+                            }
+                            */
+                            //TODO this appears to be a packet with a string table attached?
+                            break;
+                        case 14:
+                            //DEM_SaveGame = 14;
+                            break;
+                        case 15:
+                            //DEM_SpawnGroups = 15;
+                            break;
+                        case 16:
+                            //DEM_Max = 16;
+                            break;
+                        default:
+                            err = "Unknown DEM type!";
+                    }
+                    return cb(err);
+                });
+            }, function(err) {
+                //done processing demo messages, or an error occurred
+                return cb(err);
+            });
+        }
+    }, function(err) {
         if (err) {
             throw err;
         }
-        console.log(result);
-        var stop = false;
-        var count = 0;
-        async.whilst(function() {
-            return !stop;
-        }, function(cb) {
-            count += 1;
-            stop = count > 10;
-            readDemoMessage(function(err, msg) {
-                console.log(err, msg);
-                //TODO do things with the outer message
-                //TODO a separate mapping for PacketTypes
-                //TODO need to construct stringtables
-                //TODO need to construct sendtables
-                //TODO need to read entities
-                //TODO need to reverse mapping of id to string in order to use the correct protobuf decoder (dota.UserMessages.CUserMsg.decode(buf)]")
-                //example of looking up enum string by integer
-                //may be more performant to construct our own map
-                //console.log(builder.lookup("EDemoCommands").getChild(msgType).name);
-                //stop on cdemostop
-                //for each outer message, call a function from the string name of the typeId, and decode the buf based on protos
-                //DEM_Error = -1;
-                //DEM_Stop = 0;
-                //DEM_FileHeader = 1;
-                //DEM_FileInfo = 2;
-                //DEM_SyncTick = 3;
-                //DEM_SendTables = 4;
-                //DEM_ClassInfo = 5;
-                //DEM_StringTables = 6;
-                //DEM_Packet = 7;
-                //DEM_SignonPacket = 8;
-                //DEM_ConsoleCmd = 9;
-                //DEM_CustomData = 10;
-                //DEM_CustomDataCallbacks = 11;
-                //DEM_UserCmd = 12;
-                //DEM_FullPacket = 13;
-                //DEM_SaveGame = 14;
-                //DEM_Max = 15;
-                switch (msg.typeId) {
-                    case -1:
-                        break;
-                    case 0:
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        break;
-                    case 4:
-                        break;
-                    case 5:
-                        break;
-                    case 6:
-                        break;
-                    case 7:
-                        break;
-                    case 8:
-                        break;
-                    case 9:
-                        break;
-                    case 10:
-                        break;
-                    case 11:
-                        break;
-                    case 12:
-                        break;
-                    case 13:
-                        break;
-                    case 14:
-                        break;
-                    case 15:
-                        break;
-                    default:
-                        throw "Unknown DEM type!";
-                }
-                return cb(err);
-            });
-        }, function(err) {
-            console.log(err);
-            console.log('done parsing replay!');
-        });
     });
 });
 // Read the next DEM message from the replay (outer message)
 function readDemoMessage(cb) {
-    // Read a command header, which includes both the message type
-    // well as a flag to determine whether or not whether or not the
-    // message is compressed with snappy.
-    //command: = dota.EDemoCommands(p.reader.readVarUint32())
     async.series({
         command: readVarint32,
         tick: readVarint32,
         size: readVarint32
     }, function(err, result) {
-        console.log(err, result);
+        if (err) {
+            return cb(err);
+        }
         readBytes(result.size, function(err, buf) {
+            // Read a command header, which includes both the message type
+            // well as a flag to determine whether or not whether or not the
+            // message is compressed with snappy.
             var command = result.command;
             var tick = result.tick;
             var size = result.size;
@@ -341,7 +371,7 @@ function readVarint32(cb) {
                                 readByte(function(err, tmp) {
                                     result |= tmp << 28;
                                     if (tmp < 0) {
-                                        throw "malformed varint detected";
+                                        err = "malformed varint detected";
                                     }
                                     return cb(err, result);
                                 });
@@ -353,8 +383,7 @@ function readVarint32(cb) {
         });
     });
 }
-
-//synchronous implementation
+//synchronous implementation, requires entire replay to be read into bytebuffer
 /*
 var bb = new ByteBuffer();
 inStream.on('data', function(data) {
