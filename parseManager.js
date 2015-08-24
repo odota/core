@@ -70,7 +70,7 @@ function start() {
                     return job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
                 }
                 */
-                return process.env.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
+                return config.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
             }
         }
     });

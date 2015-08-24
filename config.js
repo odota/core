@@ -9,17 +9,16 @@ var defaults = {
     "PAYPAL_SECRET": "",
     "RETRIEVER_SECRET": "shared_secret_with_retriever",
     "SESSION_SECRET": "secret to encrypt cookies with",
-    "ROOT_URL": "http://localhost:5000",
+    "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "KUE_USER": "user",
     "KUE_PASS": "pass",
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
-    //set the specific *_PORT values in .env or in process environment.  Otherwise fallback to PORT
     "WEB_PORT": "5000",
-    "RETRIEVER_PORT": "",
+    "RETRIEVER_PORT": "5100",
     "PARSER_PORT": "5200",
-    "PROXY_PORT": "",
+    "PROXY_PORT": "5300",
     "MONGO_URL": "mongodb://localhost/dota",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
@@ -40,6 +39,10 @@ var defaults = {
 //ensure that process.env has all values in defaults, but prefer the process.env value
 for (var key in defaults) {
     process.env[key] = process.env[key] || defaults[key];
+}
+if (process.env.NODE_ENV === "development") {
+    //force PORT to null in development so we can run multiple web services without conflict
+    process.env.PORT = "";
 }
 //now processes can use either process.env or config
 module.exports = process.env;
