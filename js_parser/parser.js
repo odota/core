@@ -5,13 +5,9 @@
 //return an eventemitter, ee emits events when it parses a certain message
 //user listens for events and acts based on the event
 //webpack into a browser-compatible version
-//-
-//read .proto files with protobufjs, create an object to look up things like EDemoCommands?
 var ProtoBuf = require('protobufjs');
 var path = require('path');
-//https://github.com/dcodeIO/ByteBuffer.js, read types out of binary data
 var ByteBuffer = require("bytebuffer");
-//decompress with snappy
 var snappy = require('snappy');
 //emit events for user to handle
 //client sets up listeners for each event
@@ -19,7 +15,6 @@ var snappy = require('snappy');
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 var async = require('async');
-//-
 //read the protobufs and build a dota object for reference
 var builder = ProtoBuf.newBuilder();
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/base_gcmessages.proto'), builder);
@@ -62,7 +57,6 @@ inStream.once('readable', function() {
                     //TODO emit an "Any" event that fires on any demo message?  do one for packets as well?
                     ee.emit(name, demoMessageData);
                     switch (msg.typeId) {
-                        //TODO reading entities, where are they stored?
                         case -1:
                             //DEM_Error = -1;
                             err = msg;
@@ -100,6 +94,7 @@ inStream.once('readable', function() {
                             	optional bytes data = 3;
                             }
                             */
+                            //TODO reading entities, where are they stored?
                             //TODO parse the packets out of the demomessage
                             //TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types
                             break;
