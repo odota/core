@@ -32,14 +32,20 @@ abbr[title], abbr[data-original-title] {
 
 /*---------- Tables */
 
+.mdl-data-table td:first-of-type,
+.mdl-data-table th:first-of-type {
+    padding-left: 5px;
+}
+
 .mdl-data-table tbody tr {
     height: 0px;
 }
 
-.mdl-data-table td {
+.mdl-data-table td,
+.mdl-data-table th {
     vertical-align: middle;
     height: 41px;
-    padding: 5px 9px 0;
+    padding: 5px 10px 0;
 }    
 
 .rotate>td {
