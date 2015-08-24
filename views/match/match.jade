@@ -18,10 +18,11 @@ block header
 block content
   .mdl-grid.container
     .mdl-cell.mdl-cell--5-col
-      h3(class=match.radiant_win ? "radiant" : "dire")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-      .addthis_sharing_toolbox
+      .vert-center
+        h3(class=match.radiant_win ? "radiant" : "dire")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+        .addthis_sharing_toolbox
     .mdl-cell.mdl-cell--7-col
-      table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp
+      table.mdl-data-table.mdl-js-data-table.vert-center
         thead
           tr
             //th: abbr(title=constants.tooltips.status) Status

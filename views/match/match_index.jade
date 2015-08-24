@@ -15,16 +15,15 @@ mixin picks_bans_row(picks_bans, team_int)
           = hero_id
 
 block match_content
-  .mdl-grid.container
-    .col-md-12
+  .mdl-grid
+    .mdl-cell.mdl-cell--12-col.of-scroll
       //+data_table({id:"index",summable:true, heading: "Overview"})
       - var p = [match.players.slice(0, match.players.length/2), match.players.slice(match.players.length/2)]
-      table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp
+      table.mdl-data-table.mdl-js-data-table
         each side, i in p
           thead
             th
-            th Hero
-            th: abbr(title="Solo MMR of player") Rating
+            th.mdl-data-table__cell--non-numeric: abbr(title="(Solo MMR)") Player
             th: abbr(title="Level of hero") LV
             th: abbr(title="Number of kills by hero") K
             th: abbr(title="Number of deaths of hero") D
@@ -37,18 +36,13 @@ block match_content
             th: abbr(title="Amount of damage dealt to heroes") HD
             th: abbr(title="Amount of damage dealt to towers") TD
             th: abbr(title="Amount of health restored to heroes") HH
-            th: abbr(title="Items built") Items
+            th.mdl-data-table__cell--non-numeric: abbr(title="Items built") Items
           tbody
             tr.rotate
               td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
             each player in side
               tr
-                +hero_td(player)
-                td
-                  //img.img-small(src=player.avatar)
-                  if (player.last_visited)
-                    img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
-                  | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
+                +hero_td(player, true)
                 td= player.level
                 td= player.kills
                 td.negative= player.deaths
@@ -61,7 +55,7 @@ block match_content
                 td.format= player.hero_damage
                 td.format= player.tower_damage
                 td.format= player.hero_healing
-                td.text-left
+                td.mdl-data-table__cell--non-numeric
                   each val, index in player
                     if (index.slice(0, 5)==="item_")
                       - var item = constants.items[constants.item_ids[val]]
@@ -76,8 +70,8 @@ block match_content
                           img.img-small.ability(src=item.img, title=constants.item_ids[val])
                             
   if match.picks_bans
-    .mdl-grid.container
-      .col-md-12      
+    .mdl-grid
+      .mdl-cell.mdl-cell--12-col     
           h3.inline-header Picks/Bans
           #picks-bans.table-responsive.collapse.in
             table.table.table-hover
@@ -91,8 +85,8 @@ block match_content
   +ad("banner2")
   hr
   
-  .mdl-grid.container
-    .col-md-8
+  .mdl-grid
+    .mdl-cell.mdl-cell--8-col.of-scroll
       +data_table({id:"skills", heading: "Skill Builds"})
         each player, i in match.players
           +data_table_header(i, match)
@@ -110,7 +104,7 @@ block match_content
                   else
                     =ability.ability
                             
-    .col-md-4
+    .mdl-cell.mdl-cell--4-col
       h3 Buildings
       #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
         img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")

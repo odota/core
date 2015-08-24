@@ -4,16 +4,63 @@
     max-width: 1170px;
 }
 
+body {
+    color: #FFFFFF;
+    background-color: #222222;
+}
+
+abbr[title], abbr[data-original-title] {
+    cursor: help;
+    border-bottom: 1px dotted #999999;
+}
+
+.of-scroll {
+    overflow: scroll;
+}
+
+.vert-center {
+    margin: 0 auto;
+}
+
+.inline {
+    display: inline;
+}
+
+.padding {
+    padding: 5px;
+}
+
+/*---------- Tables */
 
 .mdl-data-table tbody tr {
     height: 0px;
 }
 
-.mdl-data-table tbody>tr.rotate>td {
+.mdl-data-table td {
+    vertical-align: middle;
+    height: 41px;
+    padding: 5px 9px 0;
+}    
+
+.rotate>td {
     transform: rotate(270deg);
     vertical-align: middle;
-    padding: 0;
+    padding: 0 !important;
     border: none;
+}
+
+.mdl-data-table thead,
+.mdl-data-table tbody,
+.mdl-data-table tfoot {
+    background-color: #484646;
+}
+
+.mdl-data-table th {
+    color: #FFFFFF;
+}
+
+.mdl-data-table tbody tr:hover {
+    background-color: #545353;
 }
 
 /*---------- Ads */
@@ -47,6 +94,10 @@
 
 .player-color {
     border-left: 5px solid;
+}
+
+.yasp-user-icon {
+    margin: 4px;
 }
 
 /*---------- Map */
