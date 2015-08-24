@@ -12,9 +12,3 @@ block blogcontent
         each tag in post.tags
           a(href=tagUrl(tag))
             span.label.label-info #{tag}
-
-block taglegend
-  .well.sidebar-nav
-    p.lead Tags
-    each tag in getTags()
-      div: a(href=tagURL(tag)) #{tag}

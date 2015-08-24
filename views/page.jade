@@ -1,7 +1,17 @@
 extend blog
 
 block blogcontent
-  include posts
+  each post in posts
+    .panel.panel-default.blog-panel
+      .panel-heading
+          h2.panel-title.blog-heading: a(href=post.url)= post.title 
+          h6.blog-date By #{post.author} | #{moment(post.date).format("dddd, MMMM Do, YYYY")}
+      .panel-body.blog-preview
+          != post.preview
+          .tags
+              each tag in post.tags
+                  a(href=tagUrl(tag))
+                      span.label.label-info #{tag}
   - var pageCount = getPageCount();
   if pageCount > 1
     ul.pagination
