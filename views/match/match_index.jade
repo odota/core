@@ -19,7 +19,7 @@ block match_content
     .mdl-cell.mdl-cell--12-col.of-scroll
       //+data_table({id:"index",summable:true, heading: "Overview"})
       - var p = [match.players.slice(0, match.players.length/2), match.players.slice(match.players.length/2)]
-      table.mdl-data-table.mdl-js-data-table
+      table.mdl-data-table.mdl-js-data-table.table-striped.summable
         each side, i in p
           thead
             th
@@ -41,7 +41,7 @@ block match_content
             tr.rotate
               td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
             each player in side
-              tr
+              tr(class=i ? "d":"r")
                 +hero_td(player, true)
                 td= player.level
                 td= player.kills
@@ -68,7 +68,9 @@ block match_content
                         - var item = constants.items[constants.item_ids[val]]                             
                         if item
                           img.img-small.ability(src=item.img, title=constants.item_ids[val])
-                            
+        tfoot
+          tr.rotate
+            td(rowspan="3") Totals
   if match.picks_bans
     .mdl-grid
       .mdl-cell.mdl-cell--12-col     

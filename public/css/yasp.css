@@ -57,12 +57,18 @@ abbr[title], abbr[data-original-title] {
 
 .mdl-data-table th {
     color: #FFFFFF;
+    line-height: inherit;
+    height: 36px;
 }
 
-.mdl-data-table tbody tr:hover {
+.mdl-data-table tbody tr:hover,
+.mdl-data-table.table-striped tbody tr:hover {
     background-color: #545353;
 }
 
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #3d3d3d;
+}
 /*---------- Ads */
 
 .leaderboard {

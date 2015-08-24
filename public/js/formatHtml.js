@@ -11,7 +11,7 @@ module.exports = function formatHtml() {
         //var target = sums.Total;
         tbody.children().each(function(i, row) {
             row = $(row);
-            var target = $(row).hasClass("radiant") ? sums.Radiant : sums.Dire;
+            var target = $(row).hasClass("r") ? sums.Radiant : sums.Dire;
             //iterate through cells
             row.children().each(function(j, cell) {
                 cell = $(cell);
@@ -30,7 +30,14 @@ module.exports = function formatHtml() {
         });
         //console.log(sums, negatives)
         //add sums to table
-        var tfoot = $("<tfoot>");
+        var tfoot = $(table).find("tfoot");
+        var tfootFound = true;
+        
+        if (!tfoot.length) {
+            tfootFound = false;    
+            tfoot = $("<tfoot>");
+        }
+        
         for (var key in sums) {
             var tr = $("<tr>");
             var sum = sums[key];
@@ -48,14 +55,17 @@ module.exports = function formatHtml() {
                 //invert if a negative category
                 greaterThan = negatives[index] ? sum[index] < sums[other][index] : greaterThan;
                 if (greaterThan) {
-                    td.addClass((key === "Radiant") ? 'success' : 'danger');
+                    td.addClass((key === "Radiant") ? 'radiant' : 'dire');
                 }
                 
                 tr.append(td);
             }
             tfoot.append(tr);
         }
-        $(table).append(tfoot);
+        
+        if (!tfootFound) {
+            $(table).append(tfoot);
+        }
     });
     $('.format').each(function() {
         var orig = $(this).text();
