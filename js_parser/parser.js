@@ -8,7 +8,6 @@ console.time('parse');
 //webpack into a browser-compatible version
 var ProtoBuf = require('protobufjs');
 var path = require('path');
-var ByteBuffer = require("bytebuffer");
 var BitStream = require('./BitStream');
 var snappy = require('snappy');
 //emit events for user to handle
@@ -260,13 +259,8 @@ function readCDemoPacket(demData) {
                 //protoName = "CMsgSource1LegacyGameEvent";
             }
             if (protoName) {
-                try {
-                    var decoded = dota[protoName].decode(bytes);
-                    console.log(decoded);
-                }
-                catch (e) {
-                    console.log(e);
-                }
+                var decoded = dota[protoName].decode(bytes);
+                console.log(decoded);
             }
         }
         //TODO reading entities, where are they stored?
@@ -313,24 +307,25 @@ function readDemoStringTables(msg) {
 
 function readByte(cb) {
     readBytes(1, function(err, buf) {
-        cb(err, ByteBuffer.wrap(buf).readByte());
+        cb(err, buf.readInt8());
     });
 }
 
 function readString(size, cb) {
     readBytes(size, function(err, buf) {
-        cb(err, ByteBuffer.wrap(buf).readString(size));
+        cb(err, buf.toString());
     });
 }
 
 function readUint32(cb) {
     readBytes(4, function(err, buf) {
-        cb(err, ByteBuffer.wrap(buf).readUint32());
+        cb(err, buf.readUInt32LE());
     });
 }
 
 function readBytes(size, cb) {
     if (!size) {
+        //return an empty buffer if reading 0 bytes
         return cb(null, new Buffer(""));
     }
     var buf = inStream.read(size);
@@ -338,7 +333,7 @@ function readBytes(size, cb) {
         cb(null, buf);
     }
     else {
-        //TODO this will wait forever if the replay terminates abruptly
+        //TODO this will wait forever if the replay terminates abruptly?
         inStream.once('readable', function() {
             return readBytes(size, cb);
         });
@@ -387,127 +382,7 @@ function readVarint32(cb) {
         });
     });
 }
-/*
-// Read bits of a given length as a uint, may or may not be byte-aligned.
-function readBits(buf, n) {
-	if r.remBits() < n {
-		_panicf("read overflow: %d bits requested, only %d remaining", n, r.remBits())
-	}
 
-	if n > 32 {
-		_panicf("invalid read: %d is greater than maximum read of 32 bits", n)
-	}
-
-	bitOffset := r.pos % 8
-	nBitsToRead := bitOffset + n
-	nBytesToRead := nBitsToRead / 8
-	if nBitsToRead%8 != 0 {
-		nBytesToRead += 1
-	}
-
-	var val uint64
-	for i := 0; i < nBytesToRead; i++ {
-		m := r.buf[(r.pos/8)+i]
-		val += (uint64(m) << uint32(i*8))
-	}
-	val >>= uint32(bitOffset)
-	val &= ((1 << uint32(n)) - 1)
-	r.pos += n
-
-	return uint32(val)
-}
-*/
-//synchronous implementation, requires entire replay to be read into bytebuffer
-/*
-var bb = new ByteBuffer();
-inStream.on('data', function(data) {
-    //tack on the data
-    bb.append(data);
-});
-inStream.on('end', function() {
-    console.log(bb);
-    //prepare to read buffer
-    bb.flip();
-    //first 8 bytes=header
-    var header = readStringSync(8);
-    console.log("header: %s", header);
-    if (header.toString() !== "PBDEMS2\0") {
-        throw "invalid header";
-    }
-    //next 8 bytes: appear to be two int32s related to the size of the demo file
-    var size1 = readUint32Sync();
-    var size2 = readUint32Sync();
-    console.log(size1, size2);
-    var stop = false;
-    var count = 0;
-    //next bytes are messages that need to be decoded
-    //read until stream is drained or stop on OnCDemoStop
-    while (!stop) {
-        var msg = readDemoMessageSync();
-        count += 1;
-        stop = count > 1000;
-    }
-});
-
-function readDemoMessageSync() {
-    // Read a command header, which includes both the message type
-    // well as a flag to determine whether or not whether or not the
-    // message is compressed with snappy.
-    //command: = dota.EDemoCommands(p.reader.readVarUint32())
-    var command = readVarint32Sync();
-    var tick = readVarint32Sync();
-    var size = readVarint32Sync();
-    var buf = readBytesSync(size);
-    console.log(command, tick, size);
-    // Extract the type and compressed flag out of the command
-    //msgType: = int32(command & ^ dota.EDemoCommands_DEM_IsCompressed)
-    //msgCompressed: = (command & dota.EDemoCommands_DEM_IsCompressed) == dota.EDemoCommands_DEM_IsCompressed
-    var msgType = command & ~dota.EDemoCommands.DEM_IsCompressed;
-    var msgCompressed = (command & dota.EDemoCommands.DEM_IsCompressed) === dota.EDemoCommands.DEM_IsCompressed;
-    // Read the tick that the message corresponds with.
-    // tick: = p.reader.readVarUint32()
-    // This appears to actually be an int32, where a -1 means pre-game.
-    if (tick === 4294967295) {
-        tick = 0;
-    }
-    // Read the size and following buffer.
-    // If the buffer is compressed, decompress it with snappy.
-    if (msgCompressed) {
-        buf = snappy.uncompressSync(buf);
-    }
-    var msg = {
-        tick: tick,
-        typeId: msgType,
-        size: size,
-        isCompressed: msgCompressed,
-        data: buf
-    };
-    console.log(msg);
-    return msg;
-}
-
-function readVarint32Sync() {
-    return bb.readVarint32();
-}
-
-function readStringSync(size) {
-    return bb.readString(size);
-}
-
-function readUint32Sync() {
-    return bb.readUint32();
-}
-
-function readByteSync() {
-    return bb.readByte();
-}
-
-function readBytesSync(size) {
-    var buf = bb.slice(bb.offset, bb.offset + size).toBuffer();
-    bb.offset += size;
-    return buf;
-}
-*/
 //TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types.  we'll probably want to generate them automatically from the protobufs
 //TODO translate this intermediate name into a protobuf message name?
 var packetTypes = {

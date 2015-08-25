@@ -83,14 +83,18 @@ BitStream.prototype.readBits = function(bits) {
 };
 BitStream.prototype.readBuffer = function(bits) {
     var bytes = Math.ceil(bits / 8);
-    var result = new ByteBuffer(bytes);
+    //use native buffer for faster speed
+    var result = new Buffer(bytes);
+    var offset = 0;
     result.length = bytes;
     while (bits > 0) {
-        var read = Math.min(bits, 8);
-        result.writeUint8(this.readBits(read));
-        bits -= read;
+        //read up to 8 bits at a time (we may read less at the end if unaligned)
+        var bitsToRead = Math.min(bits, 8);
+        //skip validation for more speed
+        result.writeUInt8(this.readBits(bitsToRead), offset, true);
+        offset ++;
+        bits -= bitsToRead;
     }
-    result.offset = 0;
     return result;
 };
 BitStream.prototype.readVarUInt = function() {
