@@ -8,29 +8,58 @@ var BitStream = function(buf) {
 BitStream.BitMask = [0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff];
 BitStream.prototype.readBits = function(bits) {
     var bitOffset = this.offset % 8;
-    var bitsToRead = bitOffset + bits;
-    //coerce division to integer
-    var bytesToRead = ~~(bitsToRead / 8);
-    if (bitsToRead % 8) {
-        bytesToRead += 1;
+    var value = null;
+    if (!bitOffset && bits === 8) {
+        //if we are byte-aligned, we can read quickly without shifting operations
+        value = this.bytes[this.offset / 8];
     }
-    //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
-    var value = new Long();
-    for (var i = 0; i < bytesToRead; i++) {
-        //extract the byte from the backing bytebuffer
-        var m = this.bytes[~~(this.offset / 8) + i];
-        //console.log(m, this.bytes);
-        //copy m into a 64bit holder so we can shift bits around more
-        m = new Long.fromNumber(m);
-        //shift to get the bits we want
-        value = value.add(m.shiftLeft(i * 8));
+    //32 bit shifting
+    else if (true) {
+        value = 0;
+        var bitsToRead = bitOffset + bits;
+        //coerce division to integer
+        var bytesToRead = ~~(bitsToRead / 8);
+        if (bitsToRead % 8) {
+            bytesToRead += 1;
+        }
+        //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
+        for (var i = 0; i < bytesToRead; i++) {
+            //extract the byte from the backing bytebuffer
+            var m = this.bytes[~~(this.offset / 8) + i];
+            //console.log(m, this.bytes);
+            //shift to get the bits we want
+            value += m << (i*8);
+        }
+        value >>= (bitOffset);
+        //shift a single 1 over, subtract 1 to form a bit mask 
+        value &= ((1 << bits) - 1);
     }
-    value = value.shiftRight(bitOffset);
-    //shift a single 1 over, subtract 1 to form a bit mask 
-    value = value.and((1 << bits) - 1);
+    //64 bit shifting, do we need this?
+    else {
+        value = new Long();
+        var bitsToRead = bitOffset + bits;
+        //coerce division to integer
+        var bytesToRead = ~~(bitsToRead / 8);
+        if (bitsToRead % 8) {
+            bytesToRead += 1;
+        }
+        //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
+        for (var i = 0; i < bytesToRead; i++) {
+            //extract the byte from the backing bytebuffer
+            var m = this.bytes[~~(this.offset / 8) + i];
+            //console.log(m, this.bytes);
+            //copy m into a 64bit holder so we can shift bits around more
+            m = new Long.fromNumber(m);
+            //shift to get the bits we want
+            value = value.add(m.shiftLeft(i * 8));
+        }
+        value = value.shiftRight(bitOffset);
+        //shift a single 1 over, subtract 1 to form a bit mask 
+        value = value.and((1 << bits) - 1);
+        value = value.toInt();
+    }
     this.offset += bits;
-    //console.log(value);
-    return value.toInt();
+    return value;
     /*
     //manta implementation
 	bitOffset := r.pos % 8

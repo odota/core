@@ -84,6 +84,7 @@
     "file-loader": "^0.8.4",
     "istanbul": "~0.3.17",
     "json-loader": "^0.5.2",
+    "look": "^0.1.3",
     "mocha": "~2.2.5",
     "mongodb": "~2.0.40",
     "nock": "~2.10.0",
