@@ -239,7 +239,7 @@ function readCDemoPacket(demData) {
     //convert the buffer object into a bitstream so we can read from it
     //read until less than 8 bits left
     var bitStream = new BitStream(demData.data);
-    while (bitStream.limit - bitStream.offset > 8) {
+    while (bitStream.limit - bitStream.offset >= 8) {
         var type = bitStream.readUBitVarPacketType();
         var size = bitStream.readVarUInt();
         var bytes = bitStream.readBuffer(size * 8);
