@@ -7,7 +7,9 @@ var BitStream = function(buf) {
     this.limit = buf.limit * 8;
     this.bytes = buf.buffer;
 };
-BitStream.BitMask = [0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff];
+/**
+ * Reads the specified number of bits (possibly non-aligned) and returns as 32bit int
+ **/
 BitStream.prototype.readBits = function(bits) {
     var bitOffset = this.offset % 8;
     var value = null;
@@ -83,6 +85,9 @@ BitStream.prototype.readBits = function(bits) {
 	return uint32(val)
 	*/
 };
+/**
+ * Reads the specified number of bits into a Buffer and returns
+ **/
 BitStream.prototype.readBuffer = function(bits) {
     var bytes = Math.ceil(bits / 8);
     //use native buffer for faster speed
@@ -114,7 +119,7 @@ BitStream.prototype.readVarUInt = function() {
         }
     }
 };
-BitStream.prototype.readUBitVarPacketType = function readUBitVarPacketType(bs) {
+BitStream.prototype.readUBitVarPacketType = function() {
     // Thanks to Robin Dietrich for providing a clean version of this code :-)
     // The header looks like this: [XY00001111222233333333333333333333] where everything > 0 is optional.
     // The first 2 bits (X and Y) tell us how much (if any) to read other than the 6 initial bits:
