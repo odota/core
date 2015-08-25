@@ -18,12 +18,11 @@ var ee = new EventEmitter();
 var async = require('async');
 //read the protobufs and build a dota object for reference
 var builder = ProtoBuf.newBuilder();
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/base_gcmessages.proto'), builder);
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/gcsdk_gcmessages.proto'), builder);
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/dota_gcmessages_client.proto'), builder);
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/demo.proto'), builder);
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/usermessages.proto'), builder);
-ProtoBuf.loadProtoFile(path.join(__dirname, './proto/gameevents.proto'), builder);
+var fs = require('fs');
+var protos = fs.readdirSync(path.join(__dirname, "proto"));
+protos.forEach(function(p) {
+    ProtoBuf.loadProtoFile(path.join(__dirname, "proto", p), builder);
+});
 var dota = builder.build();
 console.log(Object.keys(dota));
 var inStream = process.stdin;
@@ -382,8 +381,8 @@ function readVarint32(cb) {
         });
     });
 }
-
-//TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types.  we'll probably want to generate them automatically from the protobufs
+//TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types.
+//we'll probably want to generate them automatically from the protobufs
 //TODO translate this intermediate name into a protobuf message name?
 var packetTypes = {
         0: "NET_Messages_net_NOP",

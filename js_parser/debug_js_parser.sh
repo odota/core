@@ -1,1 +1,0 @@
-node-debug `dirname "$0"`/parser.js < testfiles/1698148651_source2.dem

@@ -1,4 +1,6 @@
-var ByteBuffer = require('bytebuffer');
+/**
+ * Provides methods for dealing with individual bits in a given buffer (non-aligned reads)
+ **/
 var Long = require('long');
 var BitStream = function(buf) {
     this.offset = buf.offset * 8;
@@ -24,11 +26,11 @@ BitStream.prototype.readBits = function(bits) {
         }
         //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
-            //extract the byte from the backing bytebuffer
+            //extract the byte from the backing buffer
             var m = this.bytes[~~(this.offset / 8) + i];
             //console.log(m, this.bytes);
             //shift to get the bits we want
-            value += m << (i*8);
+            value += m << (i * 8);
         }
         value >>= (bitOffset);
         //shift a single 1 over, subtract 1 to form a bit mask 
@@ -45,7 +47,7 @@ BitStream.prototype.readBits = function(bits) {
         }
         //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
-            //extract the byte from the backing bytebuffer
+            //extract the byte from the backing buffer
             var m = this.bytes[~~(this.offset / 8) + i];
             //console.log(m, this.bytes);
             //copy m into a 64bit holder so we can shift bits around more
@@ -92,7 +94,7 @@ BitStream.prototype.readBuffer = function(bits) {
         var bitsToRead = Math.min(bits, 8);
         //skip validation for more speed
         result.writeUInt8(this.readBits(bitsToRead), offset, true);
-        offset ++;
+        offset++;
         bits -= bitsToRead;
     }
     return result;
