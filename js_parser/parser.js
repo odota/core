@@ -8,6 +8,7 @@
 var ProtoBuf = require('protobufjs');
 var path = require('path');
 var ByteBuffer = require("bytebuffer");
+var BitStream = require('./BitStream');
 var snappy = require('snappy');
 //emit events for user to handle
 //client sets up listeners for each event
@@ -41,13 +42,13 @@ inStream.once('readable', function() {
                 return stop;
             }, function(cb) {
                 count += 1;
-                stop = count > 10;
+                stop = count > 25;
                 readDemoMessage(function(err, msg) {
                     //this is an example of looking up enum string by integer, may be more performant to construct our own map
                     var name = "CDemo" + builder.lookup("EDemoCommands").getChild(msg.typeId).name.slice(4);
-                    var demoMessageData;
+                    var demData;
                     if (dota[name]) {
-                        demoMessageData = dota[name].decode(msg.data);
+                        demData = dota[name].decode(msg.data);
                         console.log(name);
                     }
                     else {
@@ -55,7 +56,7 @@ inStream.once('readable', function() {
                     }
                     //TODO more efficient to have user specify the events they care about first, so we can selectively emit events?
                     //TODO emit an "Any" event that fires on any demo message?  do one for packets as well?
-                    ee.emit(name, demoMessageData);
+                    ee.emit(name, demData);
                     switch (msg.typeId) {
                         case -1:
                             //DEM_Error = -1;
@@ -63,6 +64,7 @@ inStream.once('readable', function() {
                             break;
                         case 0:
                             //DEM_Stop = 0;
+                            //TODO handle replays that don't have a CDemoStop?  stop on eof
                             stop = true;
                             break;
                         case 1:
@@ -94,8 +96,9 @@ inStream.once('readable', function() {
                             	optional bytes data = 3;
                             }
                             */
+                            console.log(demData);
+                            readCDemoPacket(demData);
                             //TODO reading entities, where are they stored?
-                            //TODO parse the packets out of the demomessage
                             //TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types
                             break;
                         case 8:
@@ -122,6 +125,8 @@ inStream.once('readable', function() {
                             }
                             */
                             //TODO this appears to be a packet with a string table attached?
+                            //use case 6 to process the stringtable
+                            //use case 7 to process the packet
                             break;
                         case 14:
                             //DEM_SaveGame = 14;
@@ -195,56 +200,77 @@ function readDemoMessage(cb) {
         });
     });
 }
+// Internal parser for callback OnCDemoPacket, responsible for extracting
+// multiple inner packets from a single CDemoPacket. This is the main structure
+// that contains all other data types in the demo file.
+function readCDemoPacket(demData) {
+    // Read all messages from the buffer. Messages are packed serially as
+    // {type, size, data}. We keep reading until until less than a byte remains.
+    /*
+        for r.remBytes() > 0 {
+            t: = int32(r.readUBitVar())
+            size: = int(r.readVarUint32())
+            buf: = r.readBytes(size)
+            ms = append(ms, & pendingMessage {
+                p.Tick, t, buf
+            })
+        }
+        // Sort messages to ensure dependencies are met. For example, we need to
+        // process string tables before game events that may reference them.
+        sort.Sort(ms)
+        // Dispatch messages in order.
+        for _,
+        m: = range ms {
+            // Skip message we don't have a definition for (yet)
+            // XXX TODO: remove this when we get updated protos.
+            if m.t == 400 {
+                    continue
+                }
+                // Call each packet, panic if we encounter an error.
+                // XXX TODO: this should return the error up the chain. Panic for debugging.
+            if err: = p.CallByPacketType(m.t, m.buf);
+            err != nil {
+                panic(err)
+            }
+        }
+        return nil
+        */
+    //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
+    //convert the buffer into a bitstream so we can read from it
+    //read until less than 8 bits left
+    var bitStream = new BitStream(demData.data);
+    console.log(bitStream.offset, bitStream.limit);
+    while (bitStream.limit - bitStream.offset > 8) {
+        var kind = bitStream.readUBitVarPacketType();
+        var size = bitStream.readVarUInt();
+        var bytes = bitStream.readBuffer(size * 8);
+        console.log(kind, size, bytes);
+    }
 
-function readGameMessage(byteBuffer) {
-    var kind = byteBuffer.readVarint32();
-    var size = byteBuffer.readVarint32();
-    if (!(kind in this.gameMessageIgnore)) {
-        if (kind in dota.msg.GameMessages) {
-            var msg = DotaDemo.pbMessages.build(dota.msg.GameMessages[kind]);
-            var buf = byteBuffer.slice(byteBuffer.offset, byteBuffer.offset + size);
-            var decoded = msg.decode(buf);
-            console.log({
-                type: dota.msg.GameMessages[kind],
-                message: decoded
-            });
-            if (kind in this.gameMessageListeners) {
-                for (var listener in this.gameMessageListeners[kind]) {
-                    this.gameMessageListeners[kind][listener](decoded);
+    function readUserMessage(msg) {
+        var kind = msg.msg_type;
+        var data = msg.msg_data.clone();
+        if (!(kind in this.userMessageIgnore)) {
+            if (kind in dota.msg.UserMessages) {
+                var userMsg = DotaDemo.pbMessages.build(dota.msg.UserMessages[kind]);
+                var decoded = userMsg.decode(data);
+                console.log({
+                    type: dota.msg.UserMessages[kind],
+                    message: decoded
+                });
+                for (var listener in this.userMessageListeners[kind]) {
+                    this.userMessageListeners[kind][listener](decoded);
                 }
             }
-        }
-        else {
-            console.log({
-                type: "Unknown GameMessage " + kind
-            });
-        }
-    }
-    byteBuffer.offset += size;
-};
-
-function readUserMessage(msg) {
-    var kind = msg.msg_type;
-    var data = msg.msg_data.clone();
-    if (!(kind in this.userMessageIgnore)) {
-        if (kind in dota.msg.UserMessages) {
-            var userMsg = DotaDemo.pbMessages.build(dota.msg.UserMessages[kind]);
-            var decoded = userMsg.decode(data);
-            console.log({
-                type: dota.msg.UserMessages[kind],
-                message: decoded
-            });
-            for (var listener in this.userMessageListeners[kind]) {
-                this.userMessageListeners[kind][listener](decoded);
+            else {
+                console.log({
+                    type: "Unknown UserMessage " + kind
+                });
             }
         }
-        else {
-            console.log({
-                type: "Unknown UserMessage " + kind
-            });
-        }
-    }
-};
+    };
+    return;
+}
 
 function readDemoStringTables(msg) {
     for (var i = 0; i < msg.tables.length; ++i) {
@@ -272,35 +298,6 @@ function readDemoStringTables(msg) {
         }
     }
     console.log(msg.tables);
-};
-/*
-function readGameSendTable(msg) {
-    if (!this.netTables) {
-        this.netTables = {};
-    }
-    this.netTables[msg.net_table_name] = {
-        net_name: msg.net_table_name,
-        needs_decoder: msg.needs_decoder,
-        props: msg.props
-    };
-    var props = this.netTables[msg.net_table_name].props;
-    for (var i = 0; i < props.length; ++i) {
-        var prop = props[i];
-        if (prop.type === dota.prop.Type.Array_) {
-            prop.template = props[i - 1];
-        }
-    }
-};
-*/
-function readGameCreateStringTable(msg) {
-    if (!this.stringTables) {
-        this.stringTables = {};
-        this.stringTablesID = [];
-    }
-    var table = new dota.StringTable(msg);
-    table.readStream(msg.num_entries, new BitStream(msg.string_data));
-    this.stringTables[msg.name] = table;
-    this.stringTablesID.push(msg.name);
 };
 
 function readByte(cb) {
@@ -330,6 +327,7 @@ function readBytes(size, cb) {
         cb(null, buf);
     }
     else {
+        //TODO this will wait forever if the replay terminates abruptly
         inStream.once('readable', function() {
             return readBytes(size, cb);
         });
@@ -378,6 +376,36 @@ function readVarint32(cb) {
         });
     });
 }
+/*
+// Read bits of a given length as a uint, may or may not be byte-aligned.
+function readBits(buf, n) {
+	if r.remBits() < n {
+		_panicf("read overflow: %d bits requested, only %d remaining", n, r.remBits())
+	}
+
+	if n > 32 {
+		_panicf("invalid read: %d is greater than maximum read of 32 bits", n)
+	}
+
+	bitOffset := r.pos % 8
+	nBitsToRead := bitOffset + n
+	nBytesToRead := nBitsToRead / 8
+	if nBitsToRead%8 != 0 {
+		nBytesToRead += 1
+	}
+
+	var val uint64
+	for i := 0; i < nBytesToRead; i++ {
+		m := r.buf[(r.pos/8)+i]
+		val += (uint64(m) << uint32(i*8))
+	}
+	val >>= uint32(bitOffset)
+	val &= ((1 << uint32(n)) - 1)
+	r.pos += n
+
+	return uint32(val)
+}
+*/
 //synchronous implementation, requires entire replay to be read into bytebuffer
 /*
 var bb = new ByteBuffer();
