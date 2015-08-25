@@ -31,7 +31,8 @@ block content
         | Duration: #{moment().startOf('day').seconds(match.duration).format("H:mm:ss")} | 
         | Ended: #[abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, hh:mm:ss")) #{moment.unix(match.start_time + match.duration).fromNow()}]
         | #{match.skill? "| Skill: " + constants.skill[match.skill] ? constants.skill[match.skill] : match.skill : ""}
-      .addthis_sharing_toolbox
+      .pull-right  
+        .addthis_sharing_toolbox
   block match_content
 
 append footer_assets

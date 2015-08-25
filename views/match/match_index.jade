@@ -103,20 +103,18 @@ block match_content
   .mdl-cell.mdl-cell--12-col
     +data_table({id:"index",summable:true, heading: "Overview"}, overviewColumns, match.players)
       
-  if match.picks_bans
-    .mdl-cell.mdl-cell--12-col     
-        h4.inline-header Picks/Bans
-        #picks-bans.table-responsive.collapse.in
-          table.table.table-hover
-            tbody
-              tr
-                +picks_bans_row(match.picks_bans, 0)
-              tr
-                +picks_bans_row(match.picks_bans, 1)
+    if match.picks_bans
+      h4 Picks/Bans
+      #picks-bans.of-scroll
+        table.mdl-data-table.mdl-js-data-table.table-striped   
+          tbody
+            tr
+              +picks_bans_row(match.picks_bans, 0)
+            tr
+              +picks_bans_row(match.picks_bans, 1)
                 
-  .mdl-cell.mdl-cell--12-col
     +data_table({id:"skills", heading: "Skill Builds"}, skillColumns, match.players)
-      
+        
   .mdl-cell.mdl-cell--6-col.of-scroll
     h4 Buildings
     #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
@@ -124,6 +122,13 @@ block match_content
   .mdl-cell.mdl-cell--6-col
     h4 Random Fact About This Day
     p#number
+    
+    h4 YASP: Another Stats Page
+    p.
+     Thanks for using YASP. We're a community driven effort to bring advanced Dota 2 
+     statistics to everyone. Check out our source code #[a(target="_blank", href="https://github.com/yasp-dota/yasp") here]
+     and follow us on #[a(target="_blank", href='https://twitter.com/yasp_dota') Twitter].
+    
     script.
       $.get('http://numbersapi.com/!{moment.unix(match.start_time+match.duration).format("M/D")}/date', function(data) {
           $('#number').text(data);

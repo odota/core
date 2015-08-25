@@ -30,6 +30,14 @@ abbr[title], abbr[data-original-title] {
     padding: 5px;
 }
 
+.pull-right {
+    float: right;
+}
+
+.pull-left {
+    float: left;
+}
+
 /*---------- Tables */
 
 table {
@@ -41,10 +49,10 @@ table {
     padding-left: 5px;
 }
 
-.mdl-data-table td:last-of-type,
-.mdl-data-table th:last-of-type {
-    padding-right: 5px;
-}
+/*.mdl-data-table td:last-of-type,*/
+/*.mdl-data-table th:last-of-type {*/
+/*    padding-right: 15px;*/
+/*}*/
 
 .mdl-data-table tbody tr {
     height: 0px;
