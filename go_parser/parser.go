@@ -33,16 +33,26 @@ func main() {
 //item_ should be removed from item key names
 
 		//chat
+		/*
 		parser.Callbacks.OnCUserMessageSayText2(func(m *dota.CUserMessageSayText2) error {
 			fmt.Printf("(%s) | %s: %s\n", m.GetMessagename(), m.GetParam1(), m.GetParam2())
 			return nil
 		})
+		*/
+		
+		parser.Callbacks.OnCDemoPacket(func(m *dota.CDemoPacket) error {
+			fmt.Printf("%s, %s\n", m);
+			panic("test")
+			return nil
+		})
 		
 		//actions
+		/*
 		parser.Callbacks.OnCDOTAUserMsg_SpectatorPlayerUnitOrders(func(m *dota.CDOTAUserMsg_SpectatorPlayerUnitOrders) error {
 			fmt.Printf("%s\n", m)
 			return nil
 		})
+		*/
 		
 		//combat log
 		/*

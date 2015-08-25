@@ -525,6 +525,7 @@ enum EDOTAGCMsg {
 	k_EMsgServerToGCHoldEventPoints = 7596;
 	k_EMsgSignOutReleaseEventPointHolds = 7597;
 	k_EMsgGCToGCChatNewUserSession = 7598;
+	k_EMsgGCToServerUpdateBroadcastCheers = 7602;
 	k_EMsgGCDev_GrantWarKill = 8001;
 	k_EMsgClientToGCCreateTeamShowcase = 8002;
 	k_EMsgGCToClientTeamShowcaseCreateResult = 8003;
@@ -985,6 +986,7 @@ message CSODOTALobbyInvite {
 	optional uint64 custom_game_id = 5;
 	optional fixed64 invite_gid = 6;
 	optional fixed64 custom_game_crc = 7;
+	optional fixed32 custom_game_timestamp = 8;
 }
 
 message CDOTAClientHardwareSpecs {
@@ -1190,6 +1192,7 @@ message CSODOTALobby {
 	optional .DOTALobbyVisibility visibility = 75 [default = DOTALobbyVisibility_Public];
 	optional fixed64 custom_game_crc = 76;
 	optional bool custom_game_auto_created_lobby = 77;
+	optional fixed32 custom_game_timestamp = 80;
 }
 
 message CMsgLobbyEventPoints {
@@ -1606,6 +1609,7 @@ message CMsgDOTARealtimeGameStats {
 		optional uint32 score = 5;
 		repeated .CMsgDOTARealtimeGameStats.PlayerDetails players = 6;
 		optional bool only_team = 7;
+		optional uint32 cheers = 8;
 	}
 
 	message ItemDetails {
@@ -1727,6 +1731,7 @@ message CMsgDOTARealtimeGameStats {
 		optional uint32 game_mode = 14;
 		optional uint32 league_id = 15;
 		optional bool single_team = 16;
+		optional uint32 cheers_peak = 17;
 	}
 
 	message GraphData {

@@ -16,13 +16,18 @@ var snappy = require('snappy');
 var EventEmitter = require('events').EventEmitter;
 var ee = new EventEmitter();
 var async = require('async');
+
+console.time('parse');
 //read the protobufs and build a dota object for reference
 var builder = ProtoBuf.newBuilder();
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/base_gcmessages.proto'), builder);
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/gcsdk_gcmessages.proto'), builder);
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/dota_gcmessages_client.proto'), builder);
 ProtoBuf.loadProtoFile(path.join(__dirname, './proto/demo.proto'), builder);
+ProtoBuf.loadProtoFile(path.join(__dirname, './proto/usermessages.proto'), builder);
+ProtoBuf.loadProtoFile(path.join(__dirname, './proto/gameevents.proto'), builder);
 var dota = builder.build();
+console.log(Object.keys(dota));
 var inStream = process.stdin;
 inStream.once('readable', function() {
     async.series({
@@ -42,17 +47,17 @@ inStream.once('readable', function() {
                 return stop;
             }, function(cb) {
                 count += 1;
-                stop = count > 25;
+                //stop = count > 1000;
                 readDemoMessage(function(err, msg) {
                     //this is an example of looking up enum string by integer, may be more performant to construct our own map
                     var name = "CDemo" + builder.lookup("EDemoCommands").getChild(msg.typeId).name.slice(4);
                     var demData;
                     if (dota[name]) {
                         demData = dota[name].decode(msg.data);
-                        console.log(name);
+                        //console.log(name);
                     }
                     else {
-                        console.log('no protobuf definition for %s', name);
+                        //console.log('no protobuf definition for %s', name);
                     }
                     //TODO more efficient to have user specify the events they care about first, so we can selectively emit events?
                     //TODO emit an "Any" event that fires on any demo message?  do one for packets as well?
@@ -96,10 +101,7 @@ inStream.once('readable', function() {
                             	optional bytes data = 3;
                             }
                             */
-                            console.log(demData);
                             readCDemoPacket(demData);
-                            //TODO reading entities, where are they stored?
-                            //TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types
                             break;
                         case 8:
                             //DEM_SignonPacket = 8;
@@ -151,6 +153,7 @@ inStream.once('readable', function() {
         if (err) {
             throw err;
         }
+        console.timeEnd('parse');
     });
 });
 // Read the next DEM message from the replay (outer message)
@@ -236,39 +239,40 @@ function readCDemoPacket(demData) {
         return nil
         */
     //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
-    //convert the buffer into a bitstream so we can read from it
+    //convert the buffer object into a bitstream so we can read from it
     //read until less than 8 bits left
     var bitStream = new BitStream(demData.data);
-    console.log(bitStream.offset, bitStream.limit);
     while (bitStream.limit - bitStream.offset > 8) {
-        var kind = bitStream.readUBitVarPacketType();
+        var type = bitStream.readUBitVarPacketType();
         var size = bitStream.readVarUInt();
         var bytes = bitStream.readBuffer(size * 8);
-        console.log(kind, size, bytes);
-    }
-
-    function readUserMessage(msg) {
-        var kind = msg.msg_type;
-        var data = msg.msg_data.clone();
-        if (!(kind in this.userMessageIgnore)) {
-            if (kind in dota.msg.UserMessages) {
-                var userMsg = DotaDemo.pbMessages.build(dota.msg.UserMessages[kind]);
-                var decoded = userMsg.decode(data);
-                console.log({
-                    type: dota.msg.UserMessages[kind],
-                    message: decoded
-                });
-                for (var listener in this.userMessageListeners[kind]) {
-                    this.userMessageListeners[kind][listener](decoded);
+        //console.log(kind, size, bytes);
+        if (type in packetTypes) {
+            //lookup the name of the proto message for this packet type
+            //use correct protobuf to decode
+            var protoName = null;
+            if (type === 118) {
+                protoName = "CUserMessageSayText2";
+            }
+            if (type === 205) {
+                //protoName = "CMsgSource1LegacyGameEventList";
+            }
+            if (type === 207) {
+                //protoName = "CMsgSource1LegacyGameEvent";
+            }
+            if (protoName) {
+                try {
+                    var decoded = dota[protoName].decode(bytes);
+                    console.log(decoded);
+                }
+                catch (e) {
+                    console.log(e);
                 }
             }
-            else {
-                console.log({
-                    type: "Unknown UserMessage " + kind
-                });
-            }
         }
-    };
+        //TODO reading entities, where are they stored?
+        //TODO push the packets of this message into an array and sort them by priority
+    }
     return;
 }
 
@@ -298,7 +302,7 @@ function readDemoStringTables(msg) {
         }
     }
     console.log(msg.tables);
-};
+}
 
 function readByte(cb) {
     readBytes(1, function(err, buf) {
@@ -497,3 +501,190 @@ function readBytesSync(size) {
     return buf;
 }
 */
+//TODO maintain a mapping for PacketTypes of id to string so we can emit events for different packet types.  we'll probably want to generate them automatically from the protobufs
+//TODO translate this intermediate name into a protobuf message name?
+var packetTypes = {
+    0: "NET_Messages_net_NOP",
+    1: "NET_Messages_net_Disconnect",
+    3: "NET_Messages_net_SplitScreenUser",
+    4: "NET_Messages_net_Tick",
+    5: "NET_Messages_net_StringCmd",
+    6: "NET_Messages_net_SetConVar",
+    7: "NET_Messages_net_SignonState",
+    8: "NET_Messages_net_SpawnGroup_Load",
+    9: "NET_Messages_net_SpawnGroup_ManifestUpdate",
+    11: "NET_Messages_net_SpawnGroup_SetCreationTick",
+    12: "NET_Messages_net_SpawnGroup_Unload",
+    13: "NET_Messages_net_SpawnGroup_LoadCompleted",
+    40: "SVC_Messages_svc_ServerInfo",
+    41: "SVC_Messages_svc_FlattenedSerializer",
+    42: "SVC_Messages_svc_ClassInfo",
+    43: "SVC_Messages_svc_SetPause",
+    44: "SVC_Messages_svc_CreateStringTable",
+    45: "SVC_Messages_svc_UpdateStringTable",
+    46: "SVC_Messages_svc_VoiceInit",
+    47: "SVC_Messages_svc_VoiceData",
+    48: "SVC_Messages_svc_Print",
+    49: "SVC_Messages_svc_Sounds",
+    50: "SVC_Messages_svc_SetView",
+    51: "SVC_Messages_svc_ClearAllStringTables",
+    52: "SVC_Messages_svc_CmdKeyValues",
+    53: "SVC_Messages_svc_BSPDecal",
+    54: "SVC_Messages_svc_SplitScreen",
+    55: "SVC_Messages_svc_PacketEntities",
+    56: "SVC_Messages_svc_Prefetch",
+    57: "SVC_Messages_svc_Menu",
+    58: "SVC_Messages_svc_GetCvarValue",
+    59: "SVC_Messages_svc_StopSound",
+    60: "SVC_Messages_svc_PeerList",
+    61: "SVC_Messages_svc_PacketReliable",
+    62: "SVC_Messages_svc_UserMessage",
+    63: "SVC_Messages_svc_SendTable",
+    67: "SVC_Messages_svc_GameEvent",
+    68: "SVC_Messages_svc_TempEntities",
+    69: "SVC_Messages_svc_GameEventList",
+    70: "SVC_Messages_svc_FullFrameSplit",
+    101: "EBaseUserMessages_UM_AchievementEvent",
+    102: "EBaseUserMessages_UM_CloseCaption",
+    103: "EBaseUserMessages_UM_CloseCaptionDirect",
+    104: "EBaseUserMessages_UM_CurrentTimescale",
+    105: "EBaseUserMessages_UM_DesiredTimescale",
+    106: "EBaseUserMessages_UM_Fade",
+    107: "EBaseUserMessages_UM_GameTitle",
+    109: "EBaseUserMessages_UM_HintText",
+    110: "EBaseUserMessages_UM_HudMsg",
+    111: "EBaseUserMessages_UM_HudText",
+    112: "EBaseUserMessages_UM_KeyHintText",
+    113: "EBaseUserMessages_UM_ColoredText",
+    114: "EBaseUserMessages_UM_RequestState",
+    115: "EBaseUserMessages_UM_ResetHUD",
+    116: "EBaseUserMessages_UM_Rumble",
+    117: "EBaseUserMessages_UM_SayText",
+    118: "EBaseUserMessages_UM_SayText2",
+    119: "EBaseUserMessages_UM_SayTextChannel",
+    120: "EBaseUserMessages_UM_Shake",
+    121: "EBaseUserMessages_UM_ShakeDir",
+    124: "EBaseUserMessages_UM_TextMsg",
+    125: "EBaseUserMessages_UM_ScreenTilt",
+    126: "EBaseUserMessages_UM_Train",
+    127: "EBaseUserMessages_UM_VGUIMenu",
+    128: "EBaseUserMessages_UM_VoiceMask",
+    129: "EBaseUserMessages_UM_VoiceSubtitle",
+    130: "EBaseUserMessages_UM_SendAudio",
+    131: "EBaseUserMessages_UM_ItemPickup",
+    132: "EBaseUserMessages_UM_AmmoDenied",
+    133: "EBaseUserMessages_UM_CrosshairAngle",
+    134: "EBaseUserMessages_UM_ShowMenu",
+    135: "EBaseUserMessages_UM_CreditsMsg",
+    136: "EBaseEntityMessages_EM_PlayJingle",
+    137: "EBaseEntityMessages_EM_ScreenOverlay",
+    138: "EBaseEntityMessages_EM_RemoveAllDecals",
+    139: "EBaseEntityMessages_EM_PropagateForce",
+    140: "EBaseEntityMessages_EM_DoSpark",
+    141: "EBaseEntityMessages_EM_FixAngle",
+    142: "EBaseUserMessages_UM_CloseCaptionPlaceholder",
+    143: "EBaseUserMessages_UM_CameraTransition",
+    144: "EBaseUserMessages_UM_AudioParameter",
+    145: "EBaseUserMessages_UM_ParticleManager",
+    146: "EBaseUserMessages_UM_HudError",
+    147: "EBaseUserMessages_UM_CustomGameEvent_ClientToServer",
+    148: "EBaseUserMessages_UM_CustomGameEvent_ServerToClient",
+    149: "EBaseUserMessages_UM_TrackedControllerInput_ClientToServer",
+    200: "EBaseGameEvents_GE_VDebugGameSessionIDEvent",
+    201: "EBaseGameEvents_GE_PlaceDecalEvent",
+    202: "EBaseGameEvents_GE_ClearWorldDecalsEvent",
+    203: "EBaseGameEvents_GE_ClearEntityDecalsEvent",
+    204: "EBaseGameEvents_GE_ClearDecalsForSkeletonInstanceEvent",
+    205: "EBaseGameEvents_GE_Source1LegacyGameEventList",
+    206: "EBaseGameEvents_GE_Source1LegacyListenEvents",
+    207: "EBaseGameEvents_GE_Source1LegacyGameEvent",
+    208: "EBaseGameEvents_GE_SosStartSoundEvent",
+    209: "EBaseGameEvents_GE_SosStopSoundEvent",
+    210: "EBaseGameEvents_GE_SosSetSoundEventParams",
+    211: "EBaseGameEvents_GE_SosSetLibraryStackFields",
+    212: "EBaseGameEvents_GE_SosStopSoundEventHash",
+    465: "EDotaUserMessages_DOTA_UM_AIDebugLine",
+    466: "EDotaUserMessages_DOTA_UM_ChatEvent",
+    467: "EDotaUserMessages_DOTA_UM_CombatHeroPositions",
+    470: "EDotaUserMessages_DOTA_UM_CombatLogShowDeath",
+    471: "EDotaUserMessages_DOTA_UM_CreateLinearProjectile",
+    472: "EDotaUserMessages_DOTA_UM_DestroyLinearProjectile",
+    473: "EDotaUserMessages_DOTA_UM_DodgeTrackingProjectiles",
+    474: "EDotaUserMessages_DOTA_UM_GlobalLightColor",
+    475: "EDotaUserMessages_DOTA_UM_GlobalLightDirection",
+    476: "EDotaUserMessages_DOTA_UM_InvalidCommand",
+    477: "EDotaUserMessages_DOTA_UM_LocationPing",
+    478: "EDotaUserMessages_DOTA_UM_MapLine",
+    479: "EDotaUserMessages_DOTA_UM_MiniKillCamInfo",
+    480: "EDotaUserMessages_DOTA_UM_MinimapDebugPoint",
+    481: "EDotaUserMessages_DOTA_UM_MinimapEvent",
+    482: "EDotaUserMessages_DOTA_UM_NevermoreRequiem",
+    483: "EDotaUserMessages_DOTA_UM_OverheadEvent",
+    484: "EDotaUserMessages_DOTA_UM_SetNextAutobuyItem",
+    485: "EDotaUserMessages_DOTA_UM_SharedCooldown",
+    486: "EDotaUserMessages_DOTA_UM_SpectatorPlayerClick",
+    487: "EDotaUserMessages_DOTA_UM_TutorialTipInfo",
+    488: "EDotaUserMessages_DOTA_UM_UnitEvent",
+    489: "EDotaUserMessages_DOTA_UM_ParticleManager",
+    490: "EDotaUserMessages_DOTA_UM_BotChat",
+    491: "EDotaUserMessages_DOTA_UM_HudError",
+    492: "EDotaUserMessages_DOTA_UM_ItemPurchased",
+    493: "EDotaUserMessages_DOTA_UM_Ping",
+    494: "EDotaUserMessages_DOTA_UM_ItemFound",
+    496: "EDotaUserMessages_DOTA_UM_SwapVerify",
+    497: "EDotaUserMessages_DOTA_UM_WorldLine",
+    499: "EDotaUserMessages_DOTA_UM_ItemAlert",
+    500: "EDotaUserMessages_DOTA_UM_HalloweenDrops",
+    501: "EDotaUserMessages_DOTA_UM_ChatWheel",
+    502: "EDotaUserMessages_DOTA_UM_ReceivedXmasGift",
+    503: "EDotaUserMessages_DOTA_UM_UpdateSharedContent",
+    504: "EDotaUserMessages_DOTA_UM_TutorialRequestExp",
+    505: "EDotaUserMessages_DOTA_UM_TutorialPingMinimap",
+    506: "EDotaUserMessages_DOTA_UM_GamerulesStateChanged",
+    507: "EDotaUserMessages_DOTA_UM_ShowSurvey",
+    508: "EDotaUserMessages_DOTA_UM_TutorialFade",
+    509: "EDotaUserMessages_DOTA_UM_AddQuestLogEntry",
+    510: "EDotaUserMessages_DOTA_UM_SendStatPopup",
+    511: "EDotaUserMessages_DOTA_UM_TutorialFinish",
+    512: "EDotaUserMessages_DOTA_UM_SendRoshanPopup",
+    513: "EDotaUserMessages_DOTA_UM_SendGenericToolTip",
+    514: "EDotaUserMessages_DOTA_UM_SendFinalGold",
+    515: "EDotaUserMessages_DOTA_UM_CustomMsg",
+    516: "EDotaUserMessages_DOTA_UM_CoachHUDPing",
+    517: "EDotaUserMessages_DOTA_UM_ClientLoadGridNav",
+    518: "EDotaUserMessages_DOTA_UM_TE_Projectile",
+    519: "EDotaUserMessages_DOTA_UM_TE_ProjectileLoc",
+    520: "EDotaUserMessages_DOTA_UM_TE_DotaBloodImpact",
+    521: "EDotaUserMessages_DOTA_UM_TE_UnitAnimation",
+    522: "EDotaUserMessages_DOTA_UM_TE_UnitAnimationEnd",
+    523: "EDotaUserMessages_DOTA_UM_AbilityPing",
+    524: "EDotaUserMessages_DOTA_UM_ShowGenericPopup",
+    525: "EDotaUserMessages_DOTA_UM_VoteStart",
+    526: "EDotaUserMessages_DOTA_UM_VoteUpdate",
+    527: "EDotaUserMessages_DOTA_UM_VoteEnd",
+    528: "EDotaUserMessages_DOTA_UM_BoosterState",
+    529: "EDotaUserMessages_DOTA_UM_WillPurchaseAlert",
+    530: "EDotaUserMessages_DOTA_UM_TutorialMinimapPosition",
+    531: "EDotaUserMessages_DOTA_UM_PlayerMMR",
+    532: "EDotaUserMessages_DOTA_UM_AbilitySteal",
+    533: "EDotaUserMessages_DOTA_UM_CourierKilledAlert",
+    534: "EDotaUserMessages_DOTA_UM_EnemyItemAlert",
+    535: "EDotaUserMessages_DOTA_UM_StatsMatchDetails",
+    536: "EDotaUserMessages_DOTA_UM_MiniTaunt",
+    537: "EDotaUserMessages_DOTA_UM_BuyBackStateAlert",
+    538: "EDotaUserMessages_DOTA_UM_SpeechBubble",
+    539: "EDotaUserMessages_DOTA_UM_CustomHeaderMessage",
+    540: "EDotaUserMessages_DOTA_UM_QuickBuyAlert",
+    541: "EDotaUserMessages_DOTA_UM_StatsHeroDetails",
+    542: "EDotaUserMessages_DOTA_UM_PredictionResult",
+    543: "EDotaUserMessages_DOTA_UM_ModifierAlert",
+    544: "EDotaUserMessages_DOTA_UM_HPManaAlert",
+    545: "EDotaUserMessages_DOTA_UM_GlyphAlert",
+    546: "EDotaUserMessages_DOTA_UM_BeastChat",
+    547: "EDotaUserMessages_DOTA_UM_SpectatorPlayerUnitOrders",
+    548: "EDotaUserMessages_DOTA_UM_CustomHudElement_Create",
+    549: "EDotaUserMessages_DOTA_UM_CustomHudElement_Modify",
+    550: "EDotaUserMessages_DOTA_UM_CustomHudElement_Destroy",
+    551: "EDotaUserMessages_DOTA_UM_CompendiumState",
+    552: "EDotaUserMessages_DOTA_UM_ProjectionAbility"
+}

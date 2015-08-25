@@ -11,7 +11,7 @@ import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
-import skadistats.clarity.processor.entities.UsesEntities;
+//import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
@@ -184,7 +184,7 @@ public class Main {
 		CHAT_MESSAGE_COURIER_RESPAWNED = 11;
 		*/
 		else{
-			System.err.println(message);
+			//System.err.println(message);
 		}
 	}
 	
@@ -201,7 +201,7 @@ public class Main {
 	
 	@OnMessage(CUserMessageSayText2.class)
 	public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
-		//System.err.println(message);
+		System.err.println(message);
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getParam1());
 		entry.key =  String.valueOf(message.getParam2());
@@ -421,8 +421,8 @@ public class Main {
 	}
 
 
-	@UsesEntities
-	@OnTickStart
+	//@UsesEntities
+	//@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){

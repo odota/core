@@ -1,56 +1,36 @@
 var ByteBuffer = require('bytebuffer');
+var Long = require('long');
 var BitStream = function(buf) {
-    this.offset = 0;
+    this.offset = buf.offset * 8;
     this.limit = buf.limit * 8;
-    this.byteBuffer = ByteBuffer.wrap(buf);
+    this.bytes = buf.buffer;
 };
 BitStream.BitMask = [0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff];
 BitStream.prototype.readBits = function(bits) {
     var bitOffset = this.offset % 8;
     var bitsToRead = bitOffset + bits;
-    var bytesToRead = bitsToRead / 8;
+    //coerce division to integer
+    var bytesToRead = ~~(bitsToRead / 8);
     if (bitsToRead % 8) {
         bytesToRead += 1;
     }
-    var value;
-    for (var i=0;i<bytesToRead;i++){
+    //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
+    var value = new Long();
+    for (var i = 0; i < bytesToRead; i++) {
         //extract the byte from the backing bytebuffer
-        var m = this.byteBuffer[this.offset/8+i];
-        //shift to get the bit we want
-        value += m << i*8;
+        var m = this.bytes[~~(this.offset / 8) + i];
+        //console.log(m, this.bytes);
+        //copy m into a 64bit holder so we can shift bits around more
+        m = new Long.fromNumber(m);
+        //shift to get the bits we want
+        value = value.add(m.shiftLeft(i * 8));
     }
-    
-    value >>= bitOffset;
-    value &= (1 << bits) -1;
+    value = value.shiftRight(bitOffset);
+    //shift a single 1 over, subtract 1 to form a bit mask 
+    value = value.and((1 << bits) - 1);
     this.offset += bits;
-    if (!value) throw "unexpected zero value";
-    return value;
-    
-    /*
-    //js implementation
-    var value = 0;
-    var read = 0;
-    var byte;
-    var count;
-    while (bits > 0) {
-        if (this.byteBuffer.offset === this.byteBuffer.limit) {
-            byte = 0; // They pad up to 4 byte boundary with 0
-        }
-        else {
-            byte = this.byteBuffer.readUint8(this.byteBuffer.offset);
-        }
-        count = Math.min(bits, 8 - this.offset);
-        value = value | ((byte >> this.offset) & BitStream.BitMask[count]) << read;
-        this.offset += count;
-        bits -= count;
-        read += count;
-        if (this.offset == 8) {
-            this.offset = 0;
-            this.byteBuffer.offset += 1;
-        }
-    }
-    return value;
-    */
+    //console.log(value);
+    return value.toInt();
     /*
     //manta implementation
 	bitOffset := r.pos % 8
@@ -71,23 +51,6 @@ BitStream.prototype.readBits = function(bits) {
 
 	return uint32(val)
 	*/
-    /*
-	//clarity implementation
-	//pos is bit offset
-	//data is array of 8 bytes (longs?)
-    int start = pos >> 6;
-    int end = (pos + n - 1) >> 6;
-    int s = pos & 63;
-    long ret;
-
-    if (start == end) {
-        ret = (data[start] >>> s) & MASKS[n];
-    } else { // wrap around
-        ret = ((data[start] >>> s) | (data[end] << (64 - s))) & MASKS[n];
-    }
-    pos += n;
-    return ret;
-    */
 };
 BitStream.prototype.readBuffer = function(bits) {
     var bytes = Math.ceil(bits / 8);

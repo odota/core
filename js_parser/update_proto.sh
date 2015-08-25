@@ -1,4 +1,5 @@
 #!/bin/sh
+cd `dirname "$0"`
 pushd proto
 rm *.proto
 wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobufs/dota_s2/demo.proto
@@ -12,4 +13,5 @@ wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobu
 wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobufs/dota_s2/dota_gcmessages_common.proto
 wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobufs/dota_s2/steammessages.proto
 wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobufs/dota_s2/gcsdk_gcmessages.proto
+wget https://raw.githubusercontent.com/SteamDatabase/GameTracking/master/Protobufs/dota_s2/gameevents.proto
 popd
