@@ -127,6 +127,18 @@ table {
     margin: 4px;
 }
 
+.img-text {
+    float: left;
+    text-align: center;
+    font-size: 11px;
+}
+
+.skill-usage {
+    float: right;
+    margin: 0 6px 0 3px;
+    line-height: 13px;
+}
+
 /*---------- Map */
 
 .mapContainer {

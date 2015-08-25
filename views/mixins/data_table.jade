@@ -30,14 +30,18 @@ mixin data_table(options, columns, players)
                   +skills(player)
                 else if header.name
                   td(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "", class=header.name)
-                    if header.name === "Player"
+                    if header.name === "Player" || header.name === "Hero"
                       +hero_td(player, header.property)
                     else if header.name === "Items"
                       +items(player)
+                    else if header.name === "Biggest Hit"
+                      +biggest_hit(player)
+                    else if header.property === "ability_uses_arr" || header.property === "item_uses_arr" || header.property === "damage_inflictor_arr"
+                      +usage(player, header.property)
                     else if typeof header.property === "function"
                       =header.property(player)
                     else
-                      =player[header.property]
+                      =player[header.property] || "-"
       if options.summable
         tfoot
           tr.rotate
@@ -65,19 +69,32 @@ mixin skills(player)
           img.img-small.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
         else
           =ability.ability
-//
-  h3.inline-header=options.heading
-  .table-responsive.collapse.in(style="background-color:#333;", id=options.id)
-    table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp(class=options.summable ? "summable" : "")
-      block
-      if options.summable
-        tr
-          td.lead= "Totals"
 
-mixin data_table_body
-  tbody
-    tr.rotate
-      td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
-    each player in side
-      tr(class=i ? "d":"r")
-        block
+mixin usage(player, type)
+  - var list = player.parsedPlayer[type] || []
+  each entity in list
+    span.img-text
+      img.img-small(src=entity.img, title=entity.name, class=type==="ability_uses_arr" ? "ability" : "item", class=entity.className)
+      if type === "ability_uses_arr"
+        .skill-usage #{entity.val} <br> (#{entity.hero_hits || 0})
+      else
+        .format #{entity.val} 
+       
+  
+mixin biggest_hit(player)
+  - var p = player.parsedPlayer
+  - var ability = constants.abilities[p.max_hero_hit.inflictor]
+  - var item = constants.items[p.max_hero_hit.inflictor]
+  - var hero = constants.hero_names[p.max_hero_hit.key]
+  span.img-text
+    if ability
+      span: img.img-small.ability(src=ability.img, title=p.max_hero_hit.inflictor)
+    else if item
+      span: img.img-small.item(src=item.img, title=p.max_hero_hit.inflictor)
+    else
+      span: img.img-small(src="/public/images/default_attack.png", title="Auto Attack/Other")
+    div #{p.max_hero_hit.value}
+  if hero
+    span.img-text: img.img-small(src=hero.img, title=hero.localized_name)
+  else
+    =p.max_hero_hit.key
