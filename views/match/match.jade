@@ -10,11 +10,17 @@ append head
 block header
   .mdl-layout__header-row
     span.mdl-layout-title Match #{match.match_id} 
-  .mdl-layout__tab-bar.mdl-js-ripple-effect.mdl-color--primary
+  .mdl-layout__tab-bar.mdl-js-ripple-effect
     each val, key in tabs
       - var disableTab = false && !match.parsed_data.version && key!=="index"
       a.mdl-layout__tab(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key), class=(route === key ? 'is-active' : ''), disabled=disableTab, title=(disableTab ? 'This data will be available when the replay is parsed.' : ''))= val.name  
 
+  script.
+    $('a.mdl-layout__tab').click(function(){
+      console.log("called")
+      console.log($(this).attr("href"));
+      window.location.href = $(this).attr("href");
+    });
 block content
   .mdl-cell.mdl-cell--12-col
     .text-center

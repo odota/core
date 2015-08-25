@@ -4,7 +4,7 @@ mixin data_table(options, columns, players)
   h4=options.heading
   - var p = [players.slice(0, players.length/2), players.slice(players.length/2)]
   .of-scroll
-    table.mdl-data-table.mdl-js-data-table.table-striped(class=options.summable ? "summable" : "")
+    table.mdl-data-table.mdl-js-data-table.table-striped(class=options.summable ? "summable" : "", id=options.id ? options.id : "")
       each side, i in p
         thead
           //- Add a th for the side tr.rotate

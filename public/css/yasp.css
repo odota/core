@@ -32,9 +32,18 @@ abbr[title], abbr[data-original-title] {
 
 /*---------- Tables */
 
+table {
+    width: 100%;
+}
+
 .mdl-data-table td:first-of-type,
 .mdl-data-table th:first-of-type {
     padding-left: 5px;
+}
+
+.mdl-data-table td:last-of-type,
+.mdl-data-table th:last-of-type {
+    padding-right: 5px;
 }
 
 .mdl-data-table tbody tr {
@@ -76,6 +85,11 @@ abbr[title], abbr[data-original-title] {
 .table-striped tbody tr:nth-of-type(even) {
     background-color: #3d3d3d;
 }
+
+#skills td { /* Reduce padding of skills table */
+    padding: 0;
+}
+
 /*---------- Ads */
 
 .leaderboard {
