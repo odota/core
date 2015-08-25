@@ -12,11 +12,14 @@ block content
         br
         br
   .row
-    .col-md-10
+    .col-md-12
       block blogcontent
-    .col-md-2
-      block taglegend
-        .well.sidebar-nav.tag-key
-          p.lead Tags
-          each tag in getTags()
-            div: a(href=tagURL(tag)) #{tag}
+    //-
+      .col-md-2
+        block taglegend
+          .well.sidebar-nav.tag-key
+            p.lead Tags
+            each tag in getTags()
+              div
+                span.label.label-info
+                  a(href=tagURL(tag)) #{tag}
