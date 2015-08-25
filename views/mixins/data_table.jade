@@ -1,26 +1,34 @@
 include data_table_header
 
 mixin data_table(options, columns, players)
-  h3=options.heading
+  h4=options.heading
   - var p = [players.slice(0, players.length/2), players.slice(players.length/2)]
-  .scroll
+  .of-scroll
     table.mdl-data-table.mdl-js-data-table.table-striped(class=options.summable ? "summable" : "")
       each side, i in p
         thead
+          //- Add a th for the side tr.rotate
+          th
           each header in columns
-            th(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "")
-              if header.title
-                abbr(title=header.title)= header.name
-              else
-                =header.name
+            if header.name === "Skills"
+              - for (var lv = 1; lv < 26; lv++)
+                  th.mdl-data-table__cell--non-numeric= lv
+            else
+              th(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "")
+                if header.title
+                  abbr(title=header.title)= header.name
+                else
+                  =header.name
         tbody
           tr.rotate
             td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
           each player in side
             tr(class=i ? "d":"r")
               each header in columns
-                //- empty name property lets us skip columns
-                if header.name
+                //- empty name property lets us skip column
+                if header.name === "Skills"
+                  +skills(player)
+                else if header.name
                   td(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "", class=header.name)
                     if header.name === "Player"
                       +hero_td(player, header.property)
@@ -48,7 +56,15 @@ mixin items(player)
         - var item = constants.items[constants.item_ids[val]]                             
         if item
           img.img-small.ability(src=item.img, title=constants.item_ids[val])
-  
+
+mixin skills(player)
+  each ability in player.ability_upgrades || {}
+    td.mdl-data-table__cell--non-numeric
+      - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+        if abilityData
+          img.img-small.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
+        else
+          =ability.ability
 //
   h3.inline-header=options.heading
   .table-responsive.collapse.in(style="background-color:#333;", id=options.id)
