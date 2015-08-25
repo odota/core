@@ -1,6 +1,55 @@
 include data_table_header
 
-mixin data_table(options, players)
+mixin data_table(options, columns, players)
+  h3=options.heading
+  - var p = [players.slice(0, players.length/2), players.slice(players.length/2)]
+  .scroll
+    table.mdl-data-table.mdl-js-data-table.table-striped(class=options.summable ? "summable" : "")
+      each side, i in p
+        thead
+          each header in columns
+            th(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "")
+              if header.title
+                abbr(title=header.title)= header.name
+              else
+                =header.name
+        tbody
+          tr.rotate
+            td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
+          each player in side
+            tr(class=i ? "d":"r")
+              each header in columns
+                //- empty name property lets us skip columns
+                if header.name
+                  td(class=header.notNumber ? "mdl-data-table__cell--non-numeric" : "", class=header.name)
+                    if header.name === "Player"
+                      +hero_td(player, header.property)
+                    else if header.name === "Items"
+                      +items(player)
+                    else if typeof header.property === "function"
+                      =header.property(player)
+                    else
+                      =player[header.property]
+      if options.summable
+        tfoot
+          tr.rotate
+            td(rowspan="3") Totals
+  
+mixin items(player)
+  each val, index in player
+    if (index.slice(0, 5)==="item_")
+      - var item = constants.items[constants.item_ids[val]]
+      if item
+        img.img-small.item(src=item.img, title=constants.item_ids[val])
+  if (player.hero_id === 80 && player.additional_units)
+    br
+    each val, index in player.additional_units[0]
+      if (index.slice(0, 5)==="item_")
+        - var item = constants.items[constants.item_ids[val]]                             
+        if item
+          img.img-small.ability(src=item.img, title=constants.item_ids[val])
+  
+//
   h3.inline-header=options.heading
   .table-responsive.collapse.in(style="background-color:#333;", id=options.id)
     table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp(class=options.summable ? "summable" : "")
@@ -9,9 +58,10 @@ mixin data_table(options, players)
         tr
           td.lead= "Totals"
 
-mixin data_table_body(i, match)
-  if !(i%(match.players.length/2))
-    td(class=i ? "radiant":"dire", rowspan="#{match.players.length/2}")= i ? "Dire" : "Radiant"
-  else
-    td
-  block
+mixin data_table_body
+  tbody
+    tr.rotate
+      td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
+    each player in side
+      tr(class=i ? "d":"r")
+        block

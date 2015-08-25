@@ -13,64 +13,90 @@ mixin picks_bans_row(picks_bans, team_int)
             div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
         else
           = hero_id
-
+          
 block match_content
+  -
+    var overviewColumns = [
+      {
+        name: ""
+      },
+      {
+        name: "Player",
+        title: "(Solo MMR)",
+        property: true,
+        notNumber: true
+      },
+      {
+        name: "LV",
+        title: "Level of hero",
+        property: "level"
+      },
+      {
+        name: "K",
+        title: "Number of kills by hero",
+        property: "kills"
+      },
+      {
+        name: "D",
+        title: "Number of deaths of hero",
+        property: "deaths"
+      },
+      {
+        name: "A",
+        title: "Number of assists by hero",
+        property: "assists"
+      },
+      {
+        name: "LH",
+        title: "Number of last hits by hero",
+        property: "last_hits"
+      },
+      {
+        name: "DN",
+        title: "Number of denied creeps",
+        property: "denies"
+      },
+      {
+        name: "GOLD",
+        title: "Total gold farmed",
+        property: "total_gold"
+      },
+      {
+        name: "GPM",
+        title: "Gold farmed by hero per minute",
+        property: "gold_per_min"
+      },
+      {
+        name: "XPM",
+        title: "Experience gained by hero per minute",
+        property: "xp_per_min"
+      },
+      {
+        name: "HD",
+        title: "Amount of damage dealt to heroes",
+        property: "hero_damage"
+      },
+      {
+        name: "TD",
+        title: "Amount of damage dealt to towers",
+        property: "tower_damage"
+      },
+      {
+        name: "HH",
+        title: "Amount of health restored to heroes",
+        property: "hero_healing"
+      },
+      {
+        name: "Items",
+        title: "Items built",
+        notNumber: true
+      }
+    ];
+    
   .mdl-grid
     .mdl-cell.mdl-cell--12-col.of-scroll
-      //+data_table({id:"index",summable:true, heading: "Overview"})
-      - var p = [match.players.slice(0, match.players.length/2), match.players.slice(match.players.length/2)]
-      table.mdl-data-table.mdl-js-data-table.table-striped.summable
-        each side, i in p
-          thead
-            th
-            th.mdl-data-table__cell--non-numeric: abbr(title="(Solo MMR)") Player
-            th: abbr(title="Level of hero") LV
-            th: abbr(title="Number of kills by hero") K
-            th: abbr(title="Number of deaths of hero") D
-            th: abbr(title="Number of assists by hero") A
-            th: abbr(title="Number of last hits by hero") LH
-            th: abbr(title="Number of denied creeps") DN
-            th: abbr(title="Total gold farmed") GOLD
-            th: abbr(title="Gold farmed by hero per minute") GPM
-            th: abbr(title="Experience gained by hero per minute") XPM
-            th: abbr(title="Amount of damage dealt to heroes") HD
-            th: abbr(title="Amount of damage dealt to towers") TD
-            th: abbr(title="Amount of health restored to heroes") HH
-            th.mdl-data-table__cell--non-numeric: abbr(title="Items built") Items
-          tbody
-            tr.rotate
-              td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
-            each player in side
-              tr(class=i ? "d":"r")
-                +hero_td(player, true)
-                td= player.level
-                td= player.kills
-                td.negative= player.deaths
-                td= player.assists
-                td= player.last_hits
-                td= player.denies
-                td.format= player.total_gold
-                td= player.gold_per_min
-                td= player.xp_per_min
-                td.format= player.hero_damage
-                td.format= player.tower_damage
-                td.format= player.hero_healing
-                td.mdl-data-table__cell--non-numeric
-                  each val, index in player
-                    if (index.slice(0, 5)==="item_")
-                      - var item = constants.items[constants.item_ids[val]]
-                      if item
-                        img.img-small.item(src=item.img, title=constants.item_ids[val])
-                  if (player.hero_id === 80 && player.additional_units)
-                    br
-                    each val, index in player.additional_units[0]
-                      if (index.slice(0, 5)==="item_")
-                        - var item = constants.items[constants.item_ids[val]]                             
-                        if item
-                          img.img-small.ability(src=item.img, title=constants.item_ids[val])
-        tfoot
-          tr.rotate
-            td(rowspan="3") Totals
+      +data_table({id:"index",summable:true, heading: "Overview"}, overviewColumns, match.players)
+        
   if match.picks_bans
     .mdl-grid
       .mdl-cell.mdl-cell--12-col     
@@ -89,6 +115,7 @@ block match_content
   
   .mdl-grid
     .mdl-cell.mdl-cell--8-col.of-scroll
+    //
       +data_table({id:"skills", heading: "Skill Builds"})
         each player, i in match.players
           +data_table_header(i, match)

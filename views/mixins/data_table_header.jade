@@ -1,5 +1,10 @@
-mixin data_table_header(i, match)
-  if !(i%(match.players.length/2))
-    thead
-      tr
-        block
+mixin data_table_header(options, players)
+  h3=options.heading
+  - var p = [players.slice(0, players.length/2), players.slice(players.length/2)]
+  table.mdl-data-table.mdl-js-data-table.table-striped(class=options.summable ? "summable" : "")
+    each side, i in p
+      block
+    if options.summable
+      tfoot
+        tr.rotate
+          td(rowspan="3") Totals
