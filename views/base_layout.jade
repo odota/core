@@ -51,7 +51,8 @@ html
       .mdl-layout__drawer
         include drawer.jade
       main.mdl-layout__content
-        block page_content
+        .mdl-grid.container
+          block page_content
         include footer
   //stuff to include after page load
   block footer_assets

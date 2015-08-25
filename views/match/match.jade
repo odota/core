@@ -16,30 +16,17 @@ block header
       a.mdl-layout__tab(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key), class=(route === key ? 'is-active' : ''), disabled=disableTab, title=(disableTab ? 'This data will be available when the replay is parsed.' : ''))= val.name  
 
 block content
-  .mdl-grid.container
-    .mdl-cell.mdl-cell--5-col
-      .vert-center
-        h3(class=match.radiant_win ? "radiant" : "dire")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+  .mdl-grid
+    .mdl-cell.mdl-cell--12-col
+      .text-center
+        h3.inline(class=match.radiant_win ? "radiant" : "dire")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+        small
+          | Mode: #{constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode} | 
+          | Region: #{constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster} |
+          | Duration: #{moment().startOf('day').seconds(match.duration).format("H:mm:ss")} | 
+          | Ended: #[abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, hh:mm:ss")) #{moment.unix(match.start_time + match.duration).fromNow()}]
+          | #{match.skill? "| Skill: " + constants.skill[match.skill] ? constants.skill[match.skill] : match.skill : ""}
         .addthis_sharing_toolbox
-    .mdl-cell.mdl-cell--7-col
-      table.mdl-data-table.mdl-js-data-table.vert-center
-        thead
-          tr
-            //th: abbr(title=constants.tooltips.status) Status
-            th.mdl-data-table__cell--non-numeric Mode
-            th.mdl-data-table__cell--non-numeric Region
-            th.mdl-data-table__cell--non-numeric Duration
-            th.mdl-data-table__cell--non-numeric Ended
-            th.mdl-data-table__cell--non-numeric Skill
-        tbody
-          tr
-            //td= constants.parse_status[match.parse_status]
-            td.mdl-data-table__cell--non-numeric= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
-            td.mdl-data-table__cell--non-numeric= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
-            td.mdl-data-table__cell--non-numeric= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
-            td.mdl-data-table__cell--non-numeric: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, hh:mm:ss"))= moment.unix(match.start_time + match.duration).fromNow()
-            td.mdl-data-table__cell--non-numeric= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
-    
     block match_content
 
 append footer_assets

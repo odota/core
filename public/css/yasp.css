@@ -18,8 +18,8 @@ abbr[title], abbr[data-original-title] {
     overflow: scroll;
 }
 
-.vert-center {
-    margin: 0 auto;
+.text-center {
+    text-align: center;
 }
 
 .inline {
@@ -55,6 +55,7 @@ abbr[title], abbr[data-original-title] {
     border: none;
 }
 
+.mdl-data-table,
 .mdl-data-table thead,
 .mdl-data-table tbody,
 .mdl-data-table tfoot {

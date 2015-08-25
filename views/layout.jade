@@ -2,8 +2,8 @@ extend base_layout
 include mixins/ads
 
 block page_content
-  +ad("banner1")
-  hr
+  //+ad("banner1")
+  //hr
   if banner_msg
     .alert.alert-success.text-center(role="alert") !{banner_msg}
   block content
