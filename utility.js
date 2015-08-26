@@ -143,7 +143,9 @@ function getData(url, cb) {
     var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
     var parse = urllib.parse(u, true);
     var proxy;
+    var steam_api = false;
     if (parse.host === "api.steampowered.com") {
+        steam_api = true;
         //choose an api key to use
         var api_keys = config.STEAM_API_KEY.split(",");
         parse.query.key = api_keys[Math.floor(Math.random() * api_keys.length)];
@@ -170,17 +172,17 @@ function getData(url, cb) {
             json: true,
             timeout: 30000
         }, function(err, res, body) {
-            if (err || res.statusCode !== 200 || !body) {
-                if (body && body.error) {
-                    //body contained error (probably from retriever)
-                    //non-retryable
-                    return cb(body);
-                }
+            if (body && body.error) {
+                //body contained specific error (probably from retriever)
+                //non-retryable
+                return cb(body);
+            }
+            if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
                 logger.info("retrying: %s", target);
                 return getData(url, cb);
             }
             else if (body.result) {
-                //steam api usually returns data with body.result
+                //steam api usually returns data with body.result, getplayersummaries has body.response
                 if (body.result.status === 15 || body.result.error === "Practice matches are not available via GetMatchDetails" || body.result.error === "No Match ID specified" || body.result.error === "Match ID not found") {
                     //user does not have stats enabled or attempting to get private match/invalid id, don't retry
                     //non-retryable
@@ -192,7 +194,6 @@ function getData(url, cb) {
                     return getData(url, cb);
                 }
             }
-            //TODO steam api can return !body.result, this is a retryable error, right now we just send a null body.result back
             return cb(null, body);
         });
     }, delay);

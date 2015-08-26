@@ -22,26 +22,26 @@ block match_content
           +data_table_header(i, match)
             tr
               th Hero
-              th Rating
-              th LV
-              th K
-              th D
-              th A
-              th LH
-              th DN
-              th GOLD
-              th GPM
-              th XPM
-              th HD
-              th TD
-              th HH
-              th Items
+              th: abbr(title="Solo MMR of player") Rating
+              th: abbr(title="Level of hero") LV
+              th: abbr(title="Number of kills by hero") K
+              th: abbr(title="Number of deaths of hero") D
+              th: abbr(title="Number of assists by hero") A
+              th: abbr(title="Number of last hits by hero") LH
+              th: abbr(title="Number of denied creeps") DN
+              th: abbr(title="Total gold farmed") GOLD
+              th: abbr(title="Gold farmed by hero per minute") GPM
+              th: abbr(title="Experience gained by hero per minute") XPM
+              th: abbr(title="Amount of damage dealt to heroes") HD
+              th: abbr(title="Amount of damage dealt to towers") TD
+              th: abbr(title="Amount of health restored to heroes") HH
+              th: abbr(title="Items built") Items
           tr(class=player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td
               //img.img-small(src=player.avatar)
               if (player.last_visited)
-                img.user(src='/public/images/favicon-16x16.png', title="YASP User")
+                img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
               | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
             td= player.level
             td= player.kills

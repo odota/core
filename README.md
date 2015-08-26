@@ -69,29 +69,30 @@ Quickstart
 
 Sample Data
 ----
-* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump that can be imported using mongorestore if a larger data set is desired.
+* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump if you want a medium-sized data set to work with.
 
 Developer's Guide
 ----
 * The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
 * Descriptions of each service:
-    * web: This serves the web traffic.
+    * web: An HTTP server which serves the web traffic.
     * retriever: This is a standalone HTTP server that accepts URL params `match_id` and `account_id`, and interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
         * This is used in order to determine the list of users that have added a tracker as a friend.
     * worker: Takes care of background tasks.  Currently, this involves re-queueing currently active tasks on restart, and rebuilding the sets of tracked players, donated players, rating players, etc.
     * parser: This is a standalone HTTP server that accepts a URL param ```url```.  It expects a compressed replay file `.dem.bz2` at this location, which it downloads, streams through `bunzip2`, and then through the compiled parser.
-        * The parser produces a stream of JSON objects to STDOUT, which the HTTP server returns to the client.
+        * Each parser maintains a copy of the current heroes, which is used to map combat log names ("npc_dota_hero...") to `hero_id`, which can be used to match the combat log units to a player.
+        * The parser emits a newline-delimited JSON stream of events, which is picked up and combined into a monolithic JSON object sent back to the client as the response.
+        * The schema for the current parsed_data structure can be found in `utility.getParseSchema`.
     * parseManager: This reads Redis to find the currently available list of parse workers.  A single endpoint may appear multiple times (as many cores as it has).
         * This uses the Node cluster module to fork as many workers as there are available parsing cores.
         * Each one processes parse jobs in Kue.
         * Processing a job entails:
-            * Get the replay URL: `getReplayUrl` takes care of this.  It will refuse to get a URL if match.start_time is older than the replay expire time (7 days).
+            * Get the replay URL: `getReplayUrl` takes care of this.
             * Send a request to a parse worker.
-            * Read the resulting stream of JSON objects and combine into a monolithic JSON object for storage in DB, as `match.parsed_data`
-            * The schema for the current parsed_data structure can be found in `utility.getParseSchema`.
+            * Read the response from parser worker and save as `match.parsed_data`
     * scanner: Reads the Steam sequential API to find the latest matches.  If a match is found passing the criteria for parse.  `operations.insertMatch` is called.  If `match.parse_status` is explicitly set to 0, the match is queued for parse.
-    * proxy: Simply proxies all requests to the Steam API.  The host is functionally equivalent to `api.steampowered.com`.
+    * proxy: A standalone HTTP server that simply proxies all requests to the Steam API.  The host is functionally equivalent to `api.steampowered.com`.
     * skill: Reads the GetMatchHistory API in order to continuously find matches of a particular skill level.
         * Applying the following filters increases the number of matches we can get skill data for;
             * `min_players=10`
@@ -101,8 +102,8 @@ Developer's Guide
     * fullhistory: Processes full history requests
 * Pipeline: Generally parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
-    * Request: Requests are processed from the Request page via socket.io.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
-        * This allows the user to be updated of parse percentage.
+    * Request: Requests are processed from the Request page.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
+        * The client uses AJAX to poll the server.  When an error occurs or the job finishes, it either displays the error or redirects to the match page.
         * Requests are set to only try once.
 * Player/match caching: We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
@@ -116,12 +117,11 @@ Developer's Guide
 * constants are currently built pre-run and written to file
 * web requires constants
 * fullhistory requires constants (needs to iterate through heroes)
-* parser requires constants
+* parser requires constants (for building parsed_data object)
 * buildSets currently built by worker, includes getRetriever, getParser, which are service discovery and could be separated from the actual set building
 * scanner requires buildSets in order to avoid leaking players, retries until available
 * parseManager requires getRetrievers to get replay url, retries until available
 * parseManager requires getParsers, since we need to set concurrency before starting, retries until available
-* retriever, proxy are independent
 
 History
 ----
@@ -130,6 +130,6 @@ History
 
 Core Development
 ----
-* howardc93
+* howardchung
 * albertcui
 * nickhh

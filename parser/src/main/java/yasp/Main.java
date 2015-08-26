@@ -1,5 +1,5 @@
 package yasp;
-import skadistats.clarity.wire.proto.Netmessages;
+import skadistats.clarity.wire.s1.proto.Netmessages;
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +19,13 @@ import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
-import skadistats.clarity.wire.proto.Usermessages.CUserMsg_SayText2;
-import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
-import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
-import skadistats.clarity.wire.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.proto.DotaGcmessagesCommon.DOTA_COMBATLOG_TYPES;
-import skadistats.clarity.wire.proto.Demo.CDemoFileInfo;
-import skadistats.clarity.wire.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
+import skadistats.clarity.wire.s1.proto.Usermessages.CUserMsg_SayText2;
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
+//import skadistats.clarity.wire.s1.proto.DotaGcmessagesCommon.DOTA_COMBATLOG_TYPES;
+import skadistats.clarity.wire.s1.proto.Demo.CDemoFileInfo;
+import skadistats.clarity.wire.s1.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -415,6 +415,7 @@ public class Main {
 			entry.type="modifier_refresh";
 			break;
 		default:
+		/*
 			DOTA_COMBATLOG_TYPES type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType());
 			if (type!=null){
 				entry.type = type.name();
@@ -425,6 +426,8 @@ public class Main {
 				System.err.format("unknown combat log type: %s\n", cle.getType());
 				System.err.println(cle);
 			}
+			*/
+			System.err.println(cle);
 			break;
 		}
 	}

@@ -1,7 +1,7 @@
 include /mixins/progress_bar
 
 mixin teammate_table(rows, short)
-  h3 Players
+  h3 Played with
   table.table.table-condensed#teammates.table-striped
     thead
       tr
@@ -19,7 +19,7 @@ mixin teammate_table(rows, short)
         td.text-left
           img.img-small(src=teammate.avatar)
           if (teammate.last_visited)
-            img.user(src='/public/images/favicon-16x16.png', title="YASP User")
+            img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
           a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
         td=teammate.last_played
         td= teammate.games

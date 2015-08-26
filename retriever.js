@@ -13,7 +13,7 @@ var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
 var a = [];
-var port = config.RETRIEVER_PORT || config.PORT;
+var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
@@ -111,9 +111,6 @@ async.each(a, function(i, cb) {
             //reject request if doesnt have key
             return next("invalid key");
         }
-        res.locals.to = setTimeout(function() {
-            next("retriever timeout");
-        }, 25000);
         var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
         if (req.query.match_id) {
             getGCReplayUrl(r, req.query.match_id, function(err, data) {
@@ -134,7 +131,6 @@ async.each(a, function(i, cb) {
         }
     });
     app.use(function(req, res) {
-        clearTimeout(res.locals.to);
         res.json(res.locals.data);
     });
     app.use(function(err, req, res, next) {

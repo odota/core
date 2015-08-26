@@ -7,4 +7,4 @@
 
 If you're not a developer, you can buy some <a href='/carry' target="_blank">Cheese</a>.
 
-Or tell your friends about how awesome YASP is : )
+Or tell your friends about how awesome this site is : )

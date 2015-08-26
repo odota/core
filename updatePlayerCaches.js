@@ -1,9 +1,8 @@
 var utility = require('./utility');
-var isSignificant = utility.isSignificant;
 var reduceMatch = utility.reduceMatch;
-var constants = require('./constants.json');
 var aggregator = require('./aggregator');
 var async = require('async');
+var config = require('./config');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
@@ -18,7 +17,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
     }, {
         //don't upsert if inserting skill data
         upsert: options.type !== "skill",
-        //explicitly declare we want the pre-modification document
+        //explicitly declare we want the pre-modification document in the cb
         "new": false
     }, function(err, doc) {
         if (err) {
@@ -30,8 +29,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         }
         async.each(match.players || options.players, function(p, cb) {
                 redis.get("player:" + p.account_id, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
                     //if player cache doesn't exist, skip
-                    var cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                    var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                     if (cache) {
                         var match_copy = JSON.parse(JSON.stringify(match));
                         if (options.type !== "skill") {
@@ -55,7 +57,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                             }
                             //reduce match for display
-                            //TODO if we want to cache full data, we don't want to get rid of player.parsedPlayer
+                            //if we want to cache full data, we don't want to get rid of player.parsedPlayer in the match_copy
                             reduceMatch(match_copy);
                             var orig = cache.data[match_copy.match_id];
                             if (!orig) {
@@ -79,12 +81,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             if (err) {
                                 return cb(err);
                             }
-                            redis.setex("player:" + p.account_id, Number(ttl), zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
-                    cb(err);
-                    /*
-                    //temporarily disable inserting new players into db
+                    //return cb(err);
+                    //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({
                         account_id: p.account_id
                     }, {
@@ -99,7 +100,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         }
                         cb(err);
                     });
-                    */
                 });
             },
             //done with all 10 players

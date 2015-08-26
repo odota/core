@@ -84,9 +84,17 @@ h3 img {
     font-size: 80px;
 }
 
+.small-cheese {
+    text-shadow: 0 0 1px yellow;
+}
+
 .medium-cheese {
     font-size: 40px;
     text-shadow: 0 0 10px yellow;
+}
+
+.player-tabs .nav > li > a {
+    padding: 5px 10px;
 }
 
 
@@ -169,14 +177,14 @@ h3 img {
     border-color: #848484;
 }
 
-.btn-yasp {
+.btn-query {
     color: #000;
     background-color: #BBF0FD;
     border-color: #BBF0FD;
 }
 
-.btn-yasp:hover,
-.btn-yasp:focus {
+.btn-query:hover,
+.btn-query:focus {
     color: #fff;
     background-color: #31b0d5;
     border-color: #269abc;
@@ -251,11 +259,11 @@ div .dataTables_processing {
     vertical-align: super;
 }
 
-.bright-border {
+.bright-border-collapsible {
     border-color: #ccc;
 }
 
-.toggle-button.collapsed {
+.bright-border-collapsible.collapsed {
     background-color: #545454;
     border-color: rgb(0, 0, 0);
 }

@@ -25,13 +25,15 @@ var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
 var advQuery = require('./advquery');
 var queries = require('./queries');
+var constants = require('./constants.json');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
-app.locals.constants = require('./constants.json');
+app.locals.constants = constants;
+app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
 var basic = auth.basic({
@@ -282,7 +284,7 @@ app.use(function(err, req, res, next) {
     next(err);
 });
 module.exports = app;
-var port = config.WEB_PORT || config.PORT;
+var port = config.PORT || config.WEB_PORT;
 var num_processes = require('os').cpus().length;
 var cluster = require('cluster');
 //vanilla node clustering, doesn't work with socket.io
