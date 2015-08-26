@@ -38,6 +38,16 @@ abbr[title], abbr[data-original-title] {
     float: left;
 }
 
+/*---------- Footer */
+
+.social-media button {
+    margin: 0 5px;
+}
+
+ul.mdl-mega-footer__link-list a {
+    font-weight: 700;
+}
+
 /*---------- Tables */
 
 table {
