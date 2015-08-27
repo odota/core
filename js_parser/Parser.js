@@ -28,19 +28,26 @@ var Parser = function(input) {
         input = bufferStream;
     }
     var stop = false;
-    var ee = this;
-    ee.on("CDemoStop", function(msg) {
+    var p = this;
+    p.on("CDemoStop", function(data) {
         stop = true;
     });
-    ee.on("CDemoStringTables", readCDemoStringTables);
-    ee.on("CDemoPacket", readCDemoPacket);
-    ee.on("CDemoFullPacket", function(msg) {
-        //TODO this appears to be a packet with a string table attached?
-        //use case 6 to process the stringtable
-        //use case 7 to process the packet
+    p.on("CDemoStringTables", readCDemoStringTables);
+    p.on("CDemoPacket", readCDemoPacket);
+    p.on("CDemoFullPacket", function(data) {
+        readCDemoStringTables(data.string_table);
+        readCDemoPacket(data.packet);
     });
-
-    ee.start = function start(cb) {
+    p.on("CMsgSource1LegacyGameEventList", function(data){
+        console.log(data);
+    });
+    p.on("CSVCMsg_GameEventList", function(data){
+        console.log(data);
+    });
+    p.on("CDOTAUserMsg_CombatLogData", function(data){
+        console.log(data);
+    });
+    p.start = function start(cb) {
         async.series({
             "header": function(cb) {
                 readString(8, function(err, header) {
@@ -59,7 +66,7 @@ var Parser = function(input) {
             }
         }, cb);
     };
-    return ee;
+    return p;
     // Read the next DEM message from the replay (outer message)
     function readDemoMessage(cb) {
         async.series({
@@ -96,20 +103,19 @@ var Parser = function(input) {
                 if (msgCompressed) {
                     buf = snappy.uncompressSync(buf);
                 }
-                var msg = {
+                var dem = {
                     tick: tick,
-                    typeId: msgType,
+                    type: msgType,
                     size: size,
                     data: buf
                 };
-                //TODO skip dems not being listened for
-                if (demTypes[msg.typeId]) {
+                if (msgType in demTypes) {
                     //lookup the name of the protobuf message to decode with
-                    var name = demTypes[msg.typeId];
-                    if (dota[name]) {
-                        msg.data = dota[name].decode(msg.data);
-                        ee.emit("*", msg);
-                        ee.emit(name, msg);
+                    var name = demTypes[msgType];
+                    if (dota[name] && p.listeners(name).length) {
+                        dem.data = dota[name].decode(dem.data);
+                        p.emit("*", dem.data);
+                        p.emit(name, dem.data);
                     }
                 }
                 return cb(err);
@@ -119,7 +125,7 @@ var Parser = function(input) {
     // Internal parser for callback OnCDemoPacket, responsible for extracting
     // multiple inner packets from a single CDemoPacket. This is the main structure
     // that contains all other data types in the demo file.
-    function readCDemoPacket(msg) {
+    function readCDemoPacket(data) {
         /*
         message CDemoPacket {
         	optional int32 sequence_in = 1;
@@ -130,20 +136,24 @@ var Parser = function(input) {
         //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
         //convert the buffer object into a bitstream so we can read from it
         //read until less than 8 bits left
-        var bitStream = new BitStream(msg.data.data);
+        var bitStream = new BitStream(data.data);
         while (bitStream.limit - bitStream.offset >= 8) {
             var type = bitStream.readUBitVarPacketType();
             var size = bitStream.readVarUInt();
-            var bytes = bitStream.readBuffer(size * 8);
-            //console.log(kind, size, bytes);
-            //TODO skip packets not being listened for
+            var buf = bitStream.readBuffer(size * 8);
+            var packet = {
+                type: type,
+                size: size,
+                data: buf
+            };
             if (type in packetTypes) {
                 //lookup the name of the proto message for this packet type
-                var protoName = packetTypes[type];
-                var decoded = dota[protoName].decode(bytes);
-                ee.emit("*", decoded);
-                ee.emit(protoName, decoded);
-                //console.log(protoName, decoded);
+                var name = packetTypes[type];
+                if (dota[name] && p.listeners(name).length) {
+                    packet.data = dota[name].decode(packet.data);
+                    p.emit("*", packet.data);
+                    p.emit(name, packet.data);
+                }
             }
             //TODO reading entities, how to do this?
             //TODO push the packets of this message into an array and sort them by priority
@@ -151,37 +161,12 @@ var Parser = function(input) {
         return;
     }
 
-    function readCDemoStringTables(msg) {
+    function readCDemoStringTables(data) {
         //TODO need to construct stringtables to look up things like combat log names
         //TODO rather than processing when we get this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable?
-        //console.log(msg);
-        for (var i = 0; i < msg.data.tables.length; i++) {
-            console.log(Object.keys(msg.data.tables[i]));
-            console.log(msg.data.tables[i].table_name);
-            /*
-            if (msg.tables[i].table_name == "userinfo") {
-                for (var j = 0; j < msg.tables[i].items.length; ++j) {
-                    var data = msg.tables[i].items[j].data;
-                    var info = {};
-                    if (data != null) {
-                        data = data.clone();
-                        info.xuid = data.readUint64();
-                        info.name = data.readUTF8String(32);
-                        info.userID = data.readUint32();
-                        info.guid = data.readBytes(33);
-                        info.friendsID = data.readUint32();
-                        info.friendsName = data.readBytes(32);
-                        info.fakeplayer = data.readUint32();
-                        info.ishltv = data.readUint32();
-                        info.customFiles = data.readArray(4, function() {
-                            return data.readUint32();
-                        });
-                        info.filesDownloaded = data.readUint8();
-                        console.log(info);
-                    }
-                }
-            }
-            */
+        for (var i = 0; i < data.tables.length; i++) {
+            //console.log(Object.keys(data.tables[i]));
+            //console.log(data.tables[i].table_name);
         }
     }
 

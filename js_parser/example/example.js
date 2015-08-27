@@ -6,8 +6,22 @@ var Parser = require('../Parser');
 var p = new Parser(process.stdin);
 //add an event listener with the name of the protobuf message in order to listen for it
 //listen for "*" to catch all events
-p.on("CUserMessageSayText2", function(msg) {
-    console.log(msg);
+//all chat
+p.on("CUserMessageSayText2", function(data) {
+    console.log(data);
+});
+//game epilogue
+//2015-08-27 not working yet
+p.on("CDemoFileInfo", function(data) {
+    console.log(data);
+});
+//map pings
+p.on("CDOTAUserMsg_LocationPing", function(data) {
+    //console.log(data);
+});
+//user actions
+p.on("CDOTAUserMsg_SpectatorPlayerUnitOrders", function(data){
+    //console.log(data);
 });
 console.time('parse');
 //start takes a callback function that is called when the parse completes

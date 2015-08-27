@@ -240,7 +240,7 @@ public class Main {
 			//emit epilogue event
 			Entry entry = new Entry();
 			entry.type="epilogue";
-			entry.key = new Gson().toJson(info.getGameInfo().getDota());
+			entry.key = new Gson().toJson(info);
 			es.output(entry);
 		}
 	}

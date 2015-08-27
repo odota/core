@@ -39,13 +39,17 @@ func main() {
 			return nil
 		})
 		*/
-		
+		parser.Callbacks.OnCDemoFileInfo(func(m *dota.CDemoFileInfo) error {
+			fmt.Printf("%s\n", m);
+			return nil
+		})
+		/*
 		parser.Callbacks.OnCDemoPacket(func(m *dota.CDemoPacket) error {
 			fmt.Printf("%s, %s\n", m);
 			panic("test")
 			return nil
 		})
-		
+		*/
 		//actions
 		/*
 		parser.Callbacks.OnCDOTAUserMsg_SpectatorPlayerUnitOrders(func(m *dota.CDOTAUserMsg_SpectatorPlayerUnitOrders) error {
