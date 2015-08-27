@@ -18,7 +18,7 @@ BitStream.prototype.readBits = function(bits) {
         value = this.bytes[this.offset / 8];
     }
     //32 bit shifting
-    else if (true) {
+    else {
         value = 0;
         var bitsToRead = bitOffset + bits;
         //coerce division to integer
@@ -38,6 +38,7 @@ BitStream.prototype.readBits = function(bits) {
         //shift a single 1 over, subtract 1 to form a bit mask 
         value &= ((1 << bits) - 1);
     }
+    /*
     //64 bit shifting, do we need this?
     else {
         value = new Long();
@@ -62,6 +63,7 @@ BitStream.prototype.readBits = function(bits) {
         value = value.and((1 << bits) - 1);
         value = value.toInt();
     }
+    */
     this.offset += bits;
     return value;
     /*
