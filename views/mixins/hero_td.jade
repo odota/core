@@ -1,6 +1,6 @@
 mixin name(player)
   if (player.last_visited)
-    img.yasp-user-icon(src='/public/images/favicon-16x16.png', title="This user is registered!")
+    img.yasp-user-icon(src='/public/images/favicon-96x96.png', title="This user is registered!")
   .inline(class=player.last_visited ? "" : "padding", class=(player.isRadiant || player.team) ? "radiant" : "dire")
     if (player.account_id === constants.anonymous_account_id)
       ="Anonymous"

@@ -1,36 +1,55 @@
 extend match
 
 block match_content
-    .row
-      .col-md-12
-        +data_table({id:"purchases",summable:true, heading: "Purchases"})
-          each player, i in match.players
-            +data_table_header(i, match)
-              tr
-                th Hero
-                th: abbr(title="Town Portal Scroll purchases") TPs
-                th: abbr(title="Observer Ward purchases") Observers
-                th: abbr(title="Sentry Ward purchases (x2)") Sentries
-                th: abbr(title="Smoke of Deceit purchases") Smokes
-                th: abbr(title="Dust of Appearance purchases (x2)") Dusts
-                th: abbr(title="Gem of True Sight purchases") Gems
-                th: abbr(title="Divine Rapier purchases") Rapiers
-                th: abbr(title="Buyback purchases") Buybacks
-             tr(class = player.isRadiant ? "radiant" : "dire")
-               - var hero = constants.heroes[player.hero_id]
-               - var p = player.parsedPlayer
-               +hero_td(player)
-               td #{p.purchase.tpscroll || "-"}
-               td #{p.purchase.ward_observer || "-"}
-               td #{p.purchase.ward_sentry*2 || "-"}
-               td #{p.purchase.smoke_of_deceit || "-"}
-               td #{p.purchase.dust*2 || "-"}
-               td #{p.purchase.gem || "-"}
-               td #{p.purchase.rapier || "-"}
-               td #{p.buyback_log.length || "-"}
-    hr
-    +ad("banner2")
-    hr
-    .row
-      .col-md-12
-        include timelines_purchases_table
+  -
+    var purchasesColumns = [
+      {
+        name: "Hero",
+        property: true,
+        notNumber: true
+      },
+      {
+        name: "TPs",
+        title: "Town Portal Scroll purchases",
+        property: function(p) { return p.parsedPlayer.purchase.tpscroll || "-"; }
+      },
+      {
+        name: "Observer",
+        title: "Observer Ward purchases",
+        property: function(p) { return p.parsedPlayer.purchase.ward_observer || "-"; }
+      },
+      {
+        name: "Sentry",
+        title: "Sentry Ward purchases",
+        property: function(p) { return p.parsedPlayer.purchase.ward_sentry*2 || "-"; }
+      },
+      {
+        name: "Smokes",
+        title: "Smoke of Deceit purchases",
+        property: function(p) { return  p.parsedPlayer.purchase.smoke_of_deceit || "-"; }
+      },
+      {
+        name: "Dusts",
+        title: "Dust of Appearance purchases (x2)",
+        property: function(p) { return  p.parsedPlayer.purchase.dust*2 || "-"; }
+      },
+      {
+        name: "Gems",
+        title: "Gem of True Sight purchases",
+        property: function(p) { return p.parsedPlayer.purchase.gem || "-"; }
+      },
+      {
+        name: "Rapiers",
+        title: "Divine Rapier purchases",
+        property: function(p) { return p.parsedPlayer.purchase.rapier || "-"; }
+      },
+      {
+        name: "Buybacks",
+        title: "Buyback purchases",
+        property: function(p) { return p.parsedPlayer.buyback_log.length || "-"; }
+      }
+    ];
+   
+  .mdl-cell.mdl-cell--12-col
+    +data_table({id:"performances",summable:true, heading: "Purchases"}, purchasesColumns, match.players)
+    include timelines_purchases_table

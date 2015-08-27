@@ -1,22 +1,38 @@
-+data_table({id:"build_times",heading:"Build Times"})
-  - var bucket = 300
-  each player, ind in match.players
-    - var p = player.parsedPlayer
-    +data_table_header(ind, match) 
-      th Hero
-      - for (var d = 0; d <= match.duration + bucket; d+=bucket)
-        th= d/60+"'"
-    if !truncate || truncate.indexOf(ind) > -1
-      tr(class = player.isRadiant ? "radiant" : "dire")
-        +hero_td(player)
+h4 Build Times
+- var players = match.players;
+- var p = [players.slice(0, players.length/2), players.slice(players.length/2)];
+.of-scroll
+  table.mdl-data-table.mdl-js-data-table.table-striped#build_times
+    each side, i in p
+      thead
+        //- Add a th for the side tr.rotate
+        th
+        th.dl-data-table__cell--non-numeric Hero
+        - var bucket = 300
         - for (var d = 0; d <= match.duration + bucket; d+=bucket)
-          td
-            each entry in p.purchase_log || []
-              if entry.time < d && entry.time >= d-bucket
-                - var item = constants.items[entry.key]                 
-                if item
-                  span.img-text
-                    img.img-small.item(src=item.img, title=entry.key)
-                    div.format-seconds(data-format-seconds=entry.time)=entry.time
-                else
-                  =entry.key
+          th.dl-data-table__cell--non-numeric= d/60+"'"
+      tbody
+        tr.rotate
+          td(class=i ? "dire":"radiant", rowspan="#{side.length + 1}")= i ? "Dire" : "Radiant"
+        each player in side
+          tr(class=i ? "d":"r")
+            td.dl-data-table__cell--non-numeric
+              +hero_td(player)
+            - for (var d = 0; d <= match.duration + bucket; d+=bucket)
+              td.dl-data-table__cell--non-numeric
+                - var items = {}
+                each entry in player.parsedPlayer.purchase_log || []
+                  if entry.time < d && entry.time >= d-bucket
+                    if entry.key in items
+                      - items[entry.key].push(entry.time)
+                    else
+                      - items[entry.key] = [entry.time]
+                each val, key in items
+                  - var item = constants.items[key] 
+                    if item
+                      span.img-text
+                        img.img-small.item(src=item.img, title=key)
+                        each time in val
+                          div.format-seconds(data-format-seconds=time)=time
+                    else
+                      =key
