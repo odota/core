@@ -29,9 +29,6 @@ var Parser = function(input) {
     }
     var stop = false;
     var ee = this;
-    ee.on("CDemoError", function(msg) {
-        stop = true;
-    });
     ee.on("CDemoStop", function(msg) {
         stop = true;
     });
@@ -42,7 +39,8 @@ var Parser = function(input) {
         //use case 6 to process the stringtable
         //use case 7 to process the packet
     });
-    ee.on("start", function(cb) {
+
+    ee.start = function start(cb) {
         async.series({
             "header": function(cb) {
                 readString(8, function(err, header) {
@@ -60,7 +58,7 @@ var Parser = function(input) {
                 }, readDemoMessage, cb);
             }
         }, cb);
-    });
+    };
     return ee;
     // Read the next DEM message from the replay (outer message)
     function readDemoMessage(cb) {
@@ -266,7 +264,4 @@ var Parser = function(input) {
     }
 };
 util.inherits(Parser, EventEmitter);
-Parser.prototype.start = function start(cb) {
-    this.emit("start", cb);
-};
 module.exports = Parser;

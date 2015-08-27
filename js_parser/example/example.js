@@ -1,16 +1,16 @@
-//parser accepts a stream or buffer
-//optimally, this project is released as a library that can be used server or client side
 //client side version can be generated with webpack?
-//the server side version can be run using node parser.js in order to give the parser its own process/memory space
-//parser returns an eventemitter, ee emits events when it parses a certain message
-//user listens for events and acts based on the event
-//listen for "*" to catch all events
+//server side version can be run using node parser.js in order to give the parser its own process/memory space or embedded into an existing process
 var Parser = require('../Parser');
+//parser accepts a stream or buffer
+//parser returns an eventemitter
 var p = new Parser(process.stdin);
+//add an event listener with the name of the protobuf message in order to listen for it
+//listen for "*" to catch all events
 p.on("CUserMessageSayText2", function(msg) {
     console.log(msg);
 });
 console.time('parse');
+//start takes a callback function that is called when the parse completes
 p.start(function(err) {
     if (err) {
         console.log(err);
