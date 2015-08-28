@@ -7,6 +7,8 @@ var p = new Parser(process.stdin);
 //listen for "*" to catch all events
 //TODO list the general categories of events the user can listen for
 //full listing is in build/types.json, or user can refer to original .proto files
+//WARNING: not every type listed there is actually in the replay--it's automatically generated from .protos!
+//for example, combat log data is inside GameEvents, and the definition is within the GameEventDescriptor
 //game epilogue
 p.on("CDemoFileInfo", function(data) {
     console.log(data);

@@ -20,6 +20,9 @@ protos.forEach(function(p) {
     ProtoBuf.loadProtoFile(path.join(__dirname, "proto", p), builder);
 });
 var dota = builder.build();
+//CDemoSignonPacket is a special case and should be decoded with CDemoPacket since it doesn't have its own protobuf
+//it appears that things like the gameeventlist and createstringtables calls are here?
+dota["CDemoSignonPacket"] = dota["CDemoPacket"];
 //console.log(Object.keys(dota));
 var Parser = function(input) {
     //wrap a passed buffer in a stream
@@ -30,6 +33,7 @@ var Parser = function(input) {
         input = bufferStream;
     }
     var stop = false;
+    var gameEventDescriptors = {};
     var p = this;
     /**
      * Internal listeners to automatically process certain packets such as string tables.
@@ -41,13 +45,13 @@ var Parser = function(input) {
         //stop = true;
     });
     //p.on("CDemoStringTables", readCDemoStringTables);
+    p.on("CDemoSignonPacket", readCDemoPacket);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
         //console.log(data);
         readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
-    
     //string tables may mutate over the lifetime of the replay.
     //Therefore we listen for create/update events and modify the table as needed.
     p.on("CSVCMsg_CreateStringTable", function(data) {
@@ -60,35 +64,56 @@ var Parser = function(input) {
     });
     p.on("CDOTAUserMsg_ChatEvent", function(data) {
         //objectives
-        //TODO need to translate type id to friendly name--or maybe just let the user do it?
+        //TODO need to translate type id to friendly name--or maybe just let the user do it since the data should be in dota.DOTA_CHAT_MESSAGE
         //console.log(data);
     });
     //emitted once, this packet sets up the information we need to read gameevents
     p.on("CMsgSource1LegacyGameEventList", function(data) {
-        //console.log(data);
+        console.log(data);
+        for (var i = 0; i < data.descriptors.length; i++) {
+            gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
+        }
     });
     //we process the gameevent using knowledge obtained from the gameeventlist
     p.on("CMsgSource1LegacyGameEvent", function(data) {
-        //"CDOTAUserMsg_CombatLogData"
+        //get the event name from descriptor
+        //console.log(data);
+        //console.log(gameEventDescriptors);
+        data.event_name = gameEventDescriptors[data.eventid].name;
+        var e = {};
+        data.keys.forEach(function(k, i) {
+            var key = gameEventDescriptors[data.eventid].keys[i].name;
+            var index = gameEventDescriptors[data.eventid].keys[i].type;
+            var value = k[Object.keys(k)[index]];
+            e[key] = value;
+        });
+        var ct2 = counts.game_events;
+        ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
+        if (data.event_name === "dota_combatlog") {
+            //console.log(e);
+        }
+        if (data.event_name === "player_connect") {
+            console.log(e);
+        }
+        //TODO emit events based on the event_name
+        //TODO supply some kind of index for users to use as reference for gameevent names
+        //they are listed inside individual replays, so we can't just pregenerate one to use
+        //console.log(data);
+        //throw "test";
+        //"dota_combatlog"
         //TODO emit things like combat log here?  combat log entries require the use of stringtables in order to make sense of the numeric entries
         //combat log type is in an enum in the .proto files
-        //console.log(data);
     });
-    
-    //TODO entities
+    //TODO entities. huffman trees, property decoding?!
     /*
     p.on("*", function(data) {
-        count += 1;
-        //console.log(data.type);
-        //if (count > 10) throw "test";
     });
     */
     p.start = function start(cb) {
         input.on('end', function() {
             stop = true;
             input.removeAllListeners();
-            console.log(ct);
-            console.log(count);
+            console.log(counts);
             return cb();
         });
         async.series({
@@ -156,11 +181,6 @@ var Parser = function(input) {
                 if (demType in demTypes) {
                     //lookup the name of the protobuf message to decode with
                     var name = demTypes[demType];
-                    //CDemoSignonPacket is a special case and should be decoded with CDemoPacket since it doesn't have its own protobuf
-                    //it appears that things like the gameeventlist and createstringtables calls are here?
-                    if (name === "CDemoSignonPacket") {
-                        name = "CDemoPacket";
-                    }
                     if (dota[name]) {
                         if (listening(name)) {
                             dem.data = dota[name].decode(dem.data);
@@ -218,10 +238,9 @@ var Parser = function(input) {
         for (var i = 0; i < packets.length; i++) {
             var packet = packets[i];
             var packType = packet.type;
-            /*
             var t = packetTypes[packType] || packType;
+            var ct = counts.packets;
             ct[t] = ct[t] ? ct[t] + 1 : 1;
-             */
             if (packType in packetTypes) {
                 //lookup the name of the proto message for this packet type
                 var name = packetTypes[packType];
@@ -344,5 +363,7 @@ var Parser = function(input) {
 };
 util.inherits(Parser, EventEmitter);
 module.exports = Parser;
-var ct = {};
-var count = 0;
+var counts = {
+    packets: {},
+    game_events: {}
+};
