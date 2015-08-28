@@ -10,7 +10,7 @@ var EventEmitter = require('events').EventEmitter;
 var async = require('async');
 var fs = require('fs');
 var stream = require('stream');
-var types = require('./build/types.json');
+var types = require('./types.json');
 var packetTypes = types.packets;
 var demTypes = types.dems;
 //read the protobufs and build a dota object for reference
@@ -27,16 +27,16 @@ dota["CDemoSignonPacket"] = dota["CDemoPacket"];
 var Parser = function(input) {
     //wrap a passed buffer in a stream
     //TODO this isn't tested yet
+    //TODO try webpacking the library
     if (Buffer.isBuffer(input)) {
         var bufferStream = new stream.PassThrough();
         bufferStream.end(input);
         input = bufferStream;
     }
     var stop = false;
-    var gameEventDescriptors = {};
     var p = this;
     /**
-     * Internal listeners to automatically process certain packets such as string tables.
+     * Internal listeners to automatically process certain packets.
      * We abstract this away from the user so they don't need to worry about it.
      * For optimal speed we could allow the user to disable these.
      */
@@ -49,7 +49,7 @@ var Parser = function(input) {
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
         //console.log(data);
-        readCDemoStringTables(data.string_table);
+        //readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
     //string tables may mutate over the lifetime of the replay.
@@ -62,14 +62,10 @@ var Parser = function(input) {
         //TODO create/update string table
         //console.log(data);
     });
-    p.on("CDOTAUserMsg_ChatEvent", function(data) {
-        //objectives
-        //TODO need to translate type id to friendly name--or maybe just let the user do it since the data should be in dota.DOTA_CHAT_MESSAGE
-        //console.log(data);
-    });
     //emitted once, this packet sets up the information we need to read gameevents
     p.on("CMsgSource1LegacyGameEventList", function(data) {
         console.log(data);
+        var gameEventDescriptors = p.gameEventDescriptors;
         for (var i = 0; i < data.descriptors.length; i++) {
             gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
         }
@@ -78,37 +74,28 @@ var Parser = function(input) {
     p.on("CMsgSource1LegacyGameEvent", function(data) {
         //get the event name from descriptor
         //console.log(data);
-        //console.log(gameEventDescriptors);
+        var gameEventDescriptors = p.gameEventDescriptors;
         data.event_name = gameEventDescriptors[data.eventid].name;
-        var e = {};
-        data.keys.forEach(function(k, i) {
-            var key = gameEventDescriptors[data.eventid].keys[i].name;
-            var index = gameEventDescriptors[data.eventid].keys[i].type;
-            var value = k[Object.keys(k)[index]];
-            e[key] = value;
-        });
         var ct2 = counts.game_events;
         ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
-        if (data.event_name === "dota_combatlog") {
-            //console.log(e);
+        if (listening(data.event_name)) {
+            var e = {};
+            data.keys.forEach(function(k, i) {
+                var key = gameEventDescriptors[data.eventid].keys[i].name;
+                var index = gameEventDescriptors[data.eventid].keys[i].type;
+                var value = k[Object.keys(k)[index]];
+                e[key] = value;
+            });
+            //emit events based on the event_name
+            p.emit(data.event_name, e);
         }
-        if (data.event_name === "player_connect") {
-            console.log(e);
-        }
-        //TODO emit events based on the event_name
-        //TODO supply some kind of index for users to use as reference for gameevent names
-        //they are listed inside individual replays, so we can't just pregenerate one to use
-        //console.log(data);
-        //throw "test";
-        //"dota_combatlog"
-        //TODO emit things like combat log here?  combat log entries require the use of stringtables in order to make sense of the numeric entries
-        //combat log type is in an enum in the .proto files
     });
     //TODO entities. huffman trees, property decoding?!
-    /*
-    p.on("*", function(data) {
-    });
-    */
+    //expose the gameeventdescriptor, stringtables, types to the user and have the parser update them as it parses
+    p.types = types;
+    p.gameEventDescriptors = {};
+    p.stringTables = {};
+    p.entities = {};
     p.start = function start(cb) {
         input.on('end', function() {
             stop = true;
@@ -266,7 +253,7 @@ var Parser = function(input) {
 
     function readCDemoStringTables(data) {
         /*
-        //TODO rather than processing when we get this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable?
+        //TODO rather than processing when we read this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable
         for (var i = 0; i < data.tables.length; i++) {
             //console.log(Object.keys(data.tables[i]));
             //console.log(data.tables[i].table_name);

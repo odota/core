@@ -41,14 +41,16 @@ var packetEnums = {
 var demoEnums = {
     "EDemoCommands": {
         abbr: "DEM_",
-        full: "CDemo"
+        full: "CDemo",
     }
 };
 var types = {
     packets: generate(packetEnums),
     dems: generate(demoEnums)
 };
-fs.writeFileSync(path.join(__dirname, 'build/types.json'), JSON.stringify(types, null, 2));
+types["DOTA_CHAT_MESSAGE"] = reverse(dota["DOTA_CHAT_MESSAGE"]);
+types["DOTA_COMBATLOG_TYPES"] = reverse(dota["DOTA_COMBATLOG_TYPES"]);
+fs.writeFileSync(path.join(__dirname, 'types.json'), JSON.stringify(types, null, 2));
 
 function generate(enums) {
     //using the dota object, each dota[enumName] is an object mapping an internal name to its packet number
@@ -64,4 +66,14 @@ function generate(enums) {
         }
     }
     return types;
+}
+
+function reverse(en) {
+    //accepts an object
+    //flip the mapping to id->string
+    var ret = {};
+    for (var key in en) {
+        ret[en[key]] = key;
+    }
+    return ret;
 }
