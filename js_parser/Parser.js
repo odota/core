@@ -20,8 +20,10 @@ protos.forEach(function(p) {
     ProtoBuf.loadProtoFile(path.join(__dirname, "proto", p), builder);
 });
 var dota = builder.build();
+//console.log(Object.keys(dota));
 var Parser = function(input) {
     //wrap a passed buffer in a stream
+    //TODO this isn't tested yet
     if (Buffer.isBuffer(input)) {
         var bufferStream = new stream.PassThrough();
         bufferStream.end(input);
@@ -29,7 +31,15 @@ var Parser = function(input) {
     }
     var stop = false;
     var p = this;
-    //p.on("CDemoSignonPacket", readCDemoPacket);
+    /**
+     * Internal listeners to automatically process certain packets such as string tables.
+     * We abstract this away from the user so they don't need to worry about it.
+     * For optimal speed we could allow the user to disable these.
+     */
+    p.on("CDemoStop", function(data) {
+        //don't stop on CDemoStop since some replays have CDemoGameInfo after it
+        //stop = true;
+    });
     //p.on("CDemoStringTables", readCDemoStringTables);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
@@ -37,36 +47,50 @@ var Parser = function(input) {
         readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
+    
+    //string tables may mutate over the lifetime of the replay.
+    //Therefore we listen for create/update events and modify the table as needed.
     p.on("CSVCMsg_CreateStringTable", function(data) {
-        console.log(data);
+        //TODO create/update string table
+        //console.log(data);
+    });
+    p.on("CSVCMsg_UpdateStringTable", function(data) {
+        //TODO create/update string table
+        //console.log(data);
     });
     p.on("CDOTAUserMsg_ChatEvent", function(data) {
         //objectives
-        //TODO need to translate type id to friendly name
+        //TODO need to translate type id to friendly name--or maybe just let the user do it?
         //console.log(data);
     });
-    p.on("CSVCMsg_GameEventList", function(data) {
-        console.log(data);
-    });
-    p.on("CSVCMsg_GameEvent", function(data) {
-        console.log(data);
-    });
-    /*
+    //emitted once, this packet sets up the information we need to read gameevents
     p.on("CMsgSource1LegacyGameEventList", function(data) {
-        //TODO where are these?  need descriptors to get game event names
-        console.log(data);
-    });
-    p.on("CMsgSource1LegacyListenEvents", function(data) {
-        console.log(data);
-    });
-    p.on("CMsgSource1LegacyGameEvent", function(data) {
         //console.log(data);
     });
-    p.on("CDOTAUserMsg_CombatLogData", function(data) {
-        console.log(data);
+    //we process the gameevent using knowledge obtained from the gameeventlist
+    p.on("CMsgSource1LegacyGameEvent", function(data) {
+        //"CDOTAUserMsg_CombatLogData"
+        //TODO emit things like combat log here?  combat log entries require the use of stringtables in order to make sense of the numeric entries
+        //combat log type is in an enum in the .proto files
+        //console.log(data);
+    });
+    
+    //TODO entities
+    /*
+    p.on("*", function(data) {
+        count += 1;
+        //console.log(data.type);
+        //if (count > 10) throw "test";
     });
     */
     p.start = function start(cb) {
+        input.on('end', function() {
+            stop = true;
+            input.removeAllListeners();
+            console.log(ct);
+            console.log(count);
+            return cb();
+        });
         async.series({
             "header": function(cb) {
                 readString(8, function(err, header) {
@@ -81,15 +105,9 @@ var Parser = function(input) {
                 //keep parsing demo messages until it hits a stop condition
                 async.until(function() {
                     return stop;
-                }, readDemoMessage, function(err){
-                    console.log("stop");
-                    console.log("%s err finishdem", err);
-                    cb(err);
-                });
+                }, readDemoMessage, cb);
             }
-        }, function(err) {
-            console.log("%s err exit", err);
-        });
+        }, cb);
     };
     return p;
     // Read the next DEM message from the replay (outer message)
@@ -112,8 +130,8 @@ var Parser = function(input) {
                 // Extract the type and compressed flag out of the command
                 //msgType: = int32(command & ^ dota.EDemoCommands_DEM_IsCompressed)
                 //msgCompressed: = (command & dota.EDemoCommands_DEM_IsCompressed) == dota.EDemoCommands_DEM_IsCompressed
-                var msgType = command & ~dota.EDemoCommands.DEM_IsCompressed;
-                var msgCompressed = (command & dota.EDemoCommands.DEM_IsCompressed) === dota.EDemoCommands.DEM_IsCompressed;
+                var demType = command & ~dota.EDemoCommands.DEM_IsCompressed;
+                var isCompressed = (command & dota.EDemoCommands.DEM_IsCompressed) === dota.EDemoCommands.DEM_IsCompressed;
                 // Read the tick that the message corresponds with.
                 //tick: = p.reader.readVarUint32()
                 // This appears to actually be an int32, where a -1 means pre-game.
@@ -125,22 +143,33 @@ var Parser = function(input) {
                 if (tick === 4294967295) {
                     tick = 0;
                 }
-                if (msgCompressed) {
+                if (isCompressed) {
                     buf = snappy.uncompressSync(buf);
                 }
                 var dem = {
                     tick: tick,
-                    type: msgType,
+                    type: demType,
                     size: size,
                     data: buf
                 };
-                if (msgType in demTypes) {
+                //console.log(dem);
+                if (demType in demTypes) {
                     //lookup the name of the protobuf message to decode with
-                    var name = demTypes[msgType];
-                    if (dota[name] && p.listeners(name).length) {
-                        dem.data = dota[name].decode(dem.data);
-                        p.emit("*", dem.data);
-                        p.emit(name, dem.data);
+                    var name = demTypes[demType];
+                    //CDemoSignonPacket is a special case and should be decoded with CDemoPacket since it doesn't have its own protobuf
+                    //it appears that things like the gameeventlist and createstringtables calls are here?
+                    if (name === "CDemoSignonPacket") {
+                        name = "CDemoPacket";
+                    }
+                    if (dota[name]) {
+                        if (listening(name)) {
+                            dem.data = dota[name].decode(dem.data);
+                            p.emit("*", dem.data);
+                            p.emit(name, dem.data);
+                        }
+                    }
+                    else {
+                        console.log("no definition for dem type %s (%s)", demType, typeof demType);
                     }
                 }
                 return cb(err);
@@ -158,42 +187,73 @@ var Parser = function(input) {
         	optional bytes data = 3;
         }
         */
+        var priorities = {
+            "CNETMsg_Tick": -10,
+            "CSVCMsg_CreateStringTable": -10,
+            "CSVCMsg_UpdateStringTable": -10,
+            "CNETMsg_SpawnGroup_Load": -10,
+            "CSVCMsg_PacketEntities": 5,
+            "CMsgSource1LegacyGameEvent": 10
+        };
         //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
         //convert the buffer object into a bitstream so we can read from it
         //read until less than 8 bits left
+        var packets = [];
         var bitStream = new BitStream(data.data);
         while (bitStream.limit - bitStream.offset >= 8) {
-            var type = bitStream.readUBitVarPacketType();
-            var size = bitStream.readVarUInt();
-            var buf = bitStream.readBuffer(size * 8);
-            var packet = {
-                type: type,
-                size: size,
-                data: buf
+            var t = bitStream.readUBitVar();
+            var s = bitStream.readVarUInt();
+            var d = bitStream.readBuffer(s * 8);
+            var pack = {
+                type: t,
+                size: s,
+                data: d
             };
-            var t = packetTypes[type] || type;
+            packets.push(pack);
+        }
+        //sort the inner packets by priority in order to ensure we parse dependent packets last
+        packets.sort(function(a, b) {
+            return priorities[packetTypes[a.type]] || 0 - priorities[packetTypes[b.type]] || 0;
+        });
+        for (var i = 0; i < packets.length; i++) {
+            var packet = packets[i];
+            var packType = packet.type;
+            /*
+            var t = packetTypes[packType] || packType;
             ct[t] = ct[t] ? ct[t] + 1 : 1;
-            if (type in packetTypes) {
+             */
+            if (packType in packetTypes) {
                 //lookup the name of the proto message for this packet type
-                var name = packetTypes[type];
-                if (dota[name] && p.listeners(name).length) {
-                    packet.data = dota[name].decode(packet.data);
-                    p.emit("*", packet.data);
-                    p.emit(name, packet.data);
+                var name = packetTypes[packType];
+                if (dota[name]) {
+                    if (listening(name)) {
+                        packet.data = dota[name].decode(packet.data);
+                        p.emit("*", packet.data);
+                        p.emit(name, packet.data);
+                    }
+                }
+                else {
+                    console.log("no definition for packet type %s", packType);
                 }
             }
-            //TODO reading entities, how to do this?
-            //TODO push the packets of this message into an array and sort them by priority
         }
+    }
+    /**
+     * Returns whether there is an attached listener for this message name.
+     **/
+    function listening(name) {
+        return p.listeners(name).length || p.listeners("*").length;
     }
 
     function readCDemoStringTables(data) {
-        //TODO need to construct stringtables to look up things like combat log names
+        /*
         //TODO rather than processing when we get this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable?
         for (var i = 0; i < data.tables.length; i++) {
             //console.log(Object.keys(data.tables[i]));
             //console.log(data.tables[i].table_name);
         }
+        */
+        return;
     }
 
     function readByte(cb) {
@@ -273,15 +333,10 @@ var Parser = function(input) {
         }
         var buf = input.read(size);
         if (buf) {
-            cb(null, buf);
+            return cb(null, buf);
         }
         else {
-            input.on('end', function() {
-                stop = true;
-                return cb();
-            });
             input.once('readable', function() {
-                input.removeAllListeners();
                 return readBytes(size, cb);
             });
         }
@@ -290,3 +345,4 @@ var Parser = function(input) {
 util.inherits(Parser, EventEmitter);
 module.exports = Parser;
 var ct = {};
+var count = 0;

@@ -1,5 +1,5 @@
 /**
- * Provides methods for dealing with individual bits in a given buffer (non-aligned reads)
+ * Converts a given buffer of bytes to a stream of bits and provides methods for reading individual bits (non-aligned reads)
  **/
 var Long = require('long');
 var BitStream = function(buf) {
@@ -10,44 +10,43 @@ var BitStream = function(buf) {
 /**
  * Reads the specified number of bits (possibly non-aligned) and returns as 32bit int
  **/
-BitStream.prototype.readBits = function(bits) {
+BitStream.prototype.readBits = function(n) {
     var bitOffset = this.offset % 8;
+    var bitsToRead = bitOffset + n;
+    var bytesToRead = ~~(bitsToRead / 8);
+    //if reading a multiple of 8 bits, read an additional byte
+    if (bitsToRead % 8) {
+        bytesToRead += 1;
+    }
     var value = null;
-    if (!bitOffset && bits === 8) {
-        //if we are byte-aligned, we can read quickly without shifting operations
-        value = this.bytes[this.offset / 8];
+    if (!bitOffset && n === 8) {
+        //if we are byte-aligned and only want one byte, we can read quickly without shifting operations
+        value = this.bytes.readUInt8(this.offset / 8);
     }
     //32 bit shifting
-    else {
+    else if (bitsToRead <= 31) {
         value = 0;
-        var bitsToRead = bitOffset + bits;
-        //coerce division to integer
-        var bytesToRead = ~~(bitsToRead / 8);
-        if (bitsToRead % 8) {
-            bytesToRead += 1;
-        }
         //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
             //extract the byte from the backing buffer
             var m = this.bytes[~~(this.offset / 8) + i];
-            //console.log(m, this.bytes);
-            //shift to get the bits we want
-            value += m << (i * 8);
+            //move these 8 bits to the correct location
+            //looks like most significant 8 bits come last, so this flips endianness
+            value += (m << (i * 8));
         }
-        value >>= (bitOffset);
-        //shift a single 1 over, subtract 1 to form a bit mask 
-        value &= ((1 << bits) - 1);
+        //drop the extra bits, since we started from the beginning of the byte regardless of offset
+        value >>= bitOffset;
+        //shift a single 1 over, subtract 1 to form a bit mask that removes the first bit
+        value &= ((1 << n) - 1);
     }
-    /*
-    //64 bit shifting, do we need this?
     else {
+        //TODO trying to read 32+ bits with native JS probably won't work because we must then read five bytes from the backing buffer
+        //this means in practice we may have difficulty with n >= 25 bits (since offset can be up to 7)
+        //can't fit that into a 32 bit int unless we use JS Long, which is slow
+        //perhaps we optimize by only using Long when bitsToRead > 31?
+        console.log(bitsToRead);
+        //64 bit shifting, we only need this if our operations cant fit into 32 bits
         value = new Long();
-        var bitsToRead = bitOffset + bits;
-        //coerce division to integer
-        var bytesToRead = ~~(bitsToRead / 8);
-        if (bitsToRead % 8) {
-            bytesToRead += 1;
-        }
         //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
             //extract the byte from the backing buffer
@@ -60,44 +59,22 @@ BitStream.prototype.readBits = function(bits) {
         }
         value = value.shiftRight(bitOffset);
         //shift a single 1 over, subtract 1 to form a bit mask 
-        value = value.and((1 << bits) - 1);
+        value = value.and((1 << n) - 1);
         value = value.toInt();
     }
-    */
-    this.offset += bits;
+    this.offset += n;
     return value;
-    /*
-    //manta implementation
-	bitOffset := r.pos % 8
-	nBitsToRead := bitOffset + n
-	nBytesToRead := nBitsToRead / 8
-	if nBitsToRead%8 != 0 {
-		nBytesToRead += 1
-	}
-
-	var val uint64
-	for i := 0; i < nBytesToRead; i++ {
-		m := r.buf[(r.pos/8)+i]
-		val += (uint64(m) << uint32(i*8))
-	}
-	val >>= uint32(bitOffset)
-	val &= ((1 << uint32(n)) - 1)
-	r.pos += n
-
-	return uint32(val)
-	*/
 };
 /**
  * Reads the specified number of bits into a Buffer and returns
  **/
 BitStream.prototype.readBuffer = function(bits) {
     var bytes = Math.ceil(bits / 8);
-    //use native buffer for faster speed
     var result = new Buffer(bytes);
     var offset = 0;
     result.length = bytes;
     while (bits > 0) {
-        //read up to 8 bits at a time (we may read less at the end if unaligned)
+        //read up to 8 bits at a time (we may read less at the end if not aligned)
         var bitsToRead = Math.min(bits, 8);
         result.writeUInt8(this.readBits(bitsToRead), offset);
         offset++;
@@ -120,7 +97,7 @@ BitStream.prototype.readVarUInt = function() {
         }
     }
 };
-BitStream.prototype.readUBitVarPacketType = function() {
+BitStream.prototype.readUBitVar = function() {
     // Thanks to Robin Dietrich for providing a clean version of this code :-)
     // The header looks like this: [XY00001111222233333333333333333333] where everything > 0 is optional.
     // The first 2 bits (X and Y) tell us how much (if any) to read other than the 6 initial bits:
@@ -128,14 +105,15 @@ BitStream.prototype.readUBitVarPacketType = function() {
     // X set -> read 8
     // X + Y set -> read 28
     var v = this.readBits(6);
-    switch (v & 48) {
-        case 16:
+    //bitwise & 0x30 (0b110000) (determines whether the first two bits are set)
+    switch (v & 0x30) {
+        case 0x10:
             v = (v & 15) | (this.readBits(4) << 4);
             break;
-        case 32:
+        case 0x20:
             v = (v & 15) | (this.readBits(8) << 4);
             break;
-        case 48:
+        case 0x30:
             v = (v & 15) | (this.readBits(28) << 4);
             break;
     }
