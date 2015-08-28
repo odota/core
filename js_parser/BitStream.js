@@ -99,8 +99,7 @@ BitStream.prototype.readBuffer = function(bits) {
     while (bits > 0) {
         //read up to 8 bits at a time (we may read less at the end if unaligned)
         var bitsToRead = Math.min(bits, 8);
-        //skip validation for more speed
-        result.writeUInt8(this.readBits(bitsToRead), offset, true);
+        result.writeUInt8(this.readBits(bitsToRead), offset);
         offset++;
         bits -= bitsToRead;
     }

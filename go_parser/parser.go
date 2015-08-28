@@ -31,7 +31,7 @@ func main() {
 //following is currently done by parser but could be done in JS
 //illusion_ should be prepended if illusion
 //item_ should be removed from item key names
-
+		
 		//chat
 		/*
 		parser.Callbacks.OnCUserMessageSayText2(func(m *dota.CUserMessageSayText2) error {
@@ -39,10 +39,17 @@ func main() {
 			return nil
 		})
 		*/
+		/*
 		parser.Callbacks.OnCDemoFileInfo(func(m *dota.CDemoFileInfo) error {
 			fmt.Printf("%s\n", m);
 			return nil
 		})
+		*/
+		parser.Callbacks.OnCMsgSource1LegacyGameEventList(func(m *dota.CMsgSource1LegacyGameEventList) error {
+			fmt.Printf("%s\n", m);
+			return nil
+		})	
+		
 		/*
 		parser.Callbacks.OnCDemoPacket(func(m *dota.CDemoPacket) error {
 			fmt.Printf("%s, %s\n", m);

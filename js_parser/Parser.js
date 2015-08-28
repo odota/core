@@ -29,24 +29,43 @@ var Parser = function(input) {
     }
     var stop = false;
     var p = this;
-    p.on("CDemoStop", function(data) {
-        stop = true;
-    });
-    p.on("CDemoStringTables", readCDemoStringTables);
+    //p.on("CDemoSignonPacket", readCDemoPacket);
+    //p.on("CDemoStringTables", readCDemoStringTables);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
+        //console.log(data);
         readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
-    p.on("CMsgSource1LegacyGameEventList", function(data){
+    p.on("CSVCMsg_CreateStringTable", function(data) {
         console.log(data);
     });
-    p.on("CSVCMsg_GameEventList", function(data){
+    p.on("CDOTAUserMsg_ChatEvent", function(data) {
+        //objectives
+        //TODO need to translate type id to friendly name
+        //console.log(data);
+    });
+    p.on("CSVCMsg_GameEventList", function(data) {
         console.log(data);
     });
-    p.on("CDOTAUserMsg_CombatLogData", function(data){
+    p.on("CSVCMsg_GameEvent", function(data) {
         console.log(data);
     });
+    /*
+    p.on("CMsgSource1LegacyGameEventList", function(data) {
+        //TODO where are these?  need descriptors to get game event names
+        console.log(data);
+    });
+    p.on("CMsgSource1LegacyListenEvents", function(data) {
+        console.log(data);
+    });
+    p.on("CMsgSource1LegacyGameEvent", function(data) {
+        //console.log(data);
+    });
+    p.on("CDOTAUserMsg_CombatLogData", function(data) {
+        console.log(data);
+    });
+    */
     p.start = function start(cb) {
         async.series({
             "header": function(cb) {
@@ -62,9 +81,15 @@ var Parser = function(input) {
                 //keep parsing demo messages until it hits a stop condition
                 async.until(function() {
                     return stop;
-                }, readDemoMessage, cb);
+                }, readDemoMessage, function(err){
+                    console.log("stop");
+                    console.log("%s err finishdem", err);
+                    cb(err);
+                });
             }
-        }, cb);
+        }, function(err) {
+            console.log("%s err exit", err);
+        });
     };
     return p;
     // Read the next DEM message from the replay (outer message)
@@ -146,6 +171,8 @@ var Parser = function(input) {
                 size: size,
                 data: buf
             };
+            var t = packetTypes[type] || type;
+            ct[t] = ct[t] ? ct[t] + 1 : 1;
             if (type in packetTypes) {
                 //lookup the name of the proto message for this packet type
                 var name = packetTypes[type];
@@ -158,7 +185,6 @@ var Parser = function(input) {
             //TODO reading entities, how to do this?
             //TODO push the packets of this message into an array and sort them by priority
         }
-        return;
     }
 
     function readCDemoStringTables(data) {
@@ -172,18 +198,27 @@ var Parser = function(input) {
 
     function readByte(cb) {
         readBytes(1, function(err, buf) {
+            if (!buf) {
+                return cb(err);
+            }
             cb(err, buf.readInt8());
         });
     }
 
     function readString(size, cb) {
         readBytes(size, function(err, buf) {
+            if (!buf) {
+                return cb(err);
+            }
             cb(err, buf.toString());
         });
     }
 
     function readUint32(cb) {
         readBytes(4, function(err, buf) {
+            if (!buf) {
+                return cb(err);
+            }
             cb(err, buf.readUInt32LE());
         });
     }
@@ -241,8 +276,12 @@ var Parser = function(input) {
             cb(null, buf);
         }
         else {
-            //TODO this will wait forever if the replay terminates abruptly?
+            input.on('end', function() {
+                stop = true;
+                return cb();
+            });
             input.once('readable', function() {
+                input.removeAllListeners();
                 return readBytes(size, cb);
             });
         }
@@ -250,3 +289,4 @@ var Parser = function(input) {
 };
 util.inherits(Parser, EventEmitter);
 module.exports = Parser;
+var ct = {};

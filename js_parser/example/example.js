@@ -8,10 +8,9 @@ var p = new Parser(process.stdin);
 //listen for "*" to catch all events
 //all chat
 p.on("CUserMessageSayText2", function(data) {
-    console.log(data);
+    //console.log(data);
 });
 //game epilogue
-//2015-08-27 not working yet
 p.on("CDemoFileInfo", function(data) {
     console.log(data);
 });

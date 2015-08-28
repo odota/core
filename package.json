@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nf -j Procfile.dev start",
+    "dev2": "pm2-dev pm2-dev.json",
     "test": "rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "update": "npm-check-updates -u -f '/^((?!steam).)*$/'",
