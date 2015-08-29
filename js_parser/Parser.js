@@ -40,8 +40,7 @@ var Parser = function(input) {
     p.game_event_descriptors = {};
     p.string_tables = {
         tables: [],
-        byName: {},
-        count: 0
+        byName: {}
     };
     p.entities = {};
     p.start = function start(cb) {
@@ -49,7 +48,6 @@ var Parser = function(input) {
             stop = true;
             input.removeAllListeners();
             console.error(counts);
-            //fs.writeFileSync("./output_combatlognames.json", JSON.stringify(p.string_tables.tables, null, 2));
             return cb();
         });
         async.series({
@@ -79,87 +77,18 @@ var Parser = function(input) {
         //don't stop on CDemoStop since some replays have CDemoGameInfo after it
         //stop = true;
     });
-    p.on("CDemoStringTables", readCDemoStringTables);
+    //p.on("CDemoStringTables", readCDemoStringTables);
     p.on("CDemoSignonPacket", readCDemoPacket);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
         //console.error(data);
-        readCDemoStringTables(data.string_table);
+        //readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
     //string tables may mutate over the lifetime of the replay.
     //Therefore we listen for create/update events and modify the table as needed.
-    p.on("CSVCMsg_CreateStringTable", function(data) {
-        data.index = p.string_tables.count;
-        p.string_tables.count += 1;
-        //create a stringtable
-        //console.error(data);
-        //extract the native buffer from the string_data ByteBuffer, with the offset removed
-        var buf = data.string_data.toBuffer();
-        if (data.data_compressed) {
-            //decompress the string data with snappy
-            //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
-            buf = snappy.uncompressSync(buf);
-        }
-        //pass the buffer and parse string table data from it
-        var items = parseStringTableData(buf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
-        //console.error(items);
-        //remove the buf and replace with items, which is a decoded version of it
-        data.string_data = {};
-        // Insert the items into the table as an object
-        items.forEach(function(it) {
-            data.string_data[it.index] = it;
-        });
-        /*
-        // Apply the updates to baseline state
-	    if t.name == "instancebaseline" {
-	    	p.updateInstanceBaseline()
-	    }
-        */
-        p.string_tables.byName[data.name] = data;
-        p.string_tables.tables.push(data);
-    });
-    p.on("CSVCMsg_UpdateStringTable", function(data) {
-        //update a string table
-        //retrieve table by id
-        var table = p.string_tables.tables[data.table_id];
-        //extract native buffer
-        var buf = data.string_data.toBuffer();
-        if (table) {
-            var items = parseStringTableData(buf, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
-            var string_data = table.string_data;
-            items.forEach(function(it) {
-                //console.error(it);
-                if (!string_data[it.index]) {
-                    //we don't have this item in the string table yet, add it
-                    string_data[it.index] = it;
-                }
-                else {
-                    //we're updating an existing item
-                    //only update key if the new key is not blank
-                    if (it.key) {
-                        console.log("updating key %s->%s at index %s on %s, id %s", string_data[it.index].key, it.key, it.index, table.name, data.table_id);
-                        string_data[it.index].key = it.key;
-                        //string_data[it.index].key = [].concat(string_data[it.index].key).concat(it.key);
-                    }
-                    //only update value if the new item has a nonempty value buffer
-                    if (it.value.length) {
-                        //console.log("updating value length %s->%s at index %s on %s", string_data[it.index].value.length, it.value.length, it.index, table.name);
-                        string_data[it.index].value = it.value;
-                    }
-                }
-            });
-        }
-        else {
-            throw "string table doesn't exist!";
-        }
-        /*
-        // Apply the updates to baseline state
-	    if t.name == "instancebaseline" {
-	    	p.updateInstanceBaseline()
-	    }
-	    */
-    });
+    p.on("CSVCMsg_CreateStringTable", createStringTable);
+    p.on("CSVCMsg_UpdateStringTable", updateStringTable);
     //emitted once, this packet sets up the information we need to read gameevents
     p.on("CMsgSource1LegacyGameEventList", function(data) {
         //console.error(data);
@@ -168,31 +97,11 @@ var Parser = function(input) {
             gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
         }
     });
-    //we process the gameevent using knowledge obtained from the gameeventlist
-    p.on("CMsgSource1LegacyGameEvent", function(data) {
-        //get the event name from descriptor
-        //console.error(data);
-        var gameEventDescriptors = p.game_event_descriptors;
-        data.event_name = gameEventDescriptors[data.eventid].name;
-        //TELEMETRY
-        var ct2 = counts.game_events;
-        ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
-        if (listening(data.event_name)) {
-            var e = {};
-            data.keys.forEach(function(k, i) {
-                var key = gameEventDescriptors[data.eventid].keys[i].name;
-                var index = gameEventDescriptors[data.eventid].keys[i].type;
-                //TODO maintain mapping with an object instead of getting keys and indexing into array
-                var value = k[Object.keys(k)[index]];
-                e[key] = value;
-            });
-            //emit events based on the event_name
-            p.emit(data.event_name, e);
-        }
-    });
     //TODO entities. huffman trees, property decoding?!  requires parsing CDemoClassInfo, and instancebaseline string table?
     return p;
-    // Read the next DEM message from the replay (outer message)
+    /**
+     * Reads the next DEM message from the replay (outer message)
+     **/
     function readDemoMessage(cb) {
         async.series({
             command: readVarint32,
@@ -246,7 +155,7 @@ var Parser = function(input) {
                         }
                     }
                     else {
-                        console.error("no definition for dem type %s (%s)", demType, typeof demType);
+                        console.error("no proto definition for dem type %s", demType);
                     }
                 }
                 else {
@@ -329,6 +238,77 @@ var Parser = function(input) {
                 console.error("no proto name for packet type %s", packType);
             }
         }
+    }
+
+    function createStringTable(data) {
+        //create a stringtable
+        //console.error(data);
+        //extract the native buffer from the string_data ByteBuffer, with the offset removed
+        var buf = data.string_data.toBuffer();
+        if (data.data_compressed) {
+            //decompress the string data with snappy
+            //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
+            buf = snappy.uncompressSync(buf);
+        }
+        //pass the buffer and parse string table data from it
+        var items = parseStringTableData(buf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
+        //console.error(items);
+        //remove the buf and replace with items, which is a decoded version of it
+        data.string_data = {};
+        // Insert the items into the table as an object
+        items.forEach(function(it) {
+            data.string_data[it.index] = it;
+        });
+        /*
+        // Apply the updates to baseline state
+	    if t.name == "instancebaseline" {
+	    	p.updateInstanceBaseline()
+	    }
+        */
+        p.string_tables.byName[data.name] = data;
+        p.string_tables.tables.push(data);
+    }
+
+    function updateStringTable(data) {
+        //update a string table
+        //retrieve table by id
+        var table = p.string_tables.tables[data.table_id];
+        //extract native buffer
+        var buf = data.string_data.toBuffer();
+        if (table) {
+            var items = parseStringTableData(buf, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
+            var string_data = table.string_data;
+            items.forEach(function(it) {
+                //console.error(it);
+                if (!string_data[it.index]) {
+                    //we don't have this item in the string table yet, add it
+                    string_data[it.index] = it;
+                }
+                else {
+                    //we're updating an existing item
+                    //only update key if the new key is not blank
+                    if (it.key) {
+                        //console.error("updating key %s->%s at index %s on %s, id %s", string_data[it.index].key, it.key, it.index, table.name, data.table_id);
+                        string_data[it.index].key = it.key;
+                        //string_data[it.index].key = [].concat(string_data[it.index].key).concat(it.key);
+                    }
+                    //only update value if the new item has a nonempty value buffer
+                    if (it.value.length) {
+                        //console.log("updating value length %s->%s at index %s on %s", string_data[it.index].value.length, it.value.length, it.index, table.name);
+                        string_data[it.index].value = it.value;
+                    }
+                }
+            });
+        }
+        else {
+            throw "string table doesn't exist!";
+        }
+        /*
+        // Apply the updates to baseline state
+	    if t.name == "instancebaseline" {
+	    	p.updateInstanceBaseline()
+	    }
+	    */
     }
     /**
      * Parses a buffer of string table data and returns an array of decoded items

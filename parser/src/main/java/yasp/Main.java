@@ -11,7 +11,7 @@ import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
-//import skadistats.clarity.processor.entities.UsesEntities;
+import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
@@ -19,7 +19,6 @@ import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
 //TODO support both s1 and s2?
-//s1 all chat is called cusermsg_saytext2
 import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 //s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
@@ -421,8 +420,8 @@ public class Main {
 	}
 
 
-	//@UsesEntities
-	//@OnTickStart
+	@UsesEntities
+	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
