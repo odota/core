@@ -13,7 +13,7 @@
     "constants": "node runner.js constants",
     "webpack": "webpack -p",
     "watch": "webpack --watch",
-    "maven": "mvn -q -f parser/pom.xml clean install -U",
+    "maven": "mvn -q -f java_parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
     "startup": "sudo pm2 startup ubuntu -u yasp",
     "deploy-core": "pm2 startOrReload pm2-core.json",
