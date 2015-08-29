@@ -391,7 +391,7 @@ function runParse(data, cb) {
         //set up pipe chain
         parser = spawn("java", ["-jar",
         "-Xmx64m",
-        "parser/target/stats-0.1.0.jar"
+        "java_parser/target/stats-0.1.0.jar"
     ], {
             //we may want to ignore stderr if we're not dumping it to /dev/null from java already
             stdio: ['pipe', 'pipe', 'pipe'],

@@ -1,0 +1,53 @@
+<configuration>
+	<appender name="stderr" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%msg%n</pattern>
+		</encoder>
+		<target>System.err</target>
+	</appender>
+
+	<appender name="devnull" class="ch.qos.logback.core.FileAppender">
+		<file>/dev/null</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.reflections" level="warn" />
+
+	<logger name="skadistats.clarity.parser.Peek" level="info" />
+	<logger name="skadistats.clarity.parser.HandlerRegistry" level="info" />
+
+	<logger name="skadistats.clarity.decoder.StringTableApplier" level="info" />
+	<logger name="skadistats.clarity.decoder.PacketEntitiesDecoder" level="info" />
+	<logger name="skadistats.clarity.decoder.TempEntitiesDecoder" level="info" />
+
+	<logger name="skadistats.clarity.parser.handler.DemClassInfoHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.DemFileHeaderHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.DemStringTablesHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.DemSyncTickHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.NetTickHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcClassInfoHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcCreateStringTableHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcGameEventHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcGameEventListHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcPacketEntitiesHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcTempEntitiesHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcSendTableHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcServerInfoHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcUpdateStringTableHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcVoiceDataHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.SvcVoiceInitHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgChatEventHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgCreateLinearProjectileHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgDestroyLinearProjectileHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgDodgeTrackingProjectilesHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgParticleManagerHandler" level="info" />
+	<logger name="skadistats.clarity.parser.handler.UserMsgGamerulesStateChangedHandler" level="info" />
+
+	<root level="info">
+		<appender-ref ref="devnull" />
+	</root>
+
+</configuration>

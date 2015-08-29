@@ -1,0 +1,1 @@
+cd `dirname "$0"` && mvn package && java -jar target/stats-0.1.0.jar < ../testfiles/1698148651_source2.dem > output.json
