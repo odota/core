@@ -35,90 +35,10 @@ var Parser = function(input) {
     }
     var stop = false;
     var p = this;
-    /**
-     * Internal listeners to automatically process certain packets.
-     * We abstract this away from the user so they don't need to worry about it.
-     * For optimal speed we could allow the user to disable these.
-     */
-    p.on("CDemoStop", function(data) {
-        //don't stop on CDemoStop since some replays have CDemoGameInfo after it
-        //stop = true;
-    });
-    //p.on("CDemoStringTables", readCDemoStringTables);
-    p.on("CDemoSignonPacket", readCDemoPacket);
-    p.on("CDemoPacket", readCDemoPacket);
-    p.on("CDemoFullPacket", function(data) {
-        //console.error(data);
-        //readCDemoStringTables(data.string_table);
-        readCDemoPacket(data.packet);
-    });
-    //string tables may mutate over the lifetime of the replay.
-    //Therefore we listen for create/update events and modify the table as needed.
-    p.on("CSVCMsg_CreateStringTable", function(data) {
-        //create a stringtable
-        //console.error(data);
-        //get the native buffer behind the string_data's bytebuffer
-        var buf = data.string_data;
-        if (data.data_compressed) {
-            //buf is the string_data's backing bytebuffer, extract the native buffer and pass to snappy
-            //decompress the string data with snappy
-            //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
-            console.log(buf);
-            buf.buffer = snappy.uncompressSync(buf.buffer);
-        }
-        //read string table entries from buf
-        var items = parseStringTableData(buf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
-        //remove the buf and replace with items, which is a decoded version of it
-        delete data.string_data;
-        data.items = {};
-        // Insert the items into the table as an object
-        items.forEach(function(it) {
-            data.items[it.index] = it;
-        });
-        /*
-        // Apply the updates to baseline state
-	    if t.name == "instancebaseline" {
-	    	p.updateInstanceBaseline()
-	    }
-        */
-    });
-    p.on("CSVCMsg_UpdateStringTable", function(data) {
-        //TODO create/update string table
-        //console.error(data);
-    });
-    //emitted once, this packet sets up the information we need to read gameevents
-    p.on("CMsgSource1LegacyGameEventList", function(data) {
-        console.error(data);
-        var gameEventDescriptors = p.gameEventDescriptors;
-        for (var i = 0; i < data.descriptors.length; i++) {
-            gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
-        }
-    });
-    //we process the gameevent using knowledge obtained from the gameeventlist
-    p.on("CMsgSource1LegacyGameEvent", function(data) {
-        //get the event name from descriptor
-        //console.error(data);
-        var gameEventDescriptors = p.gameEventDescriptors;
-        data.event_name = gameEventDescriptors[data.eventid].name;
-        var ct2 = counts.game_events;
-        ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
-        if (listening(data.event_name)) {
-            var e = {};
-            data.keys.forEach(function(k, i) {
-                var key = gameEventDescriptors[data.eventid].keys[i].name;
-                var index = gameEventDescriptors[data.eventid].keys[i].type;
-                var value = k[Object.keys(k)[index]];
-                e[key] = value;
-            });
-            //emit events based on the event_name
-            p.emit(data.event_name, e);
-        }
-    });
-    //TODO entities. huffman trees, property decoding?!  requires parsing CDemoClassInfo, and instancebaseline string table?
-    //expose the gameeventdescriptor, stringtables, types to the user and have the parser update them as it parses
+    //expose the gameeventdescriptor, stringtables, types, entities to the user and have the parser update them as it parses
     p.types = types;
-    p.gameEventDescriptors = {};
-    p.stringTables = {};
+    p.game_event_descriptors = {};
+    p.string_tables = {};
     p.entities = {};
     p.start = function start(cb) {
         input.on('end', function() {
@@ -145,6 +65,106 @@ var Parser = function(input) {
             }
         }, cb);
     };
+    /**
+     * Internal listeners to automatically process certain packets.
+     * We abstract this away from the user so they don't need to worry about it.
+     * For optimal speed we could allow the user to disable these.
+     **/
+    p.on("CDemoStop", function(data) {
+        //don't stop on CDemoStop since some replays have CDemoGameInfo after it
+        //stop = true;
+    });
+    //p.on("CDemoStringTables", readCDemoStringTables);
+    p.on("CDemoSignonPacket", readCDemoPacket);
+    p.on("CDemoPacket", readCDemoPacket);
+    p.on("CDemoFullPacket", function(data) {
+        //console.error(data);
+        //readCDemoStringTables(data.string_table);
+        readCDemoPacket(data.packet);
+    });
+    //string tables may mutate over the lifetime of the replay.
+    //Therefore we listen for create/update events and modify the table as needed.
+    p.on("CSVCMsg_CreateStringTable", function(data) {
+        //create a stringtable
+        //console.error(data);
+        //get the native buffer behind the string_data's bytebuffer
+        var bytebuf = data.string_data;
+        if (data.data_compressed) {
+            //decompress the string data with snappy
+            //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
+            //buf is the string_data's backing bytebuffer, extract the native buffer, slice the offset off and pass to snappy
+            bytebuf.buffer = snappy.uncompressSync(bytebuf.slice().toBuffer());
+        }
+        //pass the bytebuffer and parse string table data from it
+        var items = parseStringTableData(bytebuf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
+        //console.error(items);
+        //remove the buf and replace with items, which is a decoded version of it
+        var t = {};
+        // Insert the items into the table as an object
+        items.forEach(function(it) {
+            t[it.index] = it;
+        });
+        /*
+        // Apply the updates to baseline state
+	    if t.name == "instancebaseline" {
+	    	p.updateInstanceBaseline()
+	    }
+        */
+        p.string_tables[data.name] = t;
+    });
+    p.on("CSVCMsg_UpdateStringTable", function(data) {
+        //update a string table
+        
+        //retrieve table by id
+        var table = p.string_tables[Object.keys(p.string_tables)[data.table_id]];
+        if (table){
+            var items = parseStringTableData(data.string_data, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
+            items.forEach(function(it){
+                //console.error(it);
+                //TODO monitor what's actually getting updated more closely
+                table[it.index] = it;
+            });
+        }
+        else{
+            throw "string table doesn't exist!";
+        }
+        /*
+        // Apply the updates to baseline state
+	    if t.name == "instancebaseline" {
+	    	p.updateInstanceBaseline()
+	    }
+	    */
+    });
+    //emitted once, this packet sets up the information we need to read gameevents
+    p.on("CMsgSource1LegacyGameEventList", function(data) {
+        //console.error(data);
+        var gameEventDescriptors = p.game_event_descriptors;
+        for (var i = 0; i < data.descriptors.length; i++) {
+            gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
+        }
+    });
+    //we process the gameevent using knowledge obtained from the gameeventlist
+    p.on("CMsgSource1LegacyGameEvent", function(data) {
+        //get the event name from descriptor
+        //console.error(data);
+        var gameEventDescriptors = p.game_event_descriptors;
+        data.event_name = gameEventDescriptors[data.eventid].name;
+        var ct2 = counts.game_events;
+        ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
+        if (listening(data.event_name)) {
+            var e = {};
+            data.keys.forEach(function(k, i) {
+                var key = gameEventDescriptors[data.eventid].keys[i].name;
+                var index = gameEventDescriptors[data.eventid].keys[i].type;
+                //TODO maintain mapping with an object instead of getting keys and indexing into array
+                var value = k[Object.keys(k)[index]];
+                e[key] = value;
+            });
+            //emit events based on the event_name
+            p.emit(data.event_name, e);
+        }
+    });
+    //TODO entities. huffman trees, property decoding?!  requires parsing CDemoClassInfo, and instancebaseline string table?
     return p;
     // Read the next DEM message from the replay (outer message)
     function readDemoMessage(cb) {
@@ -277,9 +297,9 @@ var Parser = function(input) {
     /**
      * Parses a buffer of string table data and returns an array of decoded items
      **/
-    function parseStringTableData(buf, n, userDataFixedSize, userDataSize) {
+    function parseStringTableData(bytebuf, num_entries, userDataFixedSize, userDataSize) {
         var items = [];
-        var bs = new BitStream(buf);
+        var bs = new BitStream(bytebuf);
         // Start with an index of -1.
         // If the first item is at index 0 it will use a incr operation.
         var index = -1;
@@ -288,7 +308,7 @@ var Parser = function(input) {
         // each entry is a string
         var keyHistory = [];
         // Some tables have no data
-        if (!buf.length) {
+        if (!bs.limit) {
             return items;
         }
         // Loop through entries in the data structure
@@ -296,14 +316,12 @@ var Parser = function(input) {
         // Index can either be incremented from the previous position or overwritten with a given entry.
         // Key may be omitted (will be represented here as "")
         // Value may be omitted
-        //attempt to read up to n items from the buffer
-        for (var i = 0; i < n; i++) {
+        for (var i = 0; i < num_entries; i++) {
             var key = "";
-            var value = [];
+            var value = null;
             // Read a boolean to determine whether the operation is an increment or
             // has a fixed index position. A fixed index position of zero should be
             // the last data in the buffer, and indicates that all data has been read.
-            //TODO implement readBoolean
             var incr = bs.readBoolean();
             if (incr) {
                 index += 1;
@@ -324,7 +342,6 @@ var Parser = function(input) {
                     var pos = bs.readBits(5);
                     var size = bs.readBits(5);
                     if (pos >= keyHistory.length) {
-                        //TODO how is readString implemented without a size?
                         //we don't have this key cached in history
                         key += bs.readNullTerminatedString();
                     }
@@ -373,6 +390,7 @@ var Parser = function(input) {
                 value: value
             });
         }
+        //console.error(keyHistory, items, num_entries);
         return items;
     }
     /**
@@ -395,27 +413,18 @@ var Parser = function(input) {
 
     function readByte(cb) {
         readBytes(1, function(err, buf) {
-            if (!buf) {
-                return cb(err);
-            }
             cb(err, buf.readInt8());
         });
     }
 
     function readString(size, cb) {
         readBytes(size, function(err, buf) {
-            if (!buf) {
-                return cb(err);
-            }
             cb(err, buf.toString());
         });
     }
 
     function readUint32(cb) {
         readBytes(4, function(err, buf) {
-            if (!buf) {
-                return cb(err);
-            }
             cb(err, buf.readUInt32LE());
         });
     }

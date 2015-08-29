@@ -11,6 +11,13 @@ var BitStream = function(buf) {
  * Reads the specified number of bits (possibly non-aligned) and returns as 32bit int
  **/
 BitStream.prototype.readBits = function(n) {
+    if (n > (this.limit - this.offset)) {
+        //TODO should this ever happen?
+        console.error(this.limit, this.offset, n);
+        //only read as many bits as we have left
+        n = this.limit - this.offset;
+        //throw "not enough bits left in stream to read!";
+    }
     var bitOffset = this.offset % 8;
     var bitsToRead = bitOffset + n;
     var bytesToRead = ~~(bitsToRead / 8);
@@ -26,7 +33,7 @@ BitStream.prototype.readBits = function(n) {
     //32 bit shifting
     else if (bitsToRead <= 31) {
         value = 0;
-        //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
+        //console.error(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
             //extract the byte from the backing buffer
             var m = this.bytes[~~(this.offset / 8) + i];
@@ -40,18 +47,17 @@ BitStream.prototype.readBits = function(n) {
         value &= ((1 << n) - 1);
     }
     else {
-        //TODO trying to read 32+ bits with native JS probably won't work because we must then read five bytes from the backing buffer
+        //trying to read 32+ bits with native JS probably won't work because we must then read five bytes from the backing buffer
         //this means in practice we may have difficulty with n >= 25 bits (since offset can be up to 7)
         //can't fit that into a 32 bit int unless we use JS Long, which is slow
-        //perhaps we optimize by only using Long when bitsToRead > 31?
-        console.log(bitsToRead);
+        console.error(bitsToRead);
         //64 bit shifting, we only need this if our operations cant fit into 32 bits
         value = new Long();
-        //console.log(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
+        //console.error(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
             //extract the byte from the backing buffer
             var m = this.bytes[~~(this.offset / 8) + i];
-            //console.log(m, this.bytes);
+            //console.error(m, this.bytes);
             //copy m into a 64bit holder so we can shift bits around more
             m = new Long.fromNumber(m);
             //shift to get the bits we want
@@ -83,23 +89,23 @@ BitStream.prototype.readBuffer = function(bits) {
     return result;
 };
 BitStream.prototype.readBoolean = function() {
-    return this.readBits(1);
+    return Boolean(this.readBits(1));
 };
 /**
  * Reads until we reach a null terminator character and returns the result as a string
  **/
-BitStream.prototype.readNullTerminatedString = function(){
-    var buf = new Buffer();
-    var offset = 0;
-    while (true){
-        var byte = this.readByte();
-        if (!byte){
+BitStream.prototype.readNullTerminatedString = function() {
+    var buf = new Buffer(0);
+    while (true) {
+        var byteInt = this.readBits(8);
+        if (!byteInt) {
             break;
         }
-        buf.write(byte, offset);
-        offset +=1;
+        var byteBuf = new Buffer(1);
+        byteBuf.writeUInt8(byteInt);
+        buf = Buffer.concat([buf, byteBuf]);
     }
-	return buf.toString();
+    return buf.toString();
 };
 BitStream.prototype.readVarUInt = function() {
     var max = 32;
