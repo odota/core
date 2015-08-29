@@ -33,14 +33,27 @@ p.on("CDOTAUserMsg_SpectatorPlayerUnitOrders", function(data) {
 p.on("CDOTAUserMsg_ChatEvent", function(data) {
     //look up the type with DOTA_CHAT_MESSAGE
     data.type = types.DOTA_CHAT_MESSAGE[data.type];
-    console.log(data);
+    //console.log(data);
 });
 //combat log
 p.on("dota_combatlog", function(data) {
     //look up the type with DOTA_COMBATLOG_TYPES
     data.type = types.DOTA_COMBATLOG_TYPES[data.type];
     //translate the entries using stringtables
-    console.log(data);
+    //following fields can require a translation, but whether they do is dependent on the combat log type
+    //using a stringtable: lookup the property's index in game_event_descriptors
+    //using the correct stringtable, use the property index: stringtable.string_data[index]
+    //the key property should be the appropriate name.
+    //if that particular type doesn't have the field set to an actual string table entry, it can be undefined
+    //data.sourcename = p.string_tables.CombatLogNames.string_data[data.sourcename].key;
+    //data.targetname = p.string_tables.CombatLogNames.string_data[data.targetname].key;
+    //data.attackername = p.string_tables.CombatLogNames.string_data[data.attackername].key;
+    //data.inflictorname = p.string_tables.CombatLogNames.string_data[data.inflictorname].key;
+    //data.targetsourcename = p.string_tables.CombatLogNames.string_data[data.targetsourcename].key;
+    //value can sometimes needs a translation (for example, purchases)
+    //other times it's just an integer
+    //data.valuename = p.string_tables.CombatLogNames[data.value].key;
+    //console.log(data);
 });
 //everything
 //p.on("*", function(data){console.log(data);})

@@ -54,7 +54,11 @@ func main() {
 		parser.Callbacks.OnCMsgSource1LegacyGameEventList(func(m *dota.CMsgSource1LegacyGameEventList) error {
 			//fmt.Printf("%s\n", m);
 			return nil
-		})	
+		})
+		
+		parser.Callbacks.OnCDemoStringTables(func(m *dota.CDemoStringTables) error {
+			return nil
+		})
 		
 		/*
 		parser.Callbacks.OnCDemoPacket(func(m *dota.CDemoPacket) error {

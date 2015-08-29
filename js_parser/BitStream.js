@@ -2,21 +2,18 @@
  * Converts a given buffer of bytes to a stream of bits and provides methods for reading individual bits (non-aligned reads)
  **/
 var Long = require('long');
+//accepts a native buffer object
 var BitStream = function(buf) {
-    this.offset = buf.offset * 8;
-    this.limit = buf.limit * 8;
-    this.bytes = buf.buffer;
+    this.offset = 0;
+    this.limit = buf.length * 8;
+    this.bytes = buf;
 };
 /**
  * Reads the specified number of bits (possibly non-aligned) and returns as 32bit int
  **/
 BitStream.prototype.readBits = function(n) {
     if (n > (this.limit - this.offset)) {
-        //TODO should this ever happen?
-        console.error(this.limit, this.offset, n);
-        //only read as many bits as we have left
-        n = this.limit - this.offset;
-        //throw "not enough bits left in stream to read!";
+        throw "not enough bits left in stream to read!";
     }
     var bitOffset = this.offset % 8;
     var bitsToRead = bitOffset + n;
@@ -56,12 +53,12 @@ BitStream.prototype.readBits = function(n) {
         //console.error(bits, this.offset, bitOffset, bitsToRead,bytesToRead);
         for (var i = 0; i < bytesToRead; i++) {
             //extract the byte from the backing buffer
-            var m = this.bytes[~~(this.offset / 8) + i];
+            var m64 = this.bytes[~~(this.offset / 8) + i];
             //console.error(m, this.bytes);
             //copy m into a 64bit holder so we can shift bits around more
-            m = new Long.fromNumber(m);
+            m64 = new Long.fromNumber(m64);
             //shift to get the bits we want
-            value = value.add(m.shiftLeft(i * 8));
+            value = value.add(m64.shiftLeft(i * 8));
         }
         value = value.shiftRight(bitOffset);
         //shift a single 1 over, subtract 1 to form a bit mask 
@@ -95,7 +92,7 @@ BitStream.prototype.readBoolean = function() {
  * Reads until we reach a null terminator character and returns the result as a string
  **/
 BitStream.prototype.readNullTerminatedString = function() {
-    var buf = new Buffer(0);
+    var str = "";
     while (true) {
         var byteInt = this.readBits(8);
         if (!byteInt) {
@@ -103,9 +100,9 @@ BitStream.prototype.readNullTerminatedString = function() {
         }
         var byteBuf = new Buffer(1);
         byteBuf.writeUInt8(byteInt);
-        buf = Buffer.concat([buf, byteBuf]);
+        str += byteBuf.toString();
     }
-    return buf.toString();
+    return str;
 };
 BitStream.prototype.readVarUInt = function() {
     var max = 32;

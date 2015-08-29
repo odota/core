@@ -45,6 +45,7 @@ var Parser = function(input) {
             stop = true;
             input.removeAllListeners();
             console.error(counts);
+            fs.writeFileSync("./output_combatlognames.json", JSON.stringify(p.string_tables.CombatLogNames, null, 2));
             return cb();
         });
         async.series({
@@ -87,22 +88,21 @@ var Parser = function(input) {
     p.on("CSVCMsg_CreateStringTable", function(data) {
         //create a stringtable
         //console.error(data);
-        //get the native buffer behind the string_data's bytebuffer
-        var bytebuf = data.string_data;
+        //extract the native buffer from the string_data ByteBuffer, with the offset removed
+        var buf = data.string_data.slice().toBuffer();
         if (data.data_compressed) {
             //decompress the string data with snappy
             //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
-            //buf is the string_data's backing bytebuffer, extract the native buffer, slice the offset off and pass to snappy
-            bytebuf.buffer = snappy.uncompressSync(bytebuf.slice().toBuffer());
+            buf = snappy.uncompressSync(buf);
         }
-        //pass the bytebuffer and parse string table data from it
-        var items = parseStringTableData(bytebuf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
+        //pass the buffer and parse string table data from it
+        var items = parseStringTableData(buf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
         //console.error(items);
         //remove the buf and replace with items, which is a decoded version of it
-        var t = {};
+        data.string_data = {};
         // Insert the items into the table as an object
         items.forEach(function(it) {
-            t[it.index] = it;
+            data.string_data[it.index] = it;
         });
         /*
         // Apply the updates to baseline state
@@ -110,22 +110,43 @@ var Parser = function(input) {
 	    	p.updateInstanceBaseline()
 	    }
         */
-        p.string_tables[data.name] = t;
+        p.string_tables[data.name] = data;
     });
     p.on("CSVCMsg_UpdateStringTable", function(data) {
         //update a string table
-        
         //retrieve table by id
-        var table = p.string_tables[Object.keys(p.string_tables)[data.table_id]];
-        if (table){
-            var items = parseStringTableData(data.string_data, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
-            items.forEach(function(it){
+        //TODO store table in array and maintain mapping of name to index?
+        var tablename = Object.keys(p.string_tables)[data.table_id];
+        //console.log(tablename, data.table_id);
+        var table = p.string_tables[tablename];
+        //extract native buffer
+        var buf = data.string_data.slice().toBuffer();
+        if (table) {
+            var items = parseStringTableData(buf, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
+            var string_data = table.string_data;
+            items.forEach(function(it) {
                 //console.error(it);
-                //TODO monitor what's actually getting updated more closely
-                table[it.index] = it;
+                if (!string_data[it.index]) {
+                    //we don't have this item in the string table yet, add it
+                    string_data[it.index] = it;
+                }
+                else {
+                    //we're updating an existing item
+                    //only update key if the new key is not blank
+                    if (it.key) {
+                        console.log("updating key %s->%s at index %s on %s", string_data[it.index].key, it.key, it.index, table.name);
+                        //string_data[it.index].key = it.key;
+                        string_data[it.index].key = [].concat(string_data[it.index].key).concat(it.key);
+                    }
+                    //only update value if the new item has a nonempty value buffer
+                    if (it.value.length) {
+                        //console.log("updating value length %s->%s at index %s on %s", string_data[it.index].value.length, it.value.length, it.index, table.name);
+                        string_data[it.index].value = it.value;
+                    }
+                }
             });
         }
-        else{
+        else {
             throw "string table doesn't exist!";
         }
         /*
@@ -149,6 +170,7 @@ var Parser = function(input) {
         //console.error(data);
         var gameEventDescriptors = p.game_event_descriptors;
         data.event_name = gameEventDescriptors[data.eventid].name;
+        //TELEMETRY
         var ct2 = counts.game_events;
         ct2[data.event_name] = ct2[data.event_name] ? ct2[data.event_name] + 1 : 1;
         if (listening(data.event_name)) {
@@ -233,7 +255,7 @@ var Parser = function(input) {
     // Internal parser for callback OnCDemoPacket, responsible for extracting
     // multiple inner packets from a single CDemoPacket. This is the main structure
     // that contains all other data types in the demo file.
-    function readCDemoPacket(data) {
+    function readCDemoPacket(msg) {
         /*
         message CDemoPacket {
         	optional int32 sequence_in = 1;
@@ -250,10 +272,12 @@ var Parser = function(input) {
             "CMsgSource1LegacyGameEvent": 10
         };
         //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
-        //convert the buffer object into a bitstream so we can read from it
-        //read until less than 8 bits left
         var packets = [];
-        var bs = new BitStream(data.data);
+        //extract the native buffer from the ByteBuffer decoded by protobufjs
+        var buf = msg.data.slice().toBuffer();
+        //convert the buffer object into a bitstream so we can read bits from it
+        var bs = new BitStream(buf);
+        //read until less than 8 bits left
         while (bs.limit - bs.offset >= 8) {
             var t = bs.readUBitVar();
             var s = bs.readVarUInt();
@@ -272,9 +296,10 @@ var Parser = function(input) {
         for (var i = 0; i < packets.length; i++) {
             var packet = packets[i];
             var packType = packet.type;
-            var t = packetTypes[packType] || packType;
+            //TELEMETRY
+            var pt = packetTypes[packType] || packType;
             var ct = counts.packets;
-            ct[t] = ct[t] ? ct[t] + 1 : 1;
+            ct[pt] = ct[pt] ? ct[pt] + 1 : 1;
             if (packType in packetTypes) {
                 //lookup the name of the proto message for this packet type
                 var name = packetTypes[packType];
@@ -297,9 +322,13 @@ var Parser = function(input) {
     /**
      * Parses a buffer of string table data and returns an array of decoded items
      **/
-    function parseStringTableData(bytebuf, num_entries, userDataFixedSize, userDataSize) {
+    function parseStringTableData(buf, num_entries, userDataFixedSize, userDataSize) {
+        // Some tables have no data
+        if (!buf.length) {
+            return [];
+        }
         var items = [];
-        var bs = new BitStream(bytebuf);
+        var bs = new BitStream(buf);
         // Start with an index of -1.
         // If the first item is at index 0 it will use a incr operation.
         var index = -1;
@@ -307,18 +336,14 @@ var Parser = function(input) {
         // Maintain a list of key history
         // each entry is a string
         var keyHistory = [];
-        // Some tables have no data
-        if (!bs.limit) {
-            return items;
-        }
         // Loop through entries in the data structure
         // Each entry is a tuple consisting of {index, key, value}
         // Index can either be incremented from the previous position or overwritten with a given entry.
         // Key may be omitted (will be represented here as "")
         // Value may be omitted
         for (var i = 0; i < num_entries; i++) {
-            var key = "";
-            var value = null;
+            var key = null;
+            var value = new Buffer(0);
             // Read a boolean to determine whether the operation is an increment or
             // has a fixed index position. A fixed index position of zero should be
             // the last data in the buffer, and indicates that all data has been read.
@@ -342,19 +367,21 @@ var Parser = function(input) {
                     var pos = bs.readBits(5);
                     var size = bs.readBits(5);
                     if (pos >= keyHistory.length) {
-                        //we don't have this key cached in history
-                        key += bs.readNullTerminatedString();
+                        //history doesn't have this position, just read
+                        key = bs.readNullTerminatedString();
                     }
                     else {
+                        //console.log(keyHistory);
+                        //console.log("%s in history", s);
                         var s = keyHistory[pos];
-                        //our target string is longer than the historical one
-                        //read the new data and tack it on
                         if (size > s.length) {
-                            key += s + bs.readNullTerminatedString();
+                            //our target size is longer than the key stored in history
+                            //pad the remaining size with a null terminated string from stream
+                            key = (s + bs.readNullTerminatedString());
                         }
                         else {
-                            //we only want a piece of the historical string, slice it out and tack on the new read
-                            key += s.slice(0, size) + bs.readNullTerminatedString();
+                            //we only want a piece of the historical string, slice it out and read the null terminator
+                            key = s.slice(0, size) + bs.readNullTerminatedString();
                         }
                     }
                 }
@@ -362,11 +389,11 @@ var Parser = function(input) {
                     //don't use the history, just read the string
                     key = bs.readNullTerminatedString();
                 }
-                if (keyHistory.length >= STRINGTABLE_KEY_HISTORY_SIZE) {
-                    //circular buffer implementation, drop the oldest key if we hit the cap
-                    keyHistory = keyHistory.slice(1, STRINGTABLE_KEY_HISTORY_SIZE);
-                }
                 keyHistory.push(key);
+                if (keyHistory.length > STRINGTABLE_KEY_HISTORY_SIZE) {
+                    //drop the oldest key if we hit the cap
+                    keyHistory.shift();
+                }
             }
             // Some entries have a value.
             var hasValue = bs.readBoolean();
@@ -378,10 +405,10 @@ var Parser = function(input) {
                     value = bs.readBuffer(userDataSize);
                 }
                 else {
-                    var size = bs.readBits(14);
+                    var valueSize = bs.readBits(14);
                     //TODO mysterious 3 bits of data?
                     bs.readBits(3);
-                    value = bs.readBuffer(size * 8);
+                    value = bs.readBuffer(valueSize * 8);
                 }
             }
             items.push({
@@ -399,18 +426,14 @@ var Parser = function(input) {
     function listening(name) {
         return p.listeners(name).length || p.listeners("*").length;
     }
-
+    /*
     function readCDemoStringTables(data) {
-        /*
-        //TODO rather than processing when we read this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable
-        for (var i = 0; i < data.tables.length; i++) {
-            //console.error(Object.keys(data.tables[i]));
-            //console.error(data.tables[i].table_name);
-        }
-        */
+
+        //rather than processing when we read this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable
+        //this packet is just emitted as a state dump at intervals
         return;
     }
-
+    */
     function readByte(cb) {
         readBytes(1, function(err, buf) {
             cb(err, buf.readInt8());
