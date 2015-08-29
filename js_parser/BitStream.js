@@ -86,7 +86,7 @@ BitStream.prototype.readBuffer = function(bits) {
     return result;
 };
 BitStream.prototype.readBoolean = function() {
-    return Boolean(this.readBits(1));
+    return this.readBits(1);
 };
 /**
  * Reads until we reach a null terminator character and returns the result as a string
@@ -102,16 +102,16 @@ BitStream.prototype.readNullTerminatedString = function() {
         byteBuf.writeUInt8(byteInt);
         str += byteBuf.toString();
     }
+    //console.log(str);
     return str;
 };
 BitStream.prototype.readVarUInt = function() {
     var max = 32;
     var m = ((max + 6) / 7) * 7;
     var value = 0;
-    var byte = 0;
     var shift = 0;
     while (true) {
-        byte = this.readBits(8);
+        var byte = this.readBits(8);
         value |= (byte & 0x7F) << shift;
         shift += 7;
         if ((byte & 0x80) === 0 || shift == m) {

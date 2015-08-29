@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"io/ioutil"
-
+	"encoding/json"
 	"github.com/dotabuff/manta"
 	"github.com/dotabuff/manta/dota"
 )
@@ -52,7 +52,18 @@ func main() {
 		})
 		
 		parser.Callbacks.OnCMsgSource1LegacyGameEventList(func(m *dota.CMsgSource1LegacyGameEventList) error {
-			//fmt.Printf("%s\n", m);
+			//fmt.Printf("%s\n", m)
+			return nil
+		})
+		
+		parser.Callbacks.OnCDemoStop(func(m *dota.CDemoStop) error {
+			b, err := json.Marshal(nil)
+			if err!=nil {panic(err)}
+			stringTable, ok := parser.StringTables.GetTableByName("CombatLogNames")
+			if !ok {panic(!ok)}
+			fmt.Printf("%s\n", stringTable.GetIndex())
+			fmt.Printf("%s\n", b)
+
 			return nil
 		})
 		

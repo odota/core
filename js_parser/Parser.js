@@ -38,14 +38,18 @@ var Parser = function(input) {
     //expose the gameeventdescriptor, stringtables, types, entities to the user and have the parser update them as it parses
     p.types = types;
     p.game_event_descriptors = {};
-    p.string_tables = {};
+    p.string_tables = {
+        tables: [],
+        byName: {},
+        count: 0
+    };
     p.entities = {};
     p.start = function start(cb) {
         input.on('end', function() {
             stop = true;
             input.removeAllListeners();
             console.error(counts);
-            fs.writeFileSync("./output_combatlognames.json", JSON.stringify(p.string_tables.CombatLogNames, null, 2));
+            //fs.writeFileSync("./output_combatlognames.json", JSON.stringify(p.string_tables.tables, null, 2));
             return cb();
         });
         async.series({
@@ -75,21 +79,23 @@ var Parser = function(input) {
         //don't stop on CDemoStop since some replays have CDemoGameInfo after it
         //stop = true;
     });
-    //p.on("CDemoStringTables", readCDemoStringTables);
+    p.on("CDemoStringTables", readCDemoStringTables);
     p.on("CDemoSignonPacket", readCDemoPacket);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
         //console.error(data);
-        //readCDemoStringTables(data.string_table);
+        readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
     //string tables may mutate over the lifetime of the replay.
     //Therefore we listen for create/update events and modify the table as needed.
     p.on("CSVCMsg_CreateStringTable", function(data) {
+        data.index = p.string_tables.count;
+        p.string_tables.count += 1;
         //create a stringtable
         //console.error(data);
         //extract the native buffer from the string_data ByteBuffer, with the offset removed
-        var buf = data.string_data.slice().toBuffer();
+        var buf = data.string_data.toBuffer();
         if (data.data_compressed) {
             //decompress the string data with snappy
             //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
@@ -110,17 +116,15 @@ var Parser = function(input) {
 	    	p.updateInstanceBaseline()
 	    }
         */
-        p.string_tables[data.name] = data;
+        p.string_tables.byName[data.name] = data;
+        p.string_tables.tables.push(data);
     });
     p.on("CSVCMsg_UpdateStringTable", function(data) {
         //update a string table
         //retrieve table by id
-        //TODO store table in array and maintain mapping of name to index?
-        var tablename = Object.keys(p.string_tables)[data.table_id];
-        //console.log(tablename, data.table_id);
-        var table = p.string_tables[tablename];
+        var table = p.string_tables.tables[data.table_id];
         //extract native buffer
-        var buf = data.string_data.slice().toBuffer();
+        var buf = data.string_data.toBuffer();
         if (table) {
             var items = parseStringTableData(buf, data.num_changed_entries, table.user_data_fixed_size, table.user_data_size);
             var string_data = table.string_data;
@@ -134,9 +138,9 @@ var Parser = function(input) {
                     //we're updating an existing item
                     //only update key if the new key is not blank
                     if (it.key) {
-                        console.log("updating key %s->%s at index %s on %s", string_data[it.index].key, it.key, it.index, table.name);
-                        //string_data[it.index].key = it.key;
-                        string_data[it.index].key = [].concat(string_data[it.index].key).concat(it.key);
+                        console.log("updating key %s->%s at index %s on %s, id %s", string_data[it.index].key, it.key, it.index, table.name, data.table_id);
+                        string_data[it.index].key = it.key;
+                        //string_data[it.index].key = [].concat(string_data[it.index].key).concat(it.key);
                     }
                     //only update value if the new item has a nonempty value buffer
                     if (it.value.length) {
@@ -274,7 +278,7 @@ var Parser = function(input) {
         //the inner data of a CDemoPacket is raw bits (no longer byte aligned!)
         var packets = [];
         //extract the native buffer from the ByteBuffer decoded by protobufjs
-        var buf = msg.data.slice().toBuffer();
+        var buf = msg.data.toBuffer();
         //convert the buffer object into a bitstream so we can read bits from it
         var bs = new BitStream(buf);
         //read until less than 8 bits left
@@ -285,13 +289,20 @@ var Parser = function(input) {
             var pack = {
                 type: t,
                 size: s,
-                data: d
+                data: d,
+                position: packets.length
             };
             packets.push(pack);
         }
         //sort the inner packets by priority in order to ensure we parse dependent packets last
         packets.sort(function(a, b) {
-            return priorities[packetTypes[a.type]] || 0 - priorities[packetTypes[b.type]] || 0;
+            //we must use a stable sort here in order to preserve order of packets when possible (for example, string tables)
+            var p1 = priorities[packetTypes[a.type]] || 0;
+            var p2 = priorities[packetTypes[b.type]] || 0;
+            if (p1 === p2) {
+                return a.position - b.position;
+            }
+            return p1 - p2;
         });
         for (var i = 0; i < packets.length; i++) {
             var packet = packets[i];
@@ -426,14 +437,13 @@ var Parser = function(input) {
     function listening(name) {
         return p.listeners(name).length || p.listeners("*").length;
     }
-    /*
-    function readCDemoStringTables(data) {
 
+    function readCDemoStringTables(data) {
         //rather than processing when we read this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable
         //this packet is just emitted as a state dump at intervals
         return;
     }
-    */
+
     function readByte(cb) {
         readBytes(1, function(err, buf) {
             cb(err, buf.readInt8());
