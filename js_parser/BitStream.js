@@ -77,10 +77,29 @@ BitStream.prototype.readBuffer = function(bits) {
         //read up to 8 bits at a time (we may read less at the end if not aligned)
         var bitsToRead = Math.min(bits, 8);
         result.writeUInt8(this.readBits(bitsToRead), offset);
-        offset++;
+        offset += 1;
         bits -= bitsToRead;
     }
     return result;
+};
+BitStream.prototype.readBoolean = function() {
+    return this.readBits(1);
+};
+/**
+ * Reads until we reach a null terminator character and returns the result as a string
+ **/
+BitStream.prototype.readNullTerminatedString = function(){
+    var buf = new Buffer();
+    var offset = 0;
+    while (true){
+        var byte = this.readByte();
+        if (!byte){
+            break;
+        }
+        buf.write(byte, offset);
+        offset +=1;
+    }
+	return buf.toString();
 };
 BitStream.prototype.readVarUInt = function() {
     var max = 32;

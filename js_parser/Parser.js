@@ -23,7 +23,7 @@ var dota = builder.build();
 //CDemoSignonPacket is a special case and should be decoded with CDemoPacket since it doesn't have its own protobuf
 //it appears that things like the gameeventlist and createstringtables calls are here?
 dota["CDemoSignonPacket"] = dota["CDemoPacket"];
-//console.log(Object.keys(dota));
+//console.error(Object.keys(dota));
 var Parser = function(input) {
     //wrap a passed buffer in a stream
     //TODO this isn't tested yet
@@ -48,23 +48,47 @@ var Parser = function(input) {
     p.on("CDemoSignonPacket", readCDemoPacket);
     p.on("CDemoPacket", readCDemoPacket);
     p.on("CDemoFullPacket", function(data) {
-        //console.log(data);
+        //console.error(data);
         //readCDemoStringTables(data.string_table);
         readCDemoPacket(data.packet);
     });
     //string tables may mutate over the lifetime of the replay.
     //Therefore we listen for create/update events and modify the table as needed.
     p.on("CSVCMsg_CreateStringTable", function(data) {
-        //TODO create/update string table
-        //console.log(data);
+        //create a stringtable
+        //console.error(data);
+        //get the native buffer behind the string_data's bytebuffer
+        var buf = data.string_data;
+        if (data.data_compressed) {
+            //buf is the string_data's backing bytebuffer, extract the native buffer and pass to snappy
+            //decompress the string data with snappy
+            //early source 2 replays may use LZSS, we can detect this by reading the first four bytes of buffer
+            console.log(buf);
+            buf.buffer = snappy.uncompressSync(buf.buffer);
+        }
+        //read string table entries from buf
+        var items = parseStringTableData(buf, data.num_entries, data.user_data_fixed_size, data.user_data_size);
+        //remove the buf and replace with items, which is a decoded version of it
+        delete data.string_data;
+        data.items = {};
+        // Insert the items into the table as an object
+        items.forEach(function(it) {
+            data.items[it.index] = it;
+        });
+        /*
+        // Apply the updates to baseline state
+	    if t.name == "instancebaseline" {
+	    	p.updateInstanceBaseline()
+	    }
+        */
     });
     p.on("CSVCMsg_UpdateStringTable", function(data) {
         //TODO create/update string table
-        //console.log(data);
+        //console.error(data);
     });
     //emitted once, this packet sets up the information we need to read gameevents
     p.on("CMsgSource1LegacyGameEventList", function(data) {
-        console.log(data);
+        console.error(data);
         var gameEventDescriptors = p.gameEventDescriptors;
         for (var i = 0; i < data.descriptors.length; i++) {
             gameEventDescriptors[data.descriptors[i].eventid] = data.descriptors[i];
@@ -73,7 +97,7 @@ var Parser = function(input) {
     //we process the gameevent using knowledge obtained from the gameeventlist
     p.on("CMsgSource1LegacyGameEvent", function(data) {
         //get the event name from descriptor
-        //console.log(data);
+        //console.error(data);
         var gameEventDescriptors = p.gameEventDescriptors;
         data.event_name = gameEventDescriptors[data.eventid].name;
         var ct2 = counts.game_events;
@@ -90,7 +114,7 @@ var Parser = function(input) {
             p.emit(data.event_name, e);
         }
     });
-    //TODO entities. huffman trees, property decoding?!
+    //TODO entities. huffman trees, property decoding?!  requires parsing CDemoClassInfo, and instancebaseline string table?
     //expose the gameeventdescriptor, stringtables, types to the user and have the parser update them as it parses
     p.types = types;
     p.gameEventDescriptors = {};
@@ -100,7 +124,7 @@ var Parser = function(input) {
         input.on('end', function() {
             stop = true;
             input.removeAllListeners();
-            console.log(counts);
+            console.error(counts);
             return cb();
         });
         async.series({
@@ -164,7 +188,7 @@ var Parser = function(input) {
                     size: size,
                     data: buf
                 };
-                //console.log(dem);
+                //console.error(dem);
                 if (demType in demTypes) {
                     //lookup the name of the protobuf message to decode with
                     var name = demTypes[demType];
@@ -176,8 +200,11 @@ var Parser = function(input) {
                         }
                     }
                     else {
-                        console.log("no definition for dem type %s (%s)", demType, typeof demType);
+                        console.error("no definition for dem type %s (%s)", demType, typeof demType);
                     }
+                }
+                else {
+                    console.error("no proto name for dem type %s", demType);
                 }
                 return cb(err);
             });
@@ -206,11 +233,11 @@ var Parser = function(input) {
         //convert the buffer object into a bitstream so we can read from it
         //read until less than 8 bits left
         var packets = [];
-        var bitStream = new BitStream(data.data);
-        while (bitStream.limit - bitStream.offset >= 8) {
-            var t = bitStream.readUBitVar();
-            var s = bitStream.readVarUInt();
-            var d = bitStream.readBuffer(s * 8);
+        var bs = new BitStream(data.data);
+        while (bs.limit - bs.offset >= 8) {
+            var t = bs.readUBitVar();
+            var s = bs.readVarUInt();
+            var d = bs.readBuffer(s * 8);
             var pack = {
                 type: t,
                 size: s,
@@ -239,10 +266,114 @@ var Parser = function(input) {
                     }
                 }
                 else {
-                    console.log("no definition for packet type %s", packType);
+                    console.error("no proto definition for packet name %s", name);
                 }
             }
+            else {
+                console.error("no proto name for packet type %s", packType);
+            }
         }
+    }
+    /**
+     * Parses a buffer of string table data and returns an array of decoded items
+     **/
+    function parseStringTableData(buf, n, userDataFixedSize, userDataSize) {
+        var items = [];
+        var bs = new BitStream(buf);
+        // Start with an index of -1.
+        // If the first item is at index 0 it will use a incr operation.
+        var index = -1;
+        var STRINGTABLE_KEY_HISTORY_SIZE = 32;
+        // Maintain a list of key history
+        // each entry is a string
+        var keyHistory = [];
+        // Some tables have no data
+        if (!buf.length) {
+            return items;
+        }
+        // Loop through entries in the data structure
+        // Each entry is a tuple consisting of {index, key, value}
+        // Index can either be incremented from the previous position or overwritten with a given entry.
+        // Key may be omitted (will be represented here as "")
+        // Value may be omitted
+        //attempt to read up to n items from the buffer
+        for (var i = 0; i < n; i++) {
+            var key = "";
+            var value = [];
+            // Read a boolean to determine whether the operation is an increment or
+            // has a fixed index position. A fixed index position of zero should be
+            // the last data in the buffer, and indicates that all data has been read.
+            //TODO implement readBoolean
+            var incr = bs.readBoolean();
+            if (incr) {
+                index += 1;
+            }
+            else {
+                index = bs.readVarUInt() + 1;
+            }
+            // Some values have keys, some don't.
+            var hasKey = bs.readBoolean();
+            if (hasKey) {
+                // Some entries use reference a position in the key history for
+                // part of the key. If referencing the history, read the position
+                // and size from the buffer, then use those to build the string
+                // combined with an extra string read (null terminated).
+                // Alternatively, just read the string.
+                var useHistory = bs.readBoolean();
+                if (useHistory) {
+                    var pos = bs.readBits(5);
+                    var size = bs.readBits(5);
+                    if (pos >= keyHistory.length) {
+                        //TODO how is readString implemented without a size?
+                        //we don't have this key cached in history
+                        key += bs.readNullTerminatedString();
+                    }
+                    else {
+                        var s = keyHistory[pos];
+                        //our target string is longer than the historical one
+                        //read the new data and tack it on
+                        if (size > s.length) {
+                            key += s + bs.readNullTerminatedString();
+                        }
+                        else {
+                            //we only want a piece of the historical string, slice it out and tack on the new read
+                            key += s.slice(0, size) + bs.readNullTerminatedString();
+                        }
+                    }
+                }
+                else {
+                    //don't use the history, just read the string
+                    key = bs.readNullTerminatedString();
+                }
+                if (keyHistory.length >= STRINGTABLE_KEY_HISTORY_SIZE) {
+                    //circular buffer implementation, drop the oldest key if we hit the cap
+                    keyHistory = keyHistory.slice(1, STRINGTABLE_KEY_HISTORY_SIZE);
+                }
+                keyHistory.push(key);
+            }
+            // Some entries have a value.
+            var hasValue = bs.readBoolean();
+            if (hasValue) {
+                // Values can be either fixed size (with a size specified in
+                // bits during table creation, or have a variable size with
+                // a 14-bit prefixed size.
+                if (userDataFixedSize) {
+                    value = bs.readBuffer(userDataSize);
+                }
+                else {
+                    var size = bs.readBits(14);
+                    //TODO mysterious 3 bits of data?
+                    bs.readBits(3);
+                    value = bs.readBuffer(size * 8);
+                }
+            }
+            items.push({
+                index: index,
+                key: key,
+                value: value
+            });
+        }
+        return items;
     }
     /**
      * Returns whether there is an attached listener for this message name.
@@ -255,8 +386,8 @@ var Parser = function(input) {
         /*
         //TODO rather than processing when we read this demo message, we want to create when we read the packet CSVCMsg_CreateStringTable
         for (var i = 0; i < data.tables.length; i++) {
-            //console.log(Object.keys(data.tables[i]));
-            //console.log(data.tables[i].table_name);
+            //console.error(Object.keys(data.tables[i]));
+            //console.error(data.tables[i].table_name);
         }
         */
         return;

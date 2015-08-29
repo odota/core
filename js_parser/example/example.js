@@ -1,14 +1,18 @@
 var Parser = require('../Parser');
 //parser accepts a stream or buffer, returns an eventemitter
 var p = new Parser(process.stdin);
+//PROPERTIES
+var types = p.types;
+var gameEventDescriptors = p.gameEventDescriptors;
+var stringTables = p.stringTables;
+var entities = p.entities;
+//LISTENERS
 //TODO list the general categories of events the user can listen for in readme
 //add an event listener with the name of the protobuf message in order to listen for it
 //full dem/packet listing is in build/types.json, or user can refer to original .proto files
 //WARNING: not every type listed there is actually in the replay--it's automatically generated from enums in .protos!
 //gameevent types are not listed in the .protos, but are defined in the GameEventDescriptors contained within a replay
 //therefore we don't know what game event types are available until runtime
-//-
-//EXAMPLES
 //game epilogue
 p.on("CDemoFileInfo", function(data) {
     console.log(data);
