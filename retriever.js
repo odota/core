@@ -166,7 +166,7 @@ function getPlayerProfile(idx, account_id, cb) {
     steamObj[idx].profiles += 1;
     Dota2.profileRequest(account_id, false, function(err, profileData) {
         console.log(err, profileData);
-        cb(err, profileData.gameAccountClient);
+        cb(err, profileData.game_account_client);
     });
 }
 
