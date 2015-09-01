@@ -11,57 +11,10 @@ wget https://github.com/yasp-dota/testfiles/raw/master/1232307498_cyrillic.dem -
 #6.84
 mvn -f parser/pom.xml package && java -jar parser/target/stats-0.1.0.one-jar.jar < testfiles/1436943655_684.dem      
 
- db.matches.find({
-    'players.account_id': 88367253
-}, {
-        start_time: 1,
-        match_id: 1,
-        duration: 1,
-        cluster: 1,
-        radiant_win: 1,
-        parse_status: 1,
-        parsed_data: 1,
-        first_blood_time: 1,
-        lobby_type: 1,
-        game_mode: 1,
-        "players.$": 1
-    }
-).explain()
+#source2
+npm run maven && java -jar parser/target/stats-0.1.0.jar < testfiles/1560726098_source2.dem
 
- db.matches.find({
-        players: {
-            $elemMatch: {
-                account_id: 88367253
-            }
-        }
-    }, {
-            "players.$": 1,
-            start_time: 1,
-            match_id: 1,
-            duration: 1,
-            cluster: 1,
-            radiant_win: 1,
-            parse_status: 1,
-            parsed_data: 1,
-            first_blood_time: 1,
-            lobby_type: 1,
-            game_mode: 1
-    }).explain()
-
-mongoexport --db dota --collection matches --query {match_id:1321352005} > output.json
-
-/*
-//detect rune spawns
-                Iterator<Entity> runes = ec.getAllByDtName("DT_DOTA_Item_Rune");
-                while (runes.hasNext()){
-                Entity e = runes.next();
-                Integer handle = e.getHandle();
-                if (!seenEntities.contains(handle)){
-                System.err.format("rune: time:%s,x:%s,y:%s,type:%s\n", time, e.getProperty("m_iRuneType"), e.getProperty("m_cellX"), e.getProperty("m_cellY"));
-                seenEntities.add(handle);
-                }
-                }
- */
+#mongoexport --db dota --collection matches --query {match_id:1321352005} > output.json
  
  #post a job to kue, didn't work with url for some reason
  curl -H "Content-Type: application/json" -X POST -d \
