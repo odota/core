@@ -246,182 +246,52 @@ public class Main {
 
 	@OnCombatLogEntry
 	public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
-		//System.err.println(new Gson().toJson(cle.getGameEvent()));
 		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
 		//System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
 		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
 		//sets global time to time in this combat log entry
 		time = Math.round(cle.getTimestamp());
-		Entry entry = new Entry(time);
-		//TODO just dump all the fields of the combat log entry, let js take care of post-processing?  implement tostring that dumps json, but need to use stringtables to lookup names, and need to do string transforms?
-		//TODO would need cpnstants mapping combat log names to current BSON names ("damage", "healing"...)
-		switch(cle.getType()) {
-		case 0:
-			//damage
-			entry.unit = cle.getSourceName(); //source of damage (a hero)
-			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
-			entry.target_source = cle.getTargetSourceName();
-			entry.target_hero = cle.isTargetHero();
-			entry.inflictor = translate(cle.getInflictorName());
-			entry.target_illusion = cle.isTargetIllusion();
-			entry.value = cle.getValue();
-			entry.type = "damage";
+		
+		if (true){
+			//create a new entry
+			Entry entry = new Entry(time);
+			entry.type="combat_log";
+			entry.subtype=String.valueOf(cle.getType());
+			//translate the fields using string tables if necessary (get*Name methods)
+			entry.attackername=cle.getAttackerName();
+			entry.targetname=cle.getTargetName();
+			entry.sourcename=cle.getSourceName();
+			entry.targetsourcename=cle.getTargetSourceName();
+			entry.inflictor=cle.getInflictorName();
+			entry.gold_reason=cle.getGoldReason();
+			entry.xp_reason=cle.getXpReason();
+			entry.attackerhero=cle.isAttackerHero();
+			entry.targethero=cle.isTargetHero();
+			entry.attackerillusion=cle.isAttackerIllusion();
+			entry.targetillusion=cle.isTargetIllusion();
+			entry.value=cle.getValue();
+			//value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
+			if (cle.getType()==11){
+				entry.valuename=cle.getValueName();
+			}
 			es.output(entry);
-			break;
-		case 1:
-			//healing
-			entry.unit = cle.getSourceName(); //source of healing (a hero)
-			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
-			entry.value = cle.getValue();
-			entry.type = "healing";
-			es.output(entry);
-			break;
-		case 2:
-			//gain buff/debuff
-			entry.type = "modifier_applied";
-			entry.unit = cle.getAttackerName(); //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
-			entry.key = translate(cle.getInflictorName()); //the buff
-			//entry.target = determineIllusion(cle.getTargetName(), cle.isTargetIllusion()); //target of buff
-			es.output(entry);
-			break;
-		case 3:
-			//lose buff/debuff
-			entry.type = "modifier_lost";
-			//TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
-			// log.info("{} {} loses {} buff/debuff", time, determineIllusion(cle.getTargetName(), cle.isTargetIllusion()), cle.getInflictorName() );
-			break;
-		case 4:
-			//kill
-			entry.unit = cle.getSourceName(); //source of damage (a hero)
-			entry.key = determineIllusion(cle.getTargetName(), cle.isTargetIllusion());
-			entry.target_source = cle.getTargetSourceName();
-			entry.target_hero = cle.isTargetHero();
-			entry.target_illusion = cle.isTargetIllusion();
-			entry.type = "kills";
-			es.output(entry);
-			break;
-		case 5:
-			//ability use
-			entry.unit = cle.getAttackerName();
-			entry.key = translate(cle.getInflictorName());
-			entry.type = "ability_uses";
-			es.output(entry);
-			break;
-		case 6:
-			//item use
-			entry.unit = cle.getAttackerName();
-			entry.key = translate(cle.getInflictorName());
-			entry.type = "item_uses";
-			es.output(entry);
-			break;
-		case 8:
-			//gold gain/loss
-			entry.unit = cle.getTargetName();
-			entry.key = String.valueOf(cle.getGoldReason());
-			entry.value = cle.getValue();
-			entry.type = "gold_reasons";
-			es.output(entry);
-			break;
-		case 9:
-			//state
-			//System.err.println(cle.getValue());
+		}
+
+		if (cle.getType()==9) {
+			//emit game state change ("PLAYING, POST_GAME, etc.")
+			//used to compute game zero time so we can display accurate timestamps
+			Entry entry = new Entry(time);
 			//if the value is out of bounds, just make it the value itself
-			String state =  GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue()-1);
-			entry.key = state;
-			entry.value = Integer.valueOf(time);
-			entry.type = "state";
-			es.output(entry);
-			break;
-		case 10:
-			//xp gain
-			entry.unit = cle.getTargetName();
-			entry.key = String.valueOf(cle.getXpReason());
-			entry.value = cle.getValue();
-			entry.type = "xp_reasons";
-			es.output(entry);
-			break;
-		case 11:
-			//purchase
-			entry.unit = cle.getTargetName();
-			entry.key = translate(cle.getValueName());
-			entry.type = "purchase";
-			es.output(entry);
-			break;
-		case 12:
-			//buyback
-			entry.slot = cle.getValue();
-			entry.type = "buyback_log";
-			es.output(entry);
-			break;
-		case 13:
-			//TODO only seems to trigger for axe spins
-			entry.type = "ability_trigger";
-			entry.unit = cle.getAttackerName(); //unit triggered on?
-			entry.key = cle.getInflictorName();
-			//entry.unit = determineIllusion(cle.getTargetName(), cle.isTargetIllusion()); //triggering unit?
-			//es.output(entry);
-			break;
-		case 14:
-			//player stats
-			//TODO: don't really know what this does, following fields seem to be populated
-			//attackername
-			//targetname
-			//targetsourcename
-			//value (1-15)
-			//System.err.println(cle);
-			entry.type = "player_stats";
-			entry.unit = cle.getAttackerName();
-			entry.key = cle.getTargetName();
-			entry.value = cle.getValue();
-			//es.output(entry);
-			break;
-		case 15:
-			//multikill
-			//System.err.println(cle);
-			entry.type = "multi_kills";
-			entry.unit = cle.getAttackerName();
-			entry.key = String.valueOf(cle.getValue());
-			es.output(entry);
-			break;
-		case 16:
-			//killstreak
-			//System.err.println(cle);
-			entry.type = "kill_streaks";
-			entry.unit = cle.getAttackerName();
-			entry.key = String.valueOf(cle.getValue());
-			es.output(entry);
-			break;
-		case 17:
-			//team building kill
-			//System.err.println(cle);
-			entry.type = "team_building_kill";
-			entry.unit = cle.getAttackerName();
-			//0 is other?
-			//1 is tower?
-			//2 is rax?
-			//3 is ancient
-			//this is only really useful if we can get WHICH tower/rax was killed
-			entry.key = String.valueOf(cle.getValue());
-			//es.output(entry);
-			break;
-		case 18:
-			//first blood
-			entry.type="first_blood";
-			//time, involved players?
-			break;
-		case 19:
-			//modifier refresh
-			entry.type="modifier_refresh";
-			break;
-		default:
-			System.err.println(cle);
-			break;
+            String state = GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue() - 1);
+            entry.key = state;
+            entry.type = "state";
+            es.output(entry);
 		}
 	}
 
 
-	@UsesEntities
-	@OnTickStart
+	//@UsesEntities
+	//@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
@@ -542,19 +412,6 @@ public class Main {
 			nextInterval += INTERVAL;
 		}
 	}
-
-    private String translate(String in) {
-        if (in!=null){
-            if (in.startsWith("item_")){
-                in=in.substring("item_".length());
-            }
-        }
-        return in;
-    }
-    
-    private String determineIllusion(String in, boolean illusion){
-    	return (illusion ? "illusion_" : "") + in;
-    }
         
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();

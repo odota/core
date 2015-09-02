@@ -102,6 +102,7 @@ function runParse(data, cb) {
     //these events are generally not pushed to event buffer (except hero_log)
     var streamTypes = {
         "state": function(e) {
+            //capture the replay time at which the game clock was 0:00
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
@@ -142,37 +143,247 @@ function runParse(data, cb) {
         "hero_log": function(e) {
             populate(e);
         },
-        "gold_reasons": function(e) {
-            if (!constants.gold_reasons[e.key]) {
-                //new gold reason
-                //reason 8=cheat?  shouldn't occur in pub games
-                console.log(e);
+        "combat_log": function(e) {
+            //convert subtype to integer
+            switch (Number(e.subtype)) {
+                case 0:
+                    //damage
+                    e.unit = e.sourcename; //source of damage (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    //count damage dealt to unit
+                    e.type = "damage";
+                    getSlot(e);
+                    //check if this damage happened to a real hero
+                    if (e.targethero && !e.targetillusion) {
+                        //reverse and count as damage taken (see comment for reversed kill)
+                        var r = {
+                            time: e.time,
+                            unit: e.key,
+                            key: e.unit,
+                            value: e.value,
+                            type: "damage_taken"
+                        };
+                        getSlot(r);
+                        //count a hit on a real hero with this inflictor
+                        var h = {
+                            time: e.time,
+                            unit: e.unit,
+                            key: e.inflictor,
+                            type: "hero_hits"
+                        };
+                        getSlot(h);
+                        //don't count self-damage for the following
+                        if (e.key !== e.unit) {
+                            //count damage dealt to a real hero with this inflictor
+                            var inf = {
+                                type: "damage_inflictor",
+                                time: e.time,
+                                unit: e.unit,
+                                key: e.inflictor,
+                                value: e.value
+                            };
+                            getSlot(inf);
+                            //biggest hit on a hero
+                            var m = {
+                                type: "max_hero_hit",
+                                time: e.time,
+                                max: true,
+                                inflictor: e.inflictor,
+                                unit: e.unit,
+                                key: e.key,
+                                value: e.value
+                            };
+                            getSlot(m);
+                        }
+                    }
+                    break;
+                case 1:
+                    //healing
+                    e.unit = e.sourcename; //source of healing (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    e.type = "healing";
+                    getSlot(e);
+                    break;
+                case 2:
+                    //gain buff/debuff
+                    e.unit = e.attackername; //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
+                    e.key = translate(e.inflictor); //the buff
+                    //e.targetname is target of buff (possibly illusion)
+                    e.type = "modifier_applied";
+                    getSlot(e);
+                    break;
+                case 3:
+                    //lose buff/debuff
+                    //TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
+                    //e.targetname is unit losing buff (possibly illusion)
+                    //e.inflictor is name of buff
+                    e.type = "modifier_lost";
+                    break;
+                case 4:
+                    //kill
+                    e.unit = e.sourcename; //killer (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    //code to log objectives via combat log, we currently do it with objectives (chat events)
+                    // var logs = ["_tower", "_rax", "_fort", "_roshan"];
+                    // var isObjective = logs.some(function(s) {
+                    //     return (e.key.indexOf(s) !== -1 && !e.target_illusion);
+                    // });
+                    // if (isObjective) {
+                    //     //push a copy to objectives
+                    //     parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    // }
+                    //count kill by this unit
+                    e.type = "kills";
+                    getSlot(e);
+                    //killed unit was a real hero
+                    if (e.targethero && !e.targetillusion) {
+                        //log this hero kill
+                        e.type = "kills_log";
+                        populate(e);
+                        //reverse and count as killed by
+                        //if the killed unit isn't a hero, we don't care about killed_by
+                        var r = {
+                            time: e.time,
+                            unit: e.key,
+                            key: e.unit,
+                            type: "killed_by"
+                        };
+                        getSlot(r);
+                        //check teamfight state
+                        curr_teamfight = curr_teamfight || {
+                            start: e.time - teamfight_cooldown,
+                            end: null,
+                            last_death: e.time,
+                            deaths: 0,
+                            players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
+                                return {
+                                    deaths_pos: {},
+                                    ability_uses: {},
+                                    item_uses: {},
+                                    kills: {},
+                                    deaths: 0,
+                                    buybacks: 0,
+                                    damage: 0,
+                                    gold_delta: 0,
+                                    xp_delta: 0
+                                };
+                            })
+                        };
+                        //update the last_death time of the current fight
+                        curr_teamfight.last_death = e.time;
+                        curr_teamfight.deaths += 1;
+                    }
+                    break;
+                case 5:
+                    //ability use
+                    e.unit = e.attackername;
+                    e.key = translate(e.inflictor);
+                    e.type = "ability_uses";
+                    getSlot(e);
+                    break;
+                case 6:
+                    //item use
+                    e.unit = e.attackername;
+                    e.key = translate(e.inflictor);
+                    e.type = "item_uses";
+                    getSlot(e);
+                    break;
+                case 8:
+                    //gold gain/loss
+                    e.unit = e.targetname;
+                    e.key = e.gold_reason;
+                    //gold_reason=8 is cheats, not added to constants
+                    e.type = "gold_reasons";
+                    getSlot(e);
+                    break;
+                case 9:
+                    //state
+                    //we don't use this here since we need to capture it on the stream to detect game_zero
+                    e.type = "state";
+                    break;
+                case 10:
+                    //xp gain
+                    e.unit = e.targetname;
+                    e.key = e.xp_reason;
+                    e.type = "xp_reasons";
+                    getSlot(e);
+                    break;
+                case 11:
+                    //purchase
+                    e.unit = e.targetname;
+                    e.key = translate(e.valuename);
+                    e.type = "purchase";
+                    getSlot(e);
+                    //don't include recipes in purchase logs
+                    if (e.key.indexOf("recipe_") !== 0) {
+                        e.type = "purchase_log";
+                        getSlot(e);
+                    }
+                    break;
+                case 12:
+                    //buyback
+                    e.slot = e.value; //player slot that bought back
+                    e.type = "buyback_log";
+                    getSlot(e);
+                    break;
+                case 13:
+                    //only seems to happen for axe spins
+                    e.type = "ability_trigger";
+                    //e.attackername //unit triggered on?
+                    //e.key = e.inflictor; //ability triggered?
+                    //e.unit = determineIllusion(e.targetname, e.targetillusion); //unit that triggered the skill
+                    break;
+                case 14:
+                    //player stats
+                    //TODO: don't really know what this does, following fields seem to be populated
+                    //attackername
+                    //targetname
+                    //targetsourcename
+                    //value (1-15)
+                    e.type = "player_stats";
+                    e.unit = e.attackername;
+                    e.key = e.targetname;
+                    break;
+                case 15:
+                    //multikill
+                    e.unit = e.attackername;
+                    e.key = e.value;
+                    e.type = "multi_kills";
+                    getSlot(e);
+                    break;
+                case 16:
+                    //killstreak
+                    e.unit = e.attackername;
+                    e.key = e.value;
+                    e.type = "kill_streaks";
+                    getSlot(e);
+                    break;
+                case 17:
+                    //team building kill
+                    //System.err.println(cle);
+                    e.type = "team_building_kill";
+                    e.unit = e.attackername; //unit that killed the building
+                    //e.value, this is only really useful if we can get WHICH tower/rax was killed
+                    //0 is other?
+                    //1 is tower?
+                    //2 is rax?
+                    //3 is ancient?
+                    break;
+                case 18:
+                    //first blood
+                    e.type = "first_blood";
+                    //time, involved players?
+                    break;
+                case 19:
+                    //modifier refresh
+                    e.type = "modifier_refresh";
+                    //no idea what this means
+                    break;
+                default:
+                    console.log(e);
+                    break;
             }
-            getSlot(e);
         },
-        "xp_reasons": function(e) {
-            if (!constants.xp_reasons[e.key]) {
-                //new xp reason
-                console.log(e);
-            }
-            getSlot(e);
-        },
-        "purchase": function(e) {
-            getSlot(e);
-            if (e.key.indexOf("recipe_") === -1) {
-                //don't include recipes in purchase logs
-                e.type = "purchase_log";
-                populate(e);
-            }
-        },
-        "modifier_applied": getSlot,
-        "modifier_lost": getSlot,
-        "healing": getSlot,
-        "ability_trigger": getSlot,
-        "item_uses": getSlot,
-        "ability_uses": getSlot,
-        "kill_streaks": getSlot,
-        "multi_kills": getSlot,
         "clicks": function(e) {
             //just 0 (other) the key for now since we dont know what the order_types are
             e.key = 0;
@@ -212,106 +423,6 @@ function runParse(data, cb) {
                 console.log(e);
             }
         },
-        "kills": function(e) {
-            /*
-            //log objectives via combat log
-            var logs = ["_tower", "_rax", "_fort", "_roshan"];
-            var isObjective = logs.some(function(s) {
-                return (e.key.indexOf(s) !== -1 && !e.target_illusion);
-            });
-            if (isObjective) {
-                //push a copy to objectives
-                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
-            }
-            */
-            //count kill by this unit
-            getSlot(e);
-            if (e.target_hero && !e.target_illusion) {
-                //log this hero kill
-                e.type = "kills_log";
-                populate(e);
-                //reverse and count as killed by
-                //if the killed unit isn't a hero, we don't care about killed_by
-                var r = {
-                    time: e.time,
-                    unit: e.key,
-                    key: e.unit,
-                    type: "killed_by"
-                };
-                getSlot(r);
-                //check teamfight state
-                curr_teamfight = curr_teamfight || {
-                    start: e.time - teamfight_cooldown,
-                    end: null,
-                    last_death: e.time,
-                    deaths: 0,
-                    players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
-                        return {
-                            deaths_pos: {},
-                            ability_uses: {},
-                            item_uses: {},
-                            kills: {},
-                            deaths: 0,
-                            buybacks: 0,
-                            damage: 0,
-                            gold_delta: 0,
-                            xp_delta: 0
-                        };
-                    })
-                };
-                //update the last_death time of the current fight
-                curr_teamfight.last_death = e.time;
-                curr_teamfight.deaths += 1;
-            }
-        },
-        "damage": function(e) {
-            //count damage dealt to unit
-            getSlot(e);
-            //check if this damage happened to a real hero
-            if (e.target_hero && !e.target_illusion) {
-                //reverse and count as damage taken (see comment for reversed kill)
-                var r = {
-                    time: e.time,
-                    unit: e.key,
-                    key: e.unit,
-                    value: e.value,
-                    type: "damage_taken"
-                };
-                getSlot(r);
-                //count a hit on a real hero with this inflictor
-                var h = {
-                    time: e.time,
-                    unit: e.unit,
-                    key: e.inflictor,
-                    type: "hero_hits"
-                };
-                getSlot(h);
-                //don't count self-damage for the following
-                if (e.key !== e.unit) {
-                    //count damage dealt to a real hero with this inflictor
-                    var inf = {
-                        type: "damage_inflictor",
-                        time: e.time,
-                        unit: e.unit,
-                        key: e.inflictor,
-                        value: e.value
-                    };
-                    getSlot(inf);
-                    //biggest hit on a hero
-                    var m = {
-                        type: "max_hero_hit",
-                        time: e.time,
-                        max: true,
-                        inflictor: e.inflictor,
-                        unit: e.unit,
-                        key: e.key,
-                        value: e.value
-                    };
-                    getSlot(m);
-                }
-            }
-        },
-        "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
             e.slot = name_to_slot[e.unit];
             //push a copy to chat
@@ -470,7 +581,7 @@ function runParse(data, cb) {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
-            //we can only do this once we have a complete event buffer since the game start time is sent at some point in the stream
+            //we can only do this once we have a complete event buffer since the game start time (game_zero) is sent at some point in the stream
             e.time -= game_zero;
             types[e.type](e);
         }
@@ -723,6 +834,19 @@ function runParse(data, cb) {
                 }
             }
         }
+    }
+    //strips off "item_" from strings
+    function translate(input) {
+        if (input != null) {
+            if (input.indexOf("item_") === 0) {
+                input = input.slice(5);
+            }
+        }
+        return input;
+    }
+    //prepends illusion_ to string if illusion
+    function computeIllusionString(input, isIllusion) {
+        return (isIllusion ? "illusion_" : "") + input;
     }
 
     function getSlot(e) {

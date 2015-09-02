@@ -9,17 +9,20 @@ public class Entry {
     public String key;
     public Integer value;
     public Integer slot;
-    public String attacker;
-    public String target;
-    public String attacker_source;
-    public String target_source;
+    //combat log fields
+    public String attackername;
+    public String targetname;
+    public String sourcename;
+    public String targetsourcename;
+    public Boolean attackerhero;
+    public Boolean targethero;
+    public Boolean attackerillusion;
+    public Boolean targetillusion;
     public String inflictor;
     public Integer gold_reason;
     public Integer xp_reason;
-    public Boolean target_hero;
-    public Boolean attacker_hero;
-    public Boolean target_illusion;
-    public Boolean attacker_illusion;
+    public String valuename;
+    //entity fields
     public Integer gold;
     public Integer lh;
     public Integer xp;
