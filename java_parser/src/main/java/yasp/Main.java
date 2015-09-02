@@ -290,8 +290,8 @@ public class Main {
 	}
 
 
-	//@UsesEntities
-	//@OnTickStart
+	@UsesEntities
+	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
