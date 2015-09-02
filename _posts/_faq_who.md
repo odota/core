@@ -12,7 +12,8 @@ Development began in August 2014, with a public release in January 2015.
 <div>
 <img src="https://avatars2.githubusercontent.com/u/3134520?v=3&s=150"/>
 </div>
-###Howard Chung:
+Howard Chung:
+----
 * [howardchung.net](http://howardchung.net)
 * [/u/suuuncon](http://reddit.com/user/suuuncon)
 * [Player Profile](/players/88367253)
@@ -26,7 +27,8 @@ Howard works on the replay parsing/backend design, making sure the system can sc
 <div>
 <img src="https://avatars3.githubusercontent.com/u/3838552?v=3&s=150"/>
 </div>
-###Albert Cui:
+Albert Cui:
+----
 * [albertcui.com](http://albertcui.com)
 * [/u/Triple_A](http://reddit.com/user/Triple_A)
 
@@ -35,7 +37,8 @@ Albert came up with the original idea for the site and manages the server deploy
 <div>
 <img src="https://avatars1.githubusercontent.com/u/9388670?v=3&s=150"/>
 </div>
-###Nicholas Hanson-Holtry:
+Nicholas Hanson-Holtry:
+----
 * [/u/waterandshade](http://reddit.com/user/waterandshade)
 
 Nick developed the Kill Streaks/Multi-Kills feature under the teamfights tab.
