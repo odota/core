@@ -9,6 +9,9 @@ public class Entry {
     public String key;
     public Integer value;
     public Integer slot;
+    //chat event fields
+    public Integer player1;
+    public Integer player2;
     //combat log fields
     public String attackername;
     public String targetname;

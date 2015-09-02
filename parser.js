@@ -395,32 +395,81 @@ function runParse(data, cb) {
             getSlot(e);
         },
         "chat_event": function(e) {
-            if (e.subtype === "CHAT_MESSAGE_RUNE_PICKUP") {
-                //player
-                e.type = "runes";
-                populate(e);
-            }
-            else if (e.subtype === "CHAT_MESSAGE_RUNE_BOTTLE") {
-                //player, bottled rune
-            }
-            else if (e.subtype === "CHAT_MESSAGE_HERO_KILL") {
-                //player, assisting players
-            }
-            else if (e.subtype === "CHAT_MESSAGE_GLYPH_USED") {
-                //team glyph
-            }
-            else if (e.subtype === "CHAT_MESSAGE_PAUSED") {
-                //player paused
-            }
-            else if (e.subtype === "CHAT_MESSAGE_FIRSTBLOOD" || e.subtype === "CHAT_MESSAGE_TOWER_DENY" || e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_AEGIS_STOLEN" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
-                //tower (player/team)
-                //barracks (player)
-                //aegis (player)
-                //roshan (team)
-                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
-            }
-            else {
-                console.log(e);
+            switch (e.subtype) {
+                case "CHAT_MESSAGE_RUNE_PICKUP":
+                    e.type = "runes";
+                    e.slot = e.player1;
+                    e.key = e.value.toString();
+                    populate(e);
+                    break;
+                case "CHAT_MESSAGE_RUNE_BOTTLE":
+                    //not tracking rune bottling atm
+                    break;
+                case "CHAT_MESSAGE_HERO_KILL":
+                    //player, assisting players
+                    //player2 killed player 1
+                    //subsequent players assisted
+                    //still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
+                    e.type = e.subtype;
+                    e.slot = e.player2;
+                    e.key = e.player1.toString();
+                    //currently disabled in favor of combat log kills
+                    //populate(e);
+                    break;
+                case "CHAT_MESSAGE_GLYPH_USED":
+                    //team glyph
+                    //player1 = team that used glyph (2/3, or 0/1?)
+                    e.team = e.player1;
+                    break;
+                case "CHAT_MESSAGE_PAUSED":
+                    e.slot = e.player1;
+                    //player1 paused
+                    break;
+                case "CHAT_MESSAGE_TOWER_KILL":
+                case "CHAT_MESSAGE_TOWER_DENY":
+                    //tower (player/team)
+                    //player1 = slot of player who killed tower (-1 if nonplayer)
+                    //value (2/3 radiant/dire killed tower, recently 0/1?)
+                    e.team = e.value;
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_BARRACKS_KILL":
+                    //barracks (player)
+                    //value id of barracks based on power of 2?
+                    //Barracks can always be deduced 
+                    //They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
+                    //so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
+                    e.key = e.value.toString();
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_FIRSTBLOOD":
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_AEGIS":
+                case "CHAT_MESSAGE_AEGIS_STOLEN":
+                case "CHAT_MESSAGE_AEGIS_DENIED":
+                    //aegis (player)
+                    //player1 = slot who picked up/denied/stole aegis
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_ROSHAN_KILL":
+                    //player1 = team that killed roshan? (2/3)
+                    e.team = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                    //case CHAT_MESSAGE_UNPAUSED = 36;
+                    //case CHAT_MESSAGE_COURIER_LOST = 10;
+                    //case CHAT_MESSAGE_COURIER_RESPAWNED = 11;
+                    //case "CHAT_MESSAGE_SUPER_CREEPS"
+                    //case "CHAT_MESSAGE_HERO_DENY"
+                    //case "CHAT_MESSAGE_STREAK_KILL"
+                    //currently using combat log buyback
+                    //case "CHAT_MESSAGE_BUYBACK"
+                default:
+                    console.log(e);
             }
         },
         "chat": function getChatSlot(e) {

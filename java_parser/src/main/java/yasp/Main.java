@@ -111,80 +111,10 @@ public class Main {
 		Entry entry = new Entry(time);
 		entry.type = "chat_event";
 		entry.subtype = type;
-		if (type.equals("CHAT_MESSAGE_HERO_KILL")){
-			//player2 killed player 1
-			//subsequent players assisted
-			//still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
-			entry.slot=player2;
-			entry.key=String.valueOf(player1);
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_FIRSTBLOOD")){
-			entry.slot = player1;
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_TOWER_KILL") || type.equals("CHAT_MESSAGE_TOWER_DENY")){
-			entry.team = value;
-			entry.slot = player1;
-			es.output(entry);
-			//value (2/3 radiant/dire killed tower, recently 0/1?)
-			//player1 = slot of player who killed tower (-1 if nonplayer)
-			//player/unit killed tower, but don't know which tower
-		}
-		else if (type.equals("CHAT_MESSAGE_ROSHAN_KILL")){
-			entry.team = player1;
-			//player1 = team that killed roshan? (2/3)
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_BARRACKS_KILL")){
-			//value id of barracks based on power of 2?
-			/*
-			Barracks can always be deduced 
-			They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
-			so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
-			*/
-			entry.key = String.valueOf(value);
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_AEGIS") || type.equals("CHAT_MESSAGE_AEGIS_STOLEN")){
-			entry.slot = player1;
-			//player1 = slot who picked up/denied/stole aegis
-			es.output(entry);
-		}
-		//CHAT_MESSAGE_DENIED_AEGIS = 51;
-		else if (type.equals("CHAT_MESSAGE_GLYPH_USED")){
-			entry.team = player1;
-			//player1 = team that used glyph (2/3)
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_PAUSED")){
-			entry.slot = player1;
-			//player1 = slot that paused
-			es.output(entry);
-		}
-		//CHAT_MESSAGE_UNPAUSED = 36;
-		else if (type.equals("CHAT_MESSAGE_RUNE_PICKUP") || type.equals("CHAT_MESSAGE_RUNE_BOTTLE")){
-			entry.slot=player1;
-			entry.key=String.valueOf(value);
-			es.output(entry);
-		}
-		else if (type.equals("CHAT_MESSAGE_BUYBACK")){
-			//currently using combat log buyback
-			//System.err.format("%s,%s%n", time, u);
-		}
-		else if (type.equals("CHAT_MESSAGE_SUPER_CREEPS")){
-		}
-		else if (type.equals("CHAT_MESSAGE_HERO_DENY")){
-		}
-		else if (type.equals("CHAT_MESSAGE_STREAK_KILL")){
-		}
-		/*
-		CHAT_MESSAGE_COURIER_LOST = 10;
-		CHAT_MESSAGE_COURIER_RESPAWNED = 11;
-		*/
-		else{
-			//System.err.println(message);
-		}
+		entry.player1 = player1;
+		entry.player2 = player2;
+		entry.value = value;
+		es.output(entry);
 	}
 	
 	@OnMessage(CUserMsg_SayText2.class)
@@ -290,8 +220,8 @@ public class Main {
 	}
 
 
-	@UsesEntities
-	@OnTickStart
+	//@UsesEntities
+	//@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
