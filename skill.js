@@ -31,7 +31,7 @@ function scanSkill() {
         getPageData(start, object, cb);
     }, function(err) {
         console.log(err);
-        scanSkill();
+        return scanSkill();
     });
 }
 
