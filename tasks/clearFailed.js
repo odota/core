@@ -10,14 +10,12 @@ module.exports = function(cb) {
         async.eachSeries(ids, function(id, cb) {
             kue.Job.get(id, function(err, job) {
                 if (err) {
+                    console.log(err);
+                }
+                job.remove(function(err) {
+                    console.log('removed ', job.id);
                     return cb(err);
-                }
-                else {
-                    job.remove(function(err) {
-                        console.log('removed ', job.id);
-                        return cb(err);
-                    });
-                }
+                });
             });
         }, function(err) {
             return cb(err);
