@@ -22,12 +22,12 @@ import skadistats.clarity.source.InputStreamSource;
 import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 //s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
+import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
-import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
-//import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
-//import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
-//import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
+import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
@@ -79,7 +79,7 @@ public class Main {
 	}
 
 	@OnMessage(CDOTAUserMsg_LocationPing.class)
-	public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message){
+	public void onPlayerPingS1(Context ctx, CDOTAUserMsg_LocationPing message){
 		Entry entry = new Entry(time);
 		entry.type = "pings";
 		Integer player1=(Integer)message.getPlayerId();
@@ -101,8 +101,33 @@ public class Main {
 		es.output(entry);
 	}
 	
+	@OnMessage(skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing.class)
+	public void onPlayerPingS2(Context ctx, skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing message){
+		Entry entry = new Entry(time);
+		entry.type = "pings";
+		Integer player1=(Integer)message.getPlayerId();
+		entry.slot = player1;
+		es.output(entry);
+	}
+	
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
-	public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
+	public void onChatEventS1(Context ctx, CDOTAUserMsg_ChatEvent message) {
+		CDOTAUserMsg_ChatEvent u = message;
+		Integer player1=(Integer)u.getPlayerid1();
+		Integer player2=(Integer)u.getPlayerid2();
+		Integer value = (Integer)u.getValue();
+		String type = String.valueOf(u.getType());
+		Entry entry = new Entry(time);
+		entry.type = "chat_event";
+		entry.subtype = type;
+		entry.player1 = player1;
+		entry.player2 = player2;
+		entry.value = value;
+		es.output(entry);
+	}
+	
+	@OnMessage(skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent.class)
+	public void onChatEventS2(Context ctx, skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent message) {
 		CDOTAUserMsg_ChatEvent u = message;
 		Integer player1=(Integer)u.getPlayerid1();
 		Integer player2=(Integer)u.getPlayerid2();
@@ -186,7 +211,8 @@ public class Main {
 			//create a new entry
 			Entry entry = new Entry(time);
 			entry.type="combat_log";
-			entry.subtype=String.valueOf(cle.getType());
+			//entry.subtype=String.valueOf(cle.getType());
+			entry.subtype = skadistats.clarity.wire.common.proto.DotaUsermessagesCommon.DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
 			//translate the fields using string tables if necessary (get*Name methods)
 			entry.attackername=cle.getAttackerName();
 			entry.targetname=cle.getTargetName();
@@ -201,14 +227,14 @@ public class Main {
 			entry.targetillusion=cle.isTargetIllusion();
 			entry.value=cle.getValue();
 			//value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-			if (cle.getType()==11){
+			if (entry.subtype=="DOTA_COMBATLOG_PURCHASE"){
 				entry.valuename=cle.getValueName();
 			}
 			es.output(entry);
 		}
 
-		if (cle.getType()==9) {
-			//emit game state change ("PLAYING, POST_GAME, etc.")
+		if (entry.subtype == "DOTA_COMBATLOG_GAME_STATE") {
+			//emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
 			//used to compute game zero time so we can display accurate timestamps
 			Entry entry = new Entry(time);
 			//if the value is out of bounds, just make it the value itself

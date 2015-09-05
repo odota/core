@@ -144,9 +144,8 @@ function runParse(data, cb) {
             populate(e);
         },
         "combat_log": function(e) {
-            //convert subtype to integer
-            switch (Number(e.subtype)) {
-                case 0:
+            switch (e.subtype) {
+                case "DOTA_COMBATLOG_DAMAGE":
                     //damage
                     e.unit = e.sourcename; //source of damage (a hero)
                     e.key = computeIllusionString(e.targetname, e.targetillusion);
@@ -197,14 +196,14 @@ function runParse(data, cb) {
                         }
                     }
                     break;
-                case 1:
+                case "DOTA_COMBATLOG_HEAL":
                     //healing
                     e.unit = e.sourcename; //source of healing (a hero)
                     e.key = computeIllusionString(e.targetname, e.targetillusion);
                     e.type = "healing";
                     getSlot(e);
                     break;
-                case 2:
+                case "DOTA_COMBATLOG_MODIFIER_ADD":
                     //gain buff/debuff
                     e.unit = e.attackername; //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
                     e.key = translate(e.inflictor); //the buff
@@ -212,14 +211,14 @@ function runParse(data, cb) {
                     e.type = "modifier_applied";
                     getSlot(e);
                     break;
-                case 3:
+                case "DOTA_COMBATLOG_MODIFIER_REMOVE":
                     //lose buff/debuff
                     //TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
                     //e.targetname is unit losing buff (possibly illusion)
                     //e.inflictor is name of buff
                     e.type = "modifier_lost";
                     break;
-                case 4:
+                case "DOTA_COMBATLOG_DEATH":
                     //kill
                     e.unit = e.sourcename; //killer (a hero)
                     e.key = computeIllusionString(e.targetname, e.targetillusion);
@@ -274,21 +273,25 @@ function runParse(data, cb) {
                         curr_teamfight.deaths += 1;
                     }
                     break;
-                case 5:
+                case "DOTA_COMBATLOG_ABILITY":
                     //ability use
                     e.unit = e.attackername;
                     e.key = translate(e.inflictor);
                     e.type = "ability_uses";
                     getSlot(e);
                     break;
-                case 6:
+                case "DOTA_COMBATLOG_ITEM":
                     //item use
                     e.unit = e.attackername;
                     e.key = translate(e.inflictor);
                     e.type = "item_uses";
                     getSlot(e);
                     break;
-                case 8:
+                case "DOTA_COMBATLOG_LOCATION":
+                    //TODO not in replay?
+                    console.log(e);
+                    break;
+                case "DOTA_COMBATLOG_GOLD":
                     //gold gain/loss
                     e.unit = e.targetname;
                     e.key = e.gold_reason;
@@ -296,19 +299,19 @@ function runParse(data, cb) {
                     e.type = "gold_reasons";
                     getSlot(e);
                     break;
-                case 9:
+                case "DOTA_COMBATLOG_GAME_STATE":
                     //state
                     //we don't use this here since we need to capture it on the stream to detect game_zero
                     e.type = "state";
                     break;
-                case 10:
+                case "DOTA_COMBATLOG_XP":
                     //xp gain
                     e.unit = e.targetname;
                     e.key = e.xp_reason;
                     e.type = "xp_reasons";
                     getSlot(e);
                     break;
-                case 11:
+                case "DOTA_COMBATLOG_PURCHASE":
                     //purchase
                     e.unit = e.targetname;
                     e.key = translate(e.valuename);
@@ -320,20 +323,20 @@ function runParse(data, cb) {
                         getSlot(e);
                     }
                     break;
-                case 12:
+                case "DOTA_COMBATLOG_BUYBACK":
                     //buyback
                     e.slot = e.value; //player slot that bought back
                     e.type = "buyback_log";
                     getSlot(e);
                     break;
-                case 13:
+                case "DOTA_COMBATLOG_ABILITY_TRIGGER":
                     //only seems to happen for axe spins
                     e.type = "ability_trigger";
                     //e.attackername //unit triggered on?
                     //e.key = e.inflictor; //ability triggered?
                     //e.unit = determineIllusion(e.targetname, e.targetillusion); //unit that triggered the skill
                     break;
-                case 14:
+                case "DOTA_COMBATLOG_PLAYERSTATS":
                     //player stats
                     //TODO: don't really know what this does, following fields seem to be populated
                     //attackername
@@ -344,21 +347,21 @@ function runParse(data, cb) {
                     e.unit = e.attackername;
                     e.key = e.targetname;
                     break;
-                case 15:
+                case "DOTA_COMBATLOG_MULTIKILL":
                     //multikill
                     e.unit = e.attackername;
                     e.key = e.value;
                     e.type = "multi_kills";
                     getSlot(e);
                     break;
-                case 16:
+                case "DOTA_COMBATLOG_KILLSTREAK":
                     //killstreak
                     e.unit = e.attackername;
                     e.key = e.value;
                     e.type = "kill_streaks";
                     getSlot(e);
                     break;
-                case 17:
+                case "DOTA_COMBATLOG_TEAM_BUILDING_KILL":
                     //team building kill
                     //System.err.println(cle);
                     e.type = "team_building_kill";
@@ -369,12 +372,12 @@ function runParse(data, cb) {
                     //2 is rax?
                     //3 is ancient?
                     break;
-                case 18:
+                case "DOTA_COMBATLOG_FIRST_BLOOD":
                     //first blood
                     e.type = "first_blood";
                     //time, involved players?
                     break;
-                case 19:
+                case "DOTA_COMBATLOG_MODIFIER_REFRESH":
                     //modifier refresh
                     e.type = "modifier_refresh";
                     //no idea what this means
