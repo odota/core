@@ -7,7 +7,6 @@ var utility = require('./utility');
 var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
-var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var constants = require('./constants.json');
@@ -39,13 +38,9 @@ else {
             shutdown = true;
             console.log(req.body);
             //run the deployment command
-            exec('npm run deploy-parser', function(error, stdout, stderr) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                if (error) {
-                    console.log('exec error: ' + error);
-                }
-                process.exit(0);
+            spawn('npm run deploy-parser', [], {
+                detached: true,
+                stdio: ['ignore', 'ignore', 'ignore']
             });
         }
         else {
