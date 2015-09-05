@@ -190,7 +190,7 @@ function getData(url, cb) {
             if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
                 //invalid response
                 if (url.noRetry) {
-                    return cb(err);
+                    return cb(err || "invalid response");
                 }
                 else {
                     logger.info("invalid response, retrying: %s", target);
@@ -207,7 +207,7 @@ function getData(url, cb) {
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
                     if (url.noRetry) {
-                        return cb(err);
+                        return cb(err || "invalid data");
                     }
                     else {
                         logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
