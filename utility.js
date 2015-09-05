@@ -189,8 +189,13 @@ function getData(url, cb) {
             }
             if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
                 //invalid response
-                logger.info("invalid response, retrying: %s", target);
-                return retry("invalid response");
+                if (url.noRetry) {
+                    return cb(err);
+                }
+                else {
+                    logger.info("invalid response, retrying: %s", target);
+                    return getData(url, cb);
+                }
             }
             else if (body.result) {
                 //steam api usually returns data with body.result, getplayersummaries has body.response
@@ -201,20 +206,16 @@ function getData(url, cb) {
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
-                    return retry("invalid data");
+                    if (url.noRetry) {
+                        return cb(err);
+                    }
+                    else {
+                        logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        return getData(url, cb);
+                    }
                 }
             }
             return cb(null, body);
-
-            function retry(err) {
-                if (url.noRetry) {
-                    return cb(err);
-                }
-                else {
-                    return getData(url, cb);
-                }
-            }
         });
     }, delay);
 }
