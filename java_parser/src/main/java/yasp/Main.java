@@ -18,16 +18,12 @@ import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
-//TODO support both s1 and s2?
 import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
-//s1 chat_event, spectatorplayerclick, locationping have same names as s2 class, but different package
-import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_ChatEvent;
-import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.s1.proto.DotaUsermessages.CDOTAUserMsg_SpectatorPlayerClick;
-import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent;
-import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
+import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_ChatEvent;
+import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_LocationPing;
+import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
+import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import java.util.List;
@@ -66,6 +62,7 @@ public class Main {
 		System.out.println(message.toString());
 	}
 	
+	/*
 	//@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
 	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
 		Entry entry = new Entry(time);
@@ -77,6 +74,7 @@ public class Main {
 		//theres also target_index
 		es.output(entry);
 	}
+	*/
 
 	@OnMessage(CDOTAUserMsg_LocationPing.class)
 	public void onPlayerPingS1(Context ctx, CDOTAUserMsg_LocationPing message){
@@ -101,33 +99,8 @@ public class Main {
 		es.output(entry);
 	}
 	
-	@OnMessage(skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing.class)
-	public void onPlayerPingS2(Context ctx, skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_LocationPing message){
-		Entry entry = new Entry(time);
-		entry.type = "pings";
-		Integer player1=(Integer)message.getPlayerId();
-		entry.slot = player1;
-		es.output(entry);
-	}
-	
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
 	public void onChatEventS1(Context ctx, CDOTAUserMsg_ChatEvent message) {
-		CDOTAUserMsg_ChatEvent u = message;
-		Integer player1=(Integer)u.getPlayerid1();
-		Integer player2=(Integer)u.getPlayerid2();
-		Integer value = (Integer)u.getValue();
-		String type = String.valueOf(u.getType());
-		Entry entry = new Entry(time);
-		entry.type = "chat_event";
-		entry.subtype = type;
-		entry.player1 = player1;
-		entry.player2 = player2;
-		entry.value = value;
-		es.output(entry);
-	}
-	
-	@OnMessage(skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent.class)
-	public void onChatEventS2(Context ctx, skadistats.clarity.wire.s2.proto.S2DotaUserMessages.CDOTAUserMsg_ChatEvent message) {
 		CDOTAUserMsg_ChatEvent u = message;
 		Integer player1=(Integer)u.getPlayerid1();
 		Integer player2=(Integer)u.getPlayerid2();
@@ -206,13 +179,13 @@ public class Main {
 		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
 		//sets global time to time in this combat log entry
 		time = Math.round(cle.getTimestamp());
-		
+		String type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
 		if (true){
 			//create a new entry
 			Entry entry = new Entry(time);
 			entry.type="combat_log";
 			//entry.subtype=String.valueOf(cle.getType());
-			entry.subtype = skadistats.clarity.wire.common.proto.DotaUsermessagesCommon.DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
+			entry.subtype = type;
 			//translate the fields using string tables if necessary (get*Name methods)
 			entry.attackername=cle.getAttackerName();
 			entry.targetname=cle.getTargetName();
@@ -227,13 +200,13 @@ public class Main {
 			entry.targetillusion=cle.isTargetIllusion();
 			entry.value=cle.getValue();
 			//value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-			if (entry.subtype=="DOTA_COMBATLOG_PURCHASE"){
+			if (type=="DOTA_COMBATLOG_PURCHASE"){
 				entry.valuename=cle.getValueName();
 			}
 			es.output(entry);
 		}
 
-		if (entry.subtype == "DOTA_COMBATLOG_GAME_STATE") {
+		if (type == "DOTA_COMBATLOG_GAME_STATE") {
 			//emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
 			//used to compute game zero time so we can display accurate timestamps
 			Entry entry = new Entry(time);
@@ -251,16 +224,16 @@ public class Main {
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
-		if (!grpInit){
-			//we can get the match id/gamemode at the beginning of a match
-			//dota_gamerules_data.m_iGameMode = 22
-			//dota_gamerules_data.m_unMatchID64 = 1193091757
-			//System.err.println(grp);
-			//this should be game clock time (pauses don't increment it)
-			timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
-			grpInit = true;
-		}
-        time = Math.round((float)grp.getState()[timeIdx]);
+			if (!grpInit){
+				//we can get the match id/gamemode at the beginning of a match
+				//dota_gamerules_data.m_iGameMode = 22
+				//dota_gamerules_data.m_unMatchID64 = 1193091757
+				//System.err.println(grp);
+				//this should be game clock time (pauses don't increment it)
+				timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
+				grpInit = true;
+			}
+	        time = Math.round((float)grp.getState()[timeIdx]);
 		}
 		if (time >= nextInterval){
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
@@ -276,11 +249,9 @@ public class Main {
 					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
 					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
 					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-					//TODO: slow data can be output to console, but not in replay?
-					//Integer slowIdx = ps.getDtClass().getPropertyIndex("m_fSlows.0000");
 					
 					//booleans to check at endgame
-					//Integer victoryIdx = ps.getDtClass().getPropertyIndex("m_bHasPredictedVictory.0000");
+					//m_bHasPredictedVictory.0000
 					//m_bVoiceChatBanned.0000
 					//m_bHasRandomed.0000
 					//m_bHasRepicked.0000
