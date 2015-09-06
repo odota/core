@@ -12,6 +12,7 @@ import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
 import skadistats.clarity.processor.entities.UsesEntities;
+import skadistats.clarity.processor.entities.OnEntityEntered;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.reader.OnTickEnd;
@@ -26,6 +27,7 @@ import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_Specta
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
+import skadistats.clarity.model.FieldPath;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -44,6 +46,7 @@ public class Main {
 	int numPlayers = 10;
 	EventStream es = new EventStream();
 	Set<Integer> seenEntities = new HashSet<Integer>();
+	/*
 	Integer lhIdx;
 	Integer xpIdx;
 	Integer goldIdx;
@@ -52,9 +55,10 @@ public class Main {
 	Integer handleIdx;
 	Integer nameIdx;
 	Integer steamIdx;
+	Integer timeIdx;
 	boolean initialized = false;
 	boolean grpInit = false;
-	Integer timeIdx;
+	*/
 
 	//@OnMessage(GeneratedMessage.class)
 	public void onMessage(Context ctx, GeneratedMessage message) {
@@ -77,7 +81,7 @@ public class Main {
 	*/
 
 	@OnMessage(CDOTAUserMsg_LocationPing.class)
-	public void onPlayerPingS1(Context ctx, CDOTAUserMsg_LocationPing message){
+	public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message){
 		Entry entry = new Entry(time);
 		entry.type = "pings";
 		Integer player1=(Integer)message.getPlayerId();
@@ -94,13 +98,12 @@ public class Main {
 		}
 		*/
 		//we could get the ping coordinates/type if we cared
-		//skadistats.clarity.wire.proto.DotaCommonmessages.CDOTAMsg_LocationPing getLocationPing();
 		//entry.key = String.valueOf(message.getOrderType());
 		es.output(entry);
 	}
 	
 	@OnMessage(CDOTAUserMsg_ChatEvent.class)
-	public void onChatEventS1(Context ctx, CDOTAUserMsg_ChatEvent message) {
+	public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
 		CDOTAUserMsg_ChatEvent u = message;
 		Integer player1=(Integer)u.getPlayerid1();
 		Integer player2=(Integer)u.getPlayerid2();
@@ -128,7 +131,6 @@ public class Main {
 	
 	@OnMessage(CUserMessageSayText2.class)
 	public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
-		System.err.println(message);
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getParam1());
 		entry.key =  String.valueOf(message.getParam2());
@@ -140,6 +142,17 @@ public class Main {
 	
 	@OnMessage(CDemoFileInfo.class)
 	public void onFileInfo(Context ctx, CDemoFileInfo message){
+		//test dump entity
+		int ind = 0;
+		while(ind<1000){
+			try{
+		System.err.println(ctx.getProcessor(Entities.class).getByIndex(ind).getDtClass().getDtName());
+			}
+			catch(Exception e){
+				System.err.println(e);
+			}
+		ind++;
+		}
 		//load epilogue
 		CDemoFileInfo info = message;
 		List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
@@ -177,7 +190,6 @@ public class Main {
 		//System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
 		//System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
 		//System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
-		//sets global time to time in this combat log entry
 		time = Math.round(cle.getTimestamp());
 		String type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
 		if (true){
@@ -203,7 +215,8 @@ public class Main {
 			if (type=="DOTA_COMBATLOG_PURCHASE"){
 				entry.valuename=cle.getValueName();
 			}
-			es.output(entry);
+			//TODO re-enable combat log when entities are debugged
+			//es.output(entry);
 		}
 
 		if (type == "DOTA_COMBATLOG_GAME_STATE") {
@@ -217,12 +230,59 @@ public class Main {
             es.output(entry);
 		}
 	}
-
+	
+	//@UsesEntities
+	//@OnEntityEntered
+	public void onEntityEntered(Context ctx, Entity e) {
+		System.err.println(e);
+		//CDOTA_Item_ObserverWard
+		//CDOTA_NPC_Observer_Ward_TrueSight
+		//inspect the neutralspawner entity?
+		//CDOTA_NeutralSpawner
+		//TODO check if incoming entity is a obs/sen ward
+		/*
+			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");
+			while (obs.hasNext()){
+				Entity e = obs.next();
+				Integer handle = e.getHandle();
+				if (!seenEntities.contains(handle)){
+					Entry entry = new Entry(time);
+					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
+					entry.type = "obs";
+					entry.key = Arrays.toString(pos);
+					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
+					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
+					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
+					//2/3 radiant/dire
+					//entry.team = e.getProperty("m_iTeamNum");
+					es.output(entry);
+					seenEntities.add(handle);
+				}
+			}
+			Iterator<Entity> sen = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward_TrueSight");
+			while (sen.hasNext()){
+				Entity e = sen.next();
+				Integer handle = e.getHandle();
+				if (!seenEntities.contains(handle)){
+					Entry entry = new Entry(time);
+					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
+					entry.type="sen";
+					entry.key = Arrays.toString(pos);
+					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
+					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
+					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
+					//entry.team = e.getProperty("m_iTeamNum");
+					es.output(entry);
+					seenEntities.add(handle);
+				}
+			}
+			*/
+	}
 
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
-		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
+		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
 		if (grp!=null){
 			/*
 			if (!grpInit){
@@ -236,11 +296,14 @@ public class Main {
 			}
 	        time = Math.round((float)grp.getState()[timeIdx]);
 	        */
-	        time = Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime"));
+	        System.err.println(grp);
+	        
+	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
 		}
 		if (time >= nextInterval){
-			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
+			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
 			if (pr!=null){
+				System.err.println(pr);
 				/*
 				if (!initialized) {
 					//dump playerresource for inspection
@@ -287,14 +350,13 @@ public class Main {
 					Long steamid = (Long)pr.getState()[steamIdx+i];
 					int handle = (Integer)pr.getState()[handleIdx+i];
 					*/
-					//TODO increment the 0000 at the end to iterate through the 10 players?
-					entry.gold=(Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
-					entry.lh=(Integer)pr.getProperty("m_iLastHitCount.0000");
-					entry.xp=(Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
-					entry.stuns=(Float)pr.getProperty("m_fStuns.0000");
-					Integer hero = (Integer)pr.getProperty("m_nSelectedHeroID.0000");
-					Long steamid = (Long)pr.getProperty("m_iPlayerSteamIDs.0000");
-					int handle = (Integer)pr.getProperty("m_iPlayerSteamIDs.0000");
+					entry.gold=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedGold", i);
+					entry.lh=(Integer)getEntityProperty(pr, "m_iLastHitCount", i);
+					entry.xp=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedXP", i);
+					entry.stuns=(Float)getEntityProperty(pr, "m_fStuns", i);
+					Integer hero = (Integer)getEntityProperty(pr, "m_nSelectedHeroID", i);
+					Long steamid = (Long)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
+					int handle = (Integer)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
 					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
 						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
@@ -308,53 +370,23 @@ public class Main {
 					//get the player's controlled hero's coordinates
 					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
 					if (e!=null){
-						entry.x=(Integer)e.getProperty("m_cellX");
-						entry.y=(Integer)e.getProperty("m_cellY");
+						entry.x=(Integer)getEntityProperty(e, "m_cellX", null);
+						entry.y=(Integer)getEntityProperty(e, "m_cellY", null);
 					}
 					es.output(entry);
-				}
-			}
-			//log any new wards placed
-			//TODO: deduplicate code
-			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");
-			while (obs.hasNext()){
-				Entity e = obs.next();
-				Integer handle = e.getHandle();
-				if (!seenEntities.contains(handle)){
-					Entry entry = new Entry(time);
-					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-					entry.type = "obs";
-					entry.key = Arrays.toString(pos);
-					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
-					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//2/3 radiant/dire
-					//entry.team = e.getProperty("m_iTeamNum");
-					es.output(entry);
-					seenEntities.add(handle);
-				}
-			}
-			Iterator<Entity> sen = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward_TrueSight");
-			while (sen.hasNext()){
-				Entity e = sen.next();
-				Integer handle = e.getHandle();
-				if (!seenEntities.contains(handle)){
-					Entry entry = new Entry(time);
-					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-					entry.type="sen";
-					entry.key = Arrays.toString(pos);
-					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
-					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//entry.team = e.getProperty("m_iTeamNum");
-					es.output(entry);
-					seenEntities.add(handle);
 				}
 			}
 			nextInterval += INTERVAL;
 		}
 	}
-        
+    
+    public Object getEntityProperty(Entity e, String property, Integer index){
+    	FieldPath fp = e.getDtClass().getFieldPathForName(property + (index == null ? "" : ".0000"));
+    	fp.path[0] += index == null ? 0 : index;
+        Object val = e.getPropertyForFieldPath(fp);
+		return val;
+    }
+    
 	public void run(String[] args) throws Exception {
 		long tStart = System.currentTimeMillis();
 		new SimpleRunner(new InputStreamSource(System.in)).runWith(this);
