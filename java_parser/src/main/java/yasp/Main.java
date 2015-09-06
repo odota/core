@@ -219,11 +219,12 @@ public class Main {
 	}
 
 
-	//@UsesEntities
-	//@OnTickStart
+	@UsesEntities
+	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("DT_DOTAGamerulesProxy");
 		if (grp!=null){
+			/*
 			if (!grpInit){
 				//we can get the match id/gamemode at the beginning of a match
 				//dota_gamerules_data.m_iGameMode = 22
@@ -234,10 +235,13 @@ public class Main {
 				grpInit = true;
 			}
 	        time = Math.round((float)grp.getState()[timeIdx]);
+	        */
+	        time = Math.round((float)grp.getProperty("dota_gamerules_data.m_fGameTime"));
 		}
 		if (time >= nextInterval){
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("DT_DOTA_PlayerResource");
 			if (pr!=null){
+				/*
 				if (!initialized) {
 					//dump playerresource for inspection
 					//System.err.println(pr);
@@ -269,28 +273,39 @@ public class Main {
 					//m_iRespawnSeconds.0000
 					initialized = true;
 				}
+				*/
 				for (int i = 0; i < numPlayers; i++) {
-					Integer hero = (Integer)pr.getState()[heroIdx+i];
-					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
-						//hero_to_slot.put(hero, i);
-						slot_to_hero.put(i, hero);
-						Entry entry = new Entry(time);
-						entry.type="hero_log";
-						entry.slot=i;
-						entry.key=String.valueOf(hero);
-						es.output(entry);
-					}
-				
 					Entry entry = new Entry(time);
 					entry.type = "interval";
 					entry.slot = i;
+					/*
 					entry.gold=(Integer)pr.getState()[goldIdx+i];
 					entry.lh=(Integer)pr.getState()[lhIdx+i];
 					entry.xp=(Integer)pr.getState()[xpIdx+i];
 					entry.stuns=(Float)pr.getState()[stunIdx+i];
+					Integer hero = (Integer)pr.getState()[heroIdx+i];
 					Long steamid = (Long)pr.getState()[steamIdx+i];
-					steamid_to_slot.put(steamid, i);
 					int handle = (Integer)pr.getState()[handleIdx+i];
+					*/
+					//TODO increment the 0000 at the end to iterate through the 10 players?
+					entry.gold=(Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
+					entry.lh=(Integer)pr.getProperty("m_iLastHitCount.0000");
+					entry.xp=(Integer)pr.getProperty("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
+					entry.stuns=(Float)pr.getProperty("m_fStuns.0000");
+					Integer hero = (Integer)pr.getProperty("m_nSelectedHeroID.0000");
+					Long steamid = (Long)pr.getProperty("m_iPlayerSteamIDs.0000");
+					int handle = (Integer)pr.getProperty("m_iPlayerSteamIDs.0000");
+					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
+						//hero_to_slot.put(hero, i);
+						slot_to_hero.put(i, hero);
+						Entry entry2 = new Entry(time);
+						entry2.type="hero_log";
+						entry2.slot=i;
+						entry2.key=String.valueOf(hero);
+						es.output(entry2);
+					}
+					steamid_to_slot.put(steamid, i);
+					//get the player's controlled hero's coordinates
 					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
 					if (e!=null){
 						entry.x=(Integer)e.getProperty("m_cellX");
