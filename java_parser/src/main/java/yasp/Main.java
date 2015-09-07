@@ -45,21 +45,8 @@ public class Main {
 	Integer time = 0;
 	int numPlayers = 10;
 	EventStream es = new EventStream();
-	Set<Integer> seenEntities = new HashSet<Integer>();
-	/*
-	Integer lhIdx;
-	Integer xpIdx;
-	Integer goldIdx;
-	Integer heroIdx;
-	Integer stunIdx;
-	Integer handleIdx;
-	Integer nameIdx;
-	Integer steamIdx;
-	Integer timeIdx;
-	boolean initialized = false;
-	boolean grpInit = false;
-	*/
-
+	//Set<Integer> seenEntities = new HashSet<Integer>();
+	
 	//@OnMessage(GeneratedMessage.class)
 	public void onMessage(Context ctx, GeneratedMessage message) {
 		System.err.println(message.getClass().getName());
@@ -143,6 +130,7 @@ public class Main {
 	@OnMessage(CDemoFileInfo.class)
 	public void onFileInfo(Context ctx, CDemoFileInfo message){
 		//test dump entity
+		/*
 		int ind = 0;
 		while(ind<1000){
 			try{
@@ -153,6 +141,7 @@ public class Main {
 			}
 		ind++;
 		}
+		*/
 		//load epilogue
 		CDemoFileInfo info = message;
 		List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
@@ -231,99 +220,65 @@ public class Main {
 		}
 	}
 	
-	//@UsesEntities
-	//@OnEntityEntered
+	@OnEntityEntered
 	public void onEntityEntered(Context ctx, Entity e) {
-		System.err.println(e);
-		//CDOTA_Item_ObserverWard
+		//CDOTA_NPC_Observer_Ward
 		//CDOTA_NPC_Observer_Ward_TrueSight
-		//inspect the neutralspawner entity?
-		//CDOTA_NeutralSpawner
-		//TODO check if incoming entity is a obs/sen ward
-		/*
-			Iterator<Entity> obs = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward");
-			while (obs.hasNext()){
-				Entity e = obs.next();
-				Integer handle = e.getHandle();
-				if (!seenEntities.contains(handle)){
-					Entry entry = new Entry(time);
-					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-					entry.type = "obs";
-					entry.key = Arrays.toString(pos);
-					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
-					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//2/3 radiant/dire
-					//entry.team = e.getProperty("m_iTeamNum");
-					es.output(entry);
-					seenEntities.add(handle);
-				}
-			}
-			Iterator<Entity> sen = ctx.getProcessor(Entities.class).getAllByDtName("DT_DOTA_NPC_Observer_Ward_TrueSight");
-			while (sen.hasNext()){
-				Entity e = sen.next();
-				Integer handle = e.getHandle();
-				if (!seenEntities.contains(handle)){
-					Entry entry = new Entry(time);
-					Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
-					entry.type="sen";
-					entry.key = Arrays.toString(pos);
-					Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
-					Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-					entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
-					//entry.team = e.getProperty("m_iTeamNum");
-					es.output(entry);
-					seenEntities.add(handle);
-				}
-			}
-			*/
+		//s1 "DT_DOTA_NPC_Observer_Ward"
+		//s1 "DT_DOTA_NPC_Observer_Ward_TrueSight"
+		boolean isObserver = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward");
+		boolean isSentry = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward_TrueSight");
+		if (isObserver || isSentry){
+			//TODO implement fully
+			//System.err.println(e);
+			Entry entry = new Entry(time);
+			//Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
+			entry.type = isObserver ? "obs" : "sen";
+			//entry.key = Arrays.toString(pos);
+			//Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
+			//Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
+			//entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
+			//2/3 radiant/dire
+			//entry.team = e.getProperty("m_iTeamNum");
+			es.output(entry);
+		}
 	}
 
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
+		//s1 DT_DOTAGameRulesProxy
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
 		if (grp!=null){
-			/*
-			if (!grpInit){
-				//we can get the match id/gamemode at the beginning of a match
-				//dota_gamerules_data.m_iGameMode = 22
-				//dota_gamerules_data.m_unMatchID64 = 1193091757
-				//System.err.println(grp);
-				//this should be game clock time (pauses don't increment it)
-				timeIdx = grp.getDtClass().getPropertyIndex("dota_gamerules_data.m_fGameTime");
-				grpInit = true;
-			}
-	        time = Math.round((float)grp.getState()[timeIdx]);
-	        */
-	        System.err.println(grp);
-	        
-	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
+	        //System.err.println(grp);
+	        //dota_gamerules_data.m_iGameMode = 22
+			//dota_gamerules_data.m_unMatchID64 = 1193091757
+	        //time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
 		}
 		if (time >= nextInterval){
+			//s1 DT_DOTA_PlayerResource
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
 			if (pr!=null){
-				System.err.println(pr);
-				/*
-				if (!initialized) {
-					//dump playerresource for inspection
-					//System.err.println(pr);
-					lhIdx = pr.getDtClass().getPropertyIndex("m_iLastHitCount.0000");
-					xpIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedXP.0000");
-					goldIdx = pr.getDtClass().getPropertyIndex("EndScoreAndSpectatorStats.m_iTotalEarnedGold.0000");
-					heroIdx = pr.getDtClass().getPropertyIndex("m_nSelectedHeroID.0000");
-					stunIdx = pr.getDtClass().getPropertyIndex("m_fStuns.0000");
-					handleIdx = pr.getDtClass().getPropertyIndex("m_hSelectedHero.0000");
-					nameIdx = pr.getDtClass().getPropertyIndex("m_iszPlayerNames.0000");
-					steamIdx = pr.getDtClass().getPropertyIndex("m_iPlayerSteamIDs.0000");
-					
+				//System.err.println(pr);
+									try{
+				for (int i = 0; i < numPlayers; i++) {
+					Entry entry = new Entry(time);
+					entry.type = "interval";
+					entry.slot = i;
+					entry.gold=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedGold", i);
+					entry.lh=(Integer)getEntityProperty(pr, "m_iLastHitCount", i);
+					entry.xp=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedXP", i);
+					entry.stuns=(Float)getEntityProperty(pr, "m_fStuns", i);
+					Integer hero = (Integer)getEntityProperty(pr, "m_nSelectedHeroID", i);
+					Long steamid = (Long)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
+					int handle = (Integer)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
 					//booleans to check at endgame
 					//m_bHasPredictedVictory.0000
 					//m_bVoiceChatBanned.0000
 					//m_bHasRandomed.0000
 					//m_bHasRepicked.0000
 					
-					//can do all these stats with each playerresource interval?
+					//can do all these stats with each playerresource interval for graphs?
 					//m_iKills.0000
 					//m_iAssists.0000
 					//m_iDeaths.0000
@@ -334,29 +289,7 @@ public class Main {
 					
 					//time dead, count number of intervals where this value is >0?
 					//m_iRespawnSeconds.0000
-					initialized = true;
-				}
-				*/
-				for (int i = 0; i < numPlayers; i++) {
-					Entry entry = new Entry(time);
-					entry.type = "interval";
-					entry.slot = i;
-					/*
-					entry.gold=(Integer)pr.getState()[goldIdx+i];
-					entry.lh=(Integer)pr.getState()[lhIdx+i];
-					entry.xp=(Integer)pr.getState()[xpIdx+i];
-					entry.stuns=(Float)pr.getState()[stunIdx+i];
-					Integer hero = (Integer)pr.getState()[heroIdx+i];
-					Long steamid = (Long)pr.getState()[steamIdx+i];
-					int handle = (Integer)pr.getState()[handleIdx+i];
-					*/
-					entry.gold=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedGold", i);
-					entry.lh=(Integer)getEntityProperty(pr, "m_iLastHitCount", i);
-					entry.xp=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedXP", i);
-					entry.stuns=(Float)getEntityProperty(pr, "m_fStuns", i);
-					Integer hero = (Integer)getEntityProperty(pr, "m_nSelectedHeroID", i);
-					Long steamid = (Long)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
-					int handle = (Integer)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
+					
 					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
 						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
@@ -375,6 +308,10 @@ public class Main {
 					}
 					es.output(entry);
 				}
+									}
+									catch(Exception e){
+										
+									}
 			}
 			nextInterval += INTERVAL;
 		}
@@ -384,7 +321,7 @@ public class Main {
     	FieldPath fp = e.getDtClass().getFieldPathForName(property + (index == null ? "" : ".0000"));
     	fp.path[0] += index == null ? 0 : index;
         Object val = e.getPropertyForFieldPath(fp);
-		return val;
+        return val;
     }
     
 	public void run(String[] args) throws Exception {
