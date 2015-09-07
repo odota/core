@@ -260,7 +260,6 @@ public class Main {
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
 			if (pr!=null){
 				//System.err.println(pr);
-									try{
 				for (int i = 0; i < numPlayers; i++) {
 					Entry entry = new Entry(time);
 					entry.type = "interval";
@@ -307,21 +306,17 @@ public class Main {
 						entry.y=(Integer)getEntityProperty(e, "m_cellY", null);
 					}
 					es.output(entry);
-				}
-									}
-									catch(Exception e){
-										
-									}
+
 			}
 			nextInterval += INTERVAL;
 		}
 	}
+	}
     
-    public Object getEntityProperty(Entity e, String property, Integer index){
+    public <T> T getEntityProperty(Entity e, String property, Integer index){
     	FieldPath fp = e.getDtClass().getFieldPathForName(property + (index == null ? "" : ".0000"));
     	fp.path[0] += index == null ? 0 : index;
-        Object val = e.getPropertyForFieldPath(fp);
-        return val;
+        return e.getPropertyForFieldPath(fp);
     }
     
 	public void run(String[] args) throws Exception {
