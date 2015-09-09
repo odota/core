@@ -224,20 +224,20 @@ public class Main {
 	public void onEntityEntered(Context ctx, Entity e) {
 		//CDOTA_NPC_Observer_Ward
 		//CDOTA_NPC_Observer_Ward_TrueSight
+		//TODO s1
 		//s1 "DT_DOTA_NPC_Observer_Ward"
 		//s1 "DT_DOTA_NPC_Observer_Ward_TrueSight"
 		boolean isObserver = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward");
 		boolean isSentry = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward_TrueSight");
-		if (isObserver || isSentry){
-			//TODO implement fully
+		if (isObserver || isSentry) {
 			//System.err.println(e);
 			Entry entry = new Entry(time);
-			//Integer[] pos = {(Integer)e.getProperty("m_cellX"),(Integer)e.getProperty("m_cellY")};
+			Integer[] pos = {(Integer)getEntityProperty(e, "m_cellX", null),(Integer)getEntityProperty(e, "m_cellY", null)};
 			entry.type = isObserver ? "obs" : "sen";
-			//entry.key = Arrays.toString(pos);
-			//Integer owner = (Integer)e.getProperty("m_hOwnerEntity");
-			//Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-			//entry.slot = ownerEntity!=null ? (Integer)ownerEntity.getProperty("m_iPlayerID") : null;
+			entry.key = Arrays.toString(pos);
+			Integer owner = (Integer)getEntityProperty(e, "m_hOwnerEntity", null);
+			Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
+			entry.slot = ownerEntity!=null ? (Integer)getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
 			//2/3 radiant/dire
 			//entry.team = e.getProperty("m_iTeamNum");
 			es.output(entry);
@@ -247,13 +247,14 @@ public class Main {
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
+		//TODO s1
 		//s1 DT_DOTAGameRulesProxy
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
 		if (grp!=null){
 	        //System.err.println(grp);
 	        //dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
-	        //time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
+	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
 		}
 		if (time >= nextInterval){
 			//s1 DT_DOTA_PlayerResource
