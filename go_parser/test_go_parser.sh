@@ -1,0 +1,1 @@
+GOPATH=~/go go run `dirname "$0"`/parser.go < testfiles/1698148651_source2.dem

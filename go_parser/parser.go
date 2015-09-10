@@ -1,0 +1,98 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"io/ioutil"
+	"encoding/json"
+	"github.com/dotabuff/manta"
+	"github.com/dotabuff/manta/dota"
+)
+
+func main() {
+    	bytes, err := ioutil.ReadAll(os.Stdin)
+    	parser, err :=manta.NewParser(bytes)
+		//parser, err := manta.NewParserFromFile(arg)
+		if err != nil {
+			panic(err)
+		}
+
+//things we need
+//entities for player interval data
+//entities for wards
+//every second, check for new wards
+//maintain a hash table of seen ward handles, output if we see a new ward
+//output playerresource entity state (gold/lh/xp/x/y)
+//CDOTAUserMsg_LocationPing for pings
+//CDOTAUserMsg_ChatEvent for chat events, objectives
+//CDemoFileInfo for epilogue, player names
+//get final player interval data for stuns
+
+//following is currently done by parser but could be done in JS
+//illusion_ should be prepended if illusion
+//item_ should be removed from item key names
+		count := 0
+		//chat
+		/*
+		parser.Callbacks.OnCUserMessageSayText2(func(m *dota.CUserMessageSayText2) error {
+			fmt.Printf("(%s) | %s: %s\n", m.GetMessagename(), m.GetParam1(), m.GetParam2())
+			return nil
+		})
+		*/
+		/*
+		parser.Callbacks.OnCDemoFileInfo(func(m *dota.CDemoFileInfo) error {
+			fmt.Printf("%s\n", m);
+			return nil
+		})
+		*/
+		
+		parser.Callbacks.OnAny(func(m interface {}) error {
+			count += 1;
+			return nil
+		})
+		
+		parser.Callbacks.OnCMsgSource1LegacyGameEventList(func(m *dota.CMsgSource1LegacyGameEventList) error {
+			//fmt.Printf("%s\n", m)
+			return nil
+		})
+		
+		parser.Callbacks.OnCDemoStop(func(m *dota.CDemoStop) error {
+			b, err := json.Marshal(nil)
+			if err!=nil {panic(err)}
+			stringTable, ok := parser.StringTables.GetTableByName("CombatLogNames")
+			if !ok {panic(!ok)}
+			fmt.Printf("%s\n", stringTable.GetIndex())
+			fmt.Printf("%s\n", b)
+
+			return nil
+		})
+		
+		parser.Callbacks.OnCDemoStringTables(func(m *dota.CDemoStringTables) error {
+			return nil
+		})
+		
+		/*
+		parser.Callbacks.OnCDemoPacket(func(m *dota.CDemoPacket) error {
+			fmt.Printf("%s\n", len(m.GetData()));
+			panic("test")
+			return nil
+		})
+		*/
+		//actions
+		/*
+		parser.Callbacks.OnCDOTAUserMsg_SpectatorPlayerUnitOrders(func(m *dota.CDOTAUserMsg_SpectatorPlayerUnitOrders) error {
+			fmt.Printf("%s\n", m)
+			return nil
+		})
+		*/
+		
+		//combat log
+		/*
+		parser.GameEvents.OnDotaCombatlog(func(m *GameEventDotaCombatlog) error {
+			fmt.Printf("%s\n", m)
+			return nil
+		})
+		*/
+		parser.Start()
+		fmt.Printf("%s\n", count)
+}

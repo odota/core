@@ -19,6 +19,15 @@
          "script": "fullhistory.js"
       },
       {
+         "script": "parser.js"
+      },
+      {
+         "script": "retriever.js"
+      },
+      {
+         "script": "proxy.js"
+      },
+      {
          "script": "web.js",
          "exec_mode": "cluster",
          "instances": 0
