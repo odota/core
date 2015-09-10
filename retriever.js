@@ -69,7 +69,7 @@ async.each(a, function(i, cb) {
             //immediately accept incoming friend requests
             if (relationship === steam.EFriendRelationship.RequestRecipient) {
                 console.log("friend request received");
-                client.addFriend(steamID);
+                client.steamFriends.addFriend(steamID);
                 console.log("friend request accepted");
                 accountToIdx[convert64To32(steamID)] = client.steamID;
             }
