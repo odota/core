@@ -278,7 +278,7 @@ public class Main {
 					entry.gold = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
 					entry.lh = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
 					entry.xp = (Integer) getEntityProperty(e, "m_vecDataData.%i.m_iTotalEarnedXP", i % half);	
-					entry.stuns=(Float)getEntityProperty(e, "m_vecDataTeam.%i.m_fStuns", i);	
+					entry.stuns=(Float)getEntityProperty(e, "m_vecDataTeam.%i.m_fStuns", i % half);	
 				
 					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", i);
 					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
