@@ -206,7 +206,7 @@ public class Main {
 				entry.valuename=cle.getValueName();
 			}
 			//TODO re-enable combat log when entities are debugged
-			//es.output(entry);
+			es.output(entry);
 		}
 
 		if (type == "DOTA_COMBATLOG_GAME_STATE") {
@@ -283,6 +283,8 @@ public class Main {
 					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", i);
 					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
 					int handle = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", i);
+					
+					//System.err.format("%s, %s, %s\n", hero, steamid, handle);
 					//booleans to check at endgame
 					//m_bHasPredictedVictory.0000
 					//m_bVoiceChatBanned.0000
@@ -314,8 +316,10 @@ public class Main {
 					//get the player's controlled hero's coordinates
 					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
 					if (e!=null){
-						entry.x=(Integer)getEntityProperty(e, "m_cellX", null);
-						entry.y=(Integer)getEntityProperty(e, "m_cellY", null);
+						//System.err.println(e);
+						entry.x=(Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
+						entry.y=(Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
+						//System.err.format("%s, %s\n", entry.x, entry.y);
 					}
 					es.output(entry);
 
@@ -329,7 +333,6 @@ public class Main {
     	if (idx!=null){
     		property = property.replace("%i", Util.arrayIdxToString(idx));
     	}
-    	System.err.println(property);
     	FieldPath fp = e.getDtClass().getFieldPathForName(property);
         return e.getPropertyForFieldPath(fp);
     }

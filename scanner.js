@@ -69,8 +69,7 @@ function scanApi(seq_num) {
                     match.parse_status = 0;
                 }
                 async.each(match.players, function(p, cb) {
-                    //TODO: when able to parse source 2 games, remove this check 
-                    if (p.account_id in trackedPlayers && match.engine !== 1) {
+                    if (p.account_id in trackedPlayers) {
                         //queued
                         redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 0;
