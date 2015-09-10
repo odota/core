@@ -55,7 +55,7 @@
     "ndjson": "^1.4.1",
     "numeral": "^1.5.3",
     "parse-redis-url": "0.0.2",
-    "passport": "0.3.0",
+    "passport": "0.2.2",
     "passport-steam": "0.1.5",
     "paypal-rest-sdk": "~1.6",
     "pm2": "^0.14.7",
