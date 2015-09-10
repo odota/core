@@ -2,6 +2,7 @@ var utility = require('./utility');
 var reduceMatch = utility.reduceMatch;
 var aggregator = require('./aggregator');
 var async = require('async');
+var config = require('./config');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
@@ -80,7 +81,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             if (err) {
                                 return cb(err);
                             }
-                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
                     //return cb(err);

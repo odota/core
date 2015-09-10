@@ -4,6 +4,7 @@ var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
 var constants = require('./constants.json');
 var queries = require('./queries');
+var config = require('./config');
 var async = require('async');
 var db = require('./db');
 var r = require('./redis');
@@ -103,7 +104,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 };
                 console.log("saving player cache %s", player.account_id);
                 console.time("deflate");
-                redis.setex("player:" + player.account_id, 60 * 60 * 24 * 7, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                 console.timeEnd("deflate");
             }
             console.log("results: %s", results.data.length);
