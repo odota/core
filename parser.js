@@ -315,6 +315,7 @@ function runParse(data, cb) {
                     //purchase
                     e.unit = e.targetname;
                     e.key = translate(e.valuename);
+                    e.value = 1;
                     e.type = "purchase";
                     getSlot(e);
                     //don't include recipes in purchase logs
@@ -351,6 +352,7 @@ function runParse(data, cb) {
                     //multikill
                     e.unit = e.attackername;
                     e.key = e.value;
+                    e.value = 1;
                     e.type = "multi_kills";
                     getSlot(e);
                     break;
@@ -358,6 +360,7 @@ function runParse(data, cb) {
                     //killstreak
                     e.unit = e.attackername;
                     e.key = e.value;
+                    e.value = 1;
                     e.type = "kill_streaks";
                     getSlot(e);
                     break;
@@ -403,6 +406,7 @@ function runParse(data, cb) {
                     e.type = "runes";
                     e.slot = e.player1;
                     e.key = e.value.toString();
+                    e.value = 1;
                     populate(e);
                     break;
                 case "CHAT_MESSAGE_RUNE_BOTTLE":

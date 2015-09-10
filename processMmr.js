@@ -12,7 +12,7 @@ module.exports = function processMmr(job, cb) {
             return cb(null, err);
         }
         logger.info("mmr response");
-        if (data.soloCompetitiveRank || data.competitiveRank) {
+        if (data.solo_competitive_rank || data.competitive_rank) {
             db.players.update({
                 account_id: payload.account_id
             }, {
@@ -20,8 +20,8 @@ module.exports = function processMmr(job, cb) {
                     ratings:{
                         match_id: payload.match_id,
                         account_id: payload.account_id,
-                        soloCompetitiveRank: data.soloCompetitiveRank,
-                        competitiveRank: data.competitiveRank,
+                        soloCompetitiveRank: data.solo_competitive_rank,
+                        competitiveRank: data.competitive_rank,
                         time: new Date()
                     }
                 }

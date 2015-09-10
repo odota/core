@@ -32,11 +32,11 @@ module.exports = function getReplayUrl(match, cb) {
                     return r + "&match_id=" + match.match_id;
                 });
                 getData(urls, function(err, body) {
-                    if (err || !body || !body.match) {
+                    if (err || !body || !body.match || !body.match.replay_salt) {
                         //non-retryable error
                         return cb("invalid body or error");
                     }
-                    var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replaySalt + ".dem.bz2";
+                    var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replay_salt + ".dem.bz2";
                     match.url = url;
                     //save replay url in db
                     db.matches.update({
