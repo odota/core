@@ -73,9 +73,12 @@ async.each(a, function(i, cb) {
                 console.log("friend request accepted");
                 accountToIdx[convert64To32(steamID)] = client.steamID;
             }
+            /*
+            //TODO look up correct EFriendRelationship
             if (relationship === client.EFriendRelationship.None) {
                 delete accountToIdx[convert64To32(steamID)];
             }
+            */
         });
     });
     client.on('error', function onSteamError(e) {
