@@ -7,8 +7,8 @@ var defaults = {
     "RECAPTCHA_SECRET_KEY": "",
     "PAYPAL_ID": "", //for donations, in web
     "PAYPAL_SECRET": "",
-    "RETRIEVER_SECRET": "shared_secret_with_retriever",
-    "SESSION_SECRET": "secret to encrypt cookies with",
+    "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
+    "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "KUE_USER": "user",

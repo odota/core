@@ -289,6 +289,7 @@ describe("parser", function() {
         });
         done();
     });
+    /*
     it('parse replay (zipped download)', function(done) {
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
@@ -341,6 +342,7 @@ describe("parser", function() {
             });
         });
     });
+    */
 });
 describe("web", function() {
     //this.timeout(wait);

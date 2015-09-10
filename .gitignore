@@ -10,7 +10,6 @@ servers
 output*
 coverage
 constants*.json
-parser/target
 java_parser/target
 /bin/
 Thumbs.db
