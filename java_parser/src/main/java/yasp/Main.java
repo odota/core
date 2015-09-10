@@ -256,17 +256,25 @@ public class Main {
 	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
 		}
 		if (time >= nextInterval){
-			//s1 DT_DOTA_PlayerResource
+			
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
+			Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
+			Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
 			if (pr!=null){
-				System.err.println(pr);
+				//System.err.println(pr);
+				int half = numPlayers / 2;
+				
 				for (int i = 0; i < numPlayers; i++) {
 					Entry entry = new Entry(time);
 					entry.type = "interval";
 					entry.slot = i;
-					entry.gold=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTotalEarnedGold", i);
-					entry.lh=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLastHitCount", i);
-					entry.xp=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTotalEarnedXP", i);
+					
+					Entity e = i < half ? dData : rData;
+					
+					entry.gold = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
+					entry.lh = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
+					entry.xp = (Integer) getEntityProperty(e, "m_vecDataData.%i.m_iTotalEarnedXP", i % half);	
+					
 					entry.stuns=(Float)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_fStuns", i);
 					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_nSelectedHeroID", i);
 					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamIDs", i);
