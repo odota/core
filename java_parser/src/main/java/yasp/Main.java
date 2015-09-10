@@ -232,9 +232,12 @@ public class Main {
 		if (isObserver || isSentry) {
 			//System.err.println(e);
 			Entry entry = new Entry(time);
-			Integer[] pos = {(Integer)getEntityProperty(e, "m_cellX", null),(Integer)getEntityProperty(e, "m_cellY", null)};
+			Integer x = (Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
+			Integer y = (Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
+			Integer[] pos = {x,y};
 			entry.type = isObserver ? "obs" : "sen";
 			entry.key = Arrays.toString(pos);
+			//System.err.println(entry.key);
 			Integer owner = (Integer)getEntityProperty(e, "m_hOwnerEntity", null);
 			Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
 			entry.slot = ownerEntity!=null ? (Integer)getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
@@ -248,12 +251,12 @@ public class Main {
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
 		//s1 DT_DOTAGameRulesProxy
-		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerules");
+		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
 		if (grp!=null){
-	        System.err.println(grp);
+	        //System.err.println(grp);
 	        //dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
-	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
+	        time = Math.round((float)getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
 		}
 		if (time >= nextInterval){
 			//s1 DT_DOTA_PlayerResource
@@ -302,6 +305,7 @@ public class Main {
 					//get the player's controlled hero's coordinates
 					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
 					if (e!=null){
+						System.err.println(e);
 						entry.x=(Integer)getEntityProperty(e, "m_cellX", null);
 						entry.y=(Integer)getEntityProperty(e, "m_cellY", null);
 					}
