@@ -106,16 +106,16 @@ public class Main {
 		es.output(entry);
 	}
 	
+	/*
 	@OnMessage(CUserMsg_SayText2.class)
 	public void onAllChatS1(Context ctx, CUserMsg_SayText2 message) {
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getPrefix());
 		entry.key =  String.valueOf(message.getText());
-		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
-		//entry.slot = message.getClient();
 		entry.type = "chat";
 		es.output(entry);
 	}
+	*/
 	
 	@OnMessage(CUserMessageSayText2.class)
 	public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
@@ -273,12 +273,12 @@ public class Main {
 					entry.type = "interval";
 					entry.slot = i;
 					
-					Entity e = i < half ? dData : rData;
+					Entity dataTeam = i < half ? rData : dData;
 					
-					entry.gold = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
-					entry.lh = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
-					entry.xp = (Integer) getEntityProperty(e, "m_vecDataData.%i.m_iTotalEarnedXP", i % half);	
-					entry.stuns=(Float)getEntityProperty(e, "m_vecDataTeam.%i.m_fStuns", i % half);	
+					entry.gold = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
+					entry.lh = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
+					entry.xp = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", i % half);	
+					entry.stuns=(Float)getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", i % half);	
 				
 					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", i);
 					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
@@ -314,7 +314,6 @@ public class Main {
 					//get the player's controlled hero's coordinates
 					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
 					if (e!=null){
-						System.err.println(e);
 						entry.x=(Integer)getEntityProperty(e, "m_cellX", null);
 						entry.y=(Integer)getEntityProperty(e, "m_cellY", null);
 					}
@@ -332,7 +331,6 @@ public class Main {
     	}
     	System.err.println(property);
     	FieldPath fp = e.getDtClass().getFieldPathForName(property);
-    	//fp.path[0] += (index == null) ? 0 : index;
         return e.getPropertyForFieldPath(fp);
     }
     
