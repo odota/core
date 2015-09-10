@@ -1,6 +1,3 @@
-#6.84
-npm run maven && java -jar parser/target/stats-0.1.0.jar < testfiles/1436943655_684.dem      
-
 #mongoexport --db dota --collection matches --query {match_id:1321352005} > output.json
  
 #post a job to kue, didn't work with url for some reason

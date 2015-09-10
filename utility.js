@@ -139,8 +139,18 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-    //select a random element if array
-    var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
+    var u;
+    if (url.constructor === Array) {
+        //select a random element if array
+        u = url[Math.floor(Math.random() * url.length)];
+    }
+    else if (typeof url === "object") {
+        //options object
+        u = url.url;
+    }
+    else {
+        u = url;
+    }
     var parse = urllib.parse(u, true);
     var proxy;
     var steam_api = false;
@@ -178,8 +188,14 @@ function getData(url, cb) {
                 return cb(body);
             }
             if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
-                logger.info("retrying: %s", target);
-                return getData(url, cb);
+                //invalid response
+                if (url.noRetry) {
+                    return cb(err || "invalid response");
+                }
+                else {
+                    logger.info("invalid response, retrying: %s", target);
+                    return getData(url, cb);
+                }
             }
             else if (body.result) {
                 //steam api usually returns data with body.result, getplayersummaries has body.response
@@ -190,8 +206,13 @@ function getData(url, cb) {
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("invalid data: %s, %s", target, JSON.stringify(body));
-                    return getData(url, cb);
+                    if (url.noRetry) {
+                        return cb(err || "invalid data");
+                    }
+                    else {
+                        logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        return getData(url, cb);
+                    }
                 }
             }
             return cb(null, body);

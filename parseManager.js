@@ -59,12 +59,12 @@ function start() {
                 //TODO check if the assigned url is active
                 //if not, use ctx to pause and cb(err) (this consumes a retry)
                 //keep checking status and resume the worker when the parse worker is alive again
-                processParse(job, ctx, cb);
+                return processParse(job, ctx, cb);
             });
 
             function getParserUrl(job) {
                 //node <0.12 doesn't have RR cluster scheduling, so parsing on remote workers may cause us to lose a request if the remote is crashed by another job using the same core/thread
-                //for now, process parse requests on localhost to avoid issue
+                //can process parse requests on localhost to avoid issue
                 /*
                 if (job.data.payload.request) {
                     return job.parser_url = "http://localhost:5200?key=" + config.RETRIEVER_SECRET;
