@@ -205,7 +205,6 @@ public class Main {
 			if (type=="DOTA_COMBATLOG_PURCHASE"){
 				entry.valuename=cle.getValueName();
 			}
-			//TODO re-enable combat log when entities are debugged
 			es.output(entry);
 		}
 
