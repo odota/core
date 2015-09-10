@@ -53,7 +53,7 @@ async.each(a, function(i, cb) {
                 var relationship = client.steamFriends.friends[prop];
                 //friends that came in while offline
                 if (relationship === steam.EFriendRelationship.RequestRecipient) {
-                    client.addFriend(steamID);
+                    client.steamFriends.addFriend(steamID);
                     console.log(steamID + " was added as a friend");
                 }
                 accountToIdx[convert64To32(steamID)] = client.steamID;
