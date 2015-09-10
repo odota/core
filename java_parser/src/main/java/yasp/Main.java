@@ -316,7 +316,7 @@ public class Main {
     
     public <T> T getEntityProperty(Entity e, String property, Integer index){
     	FieldPath fp = e.getDtClass().getFieldPathForName(property + (index == null ? "" : ".0000"));
-    	fp.path[0] += index == null ? 0 : index;
+    	fp.path[0] += (index == null) ? 0 : index;
         return e.getPropertyForFieldPath(fp);
     }
     
