@@ -2,6 +2,7 @@ package yasp;
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import skadistats.clarity.decoder.Util;
 import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.Entity;
 import skadistats.clarity.model.GameEvent;
@@ -224,7 +225,6 @@ public class Main {
 	public void onEntityEntered(Context ctx, Entity e) {
 		//CDOTA_NPC_Observer_Ward
 		//CDOTA_NPC_Observer_Ward_TrueSight
-		//TODO s1
 		//s1 "DT_DOTA_NPC_Observer_Ward"
 		//s1 "DT_DOTA_NPC_Observer_Ward_TrueSight"
 		boolean isObserver = e.getDtClass().getDtName().equals("CDOTA_NPC_Observer_Ward");
@@ -247,11 +247,10 @@ public class Main {
 	@UsesEntities
 	@OnTickStart
 	public void onTickStart(Context ctx, boolean synthetic){
-		//TODO s1
 		//s1 DT_DOTAGameRulesProxy
-		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
+		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerules");
 		if (grp!=null){
-	        //System.err.println(grp);
+	        System.err.println(grp);
 	        //dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
 	        time = Math.round((float)getEntityProperty(grp, "dota_gamerules_data.m_fGameTime", null));
@@ -260,18 +259,18 @@ public class Main {
 			//s1 DT_DOTA_PlayerResource
 			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
 			if (pr!=null){
-				//System.err.println(pr);
+				System.err.println(pr);
 				for (int i = 0; i < numPlayers; i++) {
 					Entry entry = new Entry(time);
 					entry.type = "interval";
 					entry.slot = i;
-					entry.gold=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedGold", i);
-					entry.lh=(Integer)getEntityProperty(pr, "m_iLastHitCount", i);
-					entry.xp=(Integer)getEntityProperty(pr, "EndScoreAndSpectatorStats.m_iTotalEarnedXP", i);
-					entry.stuns=(Float)getEntityProperty(pr, "m_fStuns", i);
-					Integer hero = (Integer)getEntityProperty(pr, "m_nSelectedHeroID", i);
-					Long steamid = (Long)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
-					int handle = (Integer)getEntityProperty(pr, "m_iPlayerSteamIDs", i);
+					entry.gold=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTotalEarnedGold", i);
+					entry.lh=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iLastHitCount", i);
+					entry.xp=(Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTotalEarnedXP", i);
+					entry.stuns=(Float)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_fStuns", i);
+					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_nSelectedHeroID", i);
+					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamIDs", i);
+					int handle = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", i);
 					//booleans to check at endgame
 					//m_bHasPredictedVictory.0000
 					//m_bVoiceChatBanned.0000
@@ -314,9 +313,13 @@ public class Main {
 	}
 	}
     
-    public <T> T getEntityProperty(Entity e, String property, Integer index){
-    	FieldPath fp = e.getDtClass().getFieldPathForName(property + (index == null ? "" : ".0000"));
-    	fp.path[0] += (index == null) ? 0 : index;
+    public <T> T getEntityProperty(Entity e, String property, Integer idx){
+    	if (idx!=null){
+    		property = property.replace("%i", Util.arrayIdxToString(idx));
+    	}
+    	System.err.println(property);
+    	FieldPath fp = e.getDtClass().getFieldPathForName(property);
+    	//fp.path[0] += (index == null) ? 0 : index;
         return e.getPropertyForFieldPath(fp);
     }
     
