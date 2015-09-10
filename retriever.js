@@ -83,11 +83,11 @@ async.each(a, function(i, cb) {
     });
     client.on('error', function onSteamError(e) {
         //reset
-        process.exit(1);
+        console.log(e);
+        //process.exit(1);
     });
     client.on('loggedOff', function() {
-        //reset
-        process.exit(1);
+        client.steamUser.logOn(logOnDetails);
     });
     client.Dota2.once("ready", function() {
         //console.log("Dota 2 ready");
