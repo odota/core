@@ -270,7 +270,7 @@ public class Main {
 					entry.type = "interval";
 					entry.slot = i;
 					
-					Entity e = i < half ? dData : rData;
+					Entity e = i < half ? rData : dData;
 					
 					entry.gold = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
 					entry.lh = (Integer) getEntityProperty(e, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
