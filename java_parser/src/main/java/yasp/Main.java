@@ -46,6 +46,8 @@ public class Main {
 	Integer time = 0;
 	int numPlayers = 10;
 	EventStream es = new EventStream();
+	int[] validIndices = new int[numPlayers];
+	boolean init = false;
 	//Set<Integer> seenEntities = new HashSet<Integer>();
 	
 	//@OnMessage(GeneratedMessage.class)
@@ -264,37 +266,49 @@ public class Main {
 			Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
 			
 			if (pr!=null){
-				//System.err.println(pr);
-				int half = numPlayers / 2;
+				//skip coaches?  Radiant coach shows up in vecPlayerTeamData as position 5, and we end up:
+				//setting slot_to_hero incorrectly, which leads to misattributed combat log data.
+				//all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
+				//coaches appear to be on team 1, radiant is 2 and dire is 3?
+				//construct an array of valid indices to get vecPlayerTeamData from
 				
+				if (!init){
+					int added = 0;
+					int i = 0;
+					while (added < numPlayers) {
+						//check each m_vecPlayerData to ensure the player's team is radiant or dire
+						int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+						if (playerTeam == 2 || playerTeam == 3){
+							//if so, add it to validIndices, add 1 to added
+							validIndices[added] = i;
+							added +=1;
+						}
+						i+=1;
+					}
+					init = true;
+				}
+				
+				//System.err.println(pr);
 				for (int i = 0; i < numPlayers; i++) {
+					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
+					int handle = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
+					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
+					int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
+					int teamSlot = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
+					//System.err.format("hero:%s i:%s teamslot:%s playerteam:%s\n", hero, i, teamSlot, playerTeam);
+
+					//2 is radiant, 3 is dire, 1 is other?
+					Entity dataTeam = playerTeam==2 ? rData : dData;
+					
 					Entry entry = new Entry(time);
 					entry.type = "interval";
 					entry.slot = i;
 					
-					Entity dataTeam = i < half ? rData : dData;
-					
-					entry.gold = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", i % half);
-					entry.lh = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", i % half);
-					entry.xp = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", i % half);	
-					entry.stuns=(Float)getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", i % half);	
+					entry.gold = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
+					entry.lh = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
+					entry.xp = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);	
+					entry.stuns=(Float)getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);	
 				
-					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", i);
-					Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
-					int handle = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", i);
-					
-					//System.err.format("%s, %s, %s\n", hero, steamid, handle);
-					//booleans to check at endgame
-					//m_bHasPredictedVictory.0000
-					//m_bVoiceChatBanned.0000
-					//m_bHasRandomed.0000
-					//m_bHasRepicked.0000
-					
-					//can do all these stats with each playerresource interval for graphs?
-					//m_iKills.0000
-					//m_iAssists.0000
-					//m_iDeaths.0000
-					
 					//gem, rapier time?
 					//TODO: https://github.com/yasp-dota/yasp/issues/333
 					//need to dump inventory items for each player and possibly keep track of item entity handles
