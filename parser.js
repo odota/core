@@ -173,7 +173,7 @@ function runParse(data, cb) {
                                 type: "damage_inflictor",
                                 time: e.time,
                                 unit: e.unit,
-                                key: e.inflictor,
+                                key: translate(e.inflictor),
                                 value: e.value
                             };
                             getSlot(inf);
