@@ -16,8 +16,6 @@ block match_content
               th: abbr(title="Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes") EFF@10
               th: abbr(title="Last hits at 10 minutes") LH@10
               th: abbr(title="Seconds of disable on heroes") Stuns
-              th: abbr(title="Number of times the player pinged") Pings
-              //th: abbr(title="Number of times the player clicked") Clicks
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var p = player.parsedPlayer
             +hero_td(player)
@@ -29,17 +27,13 @@ block match_content
             td #{(p.lane_efficiency*100).toFixed(2)}
             td #{p.lh[10] || "-"}
             td #{p.stuns.toFixed(2)}
-            td #{p.pings[0] || "-"}
-            //td #{p.clicks[0] || "-"}
     //-
       .col-md-5
         h3 Map
         #map.table-responsive
           img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 
-  hr
   +ad("banner2")
-  hr
   
   .row
     .col-md-12
@@ -89,6 +83,3 @@ block match_content
                 span.img-text
                   img.img-small(class=item.className src=item.img, title=item.name)
                   div.format #{item.val}
-
-  each player, i in match.players
-    p=JSON.stringify(player.parsedPlayer.actions)
