@@ -169,6 +169,12 @@ function computeMatchData(match) {
                         parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
+                if (parsedPlayer.actions) {
+                    parsedPlayer.actions_sum = 0;
+                    for (var key in parsedPlayer.actions) {
+                        parsedPlayer.actions_sum += parsedPlayer.actions[key];
+                    }
+                }
                 //compute throw/comeback levels
                 if (match.parsed_data.radiant_gold_adv) {
                     var radiant_gold_advantage = match.parsed_data.radiant_gold_adv;

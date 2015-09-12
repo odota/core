@@ -89,9 +89,7 @@ block match_content
             +hero_td(player)
             each val, key in constants.kill_streaks
               td #{p.kill_streaks[key] || "-"}
-  hr
   +ad("banner2")
-  hr
   .row
     .col-md-12
       +data_table({id:"kill_times", heading:"Kill Times"})

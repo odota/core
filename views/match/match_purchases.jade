@@ -28,9 +28,9 @@ block match_content
                td #{p.purchase.gem || "-"}
                td #{p.purchase.rapier || "-"}
                td #{p.buyback_log.length || "-"}
-    hr
+    
     +ad("banner2")
-    hr
+    
     .row
       .col-md-12
         include timelines_purchases_table
