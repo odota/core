@@ -168,7 +168,7 @@ function getPlayerProfile(idx, account_id, cb) {
     console.log("requesting player profile %s", account_id);
     steamObj[idx].profiles += 1;
     Dota2.profileRequest(account_id, false, function(err, profileData) {
-        console.log(err, profileData);
+        //console.log(err, profileData);
         cb(err, profileData.game_account_client);
     });
 }
@@ -176,14 +176,14 @@ function getPlayerProfile(idx, account_id, cb) {
 function getGCReplayUrl(idx, match_id, cb) {
     match_id = Number(match_id);
     var Dota2 = steamObj[idx].Dota2;
-    console.log("[DOTA] requesting replay %s, numusers: %s", match_id, users.length);
+    console.log("[DOTA] requesting replay %s, numusers: %s, requests: %s", match_id, users.length, replayRequests);
     replayRequests += 1;
     if (replayRequests >= 500) {
         selfDestruct();
     }
     steamObj[idx].replays += 1;
     Dota2.matchDetailsRequest(match_id, function(err, matchData) {
-        console.log(err, matchData);
+        //console.log(err, matchData);
         cb(err, matchData);
     });
 }
