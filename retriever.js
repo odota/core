@@ -36,7 +36,7 @@ async.each(a, function(i, cb) {
         client.steamUser.logOn(logOnDetails);
     });
     client.on("logOnResponse", function(logonResp) {
-        if (logonResp.eresult !== Steam.EResult.OK) {
+        if (logonResp.eresult !== client.EResult.OK) {
             //try logging on again
             return client.steamUser.logOn(logOnDetails);
         }
