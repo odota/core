@@ -23,7 +23,7 @@ async.each(a, function(i, cb) {
     var client = new steam.SteamClient();
     client.steamUser = new steam.SteamUser(client);
     client.steamFriends = new steam.SteamFriends(client);
-    client.Dota2 = new dota2.Dota2Client(client, true, true);
+    client.Dota2 = new dota2.Dota2Client(client, false, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
