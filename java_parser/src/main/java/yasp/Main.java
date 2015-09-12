@@ -316,6 +316,25 @@ public class Main {
 					//time dead, count number of intervals where this value is >0?
 					//m_iRespawnSeconds.0000
 					
+					steamid_to_slot.put(steamid, i);
+					
+					//get the player's hero entity
+					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
+					//get the hero's coordinates
+					if (e!=null){
+						//System.err.println(e);
+						entry.x=(Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
+						entry.y=(Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
+						//System.err.format("%s, %s\n", entry.x, entry.y);
+					}
+					//TODO get the hero's name
+					//set map of combat log name to slot
+					//TODO output hero_log for pick order
+					//TODO output combat log name to slot for associating combat log entries with a slot
+					//e.getDtClass().getDtName()
+					//CDOTA_Hero_Zuus?
+					//split, take last, lower case, prepend npc_dota_hero_ for combat log name
+					/*
 					if (hero>0 && (!slot_to_hero.containsKey(i) || !slot_to_hero.get(i).equals(hero))){
 						//hero_to_slot.put(hero, i);
 						slot_to_hero.put(i, hero);
@@ -325,15 +344,8 @@ public class Main {
 						entry2.key=String.valueOf(hero);
 						es.output(entry2);
 					}
-					steamid_to_slot.put(steamid, i);
-					//get the player's controlled hero's coordinates
-					Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
-					if (e!=null){
-						//System.err.println(e);
-						entry.x=(Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
-						entry.y=(Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
-						//System.err.format("%s, %s\n", entry.x, entry.y);
-					}
+					*/
+					
 					es.output(entry);
 
 			}
