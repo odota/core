@@ -160,7 +160,7 @@ function runParse(data, cb) {
                         var h = {
                             time: e.time,
                             unit: e.unit,
-                            key: e.inflictor,
+                            key: translate(e.inflictor),
                             type: "hero_hits"
                         };
                         getSlot(h);
@@ -180,7 +180,7 @@ function runParse(data, cb) {
                                 type: "max_hero_hit",
                                 time: e.time,
                                 max: true,
-                                inflictor: e.inflictor,
+                                inflictor: translate(e.inflictor),
                                 unit: e.unit,
                                 key: e.key,
                                 value: e.value
