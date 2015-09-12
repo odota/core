@@ -35,7 +35,11 @@ async.each(a, function(i, cb) {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
         client.steamUser.logOn(logOnDetails);
     });
-    client.on("logOnResponse", function onSteamLogOn() {
+    client.on("logOnResponse", function(logonResp) {
+        if (logonResp.eresult !== Steam.EResult.OK) {
+            //try logging on again
+            return client.steamUser.logOn(logOnDetails);
+        }
         console.log("[STEAM] Logged on %s", client.steamID);
         client.steamFriends.setPersonaName("[YASP] " + client.steamID);
         steamObj[client.steamID] = client;
