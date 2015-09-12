@@ -32,6 +32,7 @@ public class Entry {
     public Integer x;
     public Integer y;
     public Float stuns;
+    public Integer hero_id;
     public Entry(){
     }
     public Entry(Integer time){

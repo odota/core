@@ -302,7 +302,6 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
-                //removed for taking up too much space
                 //"pos": {},
                 "lane_pos": {},
                 "obs": {},
@@ -310,6 +309,7 @@ function getParseSchema() {
                 //individual chat event counts?
                 //"CHAT_MESSAGE_HERO_KILL":{},
                 //"clicks":{},
+                "actions": {},
                 "pings": {},
                 "purchase": {},
                 "gold_reasons": {},
