@@ -36,6 +36,7 @@ append footer_assets
     var onloadCallback = function() {
         grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
+    document.getElementById("match_id").value = window.location.hash.slice(1);
     function submit(response){
       var field = document.getElementById("match_id");
       match_id = field.value;
@@ -88,6 +89,7 @@ append footer_assets
             }
           });
       }
+  //old socket.io code
   //-
     script.
       /*

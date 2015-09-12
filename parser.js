@@ -14,7 +14,6 @@ var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
-var shutdown = false;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
@@ -33,15 +32,14 @@ else {
     app.post('/deploy', function(req, res) {
         var err;
         //TODO verify the POST is from github/secret holder
-        //TODO we may miss deploys if we are shutting down when we receive another push
-        if (req.body.ref === "refs/heads/master" && !shutdown) {
-            shutdown = true;
+        if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
-            spawn('npm run deploy-parser', [], {
+            var child = spawn('npm run deploy-parser', [], {
                 detached: true,
                 stdio: ['ignore', 'ignore', 'ignore']
             });
+            child.unref();
         }
         else {
             err = "not passing deploy conditions";
@@ -150,7 +148,7 @@ function runParse(data, cb) {
                         var h = {
                             time: e.time,
                             unit: e.unit,
-                            key: e.inflictor,
+                            key: translate(e.inflictor),
                             type: "hero_hits"
                         };
                         getSlot(h);
@@ -170,7 +168,7 @@ function runParse(data, cb) {
                                 type: "max_hero_hit",
                                 time: e.time,
                                 max: true,
-                                inflictor: e.inflictor,
+                                inflictor: translate(e.inflictor),
                                 unit: e.unit,
                                 key: e.key,
                                 value: e.value
