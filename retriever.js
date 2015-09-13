@@ -89,9 +89,11 @@ async.each(a, function(i, cb) {
     client.on('error', function onSteamError(e) {
         //reset
         console.log(e);
-        //process.exit(1);
+        console.log("reconnecting");
+        client.connect();
     });
     client.on('loggedOff', function() {
+        console.log("relogging");
         client.steamUser.logOn(logOnDetails);
     });
     client.Dota2.once("ready", function() {
