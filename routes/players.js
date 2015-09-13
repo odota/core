@@ -284,6 +284,10 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     bots: result.sets.bots,
                     ratingPlayers: result.sets.ratingPlayers,
                     histograms: histograms,
+                    times: {
+                        "duration": 1,
+                        "first_blood_time": 1
+                    },
                     teammate_ids: teammate_ids,
                     compare_data: compare_data,
                     compare: info === "compare",
@@ -312,7 +316,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return b.games - a.games;
         });
         //limit to 200 max players
-        teammates_arr = teammates_arr.slice(0,200);
+        teammates_arr = teammates_arr.slice(0, 200);
         queries.fillPlayerNames(teammates_arr, function(err) {
             console.timeEnd('teammate list');
             cb(err, teammates_arr);

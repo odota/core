@@ -7,8 +7,9 @@ block playercontent
         script.
           var chartData = {};
         each val, key in player.aggData
-          if key in histograms
+          if key in histograms && key==="duration"
             h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+              small (#{val.n} matches)
             script.
               chartData["#{key}"] = !{JSON.stringify(player.aggData[key])};
             div.chart(id=key data-key=key)
