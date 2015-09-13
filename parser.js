@@ -7,6 +7,7 @@ var utility = require('./utility');
 var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
+var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var constants = require('./constants.json');
