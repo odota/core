@@ -36,10 +36,10 @@ else {
             console.log(req.body);
             //run the deployment command
             var debugFile = fs.openSync("./deploy_debug.txt", "a+");
-            var child = spawn('npm run deploy-parser', [], {
+            var child = spawn('npm run deploy-parser', null, {
                 cwd: process.cwd(),
-                detached: true,
-                stdio: ['ignore', 'ignore', 'ignore'],
+                //detached: true,
+                stdio: ['ignore', 'ignore', 'ignore']
             });
             child.unref();
             console.log(child);
