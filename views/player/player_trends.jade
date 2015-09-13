@@ -15,6 +15,7 @@ block playercontent
             div.chart(id=key data-key=key)
           
 append footer_assets
+  //http://code.highcharts.com/highcharts.js
   script.
     $(".chart").each(function() {
         var key = $(this).attr('data-key');
