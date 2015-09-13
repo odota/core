@@ -115,7 +115,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 return next(err);
             }
             player.teammate_list = lists.teammate_list;
-            var teammate_ids = lists.all_teammate_list || [];
+            var teammate_ids = lists.all_teammate_list || lists.teammate_list;
             //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
             var ids = {};
             teammate_ids.forEach(function(t) {

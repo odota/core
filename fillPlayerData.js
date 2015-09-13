@@ -20,16 +20,21 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     var player;
     var cachedTeammates;
     preprocessQuery(options.query);
-    redis.get("player:" + account_id, function(err, result) {
-        console.time("inflate");
-        cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-        console.timeEnd("inflate");
+    db.player_matches.find({
+        account_id: account_id
+    }, function(err, results) {
+        cache = {
+            data: results
+        };
+        //redis.get("player:" + account_id, function(err, result) {
+        //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         var filter_exists = Object.keys(options.query.js_select).length;
         player = {
             account_id: account_id,
             personaname: account_id
         };
+        /*
         if (cache && !filter_exists) {
             console.log("player cache hit %s", player.account_id);
             //var filtered = filter(cache.data, options.query.js_select);
@@ -40,18 +45,21 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 arr.push(cache.data[key]);
             }
             cache.data = arr;
-            /*
-            //below code if we want to cache full matches (with parsed data)
+            processResults(err, {
+                data: cache.data,
+                aggData: cache.aggData,
+                unfiltered: cache.data
+            });
+        }
+        */
+        //below code if we want to cache full matches (with parsed data)
+        if (cache.data.length) {
+            console.log("player cache hit %s", player.account_id);
+            //cached data should come in ascending match order
             var filtered = filter(cache.data, options.query.js_select);
             cache.aggData = aggregator(filtered, null);
             processResults(err, {
                 data: filtered,
-                aggData: cache.aggData,
-                unfiltered: cache.data
-            });
-            */
-            processResults(err, {
-                data: cache.data,
                 aggData: cache.aggData,
                 unfiltered: cache.data
             });
@@ -68,8 +76,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             else {
                 options.query.limit = 200;
             }
+            //sort ascending to support trends over time
             options.query.sort = {
-                match_id: -1
+                match_id: 1
             };
             advQuery(options.query, processResults);
         }
@@ -78,37 +87,15 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             if (err) {
                 return cb(err);
             }
-            //sort matches by descending match id
+            console.log("results: %s", results.data.length);
+            //sort matches by descending match id for display
             results.data.sort(function(a, b) {
                 return b.match_id - a.match_id;
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            //results.unfiltered.forEach(reduceMatch);
-            if (!cache && !filter_exists && player.account_id !== constants.anonymous_account_id) {
-                //pack data into hash for cache
-                var match_ids = {};
-                results.data.forEach(function(m) {
-                    match_ids[m.match_id] = m;
-                });
-                //save cache
-                /*
-                //code to save full matches (unfiltered, with parsed data)
-                cache = {
-                    data: results.unfiltered,
-                };
-                */
-                cache = {
-                    data: match_ids,
-                    aggData: results.aggData
-                };
-                console.log("saving player cache %s", player.account_id);
-                console.time("deflate");
-                redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                console.timeEnd("deflate");
-            }
-            console.log("results: %s", results.data.length);
             player.aggData = results.aggData;
+            player.all_teammates = cachedTeammates || player.aggData.teammates;
             //convert heroes hash to array and sort
             var aggData = player.aggData;
             if (aggData.heroes) {
@@ -135,12 +122,62 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 generatePositionData(d, player);
                 player.posData = [d];
             }
-            player.all_teammates = cachedTeammates || aggData.teammates;
-            var playerArr = [player];
-            queries.fillPlayerNames(playerArr, function(err) {
-                var player = playerArr[0];
-                cb(err, player);
-            });
+            //save cache
+            if (!cache.data.length) {
+                //delete unnecessary data from unfiltered
+                results.unfiltered.forEach(reduceMatch);
+                async.each(results.unfiltered, function(match_copy, cb) {
+                    //delete _id from the fetched match to prevent conflicts
+                    delete match_copy._id;
+                    db.player_matches.update({
+                        account_id: player.account_id,
+                        match_id: match_copy.match_id
+                    }, {
+                        $set: match_copy
+                    }, {
+                        upsert: true
+                    }, cb);
+                }, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    return getPlayerName(cb);
+                });
+            }
+            else {
+                getPlayerName(cb);
+            }
+            /*
+            if (!cache && !filter_exists && player.account_id !== constants.anonymous_account_id) {
+                //pack data into hash for cache
+                var match_ids = {};
+                results.data.forEach(function(m) {
+                    match_ids[m.match_id] = m;
+                });
+                //save cache
+                //code to save full matches (unfiltered, with parsed data)
+                //cache = {
+                //    data: results.unfiltered,
+                //};
+                cache = {
+                    data: match_ids,
+                    aggData: results.aggData
+                };
+                console.log("saving player cache %s", player.account_id);
+                console.time("deflate");
+                redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                console.timeEnd("deflate");
+                getPlayerName(cb);
+            }
+            */
+            function getPlayerName(cb) {
+                //get this player's name
+                var playerArr = [player];
+                queries.fillPlayerNames(playerArr, function(err) {
+                    var player = playerArr[0];
+                    cb(err, player);
+                });
+            }
         }
     });
 };
