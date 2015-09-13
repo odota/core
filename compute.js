@@ -460,7 +460,7 @@ function generateIncomeData(match) {
         var col = [reason];
         orderedPlayers.forEach(function(player) {
             var g = player.parsedPlayer.gold_reasons;
-            col.push(g[key] || 0);
+            col.push(g ? g[key] : 0);
         });
         columns.push(col);
     }
