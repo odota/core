@@ -500,7 +500,8 @@ module.exports = function aggregator(matches, fields, existing) {
                     max_match: {},
                     n: 0,
                     counts: {},
-                    win_counts: {}
+                    win_counts: {},
+                    avgs: []
                 };
             }
         }
@@ -550,6 +551,7 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
+            aggObj.avgs.push(aggObj.sum/aggObj.n);
         }
     }
 

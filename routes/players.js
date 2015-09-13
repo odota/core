@@ -41,6 +41,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "compare": {
             "name": "Compare"
         },
+        "trends": {
+            "name": "Trends"
+        },
         "rating": {
             "name": "Rating"
         }

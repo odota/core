@@ -1,0 +1,33 @@
+extend player
+
+block playercontent
+  .trends
+    .row
+      .col-md-12
+        script.
+          var chartData = {};
+        each val, key in player.aggData
+          if key in histograms
+            h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+            script.
+              chartData["#{key}"] = !{JSON.stringify(player.aggData[key])};
+            div.chart(id=key data-key=key) !{JSON.stringify(player.aggData[key].avgs)}
+          
+append footer_assets
+  script.
+    $(".chart").each(function() {
+        var key = $(this).attr('data-key');
+        var avgs = chartData[key].avgs;
+        createTrends(avgs, key);
+    });
+    
+    function createTrends(avgs, key){
+      var chart = c3.generate({
+      bindto: document.getElementById(key),
+      data: {
+          columns: [
+              [key].concat(avgs)
+          ]
+      }
+      });
+    }
