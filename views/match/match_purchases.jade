@@ -20,6 +20,7 @@ block match_content
                - var hero = constants.heroes[player.hero_id]
                - var p = player.parsedPlayer
                +hero_td(player)
+               - p.purchase = p.purchase || {}
                td #{p.purchase.tpscroll || "-"}
                td #{p.purchase.ward_observer || "-"}
                td #{p.purchase.ward_sentry*2 || "-"}
@@ -27,7 +28,7 @@ block match_content
                td #{p.purchase.dust*2 || "-"}
                td #{p.purchase.gem || "-"}
                td #{p.purchase.rapier || "-"}
-               td #{p.buyback_log.length || "-"}
+               td #{p.buyback_log && p.buyback_log.length ? p.buyback_log.length : "-"}
     
     +ad("banner2")
     
