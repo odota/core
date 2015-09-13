@@ -237,7 +237,6 @@ function count_words(match, player_filter) {
  * Renders display-only data for a match
  **/
 function renderMatch(m) {
-    //TODO we should probably handle fields not existing in the template instead of trying to fill them all out here
     var schema = utility.getParseSchema();
     //fill in version 0 if not present
     schema.version = 0;
@@ -248,13 +247,13 @@ function renderMatch(m) {
         m.parsed_data[key] = m.parsed_data[key] || schema[key];
     }
     //make sure each player's parsedplayer has all fields
-    m.players.forEach(function(p, i) {
-        mergeObjects(p.parsedPlayer, schema.players[i]);
+    m.players.forEach(function(player, i) {
+        player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+        mergeObjects(player.parsedPlayer, schema.players[i]);
     });
     //do render-only processing (not needed for aggregation, only for match display)
     m.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
-        p.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
         var p = player.parsedPlayer;
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
         targets.forEach(function(target) {
@@ -460,7 +459,7 @@ function generateIncomeData(match) {
         var col = [reason];
         orderedPlayers.forEach(function(player) {
             var g = player.parsedPlayer.gold_reasons;
-            col.push(g[key] || 0);
+            col.push(g ? g[key] : 0);
         });
         columns.push(col);
     }
