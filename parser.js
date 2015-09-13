@@ -121,11 +121,6 @@ function runParse(data, cb) {
         "error": function(e) {
             error = "parse error: " + e.key;
         },
-        "progress": function(e) {
-            //job.progress(e.key, 100);
-            //TODO we could output this as line delimited json
-            console.log(e);
-        },
         "epilogue": function() {
             error = null;
         }
@@ -573,10 +568,7 @@ function runParse(data, cb) {
                 encoding: null,
                 timeout: 30000
             })).on('progress', function(state) {
-                parseStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }) + "\n");
+                console.log(JSON.stringify({url: url, percent: state.percent}));
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
                     parseStream.write(JSON.stringify({
