@@ -10,6 +10,8 @@ var zlib = require('zlib');
 var computeMatchData = require('./compute').computeMatchData;
 module.exports = function updatePlayerCaches(match, options, cb) {
     //insert the match into db, then based on the existing document determine whether to do aggregations
+    //TODO don't want to overwrite parse_status: 2 (parsed) (e.g., if an existing parsed match is expired when re-requested)
+    //this is likely somewhat messed up in production already, although we could run a script to clean it up
     db.matches.findAndModify({
         match_id: match.match_id
     }, {
@@ -28,14 +30,14 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
+                var match_copy = JSON.parse(JSON.stringify(match));
                 if (options.type !== "skill") {
-                    var match_copy = JSON.parse(JSON.stringify(match));
                     //m.players[0] should be this player
                     //m.all_players should be all players
                     //duplicate this data into a copy to avoid corrupting original match object
                     match_copy.all_players = match.players.slice(0);
                     match_copy.players = [p];
-                    //some data fields require computeMatchData in order to aggregate correctly
+                    //computeMatchData takes the parsed_data and creates a parsedPlayer for each player in a parallel array
                     computeMatchData(match_copy);
                     reduceMatch(match_copy);
                 }
@@ -50,8 +52,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     if (err) {
                         return cb(err);
                     }
-                    //TODO don't want to overwrite 2 (parsed) (e.g., when an existing parsed match is expired when re-requested)
-                    //TODO don't want to overwrite players[] unless parse status is 2 (since players now contains parsedPlayer that is not present in API data)
                     return insertPlayers(cb);
                 });
                 /*
