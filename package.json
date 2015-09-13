@@ -17,7 +17,7 @@
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
     "startup": "sudo pm2 startup ubuntu -u yasp",
     "deploy-core": "pm2 startOrReload pm2-core.json",
-    "deploy-parser": "git pull origin master && npm run build && pm2 startOrRestart pm2-parser.json"
+    "deploy-parser": "git pull origin master && npm install && npm run maven && pm2 startOrRestart pm2-parser.json"
   },
   "repository": {
     "type": "git",
