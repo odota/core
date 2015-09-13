@@ -30,14 +30,14 @@ else {
     });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
-        var err;
+        var err = false;
         //TODO verify the POST is from github/secret holder
         if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
             var child = spawn('npm run deploy-parser', [], {
                 detached: true,
-                stdio: ['ignore', 'ignore', 'ignore']
+                stdio: ['ignore', fs.openSync("./deploy_debug.txt", "a+"), 'ignore']
             });
             child.unref();
         }
