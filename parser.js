@@ -36,10 +36,19 @@ else {
             console.log(req.body);
             //run the deployment command
             var debugFile = fs.openSync("./deploy_debug.txt", "a+");
+            /*
             var child = spawn('npm run deploy-parser', null, {
                 cwd: process.cwd(),
-                //detached: true,
+                detached: true,
                 stdio: ['ignore', 'ignore', 'ignore']
+            });
+            */
+            var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
+                if (error) {
+                    console.log('exec error: ' + error);
+                }
             });
             child.unref();
             console.log(child);
