@@ -43,7 +43,8 @@ function computeMatchData(match) {
                     match.my_word_counts = count_words(match, match.players[0]);
                 }
             }
-            //compute player-level data and set parsedPlayer
+            match.parsedPlayers = [];
+            //compute player-level data and create parsedPlayer
             match.players.forEach(function(player, ind) {
                 //mapping 0 to 0, 128 to 5, etc.
                 //if we projected only one player, then use slot 0
@@ -191,7 +192,7 @@ function computeMatchData(match) {
                     }
                 }
                 */
-                player.parsedPlayer = parsedPlayer;
+                match.parsedPlayers.push(parsedPlayer);
             });
         }
     }
@@ -250,8 +251,10 @@ function renderMatch(match) {
     match.players.forEach(function(p, i) {
         mergeObjects(p.parsedPlayer, schema.players[i]);
     });
+    //do render-only processing (not needed for aggregation, only for match display)
     match.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
+        player.parsedPlayer = match.parsedPlayers[i];
         var p = player.parsedPlayer;
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
         targets.forEach(function(target) {
@@ -401,7 +404,7 @@ function generateGraphData(match) {
         xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
     }
     else {
-        //TODO older matches need this data summed at view time, unless we migrate it
+        //TODO older matches need this data summed at view time, unless we migrate it to new format
         for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
             var goldtotal = 0;
             var xptotal = 0;
