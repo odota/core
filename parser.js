@@ -41,6 +41,7 @@ else {
                 stdio: ['ignore', debugFile, debugFile]
             });
             child.unref();
+            console.log(child);
         }
         else {
             err = "not passing deploy conditions";
@@ -62,7 +63,9 @@ else {
                 });
             }
             if (err && config.NODE_ENV !== "test") {
-                console.error(err.stack);
+                if (err){
+                    console.error(err.stack);
+                }
                 process.exit(1);
             }
             return res.json(parsed_data);
