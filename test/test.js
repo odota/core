@@ -355,6 +355,7 @@ describe("web", function() {
                     done(err);
                 });
         });
+        /*
         it('/professional', function(done) {
             supertest(app).get('/professional')
                 //.expect('Content-Type', /json/)
@@ -363,6 +364,7 @@ describe("web", function() {
                     done(err);
                 });
         });
+        */
         it('/status', function(done) {
             supertest(app).get('/status')
                 //.expect('Content-Type', /json/)
