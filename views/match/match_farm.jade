@@ -40,11 +40,9 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-              td #{p.lh[i/60]}
+              td #{p.lh ? p.lh[i/60] : "-"}
               
-  hr
   +ad("banner2")
-  hr
   
   .row
     .col-md-8
@@ -58,6 +56,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
+            - p.gold_reasons = p.gold_reasons || {}
             +hero_td(player)
             each val, key in constants.gold_reasons
               td #{p.gold_reasons[key] || "-"}
@@ -73,6 +72,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
+            - p.xp_reasons = p.xp_reasons || {}
             +hero_td(player)
             each val, key in constants.xp_reasons
               td #{p.xp_reasons[key] || "-"}
@@ -81,7 +81,7 @@ block match_content
     .col-md-12
       h3 Gold Sources
       #chart-gold-breakdown
-        
+
 append footer_assets
   script.
     var data = !{JSON.stringify(match.incomeData)};

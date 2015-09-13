@@ -509,6 +509,7 @@ module.exports = function aggregator(matches, fields, existing) {
         var m = matches[i];
         if (isSignificant(constants, m)) {
             var p = m.players[0];
+            p.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
             for (var key in fields) {
                 //execute the aggregation function for each specified field
                 if (types[key]) {

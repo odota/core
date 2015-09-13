@@ -277,7 +277,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 12,
+        "version": 13,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -302,7 +302,6 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
-                //removed for taking up too much space
                 //"pos": {},
                 "lane_pos": {},
                 "obs": {},
@@ -310,6 +309,7 @@ function getParseSchema() {
                 //individual chat event counts?
                 //"CHAT_MESSAGE_HERO_KILL":{},
                 //"clicks":{},
+                "actions": {},
                 "pings": {},
                 "purchase": {},
                 "gold_reasons": {},
@@ -371,13 +371,16 @@ function isSignificant(constants, m) {
 
 function reduceMatch(match) {
     //returns only the minimum of data required for display
-    delete match.all_players;
     delete match.parsed_data;
     delete match.my_word_counts;
     delete match.all_word_counts;
+    //keep parsedplayer and all_players if we want to store full cached data
+    /*
+    delete match.all_players;
     match.players.forEach(function(p) {
         delete p.parsedPlayer;
     });
+    */
     return match;
 }
 

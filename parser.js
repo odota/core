@@ -10,7 +10,7 @@ var spawn = cp.spawn;
 var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
-var constants = require('./constants.json');
+//var constants = require('./constants.json');
 var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
@@ -99,6 +99,7 @@ function runParse(data, cb) {
     var name_to_slot = {};
     var hero_to_slot = {};
     var hero_to_id = {};
+    var curr_player_hero = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
@@ -107,7 +108,7 @@ function runParse(data, cb) {
     var parsed_data;
     //parse logic
     //capture events streamed from parser and set up state for post-processing
-    //these events are generally not pushed to event buffer (except hero_log)
+    //these events are generally not pushed to event buffer
     var streamTypes = {
         "state": function(e) {
             //capture the replay time at which the game clock was 0:00
@@ -115,16 +116,6 @@ function runParse(data, cb) {
                 game_zero = e.time;
             }
             //console.log(e);
-        },
-        "hero_log": function(e) {
-            //lookups are used to map combat log names to player slots
-            //get hero name by id
-            var h = constants.heroes[e.key];
-            hero_to_slot[h ? h.name : e.key] = e.slot;
-            //get hero id by name
-            hero_to_id[h ? h.name : e.key] = e.key;
-            //push it to entries for hero log
-            entries.push(e);
         },
         "name": function(e) {
             name_to_slot[e.key] = e.slot;
@@ -141,9 +132,6 @@ function runParse(data, cb) {
             parsed_data.match_id = e.value;
         },
         "steam_id": function(e) {
-            populate(e);
-        },
-        "hero_log": function(e) {
             populate(e);
         },
         "combat_log": function(e) {
@@ -394,13 +382,14 @@ function runParse(data, cb) {
             }
         },
         "clicks": function(e) {
-            //just 0 (other) the key for now since we dont know what the order_types are
-            e.key = 0;
             getSlot(e);
         },
         "pings": function(e) {
             //we're not breaking pings into subtypes atm so just set key to 0 for now
             e.key = 0;
+            getSlot(e);
+        },
+        "actions": function(e) {
             getSlot(e);
         },
         "chat_event": function(e) {
@@ -501,6 +490,35 @@ function runParse(data, cb) {
                 teamfights.push(JSON.parse(JSON.stringify(curr_teamfight)));
                 //clear existing teamfight
                 curr_teamfight = null;
+            }
+            if (e.hero_id) {
+                if (curr_player_hero[e.slot] !== e.hero_id) {
+                    var h = {
+                        time: e.time,
+                        type: "hero_log",
+                        slot: e.slot,
+                        unit: e.unit,
+                        key: e.hero_id
+                    };
+                    populate(h);
+                    curr_player_hero[e.slot] = e.hero_id;
+                }
+                //grab the end of the name, lowercase it
+                var ending = e.unit.slice("CDOTA_Unit_Hero_".length);
+                //valve is bad at consistency and the combat log name could involve replacing camelCase with _ or not!
+                //double map it so we can look up both cases
+                var combatLogName = "npc_dota_hero_" + ending.toLowerCase();
+                //don't include final underscore here since the first letter is always capitalized and will be converted to underscore
+                var combatLogName2 = "npc_dota_hero" + ending.replace(/([A-Z])/g, function($1) {
+                    return "_" + $1.toLowerCase();
+                }).toLowerCase();
+                //console.log(combatLogName, combatLogName2);
+                //populate hero_to_slot for combat log mapping
+                hero_to_slot[combatLogName] = e.slot;
+                hero_to_slot[combatLogName2] = e.slot;
+                //populate hero_to_id for multikills
+                hero_to_id[combatLogName] = e.hero_id;
+                hero_to_id[combatLogName2] = e.hero_id;
             }
             if (e.time >= 0) {
                 e.type = "stuns";
