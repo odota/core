@@ -318,6 +318,7 @@ function renderMatch(m) {
     //create graph data
     m.graphData = generateGraphData(m);
     m.incomeData = generateIncomeData(m);
+    m.treeMapData = generateTreemapData(m);
     //create heatmap data
     m.posData = m.players.map(function(p) {
         return p.parsedPlayer.posData;
@@ -459,7 +460,7 @@ function generateIncomeData(match) {
         var col = [reason];
         orderedPlayers.forEach(function(player) {
             var g = player.parsedPlayer.gold_reasons;
-            col.push(g ? g[key] : 0);
+            col.push(g[key] || 0);
         });
         columns.push(col);
     }
@@ -469,6 +470,27 @@ function generateIncomeData(match) {
         gold_reasons: gold_reasons
     };
 }
+
+function generateTreemapData(match) {
+    var data = [];
+    match.players.forEach(function(player){
+        var hero = constants.heroes[player.hero_id] || {};
+        data.push({name: hero.localized_name, id: player.hero_id.toString(), value: ~~(player.gold_per_min*match.duration/60)});
+    })
+    for (var key in constants.gold_reasons) {
+        var reason = constants.gold_reasons[key].name;
+        match.players.forEach(function(player) {
+            var g = player.parsedPlayer.gold_reasons;
+            data.push({
+                name: reason,
+                parent: player.hero_id.toString(),
+                value: g[key] || 0
+            });
+        });
+    }
+    return data;
+}
+
 module.exports = {
     renderMatch: renderMatch,
     computeMatchData: computeMatchData

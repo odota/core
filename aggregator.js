@@ -552,7 +552,7 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
-            aggObj.avgs.push(aggObj.sum/aggObj.n);
+            aggObj.avgs.push(~~(aggObj.sum/aggObj.n*100)/100);
         }
     }
 

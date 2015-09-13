@@ -5,34 +5,91 @@ block playercontent
     .row
       .col-md-12
         script.
-          var chartData = {};
+          var histogramData = {};
+        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
         each val, key in player.aggData
-          if key in histograms && key==="duration"
-            h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
-              small (#{val.n} matches)
-            script.
-              chartData["#{key}"] = !{JSON.stringify(player.aggData[key])};
-            div.chart(id=key data-key=key)
+          if key in histograms
+            - var collapsed = true
+            button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+        each val, key in player.aggData
+          if key in histograms
+            - var avg = val.sum/val.n
+            - var collapsed = true
+            section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
+              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+                small (#{val.n} matches)
+              script.
+                histogramData["#{key}"] = !{JSON.stringify({avgs: player.aggData[key].avgs})};
+              div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
           
 append footer_assets
-  //http://code.highcharts.com/highcharts.js
+  //-
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="https://rawgit.com/highslide-software/highcharts.com/master/js/themes/gray.js"></script>
+    script(src="https://rawgit.com/nnnick/Chart.js/master/Chart.js")
   script.
-    $(".chart").each(function() {
-        var key = $(this).attr('data-key');
-        var avgs = chartData[key].avgs;
+    $(".histogram-chart").each(function() {
+        var key = $(this).attr('data-histogram');
+        var avgs = histogramData[key].avgs;
         createTrends(avgs, key);
     });
+    $("#histogram-container-toggle-duration").click();
     
     function createTrends(avgs, key){
       var chart = c3.generate({
-      bindto: document.getElementById(key),
+      bindto: document.getElementById("chart-histogram-"+key),
       data: {
+          x:'x',
           columns: [
+              ['x'].concat(avgs.map(function(a,i){return i;})),
               [key].concat(avgs)
           ]
       },
-      zoom: {
-        enabled: true
+      axis: {
+        x: {
+        tick:{
+            values: [0]
+        }
+        }
+    }
+    });
+    }
+    
+    function createTrends2(avgs, key){
+    $('#'+key).highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: key
+        },
+        series: [{
+            name: key,
+            data: avgs
+        }]
+      });
+    }
+    
+    function createTrends3(avgs, key){
+      var data = {
+      labels: avgs.map(function(a){return "";}),
+      datasets:[
+      {
+      label: key,
+      data: avgs
       }
+      ]
+      };
+      var options = {datasetFill: false};
+      var ctx = document.getElementById(key).getContext("2d");
+      var myNewChart = new Chart(ctx).Line(data, options);
+    }
+
+    function showAll(){
+      $(".histogram-toggle-button").each(function() {
+        if ($(this).attr("aria-expanded")!=="true"){
+          this.click();
+        }
       });
     }
