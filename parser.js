@@ -35,9 +35,10 @@ else {
         if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
+            var debugFile = fs.openSync("./deploy_debug.txt", "a+");
             var child = spawn('npm run deploy-parser', [], {
                 detached: true,
-                stdio: ['ignore', fs.openSync("./deploy_debug.txt", "a+"), 'ignore']
+                stdio: ['ignore', debugFile, debugFile]
             });
             child.unref();
         }
