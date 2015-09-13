@@ -165,33 +165,27 @@
   "runes": {
     "0": {
       "name": "DD",
-      "img": "",
-      "tooltip": "Double Damage Runes"
+      "img": ""
     },
     "1": {
       "name": "HST",
-      "img": "",
-      "tooltip": "Haste Runes"
+      "img": ""
     },
     "2": {
       "name": "ILL",
-      "img": "",
-      "tooltip": "Illusion Runes"
+      "img": ""
     },
     "3": {
       "name": "INV",
-      "img": "",
-      "tooltip": "Invisibility Runes"
+      "img": ""
     },
     "4": {
       "name": "REG",
-      "img": "",
-      "tooltip": "Regeneration Runes"
+      "img": ""
     },
     "5": {
       "name": "BTY",
-      "img": "",
-      "tooltip": "Bounty Runes"
+      "img": ""
     }
   },
   "parse_status": {
@@ -204,6 +198,13 @@
   "api_msg": "Valve's WebAPI is currently delayed.  Your matches will be processed when the service resumes.",
   "tooltips": {
     "status": "Queued: Replay is being downloaded/processed<br>Parsed: Replay has been obtained and processed<br>Unavailable: Replay has expired and no additional stats could be obtained<br>Skipped: We didn't automatically parse this match due to user inactivity."
+    "rune_DD":"Double Damage Runes",
+    "rune_HST":"Haste Runes",
+    "rune_ILL":"Illusion Runes",
+    "rune_INV":"Invisibility Runes",
+    "rune_REG":"Regeneration Runes",
+    "rune_BTY":"Bounty Runes"
+    
   },
   "anonymous_account_id": 4294967295,
   "lobby_type": {
