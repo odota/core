@@ -379,14 +379,6 @@ describe("web", function() {
                     done(err);
                 });
         });
-        it('/page/1', function(done) {
-            supertest(app).get('/page/1')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Blog/).end(function(err, res) {
-                    done(err);
-                });
-        });
         it('/carry', function(done) {
             supertest(app).get('/carry')
                 //.expect('Content-Type', /json/)
