@@ -254,7 +254,7 @@ function renderMatch(m) {
     //do render-only processing (not needed for aggregation, only for match display)
     m.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
-        p.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
+        player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
         var p = player.parsedPlayer;
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
         targets.forEach(function(target) {
