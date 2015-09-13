@@ -468,7 +468,7 @@ function runParse(data, cb) {
                     //currently using combat log buyback
                     //case "CHAT_MESSAGE_BUYBACK"
                 default:
-                    console.log(e);
+                    //console.log(e);
             }
         },
         "chat": function getChatSlot(e) {
