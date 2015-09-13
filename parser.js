@@ -37,9 +37,9 @@ else {
             //run the deployment command
             var debugFile = fs.openSync("./deploy_debug.txt", "a+");
             var child = spawn('npm run deploy-parser', [], {
+                cwd: process.cwd(),
                 detached: true,
                 stdio: ['ignore', 'ignore', 'ignore'],
-                env: config
             });
             child.unref();
             console.log(child);
