@@ -11,7 +11,7 @@ block playercontent
             h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
             script.
               chartData["#{key}"] = !{JSON.stringify(player.aggData[key])};
-            div.chart(id=key data-key=key) !{JSON.stringify(player.aggData[key].avgs)}
+            div.chart(id=key data-key=key)
           
 append footer_assets
   script.
@@ -28,6 +28,9 @@ append footer_assets
           columns: [
               [key].concat(avgs)
           ]
+      },
+      zoom: {
+        enabled: true
       }
       });
     }
