@@ -3,12 +3,12 @@ extend match
 block match_content
   .row
     .col-md-6
-      h3.inline-header: abbr(title="Data recorded from combat log.  Includes Aegis and Reincarnation deaths.") Kill/Death
+      h3.inline-header: abbr(title=tooltips.kill_death) Kill/Death
       table-responsive
         table.table.table-hover.table-condensed
           thead
             tr
-              th Hero
+              th: abbr(title=tooltips.hero_id) Hero
               each player, ind in match.players.slice(match.players.length/2, match.players.length)
                 +hero_td(player)
           tbody
@@ -34,12 +34,12 @@ block match_content
                       span(class=p1>p2 ? "" : "text-danger") #{p2}
 
     .col-md-6
-      h3.inline-header: abbr(title="Data recorded from combat log.  Values may not match those given in the API.") Damage Done/Taken
+      h3.inline-header: abbr(title=tooltips.damage_taken) Damage Done/Taken
       table-responsive
         table.table.table-hover.table-condensed
           thead
             tr
-              th Hero
+              th: abbr(title=tooltips.hero_id) Hero
               each player, ind in match.players.slice(match.players.length/2, match.players.length)
                 +hero_td(player)
           tbody
@@ -69,7 +69,7 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
+              th: abbr(title=tooltips.hero_id) Hero
               each val,key in constants.multi_kills
                 th: abbr(title=val) #{key}
           tr(class = player.isRadiant ? "radiant" : "dire")
@@ -84,7 +84,7 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
+              th: abbr(title=tooltips.hero_id) Hero
               each val, key in constants.kill_streaks
                 th: abbr(title=val) #{key}
           tr(class = player.isRadiant ? "radiant" : "dire")
@@ -105,7 +105,7 @@ block match_content
           - var p = player.parsedPlayer
           +data_table_header(ind, match)
             tr
-              th Hero
+              th: abbr(title=tooltips.hero_id) Hero
               - for (var i = 0; i <= match.duration + bucket; i+=bucket)
                 th= i/60+"'"
           tr

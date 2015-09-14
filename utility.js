@@ -371,9 +371,10 @@ function isSignificant(constants, m) {
 
 function reduceMatch(match) {
     //returns only the minimum of data required for display
+    //we can delete match.parsed_player since we generate a single-player's parsedPlayer from it
     delete match.parsed_data;
-    delete match.my_word_counts;
-    delete match.all_word_counts;
+    //delete match.my_word_counts;
+    //delete match.all_word_counts;
     //keep parsedplayer and all_players if we want to store full cached data
     /*
     delete match.all_players;

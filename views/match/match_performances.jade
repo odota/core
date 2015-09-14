@@ -7,15 +7,14 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
-              th: abbr(title="Lane based on early game position") Lane
-              th: abbr(title="# of Observer Wards placed during the game") Observer
-              th: abbr(title="# of Sentry Wards placed during the game") Sentry
-              th: abbr(title="Order in which the player picked") Pick
-              //th Pick Time
-              th: abbr(title="Percentage of lane gold (creeps+passive+starting) obtained at 10 minutes") EFF@10
-              th: abbr(title="Last hits at 10 minutes") LH@10
-              th: abbr(title="Seconds of disable on heroes") Stuns
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.lane) Lane
+              th: abbr(title=tooltips.used_ward_observer) Observer
+              th: abbr(title=tooltips.used_ward_sentry) Sentry
+              th: abbr(title=tooltips.pick_order) Pick
+              th: abbr(title=tooltips.efficiency) EFF@10
+              th: abbr(title=tooltips.lhten) LH@10
+              th: abbr(title=tooltips.stuns) Stuns
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var p = player.parsedPlayer
             +hero_td(player)
@@ -23,7 +22,6 @@ block match_content
             td.activate(data-index=i, data-type="obs") #{p.obs_log.length || "-"}
             td.activate(data-index=i, data-type="sen") #{p.sen_log.length || "-"}
             td #{p.pick_order} 
-            //td <span class="format-seconds" data-format-seconds=#{p.pick_time}></span>
             td #{(Number(p.lane_efficiency)*100).toFixed(2)}
             td #{p.lh[10]}
             td #{Number(p.stuns).toFixed(2)}
@@ -41,11 +39,11 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
-              th: abbr(title="Largest instance of damage on a hero") Biggest Hit
-              th: abbr(title="Skills used (Number of hits on enemy heroes)") Skill Use (Hits)
-              th: abbr(title="Items used") Item Use
-              th: abbr(title="Damage dealt to heroes by skills/abilities") Damage Inflictors
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.max_hero_hit) Biggest Hit
+              th: abbr(title=tooltips.ability_uses) Skill Use (Hits)
+              th: abbr(title=tooltips.item_uses) Item Use
+              th: abbr(title=tooltips.damage_inflictor) Damage Inflictors
 
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var p = player.parsedPlayer

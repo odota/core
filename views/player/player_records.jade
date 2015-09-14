@@ -19,7 +19,7 @@ block playercontent
               if key in histograms
                 - var avg = val.sum/val.n
                 tr
-                  td #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+                  td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                   td
                     - var hero = constants.heroes[val.max_match.hero_id]
                     if hero

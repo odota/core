@@ -396,31 +396,31 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, m.my_word_counts, m);
             }
         },
-        "tps_purchased": {
+        "purchase_tpscroll": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.tpscroll || 0) : undefined, m);
             }
         },
-        "observers_purchased": {
+        "purchase_ward_observer": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_observer || 0) : undefined, m);
             }
         },
-        "sentries_purchased": {
+        "purchase_ward_sentry": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry * 2 || 0) : undefined, m);
             }
         },
-        "gems_purchased": {
+        "purchase_gem": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.gem || 0) : undefined, m);
             }
         },
-        "rapiers_purchased": {
+        "purchase_rapier": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.rapier || 0) : undefined, m);

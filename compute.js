@@ -170,6 +170,11 @@ function computeMatchData(match) {
                         parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
+                if (parsedPlayer.purchase){
+                    //account for stacks
+                    parsedPlayer.purchase.ward_sentry *=2;
+                    parsedPlayer.purchase.dust *=2;
+                }
                 if (parsedPlayer.actions) {
                     parsedPlayer.actions_sum = 0;
                     for (var key in parsedPlayer.actions) {

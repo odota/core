@@ -16,7 +16,7 @@ block playercontent
             - var avg = val.sum/val.n
             - var collapsed = true
             section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
-              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+              h3: abbr(title=tooltips[key]) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
                 small (#{val.n} matches)
               script.
                 histogramData["#{key}"] = !{JSON.stringify({avgs: player.aggData[key].avgs})};
