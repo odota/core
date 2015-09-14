@@ -13,7 +13,22 @@ block content
         br
   .row
     .col-md-12
-      block blogcontent
+      each post in posts
+        .panel.panel-default.blog-panel
+          .panel-heading
+              h2.panel-title.blog-heading=post.title
+              h6.blog-date By #{post.author} | #{moment(post.date).format("dddd, MMMM Do, YYYY")}
+          .panel-body
+              != post.content
+              .tags
+                  each tag in post.tags
+                      a(href=tagUrl(tag))
+                          span.label.label-info #{tag}
+      ul.pagination.pull-right
+        if id<max
+          li: a(href="/blog/"+(id+1)) Newer
+        if id>0
+          li: a(href="/blog/"+(id-1)) Older
     //-
       .col-md-2
         block taglegend

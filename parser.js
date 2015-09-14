@@ -7,6 +7,7 @@ var utility = require('./utility');
 var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
+var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
 //var constants = require('./constants.json');
@@ -30,16 +31,28 @@ else {
     });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
-        var err;
+        var err = false;
         //TODO verify the POST is from github/secret holder
         if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
-            var child = spawn('npm run deploy-parser', [], {
+            var debugFile = fs.openSync("./deploy_debug.txt", "a+");
+            /*
+            var child = spawn('npm run deploy-parser', null, {
+                cwd: process.cwd(),
                 detached: true,
                 stdio: ['ignore', 'ignore', 'ignore']
             });
+            */
+            var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
+                if (error) {
+                    console.log('exec error: ' + error);
+                }
+            });
             child.unref();
+            console.log(child);
         }
         else {
             err = "not passing deploy conditions";
@@ -61,7 +74,9 @@ else {
                 });
             }
             if (err && config.NODE_ENV !== "test") {
-                console.error(err.stack);
+                if (err){
+                    console.error(err.stack);
+                }
                 process.exit(1);
             }
             return res.json(parsed_data);
@@ -107,11 +122,6 @@ function runParse(data, cb) {
         },
         "error": function(e) {
             error = "parse error: " + e.key;
-        },
-        "progress": function(e) {
-            //job.progress(e.key, 100);
-            //TODO we could output this as line delimited json
-            console.log(e);
         },
         "epilogue": function() {
             error = null;
@@ -587,10 +597,7 @@ function runParse(data, cb) {
                 encoding: null,
                 timeout: 30000
             })).on('progress', function(state) {
-                parseStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }) + "\n");
+                console.log(JSON.stringify({url: url, percent: state.percent}));
             }).on('response', function(response) {
                 if (response.statusCode !== 200) {
                     parseStream.write(JSON.stringify({

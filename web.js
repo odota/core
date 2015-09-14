@@ -99,6 +99,15 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
+poet.addRoute('/blog/:id?', function (req, res) {
+  var max = poet.helpers.getPostCount();
+  var id = Number(req.params.id) || max;
+  res.render('blog', {
+    posts: poet.helpers.getPosts(max-id, max-id+1),
+    id: id,
+    max: max
+  });
+});
 app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /players\nDisallow: /matches");

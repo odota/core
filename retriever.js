@@ -35,7 +35,12 @@ async.each(a, function(i, cb) {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
         client.steamUser.logOn(logOnDetails);
     });
-    client.on("logOnResponse", function onSteamLogOn() {
+    client.on("logOnResponse", function(logonResp) {
+        //EResult.OK
+        if (logonResp.eresult !== 1) {
+            //try logging on again
+            return client.steamUser.logOn(logOnDetails);
+        }
         console.log("[STEAM] Logged on %s", client.steamID);
         client.steamFriends.setPersonaName("[YASP] " + client.steamID);
         steamObj[client.steamID] = client;
@@ -84,9 +89,11 @@ async.each(a, function(i, cb) {
     client.on('error', function onSteamError(e) {
         //reset
         console.log(e);
-        //process.exit(1);
+        console.log("reconnecting");
+        client.connect();
     });
     client.on('loggedOff', function() {
+        console.log("relogging");
         client.steamUser.logOn(logOnDetails);
     });
     client.Dota2.once("ready", function() {
