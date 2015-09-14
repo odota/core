@@ -59,6 +59,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "deaths": 1,
         "assists": 1,
         "kda": 1,
+        "lane_efficiency": 1,
         "last_hits": 1,
         "denies": 1,
         "hero_damage": 1,
