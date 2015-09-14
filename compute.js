@@ -202,7 +202,7 @@ function computeMatchData(match) {
         }
     }
     catch (e) {
-        console.log(e.stack, match.match_id);
+        console.error(e.stack, match.match_id);
     }
 }
 // count the words that occur in a set of messages
