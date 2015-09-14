@@ -1,19 +1,18 @@
 include /mixins/progress_bar
 
-mixin hero_table(rows, short)
+mixin hero_table(rows)
   h3 Heroes
   table.table.table-condensed#heroes.table-striped
     thead
       tr
-        th Hero
-        th.fromNow Last
-        th Played As
-        th Win%
-        if !short
-          th: abbr(title="Number of games with this hero on the team") Played With
-          th Win% 
-          th: abbr(title="Number of games with this hero on the opposing team") Played Against
-          th Win%
+        th: abbr(title=tooltips.hero_id) Hero
+        th.fromNow: abbr(title=tooltips.last_played) Last
+        th: abbr(title=tooltips.played_as) Played As
+        th: abbr(title=tooltips.win_pct) Win%
+        th: abbr(title=tooltips.played_with) Played With
+        th: abbr(title=tooltips.win_pct) Win%
+        th: abbr(title=tooltips.played_against) Played Against
+        th: abbr(title=tooltips.win_pct) Win%
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
@@ -24,10 +23,9 @@ mixin hero_table(rows, short)
         td=h.games
         td
           +progress_bar(h.win, h.games)
-        if !short
-          td=h.with_games
-          td
-            +progress_bar(h.with_win, h.with_games)
-          td=h.against_games
-          td
-            +progress_bar(h.against_win, h.against_games)
+        td=h.with_games
+        td
+          +progress_bar(h.with_win, h.with_games)
+        td=h.against_games
+        td
+          +progress_bar(h.against_win, h.against_games)
