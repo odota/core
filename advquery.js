@@ -203,13 +203,9 @@ function getParsedPlayerData(matches, doAction, cb) {
     if (!doAction) {
         return cb();
     }
-    //we optimize by filtering matches for only those with parse_status===2
-    var parsed = matches.filter(function(m) {
-        return m.parse_status === 2;
-    });
     //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we might want a different position on each query, we need to make them individually
-    async.each(parsed, function(m, cb) {
+    async.each(matches, function(m, cb) {
         var player = m.players[0];
         var parseSlot = player.player_slot % (128 - 5);
         db.matches.findOne({
