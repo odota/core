@@ -40,11 +40,9 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             - for (var i = 0; i <= match.duration + bucket; i+=bucket)
-              td #{p.lh[i/60]}
+              td #{p.lh ? p.lh[i/60] : "-"}
               
-  hr
   +ad("banner2")
-  hr
   
   .row
     .col-md-8
@@ -58,6 +56,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
+            - p.gold_reasons = p.gold_reasons || {}
             +hero_td(player)
             each val, key in constants.gold_reasons
               td #{p.gold_reasons[key] || "-"}
@@ -73,6 +72,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
+            - p.xp_reasons = p.xp_reasons || {}
             +hero_td(player)
             each val, key in constants.xp_reasons
               td #{p.xp_reasons[key] || "-"}
@@ -81,7 +81,8 @@ block match_content
     .col-md-12
       h3 Gold Sources
       #chart-gold-breakdown
-        
+      #chart-gold-treemap
+
 append footer_assets
   script.
     var data = !{JSON.stringify(match.incomeData)};
@@ -107,3 +108,28 @@ append footer_assets
             }
         }
     });
+  //-
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="https://rawgit.com/highslide-software/highcharts.com/master/js/themes/gray.js"></script>
+    <script src="https://rawgit.com/highslide-software/highcharts.com/master/js/modules/treemap.src.js"></script>
+    script.
+      var data = !{JSON.stringify(match.treeMapData)};
+      console.log(data);
+      $('#chart-gold-treemap').highcharts({
+          series:[{type:"treemap",
+              allowDrillToNode: true,
+              data:data,
+              layoutAlgorithm: "squarified",
+              dataLabels:{enabled:true},
+              colorByPoint: true,
+              levels: [{
+                  level: 1,
+                  dataLabels: {
+                      enabled: true,
+                      align: "left",
+                      verticalAlign: "top"
+                  }
+              }],
+              }]
+      });
