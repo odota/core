@@ -465,7 +465,7 @@ module.exports = function aggregator(matches, fields, existing) {
         "lane_efficiency": {
             type: "parsed",
             agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.lane_efficiency ? p.parsedPlayer.lane_efficiency*100 : undefined, m);
+                standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lan_efficiency*100) : undefined, m);
             }
         }
     };
