@@ -30,6 +30,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
+                //full mongo cache
                 var match_copy = JSON.parse(JSON.stringify(match));
                 if (options.type !== "skill") {
                     //m.players[0] should be this player
@@ -55,6 +56,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return insertPlayers(cb);
                 });
                 /*
+                //aggregate redis cache
                     redis.get("player:" + p.account_id, function(err, result) {
                         if (err) {
                             return cb(err);
@@ -86,22 +88,14 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 //reduce match for display
                                 //if we want to cache full data, we don't want to get rid of player.parsedPlayer in the match_copy
                                 reduceMatch(match_copy);
-                                var orig = cache.data[match_copy.match_id];
-                                if (!orig) {
-                                    cache.data[match_copy.match_id] = match_copy;
-                                }
-                                else {
-                                    //check if we can update old values
-                                    //use new parse status if 2
-                                    orig.parse_status = match_copy.parse_status === 2 ? match_copy.parse_status : orig.parse_status;
-                                    //use new players[] if parse_status===2
-                                    orig.players = match_copy.parse_status === 2 ? match_copy.players : orig.players;
-                                }
+                            }
+                            var orig = cache.data[match_copy.match_id];
+                            if (!orig) {
+                                cache.data[match_copy.match_id] = match_copy;
                             }
                             else {
-                                //update only, if type===skill
-                                if (cache.data[match_copy.match_id]) {
-                                    cache.data[match_copy.match_id].skill = match_copy.skill;
+                                for (var key in match_copy) {
+                                    orig[key] = match_copy[key];
                                 }
                             }
                             redis.ttl("player:" + p.account_id, function(err, ttl) {
@@ -111,7 +105,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                             });
                         }
-                        insertPlayers(cb);
+                        return insertPlayers(cb);
                         //return cb(err);
                     });
                     */

@@ -24,7 +24,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     db.matches.count({
         "players.account_id": Number(account_id)
     }, function(err, match_count) {
-        console.log(match_count);
+        //console.log(match_count);
         console.timeEnd("count");
         db.player_matches.find({
             account_id: account_id
@@ -129,7 +129,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     player.posData = [d];
                 }
                 //save cache
-                if (!cache.data.length) {
+                if (!cache.data.length && player.account_id !== constants.anonymous_account_id) {
                     //delete unnecessary data from unfiltered
                     results.unfiltered.forEach(reduceMatch);
                     async.each(results.unfiltered, function(match_copy, cb) {
