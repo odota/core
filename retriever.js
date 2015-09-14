@@ -1,6 +1,6 @@
 var config = require('./config');
-var steam = require("steam");
-var dota2 = require("dota2");
+var Steam = require("steam");
+var Dota2 = require("dota2");
 var utility = require("./utility");
 var async = require('async');
 var convert64To32 = utility.convert64to32;
@@ -20,10 +20,10 @@ while (a.length < users.length) a.push(a.length + 0);
 async.each(a, function(i, cb) {
     var dotaReady = false;
     var relationshipReady = false;
-    var client = new steam.SteamClient();
-    client.steamUser = new steam.SteamUser(client);
-    client.steamFriends = new steam.SteamFriends(client);
-    client.Dota2 = new dota2.Dota2Client(client, false, false);
+    var client = new Steam.SteamClient();
+    client.steamUser = new Steam.SteamUser(client);
+    client.steamFriends = new Steam.SteamFriends(client);
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -36,8 +36,7 @@ async.each(a, function(i, cb) {
         client.steamUser.logOn(logOnDetails);
     });
     client.on("logOnResponse", function(logonResp) {
-        //EResult.OK
-        if (logonResp.eresult !== 1) {
+        if (logonResp.eresult !== Steam.EResult.OK) {
             //try logging on again
             return client.steamUser.logOn(logOnDetails);
         }
@@ -57,7 +56,7 @@ async.each(a, function(i, cb) {
                 var steamID = prop;
                 var relationship = client.steamFriends.friends[prop];
                 //friends that came in while offline
-                if (relationship === steam.EFriendRelationship.RequestRecipient) {
+                if (relationship === Steam.EFriendRelationship.RequestRecipient) {
                     client.steamFriends.addFriend(steamID);
                     console.log(steamID + " was added as a friend");
                 }
@@ -72,7 +71,7 @@ async.each(a, function(i, cb) {
         });
         client.steamFriends.on("friend", function(steamID, relationship) {
             //immediately accept incoming friend requests
-            if (relationship === steam.EFriendRelationship.RequestRecipient) {
+            if (relationship === Steam.EFriendRelationship.RequestRecipient) {
                 console.log("friend request received");
                 client.steamFriends.addFriend(steamID);
                 console.log("friend request accepted");
