@@ -12,6 +12,7 @@ var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
+var launched = false;
 var a = [];
 var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
@@ -34,6 +35,12 @@ async.each(a, function(i, cb) {
     client.on('connected', function() {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
         client.steamUser.logOn(logOnDetails);
+        client.once('error', function onSteamError(e) {
+            //reset
+            console.log(e);
+            console.log("reconnecting");
+            client.connect();
+        });
     });
     client.on("logOnResponse", function(logonResp) {
         if (logonResp.eresult !== Steam.EResult.OK) {
@@ -84,25 +91,18 @@ async.each(a, function(i, cb) {
             }
             */
         });
+        client.Dota2.once("ready", function() {
+            //console.log("Dota 2 ready");
+            dotaReady = true;
+            allDone();
+        });
+        client.once('loggedOff', function() {
+            console.log("relogging");
+            client.steamUser.logOn(logOnDetails);
+        });
     });
-    client.on('error', function onSteamError(e) {
-        //reset
-        console.log(e);
-        console.log("reconnecting");
-        client.connect();
-    });
-    client.on('loggedOff', function() {
-        console.log("relogging");
-        client.steamUser.logOn(logOnDetails);
-    });
-    client.Dota2.once("ready", function() {
-        //console.log("Dota 2 ready");
-        dotaReady = true;
-        allDone();
-    });
-
     function allDone() {
-        if (dotaReady && relationshipReady) {
+        if (dotaReady && relationshipReady && launched) {
             count += 1;
             console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
@@ -110,6 +110,7 @@ async.each(a, function(i, cb) {
     }
 }, function() {
     //start listening
+    launched = true;
     var server = app.listen(port, function() {
         var host = server.address().address;
         console.log('[RETRIEVER] listening at http://%s:%s', host, port);
