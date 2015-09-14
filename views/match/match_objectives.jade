@@ -28,9 +28,9 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-             th Hero
+             th: abbr(title=tooltips.hero_id) Hero
              each val, key in constants.runes
-               th: abbr(title=val.tooltip)=val.name  
+               th: abbr(title=constants.tooltips["rune_"+val.name])=val.name  
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             - var p = player.parsedPlayer
