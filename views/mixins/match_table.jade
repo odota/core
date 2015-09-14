@@ -3,19 +3,19 @@ mixin match_table(matches)
   table.table.table-condensed#matches.table-striped
     thead
       tr
-        th ID
-        th Hero
-        th Result
-        th Mode
-        th Skill
-        th.seconds Duration
-        th.fromNow Ended
-        th K
-        th D
-        th A
-        th LH
-        th GPM
-        th Status
+        th: abbr(title=tooltips.match_id) ID
+        th: abbr(title=tooltips.hero_id) Hero
+        th: abbr(title=tooltips.result) Result
+        th: abbr(title=tooltips.game_mode) Mode
+        th: abbr(title=tooltips.skill) Skill
+        th.seconds: abbr(title=tooltips.duration) Duration
+        th.fromNow: abbr(title=tooltips.ended) Ended
+        th: abbr(title=tooltips.kills) K
+        th: abbr(title=tooltips.deaths) D
+        th: abbr(title=tooltips.assists) A
+        th: abbr(title=tooltips.last_hits) LH
+        th: abbr(title=tooltips.gold_per_min) GPM
+        th: abbr(title=tooltips.status) Status
 
     tbody
       each match in matches

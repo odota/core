@@ -44,7 +44,7 @@ block content
       ul.nav.nav-tabs
         each val, key in tabs
           - var disableTab = !match.parsed_data.version && key!=="index"
-          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? 'This data will be available when the replay is parsed.' : ''))
+          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
 
   .match

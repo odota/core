@@ -85,7 +85,7 @@ matches.get('/:match_id/:info?', function(req, res, next) {
                 //"DOTA_UNIT_ORDER_EJECT_ITEM_FROM_STASH"
                 //"DOTA_UNIT_ORDER_CAST_RUNE"
                 "DOTA_UNIT_ORDER_PING_ABILITY": "Pings (Ability)"
-                    //"DOTA_UNIT_ORDER_MOVE_TO_DIRECTION"
+                //"DOTA_UNIT_ORDER_MOVE_TO_DIRECTION"
             },
             title: "Match " + match.match_id + " - YASP"
         });

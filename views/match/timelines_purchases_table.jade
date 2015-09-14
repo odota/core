@@ -3,7 +3,7 @@
   each player, ind in match.players
     - var p = player.parsedPlayer
     +data_table_header(ind, match) 
-      th Hero
+      th: abbr(title=tooltips.hero_id) Hero
       - for (var d = 0; d <= match.duration + bucket; d+=bucket)
         th= d/60+"'"
     if !truncate || truncate.indexOf(ind) > -1

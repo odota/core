@@ -2,7 +2,7 @@ var config = require('./config');
 var db = require('monk')(config.MONGO_URL);
 db.players = db.get('players');
 db.matches = db.get('matches');
-db.ratings = db.get('ratings');
+db.player_matches = db.get('player_matches');
 db.matches.index({
     'players.account_id': 1,
     'match_id': -1
@@ -62,5 +62,8 @@ db.players.index({
 db.players.index({
     'last_summaries_update': 1
 });
-
+db.player_matches.index({
+    'account_id': 1,
+    'match_id': 1
+});
 module.exports = db;

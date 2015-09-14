@@ -9,14 +9,14 @@ block playercontent
       table.table#builds.table-striped
         thead
           tr
-            th Item
-            th: abbr(title="Number of times this item was built") Built
-            th: abbr(title="Number of matches where this item was built") Matches
-            th: abbr(title="Number of times this item was used") Uses
-            th: abbr(title="Mean number of times this item was used in matches where it was built") Uses/Match
-            th.seconds: abbr(title="Mean time this item was built at") Avg Timing
-            th: abbr(title="Percentage of matches this item was built in") Build%
-            th: abbr(title="Percentage of matches won where this item was built") Win%
+            th: abbr(title=tooltips.items_name) Name
+            th: abbr(title=tooltips.items_built) Built
+            th: abbr(title=tooltips.items_matches) Matches
+            th: abbr(title=tooltips.items_uses) Uses
+            th: abbr(title=tooltips.items_uses_per_match) Uses/Match
+            th.seconds: abbr(title=tooltips.items_timing) Avg Timing
+            th: abbr(title=tooltips.items_build_pct) Build%
+            th: abbr(title=tooltips.items_win_pct) Win%
 
         tbody
           each val, key in player.aggData.purchase_time.counts
