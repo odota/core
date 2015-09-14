@@ -40,17 +40,19 @@ block content
             td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
     
   .row(style="margin-top:1em;")
-    .col-md-10.table-responsive
+    .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
           - var disableTab = !match.parsed_data.version && key!=="index"
-          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? 'This data will be available when the replay is parsed.' : ''))
+          li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
-    .col-md-2
-      .addthis_sharing_toolbox.pull-right
 
   .match
     block match_content
+  
+  .row
+    .col-md-12.col-offset-10
+      .addthis_sharing_toolbox.pull-right
 
 append footer_assets
   script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")

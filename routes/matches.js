@@ -5,7 +5,10 @@ var config = require('../config');
 var compute = require('../compute');
 var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
-var redis = require('../redis').client;
+var async = require('async');
+var r = require('../redis');
+var redis = r.client;
+var kue = r.kue;
 var db = require('../db');
 var matchPages = {
     index: {
@@ -35,6 +38,9 @@ var matchPages = {
     teamfights: {
         name: "Teamfights"
     },
+    actions: {
+        name: "Actions"
+    },
     chat: {
         name: "Chat"
     }
@@ -50,11 +56,47 @@ matches.get('/:match_id/:info?', function(req, res, next) {
         if (req.query.json) {
             return res.json(match);
         }
-        res.render("match/match_" + info, {
-            route: info,
-            match: match,
-            tabs: matchPages,
-            title: "Match " + match.match_id + " - YASP"
+        getQueuePosition(match, function(err, position) {
+            if (err) {
+                return next(err);
+            }
+            res.render("match/match_" + info, {
+                route: info,
+                match: match,
+                tabs: matchPages,
+                display_types: {
+                    "DOTA_UNIT_ORDER_MOVE_TO_POSITION": "Move (P)",
+                    "DOTA_UNIT_ORDER_MOVE_TO_TARGET": "Move (T)",
+                    "DOTA_UNIT_ORDER_ATTACK_MOVE": "Attack (M)",
+                    "DOTA_UNIT_ORDER_ATTACK_TARGET": "Attack (T)",
+                    "DOTA_UNIT_ORDER_CAST_POSITION": "Cast (P)",
+                    "DOTA_UNIT_ORDER_CAST_TARGET": "Cast (T)",
+                    //"DOTA_UNIT_ORDER_CAST_TARGET_TREE"
+                    //"DOTA_UNIT_ORDER_CAST_NO_TARGET"
+                    //"DOTA_UNIT_ORDER_CAST_TOGGLE"
+                    "DOTA_UNIT_ORDER_HOLD_POSITION": "Hold",
+                    //"DOTA_UNIT_ORDER_TRAIN_ABILITY",
+                    "DOTA_UNIT_ORDER_DROP_ITEM": "Drop",
+                    "DOTA_UNIT_ORDER_GIVE_ITEM": "Give",
+                    "DOTA_UNIT_ORDER_PICKUP_ITEM": "Pickup",
+                    //"DOTA_UNIT_ORDER_PICKUP_RUNE"
+                    //"DOTA_UNIT_ORDER_PURCHASE_ITEM"
+                    //"DOTA_UNIT_ORDER_SELL_ITEM"
+                    //"DOTA_UNIT_ORDER_DISASSEMBLE_ITEM"
+                    //"DOTA_UNIT_ORDER_MOVE_ITEM"
+                    //"DOTA_UNIT_ORDER_CAST_TOGGLE_AUTO"
+                    //"DOTA_UNIT_ORDER_STOP"
+                    "DOTA_UNIT_ORDER_TAUNT": "Taunt",
+                    //"DOTA_UNIT_ORDER_BUYBACK",
+                    "DOTA_UNIT_ORDER_GLYPH": "Glyph",
+                    //"DOTA_UNIT_ORDER_EJECT_ITEM_FROM_STASH"
+                    //"DOTA_UNIT_ORDER_CAST_RUNE"
+                    "DOTA_UNIT_ORDER_PING_ABILITY": "Pings (Ability)"
+                        //"DOTA_UNIT_ORDER_MOVE_TO_DIRECTION"
+                },
+                position: position,
+                title: "Match " + match.match_id + " - YASP"
+            });
         });
     });
 });
@@ -96,6 +138,21 @@ function prepareMatch(match_id, cb) {
                 }
             });
         }
+    });
+}
+
+function getQueuePosition(match, cb) {
+    kue.Job.rangeByType("parse", "*", 0, -1, "ASC", function(err, ids) {
+        async.mapSeries(ids, kue.Job.get, function(err, jobs) {
+            //sort jobs by promotion time
+            console.log(jobs);
+            jobs.sort(function(a,b){return a.promote_at - b.promote_at});
+            for (var i = 0; i < jobs.length; i++) {
+                if (jobs.data.payload.match_id === match.match_id) {
+                    return cb(err, i);
+                }
+            }
+        });
     });
 }
 module.exports = matches;

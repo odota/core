@@ -43,7 +43,8 @@ function computeMatchData(match) {
                     match.my_word_counts = count_words(match, match.players[0]);
                 }
             }
-            //compute player-level data and set parsedPlayer
+            match.parsedPlayers = [];
+            //compute player-level data and create parsedPlayer
             match.players.forEach(function(player, ind) {
                 //mapping 0 to 0, 128 to 5, etc.
                 //if we projected only one player, then use slot 0
@@ -169,6 +170,17 @@ function computeMatchData(match) {
                         parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
+                if (parsedPlayer.purchase){
+                    //account for stacks
+                    parsedPlayer.purchase.ward_sentry *=2;
+                    parsedPlayer.purchase.dust *=2;
+                }
+                if (parsedPlayer.actions) {
+                    parsedPlayer.actions_sum = 0;
+                    for (var key in parsedPlayer.actions) {
+                        parsedPlayer.actions_sum += parsedPlayer.actions[key];
+                    }
+                }
                 //compute throw/comeback levels
                 if (match.parsed_data.radiant_gold_adv) {
                     var radiant_gold_advantage = match.parsed_data.radiant_gold_adv;
@@ -185,7 +197,7 @@ function computeMatchData(match) {
                     }
                 }
                 */
-                player.parsedPlayer = parsedPlayer;
+                match.parsedPlayers.push(parsedPlayer);
             });
         }
     }
@@ -229,22 +241,23 @@ function count_words(match, player_filter) {
 /**
  * Renders display-only data for a match
  **/
-function renderMatch(match) {
-    //TODO we should probably handle fields not existing in the template instead of trying to fill them all out here
+function renderMatch(m) {
     var schema = utility.getParseSchema();
     //fill in version 0 if not present
     schema.version = 0;
     //make sure match.parsed_data is not null
-    match.parsed_data = match.parsed_data || schema;
+    m.parsed_data = m.parsed_data || schema;
     //make sure parsed_data has all fields
     for (var key in schema) {
-        match.parsed_data[key] = match.parsed_data[key] || schema[key];
+        m.parsed_data[key] = m.parsed_data[key] || schema[key];
     }
     //make sure each player's parsedplayer has all fields
-    match.players.forEach(function(p, i) {
-        mergeObjects(p.parsedPlayer, schema.players[i]);
+    m.players.forEach(function(player, i) {
+        player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+        mergeObjects(player.parsedPlayer, schema.players[i]);
     });
-    match.players.forEach(function(player, i) {
+    //do render-only processing (not needed for aggregation, only for match display)
+    m.players.forEach(function(player, i) {
         //converts hashes to arrays and sorts them
         var p = player.parsedPlayer;
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
@@ -286,10 +299,10 @@ function renderMatch(match) {
         }
     });
     //make a list of messages and join them all together for sentiment analysis
-    var chat_words = match.parsed_data.chat.map(function(message) {
+    var chat_words = m.parsed_data.chat.map(function(message) {
         return message.key;
     }).join(' ');
-    match.sentiment = sentiment(chat_words, {
+    m.sentiment = sentiment(chat_words, {
         "report": -2,
         "commend": 2,
         "noob": -2,
@@ -308,22 +321,23 @@ function renderMatch(match) {
         "mad": -1
     });
     //create graph data
-    match.graphData = generateGraphData(match);
-    match.incomeData = generateIncomeData(match);
+    m.graphData = generateGraphData(m);
+    m.incomeData = generateIncomeData(m);
+    m.treeMapData = generateTreemapData(m);
     //create heatmap data
-    match.posData = match.players.map(function(p) {
+    m.posData = m.players.map(function(p) {
         return p.parsedPlayer.posData;
     });
     //process objectives
-    match.parsed_data.objectives.forEach(function(entry) {
-        var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot - 5;
-        var p = match.players[adjSlot] || {};
+    m.parsed_data.objectives.forEach(function(entry) {
+        var adjSlot = m.players[entry.slot] ? entry.slot : entry.slot - 5;
+        var p = m.players[adjSlot] || {};
         entry.objective = constants.objectives[entry.subtype] || entry.subtype;
         entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
         entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
     });
     //process teamfight data
-    match.parsed_data.teamfights.forEach(function(tf) {
+    m.parsed_data.teamfights.forEach(function(tf) {
         tf.posData = [];
         tf.radiant_gold_delta = 0;
         tf.radiant_xp_delta = 0;
@@ -346,7 +360,7 @@ function renderMatch(match) {
             }
         });
         //add player's hero_id to each teamfight participant
-        match.players.forEach(function(p) {
+        m.players.forEach(function(p) {
             //index into the correct slot
             var player = tf.players[p.parseSlot];
             player.hero_id = p.hero_id;
@@ -395,7 +409,7 @@ function generateGraphData(match) {
         xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
     }
     else {
-        //TODO older matches need this data summed at view time, unless we migrate it
+        //TODO older matches need this data summed at view time, unless we migrate it to new format
         for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
             var goldtotal = 0;
             var xptotal = 0;
@@ -461,6 +475,27 @@ function generateIncomeData(match) {
         gold_reasons: gold_reasons
     };
 }
+
+function generateTreemapData(match) {
+    var data = [];
+    match.players.forEach(function(player){
+        var hero = constants.heroes[player.hero_id] || {};
+        data.push({name: hero.localized_name, id: player.hero_id.toString(), value: ~~(player.gold_per_min*match.duration/60)});
+    })
+    for (var key in constants.gold_reasons) {
+        var reason = constants.gold_reasons[key].name;
+        match.players.forEach(function(player) {
+            var g = player.parsedPlayer.gold_reasons;
+            data.push({
+                name: reason,
+                parent: player.hero_id.toString(),
+                value: g[key] || 0
+            });
+        });
+    }
+    return data;
+}
+
 module.exports = {
     renderMatch: renderMatch,
     computeMatchData: computeMatchData
