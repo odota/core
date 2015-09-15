@@ -4,7 +4,6 @@ var request = require('request');
 var fs = require('fs');
 var cp = require('child_process');
 var utility = require('./utility');
-var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
 var exec = cp.exec;
