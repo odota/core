@@ -2,6 +2,8 @@ var processParse = require('./processParse');
 var r = require('./redis');
 var redis = r.client;
 var jobs = r.jobs;
+var kue = r.kue;
+var utility = require('./utility');
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var config = require('./config');
@@ -61,7 +63,7 @@ function start() {
                 //keep checking status and resume the worker when the parse worker is alive again
                 return processParse(job, ctx, cb);
             });
-
+            utility.cleanup(jobs, kue, 'parse');
             function getParserUrl(job) {
                 //node <0.12 doesn't have RR cluster scheduling, so parsing on remote workers may cause us to lose a request if the remote is crashed by another job using the same core/thread
                 //can process parse requests on localhost to avoid issue

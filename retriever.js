@@ -1,6 +1,6 @@
 var config = require('./config');
-var steam = require("steam");
-var dota2 = require("dota2");
+var Steam = require("steam");
+var Dota2 = require("dota2");
 var utility = require("./utility");
 var async = require('async');
 var convert64To32 = utility.convert64to32;
@@ -12,6 +12,7 @@ var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
+var launched = false;
 var a = [];
 var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
@@ -20,10 +21,10 @@ while (a.length < users.length) a.push(a.length + 0);
 async.each(a, function(i, cb) {
     var dotaReady = false;
     var relationshipReady = false;
-    var client = new steam.SteamClient();
-    client.steamUser = new steam.SteamUser(client);
-    client.steamFriends = new steam.SteamFriends(client);
-    client.Dota2 = new dota2.Dota2Client(client, false, false);
+    var client = new Steam.SteamClient();
+    client.steamUser = new Steam.SteamUser(client);
+    client.steamFriends = new Steam.SteamFriends(client);
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -34,10 +35,15 @@ async.each(a, function(i, cb) {
     client.on('connected', function() {
         console.log("[STEAM] Trying to log on with %s,%s", user, pass);
         client.steamUser.logOn(logOnDetails);
+        client.once('error', function onSteamError(e) {
+            //reset
+            console.log(e);
+            console.log("reconnecting");
+            client.connect();
+        });
     });
     client.on("logOnResponse", function(logonResp) {
-        //EResult.OK
-        if (logonResp.eresult !== 1) {
+        if (logonResp.eresult !== Steam.EResult.OK) {
             //try logging on again
             return client.steamUser.logOn(logOnDetails);
         }
@@ -46,6 +52,11 @@ async.each(a, function(i, cb) {
         steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
+        client.Dota2.once("ready", function() {
+            //console.log("Dota 2 ready");
+            dotaReady = true;
+            allDone();
+        });
         client.Dota2.launch();
         client.steamFriends.on("relationships", function() {
             //console.log(Steam.EFriendRelationship);
@@ -57,7 +68,7 @@ async.each(a, function(i, cb) {
                 var steamID = prop;
                 var relationship = client.steamFriends.friends[prop];
                 //friends that came in while offline
-                if (relationship === steam.EFriendRelationship.RequestRecipient) {
+                if (relationship === Steam.EFriendRelationship.RequestRecipient) {
                     client.steamFriends.addFriend(steamID);
                     console.log(steamID + " was added as a friend");
                 }
@@ -72,38 +83,24 @@ async.each(a, function(i, cb) {
         });
         client.steamFriends.on("friend", function(steamID, relationship) {
             //immediately accept incoming friend requests
-            if (relationship === steam.EFriendRelationship.RequestRecipient) {
+            if (relationship === Steam.EFriendRelationship.RequestRecipient) {
                 console.log("friend request received");
                 client.steamFriends.addFriend(steamID);
                 console.log("friend request accepted");
                 accountToIdx[convert64To32(steamID)] = client.steamID;
             }
-            /*
-            //TODO look up correct EFriendRelationship
-            if (relationship === client.EFriendRelationship.None) {
+            if (relationship === Steam.EFriendRelationship.None) {
                 delete accountToIdx[convert64To32(steamID)];
             }
-            */
         });
-    });
-    client.on('error', function onSteamError(e) {
-        //reset
-        console.log(e);
-        console.log("reconnecting");
-        client.connect();
-    });
-    client.on('loggedOff', function() {
-        console.log("relogging");
-        client.steamUser.logOn(logOnDetails);
-    });
-    client.Dota2.once("ready", function() {
-        //console.log("Dota 2 ready");
-        dotaReady = true;
-        allDone();
+        client.once('loggedOff', function() {
+            console.log("relogging");
+            client.steamUser.logOn(logOnDetails);
+        });
     });
 
     function allDone() {
-        if (dotaReady && relationshipReady) {
+        if (dotaReady && relationshipReady && !launched) {
             count += 1;
             console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
@@ -111,6 +108,7 @@ async.each(a, function(i, cb) {
     }
 }, function() {
     //start listening
+    launched = true;
     var server = app.listen(port, function() {
         var host = server.address().address;
         console.log('[RETRIEVER] listening at http://%s:%s', host, port);

@@ -1,4 +1,5 @@
 var request = require('request');
+var async = require('async');
 var winston = require('winston');
 var config = require('./config');
 var BigNumber = require('big-number').n;
@@ -406,6 +407,52 @@ function invokeInterval(func, delay) {
         });
     })();
 }
+
+function cleanup(queue, kue, type) {
+    process.once('SIGTERM', function() {
+        clearActiveJobs(function(err) {
+            process.kill(process.pid, 'SIGTERM');
+        });
+    });
+    process.once('SIGINT', function() {
+        clearActiveJobs(function(err) {
+            process.kill(process.pid, 'SIGINT');
+        });
+    });
+    process.once('SIGUSR2', function() {
+        clearActiveJobs(function(err) {
+            console.log(err);
+            process.kill(process.pid, 'SIGUSR2');
+        });
+    });
+    process.once('uncaughtException', function(err) {
+        console.error(err.stack);
+        clearActiveJobs(function(err) {
+            process.kill(process.pid);
+        });
+    });
+
+    function clearActiveJobs(cb) {
+        queue.active(function(err, ids) {
+            if (err) {
+                return cb(err);
+            }
+            async.mapSeries(ids, function(id, cb) {
+                kue.Job.get(id, function(err, job) {
+                    if (job && job.type === type) {
+                        console.log("requeued job %s", id);
+                        job.inactive();
+                    }
+                    cb(err);
+                });
+            }, function(err) {
+                console.log("cleared active jobs");
+                cb(err);
+            });
+        });
+    }
+}
+
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -422,5 +469,6 @@ module.exports = {
     reduceMatch: reduceMatch,
     max: max,
     min: min,
-    invokeInterval: invokeInterval
+    invokeInterval: invokeInterval,
+    cleanup: cleanup
 };

@@ -27,7 +27,10 @@ function advQuery(query, cb) {
         limit: query.limit,
         skip: query.skip,
         sort: query.sort,
-        fields: query.project
+        //use either the passed projection or default to not getting parsed_data since we add it later
+        fields: query.project || {
+            parsed_data: 0
+        }
     };
     //console.log(query);
     console.time('querying database');
