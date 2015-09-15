@@ -114,9 +114,6 @@ function runParse(data, cb) {
             }
             //console.log(e);
         },
-        "error": function(e) {
-            error = "parse error: " + e.key;
-        },
         "epilogue": function() {
             error = null;
         }
