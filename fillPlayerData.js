@@ -167,10 +167,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                             }, {
                                 upsert: true
                             }, cb);
-                        }, cb);
+                        }, function(err){
+                            return cb(err, player);
+                        });
                     }
                     else {
-                        return cb();
+                        return cb(null, player);
                     }
                     /*
                     if (!cacheValid && !filter_exists && Number(player.account_id) !== constants.anonymous_account_id) {
@@ -187,7 +189,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         console.time("deflate");
                         redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         console.timeEnd("deflate");
-                        return cb();
+                        return cb(null, player);
                     }
                     */
                 }
