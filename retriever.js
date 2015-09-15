@@ -52,6 +52,11 @@ async.each(a, function(i, cb) {
         steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
+        client.Dota2.once("ready", function() {
+            //console.log("Dota 2 ready");
+            dotaReady = true;
+            allDone();
+        });
         client.Dota2.launch();
         client.steamFriends.on("relationships", function() {
             //console.log(Steam.EFriendRelationship);
@@ -88,18 +93,14 @@ async.each(a, function(i, cb) {
                 delete accountToIdx[convert64To32(steamID)];
             }
         });
-        client.Dota2.once("ready", function() {
-            //console.log("Dota 2 ready");
-            dotaReady = true;
-            allDone();
-        });
         client.once('loggedOff', function() {
             console.log("relogging");
             client.steamUser.logOn(logOnDetails);
         });
     });
+
     function allDone() {
-        if (dotaReady && relationshipReady && launched) {
+        if (dotaReady && relationshipReady && !launched) {
             count += 1;
             console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
