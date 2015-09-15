@@ -59,7 +59,7 @@ public class Main {
 	
 	/*
 	//@OnMessage(CDOTAUserMsg_SpectatorPlayerClick.class)
-	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
+	public void onSpectatorPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerClick message){
 		Entry entry = new Entry(time);
 		entry.type = "clicks";
 		//need to get the entity by index
@@ -69,9 +69,8 @@ public class Main {
 	}
 	*/
 	
-	@UsesEntities
 	@OnMessage(CDOTAUserMsg_SpectatorPlayerUnitOrders.class)
-	public void onPlayerClick(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message){
+	public void onSpectatorPlayerUnitOrders(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message){
 		Entry entry = new Entry(time);
 		entry.type = "actions";
 		//the entindex points to a CDOTAPlayer.  This is probably the player that gave the order.
@@ -344,6 +343,9 @@ public class Main {
 	}
     
     public <T> T getEntityProperty(Entity e, String property, Integer idx){
+    	if (e==null){
+			return null;
+		}
     	if (idx!=null){
     		property = property.replace("%i", Util.arrayIdxToString(idx));
     	}
