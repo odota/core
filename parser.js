@@ -68,7 +68,7 @@ else {
         }
         runParse(req.query, function(err, parsed_data) {
             if (err) {
-                console.error(err.stack);
+                console.error(err.stack || err);
                 res.json({
                     error: err.message || err.code || err
                 });
@@ -616,7 +616,9 @@ function runParse(data, cb) {
     });
     */
     parseStream.on('data', handleStream);
-    parseStream.on('end', exit);
+    parseStream.on('end', function() {
+        return exit(error);
+    });
     process.on('uncaughtException', exit);
 
     function exit(err) {
