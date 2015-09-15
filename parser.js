@@ -4,7 +4,6 @@ var request = require('request');
 var fs = require('fs');
 var cp = require('child_process');
 var utility = require('./utility');
-var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
 var exec = cp.exec;
@@ -68,18 +67,18 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            if (err && !res.headersSent) {
-                return res.json({
+            if (err) {
+                console.error(err.stack || err);
+                res.json({
                     error: err.message || err.code || err
                 });
-            }
-            if (err && config.NODE_ENV !== "test") {
-                if (err){
-                    console.error(err.stack);
+                if (config.NODE_ENV !== "test") {
+                    process.exit(1);
                 }
-                process.exit(1);
             }
-            return res.json(parsed_data);
+            else {
+                return res.json(parsed_data);
+            }
         });
     });
 }
@@ -93,7 +92,6 @@ function runParse(data, cb) {
     var parseStream;
     var bz;
     var parser;
-    var d = domain.create();
     //parse state
     var entries = [];
     var name_to_slot = {};
@@ -105,7 +103,7 @@ function runParse(data, cb) {
     var teamfights = [];
     var intervalState = {};
     var teamfight_cooldown = 15;
-    var parsed_data;
+    var parsed_data = null;
     //parse logic
     //capture events streamed from parser and set up state for post-processing
     //these events are generally not pushed to event buffer
@@ -575,50 +573,53 @@ function runParse(data, cb) {
             populate(e);
         }
     };
-    d.run(function() {
-        //set up pipe chain
-        parser = spawn("java", ["-jar",
+    //set up pipe chain
+    parser = spawn("java", ["-jar",
         "-Xmx64m",
         "java_parser/target/stats-0.1.0.jar"
     ], {
-            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        parseStream = ndjson.parse();
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            bz = spawn("bunzip2");
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                console.log(JSON.stringify({url: url, percent: state.percent}));
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    parseStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }) + "\n");
-                }
-            });
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        parser.stdout.pipe(parseStream);
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parseStream.on('data', handleStream);
-        parseStream.on('end', function() {
-            exit(error);
-        });
+        //we may want to ignore stderr so the child doesn't stay open
+        stdio: ['pipe', 'pipe', 'ignore'],
+        encoding: 'utf8'
     });
-    d.on('error', exit);
+    parseStream = ndjson.parse();
+    if (fileName) {
+        inStream = fs.createReadStream(fileName);
+        inStream.pipe(parser.stdin);
+    }
+    else if (url) {
+        bz = spawn("bunzip2");
+        inStream = progress(request.get({
+            url: url,
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state) {
+            console.log(JSON.stringify({
+                url: url,
+                percent: state.percent
+            }));
+        }).on('response', function(response) {
+            if (response.statusCode !== 200) {
+                parseStream.write(JSON.stringify({
+                    "type": "error",
+                    "key": response.statusCode
+                }) + "\n");
+            }
+        });
+        inStream.pipe(bz.stdin);
+        bz.stdout.pipe(parser.stdin);
+    }
+    parser.stdout.pipe(parseStream);
+    /*
+    parser.stderr.on('data', function(data) {
+        console.log(data.toString());
+    });
+    */
+    parseStream.on('data', handleStream);
+    parseStream.on('end', function() {
+        return exit(error);
+    });
+    process.on('uncaughtException', exit);
 
     function exit(err) {
         if (!err) {
