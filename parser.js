@@ -578,8 +578,8 @@ function runParse(data, cb) {
         "-Xmx64m",
         "java_parser/target/stats-0.1.0.jar"
     ], {
-        //we may want to ignore stderr if we're not dumping it to /dev/null from java already
-        stdio: ['pipe', 'pipe', 'pipe'],
+        //we may want to ignore stderr so the child doesn't stay open
+        stdio: ['pipe', 'pipe', 'ignore'],
         encoding: 'utf8'
     });
     parseStream = ndjson.parse();
@@ -614,9 +614,7 @@ function runParse(data, cb) {
         console.log(data.toString());
     });
     parseStream.on('data', handleStream);
-    parseStream.on('end', function() {
-        exit(error);
-    });
+    parseStream.on('end', exit);
     process.on('uncaughtException', exit);
 
     function exit(err) {
