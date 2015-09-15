@@ -24,24 +24,31 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     db.matches.count({
         "players.account_id": Number(account_id)
     }, function(err, match_count) {
+        if (err){
+            return cb(err);
+        }
         //console.log(match_count);
         console.timeEnd("count");
         db.player_matches.find({
             account_id: account_id
         }, function(err, results) {
+            if (err){
+                return cb(err);
+            }
             cache = {
                 data: results
             };
             //redis.get("player:" + account_id, function(err, result) {
             //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
             cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
+            var cacheValid = cache && cache.data.length === match_count;
             var filter_exists = Object.keys(options.query.js_select).length;
             player = {
                 account_id: account_id,
                 personaname: account_id
             };
             /*
-            if (cache && cache.data && cache.data.length===match_count && !filter_exists) {
+            if (cacheValid && !filter_exists) {
                 console.log("player cache hit %s", player.account_id);
                 //var filtered = filter(cache.data, options.query.js_select);
                 //var aggData = aggregator(filtered, null);
@@ -59,7 +66,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             */
             //below code if we want to cache full matches (with parsed data)
-            if (cache.data.length === match_count) {
+            if (cacheValid) {
                 console.log("player cache hit %s", player.account_id);
                 //cached data should come in ascending match order
                 var filtered = filter(cache.data, options.query.js_select);
@@ -129,7 +136,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     player.posData = [d];
                 }
                 //save cache
-                if (!cache.data.length && player.account_id !== constants.anonymous_account_id) {
+                if (!cacheValid && player.account_id !== constants.anonymous_account_id) {
                     //delete unnecessary data from unfiltered
                     results.unfiltered.forEach(reduceMatch);
                     async.each(results.unfiltered, function(match_copy, cb) {
@@ -154,7 +161,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     getPlayerName(cb);
                 }
                 /*
-                if (!cache && !filter_exists && player.account_id !== constants.anonymous_account_id) {
+                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id) {
                     //pack data into hash for cache
                     var match_ids = {};
                     results.data.forEach(function(m) {
