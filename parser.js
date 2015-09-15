@@ -94,7 +94,6 @@ function runParse(data, cb) {
     var parser;
     //parse state
     var entries = [];
-    var name_to_slot = {};
     var hero_to_slot = {};
     var hero_to_id = {};
     var curr_player_hero = {};
@@ -114,9 +113,6 @@ function runParse(data, cb) {
                 game_zero = e.time;
             }
             //console.log(e);
-        },
-        "name": function(e) {
-            name_to_slot[e.key] = e.slot;
         },
         "error": function(e) {
             error = "parse error: " + e.key;
@@ -470,7 +466,7 @@ function runParse(data, cb) {
             }
         },
         "chat": function getChatSlot(e) {
-            e.slot = name_to_slot[e.unit];
+            //e.slot = name_to_slot[e.unit];
             //push a copy to chat
             parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
