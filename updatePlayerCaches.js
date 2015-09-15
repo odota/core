@@ -85,8 +85,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                     //do aggregations on fields based on type		
                                     cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                                 }
-                                //reduce match for display
-                                //if we want to cache full data, we don't want to get rid of player.parsedPlayer in the match_copy
+                                //reduce match to save cache space
                                 reduceMatch(match_copy);
                             }
                             var orig = cache.data[match_copy.match_id];

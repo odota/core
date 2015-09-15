@@ -137,7 +137,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 }
                 //save cache
                 if (!cacheValid && player.account_id !== constants.anonymous_account_id) {
-                    //delete unnecessary data from unfiltered
+                    //delete unnecessary data from match (parsed_data)
                     results.unfiltered.forEach(reduceMatch);
                     async.each(results.unfiltered, function(match_copy, cb) {
                         //delete _id from the fetched match to prevent conflicts
