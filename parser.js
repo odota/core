@@ -610,9 +610,11 @@ function runParse(data, cb) {
         bz.stdout.pipe(parser.stdin);
     }
     parser.stdout.pipe(parseStream);
+    /*
     parser.stderr.on('data', function(data) {
         console.log(data.toString());
     });
+    */
     parseStream.on('data', handleStream);
     parseStream.on('end', exit);
     process.on('uncaughtException', exit);
