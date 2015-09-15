@@ -611,10 +611,8 @@ function runParse(data, cb) {
     parseStream.on('end', function() {
         return exit(error);
     });
-    process.on('uncaughtException', exit);
-
+    //TODO replace domain with something that can handle exceptions with context
     function exit(err) {
-        process.removeListener('uncaughtException', exit);
         if (!err) {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match ";
@@ -726,8 +724,7 @@ function runParse(data, cb) {
                         populate(e_cpy_1, tf);
                         //get slot of target
                         e.slot = hero_to_slot[e.key];
-                        //0 is valid value, so check for undefined
-                        if (e.slot !== undefined) {
+                        if (intervalState[e.time][e.slot]) {
                             //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
@@ -744,7 +741,7 @@ function runParse(data, cb) {
                     }
                     else if (e.type === "buyback_log") {
                         //bought back
-                        if (e.slot !== undefined) {
+                        if (tf.players[e.slot]) {
                             tf.players[e.slot].buybacks += 1;
                         }
                     }
@@ -753,14 +750,14 @@ function runParse(data, cb) {
                         //check if damage dealt to hero and not illusion
                         if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
                             //check if the damage dealer could be assigned to a slot
-                            if (e.slot !== undefined) {
+                            if (tf.players[e.slot]) {
                                 tf.players[e.slot].damage += e.value;
                             }
                         }
                     }
                     else if (e.type === "gold_reasons" || e.type === "xp_reasons") {
                         //add gold/xp to delta
-                        if (e.slot !== undefined) {
+                        if (tf.players[e.slot]) {
                             var types = {
                                 "gold_reasons": "gold_delta",
                                 "xp_reasons": "xp_delta"
