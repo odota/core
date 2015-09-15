@@ -68,7 +68,7 @@ else {
         }
         runParse(req.query, function(err, parsed_data) {
             if (err) {
-                console.error("query: %s, error: %s", JSON.stringify(req.query), err.stack || err);
+                console.error("error occurred for query: %s: %s", JSON.stringify(req.query), err.stack || err);
                 res.json({
                     error: err.message || err.code || err
                 });
@@ -600,14 +600,13 @@ function runParse(data, cb) {
             }));
         }).on('response', function(response) {
             if (response.statusCode !== 200) {
-                parseStream.write(JSON.stringify({
-                    "type": "error",
-                    "key": response.statusCode
-                }) + "\n");
+                throw response.statusCode;
+            }
+            else {
+                inStream.pipe(bz.stdin);
+                bz.stdout.pipe(parser.stdin);
             }
         });
-        inStream.pipe(bz.stdin);
-        bz.stdout.pipe(parser.stdin);
     }
     parser.stdout.pipe(parseStream);
     /*
