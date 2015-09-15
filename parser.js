@@ -68,7 +68,7 @@ else {
         }
         runParse(req.query, function(err, parsed_data) {
             if (err) {
-                console.error(err.stack || err);
+                console.error("query: %s, error: %s", req.query, err.stack || err);
                 res.json({
                     error: err.message || err.code || err
                 });
