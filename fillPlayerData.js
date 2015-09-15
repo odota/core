@@ -24,7 +24,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     db.matches.count({
         "players.account_id": Number(account_id)
     }, function(err, match_count) {
-        if (err){
+        if (err) {
             return cb(err);
         }
         //console.log(match_count);
@@ -32,7 +32,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         db.player_matches.find({
             account_id: account_id
         }, function(err, results) {
-            if (err){
+            if (err) {
                 return cb(err);
             }
             cache = {
@@ -40,6 +40,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             };
             //redis.get("player:" + account_id, function(err, result) {
             //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+            //var cacheValid = cache && Object.keys(cache.data).length===match_count;
             cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var cacheValid = cache && cache.data.length === match_count;
             var filter_exists = Object.keys(options.query.js_select).length;
@@ -50,8 +51,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             /*
             if (cacheValid && !filter_exists) {
                 console.log("player cache hit %s", player.account_id);
-                //var filtered = filter(cache.data, options.query.js_select);
-                //var aggData = aggregator(filtered, null);
                 //unpack cache.data into an array
                 var arr = [];
                 for (var key in cache.data) {
@@ -135,54 +134,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     generatePositionData(d, player);
                     player.posData = [d];
                 }
-                //save cache
-                if (!cacheValid && player.account_id !== constants.anonymous_account_id) {
-                    //delete unnecessary data from match (parsed_data)
-                    results.unfiltered.forEach(reduceMatch);
-                    async.each(results.unfiltered, function(match_copy, cb) {
-                        //delete _id from the fetched match to prevent conflicts
-                        delete match_copy._id;
-                        db.player_matches.update({
-                            account_id: player.account_id,
-                            match_id: match_copy.match_id
-                        }, {
-                            $set: match_copy
-                        }, {
-                            upsert: true
-                        }, cb);
-                    }, function(err) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        return getPlayerName(cb);
-                    });
-                }
-                else {
-                    getPlayerName(cb);
-                }
-                /*
-                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id) {
-                    //pack data into hash for cache
-                    var match_ids = {};
-                    results.data.forEach(function(m) {
-                        match_ids[m.match_id] = m;
-                    });
-                    //save cache
-                    //code to save full matches (unfiltered, with parsed data)
-                    //cache = {
-                    //    data: results.unfiltered,
-                    //};
-                    cache = {
-                        data: match_ids,
-                        aggData: results.aggData
-                    };
-                    console.log("saving player cache %s", player.account_id);
-                    console.time("deflate");
-                    redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                    console.timeEnd("deflate");
-                    getPlayerName(cb);
-                }
-                */
+                getPlayerName(function(err, player) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    saveCache(player, cb);
+                });
+
                 function getPlayerName(cb) {
                     //get this player's name
                     var playerArr = [player];
@@ -190,6 +148,48 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         var player = playerArr[0];
                         cb(err, player);
                     });
+                }
+
+                function saveCache(player, cb) {
+                    //save cache
+                    if (!cacheValid && Number(player.account_id) !== constants.anonymous_account_id) {
+                        //delete unnecessary data from match (parsed_data)
+                        results.unfiltered.forEach(reduceMatch);
+                        //cache = {data: results.unfiltered};
+                        async.each(results.unfiltered, function(match_copy, cb) {
+                            //delete _id from the fetched match to prevent conflicts
+                            delete match_copy._id;
+                            db.player_matches.update({
+                                account_id: player.account_id,
+                                match_id: match_copy.match_id
+                            }, {
+                                $set: match_copy
+                            }, {
+                                upsert: true
+                            }, cb);
+                        }, cb);
+                    }
+                    else {
+                        return cb();
+                    }
+                    /*
+                    if (!cacheValid && !filter_exists && Number(player.account_id) !== constants.anonymous_account_id) {
+                        //pack data into hash for cache
+                        var match_ids = {};
+                        results.data.forEach(function(m) {
+                            match_ids[m.match_id] = m;
+                        });
+                        cache = {
+                            data: match_ids,
+                            aggData: results.aggData
+                        };
+                        console.log("saving player cache %s", player.account_id);
+                        console.time("deflate");
+                        redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                        console.timeEnd("deflate");
+                        return cb();
+                    }
+                    */
                 }
             }
         });

@@ -73,8 +73,9 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 match_copy.players = [p];
                                 //some data fields require computeMatchData in order to aggregate correctly
                                 computeMatchData(match_copy);
-                                //check for doc.players containing this match_id
+                                //check for doc.players containing this account_id
                                 //we could need to run aggregation if we are reinserting a match but this player used to be anonymous
+                                //TODO possible bug here leading to some matches not getting aggregated?
                                 var playerInMatch = doc && doc.players && doc.players.some(function(player) {
                                     return player.account_id === p.account_id;
                                 });
