@@ -614,6 +614,7 @@ function runParse(data, cb) {
     process.on('uncaughtException', exit);
 
     function exit(err) {
+        process.removeListener('uncaughtException', exit);
         if (!err) {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match ";
@@ -743,7 +744,9 @@ function runParse(data, cb) {
                     }
                     else if (e.type === "buyback_log") {
                         //bought back
-                        tf.players[e.slot].buybacks += 1;
+                        if (e.slot !== undefined) {
+                            tf.players[e.slot].buybacks += 1;
+                        }
                     }
                     else if (e.type === "damage") {
                         //sum damage
