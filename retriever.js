@@ -84,12 +84,9 @@ async.each(a, function(i, cb) {
                 console.log("friend request accepted");
                 accountToIdx[convert64To32(steamID)] = client.steamID;
             }
-            /*
-            //TODO look up correct EFriendRelationship
-            if (relationship === client.EFriendRelationship.None) {
+            if (relationship === Steam.EFriendRelationship.None) {
                 delete accountToIdx[convert64To32(steamID)];
             }
-            */
         });
         client.Dota2.once("ready", function() {
             //console.log("Dota 2 ready");
