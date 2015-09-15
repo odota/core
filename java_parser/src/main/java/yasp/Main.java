@@ -142,8 +142,9 @@ public class Main {
 		Entry entry = new Entry(time);
 		entry.unit =  String.valueOf(message.getParam1());
 		entry.key =  String.valueOf(message.getParam2());
-		//TODO this message has a client field, likely based on connection order.  If we can figure out how the ids are assigned we can use this to match chat messages to players
-		//entry.slot = message.getClient();
+		Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntityindex());
+		Integer slot = getEntityProperty(e, "m_iPlayerID", null);
+		entry.slot = slot;
 		entry.type = "chat";
 		es.output(entry);
 	}
@@ -259,47 +260,39 @@ public class Main {
 	public void onTickStart(Context ctx, boolean synthetic){
 		//s1 DT_DOTAGameRulesProxy
 		Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
+		Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
+		Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
+		Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
 		if (grp!=null){
 	        //System.err.println(grp);
 	        //dota_gamerules_data.m_iGameMode = 22
 			//dota_gamerules_data.m_unMatchID64 = 1193091757
 	        time = Math.round((float)getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
 		}
-		if (time >= nextInterval){
-			
-			Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
-			Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
-			Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
-			
-			if (pr!=null){
-				//skip coaches?  Radiant coach shows up in vecPlayerTeamData as position 5, and we end up:
-				//setting slot_to_hero incorrectly, which leads to misattributed combat log data.
-				//all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
-				//coaches appear to be on team 1, radiant is 2 and dire is 3?
-				//construct an array of valid indices to get vecPlayerTeamData from
-				
-				if (!init){
-					int added = 0;
-					int i = 0;
-					while (added < numPlayers) {
-						//check each m_vecPlayerData to ensure the player's team is radiant or dire
-						int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
-						if (playerTeam == 2 || playerTeam == 3){
-							//if so, add it to validIndices, add 1 to added
-							validIndices[added] = i;
-							added +=1;
-						}
-
-						i+=1;
+		if (pr!=null){
+			//Radiant coach shows up in vecPlayerTeamData as position 5, and we end up:
+			//setting slot_to_hero incorrectly, which leads to misattributed combat log data.
+			//all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
+			//coaches appear to be on team 1, radiant is 2 and dire is 3?
+			//construct an array of valid indices to get vecPlayerTeamData from
+			if (!init){
+				int added = 0;
+				int i = 0;
+				while (added < numPlayers) {
+					//check each m_vecPlayerData to ensure the player's team is radiant or dire
+					int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+					if (playerTeam == 2 || playerTeam == 3){
+						//if so, add it to validIndices, add 1 to added
+						validIndices[added] = i;
+						added +=1;
 					}
-					init = true;
+
+					i+=1;
 				}
-				//boolean joined = (Boolean)getEntityProperty(pr, "m_vecPlayerData.%i.m_bFullyJoinedServer", i);
-				//TODO get client id of player to match all chat with, does clientid start at 0 or 1?
-				//keep iterating through players at every tick until we have clientids for all players
-				//increment a counter every time we get to a joined player
-				//if it is an actual player (radiant or dire team) and they have joined, map i to the number of current number of joined players
-				
+				init = true;
+			}
+			
+			if (time >= nextInterval){
 				//System.err.println(pr);
 				for (int i = 0; i < numPlayers; i++) {
 					Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
