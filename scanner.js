@@ -14,33 +14,34 @@ var buildSets = require('./buildSets');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-buildSets(function() {
-    start();
-});
+start();
 
 function start() {
-    if (config.START_SEQ_NUM === "REDIS") {
-        redis.get("match_seq_num", function(err, result) {
-            if (err || !result) {
-                return start();
-            }
-            result = Number(result);
-            scanApi(result);
-        });
-    }
-    else if (config.START_SEQ_NUM) {
-        scanApi(config.START_SEQ_NUM);
-    }
-    else {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
-            if (err) {
-                console.log("failed to get sequence number from webapi");
-                return start();
-            }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
+    buildSets(function() {
+        if (config.START_SEQ_NUM === "REDIS") {
+            redis.get("match_seq_num", function(err, result) {
+                if (err || !result) {
+                    console.log('failed to get match_seq_num from redis, retrying');
+                    return setTimeout(start, 10000);
+                }
+                result = Number(result);
+                scanApi(result);
+            });
+        }
+        else if (config.START_SEQ_NUM) {
+            scanApi(config.START_SEQ_NUM);
+        }
+        else {
+            var container = generateJob("api_history", {});
+            getData(container.url, function(err, data) {
+                if (err) {
+                    console.log("failed to get sequence number from webapi");
+                    return start();
+                }
+                scanApi(data.result.matches[0].match_seq_num);
+            });
+        }
+    });
 }
 
 function scanApi(seq_num) {

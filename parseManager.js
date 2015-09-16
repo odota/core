@@ -7,45 +7,45 @@ var utility = require('./utility');
 var cluster = require('cluster');
 var buildSets = require('./buildSets');
 var config = require('./config');
-buildSets(function() {
-    start();
-});
+start();
 
 function start() {
-    redis.get("parsers", function(err, result) {
-        if (err || !result) {
-            console.log('failed to get parsers from redis, retrying');
-            return setTimeout(start, 10000);
-        }
-        var parsers = JSON.parse(result);
-        //concurrent job processors per parse worker
-        var parallelism = 4;
-        var capacity = parsers.length * parallelism;
-        if (cluster.isMaster && config.NODE_ENV !== "test") {
-            console.log("[PARSEMANAGER] starting master");
-            for (var i = 0; i < capacity; i++) {
-                if (false) {
-                    //fork a worker for each available parse core
-                    forkWorker(i);
+    buildSets(function() {
+        redis.get("parsers", function(err, result) {
+                if (err || !result) {
+                    console.log('failed to get parsers from redis, retrying');
+                    return setTimeout(start, 10000);
+                }
+                var parsers = JSON.parse(result);
+                //concurrent job processors per parse worker
+                var parallelism = 4;
+                var capacity = parsers.length * parallelism;
+                if (cluster.isMaster && config.NODE_ENV !== "test") {
+                    console.log("[PARSEMANAGER] starting master");
+                    for (var i = 0; i < capacity; i++) {
+                        if (false) {
+                            //fork a worker for each available parse core
+                            forkWorker(i);
+                        }
+                        else {
+                            //run workers in parallel in a single thread (uses less memory)
+                            runWorker(i);
+                        }
+                    }
                 }
                 else {
-                    //run workers in parallel in a single thread (uses less memory)
-                    runWorker(i);
+                    runWorker(0);
                 }
-            }
-        }
-        else {
-            runWorker(0);
-        }
 
-        function forkWorker(i) {
-            var worker = cluster.fork({
-                PARSER_URL: parsers[i]
-            });
-            worker.on("exit", function() {
-                console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
-                forkWorker(i);
-            });
+                function forkWorker(i) {
+                    var worker = cluster.fork({
+                        PARSER_URL: parsers[i]
+                    });
+                    worker.on("exit", function() {
+                        console.log("Worker crashed! Spawning a replacement of worker %s", worker.id);
+                        forkWorker(i);
+                    });
+                });
         }
 
         function runWorker(i) {
