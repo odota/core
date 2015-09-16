@@ -451,6 +451,7 @@ function generateIncomeData(match) {
     var gold_reasons = [];
     var columns = [];
     var categories = [];
+    var imgs = [];
     var orderedPlayers = match.players.slice(0);
     orderedPlayers.sort(function(a, b) {
         return b.gold_per_min - a.gold_per_min;
@@ -458,6 +459,7 @@ function generateIncomeData(match) {
     orderedPlayers.forEach(function(player) {
         var hero = constants.heroes[player.hero_id] || {};
         categories.push(hero.localized_name);
+        imgs.push(hero.img);
     });
     for (var key in constants.gold_reasons) {
         var reason = constants.gold_reasons[key].name;
@@ -472,7 +474,8 @@ function generateIncomeData(match) {
     return {
         cats: categories,
         goldCols: columns,
-        gold_reasons: gold_reasons
+        gold_reasons: gold_reasons,
+        imgs: imgs
     };
 }
 
