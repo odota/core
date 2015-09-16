@@ -10,16 +10,19 @@ var operations = require('./operations');
 var insertMatch = operations.insertMatch;
 var queueReq = operations.queueReq;
 var queries = require('./queries');
+var buildSets = require('./buildSets');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-startScan();
+buildSets(function() {
+    start();
+});
 
-function startScan() {
+function start() {
     if (config.START_SEQ_NUM === "REDIS") {
         redis.get("match_seq_num", function(err, result) {
             if (err || !result) {
-                return startScan();
+                return start();
             }
             result = Number(result);
             scanApi(result);
@@ -33,7 +36,7 @@ function startScan() {
         getData(container.url, function(err, data) {
             if (err) {
                 console.log("failed to get sequence number from webapi");
-                return startScan();
+                return start();
             }
             scanApi(data.result.matches[0].match_seq_num);
         });
