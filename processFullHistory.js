@@ -69,9 +69,7 @@ module.exports = function processFullHistory(job, cb) {
                             return cb();
                         }
                         var match = body.result;
-                        insertMatch(match, function(err) {
-                            cb(err);
-                        });
+                        insertMatch(match, cb);
                     });
                 }, function(err) {
                     updatePlayer(err, player, cb);
