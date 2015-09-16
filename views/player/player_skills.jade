@@ -9,10 +9,10 @@ block playercontent
       table.table#accuracy.table-striped
         thead
           tr
-            th Ability
-            th Casts
-            th Hits
-            th Hit%
+            th: abbr(title=tooltips.skills_name) Name
+            th: abbr(title=tooltips.skills_casts) Casts
+            th: abbr(title=tooltips.skills_hits) Hits
+            th: abbr(title=tooltips.skills_hit_pct) Hit%
         tbody
           each val, key in player.aggData.ability_uses.counts
             - var ability = constants.abilities[key]

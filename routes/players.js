@@ -41,6 +41,9 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "compare": {
             "name": "Compare"
         },
+        "trends": {
+            "name": "Trends"
+        },
         "rating": {
             "name": "Rating"
         }
@@ -56,6 +59,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "deaths": 1,
         "assists": 1,
         "kda": 1,
+        "lane_efficiency": 1,
         "last_hits": 1,
         "denies": 1,
         "hero_damage": 1,
@@ -67,11 +71,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "tower_kills": 1,
         "neutral_kills": 1,
         "courier_kills": 1,
-        "tps_purchased": 1,
-        "observers_purchased": 1,
-        "sentries_purchased": 1,
-        "gems_purchased": 1,
-        "rapiers_purchased": 1,
+        "purchase_tpscroll": 1,
+        "purchase_ward_observer": 1,
+        "purchase_ward_sentry": 1,
+        "purchase_gem": 1,
+        "purchase_rapier": 1,
         "pings": 1,
         "pick_order": 1,
         "throw": 1,
@@ -115,7 +119,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
                 return next(err);
             }
             player.teammate_list = lists.teammate_list;
-            var teammate_ids = lists.all_teammate_list || [];
+            var teammate_ids = lists.all_teammate_list || lists.teammate_list;
             //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
             var ids = {};
             teammate_ids.forEach(function(t) {
@@ -281,6 +285,10 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     bots: result.sets.bots,
                     ratingPlayers: result.sets.ratingPlayers,
                     histograms: histograms,
+                    times: {
+                        "duration": 1,
+                        "first_blood_time": 1
+                    },
                     teammate_ids: teammate_ids,
                     compare_data: compare_data,
                     compare: info === "compare",
@@ -309,7 +317,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             return b.games - a.games;
         });
         //limit to 200 max players
-        teammates_arr = teammates_arr.slice(0,200);
+        teammates_arr = teammates_arr.slice(0, 200);
         queries.fillPlayerNames(teammates_arr, function(err) {
             console.timeEnd('teammate list');
             cb(err, teammates_arr);
