@@ -33,7 +33,7 @@ module.exports = function processFullHistory(job, cb) {
         if (err) {
             //non-retryable error while scanning, user had a private account
             console.log("error: %s", err);
-            updatePlayer(null, player, cb);
+            updatePlayer(player, cb);
         }
         else {
             //check what matches the player is already associated with
@@ -62,26 +62,22 @@ module.exports = function processFullHistory(job, cb) {
                     });
                     getData(container.url, function(err, body) {
                         if (err) {
-                            console.log(err);
-                            //non-retryable error while getting a match?
-                            //this shouldn't happen since all values are from api
-                            //if it does, we just continue inserting matches
-                            return cb();
+                            return cb(err);
                         }
                         var match = body.result;
                         insertMatch(match, cb);
                     });
                 }, function(err) {
-                    updatePlayer(err, player, cb);
+                    if (err) {
+                        return cb(err);
+                    }
+                    updatePlayer(player, cb);
                 });
             });
         }
     });
 
-    function updatePlayer(err, player, cb) {
-        if (err) {
-            return cb(err);
-        }
+    function updatePlayer(player, cb) {
         //done with this player, update
         db.players.update({
             account_id: player.account_id
@@ -91,6 +87,9 @@ module.exports = function processFullHistory(job, cb) {
                 fh_unavailable: player.fh_unavailable
             }
         }, function(err) {
+            if (err) {
+                return cb(err);
+            }
             console.log("got full match history for %s", player.account_id);
             cb(err);
         });
