@@ -395,14 +395,14 @@ function min(array) {
 
 function invokeInterval(func, delay) {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function foo() {
+    (function invoker() {
         console.log("running %s", func.name);
         func(function(err) {
             if (err) {
                 //log the error, but wait until next interval to retry
-                console.log(err);
+                console.error(err);
             }
-            setTimeout(foo, delay);
+            setTimeout(invoker, delay);
         });
     })();
 }
