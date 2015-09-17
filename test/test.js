@@ -311,6 +311,7 @@ describe("parser", function() {
         });
     });
     //TODO use function to run a set of these
+    //TODO no longer support parse from fileName
     //1v1, ardm, 6.84
     it('parse replay (local)', function(done) {
         var job = {

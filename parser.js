@@ -35,7 +35,7 @@ else {
         if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
-            var debugFile = fs.openSync("./deploy_debug.txt", "a+");
+            //var debugFile = fs.openSync("./deploy_debug.txt", "a+");
             /*
             var child = spawn('npm run deploy-parser', null, {
                 cwd: process.cwd(),
@@ -61,7 +61,7 @@ else {
         });
     });
     app.get('/', function(req, res, next) {
-        if (!req.query.fileName && !req.query.url) {
+        if (!req.query.url) {
             return res.json({
                 capacity: capacity
             });
@@ -72,9 +72,13 @@ else {
                 res.json({
                     error: err.message || err.code || err
                 });
-                if (config.NODE_ENV !== "test") {
+                //can crash the worker and let master respawn to ensure process cleanup
+                //however, this can result in losing other parses in progress if there is more than one being handled by this worker
+                /*
+                if (config.NODE_ENV==="test"){
                     process.exit(1);
                 }
+                */
             }
             else {
                 return res.json(parsed_data);
@@ -85,7 +89,6 @@ else {
 
 function runParse(data, cb) {
     var print_multi_kill_streak_debugging = false;
-    var fileName = data.fileName;
     var url = data.url;
     var error = "incomplete";
     var inStream;
@@ -566,52 +569,44 @@ function runParse(data, cb) {
             populate(e);
         }
     };
-    //set up pipe chain
-    parser = spawn("java", ["-jar",
-        "-Xmx64m",
-        "java_parser/target/stats-0.1.0.jar"
-    ], {
-        //we may want to ignore stderr so the child doesn't stay open
-        stdio: ['pipe', 'pipe', 'ignore'],
-        encoding: 'utf8'
-    });
-    parseStream = ndjson.parse();
-    if (fileName) {
-        inStream = fs.createReadStream(fileName);
-        inStream.pipe(parser.stdin);
-    }
-    else if (url) {
-        bz = spawn("bunzip2");
-        inStream = progress(request.get({
+    inStream = progress(request.get({
+        url: url,
+        encoding: null,
+        timeout: 30000
+    })).on('progress', function(state) {
+        console.log(JSON.stringify({
             url: url,
-            encoding: null,
-            timeout: 30000
-        })).on('progress', function(state) {
-            console.log(JSON.stringify({
-                url: url,
-                percent: state.percent
-            }));
-        }).on('response', function(response) {
-            if (response.statusCode !== 200) {
-                throw response.statusCode;
-            }
-            else {
-                inStream.pipe(bz.stdin);
-                bz.stdout.pipe(parser.stdin);
-            }
-        });
-    }
-    parser.stdout.pipe(parseStream);
-    /*
-    parser.stderr.on('data', function(data) {
-        console.log(data.toString());
+            percent: state.percent
+        }));
+    }).on('response', function(response) {
+        if (response.statusCode === 200) {
+            //TODO replace domain with something that can handle exceptions with context
+            bz = spawn("bunzip2");
+            parser = spawn("java", ["-jar",
+                    "-Xmx64m",
+                    "java_parser/target/stats-0.1.0.jar"
+                ], {
+                //we may want to ignore stderr so the child doesn't stay open
+                stdio: ['pipe', 'pipe', 'ignore'],
+                encoding: 'utf8'
+            });
+            parseStream = ndjson.parse();
+            inStream.pipe(bz.stdin);
+            bz.stdout.pipe(parser.stdin);
+            parser.stdout.pipe(parseStream);
+            //parser.stderr.on('data', function(data) {
+            //    console.log(data.toString());
+            //});
+            parseStream.on('data', handleStream);
+            parseStream.on('end', function() {
+                return exit(error);
+            });
+        }
+        else {
+            exit(response.statusCode.toString());
+        }
     });
-    */
-    parseStream.on('data', handleStream);
-    parseStream.on('end', function() {
-        return exit(error);
-    });
-    //TODO replace domain with something that can handle exceptions with context
+
     function exit(err) {
         if (!err) {
             parsed_data = utility.getParseSchema();

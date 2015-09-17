@@ -10,7 +10,7 @@ module.exports = function getReplayUrl(match, cb) {
         if (err){
             return cb(err);
         }
-        if (match.fileName || match.url) { 
+        if (match.url) {
             //if there's already a filename or url, we don't to retrieve
             //this is for custom jobs!
             return cb(err);
