@@ -14,33 +14,34 @@ var buildSets = require('./buildSets');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-buildSets(function() {
-    start();
-});
+start();
 
 function start() {
-    if (config.START_SEQ_NUM === "REDIS") {
-        redis.get("match_seq_num", function(err, result) {
-            if (err || !result) {
-                return start();
-            }
-            result = Number(result);
-            scanApi(result);
-        });
-    }
-    else if (config.START_SEQ_NUM) {
-        scanApi(config.START_SEQ_NUM);
-    }
-    else {
-        var container = generateJob("api_history", {});
-        getData(container.url, function(err, data) {
-            if (err) {
-                console.log("failed to get sequence number from webapi");
-                return start();
-            }
-            scanApi(data.result.matches[0].match_seq_num);
-        });
-    }
+    buildSets(function() {
+        if (config.START_SEQ_NUM === "REDIS") {
+            redis.get("match_seq_num", function(err, result) {
+                if (err || !result) {
+                    console.log('failed to get match_seq_num from redis, retrying');
+                    return setTimeout(start, 10000);
+                }
+                result = Number(result);
+                scanApi(result);
+            });
+        }
+        else if (config.START_SEQ_NUM) {
+            scanApi(config.START_SEQ_NUM);
+        }
+        else {
+            var container = generateJob("api_history", {});
+            getData(container.url, function(err, data) {
+                if (err) {
+                    console.log("failed to get sequence number from webapi");
+                    return start();
+                }
+                scanApi(data.result.matches[0].match_seq_num);
+            });
+        }
+    });
 }
 
 function scanApi(seq_num) {
@@ -87,9 +88,7 @@ function scanApi(seq_num) {
                             match_id: match.match_id,
                             account_id: p.account_id,
                             url: ratingPlayers[p.account_id]
-                        }, function(err) {
-                            cb(err);
-                        });
+                        }, cb);
                     }
                     else {
                         cb();
@@ -97,18 +96,15 @@ function scanApi(seq_num) {
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-                        insertMatch(match, function(err) {
-                            close(err, cb);
-                        });
+                        insertMatch(match, close);
                     }
                     else {
-                        close(err, cb);
+                        close(err);
                     }
 
-                    function close(err, cb) {
+                    function close(err) {
                         if (err) {
-                            console.log("failed to insert match from scanApi %s", match.match_id);
-                            return cb(err);
+                            console.error("failed to insert match from scanApi %s", match.match_id);
                         }
                         return cb(err);
                     }

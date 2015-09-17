@@ -79,7 +79,7 @@ module.exports = function buildSets(cb) {
         }
     }, function(err, result) {
         if (err) {
-            console.log('error occured during buildSets: %s', err);
+            console.log('error occurred during buildSets: %s', err);
             return cb(err);
         }
         console.log('saving sets to redis');
