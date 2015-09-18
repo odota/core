@@ -22,6 +22,7 @@ function start() {
             var capacity = parsers.length * parallelism;
             if (cluster.isMaster && config.NODE_ENV !== "test") {
                 console.log("[PARSEMANAGER] starting master");
+                utility.cleanup(jobs, kue, 'parse');
                 for (var i = 0; i < capacity; i++) {
                     if (false) {
                         //fork a worker for each available parse core
@@ -58,7 +59,6 @@ function start() {
                     //current behavior will just keep retrying the url
                     return processParse(job, ctx, cb);
                 });
-                utility.cleanup(jobs, kue, 'parse');
 
                 function getParserUrl(job) {
                     return config.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
