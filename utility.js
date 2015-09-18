@@ -410,23 +410,34 @@ function invokeInterval(func, delay) {
 function cleanup(queue, kue, type) {
     process.once('SIGTERM', function() {
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGTERM');
         });
     });
     process.once('SIGINT', function() {
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGINT');
         });
     });
     process.once('SIGUSR2', function() {
         clearActiveJobs(function(err) {
-            console.log(err);
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGUSR2');
         });
     });
     process.once('uncaughtException', function(err) {
         console.error(err.stack);
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid);
         });
     });
@@ -451,7 +462,6 @@ function cleanup(queue, kue, type) {
         });
     }
 }
-
 module.exports = {
     tokenize: tokenize,
     logger: logger,

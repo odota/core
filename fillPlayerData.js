@@ -18,7 +18,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     //options.query, the query object to use in advQuery
     var cache;
     var player;
-    var cachedTeammates;
     preprocessQuery(options.query);
     console.time("count");
     db.matches.count({
@@ -31,6 +30,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         console.timeEnd("count");
         db.player_matches.find({
             account_id: account_id
+        }, {
+            sort: {
+                match_id: 1
+            }
         }, function(err, results) {
             if (err) {
                 return cb(err);
@@ -40,9 +43,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             };
             //redis.get("player:" + account_id, function(err, result) {
             //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-            //var cacheValid = cache && Object.keys(cache.data).length===match_count;
-            cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
-            var cacheValid = cache && cache.data.length === match_count;
+            //the number of matches won't match if the account_id is string (all/professional)
+            //var cacheValid = cache && (Object.keys(cache.data).length===match_count || isNaN(Number(account_id)));
+            var cacheValid = cache && (cache.data.length === match_count || isNaN(Number(account_id)));
+            var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
             player = {
                 account_id: account_id,
@@ -79,13 +83,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             else {
                 console.log("player cache miss %s", player.account_id);
                 //convert account id to number and search db with it
-                //don't do this if the account id is not a number (all or professional)
+                //don't do this if the account id is not a number (all/professional)
                 if (!isNaN(Number(account_id))) {
                     options.query.mongo_select["players.account_id"] = Number(account_id);
                     //set a larger limit since we are only getting one player's matches
                     options.query.limit = 20000;
                 }
                 else {
+                    //only get 200 matches if not selecting a specific player.  The actual number of results will be multiplied by the number of players in each match.
                     options.query.limit = 200;
                 }
                 //sort ascending to support trends over time
@@ -104,7 +109,8 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 results.data.sort(function(a, b) {
                     return b.match_id - a.match_id;
                 });
-                //reduce matches to only required data for display, also shrinks the data for cache resave
+                //reduce matches to only required data for display
+                //results.data is also reduced
                 player.data = results.data.map(reduceMatch);
                 player.aggData = results.aggData;
                 player.all_teammates = cachedTeammates || player.aggData.teammates;
@@ -167,7 +173,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                             }, {
                                 upsert: true
                             }, cb);
-                        }, function(err){
+                        }, function(err) {
                             return cb(err, player);
                         });
                     }

@@ -30,7 +30,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
-                //full mongo cache
+                //full cache
                 var match_copy = JSON.parse(JSON.stringify(match));
                 if (options.type !== "skill") {
                     //m.players[0] should be this player
@@ -56,7 +56,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return insertPlayers(cb);
                 });
                 /*
-                //aggregate redis cache
+                //aggregate cache
                     redis.get("player:" + p.account_id, function(err, result) {
                         if (err) {
                             return cb(err);
@@ -66,28 +66,24 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         if (cache) {
                             var match_copy = JSON.parse(JSON.stringify(match));
                             if (options.type !== "skill") {
-                                //m.players[0] should be this player
-                                //m.all_players should be all players
-                                //duplicate this data into a copy to avoid corrupting original match object
-                                match_copy.all_players = match.players.slice(0);
-                                match_copy.players = [p];
-                                //some data fields require computeMatchData in order to aggregate correctly
-                                computeMatchData(match_copy);
-                                //check for doc.players containing this account_id
-                                //we could need to run aggregation if we are reinserting a match but this player used to be anonymous
-                                var playerInMatch = doc && doc.players && doc.players.some(function(player) {
-                                    return player.account_id === p.account_id;
-                                });
-                                var reInsert = doc && options.type === "api" && playerInMatch;
-                                //determine if we're reparsing this match		
-                                var reParse = doc && doc.parsed_data && options.type === "parsed";
-                                if (!reInsert && !reParse && cache.aggData) {
+                                //maintain sets of match_ids and parsed_match_ids
+                                //check the set to see if we have already aggregated this match for API/parse
+                                //aggregate or not depending on result
+                                //TODO have aggregator write two more objects, match_ids and parsed_match_ids while it aggregates
+                                if ((match.match_id in cache.aggData.match_ids && options.type === "api")||(match.match_id in cache.aggData.parsed_match_ids && options.type==="parsed")){
+                                    //m.players[0] should be this player
+                                    //m.all_players should be all players
+                                    //duplicate this data into a copy to avoid corrupting original match object
+                                    match_copy.all_players = match.players.slice(0);
+                                    match_copy.players = [p];
+                                    //some data fields require computeMatchData in order to aggregate correctly
+                                    computeMatchData(match_copy);
                                     //do aggregations on fields based on type		
                                     cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                                 }
-                                //reduce match to save cache space
-                                reduceMatch(match_copy);
                             }
+                            //reduce match to save cache space
+                            reduceMatch(match_copy);
                             var orig = cache.data[match_copy.match_id];
                             if (!orig) {
                                 cache.data[match_copy.match_id] = match_copy;
