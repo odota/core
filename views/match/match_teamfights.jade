@@ -102,7 +102,7 @@ block match_content
                 if player.buybacks
                  div(style="font-size:30px;") !{"&#128176;"}
               td(style="white-space: nowrap;")
-                if player.level_start != player.level_end
+                if player.level_start !== player.level_end
                   | #{player.level_start}<i class="fa fa-long-arrow-right"></i>#{player.level_end}
                 else
                   | #{player.level_start}
