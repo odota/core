@@ -4,12 +4,8 @@ import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import skadistats.clarity.decoder.Util;
-import skadistats.clarity.model.GameEvent;
 import skadistats.clarity.model.Entity;
-import skadistats.clarity.model.GameEvent;
-import skadistats.clarity.model.GameEventDescriptor;
 import skadistats.clarity.model.s1.GameRulesStateType;
-import skadistats.clarity.processor.gameevents.OnGameEvent;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
 import skadistats.clarity.processor.entities.Entities;
@@ -17,15 +13,12 @@ import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.entities.OnEntityEntered;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
-import skadistats.clarity.processor.reader.OnTickEnd;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
-import skadistats.clarity.wire.s1.proto.S1UserMessages.CUserMsg_SayText2;
 import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_LocationPing;
-import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerClick;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerUnitOrders;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
@@ -33,10 +26,7 @@ import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayer
 import skadistats.clarity.model.FieldPath;
 
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
@@ -78,8 +68,7 @@ public class Main {
         entry.type = "actions";
         //the entindex points to a CDOTAPlayer.  This is probably the player that gave the order.
         Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntindex());
-        Integer slot = getEntityProperty(e, "m_iPlayerID", null);
-        entry.slot = slot;
+        entry.slot = getEntityProperty(e, "m_iPlayerID", null);
         //Integer handle = (Integer)getEntityProperty(e, "m_hAssignedHero", null);
         //Entity h = ctx.getProcessor(Entities.class).getByHandle(handle);
         //System.err.println(h.getDtClass().getDtName());
@@ -94,8 +83,7 @@ public class Main {
     public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message) {
         Entry entry = new Entry(time);
         entry.type = "pings";
-        Integer player1 = message.getPlayerId();
-        entry.slot = player1;
+        entry.slot = message.getPlayerId();
         /*
         System.err.println(message);
         player_id: 7
@@ -114,11 +102,10 @@ public class Main {
 
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
     public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
-        CDOTAUserMsg_ChatEvent u = message;
-        Integer player1 = u.getPlayerid1();
-        Integer player2 = u.getPlayerid2();
-        Integer value = u.getValue();
-        String type = String.valueOf(u.getType());
+        Integer player1 = message.getPlayerid1();
+        Integer player2 = message.getPlayerid2();
+        Integer value = message.getValue();
+        String type = String.valueOf(message.getType());
         Entry entry = new Entry(time);
         entry.type = "chat_event";
         entry.subtype = type;
@@ -145,8 +132,7 @@ public class Main {
         entry.unit = String.valueOf(message.getParam1());
         entry.key = String.valueOf(message.getParam2());
         Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntityindex());
-        Integer slot = getEntityProperty(e, "m_iPlayerID", null);
-        entry.slot = slot;
+        entry.slot = getEntityProperty(e, "m_iPlayerID", null);
         entry.type = "chat";
         es.output(entry);
     }
@@ -154,36 +140,32 @@ public class Main {
     @OnMessage(CDemoFileInfo.class)
     public void onFileInfo(Context ctx, CDemoFileInfo message) {
         //load epilogue
-        CDemoFileInfo info = message;
-        List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
+        List<CPlayerInfo> players = message.getGameInfo().getDota().getPlayerInfoList();
         //names used to match all chat messages to players
         for (CPlayerInfo player : players) {
-            Entry entry = new Entry();
-            entry.type = "name";
-            entry.key = player.getPlayerName();
-            entry.slot = steamid_to_slot.get(player.getSteamid());
-            es.output(entry);
+            Entry nameEntry = new Entry();
+            nameEntry.type = "name";
+            nameEntry.key = player.getPlayerName();
+            nameEntry.slot = steamid_to_slot.get(player.getSteamid());
+            es.output(nameEntry);
+
+            Entry steamIdEntry = new Entry();
+            steamIdEntry.type = "steam_id";
+            steamIdEntry.key = String.valueOf(player.getSteamid());
+            steamIdEntry.slot = steamid_to_slot.get(player.getSteamid());
+            es.output(steamIdEntry);
         }
-        for (CPlayerInfo player : players) {
-            Entry entry = new Entry();
-            entry.type = "steam_id";
-            entry.key = String.valueOf(player.getSteamid());
-            entry.slot = steamid_to_slot.get(player.getSteamid());
-            es.output(entry);
-        }
-        if (true) {
-            Entry entry = new Entry();
-            entry.type = "match_id";
-            entry.value = info.getGameInfo().getDota().getMatchId();
-            es.output(entry);
-        }
-        if (true) {
-            //emit epilogue event to mark finish
-            Entry entry = new Entry();
-            entry.type = "epilogue";
-            entry.key = new Gson().toJson(info);
-            es.output(entry);
-        }
+
+        Entry matchIdEntry = new Entry();
+        matchIdEntry.type = "match_id";
+        matchIdEntry.value = message.getGameInfo().getDota().getMatchId();
+        es.output(matchIdEntry);
+
+        //emit epilogue event to mark finish
+        Entry epilogueEntry = new Entry();
+        epilogueEntry.type = "epilogue";
+        epilogueEntry.key = new Gson().toJson(message);
+        es.output(epilogueEntry);
     }
 
     @OnCombatLogEntry
@@ -193,39 +175,36 @@ public class Main {
         //System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
         time = Math.round(cle.getTimestamp());
         String type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
-        if (true) {
-            //create a new entry
-            Entry entry = new Entry(time);
-            entry.type = "combat_log";
-            //entry.subtype=String.valueOf(cle.getType());
-            entry.subtype = type;
-            //translate the fields using string tables if necessary (get*Name methods)
-            entry.attackername = cle.getAttackerName();
-            entry.targetname = cle.getTargetName();
-            entry.sourcename = cle.getSourceName();
-            entry.targetsourcename = cle.getTargetSourceName();
-            entry.inflictor = cle.getInflictorName();
-            entry.gold_reason = cle.getGoldReason();
-            entry.xp_reason = cle.getXpReason();
-            entry.attackerhero = cle.isAttackerHero();
-            entry.targethero = cle.isTargetHero();
-            entry.attackerillusion = cle.isAttackerIllusion();
-            entry.targetillusion = cle.isTargetIllusion();
-            entry.value = cle.getValue();
-            //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-            if ("DOTA_COMBATLOG_PURCHASE".equals(type)) {
-                entry.valuename = cle.getValueName();
-            }
-            es.output(entry);
+        //create a new entry
+        Entry combatLogEntry = new Entry(time);
+        combatLogEntry.type = "combat_log";
+        //entry.subtype=String.valueOf(cle.getType());
+        combatLogEntry.subtype = type;
+        //translate the fields using string tables if necessary (get*Name methods)
+        combatLogEntry.attackername = cle.getAttackerName();
+        combatLogEntry.targetname = cle.getTargetName();
+        combatLogEntry.sourcename = cle.getSourceName();
+        combatLogEntry.targetsourcename = cle.getTargetSourceName();
+        combatLogEntry.inflictor = cle.getInflictorName();
+        combatLogEntry.gold_reason = cle.getGoldReason();
+        combatLogEntry.xp_reason = cle.getXpReason();
+        combatLogEntry.attackerhero = cle.isAttackerHero();
+        combatLogEntry.targethero = cle.isTargetHero();
+        combatLogEntry.attackerillusion = cle.isAttackerIllusion();
+        combatLogEntry.targetillusion = cle.isTargetIllusion();
+        combatLogEntry.value = cle.getValue();
+        //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
+        if ("DOTA_COMBATLOG_PURCHASE".equals(type)) {
+            combatLogEntry.valuename = cle.getValueName();
         }
+        es.output(combatLogEntry);
 
         if ("DOTA_COMBATLOG_GAME_STATE".equals(type)) {
             //emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
             //used to compute game zero time so we can display accurate timestamps
             Entry entry = new Entry(time);
             //if the value is out of bounds, just make it the value itself
-            String state = GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue() - 1);
-            entry.key = state;
+            entry.key = GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue() - 1);
             entry.type = "state";
             es.output(entry);
         }
