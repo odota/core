@@ -33,9 +33,11 @@ public class Entry {
     public Integer y;
     public Float stuns;
     public Integer hero_id;
-    public Entry(){
+
+    public Entry() {
     }
-    public Entry(Integer time){
+
+    public Entry(Integer time) {
         this.time = time;
     }
 }

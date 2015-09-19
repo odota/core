@@ -1,4 +1,5 @@
 package yasp;
+
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,14 @@ import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPE
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import skadistats.clarity.model.FieldPath;
+
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
+
 import com.google.gson.Gson;
 
 public class Main {
@@ -70,7 +73,7 @@ public class Main {
     */
 
     @OnMessage(CDOTAUserMsg_SpectatorPlayerUnitOrders.class)
-    public void onSpectatorPlayerUnitOrders(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message){
+    public void onSpectatorPlayerUnitOrders(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message) {
         Entry entry = new Entry(time);
         entry.type = "actions";
         //the entindex points to a CDOTAPlayer.  This is probably the player that gave the order.
@@ -88,10 +91,10 @@ public class Main {
 
 
     @OnMessage(CDOTAUserMsg_LocationPing.class)
-    public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message){
+    public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message) {
         Entry entry = new Entry(time);
         entry.type = "pings";
-        Integer player1=(Integer)message.getPlayerId();
+        Integer player1 = (Integer) message.getPlayerId();
         entry.slot = player1;
         /*
         System.err.println(message);
@@ -112,9 +115,9 @@ public class Main {
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
     public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
         CDOTAUserMsg_ChatEvent u = message;
-        Integer player1=(Integer)u.getPlayerid1();
-        Integer player2=(Integer)u.getPlayerid2();
-        Integer value = (Integer)u.getValue();
+        Integer player1 = (Integer) u.getPlayerid1();
+        Integer player2 = (Integer) u.getPlayerid2();
+        Integer value = (Integer) u.getValue();
         String type = String.valueOf(u.getType());
         Entry entry = new Entry(time);
         entry.type = "chat_event";
@@ -139,8 +142,8 @@ public class Main {
     @OnMessage(CUserMessageSayText2.class)
     public void onAllChatS2(Context ctx, CUserMessageSayText2 message) {
         Entry entry = new Entry(time);
-        entry.unit =  String.valueOf(message.getParam1());
-        entry.key =  String.valueOf(message.getParam2());
+        entry.unit = String.valueOf(message.getParam1());
+        entry.key = String.valueOf(message.getParam2());
         Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntityindex());
         Integer slot = getEntityProperty(e, "m_iPlayerID", null);
         entry.slot = slot;
@@ -149,35 +152,35 @@ public class Main {
     }
 
     @OnMessage(CDemoFileInfo.class)
-    public void onFileInfo(Context ctx, CDemoFileInfo message){
+    public void onFileInfo(Context ctx, CDemoFileInfo message) {
         //load epilogue
         CDemoFileInfo info = message;
         List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
         //names used to match all chat messages to players
-        for (int i = 0;i<players.size();i++) {
+        for (int i = 0; i < players.size(); i++) {
             Entry entry = new Entry();
-            entry.type="name";
+            entry.type = "name";
             entry.key = players.get(i).getPlayerName();
             entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
             es.output(entry);
         }
-        for (int i = 0;i<players.size();i++) {
+        for (int i = 0; i < players.size(); i++) {
             Entry entry = new Entry();
-            entry.type="steam_id";
+            entry.type = "steam_id";
             entry.key = String.valueOf(players.get(i).getSteamid());
             entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
             es.output(entry);
         }
         if (true) {
             Entry entry = new Entry();
-            entry.type="match_id";
+            entry.type = "match_id";
             entry.value = info.getGameInfo().getDota().getMatchId();
             es.output(entry);
         }
         if (true) {
             //emit epilogue event to mark finish
             Entry entry = new Entry();
-            entry.type="epilogue";
+            entry.type = "epilogue";
             entry.key = new Gson().toJson(info);
             es.output(entry);
         }
@@ -190,28 +193,28 @@ public class Main {
         //System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
         time = Math.round(cle.getTimestamp());
         String type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
-        if (true){
+        if (true) {
             //create a new entry
             Entry entry = new Entry(time);
-            entry.type="combat_log";
+            entry.type = "combat_log";
             //entry.subtype=String.valueOf(cle.getType());
             entry.subtype = type;
             //translate the fields using string tables if necessary (get*Name methods)
-            entry.attackername=cle.getAttackerName();
-            entry.targetname=cle.getTargetName();
-            entry.sourcename=cle.getSourceName();
-            entry.targetsourcename=cle.getTargetSourceName();
-            entry.inflictor=cle.getInflictorName();
-            entry.gold_reason=cle.getGoldReason();
-            entry.xp_reason=cle.getXpReason();
-            entry.attackerhero=cle.isAttackerHero();
-            entry.targethero=cle.isTargetHero();
-            entry.attackerillusion=cle.isAttackerIllusion();
-            entry.targetillusion=cle.isTargetIllusion();
-            entry.value=cle.getValue();
+            entry.attackername = cle.getAttackerName();
+            entry.targetname = cle.getTargetName();
+            entry.sourcename = cle.getSourceName();
+            entry.targetsourcename = cle.getTargetSourceName();
+            entry.inflictor = cle.getInflictorName();
+            entry.gold_reason = cle.getGoldReason();
+            entry.xp_reason = cle.getXpReason();
+            entry.attackerhero = cle.isAttackerHero();
+            entry.targethero = cle.isTargetHero();
+            entry.attackerillusion = cle.isAttackerIllusion();
+            entry.targetillusion = cle.isTargetIllusion();
+            entry.value = cle.getValue();
             //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-            if (type=="DOTA_COMBATLOG_PURCHASE"){
-                entry.valuename=cle.getValueName();
+            if (type == "DOTA_COMBATLOG_PURCHASE") {
+                entry.valuename = cle.getValueName();
             }
             es.output(entry);
         }
@@ -239,15 +242,15 @@ public class Main {
         if (isObserver || isSentry) {
             //System.err.println(e);
             Entry entry = new Entry(time);
-            Integer x = (Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
-            Integer y = (Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
-            Integer[] pos = {x,y};
+            Integer x = (Integer) getEntityProperty(e, "CBodyComponent.m_cellX", null);
+            Integer y = (Integer) getEntityProperty(e, "CBodyComponent.m_cellY", null);
+            Integer[] pos = {x, y};
             entry.type = isObserver ? "obs" : "sen";
             entry.key = Arrays.toString(pos);
             //System.err.println(entry.key);
-            Integer owner = (Integer)getEntityProperty(e, "m_hOwnerEntity", null);
+            Integer owner = (Integer) getEntityProperty(e, "m_hOwnerEntity", null);
             Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
-            entry.slot = ownerEntity!=null ? (Integer)getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
+            entry.slot = ownerEntity != null ? (Integer) getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
             //2/3 radiant/dire
             //entry.team = e.getProperty("m_iTeamNum");
             es.output(entry);
@@ -256,53 +259,53 @@ public class Main {
 
     @UsesEntities
     @OnTickStart
-    public void onTickStart(Context ctx, boolean synthetic){
+    public void onTickStart(Context ctx, boolean synthetic) {
         //s1 DT_DOTAGameRulesProxy
         Entity grp = ctx.getProcessor(Entities.class).getByDtName("CDOTAGamerulesProxy");
         Entity pr = ctx.getProcessor(Entities.class).getByDtName("CDOTA_PlayerResource");
         Entity dData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataDire");
         Entity rData = ctx.getProcessor(Entities.class).getByDtName("CDOTA_DataRadiant");
-        if (grp!=null){
+        if (grp != null) {
             //System.err.println(grp);
             //dota_gamerules_data.m_iGameMode = 22
             //dota_gamerules_data.m_unMatchID64 = 1193091757
-            time = Math.round((float)getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
+            time = Math.round((float) getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
         }
-        if (pr!=null){
+        if (pr != null) {
             //Radiant coach shows up in vecPlayerTeamData as position 5, and we end up:
             //setting slot_to_hero incorrectly, which leads to misattributed combat log data.
             //all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
             //coaches appear to be on team 1, radiant is 2 and dire is 3?
             //construct an array of valid indices to get vecPlayerTeamData from
-            if (!init){
+            if (!init) {
                 int added = 0;
                 int i = 0;
                 while (added < numPlayers) {
                     //check each m_vecPlayerData to ensure the player's team is radiant or dire
-                    int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
-                    if (playerTeam == 2 || playerTeam == 3){
+                    int playerTeam = (Integer) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+                    if (playerTeam == 2 || playerTeam == 3) {
                         //if so, add it to validIndices, add 1 to added
                         validIndices[added] = i;
-                        added +=1;
+                        added += 1;
                     }
 
-                    i+=1;
+                    i += 1;
                 }
                 init = true;
             }
 
-            if (time >= nextInterval){
+            if (time >= nextInterval) {
                 //System.err.println(pr);
                 for (int i = 0; i < numPlayers; i++) {
-                    Integer hero = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
-                    int handle = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
-                    Long steamid = (Long)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
-                    int playerTeam = (Integer)getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
-                    int teamSlot = (Integer)getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
+                    Integer hero = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
+                    int handle = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
+                    Long steamid = (Long) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
+                    int playerTeam = (Integer) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
+                    int teamSlot = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
                     //System.err.format("hero:%s i:%s teamslot:%s playerteam:%s\n", hero, i, teamSlot, playerTeam);
 
                     //2 is radiant, 3 is dire, 1 is other?
-                    Entity dataTeam = playerTeam==2 ? rData : dData;
+                    Entity dataTeam = playerTeam == 2 ? rData : dData;
 
                     Entry entry = new Entry(time);
                     entry.type = "interval";
@@ -311,7 +314,7 @@ public class Main {
                     entry.gold = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
                     entry.lh = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
                     entry.xp = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
-                    entry.stuns=(Float)getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    entry.stuns = (Float) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
 
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
@@ -325,10 +328,10 @@ public class Main {
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
                     //get the hero's coordinates
-                    if (e!=null){
+                    if (e != null) {
                         //System.err.println(e);
-                        entry.x=(Integer)getEntityProperty(e, "CBodyComponent.m_cellX", null);
-                        entry.y=(Integer)getEntityProperty(e, "CBodyComponent.m_cellY", null);
+                        entry.x = (Integer) getEntityProperty(e, "CBodyComponent.m_cellX", null);
+                        entry.y = (Integer) getEntityProperty(e, "CBodyComponent.m_cellY", null);
                         //System.err.format("%s, %s\n", entry.x, entry.y);
                         //get the hero's entity name, ex: CDOTA_Hero_Zuus
                         entry.unit = e.getDtClass().getDtName();
@@ -336,17 +339,17 @@ public class Main {
                     }
                     es.output(entry);
 
+                }
+                nextInterval += INTERVAL;
             }
-            nextInterval += INTERVAL;
         }
-    }
     }
 
-    public <T> T getEntityProperty(Entity e, String property, Integer idx){
-        if (e==null){
+    public <T> T getEntityProperty(Entity e, String property, Integer idx) {
+        if (e == null) {
             return null;
         }
-        if (idx!=null){
+        if (idx != null) {
             property = property.replace("%i", Util.arrayIdxToString(idx));
         }
         FieldPath fp = e.getDtClass().getFieldPathForName(property);
