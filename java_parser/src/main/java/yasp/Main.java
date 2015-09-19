@@ -94,7 +94,7 @@ public class Main {
     public void onPlayerPing(Context ctx, CDOTAUserMsg_LocationPing message) {
         Entry entry = new Entry(time);
         entry.type = "pings";
-        Integer player1 = (Integer) message.getPlayerId();
+        Integer player1 = message.getPlayerId();
         entry.slot = player1;
         /*
         System.err.println(message);
@@ -115,9 +115,9 @@ public class Main {
     @OnMessage(CDOTAUserMsg_ChatEvent.class)
     public void onChatEvent(Context ctx, CDOTAUserMsg_ChatEvent message) {
         CDOTAUserMsg_ChatEvent u = message;
-        Integer player1 = (Integer) u.getPlayerid1();
-        Integer player2 = (Integer) u.getPlayerid2();
-        Integer value = (Integer) u.getValue();
+        Integer player1 = u.getPlayerid1();
+        Integer player2 = u.getPlayerid2();
+        Integer value = u.getValue();
         String type = String.valueOf(u.getType());
         Entry entry = new Entry(time);
         entry.type = "chat_event";
@@ -242,13 +242,13 @@ public class Main {
         if (isObserver || isSentry) {
             //System.err.println(e);
             Entry entry = new Entry(time);
-            Integer x = (Integer) getEntityProperty(e, "CBodyComponent.m_cellX", null);
-            Integer y = (Integer) getEntityProperty(e, "CBodyComponent.m_cellY", null);
+            Integer x = getEntityProperty(e, "CBodyComponent.m_cellX", null);
+            Integer y = getEntityProperty(e, "CBodyComponent.m_cellY", null);
             Integer[] pos = {x, y};
             entry.type = isObserver ? "obs" : "sen";
             entry.key = Arrays.toString(pos);
             //System.err.println(entry.key);
-            Integer owner = (Integer) getEntityProperty(e, "m_hOwnerEntity", null);
+            Integer owner = getEntityProperty(e, "m_hOwnerEntity", null);
             Entity ownerEntity = ctx.getProcessor(Entities.class).getByHandle(owner);
             entry.slot = ownerEntity != null ? (Integer) getEntityProperty(ownerEntity, "m_iPlayerID", null) : null;
             //2/3 radiant/dire
@@ -282,7 +282,7 @@ public class Main {
                 int i = 0;
                 while (added < numPlayers) {
                     //check each m_vecPlayerData to ensure the player's team is radiant or dire
-                    int playerTeam = (Integer) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+                    int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
                     if (playerTeam == 2 || playerTeam == 3) {
                         //if so, add it to validIndices, add 1 to added
                         validIndices[added] = i;
@@ -297,11 +297,11 @@ public class Main {
             if (time >= nextInterval) {
                 //System.err.println(pr);
                 for (int i = 0; i < numPlayers; i++) {
-                    Integer hero = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
-                    int handle = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
-                    Long steamid = (Long) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
-                    int playerTeam = (Integer) getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
-                    int teamSlot = (Integer) getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
+                    Integer hero = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
+                    int handle = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
+                    Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
+                    int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
+                    int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
                     //System.err.format("hero:%s i:%s teamslot:%s playerteam:%s\n", hero, i, teamSlot, playerTeam);
 
                     //2 is radiant, 3 is dire, 1 is other?
@@ -311,10 +311,10 @@ public class Main {
                     entry.type = "interval";
                     entry.slot = i;
 
-                    entry.gold = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
-                    entry.lh = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
-                    entry.xp = (Integer) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
-                    entry.stuns = (Float) getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
+                    entry.gold = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedGold", teamSlot);
+                    entry.lh = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iLastHitCount", teamSlot);
+                    entry.xp = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_iTotalEarnedXP", teamSlot);
+                    entry.stuns = getEntityProperty(dataTeam, "m_vecDataTeam.%i.m_fStuns", teamSlot);
 
                     //TODO: gem, rapier time?
                     //https://github.com/yasp-dota/yasp/issues/333
@@ -330,8 +330,8 @@ public class Main {
                     //get the hero's coordinates
                     if (e != null) {
                         //System.err.println(e);
-                        entry.x = (Integer) getEntityProperty(e, "CBodyComponent.m_cellX", null);
-                        entry.y = (Integer) getEntityProperty(e, "CBodyComponent.m_cellY", null);
+                        entry.x = getEntityProperty(e, "CBodyComponent.m_cellX", null);
+                        entry.y = getEntityProperty(e, "CBodyComponent.m_cellY", null);
                         //System.err.format("%s, %s\n", entry.x, entry.y);
                         //get the hero's entity name, ex: CDOTA_Hero_Zuus
                         entry.unit = e.getDtClass().getDtName();
