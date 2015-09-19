@@ -213,13 +213,13 @@ public class Main {
             entry.targetillusion = cle.isTargetIllusion();
             entry.value = cle.getValue();
             //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-            if (type == "DOTA_COMBATLOG_PURCHASE") {
+            if ("DOTA_COMBATLOG_PURCHASE".equals(type)) {
                 entry.valuename = cle.getValueName();
             }
             es.output(entry);
         }
 
-        if (type == "DOTA_COMBATLOG_GAME_STATE") {
+        if ("DOTA_COMBATLOG_GAME_STATE".equals(type)) {
             //emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
             //used to compute game zero time so we can display accurate timestamps
             Entry entry = new Entry(time);
