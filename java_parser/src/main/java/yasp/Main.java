@@ -44,8 +44,8 @@ import com.google.gson.Gson;
 public class Main {
     private final Logger log = LoggerFactory.getLogger(Main.class.getPackage().getClass());
     float INTERVAL = 1;
-    HashMap<Integer, Integer> slot_to_hero = new HashMap<Integer, Integer>();
-    HashMap<Long, Integer> steamid_to_slot = new HashMap<Long, Integer>();
+    HashMap<Integer, Integer> slot_to_hero = new HashMap<>();
+    HashMap<Long, Integer> steamid_to_slot = new HashMap<>();
     float nextInterval = 0;
     Integer time = 0;
     int numPlayers = 10;
@@ -157,18 +157,18 @@ public class Main {
         CDemoFileInfo info = message;
         List<CPlayerInfo> players = info.getGameInfo().getDota().getPlayerInfoList();
         //names used to match all chat messages to players
-        for (int i = 0; i < players.size(); i++) {
+        for (CPlayerInfo player : players) {
             Entry entry = new Entry();
             entry.type = "name";
-            entry.key = players.get(i).getPlayerName();
-            entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
+            entry.key = player.getPlayerName();
+            entry.slot = steamid_to_slot.get(player.getSteamid());
             es.output(entry);
         }
-        for (int i = 0; i < players.size(); i++) {
+        for (CPlayerInfo player : players) {
             Entry entry = new Entry();
             entry.type = "steam_id";
-            entry.key = String.valueOf(players.get(i).getSteamid());
-            entry.slot = steamid_to_slot.get(players.get(i).getSteamid());
+            entry.key = String.valueOf(player.getSteamid());
+            entry.slot = steamid_to_slot.get(player.getSteamid());
             es.output(entry);
         }
         if (true) {
