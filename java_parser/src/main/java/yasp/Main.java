@@ -1,35 +1,34 @@
 package yasp;
 
+import com.google.gson.Gson;
 import com.google.protobuf.GeneratedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import skadistats.clarity.decoder.Util;
 import skadistats.clarity.model.Entity;
+import skadistats.clarity.model.FieldPath;
 import skadistats.clarity.model.s1.GameRulesStateType;
+import skadistats.clarity.processor.entities.Entities;
+import skadistats.clarity.processor.entities.OnEntityEntered;
+import skadistats.clarity.processor.entities.UsesEntities;
 import skadistats.clarity.processor.gameevents.CombatLog;
 import skadistats.clarity.processor.gameevents.OnCombatLogEntry;
-import skadistats.clarity.processor.entities.Entities;
-import skadistats.clarity.processor.entities.UsesEntities;
-import skadistats.clarity.processor.entities.OnEntityEntered;
 import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
 import skadistats.clarity.source.InputStreamSource;
-import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
+import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
+import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_ChatEvent;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_LocationPing;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.CDOTAUserMsg_SpectatorPlayerUnitOrders;
 import skadistats.clarity.wire.common.proto.DotaUserMessages.DOTA_COMBATLOG_TYPES;
-import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
-import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
-import skadistats.clarity.model.FieldPath;
+import skadistats.clarity.wire.s2.proto.S2UserMessages.CUserMessageSayText2;
 
-import java.util.List;
-import java.util.HashMap;
 import java.util.Arrays;
-
-import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.List;
 
 public class Main {
     private final Logger log = LoggerFactory.getLogger(Main.class.getPackage().getClass());
