@@ -465,7 +465,7 @@ module.exports = function aggregator(matches, fields, existing) {
         "lane_efficiency": {
             type: "parsed",
             agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lane_efficiency*100) : undefined, m);
+                standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lane_efficiency * 100) : undefined, m);
             }
         }
     };
@@ -512,6 +512,10 @@ module.exports = function aggregator(matches, fields, existing) {
             }
         }
     }
+    //sort ascending to support trends
+    matches.sort(function(a, b) {
+        return a.match_id - b.match_id;
+    });
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         if (isSignificant(constants, m)) {
@@ -558,7 +562,7 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
-            aggObj.avgs.push(~~(aggObj.sum/aggObj.n*100)/100);
+            aggObj.avgs.push(~~(aggObj.sum / aggObj.n * 100) / 100);
         }
     }
 

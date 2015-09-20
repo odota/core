@@ -17,18 +17,36 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     //options.info, the tab the player is on
     //options.query, the query object to use in advQuery
     var cache;
-    var player;
+    var player = {
+        account_id: account_id,
+        personaname: account_id
+    };
     preprocessQuery(options.query);
+    //set up mongo query in case we need it
+    //convert account id to number and search db with it
+    if (!isNaN(Number(account_id))) {
+        options.query.mongo_select["players.account_id"] = Number(account_id);
+        //match limit to retrieve for any player
+        options.query.limit = 20000;
+    }
+    else {
+        options.query.limit = 200;
+    }
+    //sort descending to get the most recent data
+    options.query.sort = {
+        match_id: -1
+    };
+    account_id = Number(account_id);
     console.time("count");
     db.matches.count({
-        "players.account_id": Number(account_id)
+        "players.account_id": account_id
     }, function(err, match_count) {
         if (err) {
             return cb(err);
         }
         console.timeEnd("count");
         db.player_matches.find({
-            account_id: Number(account_id)
+            account_id: account_id
         }, {
             sort: {
                 match_id: 1
@@ -40,18 +58,17 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             cache = {
                 data: results
             };
+            //TODO caching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
+            //we end up only saving 200 matches to the cache, rather than the expanded set
+            //additionally the count validation will always fail since a non-number account_id will return 0 results
             //redis.get("player:" + account_id, function(err, result) {
             //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
             //the number of matches won't match if the account_id is string (all/professional)
-            //var cacheValid = cache && (Object.keys(cache.data).length===match_count || isNaN(Number(account_id)));
+            //var cacheValid = cache && Object.keys(cache.data).length && Object.keys(cache.data).length===match_count;
             console.log(match_count, cache.data.length);
-            var cacheValid = cache && (cache.data.length === match_count || isNaN(Number(account_id)));
+            var cacheValid = cache && cache.data.length && cache.data.length === match_count;
             var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
-            player = {
-                account_id: account_id,
-                personaname: account_id
-            };
             /*
             if (cacheValid && !filter_exists) {
                 console.log("player cache hit %s", player.account_id);
@@ -82,21 +99,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
             else {
                 console.log("player cache miss %s", player.account_id);
-                //convert account id to number and search db with it
-                //don't do this if the account id is not a number (all/professional)
-                if (!isNaN(Number(account_id))) {
-                    options.query.mongo_select["players.account_id"] = Number(account_id);
-                    //set a larger limit since we are only getting one player's matches
-                    options.query.limit = 20000;
-                }
-                else {
-                    //only get 200 matches if not selecting a specific player.  The actual number of results will be multiplied by the number of players in each match.
-                    options.query.limit = 200;
-                }
-                //sort ascending to support trends over time
-                options.query.sort = {
-                    match_id: 1
-                };
                 advQuery(options.query, processResults);
             }
 
@@ -155,7 +157,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
                 function saveCache(cb) {
                     //save cache
-                    if (!cacheValid && Number(player.account_id) !== constants.anonymous_account_id) {
+                    if (!cacheValid && account_id !== constants.anonymous_account_id) {
                         //delete unnecessary data from match (parsed_data)
                         results.unfiltered.forEach(reduceMatch);
                         console.log("saving cache with length: %s", results.unfiltered.length);
@@ -163,7 +165,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                             //delete _id from the fetched match to prevent conflicts
                             delete match_copy._id;
                             db.player_matches.update({
-                                account_id: Number(player.account_id),
+                                account_id: account_id,
                                 match_id: match_copy.match_id
                             }, {
                                 $set: match_copy
@@ -176,7 +178,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         return cb(null);
                     }
                     /*
-                    if (!cacheValid && !filter_exists && Number(player.account_id) !== constants.anonymous_account_id) {
+                    if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id) {
                         //pack data into hash for cache
                         var match_ids = {};
                         results.data.forEach(function(m) {
