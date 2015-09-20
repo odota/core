@@ -250,6 +250,24 @@ app.route('/request_job').post(function(req, res) {
         });
     });
 });
+app.route('/mmstats').get(function(req, res){
+    var calls = {};
+    function createCall(i) {
+        return function(cb) {
+            redis.lrange("mmstats:" + i, 0, -1, cb);
+        }
+    }
+    
+    for (var i = 0; i < 16; i++) {
+        calls[i] = createCall(i);
+    }
+
+    async.parallel(calls, function(err, result) {
+        res.render("mmstats", {
+            result: result
+        });
+    });
+})
 /*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
