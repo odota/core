@@ -125,7 +125,13 @@ async.each(a, function(i, cb) {
         //console.log(process.memoryUsage());
         
         var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
-        if (req.query.match_id) {
+        if (req.query.mmstats) {
+            getMMStats(r, function(err, data) {
+                res.locals.data = data;
+                return next(err);
+            });
+        }    
+        else if (req.query.match_id) {
             getGCReplayUrl(r, req.query.match_id, function(err, data) {
                 res.locals.data = data;
                 return next(err);
@@ -142,14 +148,6 @@ async.each(a, function(i, cb) {
             res.locals.data = genStats();
             return next();
         }
-    });
-    app.get('/mm_stats', function(req, res, next) {
-       
-        var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
-        getMMStats(r, function(err, data) {
-            res.locals.data = data;
-            return next(err);
-        });
     });
     app.use(function(req, res) {
         res.json(res.locals.data);
