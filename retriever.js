@@ -113,12 +113,17 @@ async.each(a, function(i, cb) {
         var host = server.address().address;
         console.log('[RETRIEVER] listening at http://%s:%s', host, port);
     });
-    app.get('/', function(req, res, next) {
-        //console.log(process.memoryUsage());
+    app.use(function(req, res, next) {
         if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
             //reject request if doesnt have key
             return next("invalid key");
+        } else{
+            next(null);
         }
+    });
+    app.get('/', function(req, res, next) {
+        //console.log(process.memoryUsage());
+        
         var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
         if (req.query.match_id) {
             getGCReplayUrl(r, req.query.match_id, function(err, data) {
@@ -137,6 +142,14 @@ async.each(a, function(i, cb) {
             res.locals.data = genStats();
             return next();
         }
+    });
+    app.get('/mm_stats', function(req, res, next) {
+       
+        var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
+        getMMStats(r, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
     });
     app.use(function(req, res) {
         res.json(res.locals.data);
@@ -165,6 +178,13 @@ function genStats() {
         accountToIdx: accountToIdx
     };
     return data;
+}
+
+function getMMStats(idx, cb) {
+    steamObj[idx].Dota2.matchmakingStatsRequest();
+    steamObj[idx].Dota2.on('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw){
+        cb(null, raw.searching_players_by_group_source2);
+    });
 }
 
 function getPlayerProfile(idx, account_id, cb) {
