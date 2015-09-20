@@ -7,12 +7,14 @@ block playercontent
         script.
           var histogramData = {};
         p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
-        each val, key in player.aggData
-          if key in histograms
+        each v, key in histograms
+          if key in player.aggData
             - var collapsed = true
             button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
-        each val, key in player.aggData
-          if key in histograms
+        
+        each v, key in histograms
+          if key in player.aggData
+            - var val = player.aggData[key]
             - var avg = val.sum/val.n
             - var collapsed = true
             section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
@@ -34,7 +36,7 @@ append footer_assets
         var avgs = histogramData[key].avgs;
         createTrends(avgs, key);
     });
-    $("#histogram-container-toggle-duration").click();
+    $("#histogram-container-toggle-gold_per_min").click();
     
     function createTrends(avgs, key){
       var chart = c3.generate({
