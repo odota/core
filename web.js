@@ -262,9 +262,13 @@ app.route('/mmstats').get(function(req, res){
         calls[i] = createCall(i);
     }
 
+    calls["x"] = function(cb) {
+        redis.lrange("mmstats:time", 0, -1, cb);
+    }
+    
     async.parallel(calls, function(err, result) {
         res.render("mmstats", {
-            result: result
+            result: result,
         });
     });
 })

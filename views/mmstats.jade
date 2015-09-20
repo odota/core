@@ -3,24 +3,20 @@ extend layout
 block content
   h1 Match Making Stats
   .row
-    #mm-graph
+    .col-md-12
+      
+      #mm-graph
 
 append footer_assets
   script.
     var data = !{JSON.stringify(result)};
+  script.
     var columns = [];
     for (var key in data) {
       var arr = data[key];
       arr.unshift(key);
       columns.push(arr);
     }
-    
-    //console.log(columns[0])
-    var times = Array.apply(null, Array(columns[0].length - 1)).map(function (_, i) {return i ? -i : 0;});
-
-    times.unshift("x");
-    
-    columns.push(times);
     
     c3.generate({
       bindto: document.getElementById("mm-graph"),
@@ -30,7 +26,13 @@ append footer_assets
       },
       axis: {
         x: {
-          label: "Minutes ago"
+          label: "Time ago",
+          tick: {
+            count: 60,
+            format: function(x) {
+              return moment(x).fromNow();
+            }
+          }
         }
       }
     })

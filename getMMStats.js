@@ -13,8 +13,13 @@ module.exports = function getMMStats(cb) {
             var urls = result.map(function(r) {
                 return r + "&mmstats=1";
             });
+            
             utility.getData(urls, function(err, body) {
                 if (err) return cb(err);
+                
+                redis.lpush("mmstats:time", Date.now());
+                redis.ltrim("mmstats:time", 0, 60 * 24); //Store a days worth of data
+                
                 body.forEach(function(elem, index) {
                     redis.lpush('mmstats:' + index, elem);
                     redis.ltrim('mmstats:' + index, 0, 60 * 24);
