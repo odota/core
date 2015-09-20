@@ -581,7 +581,6 @@ function runParse(data, cb) {
     }).on('response', function(response) {
         if (response.statusCode === 200) {
             //TODO replace domain with something that can handle exceptions with context
-            bz = spawn("bunzip2");
             parser = spawn("java", ["-jar",
                     "-Xmx64m",
                     "java_parser/target/stats-0.1.0.jar"
@@ -591,16 +590,20 @@ function runParse(data, cb) {
                 encoding: 'utf8'
             });
             parseStream = ndjson.parse();
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
+            if (url.slice(-3) === "bz2") {
+                bz = spawn("bunzip2");
+                inStream.pipe(bz.stdin);
+                bz.stdout.pipe(parser.stdin);
+            }
+            else {
+                inStream.pipe(parser.stdin);
+            }
             parser.stdout.pipe(parseStream);
             //parser.stderr.on('data', function(data) {
             //    console.log(data.toString());
             //});
             parseStream.on('data', handleStream);
-            parseStream.on('end', function() {
-                return exit(error);
-            });
+            parseStream.on('end', exit);
         }
         else {
             exit(response.statusCode.toString());
@@ -608,6 +611,7 @@ function runParse(data, cb) {
     });
 
     function exit(err) {
+        err = err || error;
         if (!err) {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match ";
