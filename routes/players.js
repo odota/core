@@ -14,20 +14,23 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "matches": {
             "name": "Matches"
         },
-        "histograms": {
+        "activity": {
+            "name": "Activity"
+        },
+      "histograms": {
             "name": "Histograms"
         },
         "records": {
             "name": "Records"
-        },
-        "activity": {
-            "name": "Activity"
         },
         "counts": {
             "name": "Counts"
         },
         "totals": {
             "name": "Totals"
+        },
+        "trends": {
+            "name": "Trends"
         },
         "items": {
             "name": "Items"
@@ -38,14 +41,11 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "wordcloud": {
             "name": "Word Cloud"
         },
+       "rating": {
+            "name": "Rating"
+        },
         "compare": {
             "name": "Compare"
-        },
-        "trends": {
-            "name": "Trends"
-        },
-        "rating": {
-            "name": "Rating"
         }
     };
     console.time("player " + req.params.account_id);
