@@ -198,6 +198,7 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+app.use('/', require('./routes/mmstats'))
 //post/get a request
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
@@ -250,37 +251,6 @@ app.route('/request_job').post(function(req, res) {
         });
     });
 });
-app.route('/mmstats').get(function(req, res){
-    var calls = {};
-    function createCall(i) {
-        return function(cb) {
-            redis.lrange("mmstats:" + i, 0, -1, cb);
-        }
-    }
-    
-    for (var i = 0; i < 16; i++) {
-        var regionName;
-        
-        for(var region in constants.regions) {
-            if (constants.regions[region]["matchgroup"] === i + "") {
-                regionName = region;
-                break;
-            }
-        }
-        
-        calls[regionName ? regionName : i] = createCall(i);
-    }
-
-    calls["x"] = function(cb) {
-        redis.lrange("mmstats:time", 0, -1, cb);
-    }
-    
-    async.parallel(calls, function(err, result) {
-        res.render("mmstats", {
-            result: result,
-        });
-    });
-})
 /*
 app.route('/preferences').post(function(req, res) {
     if (req.user) {
