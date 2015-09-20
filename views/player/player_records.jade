@@ -15,8 +15,9 @@ block playercontent
               th Total
               th Mean
           tbody
-            each val, key in player.aggData
-              if key in histograms
+            each v, key in histograms
+              if key in player.aggData
+                - var val = player.aggData[key]
                 - var avg = val.sum/val.n
                 tr
                   td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")

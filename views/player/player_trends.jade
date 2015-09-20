@@ -36,7 +36,7 @@ append footer_assets
         var avgs = histogramData[key].avgs;
         createTrends(avgs, key);
     });
-    $("#histogram-container-toggle-gold_per_min").click();
+    $("#histogram-container-toggle-kills").click();
     
     function createTrends(avgs, key){
       var chart = c3.generate({
