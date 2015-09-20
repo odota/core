@@ -259,7 +259,16 @@ app.route('/mmstats').get(function(req, res){
     }
     
     for (var i = 0; i < 16; i++) {
-        calls[i] = createCall(i);
+        var regionName;
+        
+        for(var region in constants.regions) {
+            if (constants.regions[region]["matchgroup"] === i + "") {
+                regionName = region;
+                break;
+            }
+        }
+        
+        calls[regionName ? regionName : i] = createCall(i);
     }
 
     calls["x"] = function(cb) {
