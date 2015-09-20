@@ -2,7 +2,7 @@ extend layout
 
 block content
   h1 Match Making Stats
-    small: attr(title=moment(Number(result["x"][0])).format()) Last Updated: #{moment(Number(result["x"][0])).fromNow()}
+    small: attr(title=moment(Number(result["x"][0])).format())  Updated: #{moment(Number(result["x"][0])).fromNow()}
   .row
     .col-md-12
       #mm-graph
@@ -12,8 +12,8 @@ block content
             th Region
             th # Match Making
             th 24 Hours ago (% change)
-            th Max (time)
-            th Min (time)
+            th Max
+            th Min
           tbody
             each val, region in constants.regions
               if region in result
@@ -31,11 +31,9 @@ block content
                   - var maxTime = Number(result["x"][result[region].indexOf(max + "")])
                   - var min = Math.min.apply(null, result[region])
                   - var minTime = Number(result["x"][result[region].indexOf(min + "")])
-                  td #{max} 
-                    attr(title=moment(maxTime).format()) (#{moment(maxTime).fromNow()})
-                  td #{min} 
-                    attr(title=moment(minTime).format()) (#{moment(minTime).fromNow()})
-
+                  td: attr(title=moment(maxTime).fromNow()) #{max} 
+                  td: attr(title=moment(minTime).fromNow()) #{min} 
+                    
 append footer_assets
   script.
     var data = !{JSON.stringify(result)};
@@ -68,7 +66,7 @@ append footer_assets
           }
         },
         y: {
-          label: "# players searching for matches"
+          label: "# players match making"
         }
       }
     })
