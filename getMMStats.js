@@ -3,7 +3,7 @@ var r = require('./redis');
 var redis = r.client;
 var utility = require('./utility');
 var getData = utility.getData;
-module.exports = function getMMStats() {
+module.exports = function getMMStats(cb) {
     redis.get("retrievers", function(err, result) {
         if (err || !result) {
             console.log("failed to get retrievers from redis");
@@ -14,9 +14,12 @@ module.exports = function getMMStats() {
                 return r + "&mmstats=1";
             });
             utility.getData(urls, function(err, body) {
-                if (err) console.log("man")
-                console.log(Date.now());
-                console.log(body);
+                if (err) return cb(err);
+                body.forEach(function(elem, index) {
+                    redis.lpush('mmstats:' + index, elem);
+                    redis.ltrim('mmstats:' + index, 0, 60 * 24);
+                });
+                cb(err);
             });
         }
     });
