@@ -198,6 +198,7 @@ app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+app.use('/', require('./routes/mmstats'))
 //post/get a request
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
