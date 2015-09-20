@@ -26,10 +26,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         if (err) {
             return cb(err);
         }
-        //console.log(match_count);
         console.timeEnd("count");
         db.player_matches.find({
-            account_id: account_id
+            account_id: Number(account_id)
         }, {
             sort: {
                 match_id: 1
@@ -45,6 +44,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
             //the number of matches won't match if the account_id is string (all/professional)
             //var cacheValid = cache && (Object.keys(cache.data).length===match_count || isNaN(Number(account_id)));
+            console.log(match_count, cache.data.length);
             var cacheValid = cache && (cache.data.length === match_count || isNaN(Number(account_id)));
             var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
@@ -140,45 +140,40 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     generatePositionData(d, player);
                     player.posData = [d];
                 }
-                getPlayerName(function(err, player) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    saveCache(player, cb);
+                async.series([getPlayerName, saveCache], function(err) {
+                    cb(err, player);
                 });
 
                 function getPlayerName(cb) {
                     //get this player's name
                     var playerArr = [player];
                     queries.fillPlayerNames(playerArr, function(err) {
-                        var player = playerArr[0];
-                        cb(err, player);
+                        player = playerArr[0];
+                        cb(err);
                     });
                 }
 
-                function saveCache(player, cb) {
+                function saveCache(cb) {
                     //save cache
                     if (!cacheValid && Number(player.account_id) !== constants.anonymous_account_id) {
                         //delete unnecessary data from match (parsed_data)
                         results.unfiltered.forEach(reduceMatch);
-                        //cache = {data: results.unfiltered};
+                        console.log("saving cache with length: %s", results.unfiltered.length);
                         async.each(results.unfiltered, function(match_copy, cb) {
                             //delete _id from the fetched match to prevent conflicts
                             delete match_copy._id;
                             db.player_matches.update({
-                                account_id: player.account_id,
+                                account_id: Number(player.account_id),
                                 match_id: match_copy.match_id
                             }, {
                                 $set: match_copy
                             }, {
                                 upsert: true
                             }, cb);
-                        }, function(err) {
-                            return cb(err, player);
-                        });
+                        }, cb);
                     }
                     else {
-                        return cb(null, player);
+                        return cb(null);
                     }
                     /*
                     if (!cacheValid && !filter_exists && Number(player.account_id) !== constants.anonymous_account_id) {
