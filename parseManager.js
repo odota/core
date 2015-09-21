@@ -19,7 +19,7 @@ function start() {
             var parsers = JSON.parse(result);
             //concurrent job processors per parse worker
             var parallelism = 4;
-            var capacity = parsers.length * parallelism;
+            var capacity = config.PARSER_PARALLELISM;
             if (cluster.isMaster && config.NODE_ENV !== "test") {
                 console.log("[PARSEMANAGER] starting master");
                 for (var i = 0; i < capacity; i++) {
