@@ -6,11 +6,13 @@ var updateNames = require('./tasks/updateNames');
 var buildSets = require('./buildSets');
 var utility = require('./utility');
 var serviceDiscovery = require('./serviceDiscovery');
+var getMMStats = require("./getMMStats");
 var invokeInterval = utility.invokeInterval;
 var numCPUs = require('os').cpus().length;
 console.log("[WORKER] starting worker");
 invokeInterval(buildSets, 60 * 1000);
 invokeInterval(serviceDiscovery.queryRetrievers, 60 * 1000);
+invokeInterval(getMMStats, 60 * 1000);
 jobs.watchStuckJobs();
 //process requests (api call, waits for parse to complete)
 jobs.process('request', numCPUs, processApi);

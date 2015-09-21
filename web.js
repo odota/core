@@ -144,6 +144,7 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
+/*
 app.route('/professional').get(function(req, res, next) {
     advQuery({
         mongo_select: {
@@ -177,7 +178,6 @@ app.route('/professional').get(function(req, res, next) {
         res.render('professional', {
             matches: data2.data
         });
-        /*
         //implement live match pages
         //individual live match page for each match
         //interval check api
@@ -191,14 +191,15 @@ app.route('/professional').get(function(req, res, next) {
                     recent: data2.data
                 });
         });
-        */
     });
 });
+*/
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+app.use('/', require('./routes/mmstats'))
 //post/get a request
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {

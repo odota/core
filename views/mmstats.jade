@@ -1,0 +1,72 @@
+extend layout
+
+block content
+  h1 Match Making Stats
+    small: attr(title=moment(Number(result["x"][0])).format())  Updated: #{moment(Number(result["x"][0])).fromNow()}
+  .row
+    .col-md-12
+      #mm-graph
+      .table-responsive
+        table.table.table-striped
+          thead
+            th Region
+            th # Match Making
+            th 24 Hours ago (% change)
+            th Max
+            th Min
+          tbody
+            each val, region in constants.regions
+              if region in result
+                tr
+                  td= region
+                  td= result[region][0] 
+                  if result[region][60 * 24]
+                    - var change = result[region][0] / result[region][60 * 24] * 100
+                    th #{result[region][60 * 24]} 
+                      if change
+                        span(class=change > 0 ? "text-success" : "text-danger") #{change}%
+                  else
+                    td Unavailable
+                  - var max = Math.max.apply(null, result[region])
+                  - var maxTime = Number(result["x"][result[region].indexOf(max + "")])
+                  - var min = Math.min.apply(null, result[region])
+                  - var minTime = Number(result["x"][result[region].indexOf(min + "")])
+                  td: attr(title=moment(maxTime).fromNow()) #{max} 
+                  td: attr(title=moment(minTime).fromNow()) #{min} 
+                    
+append footer_assets
+  script.
+    var data = !{JSON.stringify(result)};
+  script.
+    console.log(constants.regions)
+    var columns = [];
+    for (var key in data) {
+      var arr = data[key];
+      arr.unshift(key);
+      columns.push(arr);
+    }
+    
+    c3.generate({
+      bindto: document.getElementById("mm-graph"),
+      data: {
+        x: 'x',
+        columns: columns
+      },
+      point: {
+        show: false
+      },
+      axis: {
+        x: {
+          label: "Time ago",
+          tick: {
+            count: 60,
+            format: function(x) {
+              return moment(x).fromNow();
+            }
+          }
+        },
+        y: {
+          label: "# players match making"
+        }
+      }
+    })
