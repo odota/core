@@ -25,8 +25,8 @@ mmstats.route('/mmstats/api').get(function(req, res, next){
 
 function createCalls(range) {
     var calls = {};
-    
-    for (var i = 0; i < 16; i++) {
+
+    for (var i = 0; i < Object.keys(constants.regions).length; i++) {
         var regionName;
         
         for(var region in constants.regions) {
