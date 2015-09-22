@@ -109,7 +109,7 @@ module.exports = function constants(cb) {
                 });
             }
         }
-        console.log(cluster);
+        constants.cluster = cluster;
         fs.writeFile('./constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
