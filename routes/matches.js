@@ -36,7 +36,8 @@ var matchPages = {
         name: "Teamfights"
     },
     actions: {
-        name: "Actions"
+        name: "Actions",
+        "new": true
     },
     chat: {
         name: "Chat"

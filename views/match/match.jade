@@ -45,7 +45,7 @@ block content
         each val, key in tabs
           - var disableTab = !match.parsed_data.version && key!=="index"
           li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
-              a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+              a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key), id=(val.new ? "new-feature" : ""))= val.name
 
   .match
     block match_content

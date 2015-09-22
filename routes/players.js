@@ -26,11 +26,15 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "counts": {
             "name": "Counts"
         },
-        "totals": {
-            "name": "Totals"
-        },
         "trends": {
-            "name": "Trends"
+            "name": "Trends",
+            "new": true
+        },
+        "sprees": {
+            "name": "Sprees"
+        },
+        "wardmap":{
+            "name": "Wardmap"
         },
         "items": {
             "name": "Items"
@@ -39,7 +43,7 @@ players.get('/:account_id/:info?', function(req, res, next) {
             "name": "Skills"
         },
         "wordcloud": {
-            "name": "Word Cloud"
+            "name": "Wordcloud"
         },
        "rating": {
             "name": "Rating"
