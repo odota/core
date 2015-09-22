@@ -10,22 +10,19 @@ var redis = r.client;
 
 function insertMatch(match, cb) {
     async.series([function(cb) {
-        //set to queued, unless we specified something earlier (like skipped)
         //calling functions should explicitly set match.parse_status = 0 if they want the match to be queued for parse
-        //this way full history doesn't overwrite existing parse_status
-        //parse_status may not exist on matches we get via full history!
+        //this way full history doesn't overwrite existing parse_status (full history keeps it unset)
         updatePlayerCaches(match, {
             type: "api"
         }, cb);
         }], function decideParse(err) {
         if (err) {
-            //error occured
             return cb(err);
         }
         else if (match.parse_status !== 0) {
             //not parsing this match
-            //this isn't a error, although we want to report that back to user if it was a request
-            cb(err);
+            //this isn't a error, although we want to report that we refused to parse back to user if it was a request
+            return cb(err);
         }
         else {
             if (match.request) {
@@ -63,6 +60,7 @@ function insertMatchProgress(match, job, cb) {
             });
             job2.on('complete', function() {
                 job.progress(100, 100, "Parse complete!");
+                redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
                 cb();
             });
         }

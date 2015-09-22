@@ -5,63 +5,20 @@ var kue = r.kue;
 var updateNames = require('./tasks/updateNames');
 var buildSets = require('./buildSets');
 var utility = require('./utility');
+var serviceDiscovery = require('./serviceDiscovery');
+var getMMStats = require("./getMMStats");
 var invokeInterval = utility.invokeInterval;
-var domain = require('domain');
-var async = require('async');
 var numCPUs = require('os').cpus().length;
-//don't need these handlers when kue supports job ttl in 0.9?
-//ttl fails jobs rather than requeuing them
+var config = require('./config');
+console.log("[WORKER] starting worker");
+invokeInterval(buildSets, 60 * 1000);
+invokeInterval(serviceDiscovery.queryRetrievers, 60 * 1000);
+invokeInterval(getMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 1); //Sample every 3 minutes
 jobs.watchStuckJobs();
-process.on('SIGTERM', function() {
-    clearActiveJobs(function(err) {
-        process.exit(err || 1);
-    });
-});
-process.on('SIGINT', function() {
-    clearActiveJobs(function(err) {
-        process.exit(err || 1);
-    });
-});
-process.once('SIGUSR2', function() {
-    clearActiveJobs(function(err) {
-        console.log(err);
-        process.kill(process.pid, 'SIGUSR2');
-    });
-});
-var d = domain.create();
-d.on('error', function(err) {
-    console.log(err.stack);
-    clearActiveJobs(function(err2) {
-        process.exit(1);
-    });
-});
-d.run(function() {
-    console.log("[WORKER] starting worker");
-    //updatenames queues an api request
-    //jobs.process('api', processApi);
-    //process requests (api call, waits for parse to complete)
-    jobs.process('request', numCPUs, processApi);
-    invokeInterval(buildSets, 60 * 1000);
-    //invokeInterval(updateNames, 60 * 1000);
-    //invokeInterval(constants, 15 * 60 * 1000);
-});
-
-function clearActiveJobs(cb) {
-    jobs.active(function(err, ids) {
-        if (err) {
-            return cb(err);
-        }
-        async.mapSeries(ids, function(id, cb) {
-            kue.Job.get(id, function(err, job) {
-                if (job) {
-                    console.log("requeued job %s", id);
-                    job.inactive();
-                }
-                cb(err);
-            });
-        }, function(err) {
-            console.log("cleared active jobs");
-            cb(err);
-        });
-    });
-}
+//process requests (api call, waits for parse to complete)
+jobs.process('request', numCPUs, processApi);
+utility.cleanup(jobs, kue, 'request');
+//updatenames queues an api request, probably should have name updating occur in a separate service
+//jobs.process('api', processApi);
+//invokeInterval(updateNames, 60 * 1000);
+//invokeInterval(constants, 15 * 60 * 1000);

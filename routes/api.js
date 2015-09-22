@@ -21,7 +21,7 @@ api.get('/matches', function(req, res, next) {
     preprocessQuery(select);
     advQuery({
         select: select,
-        project: null, //just project default fields
+        project: null,
         limit: Math.min(limit, 100) || 100,
         js_agg: js_agg,
         js_limit: js_limit,

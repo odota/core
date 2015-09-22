@@ -27,7 +27,10 @@ function advQuery(query, cb) {
         limit: query.limit,
         skip: query.skip,
         sort: query.sort,
-        fields: query.project
+        //use either the passed projection or default to not getting parsed_data since we add it later
+        fields: query.project || {
+            parsed_data: 0
+        }
     };
     //console.log(query);
     console.time('querying database');
@@ -203,13 +206,9 @@ function getParsedPlayerData(matches, doAction, cb) {
     if (!doAction) {
         return cb();
     }
-    //we optimize by filtering matches for only those with parse_status===2
-    var parsed = matches.filter(function(m) {
-        return m.parse_status === 2;
-    });
     //the following does a query for each parsed match in the set, so could be a lot of queries
     //since we might want a different position on each query, we need to make them individually
-    async.each(parsed, function(m, cb) {
+    async.each(matches, function(m, cb) {
         var player = m.players[0];
         var parseSlot = player.player_slot % (128 - 5);
         db.matches.findOne({

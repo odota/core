@@ -4,7 +4,10 @@ var logger = utility.logger;
 var getData = utility.getData;
 module.exports = function processMmr(job, cb) {
     var payload = job.data.payload;
-    getData(job.data.url, function(err, data) {
+    getData({
+        url: job.data.url,
+        noRetry: true
+    }, function(err, data) {
         if (err) {
             logger.info(err);
             //don't clutter kue with failed mmr reqs
@@ -12,16 +15,16 @@ module.exports = function processMmr(job, cb) {
             return cb(null, err);
         }
         logger.info("mmr response");
-        if (data.soloCompetitiveRank || data.competitiveRank) {
+        if (data.solo_competitive_rank || data.competitive_rank) {
             db.players.update({
                 account_id: payload.account_id
             }, {
-                 $push: {
-                    ratings:{
+                $push: {
+                    ratings: {
                         match_id: payload.match_id,
                         account_id: payload.account_id,
-                        soloCompetitiveRank: data.soloCompetitiveRank,
-                        competitiveRank: data.competitiveRank,
+                        soloCompetitiveRank: data.solo_competitive_rank,
+                        competitiveRank: data.competitive_rank,
                         time: new Date()
                     }
                 }

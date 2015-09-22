@@ -2,6 +2,7 @@ var utility = require('./utility');
 var reduceMatch = utility.reduceMatch;
 var aggregator = require('./aggregator');
 var async = require('async');
+var config = require('./config');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
@@ -27,8 +28,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
-            return cb();
-            /*
                 redis.get("player:" + p.account_id, function(err, result) {
                     if (err) {
                         return cb(err);
@@ -58,7 +57,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                             }
                             //reduce match for display
-                            //TODO if we want to cache full data, we don't want to get rid of player.parsedPlayer
+                            //if we want to cache full data, we don't want to get rid of player.parsedPlayer in the match_copy
                             reduceMatch(match_copy);
                             var orig = cache.data[match_copy.match_id];
                             if (!orig) {
@@ -82,12 +81,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             if (err) {
                                 return cb(err);
                             }
-                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
-                    cb(err);
-
-                    //temporarily disable inserting new players into db on match insert
+                    //return cb(err);
+                    //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({
                         account_id: p.account_id
                     }, {
@@ -103,7 +101,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         cb(err);
                     });
                 });
-                */
             },
             //done with all 10 players
             function(err) {

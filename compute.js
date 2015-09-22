@@ -113,7 +113,8 @@ function computeMatchData(match) {
                     "lane_pos": true
                 };
                 parsedPlayer.posData = generatePositionData(d, parsedPlayer);
-                var MAP_TILES = 128;
+                //4 is scale factor that x/y are scaled down by, should probably save as constant
+                var MAP_TILES = 128/4;
                 parsedPlayer.explore = parsedPlayer.posData.pos.length / (MAP_TILES * MAP_TILES);
                 //compute lanes
                 var lanes = [];
@@ -203,11 +204,10 @@ function count_words(match, player_filter) {
     // extract individual words from the message strings
     var chat_words = [];
     messages.forEach(function(message) {
-        // adjust the slot position (important if there are fewer than 10 players)
-        var adjusted_slot = match.all_players[message.slot] ? message.slot : message.slot - 5;
-        var p = match.all_players[adjusted_slot] || {};
-        // if there is no player_filter, or if the player_filter matches this message, log it
-        if (!player_filter || p.player_slot === player_filter.player_slot) {
+        // make sure the slot exists in all_players array, otherwise, skip this message
+        var p = match.all_players[message.slot];
+        // if there is no player_filter, or if the passed player  matches this message, log it
+        if (p && (!player_filter || p.player_slot === player_filter.player_slot)) {
             chat_words.push(message.key);
         }
     });

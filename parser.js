@@ -4,18 +4,17 @@ var request = require('request');
 var fs = require('fs');
 var cp = require('child_process');
 var utility = require('./utility');
-var domain = require('domain');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
 var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
-var constants = require('./constants.json');
+//var constants = require('./constants.json');
 var app = express();
-var capacity = require('os').cpus().length;
+//var capacity = require('os').cpus().length;
+var capacity = config.PARSER_PARALLELISM;
 var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
-var shutdown = false;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     // Fork workers.
     for (var i = 0; i < capacity; i++) {
@@ -32,21 +31,28 @@ else {
     });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
-        var err;
+        var err = false;
         //TODO verify the POST is from github/secret holder
-        //TODO we may miss deploys if we are shutting down when we receive another push
-        if (req.body.ref === "refs/heads/master" && !shutdown) {
-            shutdown = true;
+        if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
-            exec('npm run deploy-parser', function(error, stdout, stderr) {
+            var debugFile = fs.openSync("./deploy_debug.txt", "a+");
+            /*
+            var child = spawn('npm run deploy-parser', null, {
+                cwd: process.cwd(),
+                detached: true,
+                stdio: ['ignore', 'ignore', 'ignore']
+            });
+            */
+            var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
                 console.log('stdout: ' + stdout);
                 console.log('stderr: ' + stderr);
                 if (error) {
                     console.log('exec error: ' + error);
                 }
-                process.exit(0);
             });
+            child.unref();
+            console.log(child);
         }
         else {
             err = "not passing deploy conditions";
@@ -62,16 +68,18 @@ else {
             });
         }
         runParse(req.query, function(err, parsed_data) {
-            if (err && !res.headersSent) {
-                return res.json({
+            if (err) {
+                console.error("error occurred for query: %s: %s", JSON.stringify(req.query), err.stack || err);
+                res.json({
                     error: err.message || err.code || err
                 });
+                if (config.NODE_ENV !== "test") {
+                    process.exit(1);
+                }
             }
-            if (err && config.NODE_ENV !== "test") {
-                console.error(err.stack);
-                process.exit(1);
+            else {
+                return res.json(parsed_data);
             }
-            return res.json(parsed_data);
         });
     });
 }
@@ -85,47 +93,27 @@ function runParse(data, cb) {
     var parseStream;
     var bz;
     var parser;
-    var d = domain.create();
     //parse state
     var entries = [];
-    var name_to_slot = {};
     var hero_to_slot = {};
     var hero_to_id = {};
+    var curr_player_hero = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
     var intervalState = {};
     var teamfight_cooldown = 15;
-    var parsed_data;
+    var parsed_data = null;
     //parse logic
     //capture events streamed from parser and set up state for post-processing
-    //these events are generally not pushed to event buffer (except hero_log)
+    //these events are generally not pushed to event buffer
     var streamTypes = {
         "state": function(e) {
+            //capture the replay time at which the game clock was 0:00
             if (e.key === "PLAYING") {
                 game_zero = e.time;
             }
             //console.log(e);
-        },
-        "hero_log": function(e) {
-            //get hero name by id
-            var h = constants.heroes[e.key];
-            hero_to_slot[h ? h.name : e.key] = e.slot;
-            //get hero id by name
-            hero_to_id[h ? h.name : e.key] = e.key;
-            //push it to entries for hero log
-            entries.push(e);
-        },
-        "name": function(e) {
-            name_to_slot[e.key] = e.slot;
-        },
-        "error": function(e) {
-            error = "parse error: " + e.key;
-        },
-        "progress": function(e) {
-            //job.progress(e.key, 100);
-            //TODO we could output this as line delimited json
-            console.log(e);
         },
         "epilogue": function() {
             error = null;
@@ -138,43 +126,254 @@ function runParse(data, cb) {
         "steam_id": function(e) {
             populate(e);
         },
-        "hero_log": function(e) {
-            populate(e);
-        },
-        "gold_reasons": function(e) {
-            if (!constants.gold_reasons[e.key]) {
-                //new gold reason
-                //reason 8=cheat?  shouldn't occur in pub games
-                console.log(e);
+        "combat_log": function(e) {
+            switch (e.subtype) {
+                case "DOTA_COMBATLOG_DAMAGE":
+                    //damage
+                    e.unit = e.sourcename; //source of damage (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    //count damage dealt to unit
+                    e.type = "damage";
+                    getSlot(e);
+                    //check if this damage happened to a real hero
+                    if (e.targethero && !e.targetillusion) {
+                        //reverse and count as damage taken (see comment for reversed kill)
+                        var r = {
+                            time: e.time,
+                            unit: e.key,
+                            key: e.unit,
+                            value: e.value,
+                            type: "damage_taken"
+                        };
+                        getSlot(r);
+                        //count a hit on a real hero with this inflictor
+                        var h = {
+                            time: e.time,
+                            unit: e.unit,
+                            key: translate(e.inflictor),
+                            type: "hero_hits"
+                        };
+                        getSlot(h);
+                        //don't count self-damage for the following
+                        if (e.key !== e.unit) {
+                            //count damage dealt to a real hero with this inflictor
+                            var inf = {
+                                type: "damage_inflictor",
+                                time: e.time,
+                                unit: e.unit,
+                                key: translate(e.inflictor),
+                                value: e.value
+                            };
+                            getSlot(inf);
+                            //biggest hit on a hero
+                            var m = {
+                                type: "max_hero_hit",
+                                time: e.time,
+                                max: true,
+                                inflictor: translate(e.inflictor),
+                                unit: e.unit,
+                                key: e.key,
+                                value: e.value
+                            };
+                            getSlot(m);
+                        }
+                    }
+                    break;
+                case "DOTA_COMBATLOG_HEAL":
+                    //healing
+                    e.unit = e.sourcename; //source of healing (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    e.type = "healing";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_MODIFIER_ADD":
+                    //gain buff/debuff
+                    e.unit = e.attackername; //unit that buffed (can we use source to get the hero directly responsible? chen/enchantress/etc.)
+                    e.key = translate(e.inflictor); //the buff
+                    //e.targetname is target of buff (possibly illusion)
+                    e.type = "modifier_applied";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_MODIFIER_REMOVE":
+                    //lose buff/debuff
+                    //TODO: do something with modifier lost events, really only useful if we want to try to "time" modifiers
+                    //e.targetname is unit losing buff (possibly illusion)
+                    //e.inflictor is name of buff
+                    e.type = "modifier_lost";
+                    break;
+                case "DOTA_COMBATLOG_DEATH":
+                    //kill
+                    e.unit = e.sourcename; //killer (a hero)
+                    e.key = computeIllusionString(e.targetname, e.targetillusion);
+                    //code to log objectives via combat log, we currently do it with objectives (chat events)
+                    // var logs = ["_tower", "_rax", "_fort", "_roshan"];
+                    // var isObjective = logs.some(function(s) {
+                    //     return (e.key.indexOf(s) !== -1 && !e.target_illusion);
+                    // });
+                    // if (isObjective) {
+                    //     //push a copy to objectives
+                    //     parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    // }
+                    //count kill by this unit
+                    e.type = "kills";
+                    getSlot(e);
+                    //killed unit was a real hero
+                    if (e.targethero && !e.targetillusion) {
+                        //log this hero kill
+                        e.type = "kills_log";
+                        populate(e);
+                        //reverse and count as killed by
+                        //if the killed unit isn't a hero, we don't care about killed_by
+                        var r = {
+                            time: e.time,
+                            unit: e.key,
+                            key: e.unit,
+                            type: "killed_by"
+                        };
+                        getSlot(r);
+                        //check teamfight state
+                        curr_teamfight = curr_teamfight || {
+                            start: e.time - teamfight_cooldown,
+                            end: null,
+                            last_death: e.time,
+                            deaths: 0,
+                            players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
+                                return {
+                                    deaths_pos: {},
+                                    ability_uses: {},
+                                    item_uses: {},
+                                    kills: {},
+                                    deaths: 0,
+                                    buybacks: 0,
+                                    damage: 0,
+                                    gold_delta: 0,
+                                    xp_delta: 0
+                                };
+                            })
+                        };
+                        //update the last_death time of the current fight
+                        curr_teamfight.last_death = e.time;
+                        curr_teamfight.deaths += 1;
+                    }
+                    break;
+                case "DOTA_COMBATLOG_ABILITY":
+                    //ability use
+                    e.unit = e.attackername;
+                    e.key = translate(e.inflictor);
+                    e.type = "ability_uses";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_ITEM":
+                    //item use
+                    e.unit = e.attackername;
+                    e.key = translate(e.inflictor);
+                    e.type = "item_uses";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_LOCATION":
+                    //TODO not in replay?
+                    console.log(e);
+                    break;
+                case "DOTA_COMBATLOG_GOLD":
+                    //gold gain/loss
+                    e.unit = e.targetname;
+                    e.key = e.gold_reason;
+                    //gold_reason=8 is cheats, not added to constants
+                    e.type = "gold_reasons";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_GAME_STATE":
+                    //state
+                    //we don't use this here since we need to capture it on the stream to detect game_zero
+                    e.type = "state";
+                    break;
+                case "DOTA_COMBATLOG_XP":
+                    //xp gain
+                    e.unit = e.targetname;
+                    e.key = e.xp_reason;
+                    e.type = "xp_reasons";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_PURCHASE":
+                    //purchase
+                    e.unit = e.targetname;
+                    e.key = translate(e.valuename);
+                    e.value = 1;
+                    e.type = "purchase";
+                    getSlot(e);
+                    //don't include recipes in purchase logs
+                    if (e.key.indexOf("recipe_") !== 0) {
+                        e.type = "purchase_log";
+                        getSlot(e);
+                    }
+                    break;
+                case "DOTA_COMBATLOG_BUYBACK":
+                    //buyback
+                    e.slot = e.value; //player slot that bought back
+                    e.type = "buyback_log";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_ABILITY_TRIGGER":
+                    //only seems to happen for axe spins
+                    e.type = "ability_trigger";
+                    //e.attackername //unit triggered on?
+                    //e.key = e.inflictor; //ability triggered?
+                    //e.unit = determineIllusion(e.targetname, e.targetillusion); //unit that triggered the skill
+                    break;
+                case "DOTA_COMBATLOG_PLAYERSTATS":
+                    //player stats
+                    //TODO: don't really know what this does, following fields seem to be populated
+                    //attackername
+                    //targetname
+                    //targetsourcename
+                    //value (1-15)
+                    e.type = "player_stats";
+                    e.unit = e.attackername;
+                    e.key = e.targetname;
+                    break;
+                case "DOTA_COMBATLOG_MULTIKILL":
+                    //multikill
+                    e.unit = e.attackername;
+                    e.key = e.value;
+                    e.value = 1;
+                    e.type = "multi_kills";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_KILLSTREAK":
+                    //killstreak
+                    e.unit = e.attackername;
+                    e.key = e.value;
+                    e.value = 1;
+                    e.type = "kill_streaks";
+                    getSlot(e);
+                    break;
+                case "DOTA_COMBATLOG_TEAM_BUILDING_KILL":
+                    //team building kill
+                    //System.err.println(cle);
+                    e.type = "team_building_kill";
+                    e.unit = e.attackername; //unit that killed the building
+                    //e.value, this is only really useful if we can get WHICH tower/rax was killed
+                    //0 is other?
+                    //1 is tower?
+                    //2 is rax?
+                    //3 is ancient?
+                    break;
+                case "DOTA_COMBATLOG_FIRST_BLOOD":
+                    //first blood
+                    e.type = "first_blood";
+                    //time, involved players?
+                    break;
+                case "DOTA_COMBATLOG_MODIFIER_REFRESH":
+                    //modifier refresh
+                    e.type = "modifier_refresh";
+                    //no idea what this means
+                    break;
+                default:
+                    console.log(e);
+                    break;
             }
-            getSlot(e);
         },
-        "xp_reasons": function(e) {
-            if (!constants.xp_reasons[e.key]) {
-                //new xp reason
-                console.log(e);
-            }
-            getSlot(e);
-        },
-        "purchase": function(e) {
-            getSlot(e);
-            if (e.key.indexOf("recipe_") === -1) {
-                //don't include recipes in purchase logs
-                e.type = "purchase_log";
-                populate(e);
-            }
-        },
-        "modifier_applied": getSlot,
-        "modifier_lost": getSlot,
-        "healing": getSlot,
-        "ability_trigger": getSlot,
-        "item_uses": getSlot,
-        "ability_uses": getSlot,
-        "kill_streaks": getSlot,
-        "multi_kills": getSlot,
         "clicks": function(e) {
-            //just 0 (other) the key for now since we dont know what the order_types are
-            e.key = 0;
             getSlot(e);
         },
         "pings": function(e) {
@@ -182,141 +381,93 @@ function runParse(data, cb) {
             e.key = 0;
             getSlot(e);
         },
+        "actions": function(e) {
+            getSlot(e);
+        },
         "chat_event": function(e) {
-            if (e.subtype === "CHAT_MESSAGE_RUNE_PICKUP") {
-                //player
-                e.type = "runes";
-                populate(e);
-            }
-            else if (e.subtype === "CHAT_MESSAGE_RUNE_BOTTLE") {
-                //player, bottled rune
-            }
-            else if (e.subtype === "CHAT_MESSAGE_HERO_KILL") {
-                //player, assisting players
-            }
-            else if (e.subtype === "CHAT_MESSAGE_GLYPH_USED") {
-                //team glyph
-            }
-            else if (e.subtype === "CHAT_MESSAGE_PAUSED") {
-                //player paused
-            }
-            else if (e.subtype === "CHAT_MESSAGE_FIRSTBLOOD" || e.subtype === "CHAT_MESSAGE_TOWER_DENY" || e.subtype === "CHAT_MESSAGE_TOWER_KILL" || e.subtype === "CHAT_MESSAGE_BARRACKS_KILL" || e.subtype === "CHAT_MESSAGE_AEGIS" || e.subtype === "CHAT_MESSAGE_AEGIS_STOLEN" || e.subtype === "CHAT_MESSAGE_ROSHAN_KILL") {
-                //tower (player/team)
-                //barracks (player)
-                //aegis (player)
-                //roshan (team)
-                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
-            }
-            else {
-                console.log(e);
-            }
-        },
-        "kills": function(e) {
-            /*
-            //log objectives via combat log
-            var logs = ["_tower", "_rax", "_fort", "_roshan"];
-            var isObjective = logs.some(function(s) {
-                return (e.key.indexOf(s) !== -1 && !e.target_illusion);
-            });
-            if (isObjective) {
-                //push a copy to objectives
-                parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
-            }
-            */
-            //count kill by this unit
-            getSlot(e);
-            if (e.target_hero && !e.target_illusion) {
-                //log this hero kill
-                e.type = "kills_log";
-                populate(e);
-                //reverse and count as killed by
-                //if the killed unit isn't a hero, we don't care about killed_by
-                var r = {
-                    time: e.time,
-                    unit: e.key,
-                    key: e.unit,
-                    type: "killed_by"
-                };
-                getSlot(r);
-                //check teamfight state
-                curr_teamfight = curr_teamfight || {
-                    start: e.time - teamfight_cooldown,
-                    end: null,
-                    last_death: e.time,
-                    deaths: 0,
-                    players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
-                        return {
-                            deaths_pos: {},
-                            ability_uses: {},
-                            item_uses: {},
-                            kills: {},
-                            deaths: 0,
-                            buybacks: 0,
-                            damage: 0,
-                            gold_delta: 0,
-                            xp_delta: 0
-                        };
-                    })
-                };
-                //update the last_death time of the current fight
-                curr_teamfight.last_death = e.time;
-                curr_teamfight.deaths += 1;
+            switch (e.subtype) {
+                case "CHAT_MESSAGE_RUNE_PICKUP":
+                    e.type = "runes";
+                    e.slot = e.player1;
+                    e.key = e.value.toString();
+                    e.value = 1;
+                    populate(e);
+                    break;
+                case "CHAT_MESSAGE_RUNE_BOTTLE":
+                    //not tracking rune bottling atm
+                    break;
+                case "CHAT_MESSAGE_HERO_KILL":
+                    //player, assisting players
+                    //player2 killed player 1
+                    //subsequent players assisted
+                    //still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
+                    e.type = e.subtype;
+                    e.slot = e.player2;
+                    e.key = e.player1.toString();
+                    //currently disabled in favor of combat log kills
+                    //populate(e);
+                    break;
+                case "CHAT_MESSAGE_GLYPH_USED":
+                    //team glyph
+                    //player1 = team that used glyph (2/3, or 0/1?)
+                    e.team = e.player1;
+                    break;
+                case "CHAT_MESSAGE_PAUSED":
+                    e.slot = e.player1;
+                    //player1 paused
+                    break;
+                case "CHAT_MESSAGE_TOWER_KILL":
+                case "CHAT_MESSAGE_TOWER_DENY":
+                    //tower (player/team)
+                    //player1 = slot of player who killed tower (-1 if nonplayer)
+                    //value (2/3 radiant/dire killed tower, recently 0/1?)
+                    e.team = e.value;
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_BARRACKS_KILL":
+                    //barracks (player)
+                    //value id of barracks based on power of 2?
+                    //Barracks can always be deduced 
+                    //They go in incremental powers of 2, starting by the Dire side to the Dire Side, Bottom to Top, Melee to Ranged
+                    //so Bottom Melee Dire Rax = 1 and Top Ranged Radiant Rax = 2048.
+                    e.key = e.value.toString();
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_FIRSTBLOOD":
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_AEGIS":
+                case "CHAT_MESSAGE_AEGIS_STOLEN":
+                case "CHAT_MESSAGE_AEGIS_DENIED":
+                    //aegis (player)
+                    //player1 = slot who picked up/denied/stole aegis
+                    e.slot = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                case "CHAT_MESSAGE_ROSHAN_KILL":
+                    //player1 = team that killed roshan? (2/3)
+                    e.team = e.player1;
+                    parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
+                    break;
+                    //case CHAT_MESSAGE_UNPAUSED = 36;
+                    //case CHAT_MESSAGE_COURIER_LOST = 10;
+                    //case CHAT_MESSAGE_COURIER_RESPAWNED = 11;
+                    //case "CHAT_MESSAGE_SUPER_CREEPS"
+                    //case "CHAT_MESSAGE_HERO_DENY"
+                    //case "CHAT_MESSAGE_STREAK_KILL"
+                    //currently using combat log buyback
+                    //case "CHAT_MESSAGE_BUYBACK"
+                default:
+                    //console.log(e);
             }
         },
-        "damage": function(e) {
-            //count damage dealt to unit
-            getSlot(e);
-            //check if this damage happened to a real hero
-            if (e.target_hero && !e.target_illusion) {
-                //reverse and count as damage taken (see comment for reversed kill)
-                var r = {
-                    time: e.time,
-                    unit: e.key,
-                    key: e.unit,
-                    value: e.value,
-                    type: "damage_taken"
-                };
-                getSlot(r);
-                //count a hit on a real hero with this inflictor
-                var h = {
-                    time: e.time,
-                    unit: e.unit,
-                    key: e.inflictor,
-                    type: "hero_hits"
-                };
-                getSlot(h);
-                //don't count self-damage for the following
-                if (e.key !== e.unit) {
-                    //count damage dealt to a real hero with this inflictor
-                    var inf = {
-                        type: "damage_inflictor",
-                        time: e.time,
-                        unit: e.unit,
-                        key: e.inflictor,
-                        value: e.value
-                    };
-                    getSlot(inf);
-                    //biggest hit on a hero
-                    var m = {
-                        type: "max_hero_hit",
-                        time: e.time,
-                        max: true,
-                        inflictor: e.inflictor,
-                        unit: e.unit,
-                        key: e.key,
-                        value: e.value
-                    };
-                    getSlot(m);
-                }
-            }
-        },
-        "buyback_log": getSlot,
         "chat": function getChatSlot(e) {
-            e.slot = name_to_slot[e.unit];
+            //e.slot = name_to_slot[e.unit];
             //push a copy to chat
             parsed_data.chat.push(JSON.parse(JSON.stringify(e)));
         },
-        "stuns": populate,
         "interval": function(e) {
             //store hero state at each interval for teamfight lookup
             if (!intervalState[e.time]) {
@@ -332,7 +483,39 @@ function runParse(data, cb) {
                 //clear existing teamfight
                 curr_teamfight = null;
             }
+            if (e.hero_id) {
+                if (curr_player_hero[e.slot] !== e.hero_id) {
+                    var h = {
+                        time: e.time,
+                        type: "hero_log",
+                        slot: e.slot,
+                        unit: e.unit,
+                        key: e.hero_id
+                    };
+                    populate(h);
+                    curr_player_hero[e.slot] = e.hero_id;
+                }
+                //grab the end of the name, lowercase it
+                var ending = e.unit.slice("CDOTA_Unit_Hero_".length);
+                //valve is bad at consistency and the combat log name could involve replacing camelCase with _ or not!
+                //double map it so we can look up both cases
+                var combatLogName = "npc_dota_hero_" + ending.toLowerCase();
+                //don't include final underscore here since the first letter is always capitalized and will be converted to underscore
+                var combatLogName2 = "npc_dota_hero" + ending.replace(/([A-Z])/g, function($1) {
+                    return "_" + $1.toLowerCase();
+                }).toLowerCase();
+                //console.log(combatLogName, combatLogName2);
+                //populate hero_to_slot for combat log mapping
+                hero_to_slot[combatLogName] = e.slot;
+                hero_to_slot[combatLogName2] = e.slot;
+                //populate hero_to_id for multikills
+                hero_to_id[combatLogName] = e.hero_id;
+                hero_to_id[combatLogName2] = e.hero_id;
+            }
             if (e.time >= 0) {
+                e.type = "stuns";
+                e.value = e.stuns;
+                populate(e);
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0) {
                     e.interval = true;
@@ -348,13 +531,18 @@ function runParse(data, cb) {
                     e.type = "lh";
                     e.value = e.lh;
                     populate(e);
+                    e.interval = false;
                 }
                 e.interval = false;
             }
             //add to positions
             if (e.x && e.y) {
                 e.type = "pos";
-                e.key = [e.x, e.y];
+                //reduce resolution of position data
+                var scalef = 4;
+                var transX = ~~(e.x/scalef)*scalef;
+                var transY = ~~(e.y/scalef)*scalef;
+                e.key = [transX, transY];
                 e.posData = true;
                 populate(e);
             }
@@ -383,54 +571,52 @@ function runParse(data, cb) {
             populate(e);
         }
     };
-    d.run(function() {
-        //set up pipe chain
-        parser = spawn("java", ["-jar",
+    //set up pipe chain
+    parser = spawn("java", ["-jar",
         "-Xmx64m",
-        "parser/target/stats-0.1.0.jar"
+        "java_parser/target/stats-0.1.0.jar"
     ], {
-            //we may want to ignore stderr if we're not dumping it to /dev/null from java already
-            stdio: ['pipe', 'pipe', 'pipe'],
-            encoding: 'utf8'
-        });
-        parseStream = ndjson.parse();
-        if (fileName) {
-            inStream = fs.createReadStream(fileName);
-            inStream.pipe(parser.stdin);
-        }
-        else if (url) {
-            bz = spawn("bunzip2");
-            inStream = progress(request.get({
-                url: url,
-                encoding: null,
-                timeout: 30000
-            })).on('progress', function(state) {
-                parseStream.write(JSON.stringify({
-                    "type": "progress",
-                    "key": state.percent
-                }) + "\n");
-            }).on('response', function(response) {
-                if (response.statusCode !== 200) {
-                    parseStream.write(JSON.stringify({
-                        "type": "error",
-                        "key": response.statusCode
-                    }) + "\n");
-                }
-            });
-            inStream.pipe(bz.stdin);
-            bz.stdout.pipe(parser.stdin);
-        }
-        parser.stdout.pipe(parseStream);
-        parser.stderr.on('data', function(data) {
-            console.log(data.toString());
-        });
-        parseStream.on('data', handleStream);
-        parseStream.on('end', function() {
-            exit(error);
-        });
+        //we may want to ignore stderr so the child doesn't stay open
+        stdio: ['pipe', 'pipe', 'ignore'],
+        encoding: 'utf8'
     });
-    d.on('error', exit);
-
+    parseStream = ndjson.parse();
+    if (fileName) {
+        inStream = fs.createReadStream(fileName);
+        inStream.pipe(parser.stdin);
+    }
+    else if (url) {
+        bz = spawn("bunzip2");
+        inStream = progress(request.get({
+            url: url,
+            encoding: null,
+            timeout: 30000
+        })).on('progress', function(state) {
+            console.log(JSON.stringify({
+                url: url,
+                percent: state.percent
+            }));
+        }).on('response', function(response) {
+            if (response.statusCode !== 200) {
+                throw response.statusCode;
+            }
+            else {
+                inStream.pipe(bz.stdin);
+                bz.stdout.pipe(parser.stdin);
+            }
+        });
+    }
+    parser.stdout.pipe(parseStream);
+    /*
+    parser.stderr.on('data', function(data) {
+        console.log(data.toString());
+    });
+    */
+    parseStream.on('data', handleStream);
+    parseStream.on('end', function() {
+        return exit(error);
+    });
+    //TODO replace domain with something that can handle exceptions with context
     function exit(err) {
         if (!err) {
             parsed_data = utility.getParseSchema();
@@ -466,7 +652,7 @@ function runParse(data, cb) {
         for (var i = 0; i < entries.length; i++) {
             var e = entries[i];
             //adjust time by zero value to get actual game time
-            //we can only do this once we have a complete event buffer since the game start time is sent at some point in the stream
+            //we can only do this once we have a complete event buffer since the game start time (game_zero) is sent at some point in the stream
             e.time -= game_zero;
             types[e.type](e);
         }
@@ -543,8 +729,7 @@ function runParse(data, cb) {
                         populate(e_cpy_1, tf);
                         //get slot of target
                         e.slot = hero_to_slot[e.key];
-                        //0 is valid value, so check for undefined
-                        if (e.slot !== undefined) {
+                        if (intervalState[e.time][e.slot]) {
                             //if a hero dies, add to deaths_pos, lookup slot of the killed hero by hero name (e.key), get position from intervalstate
                             var x = intervalState[e.time][e.slot].x;
                             var y = intervalState[e.time][e.slot].y;
@@ -561,21 +746,23 @@ function runParse(data, cb) {
                     }
                     else if (e.type === "buyback_log") {
                         //bought back
-                        tf.players[e.slot].buybacks += 1;
+                        if (tf.players[e.slot]) {
+                            tf.players[e.slot].buybacks += 1;
+                        }
                     }
                     else if (e.type === "damage") {
                         //sum damage
                         //check if damage dealt to hero and not illusion
                         if (e.key.indexOf("npc_dota_hero") !== -1 && !e.target_illusion) {
                             //check if the damage dealer could be assigned to a slot
-                            if (e.slot !== undefined) {
+                            if (tf.players[e.slot]) {
                                 tf.players[e.slot].damage += e.value;
                             }
                         }
                     }
                     else if (e.type === "gold_reasons" || e.type === "xp_reasons") {
                         //add gold/xp to delta
-                        if (e.slot !== undefined) {
+                        if (tf.players[e.slot]) {
                             var types = {
                                 "gold_reasons": "gold_delta",
                                 "xp_reasons": "xp_delta"
@@ -719,6 +906,19 @@ function runParse(data, cb) {
                 }
             }
         }
+    }
+    //strips off "item_" from strings
+    function translate(input) {
+        if (input != null) {
+            if (input.indexOf("item_") === 0) {
+                input = input.slice(5);
+            }
+        }
+        return input;
+    }
+    //prepends illusion_ to string if illusion
+    function computeIllusionString(input, isIllusion) {
+        return (isIllusion ? "illusion_" : "") + input;
     }
 
     function getSlot(e) {

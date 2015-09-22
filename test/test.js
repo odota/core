@@ -289,6 +289,7 @@ describe("parser", function() {
         });
         done();
     });
+    /*
     it('parse replay (zipped download)', function(done) {
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
@@ -341,6 +342,7 @@ describe("parser", function() {
             });
         });
     });
+    */
 });
 describe("web", function() {
     //this.timeout(wait);
@@ -353,6 +355,7 @@ describe("web", function() {
                     done(err);
                 });
         });
+        /*
         it('/professional', function(done) {
             supertest(app).get('/professional')
                 //.expect('Content-Type', /json/)
@@ -361,6 +364,7 @@ describe("web", function() {
                     done(err);
                 });
         });
+        */
         it('/status', function(done) {
             supertest(app).get('/status')
                 //.expect('Content-Type', /json/)
@@ -374,14 +378,6 @@ describe("web", function() {
                 //.expect('Content-Type', /json/)
                 //.expect('Content-Length', '20')
                 .expect(200).expect(/FAQ/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        it('/page/1', function(done) {
-            supertest(app).get('/page/1')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Blog/).end(function(err, res) {
                     done(err);
                 });
         });

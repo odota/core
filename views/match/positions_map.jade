@@ -32,8 +32,9 @@
 
     // scale points by width/127 units to fit to size of map
     // offset points by 25 units to increase visibility
+    // TODO full position data likely requires a separate offset
     var posData = !{JSON.stringify(match.posData)}
-    adjustHeatmapData(posData, width/127, null, 25);
+    adjustHeatmapData(posData, width/127, null, 100);
 
     $(".activate").on("mouseenter", function(){
       var pData = posData[Number($(this).attr('data-index'))]

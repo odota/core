@@ -372,3 +372,13 @@ table tfoot * {
 .text-danger a {
     color: inherit;
 }
+
+/* Attaches "New!" to new feature */
+#new-feature:after {
+    content: "New\0021";
+    color: yellow;
+    position: relative;
+    top: -0.5em;
+    font-size: 80%;
+    margin-left: 3px;
+}

@@ -1,4 +1,5 @@
 var request = require('request');
+var async = require('async');
 var winston = require('winston');
 var config = require('./config');
 var BigNumber = require('big-number').n;
@@ -139,8 +140,18 @@ function generateJob(type, payload) {
 }
 
 function getData(url, cb) {
-    //select a random element if array
-    var u = (typeof url === "object") ? url[Math.floor(Math.random() * url.length)] : url;
+    var u;
+    if (url.constructor === Array) {
+        //select a random element if array
+        u = url[Math.floor(Math.random() * url.length)];
+    }
+    else if (typeof url === "object") {
+        //options object
+        u = url.url;
+    }
+    else {
+        u = url;
+    }
     var parse = urllib.parse(u, true);
     var proxy;
     var steam_api = false;
@@ -178,8 +189,14 @@ function getData(url, cb) {
                 return cb(body);
             }
             if (err || res.statusCode !== 200 || !body || (steam_api && !body.result && !body.response)) {
-                logger.info("retrying: %s", target);
-                return getData(url, cb);
+                //invalid response
+                if (url.noRetry) {
+                    return cb(err || "invalid response");
+                }
+                else {
+                    logger.info("invalid response, retrying: %s", target);
+                    return getData(url, cb);
+                }
             }
             else if (body.result) {
                 //steam api usually returns data with body.result, getplayersummaries has body.response
@@ -190,8 +207,13 @@ function getData(url, cb) {
                 }
                 else if (body.result.error || body.result.status === 2) {
                     //valid response, but invalid data, retry
-                    logger.info("invalid data: %s, %s", target, JSON.stringify(body));
-                    return getData(url, cb);
+                    if (url.noRetry) {
+                        return cb(err || "invalid data");
+                    }
+                    else {
+                        logger.info("invalid data, retrying: %s, %s", target, JSON.stringify(body));
+                        return getData(url, cb);
+                    }
                 }
             }
             return cb(null, body);
@@ -256,7 +278,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 13,
+        "version": 14,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -281,7 +303,6 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
-                //removed for taking up too much space
                 "pos": {},
                 "lane_pos": {},
                 "obs": {},
@@ -289,6 +310,7 @@ function getParseSchema() {
                 //individual chat event counts?
                 //"CHAT_MESSAGE_HERO_KILL":{},
                 //"clicks":{},
+                "actions": {},
                 "pings": {},
                 "purchase": {},
                 "gold_reasons": {},
@@ -381,6 +403,52 @@ function invokeInterval(func, delay) {
         });
     })();
 }
+
+function cleanup(queue, kue, type) {
+    process.once('SIGTERM', function() {
+        clearActiveJobs(function(err) {
+            process.kill(process.pid, 'SIGTERM');
+        });
+    });
+    process.once('SIGINT', function() {
+        clearActiveJobs(function(err) {
+            process.kill(process.pid, 'SIGINT');
+        });
+    });
+    process.once('SIGUSR2', function() {
+        clearActiveJobs(function(err) {
+            console.log(err);
+            process.kill(process.pid, 'SIGUSR2');
+        });
+    });
+    process.once('uncaughtException', function(err) {
+        console.error(err.stack);
+        clearActiveJobs(function(err) {
+            process.kill(process.pid);
+        });
+    });
+
+    function clearActiveJobs(cb) {
+        queue.active(function(err, ids) {
+            if (err) {
+                return cb(err);
+            }
+            async.mapSeries(ids, function(id, cb) {
+                kue.Job.get(id, function(err, job) {
+                    if (job && job.type === type) {
+                        console.log("requeued job %s", id);
+                        job.inactive();
+                    }
+                    cb(err);
+                });
+            }, function(err) {
+                console.log("cleared active jobs");
+                cb(err);
+            });
+        });
+    }
+}
+
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -397,5 +465,6 @@ module.exports = {
     reduceMatch: reduceMatch,
     max: max,
     min: min,
-    invokeInterval: invokeInterval
+    invokeInterval: invokeInterval,
+    cleanup: cleanup
 };

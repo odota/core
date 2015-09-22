@@ -1,4 +1,9 @@
-require('dotenv').load();
+try {
+    require('dotenv').load();
+}
+catch(e){
+    console.log("[WARNING] error occurred when loading .env: %s", e);
+}
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever
@@ -7,8 +12,8 @@ var defaults = {
     "RECAPTCHA_SECRET_KEY": "",
     "PAYPAL_ID": "", //for donations, in web
     "PAYPAL_SECRET": "",
-    "RETRIEVER_SECRET": "shared_secret_with_retriever",
-    "SESSION_SECRET": "secret to encrypt cookies with",
+    "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
+    "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "KUE_USER": "user",
@@ -30,6 +35,9 @@ var defaults = {
     "ROLE": "", //for specifying a node type
     "DISABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page,
     "DISABLE_PRO_PARSING": "", // set to disable parsing pro matches from sequential API
+    "DISABLE_ADS": "", //disable ads
+    "PARSER_PARALLELISM": 8,
+    "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
     //the following are deprecated
     "AWS_S3_BUCKET": "",
     "AWS_ACCESS_KEY_ID": "",

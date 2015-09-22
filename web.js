@@ -25,13 +25,15 @@ var goal = Number(config.GOAL);
 var fillPlayerData = require('./fillPlayerData');
 var advQuery = require('./advquery');
 var queries = require('./queries');
+var constants = require('./constants.json');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
-app.locals.constants = require('./constants.json');
+app.locals.constants = constants;
+app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
 var basic = auth.basic({
@@ -96,6 +98,15 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
+poet.addRoute('/blog/:id?', function (req, res) {
+  var max = poet.helpers.getPostCount();
+  var id = Number(req.params.id) || max;
+  res.render('blog', {
+    posts: poet.helpers.getPosts(max-id, max-id+1),
+    id: id,
+    max: max
+  });
+});
 app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
     res.send("User-agent: *\nDisallow: /players\nDisallow: /matches");
@@ -132,6 +143,7 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
+/*
 app.route('/professional').get(function(req, res, next) {
     advQuery({
         mongo_select: {
@@ -165,7 +177,6 @@ app.route('/professional').get(function(req, res, next) {
         res.render('professional', {
             matches: data2.data
         });
-        /*
         //implement live match pages
         //individual live match page for each match
         //interval check api
@@ -179,14 +190,15 @@ app.route('/professional').get(function(req, res, next) {
                     recent: data2.data
                 });
         });
-        */
     });
 });
+*/
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
+app.use('/', require('./routes/mmstats'))
 //post/get a request
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {

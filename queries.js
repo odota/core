@@ -49,9 +49,10 @@ function getSets(cb) {
         "bots": function(cb) {
             redis.get("bots", function(err, bots) {
                 bots = JSON.parse(bots || "[]");
-                //sort list of bots descending, but full bots go to end
+                //sort list of bots descending, but full bots go to end (concentrates load)
+                /*
                 bots.sort(function(a, b) {
-                    var threshold = 100;
+                    var threshold = 50;
                     if (a.friends > threshold) {
                         return 1;
                     }
@@ -59,6 +60,11 @@ function getSets(cb) {
                         return -1;
                     }
                     return (b.friends - a.friends);
+                });
+                */
+                //sort ascending (distributes load)
+                bots.sort(function(a,b){
+                    return a.friends-b.friends;
                 });
                 cb(err, bots);
             });

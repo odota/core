@@ -14,7 +14,7 @@ block content
         .form-group
           input#match_id.form-control(type='text' name='match_id' placeholder='Match ID')
         .form-group
-          if !process.env.DISABLE_RECAPTCHA
+          if !config.DISABLE_RECAPTCHA
             .g-recaptcha#recaptcha(data-sitekey=rc_public, data-theme="dark", data-callback="submit")
           else
             // if the DISABLE_RECAPTCHA env var has been set, bypass the recaptcha
@@ -36,6 +36,7 @@ append footer_assets
     var onloadCallback = function() {
         grecaptcha.render('recaptcha',{sitekey: $('#recaptcha').attr('data-sitekey'), theme: "dark", callback: submit});
     };
+    document.getElementById("match_id").value = window.location.hash.slice(1);
     function submit(response){
       var field = document.getElementById("match_id");
       match_id = field.value;
@@ -88,6 +89,7 @@ append footer_assets
             }
           });
       }
+  //old socket.io code
   //-
     script.
       /*
