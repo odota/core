@@ -74,13 +74,12 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 cache.data = arr;
             }
             //the number of matches won't match if the account_id is string (all/professional)
-            var cacheValid = (cache && cache.data && cache.data.length && cache.data.length === match_count) || isNaN(account_id);
+            var cacheValid = cache && cache.data && cache.data.length && (cache.data.length === match_count || isNaN(account_id));
             console.log(match_count, cache ? cache.data.length : null);
             var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
             if (cacheValid && !filter_exists) {
                 console.log("player cache hit %s", player.account_id);
-                cache.data = arr;
                 processResults(err, {
                     data: cache.data,
                     aggData: cache.aggData,
