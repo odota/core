@@ -381,4 +381,5 @@ table tfoot * {
     top: -0.5em;
     font-size: 80%;
     margin-left: 3px;
+    text-transform: uppercase;
 }

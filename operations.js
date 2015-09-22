@@ -60,6 +60,7 @@ function insertMatchProgress(match, job, cb) {
             });
             job2.on('complete', function() {
                 job.progress(100, 100, "Parse complete!");
+                redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
                 cb();
             });
         }

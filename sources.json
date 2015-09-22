@@ -1197,55 +1197,7 @@
     "5654": "winter_wyvern_winters_curse",
     "wisp_spirits_out": "wisp_spirits_in"
   },
-  "cluster": {
-    "111": "US West",
-    "112": "US West",
-    "113": "US West",
-    "114": "US West",
-    "121": "US East",
-    "122": "US East",
-    "123": "US East",
-    "124": "US East",
-    "131": "Europe West",
-    "132": "Europe West",
-    "133": "Europe West",
-    "134": "Europe West",
-    "135": "Europe West",
-    "136": "Europe West",
-    "142": "South Korea",
-    "143": "South Korea",
-    "151": "Southeast Asia",
-    "152": "Southeast Asia",
-    "153": "Southeast Asia",
-    "161": "Dubai",
-    "163": "China",
-    "171": "Australia",
-    "181": "Russia",
-    "182": "Russia",
-    "183": "Russia",
-    "184": "Russia",
-    "185": "Russia",
-    "186": "Russia",
-    "191": "Europe East",
-    "192": "Europe East",
-    "200": "South America",
-    "202": "South America",
-    "203": "South America",
-    "204": "South America",
-    "211": "South Africa",
-    "212": "South Africa",
-    "213": "South Africa",
-    "221": "China",
-    "222": "China",
-    "223": "China",
-    "224": "China",
-    "225": "China",
-    "231": "China",
-    "242": "Chile",
-    "251": "Peru",
-    "261": "India"
-  },
-  "regions": {
+ "regions": {
     "unspecified": {
       "region": "0",
       "latitude": "0",
@@ -1302,7 +1254,8 @@
       "ip_range": [
         "146.66.152.0/23",
         "146.66.154.0/24",
-        "146.66.158.0/23"
+        "146.66.158.0/23",
+        "155.133.240.0/23"
       ],
       "clusters": [
         "131",
@@ -1310,7 +1263,10 @@
         "133",
         "134",
         "135",
-        "136"
+        "136",
+        "136",
+        "137",
+        "138"
       ]
     },
     "Korea": {
@@ -1341,12 +1297,16 @@
       "division": "se_asia",
       "ip_range": [
         "103.28.54.0/23",
-        "103.10.124.0/24"
+        "103.10.124.0/24",
+        "45.121.184.0/23"
       ],
       "clusters": [
         "151",
         "152",
-        "153"
+        "153",
+        "154",
+        "155",
+        "156"
       ]
     },
     "Dubai": {
