@@ -40,7 +40,7 @@ append footer_assets
     $("#histogram-container-toggle-kills").click();
     
     function createTrends(avgs, key){
-      var xs = avgs.map(function(a,i){return a.start_time;});
+      var xs = avgs.map(function(a,i){return i;});
       var avgVals = avgs.map(function(a,i){return a.avg;});
       var chart = c3.generate({
       bindto: document.getElementById("chart-histogram-"+key),
@@ -70,8 +70,7 @@ append footer_assets
     tooltip:{
 
     format: {
-    title: function(d){return moment.unix(d).format("dddd YYYY MMM DD");},
-    
+    title: function(d){return moment.unix(avgs[d].start_time).format("dddd YYYY MMM DD");},
     value: function(value, ratio, id, ind){
     console.log(value, ratio, id, ind);
     var table = document.createElement('table');

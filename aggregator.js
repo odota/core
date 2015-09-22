@@ -248,9 +248,11 @@ module.exports = function aggregator(matches, fields, existing) {
         },
         */
         "parsed_match_ids": {
-            type: "api",
+            type: "parsed",
             agg: function(key, m, p) {
-                aggData[key][m.match_id] = 1;
+                if (m.parsed_data) {
+                    aggData[key][m.match_id] = 1;
+                }
             }
         },
         "stuns": {
