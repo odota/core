@@ -20,11 +20,12 @@ block content
                 tr
                   td= region
                   td= result[region][0] 
-                  if result[region][60 * 24]
-                    - var change = result[region][0] / result[region][60 * 24] * 100
-                    th #{result[region][60 * 24]} 
+                  - var aDayAgo = result[region][60/(config.MMSTATS_DATA_INTERVAL || 1) * 24]
+                  if aDayAgo
+                    - var change = (result[region][0] - aDayAgo) /  aDayAgo * 100
+                    td #{aDayAgo} 
                       if change
-                        span(class=change > 0 ? "text-success" : "text-danger") #{change}%
+                        span(class=change > 0 ? "text-success" : "text-danger") (#{change >= 0 ? "+" : "-"}#{change}%)
                   else
                     td Unavailable
                   - var max = Math.max.apply(null, result[region])
@@ -38,7 +39,6 @@ append footer_assets
   script.
     var data = !{JSON.stringify(result)};
   script.
-    console.log(constants.regions)
     var columns = [];
     for (var key in data) {
       var arr = data[key];
@@ -59,7 +59,7 @@ append footer_assets
         x: {
           label: "Time ago",
           tick: {
-            count: 60,
+            count: 180,
             format: function(x) {
               return moment(x).fromNow();
             }
