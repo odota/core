@@ -176,10 +176,11 @@ function computeMatchData(match) {
                     parsedPlayer.purchase.dust *=2;
                 }
                 if (parsedPlayer.actions) {
-                    parsedPlayer.actions_sum = 0;
+                    var actions_sum = 0;
                     for (var key in parsedPlayer.actions) {
-                        parsedPlayer.actions_sum += parsedPlayer.actions[key];
+                        actions_sum += parsedPlayer.actions[key];
                     }
+                    parsedPlayer.actions_per_min = ~~(actions_sum/match.duration*60);
                 }
                 //compute throw/comeback levels
                 if (match.parsed_data.radiant_gold_adv) {

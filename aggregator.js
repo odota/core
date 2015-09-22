@@ -479,6 +479,12 @@ module.exports = function aggregator(matches, fields, existing) {
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lane_efficiency * 100) : undefined, m);
             }
+        },
+        "actions_per_min": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.actions_per_min, m);
+            }
         }
     };
     if (typeof fields === "string") {

@@ -17,7 +17,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var p = player.parsedPlayer
             +hero_td(player)
-            td #{~~(p.actions_sum/match.duration*60)}
+            td #{p.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
             each val, key in constants.order_types
               if val in display_types

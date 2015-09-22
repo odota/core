@@ -85,7 +85,8 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "throw": 1,
         "comeback": 1,
         "stomp": 1,
-        "loss": 1
+        "loss": 1,
+        "actions_per_min": 1
     };
     //copy the query in case we need the original for compare passing
     var qCopy = JSON.parse(JSON.stringify(req.query));
