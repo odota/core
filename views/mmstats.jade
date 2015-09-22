@@ -7,34 +7,50 @@ block content
     .col-md-12
       #mm-graph
       .table-responsive
-        table.table.table-striped
+        table.table.table-striped.table-condensed
           thead
-            th Region
-            th # Match Making
-            th 24 Hours ago (% change)
-            th Max
-            th Min
+            tr
+              th
+              each val, region in constants.regions
+                if region in result
+                  th= region.replace("PerfectWorld", "PW").replace("South", "S.")
           tbody
-            each val, region in constants.regions
-              if region in result
-                tr
-                  td= region
+            tr
+              th: abbr(title="Number Match Making") # MM
+              each val, region in constants.regions
+                if region in result
                   td= result[region][0] 
+            tr
+              th: abbr(title="24 Hours Ago (% Change)") 24H &#916;
+              each val, region in constants.regions
+                if region in result
                   - var aDayAgo = result[region][60/(config.MMSTATS_DATA_INTERVAL || 1) * 24]
                   if aDayAgo
                     - var change = (result[region][0] - aDayAgo) /  aDayAgo * 100
                     td #{aDayAgo} 
-                      if change
-                        span(class=change > 0 ? "text-success" : "text-danger") (#{change >= 0 ? "+" : "-"}#{change}%)
+                     if change
+                       br
+                       small
+                        | (
+                        small(class=change > 0 ? "text-success" : "text-danger") #{change >= 0 ? "+" : ""}#{change.toFixed(2)}%
+                        | )
                   else
-                    td Unavailable
+                    td N/A
+            tr
+              th Max
+              each val, region in constants.regions
+                if region in result
                   - var max = Math.max.apply(null, result[region])
                   - var maxTime = Number(result["x"][result[region].indexOf(max + "")])
+                  td: abbr(title=moment(maxTime).fromNow()) #{max} 
+            tr
+              th Min
+              each val, region in constants.regions
+                if region in result
                   - var min = Math.min.apply(null, result[region])
                   - var minTime = Number(result["x"][result[region].indexOf(min + "")])
-                  td: attr(title=moment(maxTime).fromNow()) #{max} 
-                  td: attr(title=moment(minTime).fromNow()) #{min} 
-                    
+                  td: abbr(title=moment(minTime).fromNow()) #{min} 
+
 append footer_assets
   script.
     var data = !{JSON.stringify(result)};
@@ -48,9 +64,15 @@ append footer_assets
     
     c3.generate({
       bindto: document.getElementById("mm-graph"),
+      size: {
+        height: 500
+      },
       data: {
         x: 'x',
         columns: columns
+      },
+      color: {
+        pattern: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']
       },
       point: {
         show: false
