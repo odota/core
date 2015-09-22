@@ -100,6 +100,16 @@ module.exports = function constants(cb) {
                 constants.lanes[i].push(lane);
             }
         }
+        var cluster = {};
+        var regions = constants.regions;
+        for (var key in regions) {
+            if (regions[key].clusters){
+                regions[key].clusters.forEach(function(c){
+                    cluster[c] = regions[key].display_name.slice("#dota_region_".length).split("_").map(function(s){return s.toUpperCase()}).join(" ");
+                });
+            }
+        }
+        console.log(cluster);
         fs.writeFile('./constants.json', JSON.stringify(constants, null, 2), function(err) {
             if (!err) {
                 console.log("[CONSTANTS] generated constants file");
