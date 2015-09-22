@@ -67,13 +67,13 @@ function getPageData(start, options, cb) {
             }, function(err, doc) {
                 if (doc) {
                     //if doc exists, we modified an existing doc, so we added skill data
-                    added[data.match_id] = 1;
+                    //added[data.match_id] = 1;
                 }
                 //delete results[data.match_id];
                 return cb(err);
             });
         }, function(err) {
-            console.log("waiting for insert: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
+            //console.log("waiting for insert: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);
