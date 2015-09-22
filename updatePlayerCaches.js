@@ -31,6 +31,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         }
         async.each(match.players || options.players, function(p, cb) {
                 //full cache
+                /*
                 var match_copy = JSON.parse(JSON.stringify(match));
                 if (options.type !== "skill") {
                     //m.players[0] should be this player
@@ -55,7 +56,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     }
                     return insertPlayers(cb);
                 });
-                /*
+                */
+                
                 //aggregate cache
                     redis.get("player:" + p.account_id, function(err, result) {
                         if (err) {
@@ -103,7 +105,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         return insertPlayers(cb);
                         //return cb(err);
                     });
-                    */
+                    
                 function insertPlayers(cb) {
                     //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({

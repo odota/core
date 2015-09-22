@@ -45,6 +45,10 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             return cb(err);
         }
         console.timeEnd("count");
+        //TODO mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
+        //we end up only saving 200 matches to the cache, rather than the expanded set
+        //additionally the count validation will always fail since a non-number account_id will return 0 results
+        /*
         db.player_matches.find({
             account_id: account_id
         }, {
@@ -58,18 +62,15 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             cache = {
                 data: results
             };
-            //TODO caching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
-            //we end up only saving 200 matches to the cache, rather than the expanded set
-            //additionally the count validation will always fail since a non-number account_id will return 0 results
-            //redis.get("player:" + account_id, function(err, result) {
-            //cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+*/
+        redis.get("player:" + account_id, function(err, result) {
+            cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
             //the number of matches won't match if the account_id is string (all/professional)
-            //var cacheValid = cache && Object.keys(cache.data).length && Object.keys(cache.data).length===match_count;
+            var cacheValid = (cache && Object.keys(cache.data).length && Object.keys(cache.data).length === match_count) || isNaN(account_id);
+            //var cacheValid = cache && cache.data.length && cache.data.length === match_count;
             console.log(match_count, cache.data.length);
-            var cacheValid = cache && cache.data.length && cache.data.length === match_count;
             var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
-            /*
             if (cacheValid && !filter_exists) {
                 console.log("player cache hit %s", player.account_id);
                 //unpack cache.data into an array
@@ -84,7 +85,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     unfiltered: cache.data
                 });
             }
-            */
+            /*
             //below code if we want to cache full matches (with parsed data)
             if (cacheValid) {
                 console.log("player cache hit %s", player.account_id);
@@ -97,6 +98,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                     unfiltered: cache.data
                 });
             }
+            */
             else {
                 console.log("player cache miss %s", player.account_id);
                 advQuery(options.query, processResults);
@@ -157,6 +159,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
 
                 function saveCache(cb) {
                     //save cache
+                    /*
                     if (!cacheValid && account_id !== constants.anonymous_account_id) {
                         //delete unnecessary data from match (parsed_data)
                         results.unfiltered.forEach(reduceMatch);
@@ -174,10 +177,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                             }, cb);
                         }, cb);
                     }
-                    else {
-                        return cb(null);
-                    }
-                    /*
+                    */
                     if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id) {
                         //pack data into hash for cache
                         var match_ids = {};
@@ -194,7 +194,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                         console.timeEnd("deflate");
                         return cb(null, player);
                     }
-                    */
+                    else {
+                        return cb(null);
+                    }
                 }
             }
         });
