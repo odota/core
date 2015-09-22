@@ -57,55 +57,52 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     return insertPlayers(cb);
                 });
                 */
-                
                 //aggregate cache
-                    redis.get("player:" + p.account_id, function(err, result) {
-                        if (err) {
-                            return cb(err);
+                redis.get("player:" + p.account_id, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    //if player cache doesn't exist, skip
+                    var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                    if (cache) {
+                        var match_copy = JSON.parse(JSON.stringify(match));
+                        if (options.type !== "skill") {
+                            var reInsert = match.match_id in cache.aggData.match_ids && options.type === "api";
+                            var reParse = match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
+                            if (!reInsert && !reParse) {
+                                //m.players[0] should be this player
+                                //m.all_players should be all players
+                                //duplicate this data into a copy to avoid corrupting original match object
+                                match_copy.all_players = match.players.slice(0);
+                                match_copy.players = [p];
+                                //some data fields require computeMatchData in order to aggregate correctly
+                                computeMatchData(match_copy);
+                                //do aggregations on fields based on type		
+                                cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                            }
                         }
-                        //if player cache doesn't exist, skip
-                        var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-                        if (cache) {
-                            var match_copy = JSON.parse(JSON.stringify(match));
-                            if (options.type !== "skill") {
-                                //maintain sets of match_ids and parsed_match_ids
-                                //check the set to see if we have already aggregated this match for API/parse
-                                //aggregate or not depending on result
-                                //TODO have aggregator write two more objects, match_ids and parsed_match_ids while it aggregates
-                                if ((match.match_id in cache.aggData.match_ids && options.type === "api")||(match.match_id in cache.aggData.parsed_match_ids && options.type==="parsed")){
-                                    //m.players[0] should be this player
-                                    //m.all_players should be all players
-                                    //duplicate this data into a copy to avoid corrupting original match object
-                                    match_copy.all_players = match.players.slice(0);
-                                    match_copy.players = [p];
-                                    //some data fields require computeMatchData in order to aggregate correctly
-                                    computeMatchData(match_copy);
-                                    //do aggregations on fields based on type		
-                                    cache.aggData = aggregator([match_copy], options.type, cache.aggData);
-                                }
-                            }
-                            //reduce match to save cache space
-                            reduceMatch(match_copy);
-                            var orig = cache.data[match_copy.match_id];
-                            if (!orig) {
-                                cache.data[match_copy.match_id] = match_copy;
-                            }
-                            else {
-                                for (var key in match_copy) {
-                                    orig[key] = match_copy[key];
-                                }
-                            }
-                            redis.ttl("player:" + p.account_id, function(err, ttl) {
-                                if (err) {
-                                    return cb(err);
-                                }
-                                redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                            });
+                        //reduce match to save cache space--we only need basic data per match for matches tab
+                        reduceMatch(match_copy);
+                        var orig = cache.data[match_copy.match_id];
+                        if (!orig) {
+                            cache.data[match_copy.match_id] = match_copy;
                         }
-                        return insertPlayers(cb);
-                        //return cb(err);
-                    });
-                    
+                        else {
+                            for (var key in match_copy) {
+                                orig[key] = match_copy[key];
+                            }
+                        }
+                        redis.ttl("player:" + p.account_id, function(err, ttl) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                        });
+                    }
+                    return insertPlayers(cb);
+                    //return cb(err);
+                });
+
                 function insertPlayers(cb) {
                     //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({

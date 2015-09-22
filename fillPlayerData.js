@@ -45,7 +45,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             return cb(err);
         }
         console.timeEnd("count");
-        //TODO mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
+        //mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
         //we end up only saving 200 matches to the cache, rather than the expanded set
         //additionally the count validation will always fail since a non-number account_id will return 0 results
         /*
@@ -62,22 +62,24 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             cache = {
                 data: results
             };
-*/
+        */
         redis.get("player:" + account_id, function(err, result) {
             cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-            //the number of matches won't match if the account_id is string (all/professional)
-            var cacheValid = (cache && Object.keys(cache.data).length && Object.keys(cache.data).length === match_count) || isNaN(account_id);
-            //var cacheValid = cache && cache.data.length && cache.data.length === match_count;
-            console.log(match_count, cache.data.length);
-            var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
-            var filter_exists = Object.keys(options.query.js_select).length;
-            if (cacheValid && !filter_exists) {
-                console.log("player cache hit %s", player.account_id);
-                //unpack cache.data into an array
+            //unpack cache.data into an array
+            if (cache && cache.data) {
                 var arr = [];
                 for (var key in cache.data) {
                     arr.push(cache.data[key]);
                 }
+                cache.data = arr;
+            }
+            //the number of matches won't match if the account_id is string (all/professional)
+            var cacheValid = (cache && cache.data && cache.data.length && cache.data.length === match_count) || isNaN(account_id);
+            console.log(match_count, cache ? cache.data.length : null);
+            var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
+            var filter_exists = Object.keys(options.query.js_select).length;
+            if (cacheValid && !filter_exists) {
+                console.log("player cache hit %s", player.account_id);
                 cache.data = arr;
                 processResults(err, {
                     data: cache.data,

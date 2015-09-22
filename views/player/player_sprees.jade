@@ -16,18 +16,18 @@ block playercontent
               td #{val} (#{key})
               td=player.aggData.multi_kills.counts[key] || 0
 
-     .col-md-6		
-       h3 Kill Streaks 		
-         small (#{player.aggData.kill_streaks.n} matches)		
-       table.table.table-striped		
-         thead		
-           tr		
-             th Type		
-             th Count		
-         tbody		
-           each val, key in constants.kill_streaks		
-             tr		
-               td #{val} (#{key})		
-               td=player.aggData.kill_streaks.counts[key] || 0		
- 
+    .col-md-6		
+      h3 Kill Streaks 		
+        small (#{player.aggData.kill_streaks.n} matches)		
+      table.table.table-striped		
+        thead		
+          tr		
+            th Type		
+            th Count		
+        tbody		
+          each val, key in constants.kill_streaks		
+            tr		
+              td #{val} (#{key})		
+              td=player.aggData.kill_streaks.counts[key] || 0		
+
           

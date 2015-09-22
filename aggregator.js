@@ -33,6 +33,12 @@ module.exports = function aggregator(matches, fields, existing) {
             }
         },
         //match values
+        "match_ids": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key][m.match_id] = 1;
+            }
+        },
         "start_time": {
             type: "api",
             agg: function(key, m, p) {
@@ -241,6 +247,12 @@ module.exports = function aggregator(matches, fields, existing) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
         },
         */
+        "parsed_match_ids": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key][m.match_id] = 1;
+            }
+        },
         "stuns": {
             type: "parsed",
             agg: function(key, m, p) {
@@ -562,7 +574,13 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
-            aggObj.avgs.push(~~(aggObj.sum / aggObj.n * 100) / 100);
+            aggObj.avgs.push({
+                //match_id: match.match_id,
+                start_time: match.start_time,
+                hero_id: m.players[0].hero_id,
+                val: value,
+                avg: ~~(aggObj.sum / aggObj.n * 100) / 100
+            });
         }
     }
 
