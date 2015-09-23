@@ -278,7 +278,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 12,
+        "version": 14,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -303,7 +303,7 @@ function getParseSchema() {
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
-                //"pos": {},
+                "pos": {},
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},

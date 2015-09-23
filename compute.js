@@ -109,11 +109,13 @@ function computeMatchData(match) {
                 var d = {
                     "obs": true,
                     "sen": true,
-                    //"pos": true,
+                    "pos": true,
                     "lane_pos": true
                 };
                 parsedPlayer.posData = generatePositionData(d, parsedPlayer);
-                //p.explore = p.posData.pos.length / 128 / 128;
+                //4 is scale factor that x/y are scaled down by, should probably save as constant
+                var MAP_TILES = 128/4;
+                parsedPlayer.explore = parsedPlayer.posData.pos.length / (MAP_TILES * MAP_TILES);
                 //compute lanes
                 var lanes = [];
                 for (var i = 0; i < parsedPlayer.posData.lane_pos.length; i++) {
