@@ -19,16 +19,17 @@ function start() {
             var parsers = JSON.parse(result);
             //concurrent job processors per parse worker
             var parallelism = config.PARSER_PARALLELISM;
-            parsersExpanded = [];
-            parsers.forEach(function(p){
-               for (var i=0; i<parallelism; i++){
-                   parsersExpanded.push(p);
-               }
+            var parsersExpanded = [];
+            parsers.forEach(function(p) {
+                for (var i = 0; i < parallelism; i++) {
+                    parsersExpanded.push(p);
+                }
             });
             parsers = parsersExpanded;
             var capacity = parsers.length;
             if (cluster.isMaster && config.NODE_ENV !== "test") {
                 console.log("[PARSEMANAGER] starting master");
+                utility.cleanup(jobs, kue, 'parse');
                 for (var i = 0; i < capacity; i++) {
                     if (false) {
                         //fork a worker for each available parse core
@@ -65,7 +66,6 @@ function start() {
                     //current behavior will just keep retrying the url
                     return processParse(job, ctx, cb);
                 });
-                utility.cleanup(jobs, kue, 'parse');
 
                 function getParserUrl(job) {
                     return config.PARSER_URL || parsers[i] || parsers[Math.floor(Math.random() * parsers.length)];
