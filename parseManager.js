@@ -19,11 +19,11 @@ function start() {
             var parsers = JSON.parse(result);
             //concurrent job processors per parse worker
             var parallelism = config.PARSER_PARALLELISM;
-            parsersExpanded = [];
-            parsers.forEach(function(p){
-               for (var i=0; i<parallelism; i++){
-                   parsersExpanded.push(p);
-               }
+            var parsersExpanded = [];
+            parsers.forEach(function(p) {
+                for (var i = 0; i < parallelism; i++) {
+                    parsersExpanded.push(p);
+                }
             });
             parsers = parsersExpanded;
             var capacity = parsers.length;
