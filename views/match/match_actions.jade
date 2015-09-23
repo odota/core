@@ -8,7 +8,7 @@ block match_content
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.apm) APM
+              th: abbr(title=tooltips.actions_per_min) APM
               //th: abbr(title="Number of times the player clicked") Clicks
               each val, key in constants.order_types
                 if val in display_types
