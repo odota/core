@@ -21,6 +21,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         account_id: account_id,
         personaname: account_id
     };
+    var whitelist = {
+        "all": 1
+    };
     preprocessQuery(options.query);
     //set up mongo query in case we need it
     //convert account id to number and search db with it
@@ -30,13 +33,15 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         options.query.limit = 20000;
     }
     else {
-        options.query.limit = 200;
+        options.query.limit = 250;
+        if (!(account_id in whitelist)) {
+            return cb("invalid account id");
+        }
     }
     //sort descending to get the most recent data
     options.query.sort = {
         match_id: -1
     };
-    account_id = Number(account_id);
     console.time("count");
     db.matches.count({
         "players.account_id": account_id
@@ -73,8 +78,9 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 }
                 cache.data = arr;
             }
+            account_id = Number(account_id);
             //the number of matches won't match if the account_id is string (all/professional)
-            var cacheValid = cache && cache.data && cache.data.length && (cache.data.length === match_count || isNaN(account_id));
+            var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === match_count) || isNaN(account_id));
             console.log(match_count, cache ? cache.data.length : null);
             var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
             var filter_exists = Object.keys(options.query.js_select).length;
