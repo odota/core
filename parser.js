@@ -12,7 +12,7 @@ var progress = require('request-progress');
 //var constants = require('./constants.json');
 var app = express();
 //var capacity = require('os').cpus().length;
-var capacity = config.PARSER_PARALLELISM;
+var capacity = Number(config.PARSER_PARALLELISM);
 var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
