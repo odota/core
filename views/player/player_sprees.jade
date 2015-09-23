@@ -15,8 +15,7 @@ block playercontent
             tr
               td #{val} (#{key})
               td=player.aggData.multi_kills.counts[key] || 0
-
-    .col-md-6		
+    .col-md-6
       h3 Kill Streaks 		
         small (#{player.aggData.kill_streaks.n} matches)		
       table.table.table-striped		
@@ -29,5 +28,5 @@ block playercontent
             tr		
               td #{val} (#{key})		
               td=player.aggData.kill_streaks.counts[key] || 0		
-
+    
           
