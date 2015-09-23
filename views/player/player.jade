@@ -3,7 +3,7 @@ include /mixins/progress_bar
 
 block content
   .row.match-top
-    .col-xs-9
+    .col-xs-6
       div(style="display:flex;")
         a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
           if player.avatarmedium
@@ -32,10 +32,10 @@ block content
                   small(style="margin-left:.5em") x #{' '} #{player.cheese}
           .lead(style="font-size:1em")
               span.text-info.rating: abbr(title="Solo MMR")
-                i.fa.fa-area-chart
+                i.fa.fa-user
                 | #{player.soloRating || "N/A"}
               span.text-warning.rating: abbr(title="Party MMR")
-                i.fa.fa-area-chart
+                i.fa.fa-users
                 | #{player.partyRating || "N/A"}
               span.text-info.rating: abbr(title="Highest Solo MMR")
                 i.fa.fa-star
@@ -48,6 +48,12 @@ block content
             span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
             span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
     .col-xs-3(style='text-align:center;')
+      h4(style="vertical-align:middle;"): small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
+          New users may not see all matches until their full history has been retrieved.<br> \
+          A parsed match is one that has had its replay analyzed.<br> \
+          Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
+          Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.match_ids).length} recorded, #{Object.keys(player.aggData.parsed_match_ids).length} parsed
+    .col-xs-3(style='text-align:center;')
       div(style="display:inline-block;margin-top:0;font-size:19px;")
         span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
         span -
@@ -56,12 +62,11 @@ block content
         small(style="margin:0 4px;font-size:100%") #{player.abandons}
         span.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA)
       +progress_bar(player.aggData.win, player.aggData.games)
-
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
           li(class= (route === key ? 'active' : ''))
-              a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key))= val.name
+              a(href="/players/#{player.account_id}/" + (key === 'index' ? "" : key), class=(val.new ? "new-feature" : ""))= val.name
   include /query
   block playercontent

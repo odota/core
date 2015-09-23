@@ -21,21 +21,21 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
-              th: abbr(title="Solo MMR of player") Rating
-              th: abbr(title="Level of hero") LV
-              th: abbr(title="Number of kills by hero") K
-              th: abbr(title="Number of deaths of hero") D
-              th: abbr(title="Number of assists by hero") A
-              th: abbr(title="Number of last hits by hero") LH
-              th: abbr(title="Number of denied creeps") DN
-              th: abbr(title="Total gold farmed") GOLD
-              th: abbr(title="Gold farmed by hero per minute") GPM
-              th: abbr(title="Experience gained by hero per minute") XPM
-              th: abbr(title="Amount of damage dealt to heroes") HD
-              th: abbr(title="Amount of damage dealt to towers") TD
-              th: abbr(title="Amount of health restored to heroes") HH
-              th: abbr(title="Items built") Items
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.mmr) Rating
+              th: abbr(title=tooltips.level) LV
+              th: abbr(title=tooltips.kills) K
+              th: abbr(title=tooltips.deaths) D
+              th: abbr(title=tooltips.assists) A
+              th: abbr(title=tooltips.last_hits) LH
+              th: abbr(title=tooltips.denies) DN
+              th: abbr(title=tooltips.total_gold) GOLD
+              th: abbr(title=tooltips.gold_per_min) GPM
+              th: abbr(title=tooltips.xp_per_min) XPM
+              th: abbr(title=tooltips.hero_damage) HD
+              th: abbr(title=tooltips.tower_damage) TD
+              th: abbr(title=tooltips.hero_healing) HH
+              th: abbr(title=tooltips.items) Items
           tr(class=player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td
@@ -81,9 +81,7 @@ block match_content
                 tr
                   +picks_bans_row(match.picks_bans, 1)
                 
-  hr
   +ad("banner2")
-  hr
   
   .row
     .col-md-8

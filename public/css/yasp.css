@@ -374,7 +374,7 @@ table tfoot * {
 }
 
 /* Attaches "New!" to new feature */
-#new-feature:after {
+.new-feature:after {
     content: "New\0021";
     color: yellow;
     position: relative;

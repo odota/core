@@ -7,14 +7,19 @@ block match_content
         each player, i in match.players
           +data_table_header(i, match)
             tr
-              th Hero
-              th: abbr(title="Number of times the player pinged") Pings
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.apm) APM
               //th: abbr(title="Number of times the player clicked") Clicks
+              each val, key in constants.order_types
+                if val in display_types
+                  th: abbr(title=tooltips[val])= display_types[val]
+              th: abbr(title=tooltips.pings) Pings (Map)
           tr(class = player.isRadiant ? "radiant" : "dire")
-            td #{p.pings[0] || "-"}
+            - var p = player.parsedPlayer
+            +hero_td(player)
+            td #{p.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
-
-  +ad("banner2")
-
-  each player, i in match.players
-    p=JSON.stringify(player.parsedPlayer.actions)
+            each val, key in constants.order_types
+              if val in display_types
+                td #{p.actions[key] || "-"}
+            td #{p.pings[0] || "-"}

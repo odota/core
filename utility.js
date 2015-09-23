@@ -95,7 +95,6 @@ function generateJob(type, payload) {
             return {
                 title: [type, payload.match_id].join(),
                 type: type,
-                fileName: payload.fileName,
                 url: payload.url,
                 payload: payload
             };
@@ -278,7 +277,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 12,
+        "version": 13,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -372,13 +371,13 @@ function isSignificant(constants, m) {
 
 function reduceMatch(match) {
     //returns only the minimum of data required for display
-    delete match.all_players;
+    //we can delete match.parsed_data since we generate parsedPlayers from it
     delete match.parsed_data;
+    //we can delete the following if we are only caching aggregations
     delete match.my_word_counts;
     delete match.all_word_counts;
-    match.players.forEach(function(p) {
-        delete p.parsedPlayer;
-    });
+    delete match.all_players;
+    delete match.parsedPlayers;
     return match;
 }
 
@@ -392,14 +391,14 @@ function min(array) {
 
 function invokeInterval(func, delay) {
     //invokes the function immediately, waits for callback, waits the delay, and then calls it again
-    (function foo() {
+    (function invoker() {
         console.log("running %s", func.name);
         func(function(err) {
             if (err) {
                 //log the error, but wait until next interval to retry
-                console.log(err);
+                console.error(err);
             }
-            setTimeout(foo, delay);
+            setTimeout(invoker, delay);
         });
     })();
 }
@@ -407,23 +406,34 @@ function invokeInterval(func, delay) {
 function cleanup(queue, kue, type) {
     process.once('SIGTERM', function() {
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGTERM');
         });
     });
     process.once('SIGINT', function() {
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGINT');
         });
     });
     process.once('SIGUSR2', function() {
         clearActiveJobs(function(err) {
-            console.log(err);
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid, 'SIGUSR2');
         });
     });
     process.once('uncaughtException', function(err) {
         console.error(err.stack);
         clearActiveJobs(function(err) {
+            if (err) {
+                console.error(err);
+            }
             process.kill(process.pid);
         });
     });
@@ -448,7 +458,6 @@ function cleanup(queue, kue, type) {
         });
     }
 }
-
 module.exports = {
     tokenize: tokenize,
     logger: logger,

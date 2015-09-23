@@ -37,10 +37,10 @@ block match_content
             th #
             th Start
             th Length
-            th: abbr(title="Radiant participation/Dire participation") Style
-            th: abbr(title="Radiant kills/Dire kills") Score
-            th: abbr(title="Net gold advantage for Radiant") Gold
-            th: abbr(title="Net XP advantage for Radiant") XP
+            th: abbr(title=tooltips.teamfight_participation) Style
+            th: abbr(title=tooltips.teamfight_score) Score
+            th: abbr(title=tooltips.teamfight_radiant_gold_adv) Gold
+            th: abbr(title=tooltips.teamfight_radiant_xp_adv) XP
             th
         tbody#teamfights
           - var i = 0
@@ -145,7 +145,7 @@ block match_content
       .col-md-12
 
         h3
-          abbr(title="This table associates Kill Streaks (one row for each streak) with Multi Kills and the Teamfight analysis seen above (denoted under each kill in the streak).") Kill Streaks / Multi Kills
+          abbr(title=tooltips.killstreak_multikill) Kill Streaks / Multi Kills
 
         .table-responsive
           table.table.table-hover(style="text-align:center; vertical-align:middle;")

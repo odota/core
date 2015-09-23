@@ -75,7 +75,7 @@ Developer's Guide
 ----
 * The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
 * Build step.  `npm run build` executes the following.
-    * `npm install` Downloads and installs the Node dependencies from npm
+    * `npm install` Downloads and installs the Node dependencies from npm.
     * `npm run maven` Uses Maven to build the Java parser.
     * `npm run webpack` Builds and minifies the client side JS using Webpack.  
     * `npm run constants` Builds `constants.json` from `sources.json` by requesting some dynamic data from URLs.
@@ -84,7 +84,7 @@ Developer's Guide
 * Descriptions of each service:
     * `web`: An HTTP server which serves the web traffic.
         * All of the querying, filtering, aggregation, and caching happens here.
-        * We use pm2 to be able to run multiple instances of this and reload the server when deploying new code (minimizes downtime due to rolling restart)
+        * We use pm2 to be able to run multiple instances to serve our web traffic and reload the server when deploying new code (minimizes downtime due to rolling restart)
     * `retriever`: An HTTP server that accepts URL params `match_id` and `account_id`.
         * Interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
@@ -100,14 +100,15 @@ Developer's Guide
             * `getReplayUrl` to get the download URL for a replay.  It selects randomly from the list of available retrievers to serve the request.
             * Send a request to a parse worker with the url.
             * Read the response from parse worker and save as `match.parsed_data`.
-    * `worker`: Takes care of background tasks.  This is still a bit of a jack-of-all-trades since it used to process all jobs before we moved some of them out to individual processes.
+    * `worker`: Takes care of background tasks.  This is still a bit of a jack-of-all-trades since it used to process all job types before we moved some of them out to individual processes.
         * Processes incoming parse requests, using the `processApi` processor.
             * This could probably go in its own process.
         * Runs some functions on an interval.
-            * `buildSets`.  Update sets of players that rely only on Mongo/Redis.
-                * Rebuilds the sets of tracked players, donated players, and signed-in players by querying Mongo/Redis and saves them to Redis.
+            * `buildSets`.  Update sets of players based on Mongo/Redis state.
+                * Rebuilds the sets of tracked players, donated players, and signed-in players by querying Mongo/Redis and saves them under keys in Redis.
                 * It also creates Redis keys for parsers/retrievers by reading config. Could be extended later to query from a service discovery server.
-            * `serviceDiscovery.getRetrievers`.  This iterates over the list of retrievers and queries them for list of players who have a tracker as a friend, and the list of bots to offer to users.
+            * `serviceDiscovery.getRetrievers`.  This iterates over the list of retrievers stored in Redis and queries them.
+                * This includes the list of players who have a tracker as a friend, and the list of bots to offer to users.
                 * In Redis, we store a mapping of the user's account ID to the retriever that hosts the tracker (since the MMR can only be fetched from that tracker).
             * Used to `updateNames`, which requested Steam personanames for 100 users on a timed interval.  We currently aren't updating names in the background.
             * Used to process API calls created by `updateNames`.

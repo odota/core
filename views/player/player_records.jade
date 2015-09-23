@@ -1,7 +1,6 @@
 extend player
 
 block playercontent
-    - var times={"duration":1,"first_blood_time":1}
     .row
       .col-md-12
         h3 Records
@@ -16,11 +15,12 @@ block playercontent
               th Total
               th Mean
           tbody
-            each val, key in player.aggData
-              if key in histograms
+            each v, key in histograms
+              if key in player.aggData
+                - var val = player.aggData[key]
                 - var avg = val.sum/val.n
                 tr
-                  td #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+                  td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
                   td
                     - var hero = constants.heroes[val.max_match.hero_id]
                     if hero

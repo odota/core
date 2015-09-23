@@ -4,23 +4,23 @@ block playercontent
   .histograms.match
     .row
       .col-md-12
-        - var times={"duration":1,"first_blood_time":1}
         script.
           var histogramData = {};
-        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All Histograms
-        each val, key in player.aggData
-          if key in histograms
+        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
+        each v, key in histograms
+          if key in player.aggData
             - var collapsed = true
             button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
-        each val, key in player.aggData
-          if key in histograms
+        each v, key in histograms
+          if key in player.aggData
+            - var val = player.aggData[key]
             - var avg = val.sum/val.n
             - var collapsed = true
             section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
-              h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+              h3: abbr(title=tooltips[key]) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
                 small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
               script.
-                histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
+                histogramData["#{key}"] = !{JSON.stringify({counts: player.aggData[key].counts, win_counts: player.aggData[key].win_counts})};
               div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
           
 append footer_assets
@@ -31,7 +31,7 @@ append footer_assets
         var win_counts = histogramData[key].win_counts;
         createHistogram(counts, win_counts, key);
     });
-    $("#histogram-container-toggle-duration").click();
+    $("#histogram-container-toggle-kills").click();
     
     function showAll(){
       $(".histogram-toggle-button").each(function() {

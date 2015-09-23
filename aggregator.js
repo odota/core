@@ -33,6 +33,12 @@ module.exports = function aggregator(matches, fields, existing) {
             }
         },
         //match values
+        "match_ids": {
+            type: "api",
+            agg: function(key, m, p) {
+                aggData[key][m.match_id] = 1;
+            }
+        },
         "start_time": {
             type: "api",
             agg: function(key, m, p) {
@@ -241,11 +247,19 @@ module.exports = function aggregator(matches, fields, existing) {
             standardAgg(key, p.parsedPlayer.sentry_uses, m);
         },
         */
+        "parsed_match_ids": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                if (m.parsed_data) {
+                    aggData[key][m.match_id] = 1;
+                }
+            }
+        },
         "stuns": {
             type: "parsed",
             agg: function(key, m, p) {
                 //double invert to convert the float to an int so we can bucket better
-                standardAgg(key, ("stuns" in p.parsedPlayer) ? ~~p.parsedPlayer.stuns : undefined, m);
+                standardAgg(key, p.parsedPlayer.stuns ? ~~p.parsedPlayer.stuns : undefined, m);
             }
         },
         "courier_kills": {
@@ -396,31 +410,31 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, m.my_word_counts, m);
             }
         },
-        "tps_purchased": {
+        "purchase_tpscroll": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.tpscroll || 0) : undefined, m);
             }
         },
-        "observers_purchased": {
+        "purchase_ward_observer": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_observer || 0) : undefined, m);
             }
         },
-        "sentries_purchased": {
+        "purchase_ward_sentry": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry * 2 || 0) : undefined, m);
             }
         },
-        "gems_purchased": {
+        "purchase_gem": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.gem || 0) : undefined, m);
             }
         },
-        "rapiers_purchased": {
+        "purchase_rapier": {
             type: "parsed",
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.rapier || 0) : undefined, m);
@@ -461,6 +475,18 @@ module.exports = function aggregator(matches, fields, existing) {
             agg: function(key, m, p) {
                 standardAgg(key, p.parsedPlayer.loss, m);
             }
+        },
+        "lane_efficiency": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lane_efficiency * 100) : undefined, m);
+            }
+        },
+        "actions_per_min": {
+            type: "parsed",
+            agg: function(key, m, p) {
+                standardAgg(key, p.parsedPlayer.actions_per_min, m);
+            }
         }
     };
     if (typeof fields === "string") {
@@ -500,15 +526,21 @@ module.exports = function aggregator(matches, fields, existing) {
                     max_match: {},
                     n: 0,
                     counts: {},
-                    win_counts: {}
+                    win_counts: {},
+                    avgs: []
                 };
             }
         }
     }
+    //sort ascending to support trends
+    matches.sort(function(a, b) {
+        return a.match_id - b.match_id;
+    });
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         if (isSignificant(constants, m)) {
             var p = m.players[0];
+            p.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
             for (var key in fields) {
                 //execute the aggregation function for each specified field
                 if (types[key]) {
@@ -550,6 +582,13 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
+            aggObj.avgs.push({
+                //match_id: match.match_id,
+                start_time: match.start_time,
+                hero_id: m.players[0].hero_id,
+                val: value,
+                avg: ~~(aggObj.sum / aggObj.n * 100) / 100
+            });
         }
     }
 

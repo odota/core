@@ -22,7 +22,7 @@ block match_content
     .col-md-4
       .row
         .col-md-12
-          h3: abbr(title="An estimation of how \"positive\" all chat was.", style="display:inline-block") Positivity
+          h3: abbr(title=tooltips.positivity, style="display:inline-block") Positivity
             br
             small (Score: #{match.sentiment.score}, Tokens: #{match.sentiment.tokens.length})
           .progress
