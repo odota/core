@@ -97,8 +97,12 @@ module.exports = function getStatus(cb) {
         kue: function(cb) {
             var counts = {};
             jobs.types(function(err, data) {
+                if (err){
+                    return cb(err);
+                }
                 async.each(data, function(d, cb) {
-                    jobs.cardByType(d, "inactive", function(err, result) {
+                    // others are activeCount, completeCount, failedCount, delayedCount
+                    jobs.inactiveCount(d, function(err, result) {
                         counts[d] = result;
                         cb(err);
                     });
@@ -107,7 +111,7 @@ module.exports = function getStatus(cb) {
                 });
             });
         }
-    }, function(err, results){
+    }, function(err, results) {
         console.timeEnd('status');
         cb(err, results);
     });
