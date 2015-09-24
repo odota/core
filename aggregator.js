@@ -514,7 +514,7 @@ module.exports = function aggregator(matches, fields, existing) {
                 aggData[key] = 0;
             }
             //track unique ids
-            else if (key === "teammates" || key === "heroes") {
+            else if (key === "teammates" || key === "heroes" || key === "match_ids" || key === "parsed_match_ids") {
                 aggData[key] = {};
             }
             //standard aggregation
@@ -540,7 +540,6 @@ module.exports = function aggregator(matches, fields, existing) {
         var m = matches[i];
         if (isSignificant(constants, m)) {
             var p = m.players[0];
-            p.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[0] : {};
             for (var key in fields) {
                 //execute the aggregation function for each specified field
                 if (types[key]) {

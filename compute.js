@@ -31,7 +31,6 @@ function computeMatchData(match) {
             player.total_xp = ~~(player.xp_per_min * match.duration / 60);
             player.parseSlot = player.player_slot % (128 - 5);
             player.kda = ~~((player.kills + player.assists) / (player.deaths + 1));
-            player.parsedPlayer = {};
         });
         if (match.parsed_data) {
             if (match.parsed_data.chat) {
