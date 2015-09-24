@@ -37,18 +37,21 @@ Features
 * Aggregations:
   * Result count, win rate
   * Win rate by hour/day of week
-  * Histogram (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
+  * Histograms (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
   * Hero Matchups (win rate when playing as, with, against a hero)
   * Teammates/Opponents (win rate playing with/against particular players)
   * Max/N/Sum on multiple stat categories
   * Mean item build times
   * Skill accuracy
+  * Records
+  * Multikills/Kill Streaks
   * Laning
-  * Ward maps
+  * Ward Maps
+  * Trends
+  * Comparison against other users
   * Word Clouds (text said and read in all chat)
-* Pro Games: Professional matches are automatically parsed
-* Comparison Tool: Computes a percentile for a player against all users
 * Rating Tracker: Keep track of MMR by adding a Steam account as a friend
+* Pro Games: Optionally parses professional matches: `leagueid>0`
 * Modular: Microservice architecture, with pieces that can be used independently
 * Scalable: Designed to scale to thousands of users.
 * Free: No "premium" features.  All data is available for free to users.
@@ -57,7 +60,7 @@ Features
 Tech
 ----
 * Web: Node.js/Express
-* Storage: MongoDB/Redis
+* Storage: PostgreSQL/Redis
 * Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 Quickstart
@@ -69,7 +72,8 @@ Quickstart
 
 Sample Data
 ----
-* `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump if you want a medium-sized data set to work with.
+* MongoDB: `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump if you want a medium-sized data set to work with.
+* PSQL: No sample data yet
 
 Developer's Guide
 ----
@@ -104,8 +108,8 @@ Developer's Guide
         * Processes incoming parse requests, using the `processApi` processor.
             * This could probably go in its own process.
         * Runs some functions on an interval.
-            * `buildSets`.  Update sets of players based on Mongo/Redis state.
-                * Rebuilds the sets of tracked players, donated players, and signed-in players by querying Mongo/Redis and saves them under keys in Redis.
+            * `buildSets`.  Update sets of players based on DB/Redis state.
+                * Rebuilds the sets of tracked players, donated players, and signed-in players by querying DB/Redis and saves them under keys in Redis.
                 * It also creates Redis keys for parsers/retrievers by reading config. Could be extended later to query from a service discovery server.
             * `serviceDiscovery.getRetrievers`.  This iterates over the list of retrievers stored in Redis and queries them.
                 * This includes the list of players who have a tracker as a friend, and the list of bots to offer to users.
@@ -142,8 +146,6 @@ Developer's Guide
 * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
 * `npm test` to run the full test suite.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
-
-
 
 History
 ----

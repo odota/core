@@ -58,6 +58,7 @@
     "passport": "0.2.2",
     "passport-steam": "0.1.5",
     "paypal-rest-sdk": "~1.6",
+    "pg": "^4.4.2",
     "pm2": "^0.14.7",
     "poet": "~2.0.1",
     "qTip2": "yasp-dota/qtip2",
@@ -66,6 +67,7 @@
     "request-progress": "^0.3.1",
     "selectize": "^0.12.1",
     "sentiment": "^1.0.2",
+    "sequelize": "^3.9.0",
     "steam": "1.1.0",
     "winston": "1.0.1",
     "wordcloud": "1.0.1"
