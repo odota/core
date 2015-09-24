@@ -286,7 +286,6 @@ function getParseSchema() {
         "radiant_xp_adv": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
-                "steam_id": "",
                 "stuns": 0,
                 "max_hero_hit": {
                     value: 0
@@ -306,9 +305,7 @@ function getParseSchema() {
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},
-                //individual chat event counts?
                 //"CHAT_MESSAGE_HERO_KILL":{},
-                //"clicks":{},
                 "actions": {},
                 "pings": {},
                 "purchase": {},
