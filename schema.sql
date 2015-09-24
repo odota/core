@@ -149,6 +149,7 @@ players.full_history_time
 players.cheese
 
 --MIGRATIONS
+--rename gold, lh, xp arrays in parsed_data
 --player.ratings to player_ratings
 --matches.parsed_data to matches
 --matches.parsed_data.players to player_matches
