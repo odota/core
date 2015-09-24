@@ -1,5 +1,5 @@
-h2.inline-header Filter
-button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Options
+h2.inline-header
+  button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Filter
 #filter_collapse.collapse
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"
@@ -11,12 +11,12 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         .form-group
           label The Team Included
           select.form-control(name="with_hero_id" multiple, data-placeholder="Team: Any Hero")#with_hero_id
-            each entry in constants.alpha_heroes
+            each entry in constants.heroes
               option(value=entry.id, selected=q.with_hero_id && q.with_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
           label The Enemies Included
           select.form-control(name="against_hero_id" multiple, data-placeholder="Enemy: Any Hero")#enemy_hero_id
-            each entry in constants.alpha_heroes
+            each entry in constants.heroes
               option(value=entry.id, selected=q.against_hero_id && q.against_hero_id.indexOf(entry.id)!==-1)=entry.localized_name
         .form-group
           abbr(title="Select a teammate or enter an account ID")
@@ -30,7 +30,7 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" placeholder="Any Hero")#hero_id
-            each entry in constants.alpha_heroes
+            each entry in constants.heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group  
           label Faction
@@ -47,7 +47,13 @@ button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#fi
           select.form-control(multiple name="lane_role" placeholder="Any Lane")#lane_role
             each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
-
+        .form-group  
+          label Purchased Item(s)
+          select.form-control(multiple name="purchased_item" placeholder="Any Item")#purchased_item
+            each val, key in constants.items
+              - var key = Number(val.id)
+              option(value=key, selected=(q["purchased_item"] && q["purchased_item"].indexOf(key)!==-1))=val.dname
+              
       .col-md-4
         h4 Match Parameters
         .form-group
@@ -86,13 +92,15 @@ script.
         maxItems: 10
     });
     $("#with_hero_id").selectize({
+        sortField: 'text',
         maxItems: 5
     });
     $("#enemy_hero_id").selectize({
+        sortField: 'text',
         maxItems: 5
     });
-    $("#compare_account_id").selectize({
-        create: true,
+    $("#purchased_item").selectize({
+        sortField: 'text',
         maxItems: 5
     });
     $("#hero_id").selectize({

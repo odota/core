@@ -83,6 +83,9 @@ function advQuery(query, cb) {
             matches.forEach(function(m) {
                 //post-process the match to get additional stats
                 computeMatchData(m);
+                m.players.forEach(function(player, i) {
+                    player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+                });
             });
             var filtered = filter(matches, query.js_select);
             //filtered = sort(filtered, options.js_sort);
