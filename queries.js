@@ -22,12 +22,14 @@ function fillPlayerNames(players, cb) {
             $in: player_ids
         }
     }, {
+        /*
         fields: {
             "account_id": 1,
             "last_visited": 1,
             "personaname": 1,
             "avatar": 1
         }
+        */
     }, function(err, docs) {
         if (err) {
             return cb(err);
