@@ -22,11 +22,18 @@ CREATE TABLE matches
   "engine": 1,
   radiant_team_name
   dire_team_name
-  "parse_status": 3,
+  --from skill api
   "skill": 1
-}
-  
-  
+  --parsed data
+  "parse_status": 3,
+  chat
+  objectives
+  radiant_gold_adv
+  radiant_xp_adv
+  "teamfights": []
+  "version": 13
+
+
 CREATE TABLE players
   PRIMARY KEY account_id
     "account_id" : 100344929,
@@ -47,29 +54,12 @@ CREATE TABLE players
     "realname" : "Alper",
     "steamid" : "76561198060610657",
     "timecreated" : 1332289262,
-  last_visited --(actually last login time, previously used for visit tracking but that's now done in redis, we use this for finding the players who have signed in)
-  full_history_time
-  cheese
-  fh_unavailable --could use to tell player their profile is private, but we don't currently do this
-  last_summaries_update --remove
-  join_date --remove
-
-CREATE TABLE player_ratings
-PRIMARY KEY account_id, match_id
-"match_id" : 1238535235, 
-"account_id" : 88367253, 
-"soloCompetitiveRank" : 1765, 
-"competitiveRank" : 2783, 
-"time" : ISODate("2015-02-14T19:51:14Z")
-
-CREATE TABLE parsed_matches
-  PRIMARY KEY match_id
-  chat
-  objectives
-  radiant_gold_adv
-  radiant_xp_adv
-  "teamfights": []
-  "version": 13,
+    last_visited --(actually last login time, previously used for visit tracking but that's now done in redis, we use this for finding the players who have signed in)
+    full_history_time
+    cheese
+    fh_unavailable --could use to tell player their profile is private, but we don't currently do this
+    last_summaries_update --remove
+    join_date --remove
 
 CREATE TABLE player_matches
   PRIMARY KEY account_id, match_id
@@ -103,63 +93,65 @@ CREATE TABLE player_matches
           "level": 1
         },
       ]
+      --parsed fields below
+      "stuns": 0,
+      "max_hero_hit": {
+          value: 0
+      },
+      "times": [],
+      "gold": [], --conflicts with the name in match.players
+      "lh": [],
+      "xp": [],
+      //"pos_log": [],
+      "obs_log": [],
+      "sen_log": [],
+      "hero_log": [], --can we remove along with pick order?
+      "purchase_log": [],
+      "kills_log": [],
+      "buyback_log": [],
+      //"pos": {},
+      "lane_pos": {},
+      "obs": {},
+      "sen": {},
+      "actions": {},
+      "pings": {},
+      "purchase": {},
+      "gold_reasons": {},
+      "xp_reasons": {},
+      "kills": {},
+      "item_uses": {},
+      "ability_uses": {},
+      "hero_hits": {},
+      "damage": {},
+      "damage_taken": {},
+      "damage_inflictor": {},
+      "runes": {},
+      "killed_by": {},
+      "modifier_applied": {},
+      "kill_streaks": {},
+      "multi_kills": {},
+      "healing": {},
+      "hero_id": "", --can we remove?  nick might be using this
+      "kill_streaks_log": [], --an array of kill streak values
+      "multi_kill_id_vals": [] --an array of multi kill values (the length of each multi kill)
 
-CREATE TABLE parsed_player_matches
+CREATE TABLE player_ratings
   PRIMARY KEY account_id, match_id
-                "stuns": 0,
-                "max_hero_hit": {
-                    value: 0
-                },
-                "times": [],
-                "gold": [],
-                "lh": [],
-                "xp": [],
-                //"pos_log": [],
-                "obs_log": [],
-                "sen_log": [],
-                "hero_log": [],
-                "purchase_log": [],
-                "kills_log": [],
-                "buyback_log": [],
-                //"pos": {},
-                "lane_pos": {},
-                "obs": {},
-                "sen": {},
-                //"CHAT_MESSAGE_HERO_KILL":{},
-                "actions": {},
-                "pings": {},
-                "purchase": {},
-                "gold_reasons": {},
-                "xp_reasons": {},
-                "kills": {},
-                "item_uses": {},
-                "ability_uses": {},
-                "hero_hits": {},
-                "damage": {},
-                "damage_taken": {},
-                "damage_inflictor": {},
-                "runes": {},
-                "killed_by": {},
-                "modifier_applied": {},
-                //"modifier_lost": {},
-                //"ability_trigger": {}
-                "kill_streaks": {},
-                "multi_kills": {},
-                "healing": {},
-                "hero_id": "", // the hero id of this player
-                "kill_streaks_log": [], // an array of kill streak values
-                "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
-
+  "match_id" : 1238535235, 
+  "account_id" : 88367253, 
+  "soloCompetitiveRank" : 1765, 
+  "competitiveRank" : 2783, 
+  "time" : ISODate("2015-02-14T19:51:14Z")
 
 INDEX
-parsed_matches.version
+matches.version
 players.full_history_time
 players.cheese
 
 --MIGRATIONS
 --player.ratings to player_ratings
---matches.parsed_data to parsed_player_matches
---matches.parsed_data to parsed_matches
+--matches.parsed_data to matches
+--matches.parsed_data.players to player_matches
 --matches.players to player_matches
 --subset of columns from matches to matches
 --subset of columns from players to players
