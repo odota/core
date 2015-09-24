@@ -30,11 +30,7 @@ module.exports = function constants(cb) {
         if (err) {
             return cb(err);
         }
-        var heroes = JSON.parse(JSON.stringify(constants.heroes.result.heroes));
-        heroes.sort(function(a, b) {
-            return a.localized_name.localeCompare(b.localized_name);
-        });
-        constants.alpha_heroes = heroes;
+        var heroes = constants.heroes.result.heroes;
         //key heroes by id
         constants.heroes = {};
         //key heroes by name
