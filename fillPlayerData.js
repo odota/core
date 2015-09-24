@@ -22,7 +22,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         personaname: account_id
     };
     var whitelist = {
-        "all": 1
+        "all": 250
     };
     preprocessQuery(options.query);
     //set up mongo query in case we need it
@@ -32,19 +32,20 @@ module.exports = function fillPlayerData(account_id, options, cb) {
         //match limit to retrieve for any player
         options.query.limit = 20000;
     }
+    else if (account_id in whitelist) {
+        options.query.limit = whitelist[account_id];
+    }
     else {
-        options.query.limit = 250;
-        if (!(account_id in whitelist)) {
-            return cb("invalid account id");
-        }
+        return cb("invalid account id");
     }
     //sort descending to get the most recent data
     options.query.sort = {
         match_id: -1
     };
+    //check count of matches to validate cache
     console.time("count");
     db.matches.count({
-        "players.account_id": account_id
+        "players.account_id": Number(account_id)
     }, function(err, match_count) {
         if (err) {
             return cb(err);
