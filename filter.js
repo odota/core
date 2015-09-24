@@ -2,7 +2,6 @@ var constants = require('./constants.json');
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;
-
 module.exports = function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
@@ -33,6 +32,11 @@ module.exports = function filter(matches, filters) {
         lane_role: function(m, key) {
             return m.players[0].parsedPlayer.lane_role === key;
         },
+        purchased_item: function(m, key) {
+            var item = constants.item_ids[key];
+            var pt = m.players[0].parsedPlayer.purchase_time;
+            return pt && item in pt;
+        },
         //GETFULLPLAYERDATA: we need to iterate over match.all_players
         //ensure all array elements fit the condition
         included_account_id: function(m, key, arr) {
@@ -57,10 +61,6 @@ module.exports = function filter(matches, filters) {
             });
         }
     };
-    //TODO implement more filters, including from parse data
-    //filter: specific regions
-    //filter: item was built
-    //filter: max gold/xp advantage
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
         var include = true;

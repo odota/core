@@ -30,7 +30,7 @@ h2.inline-header
         .form-group
           label Hero
           select.form-control(multiple name="hero_id" placeholder="Any Hero")#hero_id
-            each entry in constants.alpha_heroes
+            each entry in constants.heroes
               option(value=entry.id, selected=(q["hero_id"] && q["hero_id"][0]===entry.id))=entry.localized_name
         .form-group  
           label Faction
@@ -47,7 +47,13 @@ h2.inline-header
           select.form-control(multiple name="lane_role" placeholder="Any Lane")#lane_role
             each val, key in constants.lane_role
               option(value=key, selected=(q["lane_role"] && q["lane_role"][0]===Number(key)))=val
-
+        .form-group  
+          label Purchased Item(s)
+          select.form-control(multiple name="purchased_item" placeholder="Any Item")#purchased_item
+            each val, key in constants.items
+              - var key = Number(val.id)
+              option(value=key, selected=(q["purchased_item"] && q["purchased_item"].indexOf(key)!==-1))=val.dname
+              
       .col-md-4
         h4 Match Parameters
         .form-group
@@ -91,8 +97,8 @@ script.
     $("#enemy_hero_id").selectize({
         maxItems: 5
     });
-    $("#compare_account_id").selectize({
-        create: true,
+    $("#purchased_item").selectize({
+        sortField: 'text',
         maxItems: 5
     });
     $("#hero_id").selectize({
