@@ -20,55 +20,57 @@ block content
                 small(style="margin-left:.5em") x #{' '} #{player.cheese}
     .col-xs-3
           h4
-            div
-              span.text-info.rating: abbr(title="Solo MMR")
-                i.fa.fa-user
-                small(style="margin-left:.5em") #{player.soloRating || "N/A"}
-              span.text-warning.rating: abbr(title="Party MMR")
-                i.fa.fa-users
-                 small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+            span.text-info.rating: abbr(title="Solo MMR")
+              i.fa.fa-user
+              small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+            span.text-info.rating: abbr(title="Highest Solo MMR")
+              i.fa.fa-star
+              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
           h4
-            div
-              span.text-info.rating: abbr(title="Highest Solo MMR")
-                i.fa.fa-star
-                small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
-              span.text-warning.rating: abbr(title="Highest Party MMR")
-                i.fa.fa-star
-                small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
+            span.text-warning.rating: abbr(title="Party MMR")
+              i.fa.fa-users
+              small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+            span.text-warning.rating: abbr(title="Highest Party MMR")
+              i.fa.fa-star
+              small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
     .col-xs-3
           h4
-            div
-              span 
-                if (!player.full_history_time)
-                  span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
-                    i.fa.fa-exclamation-triangle
-                else
-                  span.text-success.rating: abbr(title="Full history has been processed for this user.")
-                    i.fa.fa-check
-                small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-                  New users may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
-                  
+            if (!player.full_history_time)
+              span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
+                i.fa.fa-exclamation-triangle
+            else
+              span.text-success.rating: abbr(title="Full history has been processed for this user.")
+                i.fa.fa-check
+            small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
+              New users may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
+              
           h4
-            div
-              if !(player.account_id in trackedPlayers)
-                span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
-                  i.fa.fa-eye-slash
-              else
-                span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
-                  i.fa.fa-eye
-              small: abbr(title="A parsed match is one that has had its replay analyzed.<br> \
-                Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
-                Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
+            if !(player.account_id in trackedPlayers)
+              span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
+                i.fa.fa-eye-slash
+            else
+              span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
+                i.fa.fa-eye
+            small: abbr(title="A parsed match is one that has had its replay analyzed.<br> \
+              Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
+              Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
 
-    .col-xs-3(style='text-align:center;')
-      div(style="display:inline-block;margin-top:0;font-size:19px;")
-        span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
-        span -
-        span.text-danger(style="margin:0 4px;") #{player.aggData.lose}
-        span -
-        small(style="margin:0 4px;font-size:100%") #{player.abandons}
-        span.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA)
-      +progress_bar(player.aggData.win, player.aggData.games)
+    .col-xs-3
+      h4
+        span.text-primary
+          i.fa.fa-trophy
+          small(style="margin-left:.5em")
+            span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
+            span -
+            span.text-danger(style="margin:0 4px;") #{player.aggData.lose}
+            span (#{(player.aggData.win/player.aggData.games*100).toFixed(2)}%)
+      h4
+        span.text-primary
+          i.fa.fa-sign-out
+          small(style="margin-left:.5em") #{player.abandons} abandons
+      //h4: span.visible-lg-inline-block(style="font-size:75%") (#{((player.aggData.kills.sum + player.aggData.assists.sum)/(player.aggData.deaths.sum+player.aggData.games)).toFixed(2)} KDA)
+      //+progress_bar(player.aggData.win, player.aggData.games)
+      
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive
       ul.nav.nav-tabs
