@@ -21,17 +21,17 @@ block content
     .col-xs-3
           h4
             span.text-info.rating: abbr(title="Solo MMR")
-              i.fa.fa-user
+              i.fa.fa-fw.fa-user
               small(style="margin-left:.5em") #{player.soloRating || "N/A"}
             span.text-info.rating: abbr(title="Highest Solo MMR")
-              i.fa.fa-star
+              i.fa.fa-fw.fa-star
               small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
           h4
             span.text-warning.rating: abbr(title="Party MMR")
-              i.fa.fa-users
+              i.fa.fa-fw.fa-users
               small(style="margin-left:.5em") #{player.partyRating || "N/A"}
             span.text-warning.rating: abbr(title="Highest Party MMR")
-              i.fa.fa-star
+              i.fa.fa-fw.fa-star
               small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
     .col-xs-3
           h4
