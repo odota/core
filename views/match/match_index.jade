@@ -22,7 +22,8 @@ block match_content
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.mmr) Rating
+              th
+              //th: abbr(title=tooltips.mmr) Rating
               th: abbr(title=tooltips.level) LV
               th: abbr(title=tooltips.kills) K
               th: abbr(title=tooltips.deaths) D
@@ -42,7 +43,7 @@ block match_content
               //img.img-small(src=player.avatar)
               if (player.last_visited)
                 img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
-              | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
+              // | #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
             td= player.level
             td= player.kills
             td.negative= player.deaths
