@@ -126,9 +126,6 @@ function runParse(data, cb) {
         "match_id": function(e) {
             parsed_data.match_id = e.value;
         },
-        "steam_id": function(e) {
-            populate(e);
-        },
         "combat_log": function(e) {
             switch (e.subtype) {
                 case "DOTA_COMBATLOG_DAMAGE":

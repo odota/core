@@ -33,8 +33,6 @@ import java.util.List;
 public class Main {
     private final Logger log = LoggerFactory.getLogger(Main.class.getPackage().getClass());
     float INTERVAL = 1;
-    HashMap<Integer, Integer> slot_to_hero = new HashMap<>();
-    HashMap<Long, Integer> steamid_to_slot = new HashMap<>();
     float nextInterval = 0;
     Integer time = 0;
     int numPlayers = 10;
@@ -138,23 +136,7 @@ public class Main {
 
     @OnMessage(CDemoFileInfo.class)
     public void onFileInfo(Context ctx, CDemoFileInfo message) {
-        //load epilogue
-        List<CPlayerInfo> players = message.getGameInfo().getDota().getPlayerInfoList();
-        //names used to match all chat messages to players
-        for (CPlayerInfo player : players) {
-            Entry nameEntry = new Entry();
-            nameEntry.type = "name";
-            nameEntry.key = player.getPlayerName();
-            nameEntry.slot = steamid_to_slot.get(player.getSteamid());
-            es.output(nameEntry);
-
-            Entry steamIdEntry = new Entry();
-            steamIdEntry.type = "steam_id";
-            steamIdEntry.key = String.valueOf(player.getSteamid());
-            steamIdEntry.slot = steamid_to_slot.get(player.getSteamid());
-            es.output(steamIdEntry);
-        }
-
+        //beware of 4.2b limit!  we don't currently do anything with this, so we might be able to just remove this
         Entry matchIdEntry = new Entry();
         matchIdEntry.type = "match_id";
         matchIdEntry.value = message.getGameInfo().getDota().getMatchId();
@@ -250,8 +232,7 @@ public class Main {
             time = Math.round((float) getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
         }
         if (pr != null) {
-            //Radiant coach shows up in vecPlayerTeamData as position 5, and we end up:
-            //setting slot_to_hero incorrectly, which leads to misattributed combat log data.
+            //Radiant coach shows up in vecPlayerTeamData as position 5
             //all the remaining dire entities are offset by 1 and so we miss reading the last one and don't get data for the first dire player
             //coaches appear to be on team 1, radiant is 2 and dire is 3?
             //construct an array of valid indices to get vecPlayerTeamData from
@@ -277,7 +258,7 @@ public class Main {
                 for (int i = 0; i < numPlayers; i++) {
                     Integer hero = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
                     int handle = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
-                    Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
+                    //Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
                     int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
                     //System.err.format("hero:%s i:%s teamslot:%s playerteam:%s\n", hero, i, teamSlot, playerTeam);
@@ -300,8 +281,6 @@ public class Main {
 
                     //time dead, count number of intervals where this value is >0?
                     //m_iRespawnSeconds.0000
-
-                    steamid_to_slot.put(steamid, i);
 
                     //get the player's hero entity
                     Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);

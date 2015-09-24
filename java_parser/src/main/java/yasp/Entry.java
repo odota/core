@@ -33,6 +33,7 @@ public class Entry {
     public Integer y;
     public Float stuns;
     public Integer hero_id;
+    //public Boolean hasPredictedVictory;
 
     public Entry() {
     }
