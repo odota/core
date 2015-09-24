@@ -239,7 +239,9 @@ public class Main {
             if (!init) {
                 int added = 0;
                 int i = 0;
-                while (added < numPlayers) {
+                //according to @Decoud Valve seems to have fixed this issue and players should be in first 10 slots again
+                //sanity check of i to prevent infinite loop when <10 players?
+                while (added < numPlayers && i < 100) {
                     //check each m_vecPlayerData to ensure the player's team is radiant or dire
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
                     if (playerTeam == 2 || playerTeam == 3) {
