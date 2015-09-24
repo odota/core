@@ -3,7 +3,7 @@ include /mixins/progress_bar
 
 block content
   .row.match-top
-    .col-xs-6
+    .col-xs-3
       div(style="display:flex;")
         a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
           if player.avatarmedium
@@ -11,48 +11,55 @@ block content
           //else
             //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
         div
-          h4(style="margin:0 0 5px 0;")
-            span(style='margin-right: 5px;') #{player.personaname || player.account_id}
-            div(style="display:inline-block;")
+          h4
+            div #{player.personaname || player.account_id}
+          h4
+            if player.cheese
+              div
+                i.flaticon-1.small-cheese(style="display:inline-block")
+                small(style="margin-left:.5em") x #{' '} #{player.cheese}
+    .col-xs-3
+          h4
+            div
+              span.text-info.rating: abbr(title="Solo MMR")
+                i.fa.fa-user
+                small(style="margin-left:.5em") #{player.soloRating || "N/A"}
+              span.text-warning.rating: abbr(title="Party MMR")
+                i.fa.fa-users
+                 small(style="margin-left:.5em") #{player.partyRating || "N/A"}
+          h4
+            div
+              span.text-info.rating: abbr(title="Highest Solo MMR")
+                i.fa.fa-star
+                small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
+              span.text-warning.rating: abbr(title="Highest Party MMR")
+                i.fa.fa-star
+                small(style="margin-left:.5em") #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
+    .col-xs-3
+          h4
+            div
+              span 
+                if (!player.full_history_time)
+                  span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
+                    i.fa.fa-exclamation-triangle
+                else
+                  span.text-success.rating: abbr(title="Full history has been processed for this user.")
+                    i.fa.fa-check
+                small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
+                  New users may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
+                  
+          h4
+            div
               if !(player.account_id in trackedPlayers)
                 span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
                   i.fa.fa-eye-slash
               else
                 span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
                   i.fa.fa-eye
-              if (!player.full_history_time)
-                span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
-                  i.fa.fa-exclamation-triangle
-              else
-                span.text-success.rating: abbr(title="Full history has been processed for this user.")
-                  i.fa.fa-check
-              if player.cheese
-                span
-                  i.flaticon-1.small-cheese(style="display:inline-block")
-                  small(style="margin-left:.5em") x #{' '} #{player.cheese}
-          .lead(style="font-size:1em")
-              span.text-info.rating: abbr(title="Solo MMR")
-                i.fa.fa-user
-                | #{player.soloRating || "N/A"}
-              span.text-warning.rating: abbr(title="Party MMR")
-                i.fa.fa-users
-                | #{player.partyRating || "N/A"}
-              span.text-info.rating: abbr(title="Highest Solo MMR")
-                i.fa.fa-star
-                | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.soloCompetitiveRank;})),0) || "N/A"}
-              span.text-warning.rating: abbr(title="Highest Party MMR")
-                i.fa.fa-star
-                | #{Math.max(Math.max.apply(null, player.ratings.map(function(r){return r.competitiveRank;})),0) || "N/A"}
-        //-
-          h4
-            span.label.label-info Solo Rank: #{player.soloRank} of #{player.soloRatingsLength}
-            span.label.label-warning Party Rank: #{player.partyRank} of #{player.partyRatingsLength}
-    .col-xs-3(style='text-align:center;')
-      h4(style="vertical-align:middle;"): small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-          New users may not see all matches until their full history has been retrieved.<br> \
-          A parsed match is one that has had its replay analyzed.<br> \
-          Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
-          Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.match_ids).length} recorded, #{Object.keys(player.aggData.parsed_match_ids).length} parsed
+              small: abbr(title="A parsed match is one that has had its replay analyzed.<br> \
+                Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
+                Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
+
     .col-xs-3(style='text-align:center;')
       div(style="display:inline-block;margin-top:0;font-size:19px;")
         span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
