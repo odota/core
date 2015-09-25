@@ -65,7 +65,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     //if player cache doesn't exist, skip
                     var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                     if (cache) {
-                        var match_copy = JSON.parse(JSON.stringify(match));
+                        var m = JSON.parse(JSON.stringify(match));
                         if (options.type !== "skill") {
                             var reInsert = match.match_id in cache.aggData.match_ids && options.type === "api";
                             var reParse = match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
@@ -73,23 +73,26 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                                 //m.players[0] should be this player
                                 //m.all_players should be all players
                                 //duplicate this data into a copy to avoid corrupting original match object
-                                match_copy.all_players = match.players.slice(0);
-                                match_copy.players = [p];
+                                m.all_players = match.players.slice(0);
+                                m.players = [p];
                                 //some data fields require computeMatchData in order to aggregate correctly
-                                computeMatchData(match_copy);
+                                computeMatchData(m);
+                                m.players.forEach(function(player, i) {
+                                    player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+                                });
                                 //do aggregations on fields based on type		
-                                cache.aggData = aggregator([match_copy], options.type, cache.aggData);
+                                cache.aggData = aggregator([m], options.type, cache.aggData);
                             }
                         }
                         //reduce match to save cache space--we only need basic data per match for matches tab
-                        reduceMatch(match_copy);
-                        var orig = cache.data[match_copy.match_id];
+                        reduceMatch(m);
+                        var orig = cache.data[m.match_id];
                         if (!orig) {
-                            cache.data[match_copy.match_id] = match_copy;
+                            cache.data[m.match_id] = m;
                         }
                         else {
-                            for (var key in match_copy) {
-                                orig[key] = match_copy[key];
+                            for (var key in m) {
+                                orig[key] = m[key];
                             }
                         }
                         redis.ttl("player:" + p.account_id, function(err, ttl) {
