@@ -1,10 +1,19 @@
 var config = require('../config');
 var mongodb = require('monk')(config.MONGO_URL);
-mongodb.get('players');
-mongodb.get('matches').find({}, function(err, docs){
-    console.log(docs[0]);
+var pg = require('knex')({
+    client: 'pg',
+    connection: config.POSTGRES_URL
 });
-
+mongodb.get('players');
+mongodb.get('matches').find({}).each(function(m) {
+    var match = {};
+    var player_match = {};
+    //insert to match
+    //insert to player_match
+});
+mongodb.get('players').find({}).each(function(p) {
+    //insert to players
+});
 //MIGRATIONS
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
 //rename parsed_data.players.kills -> killed
@@ -15,10 +24,10 @@ mongodb.get('matches').find({}, function(err, docs){
 //subset of columns from matches to matches
 //subset of columns from players to players
 //CODECHANGE
-//remove hero_log, pick order data
-//remove parsed_data.players.hero_id (nick was using?)
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
 //rename parsed_data.players.kills -> killed
+//remove hero_log, pick order data
+//remove parsed_data.players.hero_id (nick was using?)
 //last_summaries_update --remove code refs
 //join_date --remove code refs
 //rewrite advquery/fillplayerdata to select from player_matches then make separate query for played_with/played_against
