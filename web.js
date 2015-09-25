@@ -22,8 +22,6 @@ var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
-var fillPlayerData = require('./fillPlayerData');
-var advQuery = require('./advquery');
 var queries = require('./queries');
 var constants = require('./constants.json');
 var express = require('express');
@@ -144,56 +142,6 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
-/*
-app.route('/professional').get(function(req, res, next) {
-    advQuery({
-        mongo_select: {
-            leagueid: {
-                $gt: 0
-            }
-        },
-        project: {
-            players: {
-                $slice: 1
-            },
-            match_id: 1,
-            leagueid: 1,
-            radiant_name: 1,
-            dire_name: 1,
-            game_mode: 1,
-            duration: 1,
-            start_time: 1,
-            parse_status: 1
-        },
-        //pass something non-null to skip getting parsed data
-        js_agg: {},
-        sort: {
-            match_id: -1
-        },
-        limit: 100
-    }, function(err, data2) {
-        if (err) {
-            return next(err);
-        }
-        res.render('professional', {
-            matches: data2.data
-        });
-        //implement live match pages
-        //individual live match page for each match
-        //interval check api
-        //for each match, if time changed, update redis, push to clients
-        utility.getData(utility.generateJob("api_live").url, function(err, data) {
-                if (err) {
-                    return next(err);
-                }
-                res.render('professional', {
-                    live: data.result.games,
-                    recent: data2.data
-                });
-        });
-    });
-});
-*/
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
