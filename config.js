@@ -25,6 +25,7 @@ var defaults = {
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",
     "MONGO_URL": "mongodb://localhost/dota",
+    "POSTGRES_URL": "postgresql://postgres:postgres@localhost/postgres",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
     "PARSER_HOST": "localhost:5200",

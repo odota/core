@@ -9,21 +9,21 @@ module.exports = function processParse(job, ctx, cb) {
     if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
         //expired, can't parse even if we have url
         //TODO non-valve urls don't expire, we can try using them
-        //TODO do we want to write parse_status:1 to db?  we should not overwrite existing parse_status:2
+        //TODO do we want to write parse_status:1?  we should not overwrite existing parse_status:2
         console.log("replay too old, url expired");
         console.timeEnd("parse " + match_id);
         return cb();
     }
-    //get the replay url, update db
+    //get the replay url and save it
     getReplayUrl(match, function(err) {
         if (err) {
             return cb(err);
         }
         else {
-            //match object should now contain replay url, and url should be persisted to db
+            //match object should now contain replay url, and url should be persisted
             console.log("[PARSER] parsing from %s", job.data.payload.url);
             var url = job.data.payload.url;
-            var target = job.parser_url + "&url=" + url
+            var target = job.parser_url + "&url=" + url;
             console.log("target: %s", target);
             request({
                 url: target

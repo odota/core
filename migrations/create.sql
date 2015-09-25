@@ -1,4 +1,7 @@
---CREATE DATABASE dota;
+--postgres user by default connects to postgres db
+--default schema is public
+--drop schema public cascade;
+--create schema public;
 
 CREATE TABLE matches (
   match_id integer PRIMARY KEY,
@@ -23,11 +26,12 @@ CREATE TABLE matches (
   --dire_team_name varchar(255),
   --parsed data
   parse_status integer,
-  chat json,
-  objectives json,
-  radiant_gold_adv json,
-  radiant_xp_adv json,
-  teamfights json,
+  url varchart(255),
+  chat JSONB,
+  objectives JSONB,
+  radiant_gold_adv JSONB,
+  radiant_xp_adv JSONB,
+  teamfights JSONB,
   version integer,
   --from skill api
   skill integer
@@ -58,10 +62,6 @@ CREATE TABLE players (
     "realname" : "Alper",
     "timecreated" : 1332289262,
   */
-  /*
-    last_summaries_update --remove code refs
-    join_date --remove code refs
-  */
 );
 
 CREATE TABLE player_matches (
@@ -90,43 +90,43 @@ CREATE TABLE player_matches (
       tower_damage integer,
       hero_healing integer,
       level integer,
-      ability_upgrades json,
+      ability_upgrades JSONB,
       --parsed fields below
       stuns real,
-      max_hero_hit json,
-      times json,
-      gold_t json,
-      lh_t json,
-      xp_t json,
-      obs_log json,
-      sen_log json,
-      --hero_log json, --can we remove along with pick order?
-      purchase_log json,
-      kills_log json,
-      buyback_log json,
-      lane_pos json,
-      obs json,
-      sen json,
-      actions json,
-      pings json,
-      purchase json,
-      gold_reasons json,
-      xp_reasons json,
-      killed json,
-      item_uses json,
-      ability_uses json,
-      hero_hits json,
-      damage json,
-      damage_taken json,
-      damage_inflictor json,
-      runes json,
-      killed_by json,
-      modifier_applied json,
-      kill_streaks json,
-      multi_kills json,
-      healing json,
-      kill_streaks_log json, --an array of kill streak values
-      multi_kill_id_vals json --an array of multi kill values (the length of each multi kill)
+      max_hero_hit JSONB,
+      times JSONB,
+      gold_t JSONB,
+      lh_t JSONB,
+      xp_t JSONB,
+      obs_log JSONB,
+      sen_log JSONB,
+      --hero_log JSONB, --can we remove along with pick order?
+      purchase_log JSONB,
+      kills_log JSONB,
+      buyback_log JSONB,
+      lane_pos JSONB,
+      obs JSONB,
+      sen JSONB,
+      actions JSONB,
+      pings JSONB,
+      purchase JSONB,
+      gold_reasons JSONB,
+      xp_reasons JSONB,
+      killed JSONB,
+      item_uses JSONB,
+      ability_uses JSONB,
+      hero_hits JSONB,
+      damage JSONB,
+      damage_taken JSONB,
+      damage_inflictor JSONB,
+      runes JSONB,
+      killed_by JSONB,
+      modifier_applied JSONB,
+      kill_streaks JSONB,
+      multi_kills JSONB,
+      healing JSONB,
+      kill_streaks_log JSONB, --an array of kill streak values
+      multi_kill_id_vals JSONB --an array of multi kill values (the length of each multi kill)
 );
 
 CREATE TABLE player_ratings (

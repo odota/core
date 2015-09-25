@@ -1,7 +1,5 @@
 var utility = require('./utility');
-var invokeInterval = utility.invokeInterval;
 var async = require('async');
-var db = require('./db');
 var constants = require("./constants.json");
 var updatePlayerCaches = require('./updatePlayerCaches');
 var results = {};

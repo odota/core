@@ -7,13 +7,11 @@ var queueReq = require('./operations').queueReq;
 var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
-var db = require('./db');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
 //var session = require('express-session');
 //var RedisStore = require('connect-redis')(session);
-var passport = require('./passport');
 var status = require('./status');
 var auth = require('http-auth');
 var path = require('path');
@@ -22,13 +20,68 @@ var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
-var fillPlayerData = require('./fillPlayerData');
-var advQuery = require('./advquery');
-var queries = require('./queries');
 var constants = require('./constants.json');
 var express = require('express');
 var app = express();
 var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
+var passport = require('passport');
+var config = require('./config');
+var api_key = config.STEAM_API_KEY.split(",")[0];
+var db = require('./db');
+var SteamStrategy = require('passport-steam').Strategy;
+var host = config.ROOT_URL;
+var convert64to32 = utility.convert64to32;
+//PASSPORT config
+passport.serializeUser(function(user, done) {
+    done(null, user.account_id);
+});
+passport.deserializeUser(function(id, done) {
+    /*
+    db.players.findOne({
+        account_id: id
+    }, function(err, user) {
+        //set token for this player's visit, expires in untrack days time
+        redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
+        done(err, user);
+    });
+    */
+    console.log(db('players').columnInfo());
+    db.select().from('players').where({
+        account_id: id
+    }).then(function(rows) {
+        redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
+        done(!rows.length, rows[0]);
+    }).catch(function(err) {
+        done(err);
+    });
+});
+passport.use(new SteamStrategy({
+    returnURL: host + '/return',
+    realm: host,
+    apiKey: api_key
+}, function initializeUser(identifier, profile, done) {
+    var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
+    var insert = profile._json;
+    insert.account_id = steam32;
+    insert.last_visited = new Date();
+    db.insert(insert).into('players').then(function() {
+        done(null, insert);
+    }).catch(function(err) {
+        done(err);
+    });
+    /*
+    db.players.update({
+        account_id: insert.account_id
+    }, {
+        $set: insert
+    }, {
+        upsert: true
+    }, function(err) {
+        done(err, insert);
+    });
+    */
+}));
+//APP config
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -99,14 +152,14 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
-poet.addRoute('/blog/:id?', function (req, res) {
-  var max = poet.helpers.getPostCount();
-  var id = Number(req.params.id) || max;
-  res.render('blog', {
-    posts: poet.helpers.getPosts(max-id, max-id+1),
-    id: id,
-    max: max
-  });
+poet.addRoute('/blog/:id?', function(req, res) {
+    var max = poet.helpers.getPostCount();
+    var id = Number(req.params.id) || max;
+    res.render('blog', {
+        posts: poet.helpers.getPosts(max - id, max - id + 1),
+        id: id,
+        max: max
+    });
 });
 app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
@@ -144,63 +197,30 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
-/*
-app.route('/professional').get(function(req, res, next) {
-    advQuery({
-        mongo_select: {
-            leagueid: {
-                $gt: 0
-            }
-        },
-        project: {
-            players: {
-                $slice: 1
-            },
-            match_id: 1,
-            leagueid: 1,
-            radiant_name: 1,
-            dire_name: 1,
-            game_mode: 1,
-            duration: 1,
-            start_time: 1,
-            parse_status: 1
-        },
-        //pass something non-null to skip getting parsed data
-        js_agg: {},
-        sort: {
-            match_id: -1
-        },
-        limit: 100
-    }, function(err, data2) {
+app.route('/login').get(passport.authenticate('steam', {
+    failureRedirect: '/'
+}));
+app.route('/return').get(passport.authenticate('steam', {
+    failureRedirect: '/'
+}), function(req, res, next) {
+    //TODO buildSets since a player just logged in and might need to be retracked
+    queueReq("fullhistory", req.user, function(err, job) {
         if (err) {
             return next(err);
         }
-        res.render('professional', {
-            matches: data2.data
-        });
-        //implement live match pages
-        //individual live match page for each match
-        //interval check api
-        //for each match, if time changed, update redis, push to clients
-        utility.getData(utility.generateJob("api_live").url, function(err, data) {
-                if (err) {
-                    return next(err);
-                }
-                res.render('professional', {
-                    live: data.result.games,
-                    recent: data2.data
-                });
-        });
+        res.redirect('/players/' + req.user.account_id);
     });
 });
-*/
+app.route('/logout').get(function(req, res) {
+    req.logout();
+    req.session = null;
+    res.redirect('/');
+});
 app.use('/matches', require('./routes/matches'));
 app.use('/players', require('./routes/players'));
 app.use('/api', require('./routes/api'));
-app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/donate'));
-app.use('/', require('./routes/mmstats'))
-//post/get a request
+app.use('/', require('./routes/mmstats')(r));
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
         form: {
@@ -252,32 +272,6 @@ app.route('/request_job').post(function(req, res) {
         });
     });
 });
-/*
-app.route('/preferences').post(function(req, res) {
-    if (req.user) {
-        for (var key in req.body) {
-            //convert string to boolean
-            req.body[key] = req.body[key] === "true";
-        }
-        db.players.update({
-            account_id: req.user.account_id
-        }, {
-            $set: req.body
-        }, function(err, num) {
-            var success = !(err || !num);
-            res.json({
-                prefs: req.body,
-                sync: success
-            });
-        });
-    }
-    else {
-        res.json({
-            sync: false
-        });
-    }
-});
-*/
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;

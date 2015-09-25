@@ -1,4 +1,3 @@
-var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
 var utility = require('./utility');

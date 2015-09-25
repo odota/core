@@ -102,15 +102,10 @@ console.log('starting web');
 var app = require('../web');
 var parser = require('../parser');
 var parseManager = require('../parseManager');
-//stuff we don't run in test
-//scanner
-//worker
-//retriever
-//skill
-//proxy
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
+    //TODO https://github.com/emerleite/node-database-cleaner/blob/master/test/postgresql.test.js
     var databaseCleaner = new DatabaseCleaner('mongodb');
     var connect = require('mongodb').connect;
     nock.enableNetConnect();
@@ -196,24 +191,6 @@ before(function(done) {
             }
         ], function(err) {
         done(err);
-    });
-});
-describe("services", function() {
-    it("mongodb connected", function(done) {
-        assert(db);
-        done();
-    });
-    it("redis connected", function(done) {
-        assert(redis);
-        done();
-    });
-    it("kue ready", function(done) {
-        assert(kue);
-        done();
-    });
-    it("kue jobs queue ready", function(done) {
-        assert(jobs);
-        done();
     });
 });
 describe("worker", function() {
