@@ -55,3 +55,5 @@ mongodb.get('players').find({}).each(function(p) {
 //queries.js
 //TODO
 //UPSERT not supported until psql 9.5
+//PRIMARY KEY of player_match should be match_id, account_id, player_slot to account for anonymous players
+//when inserting player_match lookup by match_id, player_slot and update row
