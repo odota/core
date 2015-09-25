@@ -6,25 +6,67 @@ var pg = require('knex')({
 });
 mongodb.get('players');
 mongodb.get('matches').find({}).each(function(m) {
-    var match = {};
-    var player_match = {};
-    //insert to match
-    //insert to player_match
+    pg('matches').columnInfo().then(function(info) {
+        var row = {};
+        for (var key in info) {
+            if (key in m) {
+                row[key] = m[key];
+            }
+            else if (m.parsed_data && key in m.parsed_data) {
+                row[key] = m.parsed_data[key];
+            }
+            else {
+                row[key] = null;
+            }
+        }
+        pg.insert(row).into('matches');
+    });
+    m.players.forEach(function(pm) {
+        var parseSlot = pm.player_slot % (128 - 5);
+        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
+        pg('player_matches').columnInfo().then(function(info) {
+            var row = {};
+            for (var key in info) {
+                if (key === "gold_t") {
+                    row.gold_t = pp ? pp.gold : null;
+                }
+                else if (key === "xp_t") {
+                    row.gold_t = pp ? pp.xp : null;
+                }
+                else if (key === "lh_t") {
+                    row.gold_t = pp ? pp.lh : null;
+                }
+                else if (key === "killed") {
+                    row.gold_t = pp ? pp.kills : null;
+                }
+                else if (key in pm) {
+                    row[key] = pm[key];
+                }
+                else if (pp && key in pp) {
+                    row[key] = pp[key];
+                }
+            }
+            pg.insert(row).into('player_matches');
+        });
+    });
 });
 mongodb.get('players').find({}).each(function(p) {
-    //insert to players
+    //TODO insert to players
+    pg('players').columnInfo().then(function(info) {
+        var row = {};
+        for (var key in info) {
+            row[key] = p[key];
+        }
+        pg.insert(row).into('players');
+        //insert to player_ratings
+        p.ratings.forEach(function(r) {
+            pg.insert(r).into('player_ratings');
+        });
+    });
 });
 //MIGRATIONS
-//rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
-//rename parsed_data.players.kills -> killed
-//player.ratings to player_ratings
-//matches.parsed_data to matches
-//matches.parsed_data.players to player_matches
-//matches.players to player_matches
-//subset of columns from matches to matches
-//subset of columns from players to players
-//do the radiant gold adv/xp adv migration while we're at it
-//CODECHANGE
+//TODO do the radiant gold adv/xp adv migration while we're at it
+//TODO CODECHANGE
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
 //rename parsed_data.players.kills -> killed
 //remove hero_log, pick order data
@@ -32,7 +74,9 @@ mongodb.get('players').find({}).each(function(p) {
 //last_summaries_update --remove code refs
 //join_date --remove code refs
 //rewrite advquery/fillplayerdata to select from player_matches then make separate query for played_with/played_against
-//FILES
+//update aggregator to not ref parsedPlayer
+//update views to not ref parsedPlayer
+//TODO FILES
 //pass a single db/redis reference around
 //test/test.js
 //processFullHistory.js
@@ -55,5 +99,4 @@ mongodb.get('players').find({}).each(function(p) {
 //queries.js
 //TODO
 //UPSERT not supported until psql 9.5
-//PRIMARY KEY of player_match should be match_id, account_id, player_slot to account for anonymous players
-//when inserting player_match lookup by match_id, player_slot and update row
+//when inserting player_match lookup by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)
