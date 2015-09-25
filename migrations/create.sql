@@ -3,6 +3,8 @@
 --drop schema public cascade;
 --create schema public;
 
+ALTER USER postgres WITH PASSWORD 'postgres';
+
 CREATE TABLE matches (
   match_id integer PRIMARY KEY,
   radiant_win boolean,

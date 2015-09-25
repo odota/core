@@ -1,3 +1,10 @@
+var config = require('../config');
+var mongodb = require('monk')(config.MONGO_URL);
+mongodb.get('players');
+mongodb.get('matches').find({}, function(err, docs){
+    console.log(docs[0]);
+});
+
 //MIGRATIONS
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
 //rename parsed_data.players.kills -> killed
@@ -36,7 +43,5 @@
 //getReplayUrl.js
 //advquery.js
 //queries.js
-//package.json mongodb, monk
 //TODO
-//handle insertion object containing a column that doesn't exist in db?
 //UPSERT not supported until psql 9.5

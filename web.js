@@ -36,16 +36,6 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    /*
-    db.players.findOne({
-        account_id: id
-    }, function(err, user) {
-        //set token for this player's visit, expires in untrack days time
-        redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
-        done(err, user);
-    });
-    */
-    console.log(db('players').columnInfo());
     db.select().from('players').where({
         account_id: id
     }).then(function(rows) {
@@ -64,22 +54,20 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.last_visited = new Date();
-    db.insert(insert).into('players').then(function() {
-        done(null, insert);
-    }).catch(function(err) {
-        done(err);
+    db('players').columnInfo().then(function(info) {
+        for (var key in insert){
+            if (!(key in info)){
+                //TODO log something about missing column
+                delete insert[key];
+            }
+        }
+        //TODO implement upsert
+        db.insert(insert).into('players').then(function() {
+            done(null, insert);
+        }).catch(function(err) {
+            done(err);
+        });
     });
-    /*
-    db.players.update({
-        account_id: insert.account_id
-    }, {
-        $set: insert
-    }, {
-        upsert: true
-    }, function(err) {
-        done(err, insert);
-    });
-    */
 }));
 //APP config
 app.set('views', path.join(__dirname, 'views'));
