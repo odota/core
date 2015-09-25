@@ -37,18 +37,21 @@ Features
 * Aggregations:
   * Result count, win rate
   * Win rate by hour/day of week
-  * Histogram (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
+  * Histograms (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
   * Hero Matchups (win rate when playing as, with, against a hero)
   * Teammates/Opponents (win rate playing with/against particular players)
   * Max/N/Sum on multiple stat categories
   * Mean item build times
   * Skill accuracy
+  * Records
+  * Multikills/Kill Streaks
   * Laning
-  * Ward maps
+  * Ward Maps
+  * Trends
+  * Comparison against other users
   * Word Clouds (text said and read in all chat)
-* Pro Games: Professional matches are automatically parsed
-* Comparison Tool: Computes a percentile for a player against all users
 * Rating Tracker: Keep track of MMR by adding a Steam account as a friend
+* Pro Games: Optionally parses professional matches: `leagueid>0`
 * Modular: Microservice architecture, with pieces that can be used independently
 * Scalable: Designed to scale to thousands of users.
 * Free: No "premium" features.  All data is available for free to users.
