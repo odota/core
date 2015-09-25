@@ -67,7 +67,7 @@ CREATE TABLE players (
 );
 
 CREATE TABLE player_matches (
-  PRIMARY KEY(account_id, match_id),
+  PRIMARY KEY(match_id, player_slot),
       match_id integer,
       account_id integer,
       player_slot integer,
@@ -132,7 +132,7 @@ CREATE TABLE player_matches (
 );
 
 CREATE TABLE player_ratings (
-  PRIMARY KEY(account_id, match_id),
+  PRIMARY KEY(match_id, account_id),
   match_id integer,
   account_id integer,
   soloCompetitiveRank integer,
@@ -140,6 +140,7 @@ CREATE TABLE player_ratings (
   time timestamp with time zone
 );
 
+CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
 CREATE INDEX on players(cheese);
