@@ -28,7 +28,7 @@ CREATE TABLE matches (
   --dire_team_name varchar(255),
   --parsed data
   parse_status integer,
-  url varchart(255),
+  url varchar(255),
   chat JSONB,
   objectives JSONB,
   radiant_gold_adv JSONB,
