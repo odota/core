@@ -84,7 +84,9 @@ function getPageData(start, options, cb) {
             }
             else {
                 start = matches[matches.length - 1].match_id - 1;
-                getPageData(start, options, cb);
+                process.nextTick(function(){
+                    getPageData(start, options, cb);
+                });
             }
         });
     });
