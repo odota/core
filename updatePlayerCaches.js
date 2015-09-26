@@ -102,11 +102,15 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
-                    return insertPlayers(cb);
-                    //return cb(err);
+                    if (options.type !== "skill") {
+                        return insertPlayer(cb);
+                    }
+                    else {
+                        return cb();
+                    }
                 });
 
-                function insertPlayers(cb) {
+                function insertPlayer(cb) {
                     //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({
                         account_id: p.account_id

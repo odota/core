@@ -22,6 +22,7 @@ for (var i = 0; i < heroes.length; i++) {
     }
 }
 //permute = [{skill:1,hero_id:1}];
+console.log(permute.length);
 scanSkill();
 
 function scanSkill() {
