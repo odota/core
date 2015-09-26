@@ -81,6 +81,9 @@ MongoClient.connect(url, function(err, db) {
                             else if (pp && key in pp) {
                                 row[key] = pp[key];
                             }
+                            else {
+                                row[key] = null;
+                            }
                             if (typeof row[key] === "object" && row[key]) {
                                 row[key] = JSON.stringify(row[key]);
                             }
@@ -99,7 +102,12 @@ MongoClient.connect(url, function(err, db) {
         pg('players').columnInfo().then(function(info) {
             var row = {};
             for (var key in info) {
-                row[key] = p[key];
+                if (key === "last_login") {
+                    row[key] = p.last_visited;
+                }
+                else {
+                    row[key] = p[key];
+                }
             }
             pg.insert(row).into('players').asCallback(function(err) {
                 if (err) {
@@ -118,10 +126,9 @@ MongoClient.connect(url, function(err, db) {
                             else if (key === "competitive_rank") {
                                 row[key] = r.competitiveRank;
                             }
-                            else if (key in r) {
+                            else {
                                 row[key] = r[key];
                             }
-                            row[key] = r[key];
                         }
                         pg.insert(row).into('player_ratings').asCallback(cb);
                     });
@@ -138,6 +145,7 @@ MongoClient.connect(url, function(err, db) {
 //TODO CODECHANGE
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
 //rename parsed_data.players.kills -> killed, views, compute
+//rename last_visited -> last_login
 //remove pick_order, views
 //last_summaries_update --remove code refs
 //join_date --remove code refs

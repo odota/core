@@ -50,19 +50,18 @@ passport.use(new SteamStrategy({
 }, function initializeUser(identifier, profile, done) {
     var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
     var insert = profile._json;
-    insert.account_id = steam32;
-    insert.last_visited = new Date();
     //TODO refactor to queries.insertplayer
     db('players').columnInfo().then(function(info) {
-        for (var key in insert) {
-            if (!(key in info)) {
-                //TODO log something about missing column
-                delete insert[key];
-            }
+        var row = {
+            account_id: steam32,
+            last_login: new Date()
+        };
+        for (var key in info) {
+            row[key] = insert[key];
         }
         //TODO implement upsert
-        db.insert(insert).into('players').asCallback(function(err) {
-            return done(err, insert);
+        db.insert(row).into('players').asCallback(function(err) {
+            return done(err, row);
         });
     });
 }));

@@ -43,7 +43,7 @@ CREATE TABLE players (
   steamid varchar(255),
   avatar varchar(255),
   personaname varchar(255),
-  last_visited timestamp with time zone, --(actually last login time, previously used for visit tracking but that's now done in redis, we use this for finding the players who have signed in)
+  last_login timestamp with time zone,
   full_history_time timestamp with time zone,
   cheese bigint,
   fh_unavailable boolean
