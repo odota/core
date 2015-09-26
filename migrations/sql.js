@@ -1,68 +1,122 @@
 var config = require('../config');
-var mongodb = require('monk')(config.MONGO_URL);
+var async = require('async');
 var pg = require('knex')({
     client: 'pg',
     connection: config.POSTGRES_URL
 });
-mongodb.get('players');
-mongodb.get('matches').find({}).each(function(m) {
-    pg('matches').columnInfo().then(function(info) {
-        var row = {};
-        for (var key in info) {
-            if (key in m) {
-                row[key] = m[key];
-            }
-            else if (m.parsed_data && key in m.parsed_data) {
-                row[key] = m.parsed_data[key];
-            }
-            else {
-                row[key] = null;
-            }
+var MongoClient = require('mongodb').MongoClient;
+// Connection URL
+var url = config.MONGO_URL;
+MongoClient.connect(url, function(err, db) {
+    if (err) {
+        throw err;
+    }
+    var cursor = db.collection('matches').find();
+    var migrate = processMatch;
+    //var cursor = db.collection('players').find();
+    //var migrate = processPlayer;
+    cursor.nextObject(processItem);
+
+    function processItem(err, item) {
+        if (err) {
+            throw err;
         }
-        pg.insert(row).into('matches');
-    });
-    m.players.forEach(function(pm) {
-        var parseSlot = pm.player_slot % (128 - 5);
-        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-        pg('player_matches').columnInfo().then(function(info) {
-            var row = {};
-            for (var key in info) {
-                if (key === "gold_t") {
-                    row.gold_t = pp ? pp.gold : null;
-                }
-                else if (key === "xp_t") {
-                    row.gold_t = pp ? pp.xp : null;
-                }
-                else if (key === "lh_t") {
-                    row.gold_t = pp ? pp.lh : null;
-                }
-                else if (key === "killed") {
-                    row.gold_t = pp ? pp.kills : null;
-                }
-                else if (key in pm) {
-                    row[key] = pm[key];
-                }
-                else if (pp && key in pp) {
-                    row[key] = pp[key];
-                }
-            }
-            pg.insert(row).into('player_matches');
-        });
-    });
-});
-mongodb.get('players').find({}).each(function(p) {
-    //TODO insert to players
-    pg('players').columnInfo().then(function(info) {
-        var row = {};
-        for (var key in info) {
-            row[key] = p[key];
+        if (!item) {
+            return; // All done!
         }
-        pg.insert(row).into('players');
-        //insert to player_ratings
-        p.ratings.forEach(function(r) {
-            pg.insert(r).into('player_ratings');
+        migrate(item, function(err) {
+            if (err) {
+                throw err;
+            }
+            cursor.nextObject(processItem);
         });
-    });
+    }
+
+    function processMatch(m, cb) {
+        process.nextTick(function() {
+            pg('matches').columnInfo().then(function(info) {
+                var row = {};
+                for (var key in info) {
+                    if (key in m) {
+                        row[key] = m[key];
+                    }
+                    else if (m.parsed_data && key in m.parsed_data) {
+                        row[key] = m.parsed_data[key];
+                    }
+                    else {
+                        row[key] = null;
+                    }
+                }
+                pg.insert(row).into('matches').then(function() {
+                    async.each(m.players, function(pm, cb) {
+                        var parseSlot = pm.player_slot % (128 - 5);
+                        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
+                        pg('player_matches').columnInfo().then(function(info) {
+                            var row = {
+                                match_id: m.match_id
+                            };
+                            for (var key in info) {
+                                if (key === "gold_t") {
+                                    row.gold_t = pp ? pp.gold : null;
+                                }
+                                else if (key === "xp_t") {
+                                    row.gold_t = pp ? pp.xp : null;
+                                }
+                                else if (key === "lh_t") {
+                                    row.gold_t = pp ? pp.lh : null;
+                                }
+                                else if (key === "killed") {
+                                    row.gold_t = pp ? pp.kills : null;
+                                }
+                                else if (key in pm) {
+                                    row[key] = pm[key];
+                                }
+                                else if (pp && key in pp) {
+                                    row[key] = pp[key];
+                                }
+                            }
+                            pg.insert(row).into('player_matches').then(function() {
+                                cb(null);
+                            }).catch(function(err) {
+                                cb(err);
+                            });
+                        });
+                    }, function(err) {
+                        //next doc
+                        cb(err);
+                    });
+                }).catch(function(err) {
+                    cb(err);
+                });
+            });
+        });
+    }
+
+    function processPlayer(p, cb) {
+        process.nextTick(function() {
+            pg('players').columnInfo().then(function(info) {
+                var row = {};
+                for (var key in info) {
+                    row[key] = p[key];
+                }
+                pg.insert(row).into('players').then(function() {
+                    //insert to player_ratings
+                    async.each(p.ratings, function(r, cb) {
+                        pg.insert(r).into('player_ratings').then(function() {
+                            cb(null);
+                        }).catch(function(err) {
+                            cb(err);
+                        });
+                    }, function(err) {
+                        //next doc
+                        cb(err);
+                    });
+                }).catch(function(err) {
+                    cb(err);
+                });
+            });
+        });
+    }
 });
 //MIGRATIONS
 //TODO do the radiant gold adv/xp adv migration while we're at it

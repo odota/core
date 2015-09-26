@@ -1,16 +1,15 @@
 --postgres user by default connects to postgres db
---default schema is public
---drop schema public cascade;
---create schema public;
-
 ALTER USER postgres WITH PASSWORD 'postgres';
+--default schema is public
+drop schema public cascade;
+create schema public;
 
 CREATE TABLE matches (
-  match_id integer PRIMARY KEY,
+  match_id bigint PRIMARY KEY,
+  match_seq_num bigint,
   radiant_win boolean,
   start_time bigint,
   duration integer,
-  match_seq_num integer,
   tower_status_radiant integer,
   tower_status_dire integer,
   barracks_status_radiant integer,
@@ -40,7 +39,7 @@ CREATE TABLE matches (
   );
 
 CREATE TABLE players (
-  account_id integer PRIMARY KEY,
+  account_id bigint PRIMARY KEY,
   steamid varchar(255),
   avatar varchar(255),
   personaname varchar(255),
@@ -68,8 +67,8 @@ CREATE TABLE players (
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
-      match_id integer,
-      account_id integer,
+      match_id bigint,
+      account_id bigint,
       player_slot integer,
       hero_id integer,
       item_0 integer,
