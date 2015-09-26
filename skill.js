@@ -30,8 +30,12 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        console.log(err);
-        return scanSkill();
+        if (err){
+            console.error(err);
+        }
+        process.nextTick(function(){
+            scanSkill();
+        });
     });
 }
 
