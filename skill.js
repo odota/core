@@ -28,8 +28,12 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        console.log(err);
-        return scanSkill();
+        if (err){
+            console.error(err);
+        }
+        process.nextTick(function(){
+            scanSkill();
+        });
     });
 }
 
@@ -78,7 +82,9 @@ function getPageData(start, options, cb) {
             }
             else {
                 start = matches[matches.length - 1].match_id - 1;
-                getPageData(start, options, cb);
+                process.nextTick(function(){
+                    getPageData(start, options, cb);
+                });
             }
         });
     });

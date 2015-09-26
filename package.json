@@ -18,7 +18,7 @@
     "startup": "sudo pm2 startup ubuntu -u yasp",
     "create": "sudo -u postgres psql -f migrations/create.sql",
     "deploy-core": "pm2 startOrReload pm2-core.json",
-    "deploy-parser": "git pull origin master && npm install && npm run maven && pm2 startOrRestart pm2-parser.json"
+    "deploy-parser": "git pull origin master && npm run maven && pm2 startOrRestart pm2-parser.json"
   },
   "repository": {
     "type": "git",
@@ -91,6 +91,6 @@
     "webpack": "^1.12.2"
   },
   "engines": {
-    "node": ">= 0.12.0"
+    "node": "0.12.0"
   }
 }
