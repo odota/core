@@ -215,7 +215,7 @@ function runParse(data, cb) {
                     //     parsed_data.objectives.push(JSON.parse(JSON.stringify(e)));
                     // }
                     //count kill by this unit
-                    e.type = "kills";
+                    e.type = "killed";
                     getSlot(e);
                     //killed unit was a real hero
                     if (e.targethero && !e.targetillusion) {
@@ -484,17 +484,6 @@ function runParse(data, cb) {
                 curr_teamfight = null;
             }
             if (e.hero_id) {
-                if (curr_player_hero[e.slot] !== e.hero_id) {
-                    var h = {
-                        time: e.time,
-                        type: "hero_log",
-                        slot: e.slot,
-                        unit: e.unit,
-                        key: e.hero_id
-                    };
-                    populate(h);
-                    curr_player_hero[e.slot] = e.hero_id;
-                }
                 //grab the end of the name, lowercase it
                 var ending = e.unit.slice("CDOTA_Unit_Hero_".length);
                 //valve is bad at consistency and the combat log name could involve replacing camelCase with _ or not!
@@ -522,13 +511,13 @@ function runParse(data, cb) {
                     e.type = "times";
                     e.value = e.time;
                     populate(e);
-                    e.type = "gold";
+                    e.type = "gold_t";
                     e.value = e.gold;
                     populate(e);
-                    e.type = "xp";
+                    e.type = "xp_t";
                     e.value = e.xp;
                     populate(e);
-                    e.type = "lh";
+                    e.type = "lh_t";
                     e.value = e.lh;
                     populate(e);
                     e.interval = false;
@@ -653,12 +642,6 @@ function runParse(data, cb) {
     function processAllPlayers() {
         //compute data that requires all parsed players
         //pick order, radiant advantage per minute
-        //determine pick order based on last time value of hero_log
-        //determine a pick_time for each parsed player
-        //duplicate, sort
-        //create hash of indices by iterating through sorted array and mapping original index to order
-        //insert back into originals, indexing by player slot
-        var pick_map = {};
         for (var i = 0; i < parsed_data.players[0].times.length; i++) {
             var goldtotal = 0;
             var xptotal = 0;
@@ -672,21 +655,10 @@ function runParse(data, cb) {
                     xptotal -= p.xp[i];
                     goldtotal -= p.gold[i];
                 }
-                p.origIndex = j;
-                p.pick_time = p.hero_log.length ? p.hero_log[p.hero_log.length - 1].time : Number.MAX_VALUE;
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);
         }
-        var sorted = parsed_data.players.slice().sort(function(a, b) {
-            return a.pick_time - b.pick_time;
-        });
-        sorted.forEach(function(player, i) {
-            pick_map[player.origIndex] = i + 1;
-        });
-        parsed_data.players.forEach(function(player) {
-            player.pick_order = pick_map[player.origIndex];
-        });
     }
 
     function processTeamfights() {
@@ -717,7 +689,7 @@ function runParse(data, cb) {
                         //copy the entry
                         var e_cpy_1 = JSON.parse(JSON.stringify(e));
                         //count toward kills
-                        e_cpy_1.type = "kills";
+                        e_cpy_1.type = "killed";
                         populate(e_cpy_1, tf);
                         //get slot of target
                         e.slot = hero_to_slot[e.key];
@@ -788,8 +760,6 @@ function runParse(data, cb) {
             if (killer_index !== undefined) {
                 // bookmark this player's parsed bookkeeping
                 var parsed_info = parsed_data.players[killer_index];
-                // record which hero this is
-                parsed_info.hero_id = hero_to_id[killer];
                 // if needed, initialize this player's bookkeeping
                 if (players[killer_index] === undefined) {
                     parsed_info.kill_streaks_log.push([]);

@@ -446,12 +446,6 @@ module.exports = function aggregator(matches, fields, existing) {
                 standardAgg(key, p.parsedPlayer.pings ? (p.parsedPlayer.pings[0] || 0) : undefined, m);
             }
         },
-        "pick_order": {
-            type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.pick_order, m);
-            }
-        },
         "throw": {
             type: "parsed",
             agg: function(key, m, p) {

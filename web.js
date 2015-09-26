@@ -38,11 +38,9 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(id, done) {
     db.select().from('players').where({
         account_id: id
-    }).then(function(rows) {
+    }).asCallback(function(err, rows) {
         redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
-        done(!rows.length, rows[0]);
-    }).catch(function(err) {
-        done(err);
+        done(err, rows[0]);
     });
 });
 passport.use(new SteamStrategy({
@@ -54,18 +52,17 @@ passport.use(new SteamStrategy({
     var insert = profile._json;
     insert.account_id = steam32;
     insert.last_visited = new Date();
+    //TODO refactor to queries.insertplayer
     db('players').columnInfo().then(function(info) {
-        for (var key in insert){
-            if (!(key in info)){
+        for (var key in insert) {
+            if (!(key in info)) {
                 //TODO log something about missing column
                 delete insert[key];
             }
         }
         //TODO implement upsert
-        db.insert(insert).into('players').then(function() {
-            done(null, insert);
-        }).catch(function(err) {
-            done(err);
+        db.insert(insert).into('players').asCallback(function(err) {
+            return done(err, insert);
         });
     });
 }));

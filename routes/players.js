@@ -81,7 +81,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
         "purchase_gem": 1,
         "purchase_rapier": 1,
         "pings": 1,
-        "pick_order": 1,
         "throw": 1,
         "comeback": 1,
         "stomp": 1,

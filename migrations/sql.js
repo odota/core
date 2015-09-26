@@ -11,10 +11,10 @@ MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
     }
-    var cursor = db.collection('matches').find();
-    var migrate = processMatch;
-    //var cursor = db.collection('players').find();
-    //var migrate = processPlayer;
+    //var cursor = db.collection('matches').find();
+    //var migrate = processMatch;
+    var cursor = db.collection('players').find();
+    var migrate = processPlayer;
     cursor.nextObject(processItem);
 
     function processItem(err, item) {
@@ -28,70 +28,67 @@ MongoClient.connect(url, function(err, db) {
             if (err) {
                 throw err;
             }
-            cursor.nextObject(processItem);
+            process.nextTick(function() {
+                cursor.nextObject(processItem);
+            });
         });
     }
 
     function processMatch(m, cb) {
-        process.nextTick(function() {
-            pg('matches').columnInfo().then(function(info) {
-                var row = {};
-                for (var key in info) {
-                    if (key in m) {
-                        row[key] = m[key];
-                    }
-                    else if (m.parsed_data && key in m.parsed_data) {
-                        row[key] = m.parsed_data[key];
-                    }
-                    else {
-                        row[key] = null;
-                    }
-                    if (typeof row[key] === "object" && row[key]) {
-                        row[key] = JSON.stringify(row[key]);
-                    }
+        pg('matches').columnInfo().then(function(info) {
+            var row = {};
+            for (var key in info) {
+                if (key in m) {
+                    row[key] = m[key];
                 }
-                pg.insert(row).into('matches').then(function() {
-                    async.each(m.players, function(pm, cb) {
-                        var parseSlot = pm.player_slot % (128 - 5);
-                        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-                        pg('player_matches').columnInfo().then(function(info) {
-                            var row = {
-                                match_id: m.match_id
-                            };
-                            for (var key in info) {
-                                if (key === "gold_t") {
-                                    row.gold_t = pp ? pp.gold : null;
-                                }
-                                else if (key === "xp_t") {
-                                    row.gold_t = pp ? pp.xp : null;
-                                }
-                                else if (key === "lh_t") {
-                                    row.gold_t = pp ? pp.lh : null;
-                                }
-                                else if (key === "killed") {
-                                    row.gold_t = pp ? pp.kills : null;
-                                }
-                                else if (key in pm) {
-                                    row[key] = pm[key];
-                                }
-                                else if (pp && key in pp) {
-                                    row[key] = pp[key];
-                                }
-                                if (typeof row[key] === "object" && row[key]) {
-                                    row[key] = JSON.stringify(row[key]);
-                                }
+                else if (m.parsed_data && key in m.parsed_data) {
+                    row[key] = m.parsed_data[key];
+                }
+                else {
+                    row[key] = null;
+                }
+                if (typeof row[key] === "object" && row[key]) {
+                    row[key] = JSON.stringify(row[key]);
+                }
+            }
+            pg.insert(row).into('matches').asCallback(function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                async.each(m.players, function(pm, cb) {
+                    var parseSlot = pm.player_slot % (128 - 5);
+                    var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
+                    pg('player_matches').columnInfo().then(function(info) {
+                        var row = {
+                            match_id: m.match_id
+                        };
+                        for (var key in info) {
+                            if (key === "gold_t") {
+                                row.gold_t = pp ? pp.gold : null;
                             }
-                            pg.insert(row).into('player_matches').then(function() {
-                                cb(null);
-                            }).catch(function(err) {
-                                cb(err);
-                            });
-                        });
-                    }, function(err) {
-                        //next doc
-                        cb(err);
+                            else if (key === "xp_t") {
+                                row.gold_t = pp ? pp.xp : null;
+                            }
+                            else if (key === "lh_t") {
+                                row.gold_t = pp ? pp.lh : null;
+                            }
+                            else if (key === "killed") {
+                                row.gold_t = pp ? pp.kills : null;
+                            }
+                            else if (key in pm) {
+                                row[key] = pm[key];
+                            }
+                            else if (pp && key in pp) {
+                                row[key] = pp[key];
+                            }
+                            if (typeof row[key] === "object" && row[key]) {
+                                row[key] = JSON.stringify(row[key]);
+                            }
+                        }
+                        pg.insert(row).into('player_matches').asCallback(cb);
                     });
-                }).catch(function(err) {
+                }, function(err) {
+                    //next doc
                     cb(err);
                 });
             });
@@ -99,25 +96,37 @@ MongoClient.connect(url, function(err, db) {
     }
 
     function processPlayer(p, cb) {
-        process.nextTick(function() {
-            pg('players').columnInfo().then(function(info) {
-                var row = {};
-                for (var key in info) {
-                    row[key] = p[key];
+        pg('players').columnInfo().then(function(info) {
+            var row = {};
+            for (var key in info) {
+                row[key] = p[key];
+            }
+            pg.insert(row).into('players').asCallback(function(err) {
+                if (err) {
+                    return cb(err);
                 }
-                pg.insert(row).into('players').then(function() {
-                    //insert to player_ratings
-                    async.each(p.ratings, function(r, cb) {
-                        pg.insert(r).into('player_ratings').then(function() {
-                            cb(null);
-                        }).catch(function(err) {
-                            cb(err);
-                        });
-                    }, function(err) {
-                        //next doc
-                        cb(err);
+                //insert to player_ratings
+                async.each(p.ratings, function(r, cb) {
+                    pg('player_ratings').columnInfo().then(function(info) {
+                        var row = {
+                            account_id: p.account_id
+                        };
+                        for (var key in info) {
+                            if (key === "solo_competitive_rank") {
+                                row[key] = r.soloCompetitiveRank;
+                            }
+                            else if (key === "competitive_rank") {
+                                row[key] = r.competitiveRank;
+                            }
+                            else if (key in r) {
+                                row[key] = r[key];
+                            }
+                            row[key] = r[key];
+                        }
+                        pg.insert(row).into('player_ratings').asCallback(cb);
                     });
-                }).catch(function(err) {
+                }, function(err) {
+                    //next doc
                     cb(err);
                 });
             });
@@ -127,16 +136,18 @@ MongoClient.connect(url, function(err, db) {
 //MIGRATIONS
 //TODO do the radiant gold adv/xp adv migration while we're at it
 //TODO CODECHANGE
-//rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t)
-//rename parsed_data.players.kills -> killed
-//remove hero_log, pick order data
-//remove parsed_data.players.hero_id (nick was using?)
+//rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
+//rename parsed_data.players.kills -> killed, views, compute
+//remove pick_order, views
 //last_summaries_update --remove code refs
 //join_date --remove code refs
 //rewrite advquery/fillplayerdata to select from player_matches then make separate query for played_with/played_against
 //update aggregator to not ref parsedPlayer
 //update views to not ref parsedPlayer
 //stringify json pre-insert
+//change player rating fields from camelcase to snake case
+//write queries to handle all dbops
+//when inserting player_match select by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)
 //TODO FILES
 //pass a single db/redis reference around
 //test/test.js
@@ -160,4 +171,3 @@ MongoClient.connect(url, function(err, db) {
 //queries.js
 //TODO
 //UPSERT not supported until psql 9.5
-//when inserting player_match lookup by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)

@@ -101,7 +101,6 @@ CREATE TABLE player_matches (
       xp_t JSONB,
       obs_log JSONB,
       sen_log JSONB,
-      --hero_log JSONB, --can we remove along with pick order?
       purchase_log JSONB,
       kills_log JSONB,
       buyback_log JSONB,
@@ -131,11 +130,11 @@ CREATE TABLE player_matches (
 );
 
 CREATE TABLE player_ratings (
-  PRIMARY KEY(match_id, account_id),
-  match_id integer,
+  PRIMARY KEY(account_id, match_id),
   account_id integer,
-  soloCompetitiveRank integer,
-  competitiveRank integer, 
+  match_id integer,
+  solo_competitive_rank integer,
+  competitive_rank integer, 
   time timestamp with time zone
 );
 
@@ -143,3 +142,4 @@ CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
 CREATE INDEX on players(cheese);
+CREATE INDEX on player_ratings(account_id, time);
