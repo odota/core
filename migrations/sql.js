@@ -22,7 +22,7 @@ MongoClient.connect(url, function(err, db) {
             throw err;
         }
         if (!item) {
-            return; // All done!
+            process.exit(0); // All done!
         }
         migrate(item, function(err) {
             if (err) {
@@ -45,6 +45,9 @@ MongoClient.connect(url, function(err, db) {
                     }
                     else {
                         row[key] = null;
+                    }
+                    if (typeof row[key] === "object" && row[key]) {
+                        row[key] = JSON.stringify(row[key]);
                     }
                 }
                 pg.insert(row).into('matches').then(function() {
@@ -73,6 +76,9 @@ MongoClient.connect(url, function(err, db) {
                                 }
                                 else if (pp && key in pp) {
                                     row[key] = pp[key];
+                                }
+                                if (typeof row[key] === "object" && row[key]) {
+                                    row[key] = JSON.stringify(row[key]);
                                 }
                             }
                             pg.insert(row).into('player_matches').then(function() {
@@ -130,6 +136,7 @@ MongoClient.connect(url, function(err, db) {
 //rewrite advquery/fillplayerdata to select from player_matches then make separate query for played_with/played_against
 //update aggregator to not ref parsedPlayer
 //update views to not ref parsedPlayer
+//stringify json pre-insert
 //TODO FILES
 //pass a single db/redis reference around
 //test/test.js
