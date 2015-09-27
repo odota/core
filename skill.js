@@ -55,7 +55,7 @@ function getPageData(start, options, cb) {
         }
         //data is in data.result.matches
         var matches = data.result.matches;
-        async.each(matches, function(m, cb) {
+        async.eachSeries(matches, function(m, cb) {
             var data = {
                 match_id: m.match_id,
                 players: m.players,
