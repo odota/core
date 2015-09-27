@@ -118,7 +118,7 @@ Developer's Guide
             * Used to process API calls created by `updateNames`.
     * `scanner`: Reads the Steam sequential API to find the latest matches to add/parse.
         * Runs `buildSets` prior to start to ensure we have the latest trackedPlayers so we don't leak matches.
-        * If a match is found passing the criteria for parse, `operations.insertMatch` is called.
+        * If a match is found passing the criteria for parse, `insertMatch` is called.
         * If `match.parse_status` is explicitly set to 0, the match is queued for parse.
     * `proxy`: A standalone HTTP server that simply proxies all requests to the Steam API.
         * The host is functionally equivalent to `api.steampowered.com`.
@@ -133,7 +133,7 @@ Developer's Guide
         * By querying for a player's most recent 500 matches (API limit) with each hero, get most/all of a player's matches.
 * Parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
-    * Request: Requests are processed from the Request page.  This reads the match data from the steam API, then uses `operations.insertMatchProgress` in order to force waiting for the parse to finish.
+    * Request: Requests are processed from the Request page.  This reads the match data from the steam API, then uses `insertMatchProgress` in order to force waiting for the parse to finish.
         * The client uses AJAX to poll the server.  When an error occurs or the job finishes, it either displays the error or redirects to the match page.
         * Requests are set to only try once.
 * Player/match caching: 

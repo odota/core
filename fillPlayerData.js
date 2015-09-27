@@ -1,4 +1,3 @@
-var advQuery = require('./advquery');
 var utility = require('./utility');
 var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
@@ -13,6 +12,14 @@ var zlib = require('zlib');
 var preprocessQuery = require('./preprocessQuery');
 var filter = require('./filter');
 var aggregator = require('./aggregator');
+var compute = require('./compute');
+var computeMatchData = compute.computeMatchData;
+var isRadiant = utility.isRadiant;
+var isSignificant = utility.isSignificant;
+var async = require('async');
+var aggregator = require('./aggregator');
+var filter = require('./filter');
+
 module.exports = function fillPlayerData(account_id, options, cb) {
     //options.info, the tab the player is on
     //options.query, the query object to use in advQuery
@@ -209,4 +216,127 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }
         });
     });
+
+    function advQuery(query, cb) {
+        //mongo_select
+        //js_select
+        //js_agg, aggregations to do with js
+        //limit, pass to mongodb, cap the number of matches to return in mongo
+        //skip, pass to mongodb
+        //sort, pass to mongodb
+        //js_limit, the number of results to return in a page, filtered by js
+        //js_start, the position to start a page at, selected by js
+        //js_sort, post-process sorter that processes with js
+        //build the monk hash
+        var monk_options = {
+            limit: query.limit,
+            skip: query.skip,
+            sort: query.sort,
+            //use either the passed projection or default to not getting parsed_data since we add it later
+            fields: query.project || {
+                parsed_data: 0
+            }
+        };
+        //console.log(query);
+        console.time('querying database');
+        //console.log(options);
+        db.matches.find(query.mongo_select, monk_options, function(err, matches) {
+            if (err) {
+                return cb(err);
+            }
+            console.timeEnd('querying database');
+            console.time('expanding matches');
+            var expanded_matches = [];
+            for (var i = 0; i < matches.length; i++) {
+                var m = matches[i];
+                if (m.players) {
+                    //get all_players and primary player
+                    m.all_players = m.players.slice(0);
+                    //console.log(m.players.length, m.all_players.length);
+                    //use the mongodb select criteria to filter the player list
+                    //create a new match with this primary player
+                    //all players for tournament games, otherwise player matching select criteria
+                    for (var j = 0; j < m.players.length; j++) {
+                        var p = m.players[j];
+                        var pass = true;
+                        //check mongo query, if starting with player, this means we select a single player, otherwise select all players
+                        for (var key in query.mongo_select) {
+                            var split = key.split(".");
+                            //break apart the query and determine whether we are trying to get a single player for this match
+                            if (split[0] === "players" && p[split[1]] !== query.mongo_select[key]) {
+                                //if the query starts with "players" and the property of this player doesn't match, don't add it to expanded matches
+                                pass = false;
+                            }
+                        }
+                        if (pass) {
+                            var match_copy = JSON.parse(JSON.stringify(m));
+                            match_copy.players = [p];
+                            expanded_matches.push(match_copy);
+                        }
+                    }
+                }
+            }
+            matches = expanded_matches;
+            console.timeEnd('expanding matches');
+            console.time("retrieving parsed data");
+            getParsedPlayerData(matches, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                console.timeEnd("retrieving parsed data");
+                console.time('computing aggregations');
+                matches.forEach(function(m) {
+                    //post-process the match to get additional stats
+                    computeMatchData(m);
+                    m.players.forEach(function(player, i) {
+                        player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+                    });
+                });
+                var filtered = filter(matches, query.js_select);
+                //filtered = sort(filtered, options.js_sort);
+                // console.log('aggData: options.js_agg = %s', options.js_agg);
+                var aggData = aggregator(filtered, query.js_agg);
+                var result = {
+                    aggData: aggData,
+                    page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+                    data: filtered,
+                    unfiltered: matches
+                };
+                console.timeEnd('computing aggregations');
+                cb(err, result);
+            });
+        });
+    }
+
+    function getParsedPlayerData(matches, cb) {
+        //the following does a query for each parsed match in the set, so could be a lot of queries
+        //since we might want a different position on each query, we need to make them individually
+        async.each(matches, function(m, cb) {
+            var player = m.players[0];
+            var parseSlot = player.player_slot % (128 - 5);
+            db.matches.findOne({
+                match_id: m.match_id
+            }, {
+                fields: {
+                    "parsed_data": 1,
+                    "parsed_data.version": 1,
+                    "parsed_data.chat": 1,
+                    "parsed_data.radiant_gold_adv": 1,
+                    "parsed_data.radiant_xp_adv": 1,
+                    "parsed_data.players": {
+                        $slice: [parseSlot, 1]
+                    },
+                    match_id: 1
+                }
+            }, function(err, doc) {
+                if (err) {
+                    return cb(err);
+                }
+                m.parsed_data = doc.parsed_data;
+                cb(err);
+            });
+        }, function(err) {
+            cb(err);
+        });
+    }
 };

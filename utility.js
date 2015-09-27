@@ -450,6 +450,18 @@ function cleanup(queue, kue, type) {
         });
     }
 }
+
+function queueReq(queue, type, payload, cb) {
+    var job = generateJob(type, payload);
+    var kuejob = queue.create(job.type, job).attempts(payload.attempts || 15).backoff({
+        delay: 60 * 1000,
+        type: 'exponential'
+    }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
+        console.log("[KUE] created jobid: %s", kuejob.id);
+        cb(err, kuejob);
+    });
+}
+
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -467,5 +479,6 @@ module.exports = {
     max: max,
     min: min,
     invokeInterval: invokeInterval,
-    cleanup: cleanup
+    cleanup: cleanup,
+    queueReq: queueReq
 };

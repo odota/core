@@ -1,7 +1,8 @@
 var utility = require('./utility');
 var async = require('async');
 var constants = require("./constants.json");
-var updatePlayerCaches = require('./updatePlayerCaches');
+var db = require('./db');
+var insertMatch = require('./queries').insertMatch;
 var results = {};
 var added = {};
 var config = require('./config.js');
@@ -62,7 +63,7 @@ function getPageData(start, options, cb) {
                 skill: options.skill
             };
             //results[m.match_id] = 1;
-            updatePlayerCaches({
+            insertMatch(db, {
                 match_id: data.match_id,
                 skill: data.skill
             }, {

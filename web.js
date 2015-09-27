@@ -3,10 +3,11 @@ var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
 var request = require('request');
-var queueReq = require('./operations').queueReq;
+var queueReq = require('./queries').queueReq;
 var r = require('./redis');
 var redis = r.client;
 var kue = r.kue;
+var queue = r.jobs;
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
@@ -30,7 +31,7 @@ var api_key = config.STEAM_API_KEY.split(",")[0];
 var db = require('./db');
 var SteamStrategy = require('passport-steam').Strategy;
 var host = config.ROOT_URL;
-var convert64to32 = utility.convert64to32;
+var queries = require('./queries');
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -47,22 +48,11 @@ passport.use(new SteamStrategy({
     returnURL: host + '/return',
     realm: host,
     apiKey: api_key
-}, function initializeUser(identifier, profile, done) {
-    var steam32 = Number(convert64to32(identifier.substr(identifier.lastIndexOf("/") + 1)));
+}, function initializeUser(identifier, profile, cb) {
     var insert = profile._json;
-    //TODO refactor to queries.insertplayer
-    db('players').columnInfo().then(function(info) {
-        var row = {
-            account_id: steam32,
-            last_login: new Date()
-        };
-        for (var key in info) {
-            row[key] = insert[key];
-        }
-        //TODO implement upsert
-        db.insert(row).into('players').asCallback(function(err) {
-            return done(err, row);
-        });
+    insert.last_login = new Date();
+    queries.insertPlayer(db, insert, function(err, player){
+        return cb(err, player);
     });
 }));
 //APP config
@@ -188,7 +178,7 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res, next) {
     //TODO buildSets since a player just logged in and might need to be retracked
-    queueReq("fullhistory", req.user, function(err, job) {
+    queueReq(queue, "fullhistory", req.user, function(err, job) {
         if (err) {
             return next(err);
         }

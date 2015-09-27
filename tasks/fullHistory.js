@@ -1,11 +1,12 @@
 var db = require('../db');
 var async = require('async');
-var operations = require('../operations');
-var queueReq = operations.queueReq;
+var queue = require('../redis').jobs;
+var queueReq = require('../queries').queueReq;
 /**
  * Get all players who have visited and don't have full history, and queue for full history
  **/
-module.exports = function fullhistory(cb, short) {
+module.exports = function fullhistory(cb) {
+    //TODO rewrite this
     db.players.find({
         last_visited: {
             $ne: null
@@ -17,7 +18,7 @@ module.exports = function fullhistory(cb, short) {
         }
         async.eachSeries(players, function(player, cb) {
             player.priority = "low";
-            queueReq(short ? "shorthistory" : "fullhistory", player, function(err, job) {
+            queueReq(queue, "fullhistory", player, function(err, job) {
                 cb(err);
             });
         }, function(err) {

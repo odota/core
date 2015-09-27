@@ -1,14 +1,15 @@
 var utility = require('./utility');
 var config = require('./config');
 var getData = utility.getData;
+var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
+var queue = r.jobs;
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var operations = require('./operations');
-var insertMatch = operations.insertMatch;
-var queueReq = operations.queueReq;
+var insertMatch = require('./queries').insertMatch;
+var queueReq = utility.queueReq;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var trackedPlayers;
@@ -84,7 +85,7 @@ function scanApi(seq_num) {
                     }
                     if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
-                        queueReq("mmr", {
+                        queueReq(queue, "mmr", {
                             match_id: match.match_id,
                             account_id: p.account_id,
                             url: ratingPlayers[p.account_id]
@@ -96,7 +97,7 @@ function scanApi(seq_num) {
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-                        insertMatch(match, close);
+                        insertMatch(db, match, {type: "api"}, close);
                     }
                     else {
                         close(err);

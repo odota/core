@@ -1,11 +1,9 @@
 var express = require('express');
 var players = express.Router();
 var async = require('async');
-var config = require('../config');
 var constants = require('../constants.json');
 var queries = require("../queries");
 var fillPlayerData = require('../fillPlayerData');
-var db = require('../db');
 players.get('/:account_id/:info?', function(req, res, next) {
     var playerPages = {
         "index": {
@@ -223,54 +221,6 @@ players.get('/:account_id/:info?', function(req, res, next) {
                     render();
                 });
             }
-            /*
-            else if (info === "rating") {
-                console.time("computing ratings");
-                db.players.find({
-                    "ratings": {
-                        $ne: null
-                    }
-                }, function(err, docs) {
-                    if (err) {
-                        return next(err);
-                    }
-                    docs.forEach(function(d) {
-                        d.soloCompetitiveRank = d.ratings[d.ratings.length - 1].soloCompetitiveRank;
-                        d.competitiveRank = d.ratings[d.ratings.length - 1].competitiveRank;
-                        d.time = d.ratings[d.ratings.length - 1].time;
-                    });
-                    var soloRatings = docs.filter(function(d) {
-                        return d.soloCompetitiveRank;
-                    });
-                    soloRatings.sort(function(a, b) {
-                        return b.soloCompetitiveRank - a.soloCompetitiveRank;
-                    });
-                    for (var i = 0; i < soloRatings.length; i++) {
-                        if (player.soloRating > soloRatings[i].soloCompetitiveRank) {
-                            break;
-                        }
-                    }
-                    player.soloRank = i;
-                    player.soloRatingsLength = soloRatings.length;
-                    var partyRatings = docs.filter(function(d) {
-                        return d.competitiveRank;
-                    });
-                    partyRatings.sort(function(a, b) {
-                        return b.competitiveRank - a.competitiveRank;
-                    });
-                    for (var i = 0; i < partyRatings.length; i++) {
-                        if (player.partyRating > partyRatings[i].competitiveRank) {
-                            break;
-                        }
-                    }
-                    player.partyRank = i;
-                    player.partyRatingsLength = partyRatings.length;
-                    //TODO cache ratings results in redis
-                    console.timeEnd("computing ratings");
-                    render();
-                });
-            }
-            */
             else {
                 render();
             }

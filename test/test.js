@@ -21,8 +21,8 @@ var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 var request = require('request');
 var updateNames = require('../tasks/updateNames');
-var operations = require('../operations');
-var queueReq = operations.queueReq;
+var queueReq = require('../queries').queueReq;
+var queue = r.jobs;
 var buildSets = require("../buildSets");
 var supertest = require('supertest');
 var wait = 90000;
@@ -166,7 +166,7 @@ buildSets(cb);
 describe("worker", function() {
     this.timeout(wait);
     it('process details request', function(done) {
-        queueReq("api_details", {
+        queueReq(queue, "api_details", {
             match_id: 870061127
         }, function(err, job) {
             assert(!err);
@@ -177,7 +177,7 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
-        queueReq("mmr", {
+        queueReq(queue, "mmr", {
             match_id: 870061127,
             account_id: 88367253,
             url: "http://localhost:5100/?account_id=88367253"
@@ -190,7 +190,7 @@ describe("worker", function() {
         });
     });
     it('process summaries request', function(done) {
-        queueReq("api_summaries", {
+        queueReq(queue, "api_summaries", {
             players: [{
                 account_id: 88367253
             }]
@@ -203,7 +203,7 @@ describe("worker", function() {
         });
     });
     it('process fullhistory request', function(done) {
-        queueReq("fullhistory", {
+        queueReq(queue, "fullhistory", {
             account_id: 88367253
         }, function(err, job) {
             assert(!err);
@@ -247,7 +247,7 @@ describe("parser", function() {
             match_id: 1781962623,
             start_time: moment().format('X'),
         };
-        queueReq("parse", job, function(err, job) {
+        queueReq(queue, "parse", job, function(err, job) {
             assert(job && !err);
             job.parser_url = "http://localhost:5200?key=";
             job.on("complete", function() {
