@@ -117,11 +117,7 @@ function scanApi(seq_num) {
                 else {
                     redis.set("match_seq_num", next_seq_num);
                     //completed inserting matches
-                    //wait 100ms for each match less than 100
-                    var delay = (100 - resp.length) * 100;
-                    setTimeout(function() {
-                        scanApi(next_seq_num);
-                    }, delay);
+                    return scanApi(next_seq_num);
                 }
             });
         });
