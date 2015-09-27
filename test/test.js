@@ -21,7 +21,7 @@ var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 var request = require('request');
 var updateNames = require('../tasks/updateNames');
-var queueReq = require('../queries').queueReq;
+var queueReq = require('../utility').queueReq;
 var queue = r.queue;
 var buildSets = require("../buildSets");
 var supertest = require('supertest');
@@ -109,7 +109,7 @@ before(function(done) {
     nock.enableNetConnect();
     async.series([
             function(cb) {
-                /*
+            /*
             console.log("wiping mongodb");
             connect(process.env.MONGO_URL, function(err, db) {
                 assert(!err);
@@ -126,11 +126,11 @@ before(function(done) {
             });
             },
              function(cb) {
-                 console.log('building sets');
-buildSets(cb);
+            console.log('building sets');
+            buildSets(db, redis, cb);
             },
             function(cb) {
-                /*
+            /*
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
                 db.matches.insert(m, function(err) {
@@ -144,7 +144,7 @@ buildSets(cb);
             cb();
             },
             function(cb) {
-                /*
+            /*
             console.log("loading players");
             //set visited date on first player
             testdata.players[0].last_visited = new Date();

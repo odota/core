@@ -647,13 +647,15 @@ function runParse(data, cb) {
             var xptotal = 0;
             parsed_data.players.forEach(function(p, j) {
                 //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                if (j < 5) {
+                if (j < parsed_data.players.length / 2) {
                     goldtotal += p.gold[i];
                     xptotal += p.xp[i];
+                    p.player_slot = j;
                 }
                 else {
                     xptotal -= p.xp[i];
                     goldtotal -= p.gold[i];
+                    p.player_slot = (128 - 5) + j;
                 }
             });
             parsed_data.radiant_gold_adv.push(goldtotal);

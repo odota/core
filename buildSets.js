@@ -1,12 +1,9 @@
 var async = require('async');
-var db = require('./db');
-var r = require('./redis');
-var redis = r.client;
 var config = require('./config');
 var retrieverConfig = config.RETRIEVER_HOST;
 var parserConfig = config.PARSER_HOST;
 var secret = config.RETRIEVER_SECRET;
-module.exports = function buildSets(cb) {
+module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");
     async.parallel({
         //players in this set have their matches parsed

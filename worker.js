@@ -20,11 +20,16 @@ var async = require('async');
 var insertPlayer = queries.insertPlayer;
 var insertMatch = queries.insertMatch;
 var insertMatchProgress = queries.insertMatchProgress;
-var db = require('./db');
 console.log("[WORKER] starting worker");
-invokeInterval(buildSets, 60 * 1000);
-invokeInterval(serviceDiscovery.queryRetrievers, 60 * 1000);
-invokeInterval(getMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 1); //Sample every 3 minutes
+invokeInterval(function(cb) {
+    buildSets(db, redis, cb);
+}, 60 * 1000);
+invokeInterval(function(cb) {
+    serviceDiscovery.queryRetrievers(redis, cb);
+}, 60 * 1000);
+invokeInterval(function(cb) {
+    getMMStats(redis, cb);
+}, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 60000); //Sample every 3 minutes
 queue.watchStuckJobs();
 //process requests (api call, waits for parse to complete)
 queue.process('request', numCPUs, processApi);

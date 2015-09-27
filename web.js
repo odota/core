@@ -32,6 +32,7 @@ var db = require('./db');
 var SteamStrategy = require('passport-steam').Strategy;
 var host = config.ROOT_URL;
 var queries = require('./queries');
+var buildSets = require('./buildSets');
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -51,7 +52,7 @@ passport.use(new SteamStrategy({
 }, function initializeUser(identifier, profile, cb) {
     var insert = profile._json;
     insert.last_login = new Date();
-    queries.insertPlayer(db, insert, function(err, player){
+    queries.insertPlayer(db, insert, function(err, player) {
         return cb(err, player);
     });
 }));
@@ -157,7 +158,7 @@ app.route('/request').get(function(req, res) {
     });
 });
 app.route('/status').get(function(req, res, next) {
-    status(function(err, result) {
+    status(db, redis, queue, function(err, result) {
         if (err) {
             return next(err);
         }
@@ -177,12 +178,16 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res, next) {
-    //TODO buildSets since a player just logged in and might need to be retracked
-    queueReq(queue, "fullhistory", req.user, function(err, job) {
-        if (err) {
+    buildSets(db, redis, function(err) {
+        if (err){
             return next(err);
         }
-        res.redirect('/players/' + req.user.account_id);
+        queueReq(queue, "fullhistory", req.user, function(err, job) {
+            if (err) {
+                return next(err);
+            }
+            res.redirect('/players/' + req.user.account_id);
+        });
     });
 });
 app.route('/logout').get(function(req, res) {
@@ -190,11 +195,11 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-app.use('/matches', require('./routes/matches'));
-app.use('/players', require('./routes/players'));
+app.use('/matches', require('./routes/matches')(db, redis));
+app.use('/players', require('./routes/players')(db, redis));
 app.use('/api', require('./routes/api'));
-app.use('/', require('./routes/donate'));
-app.use('/', require('./routes/mmstats')(r));
+app.use('/', require('./routes/donate')(db, redis));
+app.use('/', require('./routes/mmstats')(redis));
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
         form: {

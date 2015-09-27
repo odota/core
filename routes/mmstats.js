@@ -2,8 +2,7 @@ var express = require('express');
 var mmstats = express.Router();
 var constants = require('../constants');
 var async = require('async');
-module.exports = function(r) {
-    var redis = r.client;
+module.exports = function(redis) {
     var pageCalls = createCalls(-1);
     var apiCalls = createCalls(0);
     mmstats.route('/mmstats').get(function(req, res, next) {

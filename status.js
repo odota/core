@@ -1,9 +1,7 @@
 var async = require('async');
-var db = require('./db');
-var r = require('./redis');
-var redis = r.client;
-var queue = r.queue;
-module.exports = function getStatus(cb) {
+module.exports = function getStatus(db, r, cb) {
+    var redis = r.client;
+    var queue = r.queue;
     console.time('status');
     async.series({
         matches: function(cb) {
@@ -97,7 +95,7 @@ module.exports = function getStatus(cb) {
         kue: function(cb) {
             var counts = {};
             queue.types(function(err, data) {
-                if (err){
+                if (err) {
                     return cb(err);
                 }
                 async.each(data, function(d, cb) {

@@ -15,7 +15,7 @@ var insertMatch = require('./queries').insertMatch;
 start();
 
 function start() {
-    buildSets(function() {
+    buildSets(db, redis, function() {
         redis.get("parsers", function(err, result) {
             if (err || !result) {
                 console.log('failed to get parsers from redis, retrying');

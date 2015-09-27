@@ -1,11 +1,9 @@
 var utility = require('./utility');
 var getData = utility.getData;
-var r = require('./redis');
-var redis = r.client;
 var async = require('async');
 //get list of parsers/retrievers from redis/service discovery (currently redis)
 //visit each to pick up remote data such as bots, rating players, parser capacity and write that data to redis
-function queryRetrievers(cb) {
+function queryRetrievers(redis, cb) {
     var r = {};
     var b = [];
     redis.get("retrievers", function(err, ps) {
@@ -37,7 +35,7 @@ function queryRetrievers(cb) {
     });
 }
 
-function queryParsers(cb) {
+function queryParsers(redis, cb) {
     var parser_urls = [];
     redis.get("parsers", function(err, ps) {
         if (err || !ps) {

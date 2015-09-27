@@ -18,7 +18,7 @@ var ratingPlayers;
 start();
 
 function start() {
-    buildSets(function() {
+    buildSets(db, redis, function() {
         if (config.START_SEQ_NUM === "REDIS") {
             redis.get("match_seq_num", function(err, result) {
                 if (err || !result) {

@@ -9,19 +9,6 @@ var aggregator = require('./aggregator');
 var reduceMatch = utility.reduceMatch;
 var config = require('./config');
 
-function fillPlayerNames(db, players, cb) {
-    //we want
-    /*
-            "account_id": 1,
-            "last_visited": 1,
-            "personaname": 1,
-            "avatar": 1
-            */
-//join players with player table by account_id to find their names
-
-}
-
-
 function getSets(redis, cb) {
     async.parallel({
         "bots": function(cb) {
@@ -252,7 +239,6 @@ function insertPlayer(db, player, cb) {
 }
 module.exports = {
     getSets: getSets,
-    fillPlayerNames: fillPlayerNames,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
     insertMatchProgress: insertMatchProgress
