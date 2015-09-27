@@ -6,7 +6,7 @@ var results = {};
 var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
-var parallelism = Math.min(10, api_keys.length);
+var parallelism = Math.min(4, api_keys.length);
 //TODO use cluster to spawn a separate worker for each skill level?
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
@@ -20,6 +20,7 @@ for (var i = 0; i < heroes.length; i++) {
     }
 }
 //permute = [{skill:1,hero_id:1}];
+console.log(permute.length);
 scanSkill();
 
 function scanSkill() {
@@ -48,7 +49,9 @@ function getPageData(start, options, cb) {
             return cb(err);
         }
         if (!data || !data.result || !data.result.matches) {
-            return getPageData(start, options, cb);
+            return process.nextTick(function(){
+                getPageData(start, options, cb);
+            });
         }
         //data is in data.result.matches
         var matches = data.result.matches;
@@ -75,7 +78,7 @@ function getPageData(start, options, cb) {
                 return cb(err);
             });
         }, function(err) {
-            //console.log("waiting for insert: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
+            console.log("total results: %s, added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);

@@ -29,7 +29,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             //we didn't add skill data because we didn't have this match in db, return immediately
             return cb(err);
         }
-        async.each(match.players || options.players, function(p, cb) {
+        async.eachSeries(match.players || options.players, function(p, cb) {
                 //full cache
                 /*
                 var match_copy = JSON.parse(JSON.stringify(match));
@@ -102,11 +102,11 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
-                    return insertPlayers(cb);
-                    //return cb(err);
+                    return insertPlayer(cb);
+                    //return cb();
                 });
 
-                function insertPlayers(cb) {
+                function insertPlayer(cb) {
                     //insert all players into db to ensure they exist and we can fetch their personaname later
                     db.players.update({
                         account_id: p.account_id
