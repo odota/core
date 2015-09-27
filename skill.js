@@ -51,7 +51,9 @@ function getPageData(start, options, cb) {
             return cb(err);
         }
         if (!data || !data.result || !data.result.matches) {
-            return getPageData(start, options, cb);
+            return process.nextTick(function(){
+                getPageData(start, options, cb);
+            });
         }
         //data is in data.result.matches
         var matches = data.result.matches;
