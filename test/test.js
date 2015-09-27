@@ -12,8 +12,6 @@ var async = require('async');
 var db = require('../db');
 var r = require('../redis');
 var redis = r.client;
-var kue = r.kue;
-var jobs = r.jobs;
 var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
@@ -21,11 +19,11 @@ var assert = require('assert');
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
-var fs = require('fs');
 var request = require('request');
 var updateNames = require('../tasks/updateNames');
 var operations = require('../operations');
 var queueReq = operations.queueReq;
+var buildSets = require("../buildSets");
 var supertest = require('supertest');
 var wait = 90000;
 //fake retriever response
@@ -111,6 +109,7 @@ before(function(done) {
     nock.enableNetConnect();
     async.series([
             function(cb) {
+                /*
             console.log("wiping mongodb");
             connect(process.env.MONGO_URL, function(err, db) {
                 assert(!err);
@@ -118,6 +117,7 @@ before(function(done) {
                     cb(err);
                 });
             });
+            */
             },
             function(cb) {
             console.log("wiping redis");
@@ -126,45 +126,11 @@ before(function(done) {
             });
             },
              function(cb) {
-            console.log("loading services into redis");
-            redis.set("bots", JSON.stringify([{
-                "steamID": "76561198174479859",
-                "attempts": 1,
-                "success": 1,
-                "friends": 0
-                }, {
-                "steamID": "76561198174456763",
-                "attempts": 0,
-                "success": 0,
-                "friends": 201
-                }, {
-                "steamID": "76561198174616549",
-                "attempts": 1,
-                "success": 1,
-                "friends": 250
-                }, {
-                "steamID": "76561198173905795",
-                "attempts": 0,
-                "success": 0,
-                "friends": 199
-                }, {
-                "steamID": "76561198152395299",
-                "attempts": 0,
-                "success": 0,
-                "friends": 10
-                }, {
-                "steamID": "76561198174715201",
-                "attempts": 2,
-                "success": 2,
-                "friends": 1
-                }]));
-            redis.set("ratingPlayers", JSON.stringify({}));
-            //TODO use functions to prefill these rather than hardcoding
-            redis.set("retrievers", JSON.stringify(["http://localhost:5100?key=null"]));
-            redis.set("parsers", JSON.stringify(["http://localhost:5200?key=null"]));
-            cb();
+                 console.log('building sets');
+buildSets(cb);
             },
             function(cb) {
+                /*
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
                 db.matches.insert(m, function(err) {
@@ -174,8 +140,11 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
+            */
+            cb();
             },
             function(cb) {
+                /*
             console.log("loading players");
             //set visited date on first player
             testdata.players[0].last_visited = new Date();
@@ -187,6 +156,8 @@ before(function(done) {
             }, function(err) {
                 cb(err);
             });
+            */
+            cb();
             }
         ], function(err) {
         done(err);
@@ -263,16 +234,17 @@ describe("parser", function() {
                 replaySalt: 1
             }
         });
-        done();
-    });
-    /*
-    it('parse replay (zipped download)', function(done) {
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
             return '/';
-        }).get('/').replyWithFile(200, replay_dir + '1151783218.dem.bz2');
+        }).get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
+        done();
+    });
+    //TODO do a test with zipped source 2 replay
+    //TODO define a list of file names/ids and run
+    it('parse replay', function(done) {
         var job = {
-            match_id: 1151783218,
+            match_id: 1781962623,
             start_time: moment().format('X'),
         };
         queueReq("parse", job, function(err, job) {
@@ -286,40 +258,6 @@ describe("parser", function() {
             });
         });
     });
-    //TODO use function to run a set of these
-    //TODO no longer support parse from fileName
-    //1v1, ardm, 6.84
-    it('parse replay (local)', function(done) {
-        var job = {
-            match_id: 1193091757,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "1193091757.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-        });
-    });
-    it('parse invalid file', function(done) {
-        //write invalid replay file
-        fs.writeFileSync(replay_dir + "invalid.dem", "asdf");
-        var job = {
-            match_id: 1,
-            start_time: moment().format('X'),
-            fileName: replay_dir + "invalid.dem"
-        };
-        queueReq("parse", job, function(err, job) {
-            assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("failed attempt", function() {
-                done();
-            });
-        });
-    });
-    */
 });
 describe("web", function() {
     //this.timeout(wait);

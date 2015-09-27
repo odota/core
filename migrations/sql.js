@@ -11,10 +11,18 @@ MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
     }
-    //var cursor = db.collection('matches').find();
-    //var migrate = processMatch;
-    var cursor = db.collection('players').find();
-    var migrate = processPlayer;
+    var args = process.argv.slice(2);
+    if (args[0] === "matches") {
+        var cursor = db.collection('matches').find();
+        var migrate = processMatch;
+    }
+    else if (args[0] === "players") {
+        var cursor = db.collection('players').find();
+        var migrate = processPlayer;
+    }
+    else {
+        throw "invalid option, choose matches or players";
+    }
     cursor.nextObject(processItem);
 
     function processItem(err, item) {
