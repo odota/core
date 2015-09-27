@@ -11,13 +11,6 @@ module.exports = function fullhistory(cb, short) {
             $ne: null
         },
         full_history_time: null
-    }, {
-        /*
-        sort: {
-            full_history_time: 1,
-            join_date: 1
-        }
-        */
     }, function(err, players) {
         if (err) {
             return cb(err);

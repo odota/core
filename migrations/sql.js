@@ -146,15 +146,13 @@ MongoClient.connect(url, function(err, db) {
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
 //rename parsed_data.players.kills -> killed, views, compute
 //rename last_visited -> last_login
-//remove pick_order, views
-//last_summaries_update --remove code refs
-//join_date --remove code refs
-//rewrite advquery/fillplayerdata to select from player_matches then make separate query for played_with/played_against
+//rewrite advquery/fillplayerdata to select from player_matches join with matches then make separate query for played_with/played_against
+//move operations to queries
 //update aggregator to not ref parsedPlayer
 //update views to not ref parsedPlayer
-//stringify json pre-insert
-//change player rating fields from camelcase to snake case
+//change player rating fields from camelcase to snake case (soloCompetitiveRank)
 //write queries to handle all dbops
+//stringify json pre-insert
 //when inserting player_match select by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)
 //TODO FILES
 //pass a single db/redis reference around

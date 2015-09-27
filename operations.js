@@ -69,7 +69,6 @@ function insertMatchProgress(match, job, cb) {
 
 function insertPlayer(player, cb) {
     var account_id = Number(convert64to32(player.steamid));
-    player.last_summaries_update = new Date();
     db.players.update({
         account_id: account_id
     }, {
