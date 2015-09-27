@@ -1,7 +1,8 @@
 var processFullHistory = require('./processFullHistory');
 var utility = require('./utility');
 var r = require('./redis');
-var jobs = r.jobs;
+var redis = r.client;
+var queue = r.queue;
 var kue = r.kue;
 var cluster = require('cluster');
 var config = require('./config');
@@ -18,10 +19,9 @@ var config = require('./config');
 var steam_hosts = config.STEAM_API_HOST.split(",");
 var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(10, api_keys.length);
-
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     console.log("[FULLHISTORY] starting master");
-    utility.cleanup(jobs, kue, "fullhistory");
+    utility.cleanup(queue, kue, "fullhistory");
     for (var i = 0; i < steam_hosts.length; i++) {
         if (true) {
             cluster.fork();
@@ -39,7 +39,7 @@ else {
 }
 
 function runWorker() {
-    jobs.process('fullhistory', processFullHistory);
+    queue.process('fullhistory', processFullHistory);
 }
 
 function processFullHistory(job, cb) {
@@ -96,7 +96,9 @@ function processFullHistory(job, cb) {
                             return cb(err);
                         }
                         var match = body.result;
-                        insertMatch(db, match, {type: "api"}, cb);
+                        insertMatch(db, redis, queue, match, {
+                            type: "api"
+                        }, cb);
                     });
                 }, function(err) {
                     if (err) {

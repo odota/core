@@ -194,6 +194,85 @@
     "2": "Parsed",
     "3": "Skipped"
   },
+  "match_pages": {
+    "index": {
+      "name": "Overview"
+    },
+    "performances": {
+      "name": "Performances"
+    },
+    "purchases": {
+      "name": "Purchases"
+    },
+    "farm": {
+      "name": "Farm"
+    },
+    "combat": {
+      "name": "Combat"
+    },
+    "graphs": {
+      "name": "Graphs"
+    },
+    "positions": {
+      "name": "Positions"
+    },
+    "objectives": {
+      "name": "Objectives"
+    },
+    "teamfights": {
+      "name": "Teamfights"
+    },
+    "actions": {
+      "name": "Actions"
+    },
+    "chat": {
+      "name": "Chat"
+    }
+  },
+  "player_pages": {
+    "index": {
+      "name": "Overview"
+    },
+    "matches": {
+      "name": "Matches"
+    },
+    "activity": {
+      "name": "Activity"
+    },
+    "histograms": {
+      "name": "Histograms"
+    },
+    "records": {
+      "name": "Records"
+    },
+    "counts": {
+      "name": "Counts"
+    },
+    "trends": {
+      "name": "Trends"
+    },
+    "sprees": {
+      "name": "Sprees"
+    },
+    "wardmap": {
+      "name": "Wardmap"
+    },
+    "items": {
+      "name": "Items"
+    },
+    "skills": {
+      "name": "Skills"
+    },
+    "wordcloud": {
+      "name": "Wordcloud"
+    },
+    "rating": {
+      "name": "Rating"
+    },
+    "compare": {
+      "name": "Compare"
+    }
+  },
   "untracked_msg": "<h3><strong>Missing matches?</strong></h1><br> Welcome back!! We stopped tracking your matches because we haven't seen you in a while. :( This is necessary for us to handle the ever increasing load. Your matches from now on will be tracked as long as you remain active.<br><small>This message will disappear upon relogging in.</small>",
   "api_msg": "Valve's WebAPI is currently delayed.  Your matches will be processed when the service resumes.",
   "tooltips": {
@@ -294,15 +373,15 @@
     "items_timing": "Mean time this item was built at",
     "items_build_pct": "Percentage of matches this item was built in",
     "items_win_pct": "Percentage of matches won where this item was built",
-    "skills_name":"Name of ability",
-    "skills_casts":"Number of times ability was cast",
-    "skills_hits":"Number of damage instances to heroes caused by skill",
-    "skills_hit_pct":"Number of hits divided by number of casts",
-    "last_played":"The last time a match was played with this player/hero",
+    "skills_name": "Name of ability",
+    "skills_casts": "Number of times ability was cast",
+    "skills_hits": "Number of damage instances to heroes caused by skill",
+    "skills_hit_pct": "Number of hits divided by number of casts",
+    "last_played": "The last time a match was played with this player/hero",
     "played_as": "Number of games played as this hero",
-    "played_with":"Number of games with this player/hero on the team",
-    "played_against":"Number of games with this player/hero on the opposing team",
-    "win_pct":"Win percentage with/against this player/hero"
+    "played_with": "Number of games with this player/hero on the team",
+    "played_against": "Number of games with this player/hero on the opposing team",
+    "win_pct": "Win percentage with/against this player/hero"
   },
   "anonymous_account_id": 4294967295,
   "lobby_type": {
@@ -485,7 +564,7 @@
      32400
   ],
   "patch": [
-  {
+    {
       "name": "6.85",
       "date": "2015-09-24T20:00:00Z"
   },
@@ -1201,7 +1280,7 @@
     "5654": "winter_wyvern_winters_curse",
     "wisp_spirits_out": "wisp_spirits_in"
   },
- "regions": {
+  "regions": {
     "unspecified": {
       "region": "0",
       "latitude": "0",

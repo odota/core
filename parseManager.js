@@ -1,7 +1,7 @@
 var processParse = require('./processParse');
 var r = require('./redis');
 var redis = r.client;
-var jobs = r.jobs;
+var queue = r.queue;
 var kue = r.kue;
 var utility = require('./utility');
 var cluster = require('cluster');
@@ -34,7 +34,7 @@ function start() {
             var capacity = parsers.length;
             if (cluster.isMaster && config.NODE_ENV !== "test") {
                 console.log("[PARSEMANAGER] starting master");
-                utility.cleanup(jobs, kue, 'parse');
+                utility.cleanup(queue, kue, 'parse');
                 for (var i = 0; i < capacity; i++) {
                     if (false) {
                         //fork a worker for each available parse core
@@ -62,7 +62,7 @@ function start() {
 
             function runWorker(i) {
                 console.log("[PARSEMANAGER] starting worker with pid %s", process.pid);
-                jobs.process('parse', function(job, ctx, cb) {
+                queue.process('parse', function(job, ctx, cb) {
                     console.log("starting parse job: %s", job.id);
                     job.parser_url = getParserUrl(job);
                     //TODO check if the assigned url is healthy before trying to parse?
@@ -123,7 +123,7 @@ function processParse(job, ctx, cb) {
                 match.parsed_data = parsed_data;
                 match.parse_status = 2;
                 //run aggregations on parsed data fields
-                insertMatch(db, match, {
+                insertMatch(db, redis, queue, match, {
                     type: "parsed"
                 }, function(err) {
                     console.timeEnd("parse " + match_id);

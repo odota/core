@@ -9,11 +9,11 @@ var kue = require('kue');
 var client = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
-var jobs = kue.createQueue({
+var queue = kue.createQueue({
     redis: options
 });
 module.exports = {
     client: client,
     kue: kue,
-    jobs: jobs
+    queue: queue
 };

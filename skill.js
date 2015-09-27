@@ -2,6 +2,9 @@ var utility = require('./utility');
 var async = require('async');
 var constants = require("./constants.json");
 var db = require('./db');
+var r = require('./redis');
+var queue = r.queue;
+var redis = r.client;
 var insertMatch = require('./queries').insertMatch;
 var results = {};
 var added = {};
@@ -63,7 +66,7 @@ function getPageData(start, options, cb) {
                 skill: options.skill
             };
             //results[m.match_id] = 1;
-            insertMatch(db, {
+            insertMatch(db, redis, queue, {
                 match_id: data.match_id,
                 skill: data.skill
             }, {

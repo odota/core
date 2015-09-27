@@ -2,7 +2,7 @@ var async = require('async');
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
-var jobs = r.jobs;
+var queue = r.queue;
 module.exports = function getStatus(cb) {
     console.time('status');
     async.series({
@@ -96,13 +96,13 @@ module.exports = function getStatus(cb) {
         },
         kue: function(cb) {
             var counts = {};
-            jobs.types(function(err, data) {
+            queue.types(function(err, data) {
                 if (err){
                     return cb(err);
                 }
                 async.each(data, function(d, cb) {
                     // others are activeCount, completeCount, failedCount, delayedCount
-                    jobs.inactiveCount(d, function(err, result) {
+                    queue.inactiveCount(d, function(err, result) {
                         counts[d] = result;
                         cb(err);
                     });

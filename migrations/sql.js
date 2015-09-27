@@ -174,23 +174,24 @@ MongoClient.connect(url, function(err, db) {
 //TODO CODECHANGE
 //stringify json pre-insert
 //when inserting player_match select by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)
+//update views to not ref parsedPlayer
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
 //rename parsed_data.players.kills -> killed, views, compute
-//rename last_visited -> last_login
+//rename last_visited -> last_login, multiple places
 //rewrite fillplayerdata to select from player_matches join with matches then make separate query for played_with/played_against
-//update views to not ref parsedPlayer
-//change player rating fields from camelcase to snake case (soloCompetitiveRank)
+//change player rating fields from camelcase to snake case (soloCompetitiveRank -> solo_competitive_rank)
 //var db, var redis should only be present in top level (services)
 //aggregator.js, update aggregator to not ref parsedPlayer
-//mmr.js
-//status.js
-//buildSets.js
-//routes/donate.js
-//routes/matches.js
-//fillPlayerData.js <- advquery.js
+//compute.js update field names
+//mmr.js, update insert query
+//status.js, update queries
+//buildSets.js, update queries
+//routes/donate.js, update queries
+//routes/matches.js, update queries
 //getReplayUrl.js
-//queries.js, fillPlayerNames should be select query joined with players, getSets should take redis ref
 //tasks/fullHistory.js (low priority)
+//ag -i "mongo"
 //TODO
 //UPSERT not supported until psql 9.5
 //fix tests
+//bump version number (5)

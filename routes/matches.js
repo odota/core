@@ -7,42 +7,8 @@ var computeMatchData = compute.computeMatchData;
 var renderMatch = compute.renderMatch;
 var redis = require('../redis').client;
 var db = require('../db');
-var matchPages = {
-    index: {
-        name: "Overview"
-    },
-    performances: {
-        name: "Performances"
-    },
-    purchases: {
-        name: "Purchases"
-    },
-    farm: {
-        name: "Farm"
-    },
-    combat: {
-        name: "Combat"
-    },
-    graphs: {
-        name: "Graphs"
-    },
-    positions: {
-        name: "Positions"
-    },
-    objectives: {
-        name: "Objectives"
-    },
-    teamfights: {
-        name: "Teamfights"
-    },
-    actions: {
-        name: "Actions",
-        "new": true
-    },
-    chat: {
-        name: "Chat"
-    }
-};
+var constants = require('./constants.json');
+var matchPages = constants.match_pages;
 matches.get('/:match_id/:info?', function(req, res, next) {
     console.time("match page");
     prepareMatch(req.params.match_id, function(err, match) {
@@ -115,7 +81,7 @@ function prepareMatch(match_id, cb) {
                     return cb("match not found");
                 }
                 else {
-                    queries.fillPlayerNames(match.players, function(err) {
+                    queries.fillPlayerNames(db, match.players, function(err) {
                         if (err) {
                             return cb(err);
                         }

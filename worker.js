@@ -1,6 +1,7 @@
 var processApi = require('./processApi');
 var r = require('./redis');
-var jobs = r.jobs;
+var redis = r.client;
+var queue = r.queue;
 var kue = r.kue;
 var updateNames = require('./tasks/updateNames');
 var buildSets = require('./buildSets');
@@ -24,10 +25,10 @@ console.log("[WORKER] starting worker");
 invokeInterval(buildSets, 60 * 1000);
 invokeInterval(serviceDiscovery.queryRetrievers, 60 * 1000);
 invokeInterval(getMMStats, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 1); //Sample every 3 minutes
-jobs.watchStuckJobs();
+queue.watchStuckJobs();
 //process requests (api call, waits for parse to complete)
-jobs.process('request', numCPUs, processApi);
-utility.cleanup(jobs, kue, 'request');
+queue.process('request', numCPUs, processApi);
+utility.cleanup(queue, kue, 'request');
 //updatenames queues an api request, probably should have name updating occur in a separate service
 //jobs.process('api', processApi);
 //invokeInterval(updateNames, 60 * 1000);
@@ -56,20 +57,12 @@ function processApi(job, cb) {
             job.progress(0, 100, "Received basic match data.");
             //we want to try to parse this match
             match.parse_status = 0;
-            if (match.request) {
-                insertMatchProgress(db, match, {
-                    type: "api"
-                }, job, function(err) {
-                    cb(err);
-                });
-            }
-            else {
-                insertMatch(db, match, {
-                    type: "api"
-                }, function(err) {
-                    cb(err);
-                });
-            }
+            var insertFunc = match.request ? insertMatchProgress : insertMatch;
+            insertFunc(db, redis, queue, match, {
+                type: "api"
+            }, job, function(err) {
+                cb(err);
+            });
         }
         else {
             return cb("unknown response");

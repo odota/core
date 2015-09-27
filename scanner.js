@@ -4,7 +4,7 @@ var getData = utility.getData;
 var db = require('./db');
 var r = require('./redis');
 var redis = r.client;
-var queue = r.jobs;
+var queue = r.queue;
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
@@ -49,7 +49,7 @@ function scanApi(seq_num) {
     var container = generateJob("api_sequence", {
         start_at_match_seq_num: seq_num
     });
-    queries.getSets(function(err, result) {
+    queries.getSets(redis, function(err, result) {
         if (err) {
             console.log("failed to getSets from redis");
             return scanApi(seq_num);
@@ -97,7 +97,7 @@ function scanApi(seq_num) {
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-                        insertMatch(db, match, {type: "api"}, close);
+                        insertMatch(db, redis, queue, match, {type: "api"}, close);
                     }
                     else {
                         close(err);

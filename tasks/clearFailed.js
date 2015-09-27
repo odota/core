@@ -1,9 +1,9 @@
 var r = require('../redis');
 var async = require('async');
 var kue = r.kue;
-var jobs = r.jobs;
+var queue = r.queue;
 module.exports = function(cb) {
-    jobs.failed(function(err, ids) {
+    queue.failed(function(err, ids) {
         if (err) {
             return cb(err);
         }

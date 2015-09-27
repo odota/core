@@ -1,8 +1,4 @@
-var db = require('./db');
 var async = require('async');
-var r = require('./redis');
-var redis = r.client;
-var queue = r.jobs;
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var queueReq = utility.queueReq;
@@ -13,7 +9,20 @@ var aggregator = require('./aggregator');
 var reduceMatch = utility.reduceMatch;
 var config = require('./config');
 
-function getSets(cb) {
+function fillPlayerNames(db, players, cb) {
+    //we want
+    /*
+                "account_id": 1,
+            "last_visited": 1,
+            "personaname": 1,
+            "avatar": 1
+            */
+//join players with player table by account_id to find their names
+
+}
+
+
+function getSets(redis, cb) {
     async.parallel({
         "bots": function(cb) {
             redis.get("bots", function(err, bots) {
@@ -63,54 +72,7 @@ function getSets(cb) {
     });
 }
 
-function fillPlayerNames(players, cb) {
-    if (!players) {
-        return cb();
-    }
-    //make hash of account_ids to players
-    //use $in query to get these players from db
-    //loop through results and join with players by hash
-    //iterate back through original array to get back players in order
-    var player_hash = {};
-    players.forEach(function(p) {
-        player_hash[p.account_id] = p;
-    });
-    var player_ids = players.map(function(p) {
-        return Number(p.account_id);
-    });
-    db.players.find({
-        account_id: {
-            $in: player_ids
-        }
-    }, {
-        /*
-        fields: {
-            "account_id": 1,
-            "last_visited": 1,
-            "personaname": 1,
-            "avatar": 1
-        }
-        */
-    }, function(err, docs) {
-        if (err) {
-            return cb(err);
-        }
-        docs.forEach(function(d) {
-            var player = player_hash[d.account_id];
-            if (player && d) {
-                for (var prop in d) {
-                    player[prop] = d[prop];
-                }
-            }
-        });
-        players = players.map(function(p) {
-            return player_hash[p.account_id];
-        });
-        cb(err);
-    });
-}
-
-function insertMatch(db, match, options, cb) {
+function insertMatch(db, redis, queue, match, options, cb) {
     //options specify api or parse 
     //TODO don't want to overwrite parse_status: 2 (parsed) (e.g., if an existing parsed match is expired when re-requested)
     //insert the match into db, then based on the existing document determine whether to do aggregations
@@ -128,94 +90,97 @@ function insertMatch(db, match, options, cb) {
         if (err) {
             return cb(err);
         }
-        if (options.type === "skill" && !doc) {
-            //we didn't add skill data because we didn't have this match in db, return immediately
-            return cb(err);
-        }
-        async.each(match.players || options.players, function(p, cb) {
-                //full cache
-                /*
-                var match_copy = JSON.parse(JSON.stringify(match));
-                if (options.type !== "skill") {
-                    //m.players[0] should be this player
-                    //m.all_players should be all players
-                    //duplicate this data into a copy to avoid corrupting original match object
-                    match_copy.all_players = match.players.slice(0);
-                    match_copy.players = [p];
-                    //computeMatchData takes the parsed_data and creates a parsedPlayer for each player in a parallel array
-                    computeMatchData(match_copy);
-                    reduceMatch(match_copy);
-                }
-                db.player_matches.update({
-                    account_id: p.account_id,
-                    match_id: match_copy.match_id
-                }, {
-                    $set: match_copy
-                }, {
-                    upsert: true
-                }, function(err) {
+        //clear match cache
+        redis.del("match:" + match.match_id, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            if (options.type === "skill" && !doc) {
+                //we didn't add skill data because we didn't have this match in db, return immediately
+                return cb(err);
+            }
+            async.each(match.players || options.players, function(p, cb) {
+                    //full cache
+                    /*
+                    var match_copy = JSON.parse(JSON.stringify(match));
+                    if (options.type !== "skill") {
+                        //m.players[0] should be this player
+                        //m.all_players should be all players
+                        //duplicate this data into a copy to avoid corrupting original match object
+                        match_copy.all_players = match.players.slice(0);
+                        match_copy.players = [p];
+                        //computeMatchData takes the parsed_data and creates a parsedPlayer for each player in a parallel array
+                        computeMatchData(match_copy);
+                        reduceMatch(match_copy);
+                    }
+                    db.player_matches.update({
+                        account_id: p.account_id,
+                        match_id: match_copy.match_id
+                    }, {
+                        $set: match_copy
+                    }, {
+                        upsert: true
+                    }, function(err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        return queries.insertPlayer(db, p, cb);
+                    });
+                    */
+                    //aggregate cache
+                    redis.get("player:" + p.account_id, function(err, result) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        //if player cache doesn't exist, skip
+                        var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                        if (cache) {
+                            var m = JSON.parse(JSON.stringify(match));
+                            if (options.type !== "skill") {
+                                //m.players[0] should be this player
+                                //m.all_players should be all players
+                                //duplicate this data into a copy to avoid corrupting original match object
+                                m.all_players = match.players.slice(0);
+                                m.players = [p];
+                                var reInsert = match.match_id in cache.aggData.match_ids && options.type === "api";
+                                var reParse = match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
+                                if (!reInsert && !reParse) {
+                                    //some data fields require computeMatchData in order to aggregate correctly
+                                    computeMatchData(m);
+                                    m.players.forEach(function(player, i) {
+                                        player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
+                                    });
+                                    //do aggregations on fields based on type		
+                                    cache.aggData = aggregator([m], options.type, cache.aggData);
+                                }
+                            }
+                            //reduce match to save cache space--we only need basic data per match for matches tab
+                            reduceMatch(m);
+                            var orig = cache.data[m.match_id];
+                            if (!orig) {
+                                cache.data[m.match_id] = m;
+                            }
+                            else {
+                                for (var key in m) {
+                                    orig[key] = m[key];
+                                }
+                            }
+                            redis.ttl("player:" + p.account_id, function(err, ttl) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            });
+                        }
+                        return queries.insertPlayer(db, p, cb);
+                        //return cb();
+                    });
+                },
+                //done with all 10 players
+                function(err) {
                     if (err) {
                         return cb(err);
                     }
-                    return queries.insertPlayer(db, p, cb);
-                });
-                */
-                //aggregate cache
-                redis.get("player:" + p.account_id, function(err, result) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    //if player cache doesn't exist, skip
-                    var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
-                    if (cache) {
-                        var m = JSON.parse(JSON.stringify(match));
-                        if (options.type !== "skill") {
-                            //m.players[0] should be this player
-                            //m.all_players should be all players
-                            //duplicate this data into a copy to avoid corrupting original match object
-                            m.all_players = match.players.slice(0);
-                            m.players = [p];
-                            var reInsert = match.match_id in cache.aggData.match_ids && options.type === "api";
-                            var reParse = match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
-                            if (!reInsert && !reParse) {
-                                //some data fields require computeMatchData in order to aggregate correctly
-                                computeMatchData(m);
-                                m.players.forEach(function(player, i) {
-                                    player.parsedPlayer = m.parsedPlayers ? m.parsedPlayers[i] : {};
-                                });
-                                //do aggregations on fields based on type		
-                                cache.aggData = aggregator([m], options.type, cache.aggData);
-                            }
-                        }
-                        //reduce match to save cache space--we only need basic data per match for matches tab
-                        reduceMatch(m);
-                        var orig = cache.data[m.match_id];
-                        if (!orig) {
-                            cache.data[m.match_id] = m;
-                        }
-                        else {
-                            for (var key in m) {
-                                orig[key] = m[key];
-                            }
-                        }
-                        redis.ttl("player:" + p.account_id, function(err, ttl) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                        });
-                    }
-                    return queries.insertPlayer(db, p, cb);
-                    //return cb();
-                });
-            },
-            //done with all 10 players
-            function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                //clear match cache
-                redis.del("match:" + match.match_id, function(err) {
                     if (err) {
                         return cb(err);
                     }
@@ -236,11 +201,11 @@ function insertMatch(db, match, options, cb) {
                         });
                     }
                 });
-            });
+        });
     });
 }
 
-function insertMatchProgress(db, match, options, job, cb) {
+function insertMatchProgress(db, redis, queue, match, options, job, cb) {
     insertMatch(db, match, options, function(err, job2) {
         if (err) {
             return cb(err);
