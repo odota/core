@@ -119,11 +119,10 @@ function processParse(job, ctx, cb) {
                     return cb(body.error);
                 }
                 var parsed_data = body;
-                match.match_id = match_id || parsed_data.match_id;
-                match.parsed_data = parsed_data;
-                match.parse_status = 2;
-                //run aggregations on parsed data fields
-                insertMatch(db, redis, queue, match, {
+                //parsed_data match id may not be 100% reliable, use match_id if possible
+                parsed_data.match_id = match_id || parsed_data.match_id;
+                parsed_data.parse_status = 2;
+                insertMatch(db, redis, queue, parsed_data, {
                     type: "parsed"
                 }, function(err) {
                     console.timeEnd("parse " + match_id);

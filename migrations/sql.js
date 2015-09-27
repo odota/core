@@ -175,23 +175,30 @@ MongoClient.connect(url, function(err, db) {
 //stringify json pre-insert
 //when inserting player_match select by match_id, player_slot to ensure uniqueness (account_id doesn't work since anonymous)
 //update views to not ref parsedPlayer
-//rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
-//rename parsed_data.players.kills -> killed, views, compute
+//rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views
+//rename parsed_data.players.kills -> killed, views
 //rename last_visited -> last_login, multiple places
 //rewrite fillplayerdata to select from player_matches join with matches then make separate query for played_with/played_against
 //change player rating fields from camelcase to snake case (soloCompetitiveRank -> solo_competitive_rank)
 //var db, var redis should only be present in top level (services)
-//aggregator.js, update aggregator to not ref parsedPlayer
-//compute.js update field names
+//aggregator.js, update to not ref parsedPlayer
+//filter.js, update to not ref parsedPlayer
 //mmr.js, update insert query
 //status.js, update queries
 //buildSets.js, update queries
 //routes/donate.js, update queries
 //routes/matches.js, update queries
-//getReplayUrl.js
+//getReplayUrl.js, update queries
 //tasks/fullHistory.js (low priority)
 //ag -i "mongo"
+//ag -i "parsed_data"
+//ag -i "parsedPlayer"
+//queries.js update match insert
+//pass db, redis from web to routes
+//have insertmatch operation return the entire row so we can agg on it
+//filter, aggregator should accept player_matches, fellows as first arguments
 //TODO
-//UPSERT not supported until psql 9.5
+//UPSERT not supported until psql 9.5, currently duplicate inserts throw err
 //fix tests
-//bump version number (5)
+//PRE-MIGRATION
+//check for null account_id/match_id in production

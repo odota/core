@@ -1,13 +1,12 @@
 var express = require('express');
 var matches = express.Router();
-var queries = require('../queries');
-var config = require('../config');
 var compute = require('../compute');
 var computeMatchData = compute.computeMatchData;
+var computePlayerMatchData = compute.computePlayerMatchData;
 var renderMatch = compute.renderMatch;
 var redis = require('../redis').client;
 var db = require('../db');
-var constants = require('./constants.json');
+var constants = require('../constants.json');
 var matchPages = constants.match_pages;
 matches.get('/:match_id/:info?', function(req, res, next) {
     console.time("match page");
@@ -62,35 +61,37 @@ matches.get('/:match_id/:info?', function(req, res, next) {
 function prepareMatch(match_id, cb) {
     var key = "match:" + match_id;
     redis.get(key, function(err, reply) {
-        if (!err && reply) {
+        if (err) {
+            return cb(err);
+        }
+        else if (reply) {
             console.log("Cache hit for match " + match_id);
-            try {
-                var match = JSON.parse(reply);
-                return cb(err, match);
-            }
-            catch (e) {
-                return cb(e);
-            }
+            var match = JSON.parse(reply);
+            return cb(err, match);
         }
         else {
             console.log("Cache miss for match " + match_id);
-            db.matches.findOne({
+            db.from('matches').where({
                 match_id: Number(match_id)
-            }, function(err, match) {
-                if (err || !match) {
-                    return cb("match not found");
+            }).asCallback(function(err, match) {
+                if (err) {
+                    return cb(err);
                 }
                 else {
-                    queries.fillPlayerNames(db, match.players, function(err) {
+                    //join to get personaname, last_login, avatar
+                    db.from('player_matches').where({
+                        match_id: Number(match_id)
+                    }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'match_id', 'matches.match_id').asCallback(function(err, players) {
                         if (err) {
                             return cb(err);
                         }
+                        match.players = players;
+                        match.players.forEach(function(p){
+                            computePlayerMatchData(p);
+                        });
                         computeMatchData(match);
                         renderMatch(match);
-                        //Add to cache if match is parsed
-                        if (match.parsed_data && match.parsed_data.version && config.NODE_ENV !== "development") {
-                            redis.setex(key, 3600, JSON.stringify(match));
-                        }
+                        //TODO cache the match if parsed?  previous code used match.parsed_data but that no longer exists and match.parse_status is not 100% reliable
                         return cb(err, match);
                     });
                 }
