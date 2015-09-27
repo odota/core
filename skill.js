@@ -80,7 +80,7 @@ function getPageData(start, options, cb) {
                 return cb(err);
             });
         }, function(err) {
-            //console.log("waiting for insert: %s, skill added: %s", Object.keys(results).length, Object.keys(added).length);
+            console.log("total results: %s, added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
                 cb(err);
