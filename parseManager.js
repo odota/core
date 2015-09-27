@@ -87,7 +87,7 @@ function processParse(job, ctx, cb) {
     if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
         //expired, can't parse even if we have url
         //TODO non-valve urls don't expire, we can try using them
-        //TODO do we want to write parse_status:1?  we should not overwrite existing parse_status:2
+        //TODO do we want to write parse_status:1 if expired?  we should not overwrite existing parse_status:2
         console.log("replay too old, url expired");
         console.timeEnd("parse " + match_id);
         return cb();

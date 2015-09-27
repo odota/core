@@ -64,7 +64,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
     //TODO we don't want to overwrite parse_status: 2 (parsed) (e.g., if an existing parsed match is expired when re-requested)
     //TODO we want to insert into matches, then insert into player_matches for each entry in match.players
     //TODO return entire player_match row after insert, join with matches and use that for aggregation
-    //TODO pass fellows (array of 10 objects with account_id, hero_id, player_slot) for aggregator
+    //TODO pass group (object with match_id mapped to match_id, account_id, hero_id, player_slot) to aggregator
     //TODO update (do not insert) if type is skill
     db.matches.findAndModify({
         match_id: match.match_id

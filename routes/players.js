@@ -3,15 +3,15 @@ var players = express.Router();
 var async = require('async');
 var constants = require('../constants.json');
 var queries = require("../queries");
-var utility = require('./utility');
+var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
-var config = require('./config');
+var config = require('../config');
 var zlib = require('zlib');
-var preprocessQuery = require('./preprocessQuery');
-var filter = require('./filter');
-var aggregator = require('./aggregator');
-var compute = require('./compute');
+var preprocessQuery = require('../preprocessQuery');
+var filter = require('../filter');
+var aggregator = require('../aggregator');
+var compute = require('../compute');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var histograms = {
     "kills": 1,
@@ -271,10 +271,6 @@ module.exports = function(db, redis) {
         else {
             return cb("invalid account id");
         }
-        //sort descending to get the most recent data
-        options.query.sort = {
-            match_id: -1
-        };
         //try to find player in db
         db.from('players').where({
             account_id: Number(account_id)
@@ -404,17 +400,21 @@ module.exports = function(db, redis) {
                                 player.abandons += player.aggData.leaver_status.counts[key];
                             }
                         }
-                        //sort ratings by time
-                        player.ratings = player.ratings || [];
-                        player.ratings.sort(function(a, b) {
-                            return new Date(a.time) - new Date(b.time);
-                        });
-                        var ratings = player.ratings;
-                        player.soloRating = ratings[0] ? ratings[ratings.length - 1].soloCompetitiveRank : null;
-                        player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitiveRank : null;
-                        async.series([saveCache], function(err) {
+                        async.series([getPlayerRatings, saveCache], function(err) {
                             cb(err, player);
                         });
+
+                        function getPlayerRatings(cb) {
+                            db.from('player_ratings').where({
+                                account_id: player.account_id
+                            }).orderBy('time', 'asc').asCallback(function(err, ratings) {
+                                //sort ratings by time
+                                player.ratings = ratings || [];
+                                player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
+                                player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+                                cb(err);
+                            });
+                        }
 
                         function saveCache(cb) {
                             //save cache
@@ -466,30 +466,49 @@ module.exports = function(db, redis) {
     function advQuery(query, cb) {
         //console.log(query);
         //console.log(options);
-        console.time('querying database');
+        console.time('getting player_matches');
         db.from('player_matches').where(query.select).limit(query.limit).orderBy('match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
             if (err) {
                 return cb(err);
             }
-            console.timeEnd('querying database');
+            console.timeEnd('getting player_matches');
             console.time('computing aggregations');
             //compute, filter, agg should act on player_matches joined with matches
             player_matches.forEach(function(m) {
                 //post-process the match to get additional stats
                 computePlayerMatchData(m);
             });
-            //TODO get fellow players and pass to aggregator,filter
-            var filtered = filter(player_matches, query.js_select);
-            //filtered = sort(filtered, options.js_sort);
-            var aggData = aggregator(filtered, query.js_agg);
-            var result = {
-                aggData: aggData,
-                page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-                data: filtered,
-                unfiltered: player_matches
-            };
-            console.timeEnd('computing aggregations');
-            cb(err, result);
+            console.time('getting fellows');
+            //get fellow players and pass to aggregator/filter
+            db.select(['match_id', 'account_id', 'hero_id', 'player_slot']).from('player_matches').whereIn({
+                match_id: player_matches.map(function(pm) {
+                    return pm.match_id;
+                })
+            }).asCallback(function(err, fellows) {
+                if (err) {
+                    return cb(err);
+                }
+                console.timeEnd('getting fellows');
+                //group the fellows by match_id, map to array of players in that match
+                var groups = {};
+                fellows.forEach(function(f) {
+                    if (!groups[f.match_id]) {
+                        groups[f.match_id] = [];
+                    }
+                    groups[f.match_id].push(f);
+                });
+                var filtered = filter(player_matches, groups, query.js_select);
+                //filtered = sort(filtered, options.js_sort);
+                var aggData = aggregator(filtered, groups, query.js_agg);
+                var result = {
+                    aggData: aggData,
+                    page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+                    data: filtered,
+                    unfiltered: player_matches
+                };
+                console.timeEnd('computing aggregations');
+                cb(err, result);
+            });
         });
     }
 };

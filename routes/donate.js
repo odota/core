@@ -131,6 +131,8 @@ module.exports = function(db, redis) {
         clearPaymentSessions(req);
         res.render("cancel");
     });
+    
+    return donate;
 
     function clearPaymentSessions(req) {
         PAYMENT_SESSIONS.forEach(function(s) {

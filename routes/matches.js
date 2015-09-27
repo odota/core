@@ -1,6 +1,7 @@
 var express = require('express');
 var matches = express.Router();
 var compute = require('../compute');
+var config = require('../config');
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
 var renderMatch = compute.renderMatch;
@@ -91,7 +92,9 @@ module.exports = function(db, redis) {
                             });
                             computeMatchData(match);
                             renderMatch(match);
-                            //TODO cache the match if parsed?  previous code used match.parsed_data but that no longer exists and match.parse_status is not 100% reliable
+                            if (match.version && config.NODE_ENV !== "development") {
+                                redis.setex(key, 3600, JSON.stringify(match));
+                            }
                             return cb(err, match);
                         });
                     }

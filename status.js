@@ -1,28 +1,18 @@
 var async = require('async');
-module.exports = function getStatus(db, r, cb) {
-    var redis = r.client;
-    var queue = r.queue;
+module.exports = function getStatus(db, redis, queue, cb) {
     console.time('status');
     async.series({
         matches: function(cb) {
-            db.matches.count({}, cb);
+            db.from('matches').count().asCallback(cb);
         },
         players: function(cb) {
-            db.players.count({}, cb);
+            db.from('players').count().asCallback(cb);
         },
         user_players: function(cb) {
-            db.players.count({
-                last_visited: {
-                    $gt: new Date(0)
-                }
-            }, cb);
+            db.from('players').count().whereNotNull('last_login').asCallback(cb);
         },
         full_history_players: function(cb) {
-            db.players.count({
-                full_history_time: {
-                    $gt: new Date(0)
-                }
-            }, cb);
+            db.from('players').count().whereNotNull('full_history_time').asCallback(cb);
         },
         tracked_players: function(cb) {
             redis.get("trackedPlayers", function(err, res) {
@@ -63,34 +53,10 @@ module.exports = function getStatus(db, r, cb) {
             });
         },
         last_added: function(cb) {
-            db.matches.find({}, {
-                sort: {
-                    _id: -1
-                },
-                fields: {
-                    match_id: 1,
-                    match_seq_num: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            db.from('matches').orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         last_parsed: function(cb) {
-            db.matches.find({
-                parse_status: 2
-            }, {
-                sort: {
-                    _id: -1
-                },
-                fields: {
-                    match_id: 1,
-                    match_seq_num: 1,
-                    start_time: 1,
-                    duration: 1
-                },
-                limit: 10
-            }, cb);
+            db.from('matches').where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         kue: function(cb) {
             var counts = {};
@@ -111,6 +77,7 @@ module.exports = function getStatus(db, r, cb) {
         }
     }, function(err, results) {
         console.timeEnd('status');
+        //TODO psql counts are bigints which are returned as strings in JS.  If we want to do math with them we need to numberify them
         cb(err, results);
     });
 };

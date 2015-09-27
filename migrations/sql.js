@@ -69,7 +69,10 @@ MongoClient.connect(url, function(err, db) {
         pg('matches').columnInfo().then(function(info) {
             var row = {};
             for (var key in info) {
-                if (key in m) {
+                if (key === "parse_status"){
+                    row[key] = m.parsed_data ? 2 : null;
+                }
+                else if (key in m) {
                     row[key] = m[key];
                 }
                 else if (m.parsed_data && key in m.parsed_data) {
