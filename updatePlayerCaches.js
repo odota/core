@@ -27,6 +27,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         }
         if (options.type === "skill" && !doc) {
             //we didn't add skill data because we didn't have this match in db, return immediately
+            console.log("skipping cache update");
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
@@ -102,12 +103,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             redis.setex("player:" + p.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                         });
                     }
-                    if (options.type !== "skill") {
-                        return insertPlayer(cb);
-                    }
-                    else {
-                        return cb();
-                    }
+                    return insertPlayer(cb);
+                    //return cb();
                 });
 
                 function insertPlayer(cb) {
