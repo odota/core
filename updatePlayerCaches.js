@@ -27,7 +27,6 @@ module.exports = function updatePlayerCaches(match, options, cb) {
         }
         if (options.type === "skill" && !doc) {
             //we didn't add skill data because we didn't have this match in db, return immediately
-            console.log("skipping cache update");
             return cb(err);
         }
         async.each(match.players || options.players, function(p, cb) {
