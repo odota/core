@@ -5,20 +5,21 @@ var pg = require('knex')({
     connection: config.POSTGRES_URL
 });
 var MongoClient = require('mongodb').MongoClient;
-// Connection URL
 var url = config.MONGO_URL;
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
     }
     var args = process.argv.slice(2);
+    var cursor;
+    var migrate;
     if (args[0] === "matches") {
-        var cursor = db.collection('matches').find();
-        var migrate = processMatch;
+        cursor = db.collection('matches').find();
+        migrate = processMatch;
     }
     else if (args[0] === "players") {
-        var cursor = db.collection('players').find();
-        var migrate = processPlayer;
+        cursor = db.collection('players').find();
+        migrate = processPlayer;
     }
     else {
         throw "invalid option, choose matches or players";
@@ -43,6 +44,28 @@ MongoClient.connect(url, function(err, db) {
     }
 
     function processMatch(m, cb) {
+        //compute match radiant gold/xp adv for matches that don't have it
+        if (m.parsed_data && !m.parsed_data.radiant_gold_adv) {
+            m.parsed_data.radiant_gold_adv = [];
+            m.parsed_data.radiant_xp_adv = [];
+            for (var i = 0; i < m.parsed_data.players[0].times.length; i++) {
+                var goldtotal = 0;
+                var xptotal = 0;
+                m.players.forEach(function(elem, j) {
+                    var p = elem.parsedPlayer;
+                    if (elem.isRadiant) {
+                        goldtotal += p.gold[i];
+                        xptotal += p.xp[i];
+                    }
+                    else {
+                        xptotal -= p.xp[i];
+                        goldtotal -= p.gold[i];
+                    }
+                });
+                m.parsed_data.radiant_gold_adv.push(goldtotal);
+                m.parsed_data.radiant_xp_adv.push(xptotal);
+            }
+        }
         pg('matches').columnInfo().then(function(info) {
             var row = {};
             for (var key in info) {
@@ -148,8 +171,6 @@ MongoClient.connect(url, function(err, db) {
         });
     }
 });
-//MIGRATIONS
-//TODO do the radiant gold adv/xp adv migration while we're at it
 //TODO CODECHANGE
 //rename parsed_data.players.gold, lh, xp -> (gold_t, lh_t, xp_t), views, compute
 //rename parsed_data.players.kills -> killed, views, compute

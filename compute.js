@@ -169,17 +169,17 @@ function computeMatchData(match) {
                         parsedPlayer.item_win[k] = isRadiant(player) === match.radiant_win ? 1 : 0;
                     }
                 }
-                if (parsedPlayer.purchase){
+                if (parsedPlayer.purchase) {
                     //account for stacks
-                    parsedPlayer.purchase.ward_sentry *=2;
-                    parsedPlayer.purchase.dust *=2;
+                    parsedPlayer.purchase.ward_sentry *= 2;
+                    parsedPlayer.purchase.dust *= 2;
                 }
                 if (parsedPlayer.actions) {
                     var actions_sum = 0;
                     for (var key in parsedPlayer.actions) {
                         actions_sum += parsedPlayer.actions[key];
                     }
-                    parsedPlayer.actions_per_min = ~~(actions_sum/match.duration*60);
+                    parsedPlayer.actions_per_min = ~~(actions_sum / match.duration * 60);
                 }
                 //compute throw/comeback levels
                 if (match.parsed_data.radiant_gold_adv) {
@@ -403,30 +403,8 @@ function generateGraphData(match) {
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
-    if (match.parsed_data.radiant_gold_adv.length) {
-        goldDifference = goldDifference.concat(match.parsed_data.radiant_gold_adv);
-        xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
-    }
-    else {
-        //TODO older matches need this data summed at view time, unless we migrate it to new format
-        for (var i = 0; i < match.parsed_data.players[0].times.length; i++) {
-            var goldtotal = 0;
-            var xptotal = 0;
-            match.players.forEach(function(elem, j) {
-                var p = elem.parsedPlayer;
-                if (elem.isRadiant) {
-                    goldtotal += p.gold[i];
-                    xptotal += p.xp[i];
-                }
-                else {
-                    xptotal -= p.xp[i];
-                    goldtotal -= p.gold[i];
-                }
-            });
-            goldDifference.push(goldtotal);
-            xpDifference.push(xptotal);
-        }
-    }
+    goldDifference = goldDifference.concat(match.parsed_data.radiant_gold_adv);
+    xpDifference = xpDifference.concat(match.parsed_data.radiant_xp_adv);
     var time = ["time"].concat(match.parsed_data.players[0].times);
     var data = {
         difference: [time, xpDifference, goldDifference],
@@ -480,10 +458,14 @@ function generateIncomeData(match) {
 
 function generateTreemapData(match) {
     var data = [];
-    match.players.forEach(function(player){
+    match.players.forEach(function(player) {
         var hero = constants.heroes[player.hero_id] || {};
-        data.push({name: hero.localized_name, id: player.hero_id.toString(), value: ~~(player.gold_per_min*match.duration/60)});
-    })
+        data.push({
+            name: hero.localized_name,
+            id: player.hero_id.toString(),
+            value: ~~(player.gold_per_min * match.duration / 60)
+        });
+    });
     for (var key in constants.gold_reasons) {
         var reason = constants.gold_reasons[key].name;
         match.players.forEach(function(player) {
@@ -497,7 +479,6 @@ function generateTreemapData(match) {
     }
     return data;
 }
-
 module.exports = {
     renderMatch: renderMatch,
     computeMatchData: computeMatchData
