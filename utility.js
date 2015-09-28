@@ -362,7 +362,7 @@ function isSignificant(constants, m) {
 
 function reduceMatch(match) {
     //trim down the size of a player_match so cache.data isn't so big
-    return {
+    match = {
         hero_id: match.hero_id,
         game_mode: match.game_mode,
         kills: match.kills,
@@ -377,6 +377,7 @@ function reduceMatch(match) {
         start_time: match.start_time,
         duration: match.duration
     };
+    return match;
 }
 
 function max(array) {
