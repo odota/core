@@ -27,9 +27,7 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-    
-    //- our custom js bundle, dynamically inserts external library js/css
-    script(src="/public/build/yasp.min.js")
+
     <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
     //can npm install material-design-lite to bundle mdl
     //-
@@ -47,7 +45,9 @@ html
     include navbar
     block page_content
     include footer
-  //stuff to include after page load
+  //- our custom js bundle, dynamically inserts external library js/css
+  script(src="/public/build/yasp.min.js")
+  //stuff to include after page load, js
   block footer_assets
   script.
     //make footer sticky
