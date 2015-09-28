@@ -20,7 +20,8 @@
           td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
           td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
           td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
-              
+
+append footer_assets
   script.
     var width = document.getElementById('map').clientWidth;
     var heatmap = h337.create({
