@@ -237,7 +237,7 @@ function convert32to64(id) {
 }
 
 function isRadiant(player) {
-    return player.player_slot < 127;
+    return player.player_slot < 128;
 }
 
 function mergeObjects(merge, val) {
