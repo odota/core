@@ -1,4 +1,3 @@
-var processParse = require('./processParse');
 var r = require('./redis');
 var redis = r.client;
 var queue = r.queue;

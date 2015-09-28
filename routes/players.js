@@ -50,12 +50,13 @@ module.exports = function(db, redis) {
     players.get('/:account_id/:info?', function(req, res, next) {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
+        var account_id = req.params.account_id;
         var compare_data;
         //copy the query in case we need the original for compare passing
         var qCopy = JSON.parse(JSON.stringify(req.query));
         async.series({
             "player": function(cb) {
-                fillPlayerData(req.params.account_id, {
+                fillPlayerData(account_id, {
                     info: info,
                     query: {
                         select: req.query
@@ -63,15 +64,27 @@ module.exports = function(db, redis) {
                 }, cb);
             },
             "sets": function(cb) {
-                queries.getSets(redis, function(err, results) {
-                    cb(err, results);
-                });
+                queries.getSets(redis, cb);
+            },
+            "ratings": function getPlayerRatings(cb) {
+                if (!isNaN(account_id)) {
+                    db.from('player_ratings').where({
+                        account_id: Number(account_id)
+                    }).orderBy('time', 'asc').asCallback(cb);
+                }
+                else {
+                    cb();
+                }
             }
         }, function(err, result) {
             if (err) {
                 return next(err);
             }
             var player = result.player;
+            var ratings = result.ratings || [];
+            player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
+            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+            player.ratings = ratings;
             var aggData = player.aggData;
             async.parallel({
                 //the array of teammates under the filter condition
@@ -251,26 +264,19 @@ module.exports = function(db, redis) {
         });
     }
 
-    function fillPlayerData(account_id, options, cb) {
-        //options.info, the tab the player is on
-        //options.query, the query object to use in advQuery
-        var cache;
-        options.query = preprocessQuery(options.query, account_id);
-        if (!options.query) {
-            return cb("invalid account_id");
+    function findPlayer(account_id, cb) {
+        if (!isNaN(account_id)) {
+            db.first().from('players').where({
+                account_id: Number(account_id)
+            }).asCallback(cb);
         }
-        //try to find player in db
-        db.first().from('players').where({
-            account_id: Number(account_id)
-        }).asCallback(function(err, player) {
-            if (err) {
-                return err;
-            }
-            player = player || {
-                account_id: account_id,
-                personaname: account_id
-            };
-            //check count of matches to validate cache
+        else {
+            cb(null);
+        }
+    }
+
+    function countPlayer(account_id, cb) {
+        if (!isNaN(account_id)) {
             console.time("count");
             db('player_matches').count('match_id').where({
                 account_id: Number(account_id)
@@ -280,6 +286,36 @@ module.exports = function(db, redis) {
                 }
                 count = Number(count[0].count);
                 console.timeEnd("count");
+                return cb(err, count);
+            });
+        }
+        else {
+            cb(null, 0);
+        }
+    }
+
+    function fillPlayerData(account_id, options, cb) {
+        //options.info, the tab the player is on
+        //options.query, the query object to use
+        var cache;
+        options.query = preprocessQuery(options.query, account_id);
+        if (!options.query) {
+            return cb("invalid account_id");
+        }
+        //try to find player in db
+        findPlayer(account_id, function(err, player) {
+            if (err) {
+                return cb(err);
+            }
+            player = player || {
+                account_id: account_id,
+                personaname: account_id
+            };
+            //check count of matches to validate cache
+            countPlayer(account_id, function(err, count) {
+                if (err) {
+                    return cb(err);
+                }
                 //mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
                 //we end up only saving 200 matches to the cache, rather than the expanded set
                 //additionally the count validation will always fail since a non-number account_id will return 0 results
@@ -309,7 +345,7 @@ module.exports = function(db, redis) {
                         cache.data = arr;
                     }
                     account_id = Number(account_id);
-                    //the number of matches won't match if the account_id is string (all/professional)
+                    //we return a count of 0 if the account_id is string (all/professional)
                     var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || isNaN(account_id));
                     console.log(count, cache ? cache.data.length : null);
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
@@ -388,21 +424,9 @@ module.exports = function(db, redis) {
                                 player.abandons += player.aggData.leaver_status.counts[key];
                             }
                         }
-                        async.series([getPlayerRatings, saveCache], function(err) {
+                        async.series([saveCache], function(err) {
                             cb(err, player);
                         });
-
-                        function getPlayerRatings(cb) {
-                            db.from('player_ratings').where({
-                                account_id: player.account_id
-                            }).orderBy('time', 'asc').asCallback(function(err, ratings) {
-                                //sort ratings by time
-                                player.ratings = ratings || [];
-                                player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-                                player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
-                                cb(err);
-                            });
-                        }
 
                         function saveCache(cb) {
                             //save cache
@@ -451,8 +475,7 @@ module.exports = function(db, redis) {
     }
 
     function advQuery(query, cb) {
-        //console.log(query);
-        //console.log(options);
+        console.log(query);
         console.time('getting player_matches');
         db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
             if (err) {

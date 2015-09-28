@@ -14,7 +14,7 @@ paypal.configure({
 });
 module.exports = function(db, redis) {
     donate.route('/carry').get(function(req, res, next) {
-        db.from('players').limit(50).orderBy('cheese', 'desc').asCallback(function(err, results) {
+        db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc').asCallback(function(err, results) {
             if (err) return next(err);
             res.render("carry", {
                 users: results

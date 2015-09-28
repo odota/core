@@ -1,4 +1,5 @@
 process.env.MONGO_URL = "mongodb://localhost/test";
+process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/test";
 process.env.REDIS_URL = "redis://localhost:6379/1";
 process.env.SESSION_SECRET = "testsecretvalue";
 process.env.KUE_USER = "user";
@@ -9,6 +10,34 @@ process.env.ROOT_URL = "http://localhost:5000";
 process.env.NODE_ENV = "test";
 process.env.STEAM_API_KEY = "fakekey";
 var async = require('async');
+var knex = require('knex');
+var conn = {
+    host: '127.0.0.1',
+    user: 'postgres',
+    password: 'postgres',
+    charset: 'utf8'
+};
+// connect without database selected
+/*
+var knex = require('knex')({
+    client: 'pg',
+    connection: conn
+});
+knex.raw('CREATE DATABASE test').then(function() {
+    knex.destroy();
+    // connect with database selected
+    conn.database = 'test';
+    knex = require('knex')({
+        client: 'pg',
+        connection: conn
+    });
+    knex.schema.createTable('my_table', function(table) {
+        table.string('my_field');
+    }).then(function() {
+        knex.destroy();
+    });
+});
+*/
 var db = require('../db');
 var r = require('../redis');
 var redis = r.client;
@@ -16,15 +45,22 @@ var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
+/*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
+*/
 var request = require('request');
-var updateNames = require('../tasks/updateNames');
+//var updateNames = require('../tasks/updateNames');
 var queueReq = require('../utility').queueReq;
 var queue = r.queue;
 var buildSets = require("../buildSets");
 var supertest = require('supertest');
+var replay_dir = "./testfiles/";
+console.log('starting web');
+var app = require('../web');
+var parser = require('../parser');
+var parseManager = require('../parseManager');
 var wait = 90000;
 //fake retriever response
 nock("http://" + process.env.RETRIEVER_HOST)
@@ -95,11 +131,6 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
             leagues: []
         }
     });
-var replay_dir = "./testfiles/";
-console.log('starting web');
-var app = require('../web');
-var parser = require('../parser');
-var parseManager = require('../parseManager');
 before(function(done) {
     this.timeout(wait);
     var DatabaseCleaner = require('database-cleaner');
@@ -118,6 +149,7 @@ before(function(done) {
                 });
             });
             */
+            cb();
             },
             function(cb) {
             console.log("wiping redis");
@@ -162,6 +194,7 @@ before(function(done) {
 });
 describe("worker", function() {
     this.timeout(wait);
+    /*
     it('process details request', function(done) {
         queueReq(queue, "api_details", {
             match_id: 870061127
@@ -210,14 +243,7 @@ describe("worker", function() {
             });
         });
     });
-});
-describe("tasks", function() {
-    this.timeout(wait);
-    it('updateNames', function(done) {
-        updateNames(function(err, num) {
-            done(err);
-        });
-    });
+    */
 });
 describe("parser", function() {
     this.timeout(wait);
@@ -309,7 +335,7 @@ describe("web", function() {
                     done(err);
                 });
         });
-    })
+    });
     describe("player page tests", function() {
         var tests = ["", "matches", "histograms", "counts", "compare", "asdf"];
         tests.forEach(function(t) {
@@ -334,6 +360,7 @@ describe("web", function() {
         });
         */
     });
+    /*
     describe("parsed match page tests", function() {
         var tests = ["", "performances", "purchases", "chat", "asdf"];
         tests.forEach(function(t) {
@@ -345,6 +372,7 @@ describe("web", function() {
             });
         });
     });
+    */
 });
 describe("api tests", function() {
     //todo supertest these?
