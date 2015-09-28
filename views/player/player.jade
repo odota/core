@@ -6,8 +6,8 @@ block content
     .col-xs-3
       div(style="display:flex;")
         a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
-          if player.avatarmedium
-            img(src='#{player.avatarmedium}').img-thumbnail
+          if player.avatar
+            img(src='#{player.avatar}').img-thumbnail
           //else
             //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
         div

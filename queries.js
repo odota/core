@@ -128,7 +128,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         }
                     }
                     //reduce match to save cache space--we only need basic data per match for matches tab
-                    reduceMatch(player_match);
+                    player_match = reduceMatch(player_match);
                     var orig = cache.data[player_match.match_id];
                     if (!orig) {
                         cache.data[player_match.match_id] = player_match;

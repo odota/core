@@ -316,6 +316,7 @@ module.exports = function(db, redis) {
                 if (err) {
                     return cb(err);
                 }
+                //full match cache code
                 //mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
                 //we end up only saving 200 matches to the cache, rather than the expanded set
                 //additionally the count validation will always fail since a non-number account_id will return 0 results
@@ -359,7 +360,7 @@ module.exports = function(db, redis) {
                         });
                     }
                     /*
-                    //below code if we want to cache full matches (with parsed data)
+                    //full match cache code
                     if (cacheValid) {
                         console.log("player cache hit %s", player.account_id);
                         //cached data should come in ascending match order
@@ -387,7 +388,6 @@ module.exports = function(db, redis) {
                             return b.match_id - a.match_id;
                         });
                         //reduce matches to only required data for display
-                        //results.data is also reduced
                         player.data = results.data.map(reduceMatch);
                         player.aggData = results.aggData;
                         player.all_teammates = cachedTeammates;
@@ -427,46 +427,46 @@ module.exports = function(db, redis) {
                         async.series([saveCache], function(err) {
                             cb(err, player);
                         });
+                    }
 
-                        function saveCache(cb) {
-                            //save cache
-                            /*
-                            if (!cacheValid && account_id !== constants.anonymous_account_id) {
-                                results.unfiltered.forEach(reduceMatch);
-                                console.log("saving cache with length: %s", results.unfiltered.length);
-                                async.each(results.unfiltered, function(match_copy, cb) {
-                                    //delete _id from the fetched match to prevent conflicts
-                                    delete match_copy._id;
-                                    db.player_matches.update({
-                                        account_id: account_id,
-                                        match_id: match_copy.match_id
-                                    }, {
-                                        $set: match_copy
-                                    }, {
-                                        upsert: true
-                                    }, cb);
+                    function saveCache(cb) {
+                        //full match cache code, needs ref to unfiltered data to save
+                        /*
+                        if (!cacheValid && account_id !== constants.anonymous_account_id) {
+                            results.unfiltered.forEach(reduceMatch);
+                            console.log("saving cache with length: %s", results.unfiltered.length);
+                            async.each(results.unfiltered, function(match_copy, cb) {
+                                db.player_matches.update({
+                                    account_id: account_id,
+                                    match_id: match_copy.match_id
+                                }, {
+                                    $set: match_copy
+                                }, {
+                                    upsert: true
                                 }, cb);
-                            }
-                            */
-                            if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id) {
-                                //pack data into hash for cache
-                                var match_ids = {};
-                                results.data.forEach(function(m) {
-                                    match_ids[m.match_id] = m;
-                                });
-                                cache = {
-                                    data: match_ids,
-                                    aggData: results.aggData
-                                };
-                                console.log("saving player cache %s", player.account_id);
-                                console.time("deflate");
-                                redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
-                                console.timeEnd("deflate");
-                                return cb(null, player);
-                            }
-                            else {
-                                return cb(null);
-                            }
+                            }, cb);
+                        }
+                        */
+                        if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id) {
+                            //pack data into hash for cache
+                            var match_ids = {};
+                            player.data.forEach(function(m) {
+                                match_ids[m.match_id] = m;
+                            });
+                            cache = {
+                                data: match_ids,
+                                aggData: player.aggData
+                            };
+                            console.log("saving player cache %s", player.account_id);
+                            console.time("deflate");
+                            redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            console.timeEnd("deflate");
+                            var fs = require('fs');
+                            fs.writeFileSync("output.json", JSON.stringify(cache));
+                            return cb(null, player);
+                        }
+                        else {
+                            return cb(null);
                         }
                     }
                 });
