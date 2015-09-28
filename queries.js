@@ -60,57 +60,52 @@ function getSets(redis, cb) {
 }
 
 function insertMatch(db, redis, queue, match, options, cb) {
+    var players = match.players;
+    delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in match.players
     async.series([insertMatchTable, insertPlayerMatchesTable, ensurePlayers, updatePlayerCaches, clearMatchCache], decideParse);
 
     function insertMatchTable(cb) {
-        db('matches').columnInfo().then(function(info) {
-            var row = {};
-            for (var key in row) {
-                row[key] = match[key];
-            }
+        var row = match;
+        for (var key in row) {
             if (typeof row[key] === "object" && row[key]) {
                 row[key] = JSON.stringify(row[key]);
             }
-            //TODO support upsert
-            //TODO update but do not insert if type is skill
-            db.insert(row).into('matches').where({
-                match_id: match.match_id
-            }).asCallback(cb);
-        });
+        }
+        //TODO support upsert
+        //TODO update only, do not insert if type is skill
+        db.insert(row).into('matches').where({
+            match_id: match.match_id
+        }).asCallback(cb);
     }
 
     function insertPlayerMatchesTable(cb) {
         //we can skip this if we have no players (skill case)
-        async.each(match.players || [], function(pm, cb) {
-            db('player_matches').columnInfo().then(function(info) {
-                var row = {
-                    match_id: match.match_id
-                };
-                for (var key in info) {
-                    row[key] = pm[key];
-                }
+        async.each(players || [], function(pm, cb) {
+            var row = pm;
+            row.match_id = match.match_id;
+            for (var key in row) {
                 if (typeof row[key] === "object" && row[key]) {
                     row[key] = JSON.stringify(row[key]);
                 }
-                //TODO support upsert
-                db.insert(row).into('player_matches').where({
-                    match_id: match.match_id,
-                    player_slot: pm.player_slot
-                }).asCallback(cb);
-            });
+            }
+            //TODO support upsert
+            db.insert(row).into('player_matches').where({
+                match_id: match.match_id,
+                player_slot: pm.player_slot
+            }).asCallback(cb);
         }, cb);
     }
 
     function ensurePlayers(cb) {
-        async.each(match.players || [], function(p, cb) {
+        async.each(players || [], function(p, cb) {
             queries.insertPlayer(db, p, cb);
         }, cb);
     }
 
     function updatePlayerCaches(cb) {
-        async.each(match.players || options.players, function(player_match, cb) {
+        async.each(players || options.players, function(player_match, cb) {
             //put match fields into each player to form player_match
             for (var key in match) {
                 player_match[key] = match[key];
@@ -128,7 +123,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         if (!reInsert && !reParse) {
                             computePlayerMatchData(player_match);
                             var group = {};
-                            group[player_match.match_id] = player_match.group || player_match.players;
+                            group[player_match.match_id] = players;
                             cache.aggData = aggregator([player_match], group, options.type, cache.aggData);
                         }
                     }
@@ -219,7 +214,7 @@ function insertPlayer(db, player, cb) {
         for (var key in info) {
             row[key] = player[key];
         }
-        //TODO implement upsert to avoid crashing on duplicate inserts
+        //TODO support upsert to avoid crashing on duplicate inserts
         db.insert(row).into('players').asCallback(function(err) {
             return cb(err, row);
         });

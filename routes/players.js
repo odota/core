@@ -259,7 +259,7 @@ module.exports = function(db, redis) {
             return cb("invalid account_id");
         }
         //try to find player in db
-        db.from('players').where({
+        db.first().from('players').where({
             account_id: Number(account_id)
         }).asCallback(function(err, player) {
             if (err) {

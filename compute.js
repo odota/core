@@ -30,7 +30,7 @@ function computePlayerMatchData(player_match) {
     player_match.total_xp = ~~(player_match.xp_per_min * player_match.duration / 60);
     player_match.kda = ~~((player_match.kills + player_match.assists) / (player_match.deaths + 1));
     if (player_match.chat) {
-        // aggregate all the words in these matches for each player_match (don't do this for single match display)
+        // word counts for this player and all players
         // aggregation of all words in all chat this player has experienced
         player_match.all_word_counts = count_words(player_match, null);
         // aggregation of only the words in all chat this player said themselves
@@ -368,7 +368,7 @@ function generateGraphData(match) {
     var xpDifference = ['XP'];
     goldDifference = goldDifference.concat(match.radiant_gold_adv);
     xpDifference = xpDifference.concat(match.radiant_xp_adv);
-    var time = ["time"].concat(match.times);
+    var time = ["time"].concat(match.players[0].times);
     var data = {
         difference: [time, xpDifference, goldDifference],
         gold: [time],

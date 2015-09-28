@@ -321,7 +321,6 @@ function getParseSchema() {
                 "kill_streaks": {},
                 "multi_kills": {},
                 "healing": {},
-                "hero_id": "", // the hero id of this player
                 "kill_streaks_log": [], // an array of kill streak values
                 //     where each kill streak is an array of kills where
                 //         where each kill is an object that contains

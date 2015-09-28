@@ -1,4 +1,5 @@
 var config = require('../config');
+var isRadiant = require('../utility').isRadiant;
 var async = require('async');
 var pg = require('knex')({
     client: 'pg',
@@ -53,7 +54,7 @@ MongoClient.connect(url, function(err, db) {
                 var xptotal = 0;
                 m.players.forEach(function(elem, j) {
                     var p = m.parsed_data.players[j];
-                    if (elem.isRadiant) {
+                    if (isRadiant(elem)) {
                         goldtotal += p.gold[i];
                         xptotal += p.xp[i];
                     }

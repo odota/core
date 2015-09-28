@@ -17,6 +17,7 @@ module.exports = function(db, redis) {
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json) {
+                //TODO remove some columns to reduce JSON size?
                 return res.json(match);
             }
             res.render("match/match_" + info, {
@@ -72,25 +73,27 @@ module.exports = function(db, redis) {
             }
             else {
                 console.log("Cache miss for match " + match_id);
-                db.from('matches').where({
+                db.first().from('matches').where({
                     match_id: Number(match_id)
-                }).asCallback(function(err, matches) {
+                }).asCallback(function(err, match) {
                     if (err) {
                         return cb(err);
                     }
+                    else if (!match) {
+                        return cb("match not found");
+                    }
                     else {
                         //join to get personaname, last_login, avatar
-                        db.from('player_matches').where({
+                        db.select().from('player_matches').where({
                             "player_matches.match_id": Number(match_id)
-                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, players) {
+                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players) {
                             if (err) {
                                 return cb(err);
                             }
-                            var match = matches[0];
-                            match.players = players;
-                            match.players.forEach(function(p) {
+                            players.forEach(function(p) {
                                 computePlayerMatchData(p);
                             });
+                            match.players = players;
                             computeMatchData(match);
                             renderMatch(match);
                             if (match.version && config.NODE_ENV !== "development") {

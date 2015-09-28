@@ -103,7 +103,7 @@ Developer's Guide
         * Processing a job:
             * `getReplayUrl` to get the download URL for a replay.  It selects randomly from the list of available retrievers to serve the request.
             * Send a request to a parse worker with the url.
-            * Read the response from parse worker and save as `match.parsed_data`.
+            * Read the response from parse worker and save it to DB.
     * `worker`: Takes care of background tasks.  This is still a bit of a jack-of-all-trades since it used to process all job types before we moved some of them out to individual processes.
         * Processes incoming parse requests, using the `processApi` processor.
             * This could probably go in its own process.

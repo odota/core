@@ -119,14 +119,20 @@ function processParse(job, ctx, cb) {
                     return cb(body.error);
                 }
                 var parsed_data = body;
-                //parsed_data match id may not be 100% reliable, use match_id if possible
-                parsed_data.match_id = match_id || parsed_data.match_id;
-                parsed_data.parse_status = 2;
-                parsed_data.group = match.players;
-                parsed_data.radiant_win = match.radiant_win;
-                parsed_data.duration = match.duration;
-                
-                insertMatch(db, redis, queue, parsed_data, {
+                //extend match object with parsed data, keep existing data if key conflict (match_id)
+                var players = match.players;
+                var parsedPlayers = parsed_data.players;
+                delete match.players;
+                delete parsed_data.players;
+                for (var key in parsed_data){
+                    match[key] = match[key] || parsed_data[key];
+                }
+                players.forEach(function(p){
+                    utility.mergeObjects(p, parsedPlayers[p.player_slot % (128-5)]);
+                });
+                match.players = players;
+                match.parse_status = 2;
+                insertMatch(db, redis, queue, match, {
                     type: "parsed"
                 }, function(err) {
                     console.timeEnd("parse " + match_id);

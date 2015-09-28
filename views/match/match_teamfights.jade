@@ -2,8 +2,7 @@ extend match
 
 block match_content
 
-  - var parsed_data = match.parsed_data
-  - var teamfights = parsed_data.teamfights || []
+  - var teamfights = match.teamfights || []
 
   .row
     .col-md-12
@@ -28,7 +27,6 @@ block match_content
 
   .row
     .col-md-4
-      //pre=JSON.stringify(match.parsed_data.teamfights)
       h3 Fights 
         small Click a row to display
       table.table.table-condensed.table-hover
@@ -139,8 +137,6 @@ block match_content
                     else
                       //=key
 
-
-  if parsed_data.version >= 10
     .row
       .col-md-12
 
@@ -158,13 +154,13 @@ block match_content
   
             tbody
               - var player_num = 0
-              each player in parsed_data.players
+              each player in match.players
                 - player_num = player_num + 1
                 
                 - var hero_id = player.hero_id
                 - var hero = constants.heroes[hero_id]
   
-                each streak in player.kill_streaks_log
+                each streak in player.kill_streaks_log || []
   
                   - var num_rows = Math.ceil(streak.length / max_row_size)
                   - var kills_in_other_rows = Math.ceil(streak.length / num_rows)

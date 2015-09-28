@@ -38,11 +38,11 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(id, done) {
-    db.select().from('players').where({
+    db.first().from('players').where({
         account_id: id
-    }).asCallback(function(err, rows) {
+    }).asCallback(function(err, player) {
         redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
-        done(err, rows[0]);
+        done(err, player);
     });
 });
 passport.use(new SteamStrategy({

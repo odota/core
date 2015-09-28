@@ -8,7 +8,6 @@
   .col-md-5
     +data_table({id:"positions", summable: true, heading:"Positions"})
       each player, ind in match.players
-        - var p = player.parsedPlayer
         +data_table_header(ind, match)      
           tr
             th: abbr(title=tooltips.hero_id) Hero
@@ -17,9 +16,9 @@
             th: abbr(title=tooltips.used_ward_sentry) Sentry
         tr(class = player.isRadiant ? "radiant" : "dire")
           +hero_td(player)
-          td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[p.lane] || "-"}
-          td.activate(data-index=ind, data-type="obs") #{p.obs_log.length || "-"}
-          td.activate(data-index=ind, data-type="sen") #{p.sen_log.length || "-"}
+          td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[player.lane] || "-"}
+          td.activate(data-index=ind, data-type="obs") #{player.obs_log.length || "-"}
+          td.activate(data-index=ind, data-type="sen") #{player.sen_log.length || "-"}
               
   script.
     var width = document.getElementById('map').clientWidth;

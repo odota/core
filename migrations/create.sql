@@ -8,7 +8,7 @@ CREATE TABLE matches (
   match_id bigint PRIMARY KEY,
   match_seq_num bigint,
   radiant_win boolean,
-  start_time bigint,
+  start_time integer,
   duration integer,
   tower_status_radiant integer,
   tower_status_dire integer,
@@ -25,6 +25,8 @@ CREATE TABLE matches (
   engine integer,
   --radiant_team_name varchar(255),
   --dire_team_name varchar(255),
+  --radiant_captain bigint,
+  --dire_captain bigint,
   --parsed data
   parse_status integer,
   url varchar(255),
@@ -67,7 +69,7 @@ CREATE TABLE players (
 
 CREATE TABLE player_matches (
   PRIMARY KEY(match_id, player_slot),
-      match_id bigint,
+      match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
       account_id bigint,
       player_slot integer,
       hero_id integer,
@@ -131,8 +133,8 @@ CREATE TABLE player_matches (
 
 CREATE TABLE player_ratings (
   PRIMARY KEY(account_id, match_id),
-  account_id integer,
-  match_id integer,
+  account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
+  match_id bigint,
   solo_competitive_rank integer,
   competitive_rank integer, 
   time timestamp with time zone
