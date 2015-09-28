@@ -3,10 +3,10 @@ module.exports = function ratingsChart(ratings) {
         return new Date(r.time);
     });
     var solo = ratings.map(function(r) {
-        return r.soloCompetitiveRank;
+        return r.solo_competitive_rank;
     });
     var party = ratings.map(function(r) {
-        return r.competitiveRank;
+        return r.competitive_rank;
     });
     c3.generate({
         bindto: "#ratings",

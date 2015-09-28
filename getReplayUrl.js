@@ -4,15 +4,16 @@ var redis = r.client;
 var utility = require('./utility');
 var getData = utility.getData;
 module.exports = function getReplayUrl(match, cb) {
-    db.matches.findOne({
+    if (match.url) {
+        //if there's already a filename or url, we don't need to retrieve
+        //this is for custom jobs!
+        console.log("replay url in job");
+        return cb();
+    }
+    db.select(['url']).from('matches').where({
         match_id: match.match_id
-    }, function(err, doc) {
-        if (err){
-            return cb(err);
-        }
-        if (match.url) {
-            //if there's already a filename or url, we don't to retrieve
-            //this is for custom jobs!
+    }).asCallback(function(err, doc) {
+        if (err) {
             return cb(err);
         }
         if (doc && doc.url) {
@@ -39,17 +40,13 @@ module.exports = function getReplayUrl(match, cb) {
                     var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replay_salt + ".dem.bz2";
                     match.url = url;
                     //save replay url in db
-                    db.matches.update({
+                    db('matches').update({
+                        url: url
+                    }).where({
                         match_id: match.match_id
-                    }, {
-                        $set: match
-                    }, {
-                        upsert: true
-                    }, function(err) {
-                        cb(err);
-                    });
+                    }).asCallback(cb);
                 });
             });
         }
     });
-}
+};

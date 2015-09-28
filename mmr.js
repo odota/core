@@ -5,11 +5,11 @@ var kue = r.kue;
 var queue = r.queue;
 var db = require('./db');
 var getData = utility.getData;
+var queries = require('./queries');
 queue.process('mmr', 10, processMmr);
 utility.cleanup(queue, kue, "mmr");
 
 function processMmr(job, cb) {
-    var payload = job.data.payload;
     getData({
         url: job.data.url,
         noRetry: true
@@ -21,21 +21,9 @@ function processMmr(job, cb) {
             return cb(null, err);
         }
         if (data.solo_competitive_rank || data.competitive_rank) {
-            db.players.update({
-                account_id: payload.account_id
-            }, {
-                $push: {
-                    ratings: {
-                        match_id: payload.match_id,
-                        account_id: payload.account_id,
-                        soloCompetitiveRank: data.solo_competitive_rank,
-                        competitiveRank: data.competitive_rank,
-                        time: new Date()
-                    }
-                }
-            }, function(err) {
-                cb(err);
-            });
+            data.match_id = job.data.payload.match_id;
+            data.time = new Date();
+            queries.insertPlayerRating(db, data, cb);
         }
         else {
             cb(null);

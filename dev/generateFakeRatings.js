@@ -6,8 +6,8 @@ for (var i = 0; i < 5000; i++) {
             {
                 "match_id": 1238535235 + i,
                 "account_id": i,
-                "soloCompetitiveRank": i,
-                "competitiveRank": i * 2,
+                "solo_competitive_rank": i,
+                "competitive_rank": i * 2,
                 "time": new Date(i)
         }]
     });

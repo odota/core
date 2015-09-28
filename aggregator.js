@@ -242,13 +242,13 @@ module.exports = function aggregator(matches, groups, fields, existing) {
         },
         //PARSED data aggregations below
         /*
-        //ward uses no longer accurate in 6.84 due to ability to use wards from stack
+        //ward uses no longer accurate >6.84 due to ability to use wards from stack
         //alternatives include counting purchases or checking length of ward positions object
-        "observer_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.observer_uses, m);
+        "observer_uses": function(key, m) {
+            standardAgg(key, m.observer_uses, m);
         },
-        "sentry_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.sentry_uses, m);
+        "sentry_uses": function(key, m) {
+            standardAgg(key, m.sentry_uses, m);
         },
         */
         "parsed_match_ids": {

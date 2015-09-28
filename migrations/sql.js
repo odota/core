@@ -52,7 +52,7 @@ MongoClient.connect(url, function(err, db) {
                 var goldtotal = 0;
                 var xptotal = 0;
                 m.players.forEach(function(elem, j) {
-                    var p = elem.parsedPlayer;
+                    var p = m.parsed_data.players[j];
                     if (elem.isRadiant) {
                         goldtotal += p.gold[i];
                         xptotal += p.xp[i];

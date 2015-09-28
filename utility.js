@@ -362,14 +362,22 @@ function isSignificant(constants, m) {
 }
 
 function reduceMatch(match) {
-    //returns only the minimum of data required for display
-    //we can delete match.parsed_data since we generate parsedPlayers from it
-    delete match.parsed_data;
-    //we can delete the following if we are only caching aggregations
-    delete match.my_word_counts;
-    delete match.all_word_counts;
-    delete match.all_players;
-    delete match.parsedPlayers;
+    //trim down the size of a player_match so cache.data isn't so big
+    match = {
+        hero_id: match.hero_id,
+        game_mode: match.game_mode,
+        kills: match.kills,
+        deaths: match.deaths,
+        assists: match.assists,
+        last_hits: match.last_hits,
+        gold_per_min: match.gold_per_min,
+        parse_status: match.parse_status,
+        skill: match.skill,
+        match_id: match.match_id,
+        player_win: match.player_win,
+        start_time: match.start_time,
+        duration: match.duration
+    };
     return match;
 }
 

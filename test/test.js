@@ -59,9 +59,9 @@ nock("http://" + process.env.RETRIEVER_HOST)
         "friendly": 10,
         "forgiving": 5,
         "lowPriorityGamesRemaining": 0,
-        "competitiveRank": 3228,
+        "competitive_rank": 3228,
         "calibrationGamesRemaining": 0,
-        "soloCompetitiveRank": 3958,
+        "solo_competitive_rank": 3958,
         "soloCalibrationGamesRemaining": 0,
         "recruitmentLevel": 0
     });
@@ -146,9 +146,6 @@ before(function(done) {
             function(cb) {
             /*
             console.log("loading players");
-            //set visited date on first player
-            testdata.players[0].last_visited = new Date();
-            testdata.players[1].last_visited = new Date("2012-08-31T15:59:02.161+0100");
             async.mapSeries(testdata.players, function(p, cb) {
                 db.players.insert(p, function(err) {
                     cb(err);

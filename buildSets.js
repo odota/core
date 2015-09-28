@@ -20,15 +20,7 @@ module.exports = function buildSets(db, redis, cb) {
         },
         //users in this set have their matches added
         "userPlayers": function(cb) {
-            db.players.find({
-                last_visited: {
-                    $ne: null
-                }
-            }, {
-                fields: {
-                    "account_id": 1
-                }
-            }, function(err, docs) {
+            db.select(['account_id']).from('players').whereNotNull('last_login').asCallback(function(err, docs) {
                 if (err) {
                     return cb(err);
                 }
@@ -42,15 +34,7 @@ module.exports = function buildSets(db, redis, cb) {
         },
         //users in this set are added to the trackedPlayers set
         "donators": function(cb) {
-            db.players.find({
-                cheese: {
-                    $gt: 0
-                }
-            }, {
-                fields: {
-                    "account_id": 1
-                }
-            }, function(err, docs) {
+            db.select(['account_id']).from('players').where('cheese', '>', 0).asCallback(function(err, docs) {
                 if (err) {
                     return cb(err);
                 }

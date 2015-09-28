@@ -254,22 +254,9 @@ module.exports = function(db, redis) {
         //options.info, the tab the player is on
         //options.query, the query object to use in advQuery
         var cache;
-        var whitelist = {
-            "all": 250
-        };
-        preprocessQuery(options.query);
-        //set up query in case we need it
-        //convert account id to number and search db with it
-        if (!isNaN(Number(account_id))) {
-            options.query.select.account_id = Number(account_id);
-            //match limit to retrieve for any player
-            options.query.limit = 20000;
-        }
-        else if (account_id in whitelist) {
-            options.query.limit = whitelist[account_id];
-        }
-        else {
-            return cb("invalid account id");
+        options.query = preprocessQuery(options.query, account_id);
+        if (!options.query){
+            return cb("invalid account_id");
         }
         //try to find player in db
         db.from('players').where({
@@ -420,7 +407,6 @@ module.exports = function(db, redis) {
                             //save cache
                             /*
                             if (!cacheValid && account_id !== constants.anonymous_account_id) {
-                                //delete unnecessary data from match (parsed_data)
                                 results.unfiltered.forEach(reduceMatch);
                                 console.log("saving cache with length: %s", results.unfiltered.length);
                                 async.each(results.unfiltered, function(match_copy, cb) {
@@ -467,7 +453,7 @@ module.exports = function(db, redis) {
         //console.log(query);
         //console.log(options);
         console.time('getting player_matches');
-        db.from('player_matches').where(query.select).limit(query.limit).orderBy('match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
+        db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
             if (err) {
                 return cb(err);
             }

@@ -122,6 +122,7 @@ function processParse(job, ctx, cb) {
                 //parsed_data match id may not be 100% reliable, use match_id if possible
                 parsed_data.match_id = match_id || parsed_data.match_id;
                 parsed_data.parse_status = 2;
+                parsed_data.group = match.players;
                 insertMatch(db, redis, queue, parsed_data, {
                     type: "parsed"
                 }, function(err) {

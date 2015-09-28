@@ -181,7 +181,7 @@ function computePlayerMatchData(player_match) {
  * - player_filter: if non-null, only count that player's messages
  **/
 function count_words(match, player_filter) {
-    var messages = match.parsed_data.chat;
+    var messages = match.chat;
     // extract the message strings from the message objects
     // extract individual words from the message strings
     var chat_words = [];
