@@ -74,7 +74,7 @@ module.exports = function(db, redis) {
                 console.log("Cache miss for match " + match_id);
                 db.from('matches').where({
                     match_id: Number(match_id)
-                }).asCallback(function(err, match) {
+                }).asCallback(function(err, matches) {
                     if (err) {
                         return cb(err);
                     }
@@ -86,6 +86,7 @@ module.exports = function(db, redis) {
                             if (err) {
                                 return cb(err);
                             }
+                            var match = matches[0];
                             match.players = players;
                             match.players.forEach(function(p) {
                                 computePlayerMatchData(p);

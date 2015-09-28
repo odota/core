@@ -43,7 +43,7 @@ block content
     .col-md-12.table-responsive
       ul.nav.nav-tabs
         each val, key in tabs
-          - var disableTab = !match.parsed_data.version && key!=="index"
+          - var disableTab = !match.version && key!=="index"
           li(class=(route === key ? 'active' : ''), class=(disableTab ? 'disabled' : ''), title=(disableTab ? tooltips.unparsed_tab : ''))
               a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key), class=(val.new ? "new-feature" : ""))= val.name
 

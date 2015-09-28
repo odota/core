@@ -252,28 +252,30 @@ function renderMatch(m) {
             });
         }
     });
-    //make a list of messages and join them all together for sentiment analysis
-    var chat_words = m.chat.map(function(message) {
-        return message.key;
-    }).join(' ');
-    m.sentiment = sentiment(chat_words, {
-        "report": -2,
-        "commend": 2,
-        "noob": -2,
-        "ff": -1,
-        "bg": -1,
-        "feed": -1,
-        "ty": 1,
-        "thanks": 1,
-        "wp": 1,
-        "end": -1,
-        "garbage": -1,
-        "trash": -1,
-        "throw": -1,
-        "salt": -1,
-        "ez": -1,
-        "mad": -1
-    });
+    if (m.chat) {
+        //make a list of messages and join them all together for sentiment analysis
+        var chat_words = m.chat.map(function(message) {
+            return message.key;
+        }).join(' ');
+        m.sentiment = sentiment(chat_words, {
+            "report": -2,
+            "commend": 2,
+            "noob": -2,
+            "ff": -1,
+            "bg": -1,
+            "feed": -1,
+            "ty": 1,
+            "thanks": 1,
+            "wp": 1,
+            "end": -1,
+            "garbage": -1,
+            "trash": -1,
+            "throw": -1,
+            "salt": -1,
+            "ez": -1,
+            "mad": -1
+        });
+    }
     //create graph data
     m.graphData = generateGraphData(m);
     m.incomeData = generateIncomeData(m);
@@ -283,73 +285,79 @@ function renderMatch(m) {
         return p.posData;
     });
     //process objectives
-    m.objectives.forEach(function(entry) {
-        var p = m.players[entry.slot];
-        entry.objective = constants.objectives[entry.subtype] || entry.subtype;
-        entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
-        entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
-    });
-    //process teamfight data
-    m.teamfights.forEach(function(tf) {
-        tf.posData = [];
-        tf.radiant_gold_delta = 0;
-        tf.radiant_xp_delta = 0;
-        tf.radiant_participation = 0;
-        tf.radiant_deaths = 0;
-        tf.dire_participation = 0;
-        tf.dire_deaths = 0;
-        tf.players.forEach(function(p) {
-            //lookup starting, ending level
-            p.level_start = getLevelFromXp(p.xp_start);
-            p.level_end = getLevelFromXp(p.xp_end);
-
-            function getLevelFromXp(xp) {
-                for (var i = 0; i < constants.xp_level.length; i++) {
-                    if (constants.xp_level[i] > xp) {
-                        return i;
-                    }
-                }
-                return constants.xp_level.length;
+    if (m.objectives) {
+        m.objectives.forEach(function(entry) {
+            entry.objective = constants.objectives[entry.subtype] || entry.subtype;
+            var p = m.players[entry.slot];
+            if (p) {
+                entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
+                entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
             }
         });
-        //add player's hero_id to each teamfight participant
-        m.players.forEach(function(p, i) {
-            var tfplayer = tf.players[i];
-            tfplayer.hero_id = p.hero_id;
-            tfplayer.player_slot = p.player_slot;
-            tfplayer.isRadiant = isRadiant(p);
-            tfplayer.personaname = p.personaname;
-            tfplayer.account_id = p.account_id;
-            tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0;
-            /*
-            p.teamfights_participated = 0;
-            p.teamfights_participated += tfplayer.participate ? 1 : 0;
-            */
-            //compute team gold/xp deltas
-            if (isRadiant(p)) {
-                tf.radiant_gold_delta += tfplayer.gold_delta;
-                tf.radiant_xp_delta += tfplayer.xp_delta;
-                tf.radiant_participation += tfplayer.participate ? 1 : 0;
-                tf.radiant_deaths += tfplayer.deaths ? 1 : 0;
-            }
-            else {
-                tf.radiant_gold_delta -= tfplayer.gold_delta;
-                tf.radiant_xp_delta -= tfplayer.xp_delta;
-                tf.dire_participation += tfplayer.participate ? 1 : 0;
-                tf.dire_deaths += tfplayer.deaths ? 1 : 0;
-            }
-            //convert 2d hash to array
-            tfplayer.posData = generatePositionData({
-                deaths_pos: 1
-            }, tfplayer);
-            //console.log(player);
-            //add player hero id to each death, push into teamfight death position array
-            tfplayer.posData.deaths_pos.forEach(function(pt) {
-                pt.hero_id = tfplayer.hero_id;
-                tf.posData.push(pt);
+    }
+    //process teamfight data
+    if (m.teamfights) {
+        m.teamfights.forEach(function(tf) {
+            tf.posData = [];
+            tf.radiant_gold_delta = 0;
+            tf.radiant_xp_delta = 0;
+            tf.radiant_participation = 0;
+            tf.radiant_deaths = 0;
+            tf.dire_participation = 0;
+            tf.dire_deaths = 0;
+            tf.players.forEach(function(p) {
+                //lookup starting, ending level
+                p.level_start = getLevelFromXp(p.xp_start);
+                p.level_end = getLevelFromXp(p.xp_end);
+
+                function getLevelFromXp(xp) {
+                    for (var i = 0; i < constants.xp_level.length; i++) {
+                        if (constants.xp_level[i] > xp) {
+                            return i;
+                        }
+                    }
+                    return constants.xp_level.length;
+                }
+            });
+            //add player's hero_id to each teamfight participant
+            m.players.forEach(function(p, i) {
+                var tfplayer = tf.players[i];
+                tfplayer.hero_id = p.hero_id;
+                tfplayer.player_slot = p.player_slot;
+                tfplayer.isRadiant = isRadiant(p);
+                tfplayer.personaname = p.personaname;
+                tfplayer.account_id = p.account_id;
+                tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0;
+                /*
+                p.teamfights_participated = 0;
+                p.teamfights_participated += tfplayer.participate ? 1 : 0;
+                */
+                //compute team gold/xp deltas
+                if (isRadiant(p)) {
+                    tf.radiant_gold_delta += tfplayer.gold_delta;
+                    tf.radiant_xp_delta += tfplayer.xp_delta;
+                    tf.radiant_participation += tfplayer.participate ? 1 : 0;
+                    tf.radiant_deaths += tfplayer.deaths ? 1 : 0;
+                }
+                else {
+                    tf.radiant_gold_delta -= tfplayer.gold_delta;
+                    tf.radiant_xp_delta -= tfplayer.xp_delta;
+                    tf.dire_participation += tfplayer.participate ? 1 : 0;
+                    tf.dire_deaths += tfplayer.deaths ? 1 : 0;
+                }
+                //convert 2d hash to array
+                tfplayer.posData = generatePositionData({
+                    deaths_pos: 1
+                }, tfplayer);
+                //console.log(player);
+                //add player hero id to each death, push into teamfight death position array
+                tfplayer.posData.deaths_pos.forEach(function(pt) {
+                    pt.hero_id = tfplayer.hero_id;
+                    tf.posData.push(pt);
+                });
             });
         });
-    });
+    }
 }
 /**
  * Generates data for c3 charts in a match
@@ -360,7 +368,7 @@ function generateGraphData(match) {
     var xpDifference = ['XP'];
     goldDifference = goldDifference.concat(match.radiant_gold_adv);
     xpDifference = xpDifference.concat(match.radiant_xp_adv);
-    var time = ["time"].concat(match.players[0].times);
+    var time = ["time"].concat(match.times);
     var data = {
         difference: [time, xpDifference, goldDifference],
         gold: [time],
