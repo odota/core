@@ -129,7 +129,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
                     }
                     //reduce match to save cache space--we only need basic data per match for matches tab
                     player_match = reduceMatch(player_match);
-                    var orig = cache.data[player_match.match_id];
+                    var identifier = [player_match.match_id, player_match.player_slot].join(':');
+                    var orig = cache.data[identifier];
                     if (!orig) {
                         cache.data[player_match.match_id] = player_match;
                     }

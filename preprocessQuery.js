@@ -15,7 +15,7 @@ module.exports = function(query, account_id) {
         "compare_account_id": 1
     };
     var whitelist = {
-        "all": 250
+        "all": 5000
     };
     for (var key in query.select) {
         //arrayify the element

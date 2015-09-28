@@ -453,7 +453,8 @@ module.exports = function(db, redis) {
                             //pack data into hash for cache
                             var match_ids = {};
                             player.data.forEach(function(m) {
-                                match_ids[m.match_id] = m;
+                                var identifier = [m.match_id, m.player_slot].join(':');
+                                match_ids[identifier] = m;
                             });
                             cache = {
                                 data: match_ids,
