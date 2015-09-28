@@ -111,9 +111,10 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
     function updatePlayerCaches(cb) {
         async.each(match.players || options.players, function(player_match, cb) {
-            //TODO
-            //parsed_data insert is missing some match fields! parseManager can insert them? (duration)
-            //put match fields into eaach player to form player_match
+            //put match fields into each player to form player_match
+            for (var key in match) {
+                player_match[key] = match[key];
+            }
             redis.get("player:" + player_match.account_id, function(err, result) {
                 if (err) {
                     return cb(err);

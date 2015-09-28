@@ -180,16 +180,14 @@ function computePlayerMatchData(player_match) {
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
  **/
-function count_words(match, player_filter) {
-    var messages = match.chat;
+function count_words(player_match, player_filter) {
+    var messages = player_match.chat;
     // extract the message strings from the message objects
     // extract individual words from the message strings
     var chat_words = [];
     messages.forEach(function(message) {
-        // make sure the slot exists in all_players array, otherwise, skip this message
-        var p = match.all_players[message.slot];
         // if there is no player_filter, or if the passed player  matches this message, log it
-        if (p && (!player_filter || p.player_slot === player_filter.player_slot)) {
+        if (!player_filter || player_match.player_slot === player_filter.player_slot) {
             chat_words.push(message.key);
         }
     });
@@ -246,7 +244,7 @@ function renderMatch(m) {
         });
         //filter interval data to only be >= 0
         if (p.times) {
-            var intervals = ["lh", "gold", "xp", "times"];
+            var intervals = ["lh_t", "gold_t", "xp_t", "times"];
             intervals.forEach(function(key) {
                 p[key] = p[key].filter(function(el, i) {
                     return p.times[i] >= 0;

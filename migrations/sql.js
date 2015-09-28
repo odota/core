@@ -69,7 +69,7 @@ MongoClient.connect(url, function(err, db) {
         pg('matches').columnInfo().then(function(info) {
             var row = {};
             for (var key in info) {
-                if (key === "parse_status"){
+                if (key === "parse_status") {
                     row[key] = m.parsed_data ? 2 : null;
                 }
                 else if (key in m) {
@@ -93,30 +93,28 @@ MongoClient.connect(url, function(err, db) {
                     var parseSlot = pm.player_slot % (128 - 5);
                     var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
                     pg('player_matches').columnInfo().then(function(info) {
-                        var row = {
-                            match_id: m.match_id
-                        };
+                        var row = {};
                         for (var key in info) {
                             if (key === "gold_t") {
-                                row.gold_t = pp ? pp.gold : null;
+                                row[key] = pp ? pp.gold : null;
                             }
                             else if (key === "xp_t") {
-                                row.gold_t = pp ? pp.xp : null;
+                                row[key]= pp ? pp.xp : null;
                             }
                             else if (key === "lh_t") {
-                                row.gold_t = pp ? pp.lh : null;
+                                row[key] = pp ? pp.lh : null;
                             }
                             else if (key === "killed") {
-                                row.gold_t = pp ? pp.kills : null;
+                                row[key] = pp ? pp.kills : null;
+                            }
+                            else if (key === "match_id") {
+                                row[key] = m.match_id;
                             }
                             else if (key in pm) {
                                 row[key] = pm[key];
                             }
                             else if (pp && key in pp) {
                                 row[key] = pp[key];
-                            }
-                            else {
-                                row[key] = null;
                             }
                             if (typeof row[key] === "object" && row[key]) {
                                 row[key] = JSON.stringify(row[key]);
@@ -150,15 +148,16 @@ MongoClient.connect(url, function(err, db) {
                 //insert to player_ratings
                 async.each(p.ratings, function(r, cb) {
                     pg('player_ratings').columnInfo().then(function(info) {
-                        var row = {
-                            account_id: p.account_id
-                        };
+                        var row = {};
                         for (var key in info) {
                             if (key === "solo_competitive_rank") {
                                 row[key] = r.soloCompetitiveRank;
                             }
                             else if (key === "competitive_rank") {
                                 row[key] = r.competitiveRank;
+                            }
+                            else if (key === "account_id") {
+                                row[key] = p.account_id;
                             }
                             else {
                                 row[key] = r[key];

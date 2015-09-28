@@ -123,6 +123,9 @@ function processParse(job, ctx, cb) {
                 parsed_data.match_id = match_id || parsed_data.match_id;
                 parsed_data.parse_status = 2;
                 parsed_data.group = match.players;
+                parsed_data.radiant_win = match.radiant_win;
+                parsed_data.duration = match.duration;
+                
                 insertMatch(db, redis, queue, parsed_data, {
                     type: "parsed"
                 }, function(err) {

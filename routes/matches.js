@@ -81,8 +81,8 @@ module.exports = function(db, redis) {
                     else {
                         //join to get personaname, last_login, avatar
                         db.from('player_matches').where({
-                            match_id: Number(match_id)
-                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'match_id', 'matches.match_id').asCallback(function(err, players) {
+                            "player_matches.match_id": Number(match_id)
+                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, players) {
                             if (err) {
                                 return cb(err);
                             }
