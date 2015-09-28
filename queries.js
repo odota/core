@@ -63,7 +63,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players;
     delete match.players;
     //options specify api, parse, or skill
-    //we want to insert into matches, then insert into player_matches for each entry in match.players
+    //we want to insert into matches, then insert into player_matches for each entry in players
     async.series([insertMatchTable, insertPlayerMatchesTable, ensurePlayers, updatePlayerCaches, clearMatchCache], decideParse);
 
     function insertMatchTable(cb) {

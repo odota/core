@@ -78,10 +78,11 @@ module.exports = function(db, redis) {
                 teammate_list: function(cb) {
                     generateTeammateArrayFromHash(aggData.teammates, player, cb);
                 },
-                //the array of teammates cached (no filter)
+                /*
                 all_teammate_list: function(cb) {
                     generateTeammateArrayFromHash(player.all_teammates, player, cb);
                 }
+                */
             }, function(err, lists) {
                 if (err) {
                     return next(err);
@@ -235,14 +236,14 @@ module.exports = function(db, redis) {
         //limit to 200 max players
         teammates_arr = teammates_arr.slice(0, 200);
         async.each(teammates_arr, function(t, cb) {
-            db.first('players').where({
+            db.first().from('players').where({
                 account_id: t.account_id
             }).asCallback(function(err, row) {
                 if (err) {
                     return cb(err);
                 }
                 utility.mergeObjects(t, row);
-                cb();
+                cb(err);
             });
         }, function(err) {
             console.timeEnd('teammate list');
@@ -255,7 +256,7 @@ module.exports = function(db, redis) {
         //options.query, the query object to use in advQuery
         var cache;
         options.query = preprocessQuery(options.query, account_id);
-        if (!options.query){
+        if (!options.query) {
             return cb("invalid account_id");
         }
         //try to find player in db
@@ -271,14 +272,14 @@ module.exports = function(db, redis) {
             };
             //check count of matches to validate cache
             console.time("count");
-            db.from('player_matches').count('match_id').where({
+            db('player_matches').count('match_id').where({
                 account_id: Number(account_id)
             }).asCallback(function(err, count) {
                 if (err) {
                     return cb(err);
                 }
+                count = Number(count[0].count);
                 console.timeEnd("count");
-                count = Number(count);
                 //mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
                 //we end up only saving 200 matches to the cache, rather than the expanded set
                 //additionally the count validation will always fail since a non-number account_id will return 0 results
@@ -311,7 +312,7 @@ module.exports = function(db, redis) {
                     //the number of matches won't match if the account_id is string (all/professional)
                     var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || isNaN(account_id));
                     console.log(count, cache ? cache.data.length : null);
-                    var cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
+                    var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
                     var filter_exists = Object.keys(options.query.js_select).length;
                     if (cacheValid && !filter_exists) {
                         console.log("player cache hit %s", player.account_id);
@@ -353,7 +354,7 @@ module.exports = function(db, redis) {
                         //results.data is also reduced
                         player.data = results.data.map(reduceMatch);
                         player.aggData = results.aggData;
-                        player.all_teammates = cachedTeammates || player.aggData.teammates;
+                        player.all_teammates = cachedTeammates;
                         //convert heroes hash to array and sort
                         var aggData = player.aggData;
                         if (aggData.heroes) {
@@ -453,7 +454,7 @@ module.exports = function(db, redis) {
         //console.log(query);
         //console.log(options);
         console.time('getting player_matches');
-        db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
+        db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
             if (err) {
                 return cb(err);
             }
@@ -466,11 +467,9 @@ module.exports = function(db, redis) {
             });
             console.time('getting fellows');
             //get fellow players and pass to aggregator/filter
-            db.select(['match_id', 'account_id', 'hero_id', 'player_slot']).from('player_matches').whereIn({
-                match_id: player_matches.map(function(pm) {
-                    return pm.match_id;
-                })
-            }).asCallback(function(err, fellows) {
+            db.select(['match_id', 'account_id', 'hero_id', 'player_slot']).from('player_matches').whereIn('match_id', player_matches.map(function(pm) {
+                return pm.match_id;
+            })).asCallback(function(err, fellows) {
                 if (err) {
                     return cb(err);
                 }

@@ -3,16 +3,24 @@ module.exports = function getStatus(db, redis, queue, cb) {
     console.time('status');
     async.series({
         matches: function(cb) {
-            db.from('matches').count().asCallback(cb);
+            db.from('matches').count().asCallback(function(err, count) {
+                extractCount(err, count, cb);
+            });
         },
         players: function(cb) {
-            db.from('players').count().asCallback(cb);
+            db.from('players').count().asCallback(function(err, count) {
+                extractCount(err, count, cb);
+            });
         },
         user_players: function(cb) {
-            db.from('players').count().whereNotNull('last_login').asCallback(cb);
+            db.from('players').count().whereNotNull('last_login').asCallback(function(err, count) {
+                extractCount(err, count, cb);
+            });
         },
         full_history_players: function(cb) {
-            db.from('players').count().whereNotNull('full_history_time').asCallback(cb);
+            db.from('players').count().whereNotNull('full_history_time').asCallback(function(err, count) {
+                extractCount(err, count, cb);
+            });
         },
         tracked_players: function(cb) {
             redis.get("trackedPlayers", function(err, res) {
@@ -77,7 +85,14 @@ module.exports = function getStatus(db, redis, queue, cb) {
         }
     }, function(err, results) {
         console.timeEnd('status');
-        //TODO psql counts are bigints which are returned as strings in JS.  If we want to do math with them we need to numberify them
+        //TODO psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them
         cb(err, results);
     });
+
+    function extractCount(err, count, cb) {
+        if (err) {
+            return cb(err);
+        }
+        cb(err, Number(count[0].count));
+    }
 };

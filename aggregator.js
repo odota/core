@@ -263,7 +263,7 @@ module.exports = function aggregator(matches, groups, fields, existing) {
             type: "parsed",
             agg: function(key, m) {
                 //double invert to convert the float to an int so we can bucket better
-                standardAgg(key, m.stuns ? ~~m.stuns : undefined, m);
+                standardAgg(key, (typeof m.stuns === "number") ? ~~m.stuns : undefined, m);
             }
         },
         "courier_kills": {
@@ -546,7 +546,7 @@ module.exports = function aggregator(matches, groups, fields, existing) {
     function standardAgg(key, value, match) {
         var aggObj = aggData[key];
         //console.log(key, aggObj);
-        if (typeof value === "undefined") {
+        if (typeof value === "undefined" || value === null) {
             return;
         }
         aggObj.n += 1;
@@ -571,13 +571,13 @@ module.exports = function aggregator(matches, groups, fields, existing) {
                 aggObj.max_match = {
                     match_id: match.match_id,
                     start_time: match.start_time,
-                    hero_id: match.players[0].hero_id
+                    hero_id: match.hero_id
                 };
             }
             aggObj.avgs.push({
                 //match_id: match.match_id,
                 start_time: match.start_time,
-                hero_id: m.players[0].hero_id,
+                hero_id: m.hero_id,
                 val: value,
                 avg: ~~(aggObj.sum / aggObj.n * 100) / 100
             });
