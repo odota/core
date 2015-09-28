@@ -41,7 +41,8 @@ append footer_assets
     
     function createTrends(avgs, key){
       var xs = avgs.map(function(a,i){return i;});
-      var avgVals = avgs.map(function(a,i){return a.avg;});
+      //var avgVals = avgs.map(function(a,i){return a.avg;});
+      var avgVals = avgs;
       var chart = c3.generate({
       bindto: document.getElementById("chart-histogram-"+key),
       data: {
@@ -70,6 +71,7 @@ append footer_assets
     tooltip:{
 
     format: {
+    /*
     title: function(d){return moment.unix(avgs[d].start_time).format("dddd YYYY MMM DD");},
     value: function(value, ratio, id, ind){
     console.log(value, ratio, id, ind);
@@ -101,7 +103,7 @@ append footer_assets
     tr2.appendChild(avg);
     return table.outerHTML;
     }
-
+    */
     }
     }
     });

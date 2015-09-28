@@ -375,6 +375,8 @@ function reduceMatch(match) {
     delete match.all_word_counts;
     delete match.all_players;
     delete match.parsedPlayers;
+    delete match.players[0].ability_upgrades;
+    delete match.players[0].parsedPlayer;
     return match;
 }
 

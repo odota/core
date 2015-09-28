@@ -581,6 +581,7 @@ module.exports = function aggregator(matches, fields, existing) {
                     hero_id: match.players[0].hero_id
                 };
             }
+            /*
             aggObj.avgs.push({
                 //match_id: match.match_id,
                 start_time: match.start_time,
@@ -588,6 +589,8 @@ module.exports = function aggregator(matches, fields, existing) {
                 val: value,
                 avg: ~~(aggObj.sum / aggObj.n * 100) / 100
             });
+            */
+            aggObj.avgs.push(~~(aggObj.sum / aggObj.n * 100) / 100);
         }
     }
 
