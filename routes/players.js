@@ -336,7 +336,9 @@ module.exports = function(db, redis) {
                     };
                 */
                 redis.get("player:" + account_id, function(err, result) {
+                    console.time('inflate');
                     cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                    console.timeEnd('inflate');
                     //unpack cache.data into an array
                     if (cache && cache.data) {
                         var arr = [];
