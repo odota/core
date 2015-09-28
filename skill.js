@@ -53,9 +53,7 @@ function getPageData(start, options, cb) {
             return cb(err);
         }
         if (!data || !data.result || !data.result.matches) {
-            return process.nextTick(function(){
-                getPageData(start, options, cb);
-            });
+            return getPageData(start, options, cb);
         }
         //data is in data.result.matches
         var matches = data.result.matches;
@@ -89,9 +87,7 @@ function getPageData(start, options, cb) {
             }
             else {
                 start = matches[matches.length - 1].match_id - 1;
-                process.nextTick(function(){
-                    getPageData(start, options, cb);
-                });
+                return getPageData(start, options, cb);
             }
         });
     });

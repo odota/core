@@ -9,6 +9,9 @@ var kue = require('kue');
 var client = redis.createClient(options.port, options.host, {
     auth_pass: options.password
 });
+client.on('error', function(err) {
+    throw err;
+});
 var queue = kue.createQueue({
     redis: options
 });
