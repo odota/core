@@ -27,14 +27,20 @@ CREATE TABLE matches (
   --dire_team_name varchar(255),
   --radiant_captain bigint,
   --dire_captain bigint,
+  --radiant_logo integer
+  --dire_logo integer,
+  --radiant_team_complete integer,
+  --dire_team_complete integer,
+  --radiant_team_id integer,
+  --dire_team_id integer,
   --parsed data
   parse_status integer,
   url varchar(255),
-  chat json,
-  objectives json,
-  radiant_gold_adv json,
-  radiant_xp_adv json,
-  teamfights json,
+  chat json[],
+  objectives json[],
+  radiant_gold_adv integer[],
+  radiant_xp_adv integer[],
+  teamfights json[],
   version integer,
   --from skill api
   skill integer
@@ -93,19 +99,19 @@ CREATE TABLE player_matches (
       tower_damage integer,
       hero_healing integer,
       level integer,
-      ability_upgrades json,
+      ability_upgrades json[],
       --parsed fields below
       stuns real,
       max_hero_hit json,
-      times json,
-      gold_t json,
-      lh_t json,
-      xp_t json,
-      obs_log json,
-      sen_log json,
-      purchase_log json,
-      kills_log json,
-      buyback_log json,
+      times integer[],
+      gold_t integer[],
+      lh_t integer[],
+      xp_t integer[],
+      obs_log json[],
+      sen_log json[],
+      purchase_log json[],
+      kills_log json[],
+      buyback_log json[],
       lane_pos json,
       obs json,
       sen json,
@@ -127,8 +133,8 @@ CREATE TABLE player_matches (
       kill_streaks json,
       multi_kills json,
       healing json,
-      kill_streaks_log json, --an array of kill streak values
-      multi_kill_id_vals json --an array of multi kill values (the length of each multi kill)
+      kill_streaks_log json[], --an array of kill streak values
+      multi_kill_id_vals integer[] --an array of multi kill values (the length of each multi kill)
 );
 
 CREATE TABLE player_ratings (

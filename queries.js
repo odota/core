@@ -67,11 +67,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
     function insertMatchTable(cb) {
         var row = match;
-        for (var key in row) {
-            if (typeof row[key] === "object" && row[key]) {
-                row[key] = JSON.stringify(row[key]);
-            }
-        }
         //TODO support upsert
         //TODO update only, do not insert if options.type is skill
         db.insert(row).into('matches').where({
@@ -84,11 +79,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
         async.each(players || [], function(pm, cb) {
             var row = pm;
             row.match_id = match.match_id;
-            for (var key in row) {
-                if (typeof row[key] === "object" && row[key]) {
-                    row[key] = JSON.stringify(row[key]);
-                }
-            }
             //TODO support upsert
             db.insert(row).into('player_matches').where({
                 match_id: match.match_id,
@@ -209,7 +199,10 @@ function insertMatchProgress(db, redis, queue, match, options, job, cb) {
 
 function insertPlayer(db, player, cb) {
     player.account_id = player.account_id || Number(convert64to32(player.steamid));
-    db('players').columnInfo().then(function(info) {
+    db('players').columnInfo().asCallback(function(err, info) {
+        if (err){
+            return cb(err);
+        }
         var row = {};
         for (var key in info) {
             row[key] = player[key];
@@ -222,7 +215,10 @@ function insertPlayer(db, player, cb) {
 }
 
 function insertPlayerRating(db, rating, cb) {
-    db('player_ratings').columnInfo().then(function(info) {
+    db('player_ratings').columnInfo().asCallback(function(err, info) {
+        if (err){
+            return cb(err);
+        }
         var row = {};
         for (var key in row) {
             row[key] = rating[key];

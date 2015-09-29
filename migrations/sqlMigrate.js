@@ -28,6 +28,7 @@ MongoClient.connect(url, function(err, db) {
 
     function processItem(err, item) {
         if (err) {
+            console.error(item);
             throw err;
         }
         if (!item) {
@@ -62,11 +63,18 @@ MongoClient.connect(url, function(err, db) {
                         goldtotal -= p.gold[i];
                     }
                 });
-                m.parsed_data.radiant_gold_adv.push(goldtotal);
-                m.parsed_data.radiant_xp_adv.push(xptotal);
+                if (!isNaN(goldtotal)) {
+                    m.parsed_data.radiant_gold_adv.push(goldtotal);
+                }
+                if (!isNaN(xptotal)) {
+                    m.parsed_data.radiant_xp_adv.push(xptotal);
+                }
             }
         }
-        pg('matches').columnInfo().then(function(info) {
+        pg('matches').columnInfo().asCallback(function(err, info) {
+            if (err) {
+                return cb(err);
+            }
             var row = {};
             for (var key in info) {
                 if (key === "parse_status") {
@@ -89,15 +97,20 @@ MongoClient.connect(url, function(err, db) {
                 else {
                     row[key] = null;
                 }
+                /*
                 if (typeof row[key] === "object" && row[key]) {
                     row[key] = JSON.stringify(row[key]);
                 }
+                */
             }
             pg.insert(row).into('matches').asCallback(function(err) {
                 if (err) {
                     return cb(err);
                 }
-                pg('player_matches').columnInfo().then(function(info) {
+                pg('player_matches').columnInfo().asCallback(function(err, info) {
+                    if (err) {
+                        return cb(err);
+                    }
                     if (m.players) {
                         var players = m.players.map(function(pm) {
                             var parseSlot = pm.player_slot % (128 - 5);
@@ -125,9 +138,11 @@ MongoClient.connect(url, function(err, db) {
                                 else if (pp && key in pp) {
                                     row[key] = pp[key];
                                 }
+                                /*
                                 if (typeof row[key] === "object" && row[key]) {
                                     row[key] = JSON.stringify(row[key]);
                                 }
+                                */
                             }
                             return row;
                         });
@@ -145,7 +160,10 @@ MongoClient.connect(url, function(err, db) {
     }
 
     function processPlayer(p, cb) {
-        pg('players').columnInfo().then(function(info) {
+        pg('players').columnInfo().asCallback(function(err, info) {
+            if (err) {
+                return cb(err);
+            }
             var row = {};
             for (var key in info) {
                 if (key === "last_login") {
@@ -160,7 +178,10 @@ MongoClient.connect(url, function(err, db) {
                     return cb(err);
                 }
                 //insert to player_ratings
-                pg('player_ratings').columnInfo().then(function(info) {
+                pg('player_ratings').columnInfo().asCallback(function(err, info) {
+                    if (err) {
+                        return cb(err);
+                    }
                     if (p.ratings) {
                         var ratings = p.ratings.map(function(r) {
                             var row = {};
