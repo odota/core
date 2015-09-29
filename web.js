@@ -35,7 +35,7 @@ var queries = require('./queries');
 var buildSets = require('./buildSets');
 var matches = require('./routes/matches');
 var players = require('./routes/players');
-var api = require('./api');
+var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
 //PASSPORT config
