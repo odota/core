@@ -2,7 +2,6 @@ var async = require('async');
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var queueReq = utility.queueReq;
-var queries = require('./queries');
 var computePlayerMatchData = require('./compute').computePlayerMatchData;
 var zlib = require('zlib');
 var aggregator = require('./aggregator');
