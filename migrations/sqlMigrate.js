@@ -90,17 +90,17 @@ MongoClient.connect(url, function(err, db) {
                 if (err) {
                     return cb(err);
                 }
-                async.each(m.players, function(pm, cb) {
-                    var parseSlot = pm.player_slot % (128 - 5);
-                    var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-                    pg('player_matches').columnInfo().then(function(info) {
+                pg('player_matches').columnInfo().then(function(info) {
+                    var players = m.players.map(function(pm) {
+                        var parseSlot = pm.player_slot % (128 - 5);
+                        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
                         var row = {};
                         for (var key in info) {
                             if (key === "gold_t") {
                                 row[key] = pp ? pp.gold : null;
                             }
                             else if (key === "xp_t") {
-                                row[key]= pp ? pp.xp : null;
+                                row[key] = pp ? pp.xp : null;
                             }
                             else if (key === "lh_t") {
                                 row[key] = pp ? pp.lh : null;
@@ -121,8 +121,9 @@ MongoClient.connect(url, function(err, db) {
                                 row[key] = JSON.stringify(row[key]);
                             }
                         }
-                        pg.insert(row).into('player_matches').asCallback(cb);
+                        return row;
                     });
+                    pg.insert(players).into('player_matches').asCallback(cb);
                 }, function(err) {
                     //next doc
                     cb(err);
@@ -147,8 +148,8 @@ MongoClient.connect(url, function(err, db) {
                     return cb(err);
                 }
                 //insert to player_ratings
-                async.each(p.ratings, function(r, cb) {
-                    pg('player_ratings').columnInfo().then(function(info) {
+                pg('player_ratings').columnInfo().then(function(info) {
+                    var ratings = p.ratings.map(function(r) {
                         var row = {};
                         for (var key in info) {
                             if (key === "solo_competitive_rank") {
@@ -164,8 +165,9 @@ MongoClient.connect(url, function(err, db) {
                                 row[key] = r[key];
                             }
                         }
-                        pg.insert(row).into('player_ratings').asCallback(cb);
+                        return row;
                     });
+                    pg.insert(ratings).into('player_ratings').asCallback(cb);
                 }, function(err) {
                     //next doc
                     cb(err);
