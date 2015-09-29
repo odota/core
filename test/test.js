@@ -1,50 +1,19 @@
-process.env.MONGO_URL = "mongodb://localhost/test";
-process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost/test";
-process.env.REDIS_URL = "redis://localhost:6379/1";
-process.env.SESSION_SECRET = "testsecretvalue";
-process.env.KUE_USER = "user";
-process.env.KUE_PASS = "pass";
-process.env.WEB_PORT = 5000;
-process.env.PARSER_PORT = 5200;
-process.env.ROOT_URL = "http://localhost:5000";
-process.env.NODE_ENV = "test";
-process.env.STEAM_API_KEY = "fakekey";
+var config = require('../config');
+config.PORT = ""; //use service defaults
+config.MONGO_URL = "mongodb://localhost/test";
+config.POSTGRES_URL = "postgres://postgres:postgres@localhost/template1";
+config.REDIS_URL = "redis://localhost:6379/1";
+config.SESSION_SECRET = "testsecretvalue";
+config.NODE_ENV = "test";
 var async = require('async');
-var knex = require('knex');
-var conn = {
-    host: '127.0.0.1',
-    user: 'postgres',
-    password: 'postgres',
-    charset: 'utf8'
-};
-// connect without database selected
-/*
-var knex = require('knex')({
-    client: 'pg',
-    connection: conn
-});
-knex.raw('CREATE DATABASE test').then(function() {
-    knex.destroy();
-    // connect with database selected
-    conn.database = 'test';
-    knex = require('knex')({
-        client: 'pg',
-        connection: conn
-    });
-    knex.schema.createTable('my_table', function(table) {
-        table.string('my_field');
-    }).then(function() {
-        knex.destroy();
-    });
-});
-*/
-var db = require('../db');
 var r = require('../redis');
 var redis = r.client;
 var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
+var DatabaseCleaner = require('database-cleaner');
+var databaseCleaner = new DatabaseCleaner('postgresql');
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
@@ -57,18 +26,17 @@ var queue = r.queue;
 var buildSets = require("../buildSets");
 var supertest = require('supertest');
 var replay_dir = "./testfiles/";
-console.log('starting web');
+var pg = require('pg');
+var fs = require('fs');
+var wait = 90000;
+var db = require('../db');
 var app = require('../web');
 var parser = require('../parser');
 var parseManager = require('../parseManager');
-var wait = 90000;
+nock.enableNetConnect();
 //fake retriever response
-nock("http://" + process.env.RETRIEVER_HOST)
-    /*
-    .filteringPath(function(path) {
-            return '/';
-        })
-        */
+/*
+nock("http://" + config.RETRIEVER_HOST)
     .get('/?key=shared_secret_with_retriever').reply(200, {
         "accounts": {
             "76561198186929683": {
@@ -101,6 +69,7 @@ nock("http://" + process.env.RETRIEVER_HOST)
         "soloCalibrationGamesRemaining": 0,
         "recruitmentLevel": 0
     });
+    */
 //fake api response
 nock('http://api.steampowered.com').filteringPath(function(path) {
         var split = path.split("?");
@@ -132,36 +101,38 @@ nock('http://api.steampowered.com').filteringPath(function(path) {
         }
     });
 before(function(done) {
-    this.timeout(wait);
-    var DatabaseCleaner = require('database-cleaner');
-    //TODO https://github.com/emerleite/node-database-cleaner/blob/master/test/postgresql.test.js
-    var databaseCleaner = new DatabaseCleaner('mongodb');
-    var connect = require('mongodb').connect;
-    nock.enableNetConnect();
     async.series([
-            function(cb) {
-            /*
-            console.log("wiping mongodb");
-            connect(process.env.MONGO_URL, function(err, db) {
-                assert(!err);
-                databaseCleaner.clean(db, function(err) {
-                    cb(err);
+        function(cb) {
+            console.log('connecting to pg');
+            pg.connect(config.POSTGRES_URL, function(err, client) {
+                if (err) {
+                    return cb(err);
+                }
+                console.log('cleaning db');
+                //clean the db
+                client.query('drop schema public cascade;create schema public;', function() {
+                    //databaseCleaner.clean(client, function() {
+                    console.log('cleaned %s', config.POSTGRES_URL);
+                    //set up db
+                    var query = fs.readFileSync("./migrations/create.sql", "utf8");
+                    client.query(query, function(err, result) {
+                        console.log('set up %s', config.POSTGRES_URL);
+                        cb(err);
+                    });
                 });
             });
-            */
-            cb();
-            },
-            function(cb) {
+        },
+        function(cb) {
             console.log("wiping redis");
             redis.flushall(function(err) {
                 cb(err);
             });
-            },
-             function(cb) {
+        },
+        function(cb) {
             console.log('building sets');
             buildSets(db, redis, cb);
-            },
-            function(cb) {
+        },
+        function(cb) {
             /*
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
@@ -174,8 +145,8 @@ before(function(done) {
             });
             */
             cb();
-            },
-            function(cb) {
+        },
+        function(cb) {
             /*
             console.log("loading players");
             async.mapSeries(testdata.players, function(p, cb) {
@@ -187,8 +158,7 @@ before(function(done) {
             });
             */
             cb();
-            }
-        ], function(err) {
+        }], function(err) {
         done(err);
     });
 });
@@ -249,7 +219,8 @@ describe("parser", function() {
     this.timeout(wait);
     beforeEach(function(done) {
         //fake retriever response
-        nock("http://" + process.env.RETRIEVER_HOST).filteringPath(function(path) {
+        nock("http://" + config.RETRIEVER_HOST).filteringPath(function(path) {
+            console.log('hitting retriever');
             return '/';
         }).get('/').reply(200, {
             match: {
@@ -259,6 +230,7 @@ describe("parser", function() {
         });
         //fake replay download
         nock("http://replay1.valve.net").filteringPath(function(path) {
+            console.log('hitting replay');
             return '/';
         }).get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
         done();
@@ -276,8 +248,8 @@ describe("parser", function() {
             job.on("complete", function() {
                 done();
             });
-            job.on("failed attempt", function() {
-                done("failed");
+            job.on("failed attempt", function(err) {
+                done(err);
             });
         });
     });
@@ -378,7 +350,7 @@ describe("api tests", function() {
     //todo supertest these?
     describe("/api/items", function() {
         it('should 200', function(done) {
-            request.get(process.env.ROOT_URL + '/api/items', function(err, resp, body) {
+            request.get(config.ROOT_URL + '/api/items', function(err, resp, body) {
                 assert(resp.statusCode === 200);
                 done(err);
             });
@@ -386,7 +358,7 @@ describe("api tests", function() {
     });
     describe("/api/abilities", function() {
         it('should 200', function(done) {
-            request.get(process.env.ROOT_URL + '/api/abilities', function(err, resp, body) {
+            request.get(config.ROOT_URL + '/api/abilities', function(err, resp, body) {
                 assert(resp.statusCode === 200);
                 done(err);
             });
@@ -440,7 +412,7 @@ describe("POST /upload", function() {
             replay: fs.createReadStream(replay_dir + '/1193091757.dem')
         };
         request.post({
-            url: process.env.ROOT_URL + '/upload',
+            url: config.ROOT_URL + '/upload',
             formData: formData
         }, function(err, resp, body) {
             assert(body);
@@ -479,7 +451,7 @@ describe("POST /upload", function() {
 /*
     describe("/verify_recaptcha", function() {
         it('should return JSON', function(done) {
-            request.post(process.env.ROOT_URL + '/verify_recaptcha', {
+            request.post(config.ROOT_URL + '/verify_recaptcha', {
                 form: {
                     recaptcha_challenge_field: "asdf",
                     recaptcha_response_field: "jkl;"
