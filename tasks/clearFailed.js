@@ -9,8 +9,9 @@ module.exports = function(cb) {
         }
         async.eachSeries(ids, function(id, cb) {
             kue.Job.get(id, function(err, job) {
-                if (err) {
+                if (err || !job) {
                     console.log(err);
+                    return cb();
                 }
                 job.remove(function(err) {
                     console.log('removed ', job.id);
