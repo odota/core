@@ -1,4 +1,3 @@
-var processMmr = require('./processMmr');
 var utility = require('./utility');
 var r = require('./redis');
 var kue = r.kue;

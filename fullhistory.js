@@ -1,4 +1,3 @@
-var processFullHistory = require('./processFullHistory');
 var utility = require('./utility');
 var r = require('./redis');
 var redis = r.client;

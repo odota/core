@@ -60,7 +60,7 @@ function getSets(redis, cb) {
 }
 
 function insertMatch(db, redis, queue, match, options, cb) {
-    var players = JSON.parse(JSON.stringify(match.players));
+    var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -74,7 +74,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             }
         }
         //TODO support upsert
-        //TODO update only, do not insert if type is skill
+        //TODO update only, do not insert if options.type is skill
         db.insert(row).into('matches').where({
             match_id: match.match_id
         }).asCallback(cb);
