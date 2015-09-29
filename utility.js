@@ -308,7 +308,7 @@ function getParseSchema() {
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
-                "kills": {},
+                "killed": {},
                 "item_uses": {},
                 "ability_uses": {},
                 "hero_hits": {},

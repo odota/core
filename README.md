@@ -68,7 +68,7 @@ Quickstart
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
 * Build `npm run build`
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services.
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services: `npm run dev web,parser`
 
 Sample Data
 ----
@@ -139,12 +139,8 @@ Developer's Guide
 * Player/match caching: 
     * We cache matches in Redis in order to reduce DB lookups on repeated loads.
     * Player caching is more complicated.  It means that whenever we add a match or add parsed data to a match, we need to update all of that match's player caches to reflect the change (to keep the cache valid).
-* Tools recommended for developers on the command line: `sudo npm install -g mocha foreman nodemon`
-    * `mocha` is used to run the tests.  Installing the command-line tool allows you greater control over which tests you want to run.
-    * `foreman` is used to run services individually.  The executable name is `nf`.
-    * `nodemon` watches the server files and restarts the server when changes are detected.
 * `npm run watch`: If you want to make changes to client side JS, you will want to run the watch script in order to automatically rebuild after making changes.
-* `npm test` to run the full test suite.
+* `npm test` to run the full test suite.  Use `mocha` for more fine-grained control.
 * Brief snippets and useful links are included in the [wiki](https://github.com/yasp-dota/yasp/wiki)
 
 History

@@ -8,5 +8,6 @@ notifications:
   - howardc93@gmail.com
   - aqc2109@columbia.edu
 services:
-- mongodb
 - redis-server
+addons:
+  postgresql: "9.4"

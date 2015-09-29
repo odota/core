@@ -128,7 +128,7 @@ block match_content
                     else
                       =key
               td
-                each val, key in player.kills || {}
+                each val, key in player.killed || {}
                   - var hero = constants.hero_names[key]
                   span.img-text
                     if hero

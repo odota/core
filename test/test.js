@@ -12,14 +12,11 @@ var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var DatabaseCleaner = require('database-cleaner');
-var databaseCleaner = new DatabaseCleaner('postgresql');
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
 var processMmr = require('../processMmr');
 */
-var request = require('request');
 //var updateNames = require('../tasks/updateNames');
 var queueReq = require('../utility').queueReq;
 var queue = r.queue;
@@ -34,42 +31,6 @@ var app = require('../web');
 var parser = require('../parser');
 var parseManager = require('../parseManager');
 nock.enableNetConnect();
-//fake retriever response
-/*
-nock("http://" + config.RETRIEVER_HOST)
-    .get('/?key=shared_secret_with_retriever').reply(200, {
-        "accounts": {
-            "76561198186929683": {
-                "steamID": "76561198186929683",
-                "replays": 6,
-                "profiles": 0,
-                "friends": 0
-            }
-        },
-        "accountToIdx": {
-            "26949": "76561198186929683"
-        }
-    })
-    //fake mmr response
-    .get('/?account_id=88367253').reply(200, {
-        "accountId": 88367253,
-        "wins": 889,
-        "xp": 52,
-        "level": 153,
-        "lowPriorityUntilDate": 0,
-        "preventVoiceUntilDate": 0,
-        "teaching": 6,
-        "leadership": 4,
-        "friendly": 10,
-        "forgiving": 5,
-        "lowPriorityGamesRemaining": 0,
-        "competitive_rank": 3228,
-        "calibrationGamesRemaining": 0,
-        "solo_competitive_rank": 3958,
-        "soloCalibrationGamesRemaining": 0,
-        "recruitmentLevel": 0
-    });
-    */
 //fake api response
 nock('http://api.steampowered.com').filteringPath(function(path) {
         var split = path.split("?");
@@ -130,6 +91,21 @@ before(function(done) {
         },
         function(cb) {
             console.log('building sets');
+            /*
+            nock("http://" + config.RETRIEVER_HOST).get('/?key=shared_secret_with_retriever').reply(200, {
+                "accounts": {
+                    "76561198186929683": {
+                        "steamID": "76561198186929683",
+                        "replays": 6,
+                        "profiles": 0,
+                        "friends": 0
+                    }
+                },
+                "accountToIdx": {
+                    "26949": "76561198186929683"
+                }
+            });
+            */
             buildSets(db, redis, cb);
         },
         function(cb) {
@@ -177,6 +153,25 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
+            //fake mmr response
+            nock("http://" + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, {
+            "accountId": 88367253,
+            "wins": 889,
+            "xp": 52,
+            "level": 153,
+            "lowPriorityUntilDate": 0,
+            "preventVoiceUntilDate": 0,
+            "teaching": 6,
+            "leadership": 4,
+            "friendly": 10,
+            "forgiving": 5,
+            "lowPriorityGamesRemaining": 0,
+            "competitive_rank": 3228,
+            "calibrationGamesRemaining": 0,
+            "solo_competitive_rank": 3958,
+            "soloCalibrationGamesRemaining": 0,
+            "recruitmentLevel": 0
+        });
         queueReq(queue, "mmr", {
             match_id: 870061127,
             account_id: 88367253,
@@ -218,14 +213,14 @@ describe("worker", function() {
 describe("parser", function() {
     this.timeout(wait);
     beforeEach(function(done) {
-        //fake retriever response
+        //fake match response
         nock("http://" + config.RETRIEVER_HOST).filteringPath(function(path) {
             console.log('hitting retriever');
             return '/';
         }).get('/').reply(200, {
             match: {
                 cluster: 1,
-                replaySalt: 1
+                replay_salt: 1
             }
         });
         //fake replay download
@@ -235,12 +230,14 @@ describe("parser", function() {
         }).get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
         done();
     });
-    //TODO do a test with zipped source 2 replay
     //TODO define a list of file names/ids and run
     it('parse replay', function(done) {
         var job = {
             match_id: 1781962623,
             start_time: moment().format('X'),
+            players: [{
+                player_slot: 0
+            }]
         };
         queueReq(queue, "parse", job, function(err, job) {
             assert(job && !err);
@@ -265,16 +262,6 @@ describe("web", function() {
                     done(err);
                 });
         });
-        /*
-        it('/professional', function(done) {
-            supertest(app).get('/professional')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
-                .expect(200).expect(/Status/).end(function(err, res) {
-                    done(err);
-                });
-        });
-        */
         it('/status', function(done) {
             supertest(app).get('/status')
                 //.expect('Content-Type', /json/)
@@ -347,19 +334,16 @@ describe("web", function() {
     */
 });
 describe("api tests", function() {
-    //todo supertest these?
     describe("/api/items", function() {
         it('should 200', function(done) {
-            request.get(config.ROOT_URL + '/api/items', function(err, resp, body) {
-                assert(resp.statusCode === 200);
+            supertest(app).get('/api/items').expect(200).end(function(err, res) {
                 done(err);
             });
         });
     });
     describe("/api/abilities", function() {
         it('should 200', function(done) {
-            request.get(config.ROOT_URL + '/api/abilities', function(err, resp, body) {
-                assert(resp.statusCode === 200);
+            supertest(app).get('/api/abilities').expect(200).end(function(err, res) {
                 done(err);
             });
         });
@@ -367,7 +351,7 @@ describe("api tests", function() {
 });
 /*
 var io = require('socket.io-client');
-describe("unit test", function() {
+describe("additional tests", function() {
     this.timeout(wait);
     it('socket request', function(done) {
         jobs.process('request', processApi);
@@ -392,35 +376,7 @@ describe("unit test", function() {
     });
 });
 */
-//deprecated tests
-/*
-describe("GET /upload", function() {
-    before(function(done) {
-        browser.visit('/upload');
-        browser.wait(wait, function(err) {
-            done(err);
-        });
-    });
-    it('should 200', function(done) {
-        browser.assert.status(200);
-        done();
-    });
-});
-describe("POST /upload", function() {
-    it('should upload', function(done) {
-        var formData = {
-            replay: fs.createReadStream(replay_dir + '/1193091757.dem')
-        };
-        request.post({
-            url: config.ROOT_URL + '/upload',
-            formData: formData
-        }, function(err, resp, body) {
-            assert(body);
-            done(err);
-        });
-    });
-});
-*/
+//zombiejs tests
 /*
     describe("/login", function() {
         before(function(done) {
@@ -447,30 +403,13 @@ describe("POST /upload", function() {
         });
     });
     //test for logout
-    */
-/*
-    describe("/verify_recaptcha", function() {
-        it('should return JSON', function(done) {
-            request.post(config.ROOT_URL + '/verify_recaptcha', {
-                form: {
-                    recaptcha_challenge_field: "asdf",
-                    recaptcha_response_field: "jkl;"
-                }
-            }, function(err, resp, body) {
-                assert(resp.statusCode === 200);
-                JSON.parse(body);
-                done(err);
-            });
-        });
-    });
-    */
-/*
-//zombiejs tests
+describe("home", function(){
     it('/ should 200', function(done) {
-    browser.visit('/', function(err) {
-        browser.assert.status(200);
-        done(err);
-    });
+        browser.visit('/', function(err) {
+            browser.assert.status(200);
+            done(err);
+        });
+    })
 });
 describe("/matches", function() {
     browser.visit('/matches', function(err) {

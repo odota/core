@@ -242,7 +242,7 @@ function runParse(data, cb) {
                                     deaths_pos: {},
                                     ability_uses: {},
                                     item_uses: {},
-                                    kills: {},
+                                    killed: {},
                                     deaths: 0,
                                     buybacks: 0,
                                     damage: 0,
@@ -577,7 +577,7 @@ function runParse(data, cb) {
                 encoding: 'utf8'
             });
             parseStream = ndjson.parse();
-            if (url.slice(-3) === "bz2") {
+            if (url.slice(-3) === "bz2" && config.NODE_ENV !== "test") {
                 bz = spawn("bunzip2");
                 inStream.pipe(bz.stdin);
                 bz.stdout.pipe(parser.stdin);
@@ -648,12 +648,12 @@ function runParse(data, cb) {
             parsed_data.players.forEach(function(p, j) {
                 //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
                 if (j < parsed_data.players.length / 2) {
-                    goldtotal += p.gold[i];
-                    xptotal += p.xp[i];
+                    goldtotal += p.gold_t[i];
+                    xptotal += p.xp_t[i];
                 }
                 else {
-                    xptotal -= p.xp[i];
-                    goldtotal -= p.gold[i];
+                    xptotal -= p.xp_t[i];
+                    goldtotal -= p.gold_t[i];
                 }
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
@@ -904,8 +904,8 @@ function runParse(data, cb) {
         }
         var t = container.players[e.slot][e.type];
         if (typeof t === "undefined") {
-            //parsed_data.players[0] doesn't have a type for this event
-            console.log(e);
+            //container.players[0] doesn't have a type for this event
+            console.log("no field in parsed_data.players for %s", JSON.stringify(e));
             return;
         }
         else if (e.posData) {

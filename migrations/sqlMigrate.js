@@ -1,6 +1,5 @@
 var config = require('../config');
 var isRadiant = require('../utility').isRadiant;
-var async = require('async');
 var pg = require('knex')({
     client: 'pg',
     connection: config.POSTGRES_URL
@@ -77,6 +76,14 @@ MongoClient.connect(url, function(err, db) {
                     row[key] = m[key];
                 }
                 else if (m.parsed_data && key in m.parsed_data) {
+                    if (m.parsed_data.teamfights){
+                        m.parsed_data.teamfights.forEach(function(tf){
+                            tf.players.forEach(function(tfp){
+                                tfp.killed = tfp.kills;
+                                delete tfp.kills;
+                            });
+                        });
+                    }
                     row[key] = m.parsed_data[key];
                 }
                 else {

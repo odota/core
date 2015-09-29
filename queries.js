@@ -60,7 +60,7 @@ function getSets(redis, cb) {
 }
 
 function insertMatch(db, redis, queue, match, options, cb) {
-    var players = match.players;
+    var players = JSON.parse(JSON.stringify(match.players));
     delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -100,7 +100,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
     function ensurePlayers(cb) {
         async.each(players || [], function(p, cb) {
-            queries.insertPlayer(db, p, cb);
+            insertPlayer(db, p, cb);
         }, cb);
     }
 
@@ -156,7 +156,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
         redis.del("match:" + match.match_id, cb);
     }
 
-    function decideParse(err, cb) {
+    function decideParse(err) {
         if (err) {
             return cb(err);
         }

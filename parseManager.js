@@ -119,17 +119,12 @@ function processParse(job, ctx, cb) {
                 }
                 var parsed_data = body;
                 //extend match object with parsed data, keep existing data if key conflict (match_id)
-                var players = match.players;
-                var parsedPlayers = parsed_data.players;
-                delete match.players;
-                delete parsed_data.players;
-                for (var key in parsed_data){
+                for (var key in parsed_data) {
                     match[key] = match[key] || parsed_data[key];
                 }
-                players.forEach(function(p){
-                    utility.mergeObjects(p, parsedPlayers[p.player_slot % (128-5)]);
+                match.players.forEach(function(p) {
+                    utility.mergeObjects(p, parsed_data.players[p.player_slot % (128 - 5)]);
                 });
-                match.players = players;
                 match.parse_status = 2;
                 insertMatch(db, redis, queue, match, {
                     type: "parsed"
