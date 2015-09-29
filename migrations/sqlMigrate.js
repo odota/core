@@ -76,9 +76,9 @@ MongoClient.connect(url, function(err, db) {
                     row[key] = m[key];
                 }
                 else if (m.parsed_data && key in m.parsed_data) {
-                    if (m.parsed_data.teamfights){
-                        m.parsed_data.teamfights.forEach(function(tf){
-                            tf.players.forEach(function(tfp){
+                    if (m.parsed_data.teamfights) {
+                        m.parsed_data.teamfights.forEach(function(tf) {
+                            tf.players.forEach(function(tfp) {
                                 tfp.killed = tfp.kills;
                                 delete tfp.kills;
                             });
@@ -98,39 +98,44 @@ MongoClient.connect(url, function(err, db) {
                     return cb(err);
                 }
                 pg('player_matches').columnInfo().then(function(info) {
-                    var players = m.players.map(function(pm) {
-                        var parseSlot = pm.player_slot % (128 - 5);
-                        var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-                        var row = {};
-                        for (var key in info) {
-                            if (key === "gold_t") {
-                                row[key] = pp ? pp.gold : null;
+                    if (m.players) {
+                        var players = m.players.map(function(pm) {
+                            var parseSlot = pm.player_slot % (128 - 5);
+                            var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
+                            var row = {};
+                            for (var key in info) {
+                                if (key === "gold_t") {
+                                    row[key] = pp ? pp.gold : null;
+                                }
+                                else if (key === "xp_t") {
+                                    row[key] = pp ? pp.xp : null;
+                                }
+                                else if (key === "lh_t") {
+                                    row[key] = pp ? pp.lh : null;
+                                }
+                                else if (key === "killed") {
+                                    row[key] = pp ? pp.kills : null;
+                                }
+                                else if (key === "match_id") {
+                                    row[key] = m.match_id;
+                                }
+                                else if (key in pm) {
+                                    row[key] = pm[key];
+                                }
+                                else if (pp && key in pp) {
+                                    row[key] = pp[key];
+                                }
+                                if (typeof row[key] === "object" && row[key]) {
+                                    row[key] = JSON.stringify(row[key]);
+                                }
                             }
-                            else if (key === "xp_t") {
-                                row[key] = pp ? pp.xp : null;
-                            }
-                            else if (key === "lh_t") {
-                                row[key] = pp ? pp.lh : null;
-                            }
-                            else if (key === "killed") {
-                                row[key] = pp ? pp.kills : null;
-                            }
-                            else if (key === "match_id") {
-                                row[key] = m.match_id;
-                            }
-                            else if (key in pm) {
-                                row[key] = pm[key];
-                            }
-                            else if (pp && key in pp) {
-                                row[key] = pp[key];
-                            }
-                            if (typeof row[key] === "object" && row[key]) {
-                                row[key] = JSON.stringify(row[key]);
-                            }
-                        }
-                        return row;
-                    });
-                    pg.insert(players).into('player_matches').asCallback(cb);
+                            return row;
+                        });
+                        pg.insert(players).into('player_matches').asCallback(cb);
+                    }
+                    else {
+                        cb();
+                    }
                 }, function(err) {
                     //next doc
                     cb(err);
@@ -156,25 +161,30 @@ MongoClient.connect(url, function(err, db) {
                 }
                 //insert to player_ratings
                 pg('player_ratings').columnInfo().then(function(info) {
-                    var ratings = p.ratings.map(function(r) {
-                        var row = {};
-                        for (var key in info) {
-                            if (key === "solo_competitive_rank") {
-                                row[key] = r.soloCompetitiveRank;
+                    if (p.ratings) {
+                        var ratings = p.ratings.map(function(r) {
+                            var row = {};
+                            for (var key in info) {
+                                if (key === "solo_competitive_rank") {
+                                    row[key] = r.soloCompetitiveRank;
+                                }
+                                else if (key === "competitive_rank") {
+                                    row[key] = r.competitiveRank;
+                                }
+                                else if (key === "account_id") {
+                                    row[key] = p.account_id;
+                                }
+                                else {
+                                    row[key] = r[key];
+                                }
                             }
-                            else if (key === "competitive_rank") {
-                                row[key] = r.competitiveRank;
-                            }
-                            else if (key === "account_id") {
-                                row[key] = p.account_id;
-                            }
-                            else {
-                                row[key] = r[key];
-                            }
-                        }
-                        return row;
-                    });
-                    pg.insert(ratings).into('player_ratings').asCallback(cb);
+                            return row;
+                        });
+                        pg.insert(ratings).into('player_ratings').asCallback(cb);
+                    }
+                    else {
+                        cb();
+                    }
                 }, function(err) {
                     //next doc
                     cb(err);
