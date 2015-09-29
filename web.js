@@ -33,6 +33,11 @@ var SteamStrategy = require('passport-steam').Strategy;
 var host = config.ROOT_URL;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
+var matches = require('./routes/matches');
+var players = require('./routes/players');
+var api = require('./api');
+var donate = require('./routes/donate');
+var mmstats = require('./routes/mmstats');
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -179,7 +184,7 @@ app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res, next) {
     buildSets(db, redis, function(err) {
-        if (err){
+        if (err) {
             return next(err);
         }
         queueReq(queue, "fullhistory", req.user, function(err, job) {
@@ -195,11 +200,11 @@ app.route('/logout').get(function(req, res) {
     req.session = null;
     res.redirect('/');
 });
-app.use('/matches', require('./routes/matches')(db, redis));
-app.use('/players', require('./routes/players')(db, redis));
-app.use('/api', require('./routes/api'));
-app.use('/', require('./routes/donate')(db, redis));
-app.use('/', require('./routes/mmstats')(redis));
+app.use('/matches', matches(db, redis));
+app.use('/players', players(db, redis));
+app.use('/api', api);
+app.use('/', donate(db, redis));
+app.use('/', mmstats(redis));
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
         form: {

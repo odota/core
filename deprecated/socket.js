@@ -5,9 +5,10 @@ var queueReq = require('./operations').queueReq;
 var r = require('./redis');
 var redis = r.client;
 var status = require('./status');
+var socketio = require('socket.io');
 
 module.exports = function(server) {
-    var io = require('socket.io')(server);
+    var io = socketio(server);
     /*
     setInterval(function() {
         status(function(err, res) {
