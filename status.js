@@ -85,7 +85,6 @@ module.exports = function getStatus(db, redis, queue, cb) {
         }
     }, function(err, results) {
         console.timeEnd('status');
-        //TODO psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them
         cb(err, results);
     });
 
@@ -93,6 +92,7 @@ module.exports = function getStatus(db, redis, queue, cb) {
         if (err) {
             return cb(err);
         }
+        //psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them
         cb(err, Number(count[0].count));
     }
 };

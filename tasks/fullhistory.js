@@ -1,6 +1,6 @@
 var db = require('../db');
 var async = require('async');
-var queue = require('../redis').jobs;
+var queue = require('../redis').queue;
 var queueReq = require('../utility').queueReq;
 /**
  * Get all players who have visited and don't have full history, and queue for full history
