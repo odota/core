@@ -277,9 +277,13 @@ function renderMatch(m) {
         });
     }
     //create graph data
-    m.graphData = generateGraphData(m);
-    m.incomeData = generateIncomeData(m);
-    m.treeMapData = generateTreemapData(m);
+    if (m.gold_reasons) {
+        m.incomeData = generateIncomeData(m);
+        m.treeMapData = generateTreemapData(m);
+    }
+    if (m.gold_t) {
+        m.graphData = generateGraphData(m);
+    }
     //create heatmap data
     m.posData = m.players.map(function(p) {
         return p.posData;
