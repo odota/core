@@ -82,6 +82,9 @@ module.exports = function getStatus(db, redis, queue, cb) {
                     cb(err, counts);
                 });
             });
+        },
+        parser_status: function(cb) {
+            redis.get("parsers-status", cb);
         }
     }, function(err, results) {
         console.timeEnd('status');
