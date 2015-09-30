@@ -28,11 +28,7 @@ var fs = require('fs');
 var wait = 90000;
 var db = require('../db');
 var app = require('../web');
-//var parser = require('../parser');
-//var parseManager = require('../parseManager');
-require('../workServer');
-require('../parseClient');
-nock.enableNetConnect();
+//nock.enableNetConnect();
 //fake api response
 nock('http://api.steampowered.com').filteringPath(function(path) {
         var split = path.split("?");
@@ -87,28 +83,13 @@ before(function(done) {
         },
         function(cb) {
             console.log("wiping redis");
-            redis.flushall(function(err) {
-                cb(err);
-            });
+            redis.flushdb(cb);
         },
         function(cb) {
-            console.log('building sets');
-            /*
-            nock("http://" + config.RETRIEVER_HOST).get('/?key=shared_secret_with_retriever').reply(200, {
-                "accounts": {
-                    "76561198186929683": {
-                        "steamID": "76561198186929683",
-                        "replays": 6,
-                        "profiles": 0,
-                        "friends": 0
-                    }
-                },
-                "accountToIdx": {
-                    "26949": "76561198186929683"
-                }
+            redis.keys("*", function(err, res) {
+                console.log(err, res);
+                cb(err);
             });
-            */
-            buildSets(db, redis, cb);
         },
         function(cb) {
             /*
@@ -137,6 +118,10 @@ before(function(done) {
             */
             cb();
         }], function(err) {
+        //var parser = require('../parser');
+        //var parseManager = require('../parseManager');
+        require('../workServer');
+        require('../parseClient');
         done(err);
     });
 });
@@ -146,7 +131,7 @@ describe("worker", function() {
     it('process details request', function(done) {
         queueReq(queue, "api_details", {
             match_id: 870061127
-        }, function(err, job) {
+        }, {}, function(err, job) {
             assert(!err);
             assert(job);
             processApi(job, function(err) {
@@ -178,7 +163,7 @@ describe("worker", function() {
             match_id: 870061127,
             account_id: 88367253,
             url: "http://localhost:5100/?account_id=88367253"
-        }, function(err, job) {
+        }, {}, function(err, job) {
             assert(!err);
             assert(job);
             processMmr(job, function(err) {
@@ -191,7 +176,7 @@ describe("worker", function() {
             players: [{
                 account_id: 88367253
             }]
-        }, function(err, job) {
+        }, {}, function(err, job) {
             assert(!err);
             assert(job);
             processApi(job, function(err) {
@@ -202,7 +187,7 @@ describe("worker", function() {
     it('process fullhistory request', function(done) {
         queueReq(queue, "fullhistory", {
             account_id: 88367253
-        }, function(err, job) {
+        }, {}, function(err, job) {
             assert(!err);
             assert(job);
             processFullHistory(job, function(err) {
@@ -216,40 +201,30 @@ describe("parser", function() {
     this.timeout(wait);
     beforeEach(function(done) {
         //fake match response
-        nock("http://" + config.RETRIEVER_HOST).filteringPath(function(path) {
-            console.log('hitting retriever');
-            return '/';
-        }).get('/').reply(200, {
+        nock("http://" + config.RETRIEVER_HOST).get('/').reply(200, {
             match: {
                 cluster: 1,
                 replay_salt: 1
             }
         });
         //fake replay download
-        nock("http://replay1.valve.net").filteringPath(function(path) {
-            console.log('hitting replay');
-            return '/';
-        }).get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
+        nock("http://replay1.valve.net").get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
         done();
     });
     //TODO define a list of file names/ids and run
     it('parse replay', function(done) {
-        var job = {
+        var match = {
             match_id: 1781962623,
             start_time: moment().format('X'),
             players: [{
                 player_slot: 0
             }]
         };
-        queueReq(queue, "parse", job, function(err, job) {
+        queueReq(queue, "parse", match, {}, function(err, job) {
             assert(job && !err);
-            job.parser_url = "http://localhost:5200?key=";
-            job.on("complete", function() {
-                done();
-            });
-            job.on("failed attempt", function(err) {
-                done(err);
-            });
+            //done();
+            job.on('complete', done);
+            job.on('failed', done);
         });
     });
 });

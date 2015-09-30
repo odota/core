@@ -1,21 +1,19 @@
-var db = require('./db');
-var r = require('./redis');
-var redis = r.client;
 var utility = require('./utility');
 var getData = utility.getData;
-module.exports = function getReplayUrl(match, cb) {
+module.exports = function getReplayUrl(db, redis, match, cb) {
     if (match.url) {
         //if there's already a filename or url, we don't need to retrieve
         //this is for custom jobs!
         console.log("replay url in job");
         return cb();
     }
-    db.select(['url']).from('matches').where({
+    db.first(['url']).from('matches').where({
         match_id: match.match_id
     }).asCallback(function(err, doc) {
         if (err) {
             return cb(err);
         }
+        console.log("existing url result: %s", doc);
         if (doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;

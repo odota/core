@@ -14,16 +14,7 @@ var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
-if (cluster.isMaster && config.NODE_ENV !== "test") {
-    // Fork workers.
-    for (var i = 0; i < capacity; i++) {
-        cluster.fork();
-    }
-    cluster.on('exit', function(worker, code, signal) {
-        cluster.fork();
-    });
-}
-else {
+if (cluster.isMaster) {
     var server = app.listen(port, function() {
         var host = server.address().address;
         console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
@@ -52,6 +43,20 @@ else {
             error: err
         });
     });
+    if (config.NODE_ENV !== "test") {
+        // Fork workers.
+        for (var i = 0; i < capacity; i++) {
+            var worker = cluster.fork();
+            worker.on('exit', function() {
+                cluster.fork();
+            });
+        }
+    }
+    else {
+        getJob();
+    }
+}
+else {
     getJob();
 }
 
@@ -66,7 +71,7 @@ function getJob() {
         if (err) {
             //wait interval, then get another job
             console.log("error occurred: %s", JSON.stringify(err));
-            return setTimeout(getJob, 10 * 1000);
+            return setTimeout(getJob, 5 * 1000);
         }
         console.log(body);
         if (body.id && body.data && body.data.payload && body.data.payload.url) {
