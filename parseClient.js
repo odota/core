@@ -11,8 +11,7 @@ var bodyParser = require('body-parser');
 var progress = require('request-progress');
 //var constants = require('./constants.json');
 var app = express();
-//var capacity = require('os').cpus().length;
-var capacity = Number(config.PARSER_PARALLELISM);
+var capacity = require('os').cpus().length;
 var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
 if (cluster.isMaster && config.NODE_ENV !== "test") {
@@ -27,7 +26,7 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
 else {
     var server = app.listen(port, function() {
         var host = server.address().address;
-        console.log('[PARSER] listening at http://%s:%s', host, port);
+        console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
     });
     app.use(bodyParser.json());
     app.post('/deploy', function(req, res) {
@@ -36,14 +35,6 @@ else {
         if (req.body.ref === "refs/heads/master") {
             console.log(req.body);
             //run the deployment command
-            //var debugFile = fs.openSync("./deploy_debug.txt", "a+");
-            /*
-            var child = spawn('npm run deploy-parser', null, {
-                cwd: process.cwd(),
-                detached: true,
-                stdio: ['ignore', 'ignore', 'ignore']
-            });
-            */
             var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
                 console.log('stdout: ' + stdout);
                 console.log('stderr: ' + stderr);
@@ -66,18 +57,36 @@ else {
 
 function getJob() {
     //get from endpoint asking for replay url
-    var remote = "http://" + config.PARSER_HOST + "/parse";
-    request.get(remote, function(err, resp, body) {
-        if (!err && body && body.url) {
-            runParse(body.url, function(err, parsed_data) {
+    var remote = config.WORK_URL + "/parse";
+    console.log("contacting server for work: %s", remote);
+    request({
+        url: remote,
+        json: true
+    }, function(err, resp, body) {
+        if (err) {
+            //wait interval, then get another job
+            console.log("error occurred: %s", JSON.stringify(err));
+            return setTimeout(getJob, 10 * 1000);
+        }
+        console.log(body);
+        if (body.id && body.data && body.data.payload && body.data.payload.url) {
+            var payload = body.data.payload;
+            var url = body.data.payload.url;
+            console.log("got work from server, jobid: %s, url: %s", body.id, url);
+            runParse(payload, function(err, parsed_data) {
                 if (err) {
                     console.error(err);
+                    //TODO wait after a failure to prevent a failing client from spamming the request endpoint?
                     getJob();
                 }
                 else {
-                    parsed_data.jobid = body.jobid;
-                    request.post(remote, parsed_data, function(err, resp, body) {
-                        if (err) {
+                    parsed_data.id = body.id;
+                    console.log("sending work to server, jobid: %s", body.id);
+                    request.post({
+                        url: remote,
+                        json: parsed_data
+                    }, function(err, resp, body) {
+                        if (err || body.error) {
                             console.error(err);
                         }
                         //get another job
@@ -87,8 +96,7 @@ function getJob() {
             });
         }
         else {
-            //wait interval, then get another job
-            setTimeout(getJob, 10 * 1000);
+            throw "malformed job";
         }
     });
 }

@@ -68,10 +68,17 @@ function insertMatch(db, redis, queue, match, options, cb) {
     function insertMatchTable(cb) {
         var row = match;
         //TODO support upsert
-        //TODO update only, do not insert if options.type is skill
-        db.insert(row).into('matches').where({
-            match_id: match.match_id
-        }).asCallback(cb);
+        //TODO do not insert if options.type is skill
+        if (options.type === "api") {
+            db('matches').insert(row).where({
+                match_id: row.match_id
+            }).asCallback(cb);
+        }
+        else {
+            db('matches').update(row).where({
+                match_id: row.match_id
+            }).asCallback(cb);
+        }
     }
 
     function insertPlayerMatchesTable(cb) {
@@ -80,10 +87,21 @@ function insertMatch(db, redis, queue, match, options, cb) {
             var row = pm;
             row.match_id = match.match_id;
             //TODO support upsert
-            db.insert(row).into('player_matches').where({
-                match_id: match.match_id,
-                player_slot: pm.player_slot
-            }).asCallback(cb);
+            if (options.type === "api") {
+                db('player_matches').insert(row).where({
+                    match_id: row.match_id,
+                    player_slot: row.player_slot
+                }).asCallback(cb);
+            }
+            else {
+                db('player_matches').update(row).where({
+                    match_id: row.match_id,
+                    player_slot: row.player_slot
+                }).asCallback(function(e,r){
+                    console.log(e,r,row.match_id, row.player_slot,row.obs_log);
+                    cb(e,r)
+                });
+            }
         }, cb);
     }
 
@@ -155,26 +173,27 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            if (match.request) {
-                //process requests with higher priority, one attempt only
-                match.priority = "high";
-                match.attempts = 1;
-            }
+            var options = match.request ? {
+                priority: "high",
+                attempts: 1
+            } : {};
             //queue it and finish
-            return queueReq(queue, "parse", match, function(err, job2) {
+            return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);
             });
         }
     }
 }
 
-function insertMatchProgress(db, redis, queue, match, options, job, cb) {
-    insertMatch(db, match, options, function(err, job2) {
+function insertMatchProgress(db, redis, queue, match, options, cb) {
+    //pass job in options to match API of insertMatch
+    var job = options.job;
+    insertMatch(db, redis, queue, match, options, function(err, job2) {
         if (err) {
             return cb(err);
         }
         if (!job2) {
-            //succeeded in API, but cant parse this replay
+            //succeeded in API, but decided not to parse this replay
             job.progress(100, 100, "This replay is unavailable.");
             cb();
         }
@@ -200,15 +219,15 @@ function insertMatchProgress(db, redis, queue, match, options, job, cb) {
 function insertPlayer(db, player, cb) {
     player.account_id = player.account_id || Number(convert64to32(player.steamid));
     db('players').columnInfo().asCallback(function(err, info) {
-        if (err){
+        if (err) {
             return cb(err);
         }
         var row = {};
         for (var key in info) {
             row[key] = player[key];
         }
-        //TODO support upsert to avoid crashing on duplicate inserts
-        db.insert(row).into('players').asCallback(function(err) {
+        //TODO support upsert to avoid crashing on relogs
+        db('players').insert(row).asCallback(function(err) {
             return cb(err, row);
         });
     });
@@ -216,14 +235,14 @@ function insertPlayer(db, player, cb) {
 
 function insertPlayerRating(db, rating, cb) {
     db('player_ratings').columnInfo().asCallback(function(err, info) {
-        if (err){
+        if (err) {
             return cb(err);
         }
         var row = {};
         for (var key in row) {
             row[key] = rating[key];
         }
-        db.insert(row).into('player_ratings').asCallback(cb);
+        db('player_ratings').insert(row).asCallback(cb);
     });
 }
 module.exports = {

@@ -99,7 +99,7 @@ MongoClient.connect(url, function(err, db) {
                 }
             }
             console.log(row.match_id);
-            pg.insert(row).into('matches').asCallback(function(err) {
+            pg('matches').insert(row).asCallback(function(err) {
                 if (err) {
                     return cb(err);
                 }
@@ -137,8 +137,7 @@ MongoClient.connect(url, function(err, db) {
                             }
                             return row;
                         });
-                        //console.log(pg.insert(players).into('player_matches').toSQL());
-                        pg.insert(players).into('player_matches').asCallback(cb);
+                        pg('player_matches').insert(players).asCallback(cb);
                     }
                     else {
                         cb();
@@ -193,7 +192,7 @@ MongoClient.connect(url, function(err, db) {
                             }
                             return row;
                         });
-                        pg.insert(ratings).into('player_ratings').asCallback(cb);
+                        pg('player_ratings').insert(ratings).asCallback(cb);
                     }
                     else {
                         cb();

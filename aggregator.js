@@ -528,7 +528,7 @@ module.exports = function aggregator(matches, groups, fields, existing) {
     }
     //sort ascending to support trends
     matches.sort(function(a, b) {
-        return a.match_id - b.match_id;
+        return Number(a.match_id) - Number(b.match_id);
     });
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];

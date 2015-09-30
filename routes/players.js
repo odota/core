@@ -387,7 +387,7 @@ module.exports = function(db, redis) {
                         console.log("results: %s", results.data.length);
                         //sort matches by descending match id for display
                         results.data.sort(function(a, b) {
-                            return b.match_id - a.match_id;
+                            return Number(b.match_id) - Number(a.match_id);
                         });
                         //reduce matches to only required data for display
                         player.data = results.data.map(reduceMatch);

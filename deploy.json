@@ -8,8 +8,8 @@
             "role": "core"
       },
         {
-            "script": "parseManager.js",
-            "role": "core"
+            "script": "parseClient.js",
+            "role": "parser"
       },
         {
             "script": "scanner.js",
@@ -24,8 +24,8 @@
             "role": "core"
       },
         {
-            "script": "parser.js",
-            "role": "parser"
+            "script": "workServer.js",
+            "role": "core"
       },
         {
             "script": "retriever.js",
