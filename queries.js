@@ -68,7 +68,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
     function insertMatchTable(cb) {
         var row = match;
         //TODO support upsert
-        //TODO do not insert if options.type is skill
         if (options.type === "api") {
             db('matches').insert(row).where({
                 match_id: row.match_id
@@ -97,10 +96,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 db('player_matches').update(row).where({
                     match_id: row.match_id,
                     player_slot: row.player_slot
-                }).asCallback(function(e,r){
-                    console.log(e,r,row.match_id, row.player_slot,row.obs_log);
-                    cb(e,r)
-                });
+                }).asCallback(cb);
             }
         }, cb);
     }

@@ -29,6 +29,7 @@ app.get('/parse', function(req, res) {
             }
             delete active_jobs[job.id];
             //TODO memory leak unless we destroy the worker?
+            ctx = null;
         });
         processParse(res, job, cb);
     });

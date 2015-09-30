@@ -28,8 +28,10 @@ var fs = require('fs');
 var wait = 90000;
 var db = require('../db');
 var app = require('../web');
-var parser = require('../parser');
-var parseManager = require('../parseManager');
+//var parser = require('../parser');
+//var parseManager = require('../parseManager');
+require('../workServer');
+require('../parseClient');
 nock.enableNetConnect();
 //fake api response
 nock('http://api.steampowered.com').filteringPath(function(path) {
