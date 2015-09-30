@@ -5,7 +5,7 @@ var args = process.argv.slice(2);
 var services = require("./deploy.json");
 var apps = services.apps;
 pm2.connect(function() {
-    //TODO reload if procs exist, or just manually do pm2 reload all
+    //TODO reload if procs exist, or just manually do pm2 reload all after intial deploy
     /*
     pm2.list(function(err, list){
         console.log(list);

@@ -17,7 +17,7 @@ module.exports = function(db, redis) {
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json) {
-                //TODO remove some columns to reduce JSON size?
+                //TODO remove some columns from match.players to reduce JSON size and duplication
                 return res.json(match);
             }
             res.render("match/match_" + info, {
