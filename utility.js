@@ -321,6 +321,7 @@ function getParseSchema() {
                 "kill_streaks": {},
                 "multi_kills": {},
                 "healing": {},
+                /*
                 "kill_streaks_log": [], // an array of kill streak values
                 //     where each kill streak is an array of kills where
                 //         where each kill is an object that contains
@@ -329,6 +330,7 @@ function getParseSchema() {
                 //             - the team fight id of this kill
                 //             - the time of this kill
                 "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
+                */
             };
         })
     };

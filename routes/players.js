@@ -167,9 +167,9 @@ module.exports = function(db, redis) {
 
     function doCompare(query, account_id, cb) {
         var account_ids = ["all", account_id];
-        var compareIds = query.compare_account_id;
-        compareIds = compareIds ? [].concat(compareIds) : [];
-        account_ids = account_ids.concat(compareIds).slice(0, 6);
+        //var compareIds = query.compare_account_id;
+        //compareIds = compareIds ? [].concat(compareIds) : [];
+        //account_ids = account_ids.concat(compareIds).slice(0, 6);
         async.map(account_ids, function(account_id, cb) {
             //pass a copy of the original query, saved from before
             fillPlayerData(account_id, {

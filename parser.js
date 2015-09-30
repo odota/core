@@ -607,8 +607,8 @@ function runParse(data, cb) {
             processEventBuffer();
             console.log("processing team fights...");
             processTeamfights();
-            console.log("processing multi-kill-streaks...");
-            processMultiKillStreaks();
+            //console.log("processing multi-kill-streaks...");
+            //processMultiKillStreaks();
             console.log("processing all players data");
             processAllPlayers();
             console.timeEnd(message);

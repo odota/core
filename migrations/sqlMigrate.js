@@ -97,12 +97,8 @@ MongoClient.connect(url, function(err, db) {
                 else {
                     row[key] = null;
                 }
-                /*
-                if (typeof row[key] === "object" && row[key]) {
-                    row[key] = JSON.stringify(row[key]);
-                }
-                */
             }
+            console.log(row.match_id);
             pg.insert(row).into('matches').asCallback(function(err) {
                 if (err) {
                     return cb(err);
@@ -138,14 +134,10 @@ MongoClient.connect(url, function(err, db) {
                                 else if (pp && key in pp) {
                                     row[key] = pp[key];
                                 }
-                                /*
-                                if (typeof row[key] === "object" && row[key]) {
-                                    row[key] = JSON.stringify(row[key]);
-                                }
-                                */
                             }
                             return row;
                         });
+                        //console.log(pg.insert(players).into('player_matches').toSQL());
                         pg.insert(players).into('player_matches').asCallback(cb);
                     }
                     else {
