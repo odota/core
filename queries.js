@@ -171,11 +171,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
         else {
             var options = match.request ? {
                 priority: "high",
-                attempts: 1,
-                ttl: 120 * 1000
-            } : {
-                ttl: 120 * 1000
-            };
+                attempts: 1
+            } : {};
             //queue it and finish
             return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);
