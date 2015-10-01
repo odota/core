@@ -1,7 +1,6 @@
 var config = require('./config');
 var express = require('express');
 var request = require('request');
-var fs = require('fs');
 var cp = require('child_process');
 var utility = require('./utility');
 var ndjson = require('ndjson');
@@ -9,7 +8,6 @@ var spawn = cp.spawn;
 var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
-//var constants = require('./constants.json');
 var app = express();
 var capacity = require('os').cpus().length;
 var cluster = require('cluster');
@@ -82,7 +80,7 @@ function getJob() {
                 if (err) {
                     console.error(err);
                     //TODO wait after a failure to prevent a failing client from spamming the request endpoint?
-                    getJob();
+                    return getJob();
                 }
                 else {
                     parsed_data.id = body.id;
@@ -95,7 +93,7 @@ function getJob() {
                             console.error(err);
                         }
                         //get another job
-                        getJob();
+                        return getJob();
                     });
                 }
             });

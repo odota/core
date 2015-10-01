@@ -12,6 +12,8 @@ var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
+var cp = require('child_process');
+var request = require('request');
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
@@ -20,7 +22,6 @@ var processMmr = require('../processMmr');
 //var updateNames = require('../tasks/updateNames');
 var queueReq = require('../utility').queueReq;
 var queue = r.queue;
-var buildSets = require("../buildSets");
 var supertest = require('supertest');
 var replay_dir = "./testfiles/";
 var pg = require('pg');
@@ -28,33 +29,30 @@ var fs = require('fs');
 var wait = 90000;
 var db = require('../db');
 var app = require('../web');
+//nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
-nock('http://api.steampowered.com').filteringPath(function(path) {
-        var split = path.split("?");
-        var split2 = split[0].split(".com");
-        return split2[0];
-    })
+nock('http://api.steampowered.com')
     //500 error
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/').reply(500, {})
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500, {})
     //fake match details
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/').times(10).reply(200, testdata.details_api)
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, testdata.details_api)
     //fake player summaries
-    .get('/ISteamUser/GetPlayerSummaries/v0002/').reply(200, testdata.summaries_api)
+    .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, testdata.summaries_api)
     //non-retryable error
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, {
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, {
         result: {
             error: "error"
         }
     })
     //fake full history
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').reply(200, testdata.history_api)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, testdata.history_api)
     //fake full history page 2
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').times(2).reply(200, testdata.history_api2)
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).times(2).reply(200, testdata.history_api2)
     //fake heroes list
-    .get('/IEconDOTA2_570/GetHeroes/v0001/').reply(200, testdata.heroes_api)
+    .get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, testdata.heroes_api)
     //fake leagues
-    .get('/IDOTA2Match_570/GetLeagueListing/v0001/').reply(200, {
+    .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, {
         result: {
             leagues: []
         }
@@ -83,7 +81,7 @@ before(function(done) {
         },
         function(cb) {
             console.log("wiping redis");
-            redis.flushdb(cb);
+            redis.flushall(cb);
         },
         function(cb) {
             redis.keys("*", function(err, res) {
@@ -118,8 +116,10 @@ before(function(done) {
             */
             cb();
         }], function(err) {
-        //var parser = require('../parser');
-        //var parseManager = require('../parseManager');
+        //cp.fork(__dirname + '/../deprecated/parser');
+        //cp.fork(__dirname + '/../deprecated/parseManager');
+        //cp.fork(__dirname + '/../workServer');
+        //cp.fork(__dirname + '/../parseClient');
         require('../workServer');
         require('../parseClient');
         done(err);
@@ -199,9 +199,10 @@ describe("worker", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
+    //TODO define a list of file names/ids and run/set up nock
     beforeEach(function(done) {
         //fake match response
-        nock("http://" + config.RETRIEVER_HOST).get('/').reply(200, {
+        nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
             match: {
                 cluster: 1,
                 replay_salt: 1
@@ -211,11 +212,11 @@ describe("parser", function() {
         nock("http://replay1.valve.net").get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
         done();
     });
-    //TODO define a list of file names/ids and run
     it('parse replay', function(done) {
         var match = {
             match_id: 1781962623,
             start_time: moment().format('X'),
+            url: "http://replay1.valve.net/",
             players: [{
                 player_slot: 0
             }]
