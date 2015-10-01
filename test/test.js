@@ -84,12 +84,6 @@ before(function(done) {
             redis.flushall(cb);
         },
         function(cb) {
-            redis.keys("*", function(err, res) {
-                console.log(err, res);
-                cb(err);
-            });
-        },
-        function(cb) {
             /*
             console.log("loading matches");
             async.mapSeries(testdata.matches, function(m, cb) {
@@ -121,7 +115,7 @@ before(function(done) {
         //cp.fork(__dirname + '/../workServer');
         //cp.fork(__dirname + '/../parseClient');
         require('../workServer');
-        require('../parseClient');
+        require('../parseWorker');
         done(err);
     });
 });

@@ -68,7 +68,7 @@ function getJob() {
     }, function(err, resp, body) {
         if (err) {
             //wait interval, then get another job
-            console.log("error occurred: %s", JSON.stringify(err));
+            console.log("error occurred while requesting work: %s", JSON.stringify(err));
             return setTimeout(getJob, 5 * 1000);
         }
         console.log(body);
@@ -78,9 +78,9 @@ function getJob() {
             console.log("got work from server, jobid: %s, url: %s", body.id, url);
             runParse(payload, function(err, parsed_data) {
                 if (err) {
-                    console.error(err);
+                    console.error("error occurred on parse: %s", err);
                     //TODO wait after a failure to prevent a failing client from spamming the request endpoint?
-                    return getJob();
+                    return setTimeout(getJob, 5 * 1000);
                 }
                 else {
                     parsed_data.id = body.id;
@@ -90,7 +90,7 @@ function getJob() {
                         json: parsed_data
                     }, function(err, resp, body) {
                         if (err || body.error) {
-                            console.error(err);
+                            console.error("error occurred while submitting work: %s", err);
                         }
                         //get another job
                         return getJob();
@@ -99,7 +99,8 @@ function getJob() {
             });
         }
         else {
-            throw "malformed job";
+            console.error('got invalid job from server');
+            return setTimeout(getJob, 5 * 1000);
         }
     });
 }

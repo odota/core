@@ -8,7 +8,7 @@
             "role": "core"
       },
         {
-            "script": "parseClient.js",
+            "script": "parseWorker.js",
             "role": "parser"
       },
         {
