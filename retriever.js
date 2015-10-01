@@ -19,6 +19,10 @@ var port = config.PORT || config.RETRIEVER_PORT;
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
 async.each(a, function(i, cb) {
+    
+    // Start listening if we have over 80% of accounts ready
+    if (count/users.length > 0.8) cb();
+    
     var dotaReady = false;
     var relationshipReady = false;
     var client = new Steam.SteamClient();
@@ -49,11 +53,11 @@ async.each(a, function(i, cb) {
         }
         console.log("[STEAM] Logged on %s", client.steamID);
         client.steamFriends.setPersonaName("[YASP] " + client.steamID);
-        steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
         client.Dota2.once("ready", function() {
             //console.log("Dota 2 ready");
+            steamObj[client.steamID] = client;
             dotaReady = true;
             allDone();
         });
@@ -123,8 +127,8 @@ async.each(a, function(i, cb) {
     });
     app.get('/', function(req, res, next) {
         //console.log(process.memoryUsage());
-        
-        var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
+        var keys = Object.keys(steamObj);
+        var r = keys[Math.floor((Math.random() * keys.length))];
         if (req.query.mmstats) {
             getMMStats(r, function(err, data) {
                 res.locals.data = data;
