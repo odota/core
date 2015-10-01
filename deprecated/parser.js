@@ -67,7 +67,22 @@ else {
                 capacity: capacity
             });
         }
+        
+        var timeout = setTimeout(function() {
+            return res.json({
+                error: "Parse took too long"
+            });
+            
+            console.log("Parse took too long");
+            
+            process.exit(1);
+            
+        }, 2 * 60 * 1000);
+        
         runParse(req.query, function(err, parsed_data) {
+            
+            clearTimeout(timeout);
+            
             if (err) {
                 console.error("error occurred for query: %s: %s", JSON.stringify(req.query), err.stack || err);
                 res.json({
