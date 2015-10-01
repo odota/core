@@ -57,8 +57,8 @@ passport.use(new SteamStrategy({
 }, function initializeUser(identifier, profile, cb) {
     var insert = profile._json;
     insert.last_login = new Date();
-    queries.insertPlayer(db, insert, function(err, player) {
-        return cb(err, player);
+    queries.insertPlayer(db, insert, function(err) {
+        return cb(err, insert);
     });
 }));
 //APP config

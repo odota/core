@@ -67,11 +67,21 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
     function insertMatchTable(cb) {
         var row = match;
-        //TODO support upsert
+        //TODO use psql upsert when available
         if (options.type === "api") {
             db('matches').insert(row).where({
                 match_id: row.match_id
-            }).asCallback(cb);
+            }).asCallback(function(err) {
+                if (err) {
+                    //try update
+                    db('matches').update(row).where({
+                        match_id: row.match_id
+                    }).asCallback(cb);
+                }
+                else {
+                    cb();
+                }
+            });
         }
         else {
             db('matches').update(row).where({
@@ -85,12 +95,22 @@ function insertMatch(db, redis, queue, match, options, cb) {
         async.each(players || [], function(pm, cb) {
             var row = pm;
             row.match_id = match.match_id;
-            //TODO support upsert
+            //TODO upsert
             if (options.type === "api") {
                 db('player_matches').insert(row).where({
                     match_id: row.match_id,
                     player_slot: row.player_slot
-                }).asCallback(cb);
+                }).asCallback(function(err) {
+                    if (err) {
+                        db('player_matches').update(row).where({
+                            match_id: row.match_id,
+                            player_slot: row.player_slot
+                        }).asCallback(cb);
+                    }
+                    else {
+                        cb();
+                    }
+                });
             }
             else {
                 db('player_matches').update(row).where({
@@ -222,9 +242,14 @@ function insertPlayer(db, player, cb) {
         for (var key in info) {
             row[key] = player[key];
         }
-        //TODO support upsert to avoid crashing on relogs
+        //TODO upsert
         db('players').insert(row).asCallback(function(err) {
-            return cb(err, row);
+            if (err) {
+                db('players').update(row).asCallback(cb);
+            }
+            else {
+                return cb();
+            }
         });
     });
 }
