@@ -12,7 +12,6 @@ var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
-var launched = false;
 var a = [];
 var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
@@ -166,6 +165,8 @@ async.each(a, function(i, cb) {
 
 function genStats() {
     var stats = {};
+    var numReadyAccounts = Object.keys(steamObj).length
+    
     for (var key in steamObj) {
         stats[key] = {
             steamID: key,
@@ -177,9 +178,10 @@ function genStats() {
     var data = {
         replayRequests: replayRequests,
         uptime: (new Date() - launch) / 1000,
+        numReadyAccounts: numReadyAccounts,
+        ready: numReadyAccounts === users.length,
         accounts: stats,
-        accountToIdx: accountToIdx,
-        ready: Object.keys(steamObj).length === users.length
+        accountToIdx: accountToIdx
     };
     return data;
 }
