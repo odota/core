@@ -460,12 +460,12 @@ function cleanup(queue, kue, type) {
     }
 }
 
-function queueReq(queue, type, payload, cb) {
+function queueReq(queue, type, payload, options, cb) {
     var job = generateJob(type, payload);
-    var kuejob = queue.create(job.type, job).attempts(payload.attempts || 15).backoff({
+    var kuejob = queue.create(job.type, job).attempts(options.attempts || 15).backoff({
         delay: 60 * 1000,
         type: 'exponential'
-    }).removeOnComplete(true).priority(payload.priority || 'normal').save(function(err) {
+    }).removeOnComplete(true).priority(options.priority || 'normal').ttl(options.ttl).save(function(err) {
         console.log("[KUE] created jobid: %s", kuejob.id);
         cb(err, kuejob);
     });

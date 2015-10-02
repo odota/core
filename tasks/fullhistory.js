@@ -12,7 +12,7 @@ module.exports = function fullhistory(cb) {
         }
         async.eachSeries(players, function(player, cb) {
             player.priority = "low";
-            queueReq(queue, "fullhistory", player, function(err, job) {
+            queueReq(queue, "fullhistory", player, {}, function(err, job) {
                 cb(err);
             });
         }, function(err) {

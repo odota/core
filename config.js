@@ -15,6 +15,7 @@ var defaults = {
     "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
     "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
+    "WORK_URL": "http://localhost:5400", //url to request work from (for worker nodes)
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "KUE_USER": "user",
     "KUE_PASS": "pass",
@@ -24,6 +25,7 @@ var defaults = {
     "RETRIEVER_PORT": "5100",
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",
+    "WORK_PORT": "5400",
     "POSTGRES_URL": "postgresql://postgres:postgres@localhost/postgres",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",

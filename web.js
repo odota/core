@@ -57,8 +57,8 @@ passport.use(new SteamStrategy({
 }, function initializeUser(identifier, profile, cb) {
     var insert = profile._json;
     insert.last_login = new Date();
-    queries.insertPlayer(db, insert, function(err, player) {
-        return cb(err, player);
+    queries.insertPlayer(db, insert, function(err) {
+        return cb(err, insert);
     });
 }));
 //APP config
@@ -187,7 +187,7 @@ app.route('/return').get(passport.authenticate('steam', {
         if (err) {
             return next(err);
         }
-        queueReq(queue, "fullhistory", req.user, function(err, job) {
+        queueReq(queue, "fullhistory", req.user, {}, function(err, job) {
             if (err) {
                 return next(err);
             }
@@ -222,9 +222,7 @@ app.route('/request_job').post(function(req, res) {
         }
         var match_id = req.body.match_id;
         match_id = Number(match_id);
-        if (!body.success && config.NODE_ENV !== "test"
-            // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
-            && !config.DISABLE_RECAPTCHA) {
+        if (!body.success && config.NODE_ENV !== "test" && !config.DISABLE_RECAPTCHA) {
             console.log('failed recaptcha');
             res.json({
                 error: "Recaptcha Failed!"
@@ -237,13 +235,13 @@ app.route('/request_job').post(function(req, res) {
             });
         }
         else {
-            queueReq("request", {
+            queueReq(queue, "request", {
                 match_id: match_id,
                 request: true
-            }, function(err, job) {
+            }, {}, function(err, job) {
                 res.json({
                     error: err,
-                    job: job
+                    job: job ? job.toJSON() : null
                 });
             });
         }

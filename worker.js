@@ -63,27 +63,20 @@ function processApi(job, cb) {
             return cb(JSON.stringify(err));
         }
         else if (body.response) {
-            async.mapSeries(body.response.players, function(player, cb) {
+            async.each(body.response.players, function(player, cb) {
                 insertPlayer(db, player, cb);
-            }, function(err) {
-                return cb(err, body.response.players);
-            });
+            }, cb);
         }
         else if (payload.match_id) {
             var match = body.result;
-            //join payload with match
-            for (var prop in payload) {
-                match[prop] = (prop in match) ? match[prop] : payload[prop];
-            }
             job.progress(0, 100, "Received basic match data.");
             //we want to try to parse this match
             match.parse_status = 0;
-            var insertFunc = match.request ? insertMatchProgress : insertMatch;
+            var insertFunc = payload.request ? insertMatchProgress : insertMatch;
             insertFunc(db, redis, queue, match, {
-                type: "api"
-            }, job, function(err) {
-                cb(err);
-            });
+                type: "api",
+                job: job
+            }, cb);
         }
         else {
             return cb("unknown response");

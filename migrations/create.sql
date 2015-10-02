@@ -25,8 +25,8 @@ CREATE TABLE matches (
   engine integer,
   --radiant_team_name varchar(255),
   --dire_team_name varchar(255),
-  --radiant_captain bigint,
-  --dire_captain bigint,
+  --radiant_captain integer,
+  --dire_captain integer,
   --radiant_logo integer
   --dire_logo integer,
   --radiant_team_complete integer,
@@ -48,12 +48,12 @@ CREATE TABLE matches (
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
-  steamid varchar(255),
+  steamid bigint,
   avatar varchar(255),
   personaname varchar(255),
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
-  cheese bigint,
+  cheese integer,
   fh_unavailable boolean
   /*
     "avatarfull" : "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/88/883f2697f5b2dc4affda2d47eedc1cbec8cfb657_full.jpg",
