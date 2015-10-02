@@ -41,6 +41,8 @@ module.exports = function processParse(job, ctx, cb) {
                     return cb(body.error);
                 }
                 //run aggregations on parsed data fields
+match.parsed_data=body;
+match.parse_status=2;
                 updatePlayerCaches(match, {
                     type: "parsed"
                 }, function(err) {
