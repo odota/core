@@ -28,12 +28,12 @@
   "dependencies": {
     "async": "1.4.2",
     "big-number": "0.3.1",
-    "body-parser": "1.14.0",
+    "body-parser": "1.14.1",
     "bootstrap": "^3.3.5",
     "bootswatch": "^3.3.5",
     "c3": "^0.4.11-rc4",
     "cal-heatmap": "^3.5.4",
-    "compression": "^1.5.2",
+    "compression": "^1.6.0",
     "connect-redis": "^2.5.1",
     "cookie-session": "^1.2.0",
     "d3": "^3.5.6",
@@ -54,7 +54,6 @@
     "knex": "^0.8.6",
     "kue": "~0.9.5",
     "moment": "^2.10.6",
-    "monk": "1.0.1",
     "ndjson": "^1.4.2",
     "numeral": "^1.5.3",
     "parse-redis-url": "0.0.2",
@@ -62,16 +61,15 @@
     "passport-steam": "0.1.6",
     "paypal-rest-sdk": "~1.6",
     "pg": "^4.4.2",
-    "pm2": "^0.15.6",
+    "pm2": "^0.15.7",
     "poet": "~2.0.1",
     "qTip2": "yasp-dota/qtip2",
-    "redis": "1.0.0",
+    "redis": "2.0.1",
     "request": "~2.64.0",
     "request-progress": "^0.3.1",
     "selectize": "^0.12.1",
     "sentiment": "^1.0.2",
-    "sequelize": "^3.9.0",
-    "steam": "1.1.0",
+    "steam": "1.2.0",
     "winston": "1.0.2",
     "wordcloud": "1.0.1"
   },
@@ -83,7 +81,7 @@
     "istanbul": "~0.3.21",
     "json-loader": "^0.5.3",
     "mocha": "~2.3.3",
-    "mongodb": "~2.0.43",
+    "mongodb": "~2.0.45",
     "nock": "~2.13.0",
     "nodemon": "^1.7.1",
     "style-loader": "^0.12.4",
@@ -92,6 +90,6 @@
     "webpack": "^1.12.2"
   },
   "engines": {
-    "node": "0.12.0"
+    "node": "4.1.1"
   }
 }

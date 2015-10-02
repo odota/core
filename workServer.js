@@ -72,7 +72,8 @@ function start() {
                     if (parsed_data.error) {
                         return cb(parsed_data.error);
                     }
-                    //extend match object with parsed data, keep existing data if key conflict (match_id), players if we choose to keep it
+                    //extend match object with parsed data, keep existing data if key conflict (match_id)
+                    //match.players was deleted earlier during insertion of api data
                     for (var key in parsed_data) {
                         match[key] = match[key] || parsed_data[key];
                     }
