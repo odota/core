@@ -12,13 +12,68 @@ var steamObj = {};
 var accountToIdx = {};
 var replayRequests = 0;
 var launch = new Date();
-var launched = false;
 var a = [];
 var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
+
+ 
+app.use(function(req, res, next) {
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+        //reject request if doesnt have key
+        return next("invalid key");
+    } else{
+        next(null);
+    }
+});
+app.get('/', function(req, res, next) {
+    //console.log(process.memoryUsage());
+    var keys = Object.keys(steamObj);
+    
+    if (keys.length == 0) return next("No accounts ready");
+    
+    var r = keys[Math.floor((Math.random() * keys.length))];
+    if (req.query.mmstats) {
+        getMMStats(r, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }    
+    else if (req.query.match_id) {
+        getGCReplayUrl(r, req.query.match_id, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }
+    else if (req.query.account_id) {
+        var idx = accountToIdx[req.query.account_id] || r;
+        getPlayerProfile(idx, req.query.account_id, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }
+    else {
+        res.locals.data = genStats();
+        return next();
+    }
+});
+app.use(function(req, res) {
+    res.json(res.locals.data);
+});
+app.use(function(err, req, res, next) {
+    return res.status(500).json({
+        error: err
+    });
+});
+
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
+});
+    
 async.each(a, function(i, cb) {
+    
     var dotaReady = false;
     var relationshipReady = false;
     var client = new Steam.SteamClient();
@@ -49,11 +104,11 @@ async.each(a, function(i, cb) {
         }
         console.log("[STEAM] Logged on %s", client.steamID);
         client.steamFriends.setPersonaName("[YASP] " + client.steamID);
-        steamObj[client.steamID] = client;
         client.replays = 0;
         client.profiles = 0;
         client.Dota2.once("ready", function() {
             //console.log("Dota 2 ready");
+            steamObj[client.steamID] = client;
             dotaReady = true;
             allDone();
         });
@@ -100,67 +155,18 @@ async.each(a, function(i, cb) {
     });
 
     function allDone() {
-        if (dotaReady && relationshipReady && !launched) {
+        if (dotaReady && relationshipReady) {
             count += 1;
             console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
         }
     }
-}, function() {
-    //start listening
-    launched = true;
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-    });
-    app.use(function(req, res, next) {
-        if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-            //reject request if doesnt have key
-            return next("invalid key");
-        } else{
-            next(null);
-        }
-    });
-    app.get('/', function(req, res, next) {
-        //console.log(process.memoryUsage());
-        
-        var r = Object.keys(steamObj)[Math.floor((Math.random() * users.length))];
-        if (req.query.mmstats) {
-            getMMStats(r, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }    
-        else if (req.query.match_id) {
-            getGCReplayUrl(r, req.query.match_id, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }
-        else if (req.query.account_id) {
-            var idx = accountToIdx[req.query.account_id] || r;
-            getPlayerProfile(idx, req.query.account_id, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }
-        else {
-            res.locals.data = genStats();
-            return next();
-        }
-    });
-    app.use(function(req, res) {
-        res.json(res.locals.data);
-    });
-    app.use(function(err, req, res, next) {
-        return res.status(500).json({
-            error: err
-        });
-    });
 });
 
 function genStats() {
     var stats = {};
+    var numReadyAccounts = Object.keys(steamObj).length
+    
     for (var key in steamObj) {
         stats[key] = {
             steamID: key,
@@ -172,6 +178,8 @@ function genStats() {
     var data = {
         replayRequests: replayRequests,
         uptime: (new Date() - launch) / 1000,
+        numReadyAccounts: numReadyAccounts,
+        ready: numReadyAccounts === users.length,
         accounts: stats,
         accountToIdx: accountToIdx
     };
