@@ -21,7 +21,10 @@ while (a.length < users.length) a.push(a.length + 0);
 async.each(a, function(i, cb) {
     
     // Start listening if we have over 80% of accounts ready
-    if (count/users.length > 0.8) cb();
+    if (count/users.length > 0.8) {
+        launchServer();
+        cb();
+    }
     
     var dotaReady = false;
     var relationshipReady = false;
@@ -104,14 +107,23 @@ async.each(a, function(i, cb) {
     });
 
     function allDone() {
-        if (dotaReady && relationshipReady && !launched) {
+        if (dotaReady && relationshipReady) {
             count += 1;
-            console.log("acct %s ready, %s/%s", i, count, users.length);
+            console.log("acct %s ready, %s/%s", i, count, users.length);    
+        }
+        
+        if (!launched) {
             cb();
         }
     }
 }, function() {
+    launchServer();
+});
+
+function launchServer() {
     //start listening
+    if (launched) return;
+    
     launched = true;
     var server = app.listen(port, function() {
         var host = server.address().address;
@@ -161,7 +173,7 @@ async.each(a, function(i, cb) {
             error: err
         });
     });
-});
+}
 
 function genStats() {
     var stats = {};
