@@ -16,3 +16,4 @@ Thumbs.db
 public/build
 testfiles
 ecosystem.json
+*.swp
