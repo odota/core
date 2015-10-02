@@ -18,13 +18,62 @@ var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
-async.each(a, function(i, cb) {
-    
-    // Start listening if we have over 80% of accounts ready
-    if (count/users.length > 0.8) {
-        launchServer();
-        cb();
+
+ 
+app.use(function(req, res, next) {
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+        //reject request if doesnt have key
+        return next("invalid key");
+    } else{
+        next(null);
     }
+});
+app.get('/', function(req, res, next) {
+    //console.log(process.memoryUsage());
+    var keys = Object.keys(steamObj);
+    
+    if (keys.length == 0) return next("No accounts ready");
+    
+    var r = keys[Math.floor((Math.random() * keys.length))];
+    if (req.query.mmstats) {
+        getMMStats(r, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }    
+    else if (req.query.match_id) {
+        getGCReplayUrl(r, req.query.match_id, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }
+    else if (req.query.account_id) {
+        var idx = accountToIdx[req.query.account_id] || r;
+        getPlayerProfile(idx, req.query.account_id, function(err, data) {
+            res.locals.data = data;
+            return next(err);
+        });
+    }
+    else {
+        res.locals.data = genStats();
+        return next();
+    }
+});
+app.use(function(req, res) {
+    res.json(res.locals.data);
+});
+app.use(function(err, req, res, next) {
+    return res.status(500).json({
+        error: err
+    });
+});
+
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[RETRIEVER] listening at http://%s:%s', host, port);
+});
+    
+async.each(a, function(i, cb) {
     
     var dotaReady = false;
     var relationshipReady = false;
@@ -109,71 +158,11 @@ async.each(a, function(i, cb) {
     function allDone() {
         if (dotaReady && relationshipReady) {
             count += 1;
-            console.log("acct %s ready, %s/%s", i, count, users.length);    
-        }
-        
-        if (!launched) {
+            console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
         }
     }
-}, function() {
-    launchServer();
 });
-
-function launchServer() {
-    //start listening
-    if (launched) return;
-    
-    launched = true;
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[RETRIEVER] listening at http://%s:%s', host, port);
-    });
-    app.use(function(req, res, next) {
-        if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-            //reject request if doesnt have key
-            return next("invalid key");
-        } else{
-            next(null);
-        }
-    });
-    app.get('/', function(req, res, next) {
-        //console.log(process.memoryUsage());
-        var keys = Object.keys(steamObj);
-        var r = keys[Math.floor((Math.random() * keys.length))];
-        if (req.query.mmstats) {
-            getMMStats(r, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }    
-        else if (req.query.match_id) {
-            getGCReplayUrl(r, req.query.match_id, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }
-        else if (req.query.account_id) {
-            var idx = accountToIdx[req.query.account_id] || r;
-            getPlayerProfile(idx, req.query.account_id, function(err, data) {
-                res.locals.data = data;
-                return next(err);
-            });
-        }
-        else {
-            res.locals.data = genStats();
-            return next();
-        }
-    });
-    app.use(function(req, res) {
-        res.json(res.locals.data);
-    });
-    app.use(function(err, req, res, next) {
-        return res.status(500).json({
-            error: err
-        });
-    });
-}
 
 function genStats() {
     var stats = {};
@@ -189,7 +178,8 @@ function genStats() {
         replayRequests: replayRequests,
         uptime: (new Date() - launch) / 1000,
         accounts: stats,
-        accountToIdx: accountToIdx
+        accountToIdx: accountToIdx,
+        ready: Object.keys(steamObj).length === users.length
     };
     return data;
 }
