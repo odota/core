@@ -18,6 +18,9 @@ function queryRetrievers(cb) {
                 if (err) {
                     return cb(err);
                 }
+                
+                if (!body.ready) return cb("retriever isn't ready");
+                
                 for (var key in body.accounts) {
                     b.push(body.accounts[key]);
                 }
