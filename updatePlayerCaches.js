@@ -70,10 +70,10 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //m.players[0] should be this player
                             //m.all_players should be all players
                             //duplicate this data into a copy to avoid corrupting original match object
-                            m.all_players = match.players.slice(0);
+                            m.all_players = JSON.parse(JSON.stringify(m.players));
                             m.players = [p];
-                            var reInsert = match.match_id in cache.aggData.match_ids && options.type === "api";
-                            var reParse = match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
+                            var reInsert = m.match_id in cache.aggData.match_ids && options.type === "api";
+                            var reParse = m.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
                             if (!reInsert && !reParse) {
                                 //some data fields require computeMatchData in order to aggregate correctly
                                 computeMatchData(m);

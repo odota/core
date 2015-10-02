@@ -23,7 +23,7 @@ module.exports = function processParse(job, ctx, cb) {
             //match object should now contain replay url, and url should be persisted to db
             console.log("[PARSER] parsing from %s", job.data.payload.url);
             var url = job.data.payload.url;
-            var target = job.parser_url + "&url=" + url
+            var target = job.parser_url + "&url=" + url;
             console.log("target: %s", target);
             request({
                 url: target
@@ -40,11 +40,9 @@ module.exports = function processParse(job, ctx, cb) {
                 if (body.error) {
                     return cb(body.error);
                 }
-                var parsed_data = body;
-                match.match_id = match_id || parsed_data.match_id;
-                match.parsed_data = parsed_data;
-                match.parse_status = 2;
                 //run aggregations on parsed data fields
+match.parsed_data=body;
+match.parse_status=2;
                 updatePlayerCaches(match, {
                     type: "parsed"
                 }, function(err) {
