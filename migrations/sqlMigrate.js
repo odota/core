@@ -14,7 +14,7 @@ MongoClient.connect(url, function(err, db) {
     var cursor;
     var migrate;
     if (args[0] === "matches") {
-        cursor = db.collection('matches').find();
+        cursor = db.collection('matches').find().sort({match_id: 1});
         migrate = processMatch;
     }
     else if (args[0] === "players") {
