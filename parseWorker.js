@@ -79,23 +79,22 @@ function getJob() {
             runParse(payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
-                    //TODO wait after a failure to prevent a failing client from spamming the request endpoint?
-                    return setTimeout(getJob, 5 * 1000);
+                    parsed_data = {
+                        error: err
+                    };
                 }
-                else {
-                    parsed_data.id = body.id;
-                    console.log("sending work to server, jobid: %s", body.id);
-                    request.post({
-                        url: remote,
-                        json: parsed_data
-                    }, function(err, resp, body) {
-                        if (err || body.error) {
-                            console.error("error occurred while submitting work: %s", err);
-                        }
-                        //get another job
-                        return getJob();
-                    });
-                }
+                parsed_data.id = body.id;
+                console.log("sending work to server, jobid: %s", body.id);
+                request.post({
+                    url: remote,
+                    json: parsed_data
+                }, function(err, resp, body) {
+                    if (err || body.error) {
+                        console.error("error occurred while submitting work: %s", err);
+                    }
+                    //get another job
+                    return getJob();
+                });
             });
         }
         else {

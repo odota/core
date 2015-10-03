@@ -70,6 +70,7 @@ function start() {
                     if (parsed_data.error) {
                         return cb(parsed_data.error);
                     }
+                    delete parsed_data.id;
                     //extend match object with parsed data, keep existing data if key conflict (match_id)
                     //match.players was deleted earlier during insertion of api data
                     for (var key in parsed_data) {
@@ -96,9 +97,8 @@ function start() {
         //TODO validate request
         //got data from worker, signal the job with this match_id
         console.log('received submitted work');
-        if (active_jobs[req.body.id] && !req.body.error) {
+        if (active_jobs[req.body.id]) {
             var job = active_jobs[req.body.id];
-            delete req.body.id;
             job.emit('submitwork', req.body);
             return res.json({
                 error: null

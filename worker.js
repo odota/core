@@ -44,16 +44,18 @@ function processApi(job, cb) {
             return cb(JSON.stringify(err));
         }
         else if (body.response) {
+            //player summaries response
             async.each(body.response.players, function(player, cb) {
                 insertPlayer(db, player, cb);
             }, cb);
         }
         else if (payload.match_id) {
+            //match details response
             var match = body.result;
             job.progress(0, 100, "Received basic match data.");
             //we want to try to parse this match
             match.parse_status = 0;
-            var insertFunc = payload.request ? insertMatchProgress : insertMatch;
+            var insertFunc = job.data.request ? insertMatchProgress : insertMatch;
             insertFunc(db, redis, queue, match, {
                 type: "api",
                 job: job

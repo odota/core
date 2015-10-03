@@ -105,6 +105,7 @@ function generateJob(type, payload) {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
                 type: type,
+                request: true,
                 payload: payload
             };
         },

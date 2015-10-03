@@ -14,34 +14,37 @@ var buildSets = require('./buildSets');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-start();
+buildSets(db, redis, function(err) {
+    if (err) {
+        throw err;
+    }
+    start();
+});
 
 function start() {
-    buildSets(db, redis, function() {
-        if (config.START_SEQ_NUM === "REDIS") {
-            redis.get("match_seq_num", function(err, result) {
-                if (err || !result) {
-                    console.log('failed to get match_seq_num from redis, retrying');
-                    return setTimeout(start, 10000);
-                }
-                result = Number(result);
-                scanApi(result);
-            });
-        }
-        else if (config.START_SEQ_NUM) {
-            scanApi(config.START_SEQ_NUM);
-        }
-        else {
-            var container = generateJob("api_history", {});
-            getData(container.url, function(err, data) {
-                if (err) {
-                    console.log("failed to get sequence number from webapi");
-                    return start();
-                }
-                scanApi(data.result.matches[0].match_seq_num);
-            });
-        }
-    });
+    if (config.START_SEQ_NUM === "REDIS") {
+        redis.get("match_seq_num", function(err, result) {
+            if (err || !result) {
+                console.log('failed to get match_seq_num from redis, retrying');
+                return setTimeout(start, 10000);
+            }
+            result = Number(result);
+            scanApi(result);
+        });
+    }
+    else if (config.START_SEQ_NUM) {
+        scanApi(config.START_SEQ_NUM);
+    }
+    else {
+        var container = generateJob("api_history", {});
+        getData(container.url, function(err, data) {
+            if (err) {
+                console.log("failed to get sequence number from webapi");
+                return start();
+            }
+            scanApi(data.result.matches[0].match_seq_num);
+        });
+    }
 }
 
 function scanApi(seq_num) {
@@ -96,7 +99,9 @@ function scanApi(seq_num) {
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-                        insertMatch(db, redis, queue, match, {type: "api"}, close);
+                        insertMatch(db, redis, queue, match, {
+                            type: "api"
+                        }, close);
                     }
                     else {
                         close(err);

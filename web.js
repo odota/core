@@ -235,9 +235,10 @@ app.route('/request_job').post(function(req, res) {
         }
         else {
             queueReq(queue, "request", {
-                match_id: match_id,
-                request: true
-            }, {}, function(err, job) {
+                match_id: match_id
+            }, {
+                attempts: 1
+            }, function(err, job) {
                 res.json({
                     error: err,
                     job: job ? job.toJSON() : null

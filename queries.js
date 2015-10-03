@@ -218,12 +218,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            var options = match.request ? {
+            var jobOptions = options.job && options.job.data && options.job.data.request ? {
                 priority: "high",
                 attempts: 1
             } : {};
-            //queue it and finish
-            return queueReq(queue, "parse", match, options, function(err, job2) {
+            //queue it and finish, callback with the queued parse job
+            return queueReq(queue, "parse", match, jobOptions, function(err, job2) {
                 cb(err, job2);
             });
         }
@@ -231,7 +231,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
 }
 
 function insertMatchProgress(db, redis, queue, match, options, cb) {
-    //pass job in options to match API of insertMatch
+    //pass job in options to mirror API of insertMatch
     var job = options.job;
     insertMatch(db, redis, queue, match, options, function(err, job2) {
         if (err) {
