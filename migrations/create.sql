@@ -23,6 +23,7 @@ CREATE TABLE matches (
   negative_votes integer,
   game_mode integer,
   engine integer,
+  picks_bans json[],
   --radiant_team_name varchar(255),
   --dire_team_name varchar(255),
   --radiant_captain integer,
@@ -33,7 +34,9 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
-  --parsed data
+  --from skill api
+  skill integer,
+  --parsed data below
   parse_status integer,
   url varchar(255),
   chat json[],
@@ -41,9 +44,7 @@ CREATE TABLE matches (
   radiant_gold_adv integer[],
   radiant_xp_adv integer[],
   teamfights json[],
-  version integer,
-  --from skill api
-  skill integer
+  version integer
   );
 
 CREATE TABLE players (

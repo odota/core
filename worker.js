@@ -17,10 +17,6 @@ var async = require('async');
 var insertPlayer = queries.insertPlayer;
 var insertMatch = queries.insertMatch;
 var insertMatchProgress = queries.insertMatchProgress;
-var parsers = config.PARSER_HOST.split(",").map(function(p) {
-        return "http://" + p;
-    });
-    
 console.log("[WORKER] starting worker");
 invokeInterval(function(cb) {
     buildSets(db, redis, cb);
@@ -31,19 +27,6 @@ invokeInterval(function(cb) {
 invokeInterval(function(cb) {
     getMMStats(redis, cb);
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 60000); //Sample every 3 minutes
-invokeInterval(function(cb) {
-    
-    var count = 0;
-    
-    async.each(parsers, function(url, callback) {
-        getData(url, function(err, body) {
-            if (!err) count++;
-        });
-    }, function(err) {
-        redis.set("parsers-status", count);
-        cb(err);
-    });
-}, 60 * 1000);
 queue.watchStuckJobs();
 //process requests (api call, waits for parse to complete)
 queue.process('request', numCPUs, processApi);

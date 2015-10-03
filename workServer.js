@@ -96,7 +96,7 @@ function start() {
         //TODO validate request
         //got data from worker, signal the job with this match_id
         console.log('received submitted work');
-        if (active_jobs[req.body.id]) {
+        if (active_jobs[req.body.id] && !req.body.error) {
             var job = active_jobs[req.body.id];
             delete req.body.id;
             job.emit('submitwork', req.body);
