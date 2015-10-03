@@ -29,8 +29,8 @@ module.exports = function updatePlayerCaches(match, options, cb) {
             //we didn't add skill data because we didn't have this match in db, return immediately
             return cb(err);
         }
-        var m = JSON.parse(JSON.stringify(match));
-        async.each(m.players || options.players, function(p, cb) {
+        var players = JSON.parse(JSON.stringify(match.players || options.players));
+        async.each(players, function(p, cb) {
                 //full cache
                 /*
                 var match_copy = JSON.parse(JSON.stringify(match));
@@ -66,6 +66,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                     //if player cache doesn't exist, skip
                     var cache = result ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
                     if (cache) {
+                        var m = JSON.parse(JSON.stringify(match));
                         if (options.type !== "skill") {
                             //m.players[0] should be this player
                             //m.all_players should be all players
