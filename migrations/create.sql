@@ -101,6 +101,7 @@ CREATE TABLE player_matches (
       hero_healing integer,
       level integer,
       ability_upgrades json[],
+      additional_units json[],
       --parsed fields below
       stuns real,
       max_hero_hit json,
