@@ -152,5 +152,6 @@ CREATE TABLE player_ratings (
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
+CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
 CREATE INDEX on player_ratings(account_id, time);
