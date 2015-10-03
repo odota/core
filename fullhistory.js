@@ -1,8 +1,6 @@
 var utility = require('./utility');
-var r = require('./redis');
-var redis = r.client;
-var queue = r.queue;
-var kue = r.kue;
+var redis = require('./redis');
+var queue = require('./queue');
 var cluster = require('cluster');
 var config = require('./config');
 var utility = require('./utility');
@@ -20,7 +18,7 @@ var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(10, api_keys.length);
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     console.log("[FULLHISTORY] starting master");
-    utility.cleanup(queue, kue, "fullhistory");
+    utility.cleanup(queue, "fullhistory");
     for (var i = 0; i < steam_hosts.length; i++) {
         if (true) {
             cluster.fork();

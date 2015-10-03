@@ -2,8 +2,7 @@ var request = require('request');
 var config = require('./config');
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var queueReq = require('./operations').queueReq;
-var r = require('./redis');
-var redis = r.client;
+var redis = require('./redis');
 var status = require('./status');
 var socketio = require('socket.io');
 

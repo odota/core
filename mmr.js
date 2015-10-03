@@ -1,12 +1,10 @@
 var utility = require('./utility');
-var r = require('./redis');
-var kue = r.kue;
-var queue = r.queue;
+var queue = require('./queue');
 var db = require('./db');
 var getData = utility.getData;
 var queries = require('./queries');
 queue.process('mmr', 10, processMmr);
-utility.cleanup(queue, kue, "mmr");
+utility.cleanup(queue, "mmr");
 
 function processMmr(job, cb) {
     getData({

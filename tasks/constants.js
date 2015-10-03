@@ -1,5 +1,3 @@
-//var r = require('../redis');
-//var redis = r.client;
 var utility = require('../utility');
 var getData = utility.getData;
 var async = require('async');

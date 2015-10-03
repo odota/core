@@ -1,7 +1,5 @@
-var r = require('./redis');
-var redis = r.client;
-var queue = r.queue;
-var kue = r.kue;
+var redis = require('./redis');
+var queue = require('./queue');
 //var updateNames = require('./tasks/updateNames');
 var buildSets = require('./buildSets');
 var utility = require('./utility');
@@ -49,7 +47,7 @@ invokeInterval(function(cb) {
 queue.watchStuckJobs();
 //process requests (api call, waits for parse to complete)
 queue.process('request', numCPUs, processApi);
-utility.cleanup(queue, kue, 'request');
+utility.cleanup(queue, 'request');
 //updatenames queues an api request, probably should have name updating occur in a separate service
 //jobs.process('api', processApi);
 //invokeInterval(updateNames, 60 * 1000);

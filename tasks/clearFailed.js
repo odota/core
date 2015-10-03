@@ -1,7 +1,6 @@
-var r = require('../redis');
 var async = require('async');
-var kue = r.kue;
-var queue = r.queue;
+var kue = require('kue');
+var queue = require('../queue');
 module.exports = function(cb) {
     queue.failed(function(err, ids) {
         if (err) {

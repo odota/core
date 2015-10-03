@@ -128,6 +128,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
     }
 
     function updatePlayerCaches(cb) {
+        //we want to update player caches for skill from options.players
         async.each(players || options.players, function(player_match, cb) {
             //put match fields into each player to form player_match
             for (var key in match) {

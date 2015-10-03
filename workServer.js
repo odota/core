@@ -1,7 +1,5 @@
-var r = require('./redis');
-var redis = r.client;
-var queue = r.queue;
-var kue = r.kue;
+var redis = require('./redis');
+var queue = require('./queue');
 var utility = require('./utility');
 var config = require('./config');
 var getReplayUrl = require('./getReplayUrl');
@@ -29,7 +27,7 @@ function start() {
         //put it in the queue
         queued_jobs[job.id] = job;
     });
-    utility.cleanup(queue, kue, 'parse');
+    utility.cleanup(queue, 'parse');
     app.use(bodyParser.json({
         limit: '1mb'
     }));

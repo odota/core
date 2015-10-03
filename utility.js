@@ -4,6 +4,7 @@ var winston = require('winston');
 var config = require('./config');
 var BigNumber = require('big-number').n;
 var urllib = require('url');
+var kue = require('kue');
 var transports = [];
 transports.push(new(winston.transports.Console)({
     'timestamp': true
@@ -100,7 +101,6 @@ function generateJob(type, payload) {
             };
         },
         "request": function() {
-            payload.attempts = 1;
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
@@ -109,24 +109,13 @@ function generateJob(type, payload) {
             };
         },
         "fullhistory": function() {
-            payload.attempts = 1;
             return {
                 title: [type, payload.account_id].join(),
                 type: type,
-                payload: payload
-            };
-        },
-        "shorthistory": function() {
-            payload.attempts = 1;
-            return {
-                title: [type, payload.account_id].join(),
-                type: type,
-                short_history: true,
                 payload: payload
             };
         },
         "mmr": function() {
-            payload.attempts = 1;
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
                 type: type,
@@ -404,7 +393,7 @@ function invokeInterval(func, delay) {
     })();
 }
 
-function cleanup(queue, kue, type) {
+function cleanup(queue, type) {
     process.once('SIGTERM', function() {
         clearActiveJobs(function(err) {
             if (err) {
