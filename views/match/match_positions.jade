@@ -21,9 +21,9 @@ block match_content
                   th: abbr(title=tooltips.used_ward_sentry) Sentry
               tr(class = player.isRadiant ? "radiant" : "dire")
                 +hero_td(player)
-                td.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[player.lane] || "-"}
-                td.activate(data-index=ind, data-type="obs") #{player.obs_log.length || "-"}
-                td.activate(data-index=ind, data-type="sen") #{player.sen_log.length || "-"}
+                td.lane-position.activate(data-index=ind, data-type="lane_pos") #{constants.lane_ids[player.lane] || "-"}
+                td.lane-position.activate(data-index=ind, data-type="obs") #{player.obs_log.length || "-"}
+                td.lane-position.activate(data-index=ind, data-type="sen") #{player.sen_log.length || "-"}
 
 append footer_assets
   script.

@@ -383,3 +383,7 @@ table tfoot * {
     margin-left: 3px;
     text-transform: uppercase;
 }
+
+.lane-position {
+  cursor: pointer;
+}
