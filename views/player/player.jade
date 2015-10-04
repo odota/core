@@ -36,24 +36,25 @@ block content
     .col-xs-3
           h4
             if (!player.full_history_time)
-              span.text-danger.rating: abbr(title="This user does not have full match history yet.  Some matches may be missing.  (Full history request queued on this user's next login)")
+              span.text-danger.rating: abbr(title="This player does not have full match history yet.  Some matches may be missing.  (A full history request is automatically queued on login)")
                 i.fa.fa-exclamation-triangle
             else
-              span.text-success.rating: abbr(title="Full history has been processed for this user.")
+              span.text-success.rating: abbr(title="Full history has been processed for this player.")
                 i.fa.fa-check
             small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-              New users may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
+              Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
               
           h4
             if !(player.account_id in trackedPlayers)
-              span.text-danger.rating: abbr(title="This user has not visited recently, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
+              span.text-danger.rating: abbr(title="This player has not visited in the last #{config.UNTRACK_DAYS} days, so their matches are not automatically parsed. (Parsing resumes on this user's next visit)")
                 i.fa.fa-eye-slash
             else
-              span.text-success.rating: abbr(title="This user is tracked!  Matches they play are automatically parsed.")
+              span.text-success.rating: abbr(title="This player has visited in the last #{config.UNTRACK_DAYS} days.  Matches they play are automatically parsed.")
                 i.fa.fa-eye
-            small: abbr(title="A parsed match is one that has had its replay analyzed.<br> \
+            small: abbr(title="A parsed match is a match that has had its replay analyzed.<br> \
               Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
-              Many advanced statistics are only available for parsed matches.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
+              Many advanced statistics are only available for parsed matches.<br> \
+              Replays of active users and specifically requested matches are parsed.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
 
     .col-xs-3
       h4

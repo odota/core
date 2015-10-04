@@ -10,8 +10,9 @@ var queue = require('../queue');
 var redis = require('../redis');
 var match_seq_num = args[0] || 0;
 getPage();
-//match 59622 has a messed up MAXINT32 in one of the player's tower damage
-//match 239190 for hero_healing
+//match seq num 59622 has a messed up MAXINT32 in one of the player's tower damage
+//match seq num 239190 for hero_healing
+//match seq num 542284 for hero_healing
 function getPage() {
     var job = generateJob("api_sequence", {
         start_at_match_seq_num: match_seq_num

@@ -8,6 +8,7 @@ var MongoClient = require('mongodb').MongoClient;
 var url = config.MONGO_URL;
 var async = require('async');
 var columnInfo = null;
+//TODO this either needs to handle insert conflicts or we need to use upsert
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
@@ -100,7 +101,7 @@ MongoClient.connect(url, function(err, db) {
                 }
             }
         }
-        getColumnInfo(db, function(err) {
+        getColumnInfo(pg, function(err) {
             if (err) {
                 return cb(err);
             }
@@ -132,7 +133,7 @@ MongoClient.connect(url, function(err, db) {
                 if (err) {
                     return cb(err);
                 }
-                getColumnInfo(db, function(err) {
+                getColumnInfo(pg, function(err) {
                     if (err) {
                         return cb(err);
                     }
@@ -180,7 +181,7 @@ MongoClient.connect(url, function(err, db) {
     }
 
     function processPlayer(p, cb) {
-        getColumnInfo(db, function(err) {
+        getColumnInfo(pg, function(err) {
             if (err) {
                 return cb(err);
             }
@@ -198,7 +199,7 @@ MongoClient.connect(url, function(err, db) {
                     return cb(err);
                 }
                 //insert to player_ratings
-                getColumnInfo(db, function(err) {
+                getColumnInfo(pg, function(err) {
                     if (err) {
                         return cb(err);
                     }
