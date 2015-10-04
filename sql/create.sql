@@ -49,7 +49,7 @@ CREATE TABLE matches (
 
 CREATE TABLE players (
   account_id bigint PRIMARY KEY,
-  steamid bigint,
+  steamid varchar(32),
   avatar varchar(255),
   personaname varchar(255),
   last_login timestamp with time zone,
@@ -97,8 +97,8 @@ CREATE TABLE player_matches (
       xp_per_min integer,
       gold_spent integer,
       hero_damage integer,
-      tower_damage integer,
-      hero_healing integer,
+      tower_damage bigint,
+      hero_healing bigint,
       level integer,
       ability_upgrades json[],
       additional_units json[],

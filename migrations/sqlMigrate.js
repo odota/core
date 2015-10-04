@@ -6,6 +6,8 @@ var pg = require('knex')({
 });
 var MongoClient = require('mongodb').MongoClient;
 var url = config.MONGO_URL;
+var async = require('async');
+var columnInfo = null;
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
@@ -14,7 +16,9 @@ MongoClient.connect(url, function(err, db) {
     var cursor;
     var migrate;
     if (args[0] === "matches") {
-        cursor = db.collection('matches').find().sort({match_id: 1});
+        cursor = db.collection('matches').find().sort({
+            match_id: 1
+        });
         migrate = processMatch;
     }
     else if (args[0] === "players") {
@@ -25,6 +29,31 @@ MongoClient.connect(url, function(err, db) {
         throw "invalid option, choose matches or players";
     }
     cursor.nextObject(processItem);
+
+    function getColumnInfo(db, cb) {
+        if (columnInfo) {
+            return cb();
+        }
+        else {
+            async.parallel({
+                "matches": function(cb) {
+                    db('matches').columnInfo().asCallback(cb);
+                },
+                "player_matches": function(cb) {
+                    db('player_matches').columnInfo().asCallback(cb);
+                },
+                "players": function(cb) {
+                    db('players').columnInfo().asCallback(cb);
+                },
+                "player_ratings": function(cb) {
+                    db('player_ratings').columnInfo().asCallback(cb);
+                }
+            }, function(err, results) {
+                columnInfo = results;
+                cb(err);
+            });
+        }
+    }
 
     function processItem(err, item) {
         if (err) {
@@ -71,12 +100,12 @@ MongoClient.connect(url, function(err, db) {
                 }
             }
         }
-        pg('matches').columnInfo().asCallback(function(err, info) {
+        getColumnInfo(db, function(err) {
             if (err) {
                 return cb(err);
             }
             var row = {};
-            for (var key in info) {
+            for (var key in columnInfo.matches) {
                 if (key === "parse_status") {
                     row[key] = m.parsed_data ? 2 : null;
                 }
@@ -98,12 +127,12 @@ MongoClient.connect(url, function(err, db) {
                     row[key] = null;
                 }
             }
-            console.log(row.match_id);
+            //console.log(row.match_id);
             pg('matches').insert(row).asCallback(function(err) {
                 if (err) {
                     return cb(err);
                 }
-                pg('player_matches').columnInfo().asCallback(function(err, info) {
+                getColumnInfo(db, function(err) {
                     if (err) {
                         return cb(err);
                     }
@@ -112,7 +141,7 @@ MongoClient.connect(url, function(err, db) {
                             var parseSlot = pm.player_slot % (128 - 5);
                             var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
                             var row = {};
-                            for (var key in info) {
+                            for (var key in columnInfo.player_matches) {
                                 if (key === "gold_t") {
                                     row[key] = pp ? pp.gold : null;
                                 }
@@ -151,12 +180,12 @@ MongoClient.connect(url, function(err, db) {
     }
 
     function processPlayer(p, cb) {
-        pg('players').columnInfo().asCallback(function(err, info) {
+        getColumnInfo(db, function(err) {
             if (err) {
                 return cb(err);
             }
             var row = {};
-            for (var key in info) {
+            for (var key in columnInfo.players) {
                 if (key === "last_login") {
                     row[key] = p.last_visited;
                 }
@@ -169,14 +198,14 @@ MongoClient.connect(url, function(err, db) {
                     return cb(err);
                 }
                 //insert to player_ratings
-                pg('player_ratings').columnInfo().asCallback(function(err, info) {
+                getColumnInfo(db, function(err) {
                     if (err) {
                         return cb(err);
                     }
                     if (p.ratings) {
                         var ratings = p.ratings.map(function(r) {
                             var row = {};
-                            for (var key in info) {
+                            for (var key in columnInfo.player_ratings) {
                                 if (key === "solo_competitive_rank") {
                                     row[key] = r.soloCompetitiveRank;
                                 }

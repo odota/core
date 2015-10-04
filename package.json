@@ -17,7 +17,7 @@
     "maven": "mvn -q -f java_parser/pom.xml clean install -U",
     "build": "npm install && npm run maven && npm run webpack && npm run constants",
     "startup": "sudo pm2 startup ubuntu -u yasp",
-    "create": "sudo -u postgres psql -f migrations/create.sql",
+    "create": "sudo -u postgres psql -f sql/create.sql",
     "deploy-core": "node deploy core",
     "deploy-parser": "git pull origin master && npm run maven && node deploy parser"
   },

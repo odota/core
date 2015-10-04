@@ -130,6 +130,7 @@ function generateJob(type, payload) {
 
 function getData(url, cb) {
     var u;
+    var delay = 1000;
     if (url.constructor === Array) {
         //select a random element if array
         u = url[Math.floor(Math.random() * url.length)];
@@ -137,6 +138,7 @@ function getData(url, cb) {
     else if (typeof url === "object") {
         //options object
         u = url.url;
+        delay = url.delay || delay;
     }
     else {
         u = url;
@@ -164,7 +166,6 @@ function getData(url, cb) {
     }
     var target = urllib.format(parse);
     logger.info("getData: %s", target);
-    var delay = 1000;
     return setTimeout(function() {
         request({
             proxy: proxy,
@@ -460,7 +461,6 @@ function queueReq(queue, type, payload, options, cb) {
         cb(err, kuejob);
     });
 }
-
 module.exports = {
     tokenize: tokenize,
     logger: logger,

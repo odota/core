@@ -60,7 +60,10 @@ function scanApi(seq_num) {
         trackedPlayers = result.trackedPlayers;
         ratingPlayers = result.ratingPlayers;
         userPlayers = result.userPlayers;
-        getData(container.url, function(err, data) {
+        getData({
+            url: container.url,
+            delay: 1
+        }, function(err, data) {
             if (err) {
                 return scanApi(seq_num);
             }

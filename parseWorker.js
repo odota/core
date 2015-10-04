@@ -60,7 +60,7 @@ else {
 
 function getJob() {
     //get from endpoint asking for replay url
-    var remote = config.WORK_URL + "/parse";
+    var remote = config.WORK_URL + "/parse" + "?key=" + config.RETRIEVER_SECRET;
     console.log("contacting server for work: %s", remote);
     request({
         url: remote,
@@ -84,6 +84,7 @@ function getJob() {
                     };
                 }
                 parsed_data.id = body.id;
+                parsed_data.key = config.RETRIEVER_SECRET;
                 console.log("sending work to server, jobid: %s", body.id);
                 request.post({
                     url: remote,

@@ -33,6 +33,11 @@ function start() {
     }));
     app.get('/parse', function(req, res) {
         //TODO validate request
+        if (config.RETRIEVER_SECRET && req.query.key !== config.RETRIEVER_SECRET) {
+            return res.status(500).json({
+                error: "invalid key"
+            });
+        }
         console.log('client requested work');
         var job = queued_jobs[Object.keys(queued_jobs)[0]];
         if (!job) {
@@ -70,6 +75,7 @@ function start() {
                     if (parsed_data.error) {
                         return cb(parsed_data.error);
                     }
+                    delete parsed_data.key;
                     delete parsed_data.id;
                     //extend match object with parsed data, keep existing data if key conflict (match_id)
                     //match.players was deleted earlier during insertion of api data
@@ -94,7 +100,12 @@ function start() {
         });
     });
     app.post('/parse', function(req, res) {
-        //TODO validate request
+        //validate request
+        if (config.RETRIEVER_SECRET && req.body.key !== config.RETRIEVER_SECRET) {
+            return res.status(500).json({
+                error: "invalid key"
+            });
+        }
         //got data from worker, signal the job with this match_id
         console.log('received submitted work');
         if (active_jobs[req.body.id]) {

@@ -7,6 +7,8 @@ var zlib = require('zlib');
 var aggregator = require('./aggregator');
 var reduceMatch = utility.reduceMatch;
 var config = require('./config');
+var constants = require('./constants');
+var columnInfo = null;
 
 function getSets(redis, cb) {
     async.parallel({
@@ -58,35 +60,101 @@ function getSets(redis, cb) {
     });
 }
 
+function getColumnInfo(db, cb) {
+    if (columnInfo) {
+        return cb();
+    }
+    else {
+        async.parallel({
+            "matches": function(cb) {
+                db('matches').columnInfo().asCallback(cb);
+            },
+            "player_matches": function(cb) {
+                db('player_matches').columnInfo().asCallback(cb);
+            },
+            "players": function(cb) {
+                db('players').columnInfo().asCallback(cb);
+            },
+            "player_ratings": function(cb) {
+                db('player_ratings').columnInfo().asCallback(cb);
+            }
+        }, function(err, results) {
+            columnInfo = results;
+            cb(err);
+        });
+    }
+}
+
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
-    async.series([insertMatchTable, insertPlayerMatchesTable, ensurePlayers, updatePlayerCaches, clearMatchCache], decideParse);
+    async.series([
+    function(cb) {
+            getColumnInfo(db, cb);
+    },
+    insertMatchTable,
+    insertPlayerMatchesTable,
+    //ensurePlayers,
+    updatePlayerCaches,
+    clearMatchCache
+    ], decideParse);
 
     function insertMatchTable(cb) {
-        db('matches').columnInfo().asCallback(function(err, info) {
-            if (err) {
-                return cb(err);
+        var row = match;
+        for (var key in row) {
+            if (!(key in columnInfo.matches)) {
+                delete row[key];
+                console.error(key);
             }
-            var row = match;
+        }
+        //TODO use psql upsert when available
+        //upsert on api, update only otherwise
+        if (options.type === "api") {
+            db('matches').insert(row).where({
+                match_id: row.match_id
+            }).asCallback(function(err) {
+                if (err) {
+                    //try update
+                    db('matches').update(row).where({
+                        match_id: row.match_id
+                    }).asCallback(cb);
+                }
+                else {
+                    cb();
+                }
+            });
+        }
+        else {
+            db('matches').update(row).where({
+                match_id: row.match_id
+            }).asCallback(cb);
+        }
+    }
+
+    function insertPlayerMatchesTable(cb) {
+        //we can skip this if we have no players (skill case)
+        async.each(players || [], function(pm, cb) {
+            var row = pm;
             for (var key in row) {
-                if (!(key in info)) {
+                if (!(key in columnInfo.player_matches)) {
                     delete row[key];
                     console.error(key);
                 }
             }
-            //TODO use psql upsert when available
+            row.match_id = match.match_id;
+            //TODO upsert
             //upsert on api, update only otherwise
             if (options.type === "api") {
-                db('matches').insert(row).where({
-                    match_id: row.match_id
+                db('player_matches').insert(row).where({
+                    match_id: row.match_id,
+                    player_slot: row.player_slot
                 }).asCallback(function(err) {
                     if (err) {
-                        //try update
-                        db('matches').update(row).where({
-                            match_id: row.match_id
+                        db('player_matches').update(row).where({
+                            match_id: row.match_id,
+                            player_slot: row.player_slot
                         }).asCallback(cb);
                     }
                     else {
@@ -95,53 +163,11 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 });
             }
             else {
-                db('matches').update(row).where({
-                    match_id: row.match_id
+                db('player_matches').update(row).where({
+                    match_id: row.match_id,
+                    player_slot: row.player_slot
                 }).asCallback(cb);
             }
-        });
-    }
-
-    function insertPlayerMatchesTable(cb) {
-        //we can skip this if we have no players (skill case)
-        async.each(players || [], function(pm, cb) {
-            db('player_matches').columnInfo().asCallback(function(err, info) {
-                if (err) {
-                    return cb(err);
-                }
-                var row = pm;
-                for (var key in row) {
-                    if (!(key in info)) {
-                        delete row[key];
-                        console.error(key);
-                    }
-                }
-                row.match_id = match.match_id;
-                //TODO upsert
-                //upsert on api, update only otherwise
-                if (options.type === "api") {
-                    db('player_matches').insert(row).where({
-                        match_id: row.match_id,
-                        player_slot: row.player_slot
-                    }).asCallback(function(err) {
-                        if (err) {
-                            db('player_matches').update(row).where({
-                                match_id: row.match_id,
-                                player_slot: row.player_slot
-                            }).asCallback(cb);
-                        }
-                        else {
-                            cb();
-                        }
-                    });
-                }
-                else {
-                    db('player_matches').update(row).where({
-                        match_id: row.match_id,
-                        player_slot: row.player_slot
-                    }).asCallback(cb);
-                }
-            });
         }, cb);
     }
     /**
@@ -262,17 +288,17 @@ function insertMatchProgress(db, redis, queue, match, options, cb) {
 }
 
 function insertPlayer(db, player, cb) {
-    if (!player.account_id) {
+    if (!player.account_id || player.account_id === constants.anonymous_account_id) {
         return cb();
     }
     player.account_id = player.account_id || Number(convert64to32(player.steamid));
-    db('players').columnInfo().asCallback(function(err, info) {
+    getColumnInfo(db, function(err) {
         if (err) {
             return cb(err);
         }
         var row = player;
         for (var key in row) {
-            if (!(key in info)) {
+            if (!(key in columnInfo.players)) {
                 delete row[key];
                 console.error(key);
             }
@@ -291,17 +317,8 @@ function insertPlayer(db, player, cb) {
     });
 }
 
-function insertPlayerRating(db, rating, cb) {
-    db('player_ratings').columnInfo().asCallback(function(err, info) {
-        if (err) {
-            return cb(err);
-        }
-        var row = {};
-        for (var key in row) {
-            row[key] = rating[key];
-        }
-        db('player_ratings').insert(row).asCallback(cb);
-    });
+function insertPlayerRating(db, row, cb) {
+    db('player_ratings').insert(row).asCallback(cb);
 }
 module.exports = {
     getSets: getSets,
