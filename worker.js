@@ -28,8 +28,8 @@ invokeInterval(function(cb) {
 invokeInterval(function(cb) {
     //clean old jobs from queue older than 1 week
     for (var key in queue) {
-        queue[key].clean(7 * 24 * 60 * 60 * 1000, 'completed');
-        queue[key].clean(7 * 24 * 60 * 60 * 1000, 'failed');
+        queue[key].clean(24 * 60 * 60 * 1000, 'completed');
+        queue[key].clean(24 * 60 * 60 * 1000, 'failed');
     }
 }, 60 * 60 * 1000);
 //process requests (api call, waits for parse to complete)
