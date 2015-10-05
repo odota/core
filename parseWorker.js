@@ -91,7 +91,7 @@ function getJob() {
                     json: parsed_data
                 }, function(err, resp, body) {
                     if (err || body.error) {
-                        console.error("error occurred while submitting work: %s", err);
+                        console.error("error occurred while submitting work: %s", err || body.error);
                     }
                     //get another job
                     return getJob();

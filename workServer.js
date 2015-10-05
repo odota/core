@@ -53,7 +53,7 @@ function start() {
         var expire = setTimeout(function() {
             delete active_jobs[job.jobId];
             cb("timeout");
-        }, 120 * 1000);
+        }, 180 * 1000);
         console.log('server assigned jobid %s', job.jobId);
         var match_id = job.data.payload.match_id;
         var match = job.data.payload;
