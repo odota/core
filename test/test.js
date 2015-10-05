@@ -70,7 +70,7 @@ before(function(done) {
                     //databaseCleaner.clean(client, function() {
                     console.log('cleaned %s', config.POSTGRES_URL);
                     //set up db
-                    var query = fs.readFileSync("./migrations/create.sql", "utf8");
+                    var query = fs.readFileSync("./sql/create.sql", "utf8");
                     client.query(query, function(err, result) {
                         console.log('set up %s', config.POSTGRES_URL);
                         cb(err);
