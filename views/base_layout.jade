@@ -47,6 +47,11 @@ html
     include footer
   //- our custom js bundle, dynamically inserts external library js/css
   script(src="/public/build/yasp.min.js")
+  link(rel='stylesheet' href='//cdn.rawgit.com/brianreavis/selectize.js/v0.12.1/dist/css/selectize.bootstrap3.css')
+  script(src="//cdn.rawgit.com/brianreavis/selectize.js/v0.12.1/dist/js/standalone/selectize.min.js")
+  link(rel='stylesheet' href='//cdn.rawgit.com/masayuki0812/c3/0.4.11-rc4/c3.min.css')
+  script(src="//cdn.rawgit.com/masayuki0812/c3/0.4.11-rc4/c3.min.js")
+  
   //stuff to include after page load, js
   block footer_assets
   script.

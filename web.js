@@ -12,7 +12,6 @@ var session = require('cookie-session');
 //var session = require('express-session');
 //var RedisStore = require('connect-redis')(session);
 var status = require('./status');
-var auth = require('http-auth');
 var path = require('path');
 var moment = require('moment');
 var bodyParser = require('body-parser');
