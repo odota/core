@@ -35,15 +35,17 @@ var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
+var convert64to32 = utility.convert64to32;
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(account_id, done) {
+    console.log(account_id);
     db.first().from('players').where({
-        account_id: id
+        account_id: account_id
     }).asCallback(function(err, player) {
-        redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
+        redis.setex("visit:" + account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, account_id);
         done(err, player);
     });
 });
@@ -52,10 +54,21 @@ passport.use(new SteamStrategy({
     realm: host,
     apiKey: api_key
 }, function initializeUser(identifier, profile, cb) {
-    var insert = profile._json;
-    insert.last_login = new Date();
-    queries.insertPlayer(db, insert, function(err) {
-        return cb(err, insert);
+    var player = profile._json;
+    player.last_login = new Date();
+    player.account_id = Number(convert64to32(player.steamid));
+    queries.insertPlayer(db, player, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        buildSets(db, redis, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            queueReq(queue, "fullhistory", player, {}, function(err) {
+                return cb(err, player);
+            });
+        });
     });
 }));
 //APP config
@@ -173,17 +186,7 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res, next) {
-    buildSets(db, redis, function(err) {
-        if (err) {
-            return next(err);
-        }
-        queueReq(queue, "fullhistory", req.user, {}, function(err, job) {
-            if (err) {
-                return next(err);
-            }
-            res.redirect('/players/' + req.user.account_id);
-        });
-    });
+    res.redirect('/players/' + req.user.account_id);
 });
 app.route('/logout').get(function(req, res) {
     req.logout();
@@ -252,7 +255,9 @@ app.route('/request_job').post(function(req, res) {
             });
         }
         else {
-            res.json({state:"failed"});
+            res.json({
+                state: "failed"
+            });
         }
     });
 });

@@ -140,7 +140,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             for (var key in row) {
                 if (!(key in columnInfo.player_matches)) {
                     delete row[key];
-                    console.error(key);
+                    //console.error(key);
                 }
             }
             row.match_id = match.match_id;
@@ -265,7 +265,7 @@ function insertPlayer(db, player, cb) {
         for (var key in row) {
             if (!(key in columnInfo.players)) {
                 delete row[key];
-                console.error(key);
+                //console.error(key);
             }
         }
         //TODO upsert

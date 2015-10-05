@@ -7,6 +7,11 @@ var pg = require('knex')({
 var MongoClient = require('mongodb').MongoClient;
 var url = config.MONGO_URL;
 var async = require('async');
+var queries = require('../queries');
+var insertMatch = queries.insertMatch;
+var insertPlayer = queries.insertPlayer;
+var redis = require('../redis');
+var queue = require('../queue');
 var columnInfo = null;
 //TODO this either needs to handle insert conflicts or we need to use upsert
 MongoClient.connect(url, function(err, db) {
@@ -30,31 +35,6 @@ MongoClient.connect(url, function(err, db) {
         throw "invalid option, choose matches or players";
     }
     cursor.nextObject(processItem);
-
-    function getColumnInfo(db, cb) {
-        if (columnInfo) {
-            return cb();
-        }
-        else {
-            async.parallel({
-                "matches": function(cb) {
-                    db('matches').columnInfo().asCallback(cb);
-                },
-                "player_matches": function(cb) {
-                    db('player_matches').columnInfo().asCallback(cb);
-                },
-                "players": function(cb) {
-                    db('players').columnInfo().asCallback(cb);
-                },
-                "player_ratings": function(cb) {
-                    db('player_ratings').columnInfo().asCallback(cb);
-                }
-            }, function(err, results) {
-                columnInfo = results;
-                cb(err);
-            });
-        }
-    }
 
     function processItem(err, item) {
         if (err) {
@@ -101,136 +81,66 @@ MongoClient.connect(url, function(err, db) {
                 }
             }
         }
-        getColumnInfo(pg, function(err) {
-            if (err) {
-                return cb(err);
-            }
-            var row = {};
-            for (var key in columnInfo.matches) {
-                if (key === "parse_status") {
-                    row[key] = m.parsed_data ? 2 : null;
-                }
-                else if (key in m) {
-                    row[key] = m[key];
-                }
-                else if (m.parsed_data && key in m.parsed_data) {
-                    if (m.parsed_data.teamfights) {
-                        m.parsed_data.teamfights.forEach(function(tf) {
-                            tf.players.forEach(function(tfp) {
-                                tfp.killed = tfp.kills;
-                                delete tfp.kills;
-                            });
-                        });
-                    }
-                    row[key] = m.parsed_data[key];
-                }
-                else {
-                    row[key] = null;
-                }
-            }
-            //console.log(row.match_id);
-            pg('matches').insert(row).asCallback(function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                getColumnInfo(pg, function(err) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    if (m.players) {
-                        var players = m.players.map(function(pm) {
-                            var parseSlot = pm.player_slot % (128 - 5);
-                            var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-                            var row = {};
-                            for (var key in columnInfo.player_matches) {
-                                if (key === "gold_t") {
-                                    row[key] = pp ? pp.gold : null;
-                                }
-                                else if (key === "xp_t") {
-                                    row[key] = pp ? pp.xp : null;
-                                }
-                                else if (key === "lh_t") {
-                                    row[key] = pp ? pp.lh : null;
-                                }
-                                else if (key === "killed") {
-                                    row[key] = pp ? pp.kills : null;
-                                }
-                                else if (key === "match_id") {
-                                    row[key] = m.match_id;
-                                }
-                                else if (key in pm) {
-                                    row[key] = pm[key];
-                                }
-                                else if (pp && key in pp) {
-                                    row[key] = pp[key];
-                                }
-                            }
-                            return row;
-                        });
-                        pg('player_matches').insert(players).asCallback(cb);
-                    }
-                    else {
-                        cb();
-                    }
-                }, function(err) {
-                    //next doc
-                    cb(err);
+        if (m.parsed_data && m.parsed_data.teamfights) {
+            m.parsed_data.teamfights.forEach(function(tf) {
+                tf.players.forEach(function(tfp) {
+                    tfp.killed = tfp.kills;
+                    delete tfp.kills;
                 });
             });
-        });
+        }
+        if (m.players) {
+            m.players = m.players.map(function(pm) {
+                var parseSlot = pm.player_slot % (128 - 5);
+                var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
+                pm.gold_t = pp ? pp.gold : null;
+                pm.xp_t = pp ? pp.xp : null;
+                pm.lh_t = pp ? pp.lh : null;
+                pm.killed = pp ? pp.kills : null;
+                if (pp) {
+                    for (var key in pp) {
+                        if (!(key in pm) && pp && pp[key]) {
+                            pm[key] = pp[key];
+                        }
+                    }
+                }
+                return pm;
+            });
+        }
+        if (m.parsed_data) {
+            for (var key in m.parsed_data) {
+                if (!(key in m) && m.parsed_data[key]) {
+                    m[key] = m.parsed_data[key];
+                }
+            }
+        }
+        m.parse_status = m.parsed_data ? 2 : null;
+        insertMatch(pg, redis, queue, m, {
+            type: "api"
+        }, cb);
     }
 
     function processPlayer(p, cb) {
-        getColumnInfo(pg, function(err) {
+        p.last_login = p.last_visited;
+        delete p.last_visited;
+        var ratings = JSON.parse(JSON.stringify(p.ratings || []));
+        ratings = ratings.map(function(r) {
+            return {
+                solo_competitive_rank: r.soloCompetitiveRank,
+                competitive_rank: r.competitiveRank,
+                time: r.time,
+                match_id: r.match_id,
+                account_id: p.account_id
+            };
+        });
+        delete p.ratings;
+        insertPlayer(pg, p, function(err) {
             if (err) {
                 return cb(err);
             }
-            var row = {};
-            for (var key in columnInfo.players) {
-                if (key === "last_login") {
-                    row[key] = p.last_visited;
-                }
-                else {
-                    row[key] = p[key];
-                }
-            }
-            pg.insert(row).into('players').asCallback(function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                //insert to player_ratings
-                getColumnInfo(pg, function(err) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    if (p.ratings) {
-                        var ratings = p.ratings.map(function(r) {
-                            var row = {};
-                            for (var key in columnInfo.player_ratings) {
-                                if (key === "solo_competitive_rank") {
-                                    row[key] = r.soloCompetitiveRank;
-                                }
-                                else if (key === "competitive_rank") {
-                                    row[key] = r.competitiveRank;
-                                }
-                                else if (key === "account_id") {
-                                    row[key] = p.account_id;
-                                }
-                                else {
-                                    row[key] = r[key];
-                                }
-                            }
-                            return row;
-                        });
-                        pg('player_ratings').insert(ratings).asCallback(cb);
-                    }
-                    else {
-                        cb();
-                    }
-                }, function(err) {
-                    //next doc
-                    cb(err);
-                });
+            pg('player_ratings').insert(ratings).asCallback(function(err) {
+                //next doc
+                cb(err);
             });
         });
     }

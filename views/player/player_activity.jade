@@ -16,7 +16,7 @@ block playercontent
     
 append footer_assets
   script.
-    createCalHeatmap(!{JSON.stringify(player.aggData.start_time.counts)});
+    createCalHeatmap(start_times.counts);
   script.
     $(".histogram-chart").each(function() {
         var key = $(this).attr('data-histogram');
