@@ -52,7 +52,7 @@ append footer_assets
           showError(msg.error);
         }
         else{
-        checker = setInterval(function(){poll(msg.job.id)}, 2000);
+        checker = setInterval(function(){poll(msg.job.jobId)}, 2000);
       }
       });
       $("#request").hide('slow');
@@ -72,16 +72,20 @@ append footer_assets
           $.ajax({
             url: "/request_job?id="+job_id
           })
-          .done(function( msg ) {
-            if (!msg.job){
-            //job doesn't exist, we're done
+          .done(function(msg) {
+          console.log(msg);
+            if (msg.state==="completed"){
+            //job done
             window.location.assign("/matches/"+match_id);
             }
-            else if(msg.job.error){
-              showError(msg.job.error);
+            else if(msg.error){
+              showError(msg.error);
             }
-            else{
-              var prog = msg.job.progress;
+            else if (msg.state==="failed") {
+              showError("Failed to parse replay.  Please make sure the replay is available in client and has not expired.");
+            }
+            else if (msg.progress){
+              var prog = msg.progress;
               console.log(prog);
               document.getElementById("bar").style.width = prog + "%";
               document.getElementById("bar").innerHTML = prog + "%";

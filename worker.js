@@ -16,7 +16,6 @@ var db = require('./db');
 var async = require('async');
 var insertPlayer = queries.insertPlayer;
 var insertMatch = queries.insertMatch;
-var insertMatchProgress = queries.insertMatchProgress;
 console.log("[WORKER] starting worker");
 invokeInterval(function(cb) {
     buildSets(db, redis, cb);
@@ -27,17 +26,21 @@ invokeInterval(function(cb) {
 invokeInterval(function(cb) {
     getMMStats(redis, cb);
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 60000); //Sample every 3 minutes
-queue.watchStuckJobs();
+invokeInterval(function(cb) {
+    //clean old jobs from queue older than 1 week
+    for (var key in queue) {
+        queue[key].clean(7 * 24 * 60 * 60 * 1000, 'completed');
+        queue[key].clean(7 * 24 * 60 * 60 * 1000, 'failed');
+    }
+}, 60 * 60 * 1000);
 //process requests (api call, waits for parse to complete)
-queue.process('request', numCPUs, processApi);
-utility.cleanup(queue, 'request');
+queue.request.process(numCPUs, processApi);
 //updatenames queues an api request, probably should have name updating occur in a separate service
 //jobs.process('api', processApi);
 //invokeInterval(updateNames, 60 * 1000);
 //invokeInterval(constants, 15 * 60 * 1000);
 function processApi(job, cb) {
     var payload = job.data.payload;
-    job.progress(0, 100, "Getting basic match data from Steam API...");
     getData(job.data.url, function(err, body) {
         if (err) {
             //couldn't get data from api, non-retryable
@@ -52,17 +55,33 @@ function processApi(job, cb) {
         else if (payload.match_id) {
             //match details response
             var match = body.result;
-            job.progress(0, 100, "Received basic match data.");
-            //we want to try to parse this match
-            match.parse_status = 0;
-            var insertFunc = job.data.request ? insertMatchProgress : insertMatch;
-            insertFunc(db, redis, queue, match, {
+            if (job.data.request) {
+                match.parse_status = 0;
+            }
+            insertMatch(db, redis, queue, match, {
                 type: "api",
-                job: job
-            }, cb);
+            }, function(err, job2) {
+                //job2 is the parse job
+                if (job.data.request && job2) {
+                    //TODO set timeout?
+                    ee.once(job2.jobId, function() {
+                        redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
+                        return cb();
+                    });
+                }
+                else {
+                    cb(err);
+                }
+            });
         }
         else {
             return cb("unknown response");
         }
     });
 }
+var EventEmitter = require('events');
+var ee = new EventEmitter();
+queue.parse.on('completed', function(compjob) {
+    console.log(compjob.jobId);
+    ee.emit(compjob.jobId.toString());
+});

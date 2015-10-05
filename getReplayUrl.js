@@ -13,7 +13,6 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
         if (err) {
             return cb(err);
         }
-        console.log("existing url result: %s", doc);
         if (doc && doc.url) {
             console.log("replay url in db");
             match.url = doc.url;

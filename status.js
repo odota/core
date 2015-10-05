@@ -66,22 +66,41 @@ module.exports = function getStatus(db, redis, queue, cb) {
         last_parsed: function(cb) {
             db.from('matches').where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
-        kue: function(cb) {
-            var counts = {};
-            queue.types(function(err, data) {
-                if (err) {
-                    return cb(err);
-                }
-                async.each(data, function(d, cb) {
-                    // others are activeCount, completeCount, failedCount, delayedCount
-                    queue.inactiveCount(d, function(err, result) {
-                        counts[d] = result;
-                        cb(err);
-                    });
-                }, function(err) {
-                    cb(err, counts);
-                });
-            });
+        queue: function(cb) {
+            //object with properties as queue types, each mapped to json object mapping state to count
+            var obj = {};
+            for (var key in queue) {
+                obj[key] = function(cb) {
+                    async.parallel({
+                        "waiting": function(cb) {
+                            queue[key].getWaiting().then(function(count) {
+                                cb(null, count.length);
+                            });
+                        },
+                        "active": function(cb) {
+                            queue[key].getActive().then(function(count) {
+                                cb(null, count.length);
+                            });
+                        },
+                        "delayed": function(cb) {
+                            queue[key].getDelayed().then(function(count) {
+                                cb(null, count.length);
+                            });
+                        },
+                        "completed": function(cb) {
+                            queue[key].getCompleted().then(function(count) {
+                                cb(null, count.length);
+                            });
+                        },
+                        "failed": function(cb) {
+                            queue[key].getFailed().then(function(count) {
+                                cb(null, count.length);
+                            });
+                        }
+                    }, cb);
+                };
+            }
+            async.parallel(obj, cb);
         },
         parser_status: function(cb) {
             redis.get("parsers-status", cb);

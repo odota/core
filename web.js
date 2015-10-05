@@ -6,7 +6,6 @@ var request = require('request');
 var queueReq = utility.queueReq;
 var redis = require('./redis');
 var queue = require('./queue');
-var kue = require('kue');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
@@ -69,13 +68,6 @@ app.locals.tooltips = constants.tooltips;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
-var basic = auth.basic({
-    realm: "Kue"
-}, function(username, password, callback) { // Custom authentication method.
-    callback(username === config.KUE_USER && password === config.KUE_PASS);
-});
-app.use("/kue", auth.connect(basic));
-app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 /*
 var sessOptions = {
@@ -241,16 +233,22 @@ app.route('/request_job').post(function(req, res) {
             }, function(err, job) {
                 res.json({
                     error: err,
-                    job: job ? job.toJSON() : null
+                    job: {
+                        jobId: job.jobId,
+                        data: job.data
+                    }
                 });
             });
         }
     });
 }).get(function(req, res) {
-    kue.Job.get(req.query.id, function(err, job) {
-        res.json({
-            error: err,
-            job: job ? job.toJSON() : null
+    queue.parse.getJob(req.query.id).then(function(job) {
+        job.getState().then(function(state) {
+            res.json({
+                jobId: job.jobId,
+                data: job.data,
+                state: state
+            });
         });
     });
 });

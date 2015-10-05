@@ -9,6 +9,7 @@ var insertMatch = require('./queries').insertMatch;
 var buildSets = require('./buildSets');
 var bodyParser = require('body-parser');
 var express = require('express');
+var EventEmitter = require('events');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
 var queued_jobs = {};
@@ -21,13 +22,13 @@ buildSets(db, redis, function(err) {
 });
 
 function start() {
-    queue.process('parse', 100, function(job, ctx, cb) {
+    queue.parse.process(100, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
+        job.ee = new EventEmitter();
         //put it in the queue
-        queued_jobs[job.id] = job;
+        queued_jobs[job.jobId] = job;
     });
-    utility.cleanup(queue, 'parse');
     app.use(bodyParser.json({
         limit: '1mb'
     }));
@@ -47,13 +48,13 @@ function start() {
         }
         var cb = job.cb;
         //remove job from pool
-        delete queued_jobs[job.id];
-        active_jobs[job.id] = job;
+        delete queued_jobs[job.jobId];
+        active_jobs[job.jobId] = job;
         var expire = setTimeout(function() {
-            delete active_jobs[job.id];
+            delete active_jobs[job.jobId];
             cb("timeout");
         }, 120 * 1000);
-        console.log('server assigned jobid %s', job.id);
+        console.log('server assigned jobid %s', job.jobId);
         var match_id = job.data.payload.match_id;
         var match = job.data.payload;
         //TODO non-valve urls don't expire, we can try using them
@@ -69,14 +70,14 @@ function start() {
             }
             else {
                 console.time("parse " + match_id);
-                console.log('server sent jobid %s', job.id);
-                res.json(job.toJSON());
-                job.on('submitwork', function(parsed_data) {
+                console.log('server sent jobid %s', job.jobId);
+                res.json({jobId: job.jobId, data: job.data});
+                job.ee.on('submitwork', function(parsed_data) {
                     if (parsed_data.error) {
                         return cb(parsed_data.error);
                     }
                     delete parsed_data.key;
-                    delete parsed_data.id;
+                    delete parsed_data.jobId;
                     //extend match object with parsed data, keep existing data if key conflict (match_id)
                     //match.players was deleted earlier during insertion of api data
                     for (var key in parsed_data) {
@@ -92,7 +93,7 @@ function start() {
                     }, function(err) {
                         console.timeEnd("parse " + match_id);
                         clearTimeout(expire);
-                        delete active_jobs[job.id];
+                        delete active_jobs[job.jobId];
                         return cb(err);
                     });
                 });
@@ -108,9 +109,9 @@ function start() {
         }
         //got data from worker, signal the job with this match_id
         console.log('received submitted work');
-        if (active_jobs[req.body.id]) {
-            var job = active_jobs[req.body.id];
-            job.emit('submitwork', req.body);
+        if (active_jobs[req.body.jobId]) {
+            var job = active_jobs[req.body.jobId];
+            job.ee.emit('submitwork', req.body);
             return res.json({
                 error: null
             });

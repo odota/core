@@ -65,17 +65,17 @@ function getJob() {
     request({
         url: remote,
         json: true
-    }, function(err, resp, body) {
+    }, function(err, resp, job) {
         if (err) {
             //wait interval, then get another job
             console.log("error occurred while requesting work: %s", JSON.stringify(err));
             return setTimeout(getJob, 5 * 1000);
         }
-        console.log(body);
-        if (body.id && body.data && body.data.payload && body.data.payload.url) {
-            var payload = body.data.payload;
-            var url = body.data.payload.url;
-            console.log("got work from server, jobid: %s, url: %s", body.id, url);
+        console.log(job);
+        if (job.jobId && job.data && job.data.payload && job.data.payload.url) {
+            var payload = job.data.payload;
+            var url = job.data.payload.url;
+            console.log("got work from server, jobid: %s, url: %s", job.jobId, url);
             runParse(payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
@@ -83,9 +83,9 @@ function getJob() {
                         error: err
                     };
                 }
-                parsed_data.id = body.id;
+                parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
-                console.log("sending work to server, jobid: %s", body.id);
+                console.log("sending work to server, jobid: %s", job.jobId);
                 request.post({
                     url: remote,
                     json: parsed_data

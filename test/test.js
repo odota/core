@@ -216,9 +216,11 @@ describe("parser", function() {
         };
         queueReq(queue, "parse", match, {}, function(err, job) {
             assert(job && !err);
-            //done();
-            job.on('complete', done);
-            job.on('failed', done);
+            queue.parse.once('completed', function(job2, result) {
+                if (job.jobId === job2.jobId) {
+                    return done();
+                }
+            });
         });
     });
 });

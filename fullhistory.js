@@ -18,7 +18,6 @@ var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(10, api_keys.length);
 if (cluster.isMaster && config.NODE_ENV !== "test") {
     console.log("[FULLHISTORY] starting master");
-    utility.cleanup(queue, "fullhistory");
     for (var i = 0; i < steam_hosts.length; i++) {
         if (true) {
             cluster.fork();
@@ -36,7 +35,7 @@ else {
 }
 
 function runWorker() {
-    queue.process('fullhistory', processFullHistory);
+    queue.fullhistory.process(1, processFullHistory);
 }
 
 function processFullHistory(job, cb) {
