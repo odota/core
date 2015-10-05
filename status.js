@@ -55,33 +55,57 @@ module.exports = function getStatus(db, redis, queue, cb) {
                 cb(err, result.length);
             });
         },
+        /*
         requested_last_day: function(cb) {
             redis.keys("requested_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
+        */
         last_added: function(cb) {
             db.from('matches').orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         last_parsed: function(cb) {
             db.from('matches').where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
-        kue: function(cb) {
-            var counts = {};
-            queue.types(function(err, data) {
-                if (err) {
-                    return cb(err);
-                }
-                async.each(data, function(d, cb) {
-                    // others are activeCount, completeCount, failedCount, delayedCount
-                    queue.inactiveCount(d, function(err, result) {
-                        counts[d] = result;
-                        cb(err);
-                    });
-                }, function(err) {
-                    cb(err, counts);
+        queue: function(cb) {
+            //object with properties as queue types, each mapped to json object mapping state to count
+            async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result){
+                var obj = {};
+                result.forEach(function(r, i){
+                    obj[Object.keys(queue)[i]] = r;
                 });
+                cb(err, obj);
             });
+            function getQueueCounts(type, cb) {
+                async.series({
+                    "waiting": function(cb) {
+                        queue[type].getWaiting().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "active": function(cb) {
+                        queue[type].getActive().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "delayed": function(cb) {
+                        queue[type].getDelayed().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "completed": function(cb) {
+                        queue[type].getCompleted().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "failed": function(cb) {
+                        queue[type].getFailed().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    }
+                }, cb);
+            }
         },
         parser_status: function(cb) {
             redis.get("parsers-status", cb);

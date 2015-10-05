@@ -140,7 +140,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             for (var key in row) {
                 if (!(key in columnInfo.player_matches)) {
                     delete row[key];
-                    console.error(key);
+                    //console.error(key);
                 }
             }
             row.match_id = match.match_id;
@@ -244,47 +244,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            var jobOptions = options.job && options.job.data && options.job.data.request ? {
-                priority: "high",
-                attempts: 1
-            } : {};
             //queue it and finish, callback with the queued parse job
-            return queueReq(queue, "parse", match, jobOptions, function(err, job2) {
+            return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);
             });
         }
     }
-}
-
-function insertMatchProgress(db, redis, queue, match, options, cb) {
-    //pass job in options to mirror API of insertMatch
-    var job = options.job;
-    insertMatch(db, redis, queue, match, options, function(err, job2) {
-        if (err) {
-            return cb(err);
-        }
-        if (!job2) {
-            //succeeded in API, but decided not to parse this replay
-            job.progress(100, 100, "This replay is unavailable.");
-            cb();
-        }
-        else {
-            //wait for parse to finish
-            job.progress(0, 100, "Parsing replay...");
-            //request, parse and log the progress
-            job2.on('progress', function(prog) {
-                job.progress(prog, 100);
-            });
-            job2.on('failed', function(err) {
-                cb(err);
-            });
-            job2.on('complete', function() {
-                job.progress(100, 100, "Parse complete!");
-                redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
-                cb();
-            });
-        }
-    });
 }
 
 function insertPlayer(db, player, cb) {
@@ -300,7 +265,7 @@ function insertPlayer(db, player, cb) {
         for (var key in row) {
             if (!(key in columnInfo.players)) {
                 delete row[key];
-                console.error(key);
+                //console.error(key);
             }
         }
         //TODO upsert
@@ -324,6 +289,5 @@ module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
-    insertMatchProgress: insertMatchProgress,
     insertPlayerRating: insertPlayerRating
 };

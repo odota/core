@@ -6,14 +6,12 @@ var request = require('request');
 var queueReq = utility.queueReq;
 var redis = require('./redis');
 var queue = require('./queue');
-var kue = require('kue');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
 //var session = require('express-session');
 //var RedisStore = require('connect-redis')(session);
 var status = require('./status');
-var auth = require('http-auth');
 var path = require('path');
 var moment = require('moment');
 var bodyParser = require('body-parser');
@@ -37,15 +35,17 @@ var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
+var convert64to32 = utility.convert64to32;
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(account_id, done) {
+    console.log(account_id);
     db.first().from('players').where({
-        account_id: id
+        account_id: account_id
     }).asCallback(function(err, player) {
-        redis.setex("visit:" + id, 60 * 60 * 24 * config.UNTRACK_DAYS, id);
+        redis.setex("visit:" + account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, account_id);
         done(err, player);
     });
 });
@@ -54,10 +54,21 @@ passport.use(new SteamStrategy({
     realm: host,
     apiKey: api_key
 }, function initializeUser(identifier, profile, cb) {
-    var insert = profile._json;
-    insert.last_login = new Date();
-    queries.insertPlayer(db, insert, function(err) {
-        return cb(err, insert);
+    var player = profile._json;
+    player.last_login = new Date();
+    player.account_id = Number(convert64to32(player.steamid));
+    queries.insertPlayer(db, player, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        buildSets(db, redis, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            queueReq(queue, "fullhistory", player, {}, function(err) {
+                return cb(err, player);
+            });
+        });
     });
 }));
 //APP config
@@ -69,13 +80,6 @@ app.locals.tooltips = constants.tooltips;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
-var basic = auth.basic({
-    realm: "Kue"
-}, function(username, password, callback) { // Custom authentication method.
-    callback(username === config.KUE_USER && password === config.KUE_PASS);
-});
-app.use("/kue", auth.connect(basic));
-app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 /*
 var sessOptions = {
@@ -182,17 +186,7 @@ app.route('/login').get(passport.authenticate('steam', {
 app.route('/return').get(passport.authenticate('steam', {
     failureRedirect: '/'
 }), function(req, res, next) {
-    buildSets(db, redis, function(err) {
-        if (err) {
-            return next(err);
-        }
-        queueReq(queue, "fullhistory", req.user, {}, function(err, job) {
-            if (err) {
-                return next(err);
-            }
-            res.redirect('/players/' + req.user.account_id);
-        });
-    });
+    res.redirect('/players/' + req.user.account_id);
 });
 app.route('/logout').get(function(req, res) {
     req.logout();
@@ -241,17 +235,30 @@ app.route('/request_job').post(function(req, res) {
             }, function(err, job) {
                 res.json({
                     error: err,
-                    job: job ? job.toJSON() : null
+                    job: {
+                        jobId: job.jobId,
+                        data: job.data
+                    }
                 });
             });
         }
     });
 }).get(function(req, res) {
-    kue.Job.get(req.query.id, function(err, job) {
-        res.json({
-            error: err,
-            job: job ? job.toJSON() : null
-        });
+    queue.request.getJob(req.query.id).then(function(job) {
+        if (job) {
+            job.getState().then(function(state) {
+                res.json({
+                    jobId: job.jobId,
+                    data: job.data,
+                    state: state
+                });
+            });
+        }
+        else {
+            res.json({
+                state: "failed"
+            });
+        }
     });
 });
 app.use(function(req, res, next) {

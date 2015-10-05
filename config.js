@@ -17,8 +17,6 @@ var defaults = {
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
     "WORK_URL": "http://localhost:5400", //url to request work from (for worker nodes)
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
-    "KUE_USER": "user",
-    "KUE_PASS": "pass",
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
     "WEB_PORT": "5000",

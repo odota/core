@@ -255,7 +255,9 @@ module.exports = function(db, redis) {
                 if (err) {
                     return cb(err);
                 }
-                utility.mergeObjects(t, row);
+                t.personaname = row.personaname;
+                t.last_login = row.last_login;
+                t.avatar = row.avatar;
                 cb(err);
             });
         }, function(err) {

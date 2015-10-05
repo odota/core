@@ -186,8 +186,12 @@ function count_words(player_match, player_filter) {
     // extract individual words from the message strings
     var chat_words = [];
     messages.forEach(function(message) {
-        // if there is no player_filter, or if the passed player  matches this message, log it
-        if (!player_filter || player_match.player_slot === player_filter.player_slot) {
+        // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
+        var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
+        if (!player_filter || (messageParseSlot === player_filter.player_slot)) {
+            if (player_filter){
+            console.log(messageParseSlot, player_filter.player_slot);
+            }
             chat_words.push(message.key);
         }
     });
@@ -276,12 +280,13 @@ function renderMatch(m) {
             "mad": -1
         });
     }
-    //create graph data
-    if (m.gold_reasons) {
+    //create gold breakdown data
+    if (m.players[0].gold_reasons) {
         m.incomeData = generateIncomeData(m);
         m.treeMapData = generateTreemapData(m);
     }
-    if (m.gold_t) {
+    //create graph data
+    if (m.players[0].gold_t) {
         m.graphData = generateGraphData(m);
     }
     //create heatmap data

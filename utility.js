@@ -4,7 +4,6 @@ var winston = require('winston');
 var config = require('./config');
 var BigNumber = require('big-number').n;
 var urllib = require('url');
-var kue = require('kue');
 var transports = [];
 transports.push(new(winston.transports.Console)({
     'timestamp': true
@@ -395,70 +394,14 @@ function invokeInterval(func, delay) {
     })();
 }
 
-function cleanup(queue, type) {
-    process.once('SIGTERM', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGTERM');
-        });
-    });
-    process.once('SIGINT', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGINT');
-        });
-    });
-    process.once('SIGUSR2', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGUSR2');
-        });
-    });
-    process.once('uncaughtException', function(err) {
-        console.error(err.stack);
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid);
-        });
-    });
-
-    function clearActiveJobs(cb) {
-        queue.active(function(err, ids) {
-            if (err) {
-                return cb(err);
-            }
-            async.each(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job && job.type === type) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.log("cleared active jobs");
-                cb(err);
-            });
-        });
-    }
-}
-
 function queueReq(queue, type, payload, options, cb) {
     var job = generateJob(type, payload);
-    var kuejob = queue.create(job.type, job).attempts(options.attempts || 15).backoff({
+    queue[job.type].add(job, {attempts: options.attempts || 15, backoff: {
         delay: 60 * 1000,
         type: 'exponential'
-    }).removeOnComplete(true).priority(options.priority || 'normal').ttl(options.ttl).save(function(err) {
-        console.log("[KUE] created jobid: %s", kuejob.id);
-        cb(err, kuejob);
+    }}).then(function(queuejob) {
+        console.log("created jobId: %s", queuejob.jobId);
+        cb(null, queuejob);
     });
 }
 module.exports = {
@@ -478,6 +421,5 @@ module.exports = {
     max: max,
     min: min,
     invokeInterval: invokeInterval,
-    cleanup: cleanup,
     queueReq: queueReq
 };

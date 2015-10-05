@@ -62,7 +62,7 @@ function scanApi(seq_num) {
         userPlayers = result.userPlayers;
         getData({
             url: container.url,
-            delay: 1
+            delay: 1000
         }, function(err, data) {
             if (err) {
                 return scanApi(seq_num);

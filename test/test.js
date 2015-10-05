@@ -70,7 +70,7 @@ before(function(done) {
                     //databaseCleaner.clean(client, function() {
                     console.log('cleaned %s', config.POSTGRES_URL);
                     //set up db
-                    var query = fs.readFileSync("./migrations/create.sql", "utf8");
+                    var query = fs.readFileSync("./sql/create.sql", "utf8");
                     client.query(query, function(err, result) {
                         console.log('set up %s', config.POSTGRES_URL);
                         cb(err);
@@ -216,9 +216,11 @@ describe("parser", function() {
         };
         queueReq(queue, "parse", match, {}, function(err, job) {
             assert(job && !err);
-            //done();
-            job.on('complete', done);
-            job.on('failed', done);
+            queue.parse.once('completed', function(job2, result) {
+                if (job.jobId === job2.jobId) {
+                    return done();
+                }
+            });
         });
     });
 });

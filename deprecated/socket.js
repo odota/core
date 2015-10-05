@@ -52,7 +52,6 @@ module.exports = function(server) {
                             return socket.emit('err', err);
                         }
                         job.on('progress', function(prog, data) {
-                            //kue now allows emitting additional data so we can capture api start, api finish, match expired, parse start, parse finish
                             socket.emit('prog', prog);
                             if (data){
                                 socket.emit('log', data);
