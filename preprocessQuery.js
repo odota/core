@@ -1,3 +1,4 @@
+var constants = require('./constants.json');
 module.exports = function(query, account_id) {
     //check if we already processed to ensure idempotence
     if (query.processed) {
@@ -35,10 +36,11 @@ module.exports = function(query, account_id) {
             query.js_select[key] = query.select[key];
         }
     }
+    if (Number(account_id) === constants.anonymous_account_id) {
+        return null;
+    }
     if (!isNaN(Number(account_id))) {
         query.db_select.account_id = Number(account_id);
-        //match limit to retrieve for any player
-        query.limit = 20000;
     }
     else if (account_id in whitelist) {
         query.limit = whitelist[account_id];

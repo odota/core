@@ -435,7 +435,7 @@ function cleanup(queue, type) {
             if (err) {
                 return cb(err);
             }
-            async.mapSeries(ids, function(id, cb) {
+            async.each(ids, function(id, cb) {
                 kue.Job.get(id, function(err, job) {
                     if (job && job.type === type) {
                         console.log("requeued job %s", id);
