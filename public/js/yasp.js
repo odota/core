@@ -18,7 +18,7 @@ require('qTip2');
 //require('../../node_modules/bootswatch/darkly/bootstrap.css');
 require('bootstrap');
 require('wordcloud');
-require('../../node_modules/c3/c3.css');
+//require('../../node_modules/c3/c3.css');
 //window.c3 = require('c3');
 //require('../../node_modules/cal-heatmap/cal-heatmap.css');
 window.CalHeatMap = require('cal-heatmap');
