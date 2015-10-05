@@ -11,7 +11,6 @@ var numCPUs = require('os').cpus().length;
 var config = require('./config');
 var async = require('async');
 var queries = require('./queries');
-var insertPlayer = queries.insertPlayer;
 var db = require('./db');
 var async = require('async');
 var insertPlayer = queries.insertPlayer;
@@ -60,13 +59,26 @@ function processApi(job, cb) {
             }
             insertMatch(db, redis, queue, match, {
                 type: "api",
+                attempts: job.data.request ? 1 : undefined
             }, function(err, job2) {
                 //job2 is the parse job
                 if (job.data.request && job2) {
                     //TODO set timeout?
-                    ee.once(job2.jobId, function() {
-                        redis.setex("requested_match:" + match.match_id, 60 * 60 * 24, "1");
-                        return cb();
+                    var poll = setInterval(function() {
+                        queue.parse.getJob(job2.jobId).then(function(job) {
+                            if (job) {
+                                job.getState().then(function(state) {
+                                    if (state === "completed") {
+                                        clearInterval(poll);
+                                        return cb();
+                                    }
+                                    if (state === "failed") {
+                                        clearInterval();
+                                        return cb("failed");
+                                    }
+                                });
+                            }
+                        });
                     });
                 }
                 else {
@@ -79,9 +91,3 @@ function processApi(job, cb) {
         }
     });
 }
-var EventEmitter = require('events');
-var ee = new EventEmitter();
-queue.parse.on('completed', function(compjob) {
-    console.log(compjob.jobId);
-    ee.emit(compjob.jobId.toString());
-});

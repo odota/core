@@ -55,11 +55,13 @@ module.exports = function getStatus(db, redis, queue, cb) {
                 cb(err, result.length);
             });
         },
+        /*
         requested_last_day: function(cb) {
             redis.keys("requested_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
+        */
         last_added: function(cb) {
             db.from('matches').orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
@@ -68,39 +70,42 @@ module.exports = function getStatus(db, redis, queue, cb) {
         },
         queue: function(cb) {
             //object with properties as queue types, each mapped to json object mapping state to count
-            var obj = {};
-            for (var key in queue) {
-                obj[key] = function(cb) {
-                    async.parallel({
-                        "waiting": function(cb) {
-                            queue[key].getWaiting().then(function(count) {
-                                cb(null, count.length);
-                            });
-                        },
-                        "active": function(cb) {
-                            queue[key].getActive().then(function(count) {
-                                cb(null, count.length);
-                            });
-                        },
-                        "delayed": function(cb) {
-                            queue[key].getDelayed().then(function(count) {
-                                cb(null, count.length);
-                            });
-                        },
-                        "completed": function(cb) {
-                            queue[key].getCompleted().then(function(count) {
-                                cb(null, count.length);
-                            });
-                        },
-                        "failed": function(cb) {
-                            queue[key].getFailed().then(function(count) {
-                                cb(null, count.length);
-                            });
-                        }
-                    }, cb);
-                };
+            async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result){
+                var obj = {};
+                result.forEach(function(r, i){
+                    obj[Object.keys(queue)[i]] = r;
+                });
+                cb(err, obj);
+            });
+            function getQueueCounts(type, cb) {
+                async.series({
+                    "waiting": function(cb) {
+                        queue[type].getWaiting().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "active": function(cb) {
+                        queue[type].getActive().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "delayed": function(cb) {
+                        queue[type].getDelayed().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "completed": function(cb) {
+                        queue[type].getCompleted().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    },
+                    "failed": function(cb) {
+                        queue[type].getFailed().then(function(count) {
+                            cb(null, count.length);
+                        });
+                    }
+                }, cb);
             }
-            async.parallel(obj, cb);
         },
         parser_status: function(cb) {
             redis.get("parsers-status", cb);

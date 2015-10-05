@@ -116,7 +116,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 match_id: row.match_id
             }).asCallback(function(err) {
                 if (err) {
-                    console.error(err);
                     //try update
                     db('matches').update(row).where({
                         match_id: row.match_id
@@ -246,7 +245,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
         }
         else {
             //queue it and finish, callback with the queued parse job
-            return queueReq(queue, "parse", match, {}, function(err, job2) {
+            return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);
             });
         }

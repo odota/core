@@ -242,14 +242,19 @@ app.route('/request_job').post(function(req, res) {
         }
     });
 }).get(function(req, res) {
-    queue.parse.getJob(req.query.id).then(function(job) {
-        job.getState().then(function(state) {
-            res.json({
-                jobId: job.jobId,
-                data: job.data,
-                state: state
+    queue.request.getJob(req.query.id).then(function(job) {
+        if (job) {
+            job.getState().then(function(state) {
+                res.json({
+                    jobId: job.jobId,
+                    data: job.data,
+                    state: state
+                });
             });
-        });
+        }
+        else {
+            res.json({state:"failed"});
+        }
     });
 });
 app.use(function(req, res, next) {

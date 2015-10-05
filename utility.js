@@ -400,7 +400,7 @@ function queueReq(queue, type, payload, options, cb) {
         delay: 60 * 1000,
         type: 'exponential'
     }}).then(function(queuejob) {
-        console.log("created jobId: %s", job.jobId);
+        console.log("created jobId: %s", queuejob.jobId);
         cb(null, queuejob);
     });
 }
