@@ -189,9 +189,6 @@ function count_words(player_match, player_filter) {
         // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
         var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
         if (!player_filter || (messageParseSlot === player_filter.player_slot)) {
-            if (player_filter){
-            console.log(messageParseSlot, player_filter.player_slot);
-            }
             chat_words.push(message.key);
         }
     });
