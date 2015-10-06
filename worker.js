@@ -73,7 +73,7 @@ function processApi(job, cb) {
                                         return cb();
                                     }
                                     if (state === "failed") {
-                                        clearInterval();
+                                        clearInterval(poll);
                                         return cb("failed");
                                     }
                                 });

@@ -10,7 +10,7 @@ var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(4, api_keys.length);
-//TODO use cluster to spawn a separate worker for each skill level?
+//TODO use cluster to spawn a separate worker for each skill level for greater throughput?
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
 var permute = [];

@@ -33,7 +33,6 @@ function start() {
         limit: '1mb'
     }));
     app.get('/parse', function(req, res) {
-        //TODO validate request
         if (config.RETRIEVER_SECRET && req.query.key !== config.RETRIEVER_SECRET) {
             return res.status(500).json({
                 error: "invalid key"
@@ -59,7 +58,6 @@ function start() {
         var match = job.data.payload;
         //TODO non-valve urls don't expire, we can try using them
         if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
-            //TODO do we want to write parse_status:1 if expired?  if so we should not overwrite existing parse_status:2
             console.log("replay too old, url expired");
             return cb();
         }

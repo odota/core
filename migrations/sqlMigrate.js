@@ -13,7 +13,6 @@ var redis = require('../redis');
 var queue = require('../queue');
 var args = process.argv.slice(2);
 var start_id = args[0] || 0;
-//TODO this either needs to handle insert conflicts or we need to use upsert
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
