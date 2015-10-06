@@ -11,8 +11,9 @@ module.exports = function fullhistory(cb) {
             return cb(err);
         }
         async.eachSeries(players, function(player, cb) {
-            player.priority = "low";
-            queueReq(queue, "fullhistory", player, {}, function(err, job) {
+            queueReq(queue, "fullhistory", player, {
+                attempts: 1
+            }, function(err, job) {
                 cb(err);
             });
         }, function(err) {

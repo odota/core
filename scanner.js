@@ -94,6 +94,8 @@ function scanApi(seq_num) {
                             match_id: match.match_id,
                             account_id: p.account_id,
                             url: ratingPlayers[p.account_id]
+                        }, {
+                            attempts: 1
                         }, cb);
                     }
                     else {

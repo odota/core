@@ -12,9 +12,7 @@ function processMmr(job, cb) {
     }, function(err, data) {
         if (err) {
             console.error(err);
-            //don't clutter queue with failed mmr reqs
-            //if any error occurs (including retriever down) we simply skip getting MMR for this match
-            return cb(null, err);
+            return cb(err);
         }
         if (data.solo_competitive_rank || data.competitive_rank) {
             data.match_id = job.data.payload.match_id;
@@ -22,7 +20,7 @@ function processMmr(job, cb) {
             queries.insertPlayerRating(db, data, cb);
         }
         else {
-            cb(null);
+            cb();
         }
     });
 }
