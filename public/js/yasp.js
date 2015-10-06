@@ -7,20 +7,15 @@ require('../../node_modules/datatables/media/js/jquery.dataTables.js');
 require('../../node_modules/datatables-bootstrap3-plugin/media/js/datatables-bootstrap3.js');
 require('../../node_modules/qTip2/dist/jquery.qtip.css');
 require('qTip2');
-//TODO selectize, c3 disabled due to not building with node v4
-//require('../../node_modules/selectize/dist/css/selectize.bootstrap3.css');
-//require('selectize');
-//require('../../node_modules/select2/dist/css/select2.css');
-//require('../../node_modules/select2-bootstrap-theme/dist/select2-bootstrap.css');
-//require('../../node_modules/select2/dist/js/select2.full.js');
+require('../../node_modules/selectize/dist/css/selectize.bootstrap3.css');
+require('selectize');
 //require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 //bundling darkly doesn't work right now due to webpack not properly resolving font paths
 //require('../../node_modules/bootswatch/darkly/bootstrap.css');
 require('bootstrap');
 require('wordcloud');
-//require('d3');
-//require('../../node_modules/c3/c3.css');
-//window.c3 = require('c3');
+require('../../node_modules/c3/c3.css');
+window.c3 = require('c3');
 require('../../node_modules/cal-heatmap/cal-heatmap.css');
 window.CalHeatMap = require('cal-heatmap');
 window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
