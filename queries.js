@@ -188,7 +188,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             for (var key in match) {
                 player_match[key] = match[key];
             }
-            redis.get("player:" + player_match.account_id, function(err, result) {
+            redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
                 if (err) {
                     return cb(err);
                 }
@@ -222,7 +222,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         if (err) {
                             return cb(err);
                         }
-                        redis.setex("player:" + player_match.account_id, Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                        redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
                     });
                 }
                 return cb();

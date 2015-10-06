@@ -6,13 +6,13 @@ var pg = require('knex')({
 });
 var MongoClient = require('mongodb').MongoClient;
 var url = config.MONGO_URL;
-var async = require('async');
 var queries = require('../queries');
 var insertMatch = queries.insertMatch;
 var insertPlayer = queries.insertPlayer;
 var redis = require('../redis');
 var queue = require('../queue');
-var columnInfo = null;
+var args = process.argv.slice(2);
+var start_id = args[0] || 0;
 //TODO this either needs to handle insert conflicts or we need to use upsert
 MongoClient.connect(url, function(err, db) {
     if (err) {
@@ -22,13 +22,23 @@ MongoClient.connect(url, function(err, db) {
     var cursor;
     var migrate;
     if (args[0] === "matches") {
-        cursor = db.collection('matches').find().sort({
+        cursor = db.collection('matches').find({
+            match_id: {
+                $gt: start_id
+            }
+        }).sort({
             match_id: 1
         });
         migrate = processMatch;
     }
     else if (args[0] === "players") {
-        cursor = db.collection('players').find();
+        cursor = db.collection('players').find({
+            account_id: {
+                $gt: start_id
+            }
+        }).sort({
+            account_id: 1
+        });
         migrate = processPlayer;
     }
     else {
@@ -115,6 +125,7 @@ MongoClient.connect(url, function(err, db) {
             }
         }
         m.parse_status = m.parsed_data ? 2 : null;
+        console.log(m.match_id);
         insertMatch(pg, redis, queue, m, {
             type: "api"
         }, cb);
@@ -134,6 +145,7 @@ MongoClient.connect(url, function(err, db) {
             };
         });
         delete p.ratings;
+        console.log(p.account_id);
         insertPlayer(pg, p, function(err) {
             if (err) {
                 return cb(err);

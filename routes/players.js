@@ -337,9 +337,9 @@ module.exports = function(db, redis) {
                         data: results
                     };
                 */
-                redis.get("player:" + account_id, function(err, result) {
+                redis.get(new Buffer("player:" + account_id), function(err, result) {
                     console.time('inflate');
-                    cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+                    cache = result && !err ? JSON.parse(zlib.inflateSync(result)) : null;
                     console.timeEnd('inflate');
                     //unpack cache.data into an array
                     if (cache && cache.data) {
@@ -464,7 +464,7 @@ module.exports = function(db, redis) {
                             };
                             console.log("saving player cache %s", player.account_id);
                             console.time("deflate");
-                            redis.setex("player:" + player.account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)).toString('base64'));
+                            redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
                             console.timeEnd("deflate");
                             var fs = require('fs');
                             fs.writeFileSync("output.json", JSON.stringify(cache));

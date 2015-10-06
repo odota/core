@@ -2,12 +2,12 @@ var utility = require('../utility');
 var generateJob = utility.generateJob;
 var async = require('async');
 var getData = utility.getData;
-var args = process.argv.slice(2);
 var queries = require('../queries');
 var insertMatch = queries.insertMatch;
 var db = require('../db');
 var queue = require('../queue');
 var redis = require('../redis');
+var args = process.argv.slice(2);
 var match_seq_num = args[0] || 0;
 getPage();
 //match seq num 59622 has a MAXINT32 in one of the player's tower damage
