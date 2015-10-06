@@ -64,13 +64,10 @@ function processFullHistory(job, cb) {
         }
         else {
             //check what matches the player is already associated with
-            db.matches.find({
-                "players.account_id": player.account_id
-            }, {
-                fields: {
-                    "match_id": 1
-                }
-            }, function(err, docs) {
+            db.select('match_id').from('player_matches').where({
+                account_id: player.account_id
+            }).
+            asCallback(function(err, docs) {
                 if (err) {
                     return cb(err);
                 }
@@ -108,14 +105,12 @@ function processFullHistory(job, cb) {
 
     function updatePlayer(player, cb) {
         //done with this player, update
-        db.players.update({
+        db('players').update({
+            full_history_time: new Date(),
+            fh_unavailable: player.fh_unavailable
+        }).where({
             account_id: player.account_id
-        }, {
-            $set: {
-                full_history_time: new Date(),
-                fh_unavailable: player.fh_unavailable
-            }
-        }, function(err) {
+        }).asCallback(function(err) {
             if (err) {
                 return cb(err);
             }
