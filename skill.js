@@ -1,6 +1,6 @@
 var utility = require('./utility');
 var async = require('async');
-var constants = require("./constants.json");
+var constants = require("./constants.js");
 var db = require('./db');
 var redis = require('./redis');
 var queue = require('./queue');

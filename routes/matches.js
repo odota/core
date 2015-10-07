@@ -5,7 +5,7 @@ var config = require('../config');
 var computeMatchData = compute.computeMatchData;
 var computePlayerMatchData = compute.computePlayerMatchData;
 var renderMatch = compute.renderMatch;
-var constants = require('../constants.json');
+var constants = require('../constants.js');
 var matchPages = constants.match_pages;
 module.exports = function(db, redis) {
     matches.get('/:match_id/:info?', function(req, res, next) {

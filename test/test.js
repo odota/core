@@ -14,7 +14,7 @@ var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
 var request = require('request');
-var constants = require('../constants.json');
+var constants = require('../constants.js');
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');

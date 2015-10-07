@@ -4,7 +4,7 @@ var max = utility.max;
 var min = utility.min;
 var generatePositionData = utility.generatePositionData;
 var isRadiant = utility.isRadiant;
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 var sentiment = require('sentiment');
 
 function computeMatchData(match) {

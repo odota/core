@@ -1,0 +1,14 @@
+{
+  "1": "Dire Bot Melee",
+  "2": "Dire Bot Ranged",
+  "4": "Dire Mid Melee",
+  "8": "Dire Mid Ranged",
+  "16": "Dire Top Melee",
+  "32": "Dire Top Ranged",
+  "64": "Radiant Bot Melee",
+  "128": "Radiant Bot Ranged",
+  "256": "Radiant Mid Melee",
+  "512": "Radiant Mid Ranged",
+  "1024": "Radiant Top Melee",
+  "2048": "Radiant Top Ranged"
+}

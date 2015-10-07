@@ -1,0 +1,44 @@
+{
+  "index": {
+    "name": "Overview"
+  },
+  "matches": {
+    "name": "Matches"
+  },
+  "activity": {
+    "name": "Activity"
+  },
+  "histograms": {
+    "name": "Histograms"
+  },
+  "records": {
+    "name": "Records"
+  },
+  "counts": {
+    "name": "Counts"
+  },
+  "trends": {
+    "name": "Trends"
+  },
+  "sprees": {
+    "name": "Sprees"
+  },
+  "wardmap": {
+    "name": "Wardmap"
+  },
+  "items": {
+    "name": "Items"
+  },
+  "skills": {
+    "name": "Skills"
+  },
+  "wordcloud": {
+    "name": "Wordcloud"
+  },
+  "rating": {
+    "name": "Rating"
+  },
+  "compare": {
+    "name": "Compare"
+  }
+}

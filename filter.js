@@ -1,4 +1,4 @@
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;

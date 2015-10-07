@@ -1,5 +1,5 @@
 var args = process.argv.slice(2);
-require('./tasks/' + args[0])(function(err, res) {
+require('./runner/' + args[0])(function(err, res) {
     if (err){
         console.error(err);
     }

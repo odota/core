@@ -1,4 +1,4 @@
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 module.exports = function(query, account_id) {
     //check if we already processed to ensure idempotence
     if (query.processed) {
