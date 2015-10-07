@@ -232,6 +232,10 @@ function isRadiant(player) {
 
 function mergeObjects(merge, val) {
     for (var attr in val) {
+        //NaN test
+        if (Number.isNaN(val[attr])){
+            val[attr] = 0;
+        }
         //does property exist?
         if (!merge[attr]) {
             merge[attr] = val[attr];
@@ -243,7 +247,7 @@ function mergeObjects(merge, val) {
             mergeObjects(merge[attr], val[attr]);
         }
         else {
-            merge[attr] += val[attr];
+            merge[attr] += Number(val[attr]);
         }
     }
 }
