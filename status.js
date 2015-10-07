@@ -50,11 +50,13 @@ module.exports = function getStatus(db, redis, queue, cb) {
                 cb(err, result.length);
             });
         },
+        /*
         parsed_last_day: function(cb) {
             redis.keys("parsed_match:*", function(err, result) {
                 cb(err, result.length);
             });
         },
+        */
         /*
         requested_last_day: function(cb) {
             redis.keys("requested_match:*", function(err, result) {
