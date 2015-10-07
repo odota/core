@@ -27,25 +27,26 @@ html
     meta(name='msapplication-TileImage', content='/public/images/mstile-144x144.png')
     meta(name='msapplication-config', content='/public/images/browserconfig.xml')
     meta(name='theme-color', content='#ffffff')
-
-    <link rel="stylesheet" href="https://bootswatch.com/darkly/bootstrap.min.css">
-    //can npm install material-design-lite to bundle mdl
-    //-
-      <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
-      <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-    link(rel='stylesheet', href="/public/css/flaticon.css")
-    link(rel='stylesheet', href="/public/css/yasp.css")
-    //constants for client side rendering
-    script.
-      var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
     block head
+    
+  link(rel='stylesheet' href="https://cdn.rawgit.com/thomaspark/bootswatch/v3.3.5%2B4/darkly/bootstrap.css")
+  //can npm install material-design-lite to bundle mdl
+  //-
+    <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-blue.min.css">
+    <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  link(rel='stylesheet', href="/public/css/flaticon.css")
+  link(rel='stylesheet', href="/public/css/yasp.css")
+  
   body
     include navbar
     block page_content
     include footer
-
+    
+  //constants for client side rendering (c3 graphs, etc)
+  script.
+    var constants = !{JSON.stringify({"player_colors": constants.player_colors})};
 
   //-
   script(src="//code.jquery.com/jquery-2.1.4.min.js")

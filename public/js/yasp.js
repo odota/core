@@ -1,4 +1,4 @@
-require('./ga.js')
+require('./ga.js');
 //require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 //bundling darkly doesn't work right now due to webpack not properly resolving font paths
 //require('../../node_modules/bootswatch/darkly/bootstrap.css');
