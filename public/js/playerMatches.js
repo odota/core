@@ -1,4 +1,4 @@
-module.exports = function drawMatches(data, options) {
+window.playerMatches = function playerMatches(data, options) {
     $('#matches').dataTable({
         "order": [
                 [0, "desc"]

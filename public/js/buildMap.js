@@ -1,4 +1,4 @@
-module.exports = function buildMap() {
+window.buildMap = function buildMap() {
     var buildingData = [{
         id: "t4br",
         style: "position: absolute; top: 78%; left: 17%;"

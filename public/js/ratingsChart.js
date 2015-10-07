@@ -1,4 +1,4 @@
-module.exports = function ratingsChart(ratings) {
+window.ratingsChart = function ratingsChart(ratings) {
     var times = ratings.map(function(r) {
         return new Date(r.time);
     });

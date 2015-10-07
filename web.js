@@ -56,7 +56,6 @@ passport.use(new SteamStrategy({
 }, function initializeUser(identifier, profile, cb) {
     var player = profile._json;
     player.last_login = new Date();
-    player.account_id = Number(convert64to32(player.steamid));
     queries.insertPlayer(db, player, function(err) {
         if (err) {
             return cb(err);

@@ -1,4 +1,4 @@
-module.exports = function tooltips() {
+window.tooltips = function tooltips() {
     $('[title]').qtip({
         style: "qtip-dark"
     });

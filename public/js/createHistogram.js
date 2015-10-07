@@ -1,4 +1,4 @@
-module.exports = function createHistogram(counts, win_counts, label) {
+window.createHistogram = function createHistogram(counts, win_counts, label) {
     //counts, the number of matches with a value in each key
     //win_counts, the number of wins with a value in each key
     //create a hash of the categories/buckets to wins/games data

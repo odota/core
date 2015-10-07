@@ -253,10 +253,13 @@ function insertMatch(db, redis, queue, match, options, cb) {
 }
 
 function insertPlayer(db, player, cb) {
+    if (player.steamid) {
+        //this is a login, compute the account_id from steamid
+        player.account_id = Number(convert64to32(player.steamid));
+    }
     if (!player.account_id || player.account_id === constants.anonymous_account_id) {
         return cb();
     }
-    player.account_id = player.account_id || Number(convert64to32(player.steamid));
     getColumnInfo(db, function(err) {
         if (err) {
             return cb(err);

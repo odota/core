@@ -252,7 +252,7 @@ module.exports = function(db, redis) {
             db.first().from('players').where({
                 account_id: t.account_id
             }).asCallback(function(err, row) {
-                if (err) {
+                if (err || !row) {
                     return cb(err);
                 }
                 t.personaname = row.personaname;

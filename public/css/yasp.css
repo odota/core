@@ -34,21 +34,16 @@ h3 img {
 .img-text {
     float: left;
     text-align: center;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .img-small {
     margin: 1px;
-    height: 24px;
+    height: 20px;
 }
 
 .img-md {
     margin: 1px;
-    height: 28px;
-}
-
-.pickban {
-    margin: 0px;
     height: 24px;
 }
 
