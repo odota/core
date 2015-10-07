@@ -38,6 +38,8 @@ var defaults = {
     "DISABLE_ADS": "", //disable ads
     "PARSER_PARALLELISM": 8,
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
+    "ENABLE_MATCH_CACHE": "",
+    "ENABLE_PLAYER_CACHE": "",
     //the following are deprecated
     "MONGO_URL": "mongodb://localhost/dota",
     "AWS_S3_BUCKET": "",

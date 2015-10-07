@@ -96,7 +96,7 @@ module.exports = function(db, redis) {
                             match.players = players;
                             computeMatchData(match);
                             renderMatch(match);
-                            if (match.version && config.NODE_ENV !== "development") {
+                            if (match.version && config.ENABLE_MATCH_CACHE) {
                                 redis.setex(key, 3600, JSON.stringify(match));
                             }
                             return cb(err, match);

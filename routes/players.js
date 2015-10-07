@@ -436,7 +436,7 @@ module.exports = function(db, redis) {
                     function saveCache(cb) {
                         //full match cache code, needs ref to unfiltered data to save
                         /*
-                        if (!cacheValid && account_id !== constants.anonymous_account_id) {
+                        if (!cacheValid && account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
                             results.unfiltered.forEach(reduceMatch);
                             console.log("saving cache with length: %s", results.unfiltered.length);
                             async.each(results.unfiltered, function(match_copy, cb) {
@@ -451,7 +451,7 @@ module.exports = function(db, redis) {
                             }, cb);
                         }
                         */
-                        if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id) {
+                        if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
                             //pack data into hash for cache
                             var match_ids = {};
                             player.data.forEach(function(m) {
