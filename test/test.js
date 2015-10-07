@@ -8,12 +8,11 @@ config.NODE_ENV = "test";
 var async = require('async');
 var redis = require('../redis');
 var queue = require('../queue');
-var testdata = require('./test.json');
 var nock = require('nock');
 var moment = require('moment');
 var assert = require('assert');
-var cp = require('child_process');
 var request = require('request');
+var constants = require('../constants.json');
 /*
 var processApi = require('../processApi');
 var processFullHistory = require('../processFullHistory');
@@ -28,6 +27,9 @@ var fs = require('fs');
 var wait = 90000;
 var db = require('../db');
 var app = require('../web');
+var queries = require('../queries');
+var insertMatch = queries.insertMatch;
+var insertPlayer = queries.insertPlayer;
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -35,9 +37,9 @@ nock('http://api.steampowered.com')
     //500 error
     .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).reply(500, {})
     //fake match details
-    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, testdata.details_api)
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/').query(true).times(10).reply(200, require('./details_api.json'))
     //fake player summaries
-    .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, testdata.summaries_api)
+    .get('/ISteamUser/GetPlayerSummaries/v0002/').query(true).reply(200, require('./summaries_api.json'))
     //non-retryable error
     .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, {
         result: {
@@ -45,18 +47,16 @@ nock('http://api.steampowered.com')
         }
     })
     //fake full history
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, testdata.history_api)
-    //fake full history page 2
-    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).times(2).reply(200, testdata.history_api2)
-    //fake heroes list
-    .get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, testdata.heroes_api)
-    //fake leagues
-    .get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, {
-        result: {
-            leagues: []
-        }
-    });
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/').query(true).reply(200, require('./history_api.json'));
+//TODO page 2 for fullhistory?
+//fake heroes list
+//.get('/IEconDOTA2_570/GetHeroes/v0001/').query(true).reply(200, require('./heroes_api.json')
+//fake leagues
+//.get('/IDOTA2Match_570/GetLeagueListing/v0001/').query(true).reply(200, require('./leagues_api.json'));
+//fake mmr response
+nock("http://" + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, require('./retriever_player.json'));
 before(function(done) {
+    this.timeout(wait);
     async.series([
         function(cb) {
             console.log('connecting to pg');
@@ -80,46 +80,30 @@ before(function(done) {
         },
         function(cb) {
             console.log("wiping redis");
-            redis.flushall(cb);
+            redis.flushdb(cb);
         },
         function(cb) {
-            /*
             console.log("loading matches");
-            async.mapSeries(testdata.matches, function(m, cb) {
-                db.matches.insert(m, function(err) {
-                    console.log(m.match_id);
-                    cb(err);
-                });
-            }, function(err) {
-                cb(err);
-            });
-            */
-            cb();
+            async.mapSeries([require('./details_api.json').result], function(m, cb) {
+                insertMatch(db, redis, queue, m, {
+                    type: "api"
+                }, cb);
+            }, cb);
         },
         function(cb) {
-            /*
             console.log("loading players");
-            async.mapSeries(testdata.players, function(p, cb) {
-                db.players.insert(p, function(err) {
-                    cb(err);
-                });
-            }, function(err) {
-                cb(err);
-            });
-            */
-            cb();
+            async.mapSeries(require('./summaries_api').response.players, function(p, cb) {
+                insertPlayer(db, p, cb);
+            }, cb);
         }], function(err) {
-        //cp.fork(__dirname + '/../deprecated/parser');
-        //cp.fork(__dirname + '/../deprecated/parseManager');
-        //cp.fork(__dirname + '/../workServer');
-        //cp.fork(__dirname + '/../parseClient');
         require('../workServer');
-        require('../parseWorker');
+        require('../workParser');
         done(err);
     });
 });
 describe("worker", function() {
     this.timeout(wait);
+    //TODO fix match/account_ids
     /*
     it('process details request', function(done) {
         queueReq(queue, "api_details", {
@@ -133,25 +117,6 @@ describe("worker", function() {
         });
     });
     it('process mmr request', function(done) {
-            //fake mmr response
-            nock("http://" + config.RETRIEVER_HOST).get('/?account_id=88367253').reply(200, {
-            "accountId": 88367253,
-            "wins": 889,
-            "xp": 52,
-            "level": 153,
-            "lowPriorityUntilDate": 0,
-            "preventVoiceUntilDate": 0,
-            "teaching": 6,
-            "leadership": 4,
-            "friendly": 10,
-            "forgiving": 5,
-            "lowPriorityGamesRemaining": 0,
-            "competitive_rank": 3228,
-            "calibrationGamesRemaining": 0,
-            "solo_competitive_rank": 3958,
-            "soloCalibrationGamesRemaining": 0,
-            "recruitmentLevel": 0
-        });
         queueReq(queue, "mmr", {
             match_id: 870061127,
             account_id: 88367253,
@@ -192,7 +157,6 @@ describe("worker", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    //TODO define a list of file names/ids and run/set up nock
     beforeEach(function(done) {
         //fake match response
         nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
@@ -205,14 +169,12 @@ describe("parser", function() {
         nock("http://replay1.valve.net").get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
         done();
     });
+    //TODO define a list of file names/ids and run/set up nock
     it('parse replay', function(done) {
         var match = {
             match_id: 1781962623,
             start_time: moment().format('X'),
-            url: "http://replay1.valve.net/",
-            players: [{
-                player_slot: 0
-            }]
+            url: "http://replay1.valve.net/"
         };
         queueReq(queue, "parse", match, {}, function(err, job) {
             assert(job && !err);
@@ -269,42 +231,38 @@ describe("web", function() {
         });
     });
     describe("player page tests", function() {
-        var tests = ["", "matches", "histograms", "counts", "compare", "asdf"];
+        var tests = Object.keys(constants.player_pages);
         tests.forEach(function(t) {
             it('/players/:valid/' + t, function(done) {
-                supertest(app).get('/players/83684080/' + t).expect(200).end(function(err, res) {
+                supertest(app).get('/players/120269134/' + t).expect(200).end(function(err, res) {
                     done(err);
                 });
             });
         });
     });
-    describe("unparsed match page tests", function() {
+    describe("basic match page tests", function() {
         it('/matches/:invalid', function(done) {
             supertest(app).get('/matches/1').expect(500).end(function(err, res) {
                 done(err);
             });
         });
-        /*
         it('/matches/:valid', function(done) {
-            supertest(app).get('/matches/870061127').expect(200).end(function(err, res) {
+            supertest(app).get('/matches/1781962623').expect(200).end(function(err, res) {
                 done(err);
             });
         });
-        */
     });
-    /*
     describe("parsed match page tests", function() {
-        var tests = ["", "performances", "purchases", "chat", "asdf"];
+        var tests = Object.keys(constants.match_pages);
         tests.forEach(function(t) {
             it('/matches/:valid_parsed/' + t, function(done) {
                 //new RegExp(t, "i")
-                supertest(app).get('/matches/1193091757/' + t).expect(200).expect(/1193091757/).end(function(err, res) {
+                supertest(app).get('/matches/1781962623/' + t).expect(200).expect(/1781962623/).end(function(err, res) {
                     done(err);
                 });
             });
         });
     });
-    */
 });
 describe("api tests", function() {
     describe("/api/items", function() {

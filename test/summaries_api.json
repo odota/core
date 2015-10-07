@@ -1,0 +1,24 @@
+{
+	"response": {
+		"players": [
+			{
+				"steamid": "76561198080534862",
+				"communityvisibilitystate": 3,
+				"profilestate": 1,
+				"personaname": "Cherno Billy",
+				"lastlogoff": 1444167613,
+				"commentpermission": 1,
+				"profileurl": "http://steamcommunity.com/profiles/76561198080534862/",
+				"avatar": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/2c/2c3de10a19eec58c2ddb3f41bd2bbb0faf3d2867.jpg",
+				"avatarmedium": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/2c/2c3de10a19eec58c2ddb3f41bd2bbb0faf3d2867_medium.jpg",
+				"avatarfull": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/2c/2c3de10a19eec58c2ddb3f41bd2bbb0faf3d2867_full.jpg",
+				"personastate": 0,
+				"realname": "T'L",
+				"primaryclanid": "103582791436662010",
+				"timecreated": 1357309801,
+				"personastateflags": 0
+			}
+		]
+		
+	}
+}
