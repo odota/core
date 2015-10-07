@@ -7,7 +7,7 @@ catch(e){
 var defaults = {
     "STEAM_API_KEY": "", //for API reqs, in worker
     "STEAM_USER": "", //for getting replay salt/profile data, in retriever
-    "STEAM_PASS": "",
+    "STEAM_PASS": "", //make sure to wrap in double quotes if it contains special characters
     "RECAPTCHA_PUBLIC_KEY": "", //for preventing automated requests, in web
     "RECAPTCHA_SECRET_KEY": "",
     "PAYPAL_ID": "", //for donations, in web

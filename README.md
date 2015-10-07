@@ -65,13 +65,15 @@ Tech
 
 Quickstart
 ----
-* Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
+* Install dependencies: `sudo bash init.sh`. For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * Note: If you have Steam Guard activated on your account you will
     either have to deactivate it or create a new account for use with
     the retriever (recommended).
 * Build `npm run build`
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services: `npm run dev web,parser`
+* Run `npm test` to make sure your install works correctly
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`. You can also start individual services.
+
 
 Sample Data
 ----
