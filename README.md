@@ -67,7 +67,7 @@ Quickstart
 ----
 * Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
-  * Note: If you have 'Steam Guard' activated on your account you will
+  * Note: If you have Steam Guard activated on your account you will
     either have to deactivate it or create a new account for use with
     the retriever (recommended).
 * Build `npm run build`
@@ -76,7 +76,7 @@ Quickstart
 Sample Data
 ----
 * MongoDB: `wget https://github.com/yasp-dota/testfiles/raw/master/dota.zip && unzip dota && mongorestore --dir dota` to import a database dump if you want a medium-sized data set to work with.
-* PSQL: No sample data yet
+* Postgres: No sample data yet
 
 Developer's Guide
 ----
@@ -84,10 +84,7 @@ Developer's Guide
 * Build step.  `npm run build` executes the following.
     * `npm install` Downloads and installs the Node dependencies from npm.
     * `npm run maven` Uses Maven to build the Java parser.
-    * `npm run webpack` Builds and minifies the client side JS using Webpack.  
-    * `npm run constants` Builds `constants.json` from `sources.json` by requesting some dynamic data from URLs.
-        * web requires constants for display purposes (map internal strings to friendly names)
-        * fullhistory requires constants (needs to iterate through heroes)
+    * `npm run webpack` Builds and minifies the client side JS using Webpack.
 * Descriptions of each service:
     * `web`: An HTTP server which serves the web traffic.
         * All of the querying, filtering, aggregation, and caching happens here.
@@ -96,17 +93,18 @@ Developer's Guide
         * Interfaces with the Steam GC in order to return match details/account profile.
         * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
         * This is used in order to determine the list of users that have added a tracker as a friend for MMR tracking.
-    * `parser`: An HTTP server that accepts a URL param `url`.
+    * `workParser`: An HTTP client that requests work from `workServer`.
+        * The server should send back a replay URL.
         * It expects a compressed replay file `.dem.bz2` at this location, which it downloads, streams through `bunzip2`, and then through the compiled parser.
-        * The parser emits a newline-delimited JSON stream of events, which is picked up and combined into a monolithic JSON object sent back to the client as the response.
+        * The parser emits a newline-delimited JSON stream of events, which is picked up and combined into a monolithic JSON object.
+        * This JSON is POSTed back to the server.
         * The schema for the current parsed_data structure can be found in `utility.getParseSchema`.
-    * `parseManager`: Processes parse requests.
-        * Runs `buildSets` prior to start to ensure it has has the retrievers and parsers to begin parsing.
-        * This starts a number of parse job processors based on the number of available parsers.
-        * Processing a job:
+    * `workServer`: Handles clients looking for work.
+        * Runs `buildSets` prior to start to ensure it has a retrievers list.
+        * Listens for work requests from `workParser`.  When it gets one:
             * `getReplayUrl` to get the download URL for a replay.  It selects randomly from the list of available retrievers to serve the request.
-            * Send a request to a parse worker with the url.
-            * Read the response from parse worker and save it to DB.
+            * Send the replay URL back to the client that requested it.
+            * Listen for a POST from the parse worker and save the result to DB.
     * `worker`: Takes care of background tasks.  This is still a bit of a jack-of-all-trades since it used to process all job types before we moved some of them out to individual processes.
         * Processes incoming parse requests, using the `processApi` processor.
             * This could probably go in its own process.
@@ -136,7 +134,7 @@ Developer's Guide
         * By querying for a player's most recent 500 matches (API limit) with each hero, get most/all of a player's matches.
 * Parses come in one of two ways:
     * Sequential: We read a match from the Steam API that either has `leagueid>0` or contains a player in the `trackedPlayer` set.
-    * Request: Requests are processed from the Request page.  This reads the match data from the steam API, then uses `insertMatchProgress` in order to force waiting for the parse to finish.
+    * Request: Requests are processed from the Request page.  This creates a job that reads the match data from the steam API, then waits for the parse to finish.
         * The client uses AJAX to poll the server.  When an error occurs or the job finishes, it either displays the error or redirects to the match page.
         * Requests are set to only try once.
 * Player/match caching: 
