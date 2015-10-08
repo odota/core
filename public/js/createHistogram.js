@@ -66,7 +66,7 @@ window.createHistogram = function createHistogram(counts, win_counts, label) {
             },
             labels: {
                 format: function(v, id, ind, j){
-                    return (hash[ind] && hash[ind].win ? hash[ind].win / hash[ind].games * 100 : 0).toFixed(0) + "%";
+                    return hash[ind] && hash[ind].games ? (hash[ind] && hash[ind].win ? hash[ind].win / hash[ind].games * 100 : 0).toFixed(0) + "%" : "";
                 },
             }
         },
