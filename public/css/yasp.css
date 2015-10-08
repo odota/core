@@ -47,6 +47,14 @@ h3 img {
     height: 28px;
 }
 
+/* used on a <span> wherever an "empty" .img-small element is desired */
+.spacer-small {
+    margin: 1px;
+    width: 32px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
 .pickban {
     margin: 0px;
     height: 24px;
