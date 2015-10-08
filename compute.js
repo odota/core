@@ -230,7 +230,7 @@ function renderMatch(m) {
                         img: def.img,
                         name: key === "undefined" ? "Auto Attack/Other" : key,
                         val: p[target][key],
-                        className: a ? "ability" : i ? "item" : "img-small"
+                        className: a ? "ability" : i ? "item" : "img-sm"
                     };
                     if (p.hero_hits) {
                         result.hero_hits = p.hero_hits[key];

@@ -15,7 +15,7 @@
                 - var item = constants.items[entry.key]                 
                 if item
                   span.img-text
-                    img.img-small.item(src=item.img, title=entry.key)
+                    img.img-sm.item(src=item.img, title=entry.key)
                     div.format-seconds(data-format-seconds=entry.time)=entry.time
                 else
                   =entry.key

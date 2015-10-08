@@ -37,14 +37,14 @@ h3 img {
     font-size: 10px;
 }
 
-.img-small {
+.img-sm {
     margin: 1px;
-    height: 20px;
+    width: 28px;
 }
 
 .img-md {
     margin: 1px;
-    height: 24px;
+    width: 40px;
 }
 
 .tooltip-inner {

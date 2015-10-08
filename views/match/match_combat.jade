@@ -112,7 +112,7 @@ block match_content
                     - var dmg = constants.hero_names[entry.key]                 
                     if dmg
                       span.img-text
-                        img.img-small(src=dmg.img, title=dmg.localized_name)
+                        img.img-sm(src=dmg.img, title=dmg.localized_name)
                         div.format-seconds(data-format-seconds=entry.time)=entry.time
                     else
                       //=entry.key          
