@@ -1,6 +1,6 @@
-require('./ga.js');
-require('../../node_modules/font-awesome/css/font-awesome.css');
-require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
+//require('./ga.js');
+//require('../../node_modules/font-awesome/css/font-awesome.css');
+//require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
 //require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 //bundling darkly doesn't work right now due to webpack not properly resolving font paths
 //require('../../node_modules/bootswatch/darkly/bootstrap.css');
