@@ -29,3 +29,4 @@
 //require('./ratingsChart.js')
 //require('./generateCharts.js')
 //require('./util.js')
+//require('./resize.js')

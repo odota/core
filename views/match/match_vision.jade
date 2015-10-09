@@ -40,20 +40,13 @@ block match_content
 
 append footer_assets
   script.
-    var width = document.getElementById('map').clientWidth;
-    var heatmap = h337.create({
-      container: document.getElementById('map'),
-      radius: 15*(width/600)
+    $(document).ready(function() {
+      window.resize.initResizableHeatmap($('#map'),
+        !{JSON.stringify(match.posData)}, 'mouseenter', $('.activate'),
+        function(elem, posData) {
+          var pData = posData[Number(elem.attr('data-index'))]
+          var data = pData[elem.attr('data-type')];
+          return data;
+      });
     });
 
-    // scale points by width/127 units to fit to size of map
-    // offset points by 25 units to increase visibility
-    var posData = !{JSON.stringify(match.posData)}
-    adjustHeatmapData(posData, width/127, null, 25);
-
-    $(".activate").on("mouseenter", function(){
-      var pData = posData[Number($(this).attr('data-index'))]
-      var data = pData[$(this).attr('data-type')];
-      console.log("mouseover", pData, data);
-      heatmap.setData(data);
-    })
