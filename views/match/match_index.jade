@@ -68,8 +68,7 @@ block match_content
                   if (index.slice(0, 5)==="item_")
                     - var item = constants.items[constants.item_ids[val]]                             
                     if item
-                      img.img-small.ability(src=item.img, title=constants.item_ids[val])
-                      
+                      img.img-small.item(src=item.img, title=constants.item_ids[val])
   if match.picks_bans
     .row
       .col-md-12      
