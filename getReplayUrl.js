@@ -1,4 +1,5 @@
 var utility = require('./utility');
+var config = require('./config');
 var getData = utility.getData;
 module.exports = function getReplayUrl(db, redis, match, cb) {
     if (match.url) {
@@ -35,6 +36,8 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
                         return cb("invalid body or error");
                     }
                     var url = "http://replay" + body.match.cluster + ".valve.net/570/" + match.match_id + "_" + body.match.replay_salt + ".dem.bz2";
+                    //remove bz2 if test
+                    url = config.NODE_ENV === 'test' ? url.slice(0, -4) : url;
                     match.url = url;
                     //save replay url in db
                     db('matches').update({

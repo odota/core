@@ -159,34 +159,34 @@ describe("worker", function() {
 });
 describe("parser", function() {
     this.timeout(wait);
-    beforeEach(function(done) {
-        //fake match response
-        nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
-            match: {
-                cluster: 1,
-                replay_salt: 1
-            }
-        });
-        //fake replay download
-        nock("http://replay1.valve.net").get('/').replyWithFile(200, replay_dir + '1781962623_source2.dem');
-        done();
-    });
-    //TODO define a list of file names/ids and run/set up nock
-    it('parse replay', function(done) {
-        var match = {
-            match_id: 1781962623,
-            start_time: moment().format('X'),
-            url: "http://replay1.valve.net/"
-        };
-        queueReq(queue, "parse", match, {}, function(err, job) {
-            assert(job && !err);
-            queue.parse.once('completed', function(job2, result) {
-                if (job.jobId === job2.jobId) {
-                    return done();
+    var tests = {
+        '1781962623_source2.dem': 1781962623
+    };
+    for (var key in tests) {
+        it('parse replay', function(done) {
+            nock("http://" + config.RETRIEVER_HOST).get('/').query(true).reply(200, {
+                match: {
+                    cluster: 1,
+                    replay_salt: key.split(".")[0].split("_")[1]
                 }
             });
+            //fake replay download
+            nock("http://replay1.valve.net").get('/570/' + key).replyWithFile(200, replay_dir + key);
+            var match = {
+                match_id: tests[key],
+                start_time: moment().format('X'),
+                //url: "http://replay1.valve.net/"
+            };
+            queueReq(queue, "parse", match, {}, function(err, job) {
+                assert(job && !err);
+                queue.parse.once('completed', function(job2, result) {
+                    if (job.jobId === job2.jobId) {
+                        return done();
+                    }
+                });
+            });
         });
-    });
+    }
 });
 describe("web", function() {
     //this.timeout(wait);

@@ -594,7 +594,7 @@ function runParse(data, cb) {
                 encoding: 'utf8'
             });
             parseStream = ndjson.parse();
-            if (url.slice(-3) === "bz2" && config.NODE_ENV !== "test") {
+            if (url.slice(-3) === "bz2") {
                 bz = spawn("bunzip2");
                 inStream.pipe(bz.stdin);
                 bz.stdout.pipe(parser.stdin);
