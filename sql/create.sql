@@ -51,14 +51,15 @@ CREATE TABLE players (
   account_id bigint PRIMARY KEY,
   steamid varchar(32),
   avatar varchar(255),
+  avatarmedium varchar(255),
+  avatarfull varchar(255),
+  profileurl varchar(255),
   personaname varchar(255),
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
   cheese integer,
   fh_unavailable boolean
   /*
-    "avatarfull" : "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/88/883f2697f5b2dc4affda2d47eedc1cbec8cfb657_full.jpg",
-    "avatarmedium" : "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/88/883f2697f5b2dc4affda2d47eedc1cbec8cfb657_medium.jpg",
     "communityvisibilitystate" : 3,
     "lastlogoff" : 1426020853,
     "loccityid" : 44807,
@@ -68,7 +69,6 @@ CREATE TABLE players (
     "personastateflags" : 0,
     "primaryclanid" : "103582791433775490",
     "profilestate" : 1,
-    "profileurl" : "http://steamcommunity.com/profiles/76561198060610657/",
     "realname" : "Alper",
     "timecreated" : 1332289262,
   */

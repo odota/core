@@ -51,10 +51,24 @@ module.exports = function(db, redis) {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
+        var query = req.query;
         var compare_data;
         //copy the query in case we need the original for compare passing
-        var qCopy = JSON.parse(JSON.stringify(req.query));
+        var qCopy = JSON.parse(JSON.stringify(query));
         async.series({
+            "resolve": function(cb) {
+                //resolve vanity url to account_id, watch out for keywords like "all"
+                redis.get("vanity:" + account_id, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    //TODO less hacky way of checking for conflict with keywords
+                    if (result && isNaN(account_id) && account_id !== "all") {
+                        account_id = Number(result);
+                    }
+                    cb();
+                });
+            },
             "player": function(cb) {
                 fillPlayerData(account_id, {
                     info: info,
@@ -300,7 +314,8 @@ module.exports = function(db, redis) {
         //options.info, the tab the player is on
         //options.query, the query object to use
         var cache;
-        options.query = preprocessQuery(options.query, account_id);
+        options.query.select.account_id = account_id;
+        options.query = preprocessQuery(options.query);
         if (!options.query) {
             return cb("invalid account_id");
         }

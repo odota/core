@@ -1,5 +1,5 @@
 var constants = require('./constants.js');
-module.exports = function(query, account_id) {
+module.exports = function preprocessQuery(query) {
     //check if we already processed to ensure idempotence
     if (query.processed) {
         return;
@@ -25,30 +25,32 @@ module.exports = function(query, account_id) {
                 //just return the object if it's an array or object
                 return e;
             }
-            //numberify this element
-            return Number(e);
+            //numberify this element if not keyword
+            if (e in whitelist) {
+                return e;
+            }
+            else {
+                return Number(e);
+            }
         });
         if (dbAble[key]) {
             //get the first element
-            query.db_select[key] = query.select[key][0];
+            if (query.select[key][0] in whitelist) {
+                query.limit = whitelist[query.select[key][0]];
+            }
+            else {
+                query.db_select[key] = query.select[key][0];
+            }
         }
         else if (!exceptions[key]) {
             query.js_select[key] = query.select[key];
         }
     }
-    if (Number(account_id) === constants.anonymous_account_id) {
-        return null;
-    }
-    if (!isNaN(Number(account_id))) {
-        query.db_select.account_id = Number(account_id);
-    }
-    else if (account_id in whitelist) {
-        query.limit = whitelist[account_id];
-    }
-    else {
+    if (query.db_select.account_id === constants.anonymous_account_id) {
         return null;
     }
     //mark this query processed
     query.processed = true;
+    console.log(query);
     return query;
 };

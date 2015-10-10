@@ -12,7 +12,7 @@ var insertPlayer = queries.insertPlayer;
 var redis = require('../redis');
 var queue = require('../queue');
 var args = process.argv.slice(2);
-var start_id = args[0] || 0;
+var start_id = args[1] || 0;
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;

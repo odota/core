@@ -35,7 +35,6 @@ var players = require('./routes/players');
 var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
-var convert64to32 = utility.convert64to32;
 //PASSPORT config
 passport.serializeUser(function(user, done) {
     done(null, user.account_id);
@@ -59,6 +58,11 @@ passport.use(new SteamStrategy({
     queries.insertPlayer(db, player, function(err) {
         if (err) {
             return cb(err);
+        }
+        if (player.profileurl) {
+            var s = player.profileurl.split('/');
+            var vanityId = s[s.length - 2];
+            redis.set("vanity:" + vanityId, player.account_id);
         }
         buildSets(db, redis, function(err) {
             if (err) {
