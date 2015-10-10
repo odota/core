@@ -22,8 +22,7 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
         else {
             redis.get("retrievers", function(err, result) {
                 if (err || !result) {
-                    console.log("failed to get retrievers from redis");
-                    return cb(err);
+                    return cb(err || "failed to get retrievers from redis");
                 }
                 result = JSON.parse(result);
                 //make array of retriever urls and use a random one on each retry
