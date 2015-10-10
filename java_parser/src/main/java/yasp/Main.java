@@ -17,6 +17,7 @@ import skadistats.clarity.processor.reader.OnMessage;
 import skadistats.clarity.processor.reader.OnTickStart;
 import skadistats.clarity.processor.runner.Context;
 import skadistats.clarity.processor.runner.SimpleRunner;
+import skadistats.clarity.model.CombatLogEntry;
 import skadistats.clarity.source.InputStreamSource;
 import skadistats.clarity.wire.common.proto.Demo.CDemoFileInfo;
 import skadistats.clarity.wire.common.proto.Demo.CGameInfo.CDotaGameInfo.CPlayerInfo;
@@ -150,21 +151,16 @@ public class Main {
     }
 
     @OnCombatLogEntry
-    public void onCombatLogEntry(Context ctx, CombatLog.Entry cle) {
-        //System.err.format("stun: %s, slow: %s\n", cle.getStunDuration(), cle.getSlowDuration());
-        //System.err.format("x: %s, y: %s\n", cle.getLocationX(), cle.getLocationY());
-        //System.err.format("modifier_duration: %s, last_hits: %s, att_team: %s, target_team: %s, obs_placed: %s\n",cle.getModifierDuration(), cle.getAttackerTeam(), cle.getTargetTeam(), cle.getObsWardsPlaced());
+    public void onCombatLogEntry(Context ctx, CombatLogEntry cle) {
         time = Math.round(cle.getTimestamp());
-        String type = DOTA_COMBATLOG_TYPES.valueOf(cle.getType()).name();
         //create a new entry
         Entry combatLogEntry = new Entry(time);
         combatLogEntry.type = "combat_log";
-        //entry.subtype=String.valueOf(cle.getType());
-        combatLogEntry.subtype = type;
+        combatLogEntry.subtype = cle.getType().name();
         //translate the fields using string tables if necessary (get*Name methods)
         combatLogEntry.attackername = cle.getAttackerName();
         combatLogEntry.targetname = cle.getTargetName();
-        combatLogEntry.sourcename = cle.getSourceName();
+        combatLogEntry.sourcename = cle.getDamageSourceName();
         combatLogEntry.targetsourcename = cle.getTargetSourceName();
         combatLogEntry.inflictor = cle.getInflictorName();
         combatLogEntry.gold_reason = cle.getGoldReason();
@@ -175,12 +171,12 @@ public class Main {
         combatLogEntry.targetillusion = cle.isTargetIllusion();
         combatLogEntry.value = cle.getValue();
         //value may be out of bounds in string table, we can only get valuename if a purchase (type 11)
-        if ("DOTA_COMBATLOG_PURCHASE".equals(type)) {
+        if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_PURCHASE) {
             combatLogEntry.valuename = cle.getValueName();
         }
         es.output(combatLogEntry);
 
-        if ("DOTA_COMBATLOG_GAME_STATE".equals(type)) {
+        if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_GAME_STATE) {
             //emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
             //used to compute game zero time so we can display accurate timestamps
             Entry entry = new Entry(time);
