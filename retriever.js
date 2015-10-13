@@ -79,7 +79,7 @@ async.each(a, function(i, cb) {
     var client = new Steam.SteamClient();
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    client.Dota2 = new Dota2.Dota2Client(client, true, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -198,7 +198,7 @@ function getPlayerProfile(idx, account_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
     steamObj[idx].profiles += 1;
-    Dota2.profileRequest(account_id, false, function(err, profileData) {
+    Dota2.requestProfile(account_id, false, function(err, profileData) {
         //console.log(err, profileData);
         cb(err, profileData.game_account_client);
     });
@@ -213,7 +213,7 @@ function getGCReplayUrl(idx, match_id, cb) {
         selfDestruct();
     }
     steamObj[idx].replays += 1;
-    Dota2.matchDetailsRequest(match_id, function(err, matchData) {
+    Dota2.requestMatchDetails(match_id, function(err, matchData) {
         //console.log(err, matchData);
         cb(err, matchData);
     });
