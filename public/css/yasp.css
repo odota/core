@@ -31,20 +31,24 @@ h3 img {
     padding-right: 1em;
 }
 
-.img-text {
-    float: left;
-    text-align: center;
-    font-size: 10px;
-}
-
 .img-sm {
     margin: 1px;
-    width: 28px;
+    height: 24px;
 }
 
 .img-md {
     margin: 1px;
-    width: 40px;
+    height: 32px;
+}
+
+.img-text {
+    float: left;
+    text-align: center;
+    font-size: 11px;
+}
+
+.img-text img {
+    height: 22px;
 }
 
 .tooltip-inner {

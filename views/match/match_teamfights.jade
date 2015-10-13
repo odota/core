@@ -1,3 +1,4 @@
+include /mixins/progress_bar
 extend match
 
 block match_content
@@ -8,23 +9,16 @@ block match_content
     .col-md-12
       h2 Teamfights 
         small where 3+ heroes died
-  //-
-    .row
-      .col-md-12
-        h3 Participation
-        table.table.table-condensed
-          tr
-            each player in match.players
-              - var hero = constants.heroes[player.hero_id]
-              td(class=(player.isRadiant?"success":"danger"))
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
-                - var pct = (player.teamfights_participated*100/teamfights.length)
-                .progress
-                  .progress-bar(class=pct >= 75 ? "progress-bar-success" : pct >=50 ? "progress-bar-warning" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
+  .row
+    .col-md-12
+      h3 Participation
+      each player in match.players
+        .col-md-1
+          +hero_td(player)
+          +progress_bar((player.teamfights_participated || 0), teamfights.length)
+  hr
+  
   .row
     .col-md-4
       h3 Fights 

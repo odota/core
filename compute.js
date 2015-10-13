@@ -327,17 +327,17 @@ function renderMatch(m) {
             });
             //add player's hero_id to each teamfight participant
             m.players.forEach(function(p, i) {
-                var tfplayer = tf.players[i];
+                var tfplayer = tf.players[p.player_slot % (128 - 5)];
                 tfplayer.hero_id = p.hero_id;
                 tfplayer.player_slot = p.player_slot;
                 tfplayer.isRadiant = isRadiant(p);
                 tfplayer.personaname = p.personaname;
                 tfplayer.account_id = p.account_id;
                 tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0;
-                /*
-                p.teamfights_participated = 0;
+                if (!p.teamfights_participated) {
+                    p.teamfights_participated = 0;
+                }
                 p.teamfights_participated += tfplayer.participate ? 1 : 0;
-                */
                 //compute team gold/xp deltas
                 if (isRadiant(p)) {
                     tf.radiant_gold_delta += tfplayer.gold_delta;
