@@ -7,17 +7,21 @@ block playercontent
         script.
           var heroes = !{JSON.stringify(constants.heroes)};
           var histogramData = {};
-        p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
+        //p: button.btn.btn-xs.btn-dark.toggle-button.bright-border.collapsed(onclick="showAll()") Show All
+        //-
+          each v, key in histograms
+            if key in player.aggData
+              - var collapsed = true
+              button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
+        ul.nav.nav-pills
+          each v, key in histograms
+            if key in player.aggData
+              li(class=subkey===key ? "active" : ""): a(href='/players/'+player.account_id+'/'+route+'/'+key) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
         each v, key in histograms
-          if key in player.aggData
-            - var collapsed = true
-            button.btn.btn-xs.btn-dark.toggle-button.bright-border-collapsible(data-toggle="collapse" data-target="#chart-histogram-container-"+key, aria-expanded=collapsed ? "false" : "true", style="margin-right: 3px", class=collapsed ? "collapsed" : "", id="histogram-container-toggle-"+key class="histogram-toggle-button") #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")}
-        
-        each v, key in histograms
-          if key in player.aggData
+          if key in player.aggData && (subkey===key)
             - var val = player.aggData[key]
             - var avg = val.sum/val.n
-            - var collapsed = true
+            //- var collapsed = true
             section.histogram-section(id="chart-histogram-container-"+key, data-histogram=key, class=collapsed ? "collapse" : "")
               h3: abbr(title=tooltips[key]) #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
                 small (#{val.n} matches)
@@ -37,7 +41,16 @@ append footer_assets
         var avgs = histogramData[key].avgs;
         createTrends(avgs, key);
     });
-    $("#histogram-container-toggle-kills").click();
+    
+    //$("#histogram-container-toggle-kills").click();
+    
+    function showAll(){
+      $(".histogram-toggle-button").each(function() {
+        if ($(this).attr("aria-expanded")!=="true"){
+          this.click();
+        }
+      });
+    }
     
     function createTrends(avgs, key){
       var xs = avgs.map(function(a,i){return i;});
@@ -136,12 +149,4 @@ append footer_assets
       var options = {datasetFill: false};
       var ctx = document.getElementById(key).getContext("2d");
       var myNewChart = new Chart(ctx).Line(data, options);
-    }
-
-    function showAll(){
-      $(".histogram-toggle-button").each(function() {
-        if ($(this).attr("aria-expanded")!=="true"){
-          this.click();
-        }
-      });
     }

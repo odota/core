@@ -47,7 +47,7 @@ var histograms = {
 };
 var playerPages = constants.player_pages;
 module.exports = function(db, redis) {
-    players.get('/:account_id/:info?', function(req, res, next) {
+    players.get('/:account_id/:info?/:subkey?', function(req, res, next) {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
@@ -151,6 +151,7 @@ module.exports = function(db, redis) {
                         bots: result.sets.bots,
                         ratingPlayers: result.sets.ratingPlayers,
                         histograms: histograms,
+                        subkey: req.params.subkey || "kills",
                         times: {
                             "duration": 1,
                             "first_blood_time": 1
