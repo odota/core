@@ -30,7 +30,7 @@ block match_content
                     abbr.blackunderline(title=hero1name+" killed "+hero2name+" "+p1+" time"+(p1===1?"":"s")+".<br>"+hero2name+" killed "+hero1name+" "+p2+" time"+(p2===1?"":"s")+".")
                       span(class=p1>p2 ? "text-success" : "") #{p1}
                       span="/"
-                      span(class=p1>p2 ? "" : "text-danger") #{p2}
+                      span(class=p2>p1 ? "text-danger" : "") #{p2}
 
     .col-md-6
       h3.inline-header: abbr(title=tooltips.damage_taken) Damage Done/Taken
@@ -60,7 +60,7 @@ block match_content
                       abbr.blackunderline(title=hero1name+" did "+p1+" damage to "+hero2name+".<br>"+hero2name+" did "+p2+" damage to "+hero1name+".")
                         span(class="format" class=p1>p2 ? "text-success" : "") #{p1}
                         span="/"
-                        span(class="format" class=p1>p2 ? "" : "text-danger") #{p2}
+                        span(class="format" class=p2>p1 ? "text-danger" : "") #{p2}
   .row
     .col-md-6
       +data_table({id:"multi_kills", summable:true, heading:"Multi Kills"})
