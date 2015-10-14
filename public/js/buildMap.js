@@ -10,7 +10,7 @@ module.exports = function buildMap() {
         style: "position: absolute; top: 86%; left: 26%;"
         }, {
         id: "t2br",
-        style: "position: absolute; top: 86%; left: 43%;"
+        style: "position: absolute; top: 86%; left: 46%;"
         }, {
         id: "t1br",
         style: "position: absolute; top: 86%; left: 80%;"
@@ -22,16 +22,16 @@ module.exports = function buildMap() {
         style: "position: absolute; top: 64%; left: 30%;"
         }, {
         id: "t1mr",
-        style: "position: absolute; top: 56%; left: 38%;"
+        style: "position: absolute; top: 56%; left: 40%;"
         }, {
         id: "t3tr",
         style: "position: absolute; top: 67%; left: 9%;"
         }, {
         id: "t2tr",
-        style: "position: absolute; top: 50%; left: 9%;"
+        style: "position: absolute; top: 52%; left: 11%;"
         }, {
         id: "t1tr",
-        style: "position: absolute; top: 40%; left: 9%;"
+        style: "position: absolute; top: 39%; left: 11%;"
         }, {
         id: "brbr",
         style: "position: absolute; top: 85%; left: 24%;"
@@ -40,10 +40,10 @@ module.exports = function buildMap() {
         style: "position: absolute; top: 87%; left: 24%;"
         }, {
         id: "brmr",
-        style: "position: absolute; top: 73%; left: 18%;"
+        style: "position: absolute; top: 72.5%; left: 20%;"
         }, {
         id: "bmmr",
-        style: "position: absolute; top: 74%; left: 20%;"
+        style: "position: absolute; top: 73.5%; left: 21.5%;"
         }, {
         id: "brtr",
         style: "position: absolute; top: 69%; left: 8%;"
