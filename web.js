@@ -61,8 +61,8 @@ passport.use(new SteamStrategy({
         }
         if (player.profileurl) {
             var s = player.profileurl.split('/');
-            var vanityId = s[s.length - 2];
-            redis.set("vanity:" + vanityId, player.account_id);
+            var vanityUrl = s[s.length - 2];
+            redis.set("vanity:" + vanityUrl, player.account_id);
         }
         buildSets(db, redis, function(err) {
             if (err) {
@@ -198,6 +198,14 @@ app.route('/logout').get(function(req, res) {
 });
 app.use('/matches', matches(db, redis));
 app.use('/players', players(db, redis));
+app.use('/names/:vanityUrl', function(req, res, cb) {
+    redis.get("vanity:" + req.params.vanityUrl, function(err, result) {
+        if (err || !result) {
+            return cb(err || "no matching player found");
+        }
+        res.redirect('/players/' + Number(result));
+    });
+});
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));

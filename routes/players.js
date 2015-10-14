@@ -56,19 +56,6 @@ module.exports = function(db, redis) {
         //copy the query in case we need the original for compare passing
         var qCopy = JSON.parse(JSON.stringify(query));
         async.series({
-            "resolve": function(cb) {
-                //resolve vanity url to account_id, watch out for keywords like "all"
-                redis.get("vanity:" + account_id, function(err, result) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    //TODO less hacky way of checking for conflict with keywords
-                    if (result && isNaN(account_id) && account_id !== "all") {
-                        account_id = Number(result);
-                    }
-                    cb();
-                });
-            },
             "player": function(cb) {
                 fillPlayerData(account_id, {
                     info: info,
