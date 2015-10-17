@@ -84,10 +84,14 @@ function scanApi(seq_num) {
                     }
                     if (p.account_id in ratingPlayers && match.lobby_type === 7) {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
+                        var retrieverArr = config.RETRIEVER_HOST.split(",");
                         queueReq("mmr", {
                             match_id: match.match_id,
                             account_id: p.account_id,
-                            url: ratingPlayers[p.account_id]
+                            //url: ratingPlayers[p.account_id]
+                            url: retrieverArr.map(function(r) {
+                                return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id" + p.account_id;
+                            })[p.account_id % retrieverArr.length]
                         }, cb);
                     }
                     else {
