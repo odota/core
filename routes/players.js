@@ -148,8 +148,8 @@ module.exports = function(db, redis) {
                         tabs: playerPages,
                         player: player,
                         trackedPlayers: result.sets.trackedPlayers,
-                        bots: result.sets.bots,
-                        ratingPlayers: result.sets.ratingPlayers,
+                        //bots: result.sets.bots,
+                        //ratingPlayers: result.sets.ratingPlayers,
                         histograms: histograms,
                         subkey: req.params.subkey || "kills",
                         times: {

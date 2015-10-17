@@ -28,12 +28,6 @@ module.exports = function getStatus(db, redis, queue, cb) {
                 cb(err, res);
             });
         },
-        rating_players: function(cb) {
-            redis.get("ratingPlayers", function(err, res) {
-                res = res ? Object.keys(JSON.parse(res)).length : 0;
-                cb(err, res);
-            });
-        },
         donated_players: function(cb) {
             redis.get("donators", function(err, res) {
                 res = res ? Object.keys(JSON.parse(res)).length : 0;
