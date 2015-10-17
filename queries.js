@@ -117,7 +117,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             db('matches').insert(row).where({
                 match_id: row.match_id
             }).asCallback(function(err) {
-                if (err) {
+                if (err && err.detail.indexOf("already exists") !== -1) {
                     //try update
                     db('matches').update(row).where({
                         match_id: row.match_id
@@ -153,7 +153,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                     match_id: row.match_id,
                     player_slot: row.player_slot
                 }).asCallback(function(err) {
-                    if (err) {
+                    if (err && err.detail.indexOf("already exists") !== -1) {
                         db('player_matches').update(row).where({
                             match_id: row.match_id,
                             player_slot: row.player_slot
@@ -275,7 +275,7 @@ function insertPlayer(db, player, cb) {
         }
         //TODO upsert
         db('players').insert(row).asCallback(function(err) {
-            if (err) {
+            if (err && err.detail.indexOf("already exists") !== -1) {
                 db('players').update(row).where({
                     account_id: row.account_id
                 }).asCallback(cb);
