@@ -17,29 +17,26 @@ var port = config.PORT || config.RETRIEVER_PORT;
 //create array of numbers from 0 to n
 var count = 0;
 while (a.length < users.length) a.push(a.length + 0);
-
- 
 app.use(function(req, res, next) {
     if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
         //reject request if doesnt have key
         return next("invalid key");
-    } else{
+    }
+    else {
         next(null);
     }
 });
 app.get('/', function(req, res, next) {
     //console.log(process.memoryUsage());
     var keys = Object.keys(steamObj);
-    
     if (keys.length == 0) return next("No accounts ready");
-    
     var r = keys[Math.floor((Math.random() * keys.length))];
     if (req.query.mmstats) {
         getMMStats(r, function(err, data) {
             res.locals.data = data;
             return next(err);
         });
-    }    
+    }
     else if (req.query.match_id) {
         getGCReplayUrl(r, req.query.match_id, function(err, data) {
             res.locals.data = data;
@@ -47,8 +44,7 @@ app.get('/', function(req, res, next) {
         });
     }
     else if (req.query.account_id) {
-        var idx = accountToIdx[req.query.account_id] || r;
-        getPlayerProfile(idx, req.query.account_id, function(err, data) {
+        getPlayerProfile(r, req.query.account_id, function(err, data) {
             res.locals.data = data;
             return next(err);
         });
@@ -66,20 +62,17 @@ app.use(function(err, req, res, next) {
         error: err
     });
 });
-
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[RETRIEVER] listening at http://%s:%s', host, port);
 });
-    
 async.each(a, function(i, cb) {
-    
     var dotaReady = false;
     var relationshipReady = false;
     var client = new Steam.SteamClient();
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, false, false);
+    client.Dota2 = new Dota2.Dota2Client(client, true, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -113,6 +106,7 @@ async.each(a, function(i, cb) {
             allDone();
         });
         client.Dota2.launch();
+        /*
         client.steamFriends.on("relationships", function() {
             //console.log(Steam.EFriendRelationship);
             console.log("searching for pending friend requests...");
@@ -148,6 +142,7 @@ async.each(a, function(i, cb) {
                 delete accountToIdx[convert64To32(steamID)];
             }
         });
+        */
         client.once('loggedOff', function() {
             console.log("relogging");
             client.steamUser.logOn(logOnDetails);
@@ -155,7 +150,7 @@ async.each(a, function(i, cb) {
     });
 
     function allDone() {
-        if (dotaReady && relationshipReady) {
+        if (dotaReady) {
             count += 1;
             console.log("acct %s ready, %s/%s", i, count, users.length);
             cb();
@@ -165,8 +160,7 @@ async.each(a, function(i, cb) {
 
 function genStats() {
     var stats = {};
-    var numReadyAccounts = Object.keys(steamObj).length
-    
+    var numReadyAccounts = Object.keys(steamObj).length;
     for (var key in steamObj) {
         stats[key] = {
             steamID: key,
@@ -188,7 +182,7 @@ function genStats() {
 
 function getMMStats(idx, cb) {
     steamObj[idx].Dota2.matchmakingStatsRequest();
-    steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw){
+    steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw) {
         cb(null, raw.searching_players_by_group_source2);
     });
 }
@@ -198,9 +192,36 @@ function getPlayerProfile(idx, account_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("requesting player profile %s", account_id);
     steamObj[idx].profiles += 1;
-    Dota2.profileRequest(account_id, false, function(err, profileData) {
+    /*
+    Dota2.requestProfile(account_id, false, function(err, profileData) {
         //console.log(err, profileData);
         cb(err, profileData.game_account_client);
+    });
+    */
+    Dota2.requestProfileCard(account_id, function(err, profileData) {
+        /*
+     	enum EStatID {
+		k_eStat_SoloRank = 1;
+		k_eStat_PartyRank = 2;
+		k_eStat_Wins = 3;
+		k_eStat_Commends = 4;
+		k_eStat_GamesPlayed = 5;
+		k_eStat_FirstMatchDate = 6;
+    	}
+    	*/
+        if (err) {
+            return cb(err);
+        }
+        var response = {};
+        profileData.slots.forEach(function(s) {
+            if (s.stat && s.stat.stat_id === 1) {
+                response.solo_competitive_rank = s.stat.stat_score;
+            }
+            if (s.stat && s.stat.stat_id === 2) {
+                response.competitive_rank = s.stat.stat_score;
+            }
+        });
+        cb(err, response);
     });
 }
 
@@ -213,7 +234,7 @@ function getGCReplayUrl(idx, match_id, cb) {
         selfDestruct();
     }
     steamObj[idx].replays += 1;
-    Dota2.matchDetailsRequest(match_id, function(err, matchData) {
+    Dota2.requestMatchDetails(match_id, function(err, matchData) {
         //console.log(err, matchData);
         cb(err, matchData);
     });
