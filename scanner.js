@@ -90,7 +90,7 @@ function scanApi(seq_num) {
                             account_id: p.account_id,
                             //url: ratingPlayers[p.account_id]
                             url: retrieverArr.map(function(r) {
-                                return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id" + p.account_id;
+                                return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
                             })[p.account_id % retrieverArr.length]
                         }, cb);
                     }
