@@ -95,11 +95,14 @@ block match_content
             +hero_td(player)
             each ability in player.ability_upgrades || {}
               td(style="padding:0px;")
-                - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                span.img-text
+                  - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
                   if abilityData
                     img.img-sm.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
                   else
                     =ability.ability
+                  //div #{moment().startOf('day').seconds(ability.time).format("mm:ss")}
+                  div #{(ability.time/60).toFixed(0)}'
                             
     .col-md-4
       h3 Buildings
