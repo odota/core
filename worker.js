@@ -20,13 +20,10 @@ invokeInterval(function(cb) {
     buildSets(db, redis, cb);
 }, 60 * 1000);
 invokeInterval(function(cb) {
-    serviceDiscovery.queryRetrievers(redis, cb);
-}, 60 * 1000);
-invokeInterval(function(cb) {
     getMMStats(redis, cb);
 }, config.MMSTATS_DATA_INTERVAL * 60 * 1000 || 60000); //Sample every 3 minutes
 invokeInterval(function(cb) {
-    //clean old jobs from queue older than 1 week
+    //clean old jobs from queue older than 1 day
     for (var key in queue) {
         queue[key].clean(24 * 60 * 60 * 1000, 'completed');
         queue[key].clean(24 * 60 * 60 * 1000, 'failed');
