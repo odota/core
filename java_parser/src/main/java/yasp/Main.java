@@ -185,6 +185,10 @@ public class Main {
             entry.type = "state";
             es.output(entry);
         }
+        
+        if (cle.getType().ordinal() > 18) {
+            System.err.println(cle);
+        }
     }
 
     @OnEntityEntered

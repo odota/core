@@ -13,8 +13,6 @@ block match_content
               th: abbr(title=tooltips.farm_neutrals) Neutrals
               th: abbr(title=tooltips.farm_towers) Towers
               th: abbr(title=tooltips.farm_couriers) Couriers
-              th: abbr(title=tooltips.farm_observers) Obs
-              th: abbr(title=tooltips.farm_sentries) Sen
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
             +hero_td(player)
@@ -23,8 +21,6 @@ block match_content
             td #{player.neutral_kills || "-"}
             td #{player.tower_kills || "-"}
             td #{player.courier_kills || "-"}
-            td #{player.observer_kills || "-"}
-            td #{player.sentry_kills || "-"}
   .row
     .col-md-12
       +data_table({id:"last_hits", summable:true, heading:"Last Hits"})
