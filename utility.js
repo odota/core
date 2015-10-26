@@ -271,7 +271,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 13,
+        "version": 14,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
