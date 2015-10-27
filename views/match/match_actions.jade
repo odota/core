@@ -17,6 +17,7 @@ block match_content
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             - player.actions = player.actions || {}
+            - player.pings = player.pings || {}
             td #{player.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
             each val, key in constants.order_types
