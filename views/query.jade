@@ -1,5 +1,5 @@
 h2.inline-header
-  button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Toggle Filter
+  button.btn.btn-sm.btn-dark.toggle-button(style="float: right;" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
 #filter_collapse.collapse
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"

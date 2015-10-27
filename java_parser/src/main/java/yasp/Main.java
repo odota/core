@@ -40,6 +40,7 @@ public class Main {
     EventStream es = new EventStream();
     int[] validIndices = new int[numPlayers];
     boolean init = false;
+    int gameStartTime = 0;
     //Set<Integer> seenEntities = new HashSet<Integer>();
 
     //@OnMessage(GeneratedMessage.class)
@@ -230,6 +231,15 @@ public class Main {
             //dota_gamerules_data.m_iGameMode = 22
             //dota_gamerules_data.m_unMatchID64 = 1193091757
             time = Math.round((float) getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
+            //alternate to combat log for getting game zero time (looks like this is set at the same time as the game start, so it's not any better for streaming)
+            /*
+            int currGameStartTime = Math.round( (float) grp.getProperty("m_pGameRules.m_flGameStartTime"));
+            if (currGameStartTime != gameStartTime){
+                gameStartTime = currGameStartTime;
+                System.err.println(gameStartTime);
+                System.err.println(time);
+            }
+            */
         }
         if (pr != null) {
             //Radiant coach shows up in vecPlayerTeamData as position 5
