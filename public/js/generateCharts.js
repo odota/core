@@ -68,6 +68,9 @@ window.generateCharts = function generateCharts(data) {
                     label: chart.yLabel
                 }
             },
+            zoom:{
+                enabled: true
+            },
             tooltip: {
                 contents: function(d, defaultTitleFormat, defaultValueFormat, color) {
                     d.sort(function(a, b) {
