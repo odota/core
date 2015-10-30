@@ -353,6 +353,11 @@ table tfoot * {
     color: #000;
 }
 
+.c3-chart-arcs-title
+{
+    color: #FFF;
+}
+
 .c3-axis path,
 .c3-axis line {
     stroke: rgb(199, 199, 199);

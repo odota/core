@@ -69,7 +69,8 @@ window.generateCharts = function generateCharts(data) {
                 }
             },
             zoom:{
-                enabled: true
+                enabled: true,
+                rescale: true
             },
             tooltip: {
                 contents: function(d, defaultTitleFormat, defaultValueFormat, color) {
