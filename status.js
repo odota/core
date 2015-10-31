@@ -88,7 +88,7 @@ module.exports = function getStatus(db, redis, queue, cb) {
                     },
                     */
                     "wait": function(cb) {
-                        redis.llen(queue[type].toKey("waiting"), cb);
+                        redis.llen(queue[type].toKey("wait"), cb);
                     },
                     "act": function(cb) {
                         redis.llen(queue[type].toKey("active"), cb);
