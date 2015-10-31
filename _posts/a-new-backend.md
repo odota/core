@@ -20,8 +20,9 @@ New matches you play should continue to be automatically added and parsed as bef
 
 We're also added new features:
 * Vanity URLs - Users have often complained that it's hard to find your YASP profile. You can now access
-  your account using the same URL ending as your Steam Profile: <a href="/names/TriplexA">yasp.co/names/TriplexA</a>
+  your account using the same URL ending as your Steam Profile: [/names/TriplexA](yasp.co/names/TriplexA)
 * Match graphs are now zoomable.
+* The [http://yasp.co/matches/1903993653/vision](vision tab) has a new look!
 
 There have also be various bug fixes around the site.
 
