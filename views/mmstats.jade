@@ -6,50 +6,54 @@ block content
   .row
     .col-md-12
       #mm-graph
-      .table-responsive
-        table.table.table-striped.table-condensed
-          thead
-            tr
-              th
-              each val, region in constants.regions
-                if region in result
-                  th= region.replace("PerfectWorld", "PW").replace("South", "S.")
-          tbody
-            tr
-              th: abbr(title="Number Match Making") # MM
-              each val, region in constants.regions
-                if region in result
-                  td= result[region][0] 
-            tr
-              th: abbr(title="24 Hours Ago (% Change)") 24H &#916;
-              each val, region in constants.regions
-                if region in result
-                  - var aDayAgo = result[region][60/(config.MMSTATS_DATA_INTERVAL || 1) * 24]
-                  if aDayAgo
-                    - var change = (result[region][0] - aDayAgo) /  aDayAgo * 100
-                    td #{aDayAgo} 
-                     if change
-                       br
-                       small
-                        | (
-                        small(class=change > 0 ? "text-success" : "text-danger") #{change >= 0 ? "+" : ""}#{change.toFixed(2)}%
-                        | )
-                  else
-                    td N/A
-            tr
-              th Max
-              each val, region in constants.regions
-                if region in result
-                  - var max = Math.max.apply(null, result[region])
-                  - var maxTime = Number(result["x"][result[region].indexOf(max + "")])
-                  td: abbr(title=moment(maxTime).fromNow()) #{max} 
-            tr
-              th Min
-              each val, region in constants.regions
-                if region in result
-                  - var min = Math.min.apply(null, result[region])
-                  - var minTime = Number(result["x"][result[region].indexOf(min + "")])
-                  td: abbr(title=moment(minTime).fromNow()) #{min} 
+      
+      - var regions = Object.keys(constants.regions)
+      - regions = [regions.slice(0, regions.length/2), regions.slice(regions.length/2)]
+      each regionGroup in regions
+        .table-responsive
+          table.table.table-striped.table-condensed
+            thead
+              tr
+                th
+                each region in regionGroup
+                  if region in result
+                    th= region.replace("PerfectWorldTelecom", "PWT").replace("South", "S.").replace("PerfectWorld", "PW")
+            tbody
+              tr
+                th: abbr(title="Number Match Making") # MM
+                each region in regionGroup
+                  if region in result
+                    td= result[region][0] 
+              tr
+                th: abbr(title="24 Hours Ago (% Change)") 24H &#916;
+                each region in regionGroup
+                  if region in result
+                    - var aDayAgo = result[region][60/(config.MMSTATS_DATA_INTERVAL || 1) * 24]
+                    if aDayAgo
+                      - var change = (result[region][0] - aDayAgo) /  aDayAgo * 100
+                      td #{aDayAgo} 
+                       if change
+                         br
+                         small
+                          | (
+                          small(class=change > 0 ? "text-success" : "text-danger") #{change >= 0 ? "+" : ""}#{change.toFixed(2)}%
+                          | )
+                    else
+                      td N/A
+              tr
+                th Max
+                each region in regionGroup
+                  if region in result
+                    - var max = Math.max.apply(null, result[region])
+                    - var maxTime = Number(result["x"][result[region].indexOf(max + "")])
+                    td: abbr(title=moment(maxTime).fromNow()) #{max} 
+              tr
+                th Min
+                each region in regionGroup
+                  if region in result
+                    - var min = Math.min.apply(null, result[region])
+                    - var minTime = Number(result["x"][result[region].indexOf(min + "")])
+                    td: abbr(title=moment(minTime).fromNow()) #{min} 
 
 append footer_assets
   script.
