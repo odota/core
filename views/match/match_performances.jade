@@ -14,7 +14,7 @@ block match_content
               th: abbr(title=tooltips.lane_efficiency) EFF@10
               th: abbr(title=tooltips.lhten) LH@10
               th: abbr(title=tooltips.stuns) Stuns
-          tr(class = player.isRadiant ? "radiant" : "dire").activate(data-index=i, data-type="lane_pos")
+          tr.activate(data-index=i, data-type="lane_pos", class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
             //td.activate(data-index=i, data-type="obs") #{player.obs_log.length || "-"}
