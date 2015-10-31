@@ -19,7 +19,7 @@ pm2.connect(function() {
             cb();
         }
     }, function() {
-        if (config.ROLE === "parser") {
+        if (config.ROLE === "parser" || config.ROLE === "core") {
             pm2.disconnect();
             process.exit(0);
         }
