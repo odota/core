@@ -160,8 +160,9 @@ MongoClient.connect(url, function(err, db) {
                     //next doc
                     if (err) {
                         fs.appendFile(fileName, err, cb)
+                    } else {
+                        cb();    
                     }
-                    cb();
                 });
             }, function() {
                 cb();
