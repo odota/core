@@ -1,5 +1,3 @@
---postgres user by default connects to postgres db
-ALTER USER postgres WITH PASSWORD 'postgres';
 --default schema is public
 drop schema public cascade;
 create schema public;
@@ -57,7 +55,7 @@ CREATE TABLE players (
   personaname varchar(255),
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
-  cheese integer,
+  cheese integer DEFAULT 0,
   fh_unavailable boolean
   /*
     "communityvisibilitystate" : 3,

@@ -91,16 +91,15 @@ module.exports = function(db, redis) {
                         redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
                     }
                     if (req.user && payment.transactions[0]) {
-                        var cheeseTotal = (req.user.cheese || 0) + parseInt(payment.transactions[0].amount.total, 10);
-                        db('players').update({
-                            cheese: cheeseTotal
-                        }).where({
+                        db('players')
+                        .increment("cheese", parseInt(payment.transactions[0].amount.total, 10) || 0)
+                        .where({
                             account_id: req.user.account_id
                         }).asCallback(function(err) {
                             if (err) {
                                 return next(err);
                             }
-                            req.session.cheeseTotal = cheeseTotal;
+
                             res.redirect("/thanks");
                         });
                     }
@@ -113,7 +112,7 @@ module.exports = function(db, redis) {
     });
     donate.route('/thanks').get(function(req, res) {
         var cheeseCount = req.session.cheeseAmount;
-        var cheeseTotal = req.session.cheeseTotal;
+        var cheeseTotal = req.user.cheese;
         clearPaymentSessions(req);
         res.render("thanks", {
             cheese: cheeseCount,
