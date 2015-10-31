@@ -71,11 +71,11 @@ block content
           tr
             td= i + 1
             td
-              if player.avatar
-                .col-md-2
-                  img(src='#{player.avatar}').img-thumbnail
-              .col-md-5
-                h4 <a href="/players/#{player.account_id}"> #{player.personaname || player.account_id}</a>
+              div(style="margin: 0 auto;")
+                a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
+                  if player.avatar
+                    img(src='#{player.avatar}').img-thumbnail
+                h4(style="display:inline"): a(href="/players/#{player.account_id}") #{player.personaname || player.account_id}
             td #{player.cheese}
 
 append footer_assets
