@@ -19,6 +19,6 @@ pm2.connect(function() {
             cb();
         }
     }, function() {
-        pm2.disconnect();
+        //pm2.disconnect();
     });
 });
