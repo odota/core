@@ -17,7 +17,7 @@ block content
               i.fa.fa-download
         br
         small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
-        a(style="margin-left:1em;" href="/request#"+match.match_id, class="btn btn-primary btn-sm") Request Parse
+        a(style="margin-left:1em;" href="/request#"+match.match_id, class="btn btn-sm" class=match.version ? "btn-success" : "btn-primary") #{match.version ? "Re-Parse Match" : "Request Parse"}
  
     .col-md-7.table-responsive
       h2

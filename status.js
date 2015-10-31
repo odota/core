@@ -67,12 +67,14 @@ module.exports = function getStatus(db, redis, queue, cb) {
             db.from('matches').where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         queue: function(cb) {
+            console.time('queue');
             //object with properties as queue types, each mapped to json object mapping state to count
             async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result) {
                 var obj = {};
                 result.forEach(function(r, i) {
                     obj[Object.keys(queue)[i]] = r;
                 });
+                console.timeEnd('queue');
                 cb(err, obj);
             });
 
