@@ -90,9 +90,7 @@ Developer's Guide
         * All of the querying, filtering, aggregation, and caching happens here.
         * We use pm2 to be able to run multiple instances to serve our web traffic and reload the server when deploying new code (minimizes downtime due to rolling restart)
     * `retriever`: An HTTP server that accepts URL params `match_id` and `account_id`.
-        * Interfaces with the Steam GC in order to return match details/account profile.
-        * Accessing it without any params returns a list of the registered Steam accounts, and a hash mapping friends of those accounts to the Steam account.
-        * This is used in order to determine the list of users that have added a tracker as a friend for MMR tracking.
+        * Interfaces with the Steam GC in order to return match details/profile card.
     * `workParser`: An HTTP client that requests work from `workServer`.
         * The server should send back a replay URL.
         * It expects a compressed replay file `.dem.bz2` at this location, which it downloads, streams through `bunzip2`, and then through the compiled parser.
@@ -112,9 +110,6 @@ Developer's Guide
             * `buildSets`.  Update sets of players based on DB/Redis state.
                 * Rebuilds the sets of tracked players, donated players, and signed-in players by querying DB/Redis and saves them under keys in Redis.
                 * It also creates Redis keys for parsers/retrievers by reading config. Could be extended later to query from a service discovery server.
-            * `serviceDiscovery.getRetrievers`.  This iterates over the list of retrievers stored in Redis and queries them.
-                * This includes the list of players who have a tracker as a friend, and the list of bots to offer to users.
-                * In Redis, we store a mapping of the user's account ID to the retriever that hosts the tracker (since the MMR can only be fetched from that tracker).
             * Used to `updateNames`, which requested Steam personanames for 100 users on a timed interval.  We currently aren't updating names in the background.
             * Used to process API calls created by `updateNames`.
     * `scanner`: Reads the Steam sequential API to find the latest matches to add/parse.
@@ -129,7 +124,7 @@ Developer's Guide
             * `hero_id=X`
             * By permuting all three skill levels with the list of heroes, we can get up to 500 matches for each combination.
     * `mmr`: Processes MMR requests.
-        * Sends a request to the retriever hosting the user's tracker.
+        * Sends a request to the retriever asking for the player's MMR
     * `fullhistory`: Processes full history requests.
         * By querying for a player's most recent 500 matches (API limit) with each hero, get most/all of a player's matches.
 * Parses come in one of two ways:
