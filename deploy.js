@@ -19,6 +19,9 @@ pm2.connect(function() {
             cb();
         }
     }, function() {
-        pm2.disconnect();
+        if (config.ROLE === "parser") {
+            pm2.disconnect();
+            process.exit(0);
+        }
     });
 });

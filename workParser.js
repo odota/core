@@ -18,6 +18,12 @@ if (cluster.isMaster) {
         console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
     });
     app.use(bodyParser.json());
+    app.get('/', function(req, res) {
+        res.json({
+            capacity: capacity,
+            version: utility.getParseSchema().version
+        });
+    });
     app.post('/deploy', function(req, res) {
         var err = false;
         //TODO verify the POST is from github/secret holder
