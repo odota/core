@@ -4,7 +4,6 @@ var queue = require('./queue');
 var buildSets = require('./buildSets');
 var utility = require('./utility');
 var getData = utility.getData;
-var serviceDiscovery = require('./serviceDiscovery');
 var getMMStats = require("./getMMStats");
 var invokeInterval = utility.invokeInterval;
 var numCPUs = require('os').cpus().length;

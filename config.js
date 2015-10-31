@@ -24,7 +24,7 @@ var defaults = {
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",
     "WORK_PORT": "5400",
-    "POSTGRES_URL": "postgresql://postgres:postgres@localhost/postgres",
+    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
     "PARSER_HOST": "localhost:5200",

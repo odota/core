@@ -1,7 +1,7 @@
 var config = require('../config');
 config.PORT = ""; //use service defaults
 config.MONGO_URL = "mongodb://localhost/test";
-config.POSTGRES_URL = "postgres://postgres:postgres@localhost/template1";
+config.POSTGRES_URL = "postgres://yasp_test:yasp_test@localhost/yasp_test";
 config.REDIS_URL = "redis://localhost:6379/1";
 config.SESSION_SECRET = "testsecretvalue";
 config.NODE_ENV = "test";
@@ -27,11 +27,10 @@ var replay_dir = "./testfiles/";
 var pg = require('pg');
 var fs = require('fs');
 var wait = 90000;
-var db = require('../db');
-var app = require('../web');
-var queries = require('../queries');
-var insertMatch = queries.insertMatch;
-var insertPlayer = queries.insertPlayer;
+// these are loaded later, as the database needs to be created when these are required
+var db;
+var app;
+var queries;
 //nock.disableNetConnect();
 //nock.enableNetConnect();
 //fake api response
@@ -61,22 +60,46 @@ before(function(done) {
     this.timeout(wait);
     async.series([
         function(cb) {
-            console.log('connecting to pg');
+            console.log('removing old test database');
+            pg.connect("postgres://postgres:postgres@localhost/postgres", function(err, client) {
+                if (err) {
+                    return cb(err);
+                }
+                client.query('DROP ROLE IF EXISTS yasp_test;', function(err, result) {
+                    console.log('cleaning database role for testing');
+                });
+                client.query('DROP DATABASE IF EXISTS yasp_test;', function(err, result) {
+                    console.log('cleaning test database', config.POSTGRES_URL);
+                    cb(err);
+                });
+            });
+        },
+        function(cb) {
+            console.log('creating test database');
+            pg.connect("postgres://postgres:postgres@localhost/postgres", function(err, client) {
+                if (err) {
+                    return cb(err);
+                }
+                client.query('CREATE ROLE yasp_test WITH LOGIN PASSWORD \'yasp_test\';', function(err, result) {
+                    console.log('creation of database role for testing');
+                });
+                client.query('CREATE DATABASE yasp_test OWNER yasp_test;', function(err, result) {
+                    console.log('creation of test database', config.POSTGRES_URL);
+                    cb(err);
+                });
+            });
+        },
+        function(cb) {
+            console.log('connecting to test database and creating tables');
             pg.connect(config.POSTGRES_URL, function(err, client) {
                 if (err) {
                     return cb(err);
                 }
-                console.log('cleaning db');
-                //clean the db
-                client.query('drop schema public cascade;create schema public;', function() {
-                    //databaseCleaner.clean(client, function() {
-                    console.log('cleaned %s', config.POSTGRES_URL);
-                    //set up db
-                    var query = fs.readFileSync("./sql/create.sql", "utf8");
-                    client.query(query, function(err, result) {
-                        console.log('set up %s', config.POSTGRES_URL);
-                        cb(err);
-                    });
+                // create tables
+                var query = fs.readFileSync("./sql/create_tables.sql", "utf8");
+                client.query(query, function(err, result) {
+                    console.log('set up %s', config.POSTGRES_URL);
+                    cb(err);
                 });
             });
         },
@@ -85,9 +108,12 @@ before(function(done) {
             redis.flushdb(cb);
         },
         function(cb) {
+            db = require('../db');
+            app = require('../web');
+            queries = require('../queries');
             console.log("loading matches");
             async.mapSeries([require('./details_api.json').result], function(m, cb) {
-                insertMatch(db, redis, queue, m, {
+                queries.insertMatch(db, redis, queue, m, {
                     type: "api"
                 }, cb);
             }, cb);
@@ -95,7 +121,7 @@ before(function(done) {
         function(cb) {
             console.log("loading players");
             async.mapSeries(require('./summaries_api').response.players, function(p, cb) {
-                insertPlayer(db, p, cb);
+                queries.insertPlayer(db, p, cb);
             }, cb);
         }], function(err) {
         require('../workServer');
