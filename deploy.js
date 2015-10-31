@@ -21,6 +21,7 @@ pm2.connect(function() {
     }, function() {
         if (config.ROLE === "parser") {
             pm2.disconnect();
+            process.exit(0);
         }
     });
 });
