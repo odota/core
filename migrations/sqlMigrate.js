@@ -12,7 +12,7 @@ var insertPlayer = queries.insertPlayer;
 var redis = require('../redis');
 var queue = require('../queue');
 var args = process.argv.slice(2);
-var start_id = args[1] || 0;
+var start_id = Number(args[1]) || 0;
 var async = require("async");
 var fs = require("fs");
 
@@ -28,7 +28,7 @@ MongoClient.connect(url, function(err, db) {
     if (args[0] === "matches") {
         cursor = db.collection('matches').find({
             match_id: {
-                $gt: Number(start_id)
+                $gt: start_id
             }
         }).sort({
             match_id: 1
