@@ -20,9 +20,8 @@ block content
             // if the DISABLE_RECAPTCHA env var has been set, bypass the recaptcha
             button.btn.btn-default(onclick="submit()") Request Parse
       #progContainer(style="display:none")
-        h3 Progress
         img(src="/public/images/loading.gif", style="display:none")#loading
-        .progress
+        .progress(style="display:none;")
           .progress-bar.progress-bar-info.progress-bar-striped.active#bar
         #messages
 
@@ -38,6 +37,7 @@ append footer_assets
     };
     document.getElementById("match_id").value = window.location.hash.slice(1);
     function submit(response){
+      $("#loading").css("display", "block");
       var field = document.getElementById("match_id");
       match_id = field.value;
       field.value = "";    
@@ -89,7 +89,6 @@ append footer_assets
               console.log(prog);
               document.getElementById("bar").style.width = prog + "%";
               document.getElementById("bar").innerHTML = prog + "%";
-              $("#loading").css("display", "block");
             }
           });
       }
