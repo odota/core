@@ -93,9 +93,11 @@ function getJob() {
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
                 console.log("sending work to server, jobid: %s", job.jobId);
-                request.post({
+                request({
                     url: remote,
+                    method: "POST",
                     json: parsed_data,
+                    timeout: 15000
                 }, function(err, resp, body) {
                     if (err || body.error) {
                         console.error("error occurred while submitting work: %s", err || body.error);
