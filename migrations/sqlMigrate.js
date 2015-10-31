@@ -16,7 +16,7 @@ var start_id = args[1] || 0;
 var async = require("async");
 var fs = require("fs");
 
-var fileName = "migration-" + args[0] + "-" + (new Date()).now() + ".log";
+var fileName = "migration-" + args[0] + "-" + (new Date()) + ".log";
 
 MongoClient.connect(url, function(err, db) {
     if (err) {
