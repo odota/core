@@ -19,7 +19,6 @@ if (cluster.isMaster) {
     });
     app.use(bodyParser.json());
     app.get('/', function(req, res) {
-        console.error("got visit to index");
         res.json({
             capacity: capacity,
             version: utility.getParseSchema().version
