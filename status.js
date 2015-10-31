@@ -69,7 +69,7 @@ module.exports = function getStatus(db, redis, queue, cb) {
         queue: function(cb) {
             console.time('queue');
             //object with properties as queue types, each mapped to json object mapping state to count
-            async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result) {
+            async.map(Object.keys(queue), getQueueCounts, function(err, result) {
                 var obj = {};
                 result.forEach(function(r, i) {
                     obj[Object.keys(queue)[i]] = r;
@@ -80,30 +80,27 @@ module.exports = function getStatus(db, redis, queue, cb) {
 
             function getQueueCounts(type, cb) {
                 async.series({
-                    "waiting": function(cb) {
-                        queue[type].getWaiting().then(function(count) {
-                            cb(null, count.length);
+                    /*
+                    "queued": function(cb) {
+                        queue[type].count().then(function(count) {
+                            cb(null, count);
                         });
                     },
-                    "active": function(cb) {
-                        queue[type].getActive().then(function(count) {
-                            cb(null, count.length);
-                        });
+                    */
+                    "wait": function(cb) {
+                        redis.llen(queue[type].toKey("waiting"), cb);
                     },
-                    "delayed": function(cb) {
-                        queue[type].getDelayed().then(function(count) {
-                            cb(null, count.length);
-                        });
+                    "act": function(cb) {
+                        redis.llen(queue[type].toKey("active"), cb);
                     },
-                    "completed": function(cb) {
-                        queue[type].getCompleted().then(function(count) {
-                            cb(null, count.length);
-                        });
+                    "del": function(cb) {
+                        redis.zcard(queue[type].toKey("delayed"), cb);
                     },
-                    "failed": function(cb) {
-                        queue[type].getFailed().then(function(count) {
-                            cb(null, count.length);
-                        });
+                    "comp": function(cb) {
+                        redis.scard(queue[type].toKey("completed"), cb);
+                    },
+                    "fail": function(cb) {
+                        redis.scard(queue[type].toKey("failed"), cb);
                     }
                 }, cb);
             }

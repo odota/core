@@ -3,7 +3,7 @@ extend layout
 block content
   h1 Status
   .row
-    .col-md-4
+    .col-md-3
       h3 Counts
       table.table
         thead
@@ -16,7 +16,7 @@ block content
               tr
                 td=key
                 td(id=key)=val
-    .col-md-4
+    .col-md-3
       h3 Last Added
       table.table#last_added
         thead
@@ -28,7 +28,7 @@ block content
             tr
               td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
-    .col-md-4
+    .col-md-3
       h3 Last Parsed
       table.table#last_parsed
         thead
@@ -40,8 +40,7 @@ block content
             tr
               td: a(href="/matches/"+match.match_id)= match.match_id
               td=moment.unix(match.start_time + match.duration).fromNow()
-  .row
-    .col-md-4.col-md-offset-4
+    .col-md-3
       h3 Queue
       //pre=JSON.stringify(result.queue)
       table.table.table-condensed
