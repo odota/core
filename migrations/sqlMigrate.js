@@ -13,6 +13,11 @@ var redis = require('../redis');
 var queue = require('../queue');
 var args = process.argv.slice(2);
 var start_id = args[1] || 0;
+var async = require("async");
+var fs = require("fs");
+
+var fileName = "migration-" + args[0] + "-" + (new Date()).now() + ".log";
+
 MongoClient.connect(url, function(err, db) {
     if (err) {
         throw err;
@@ -149,10 +154,18 @@ MongoClient.connect(url, function(err, db) {
             if (err) {
                 return cb(err);
             }
-            pg('player_ratings').insert(ratings).asCallback(function(err) {
-                //next doc
-                cb(err);
-            });
+            
+            async.each(ratings, function(cb) {
+                pg('player_ratings').insert(ratings).asCallback(function(err) {
+                    //next doc
+                    if (err) {
+                        fs.appendFile(fileName, err, cb)
+                    }
+                    cb();
+                });
+            }, function() {
+                cb();
+            })
         });
     }
 });
