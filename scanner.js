@@ -88,7 +88,7 @@ function scanApi(seq_num) {
                         //skipped, but only if not already queued
                         match.parse_status = 3;
                     }
-                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id) {
+                    if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && p.account_id in userPlayers) {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
                         var retrieverArr = config.RETRIEVER_HOST.split(",");
                         queueReq(queue, "mmr", {
