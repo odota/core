@@ -3,13 +3,15 @@ module.exports = function getStatus(db, redis, queue, cb) {
     console.time('status');
     async.series({
         matches: function(cb) {
-            db.from('matches').count().asCallback(function(err, count) {
-                extractCount(err, count, cb);
+            //db.from('matches').count().asCallback(function(err, count) {
+            db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='matches';").asCallback(function(err, count) {
+                extractCount(err, count.rows, cb);
             });
         },
         players: function(cb) {
-            db.from('players').count().asCallback(function(err, count) {
-                extractCount(err, count, cb);
+            //db.from('players').count().asCallback(function(err, count) {
+            db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count) {
+                extractCount(err, count.rows, cb);
             });
         },
         user_players: function(cb) {
@@ -66,13 +68,14 @@ module.exports = function getStatus(db, redis, queue, cb) {
         },
         queue: function(cb) {
             //object with properties as queue types, each mapped to json object mapping state to count
-            async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result){
+            async.mapSeries(Object.keys(queue), getQueueCounts, function(err, result) {
                 var obj = {};
-                result.forEach(function(r, i){
+                result.forEach(function(r, i) {
                     obj[Object.keys(queue)[i]] = r;
                 });
                 cb(err, obj);
             });
+
             function getQueueCounts(type, cb) {
                 async.series({
                     "waiting": function(cb) {
