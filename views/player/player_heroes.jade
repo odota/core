@@ -1,0 +1,31 @@
+extend player
+include /mixins/hero_table
+
+block playercontent
+  .row
+    .col-md-12.table-responsive
+      +hero_table(player.heroes_list)
+
+append footer_assets
+  script.
+    $('#heroes').dataTable({
+        "paging": true,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback":function(){
+            tooltips();
+        },
+        "columnDefs": [{
+            targets: "fromNow",
+            render: function(data, type) {
+                if (type === "display") {
+                    if (!Number(data)){
+                        return "never";
+                    }
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
+    });

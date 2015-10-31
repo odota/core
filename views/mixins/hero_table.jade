@@ -7,17 +7,17 @@ mixin hero_table(rows)
       tr
         th: abbr(title=tooltips.hero_id) Hero
         th.fromNow: abbr(title=tooltips.last_played) Last
-        th: abbr(title=tooltips.played_as) Played As
+        th: abbr(title=tooltips.played_as) As
         th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_with) Played With
+        th: abbr(title=tooltips.played_with) With
         th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_against) Played Against
+        th: abbr(title=tooltips.played_against) Against
         th: abbr(title=tooltips.win_pct) Win%
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
         td.text-left
-          img.img-md(src=hero.img, title=hero.localized_name)
+          img.img-sm(src=hero.img, title=hero.localized_name)
           =hero.localized_name
         td=h.last_played
         td=h.games

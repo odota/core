@@ -7,9 +7,9 @@ mixin teammate_table(rows)
       tr
         th Player
         th.fromNow: abbr(title=tooltips.last_played) Last
-        th: abbr(title=tooltips.played_with) Played With
+        th: abbr(title=tooltips.played_with) With
         th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_against) Played Against
+        th: abbr(title=tooltips.played_against) Against
         th: abbr(title=tooltips.win_pct) Win%
     each teammate in rows
       tr

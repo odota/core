@@ -5,6 +5,12 @@
   "matches": {
     "name": "Matches"
   },
+  "heroes": {
+    "name": "Heroes"
+  },
+  "playedwith": {
+    "name": "Played With"
+  },
   "activity": {
     "name": "Activity"
   },

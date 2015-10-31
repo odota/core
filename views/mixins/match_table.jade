@@ -13,9 +13,9 @@ mixin match_table(matches)
         th: abbr(title=tooltips.kills) K
         th: abbr(title=tooltips.deaths) D
         th: abbr(title=tooltips.assists) A
-        th: abbr(title=tooltips.last_hits) LH
-        th: abbr(title=tooltips.gold_per_min) GPM
-        th: abbr(title=tooltips.status) Status
+        //th: abbr(title=tooltips.last_hits) LH
+        //th: abbr(title=tooltips.gold_per_min) GPM
+        //th: abbr(title=tooltips.status) Status
 
     tbody
       each match in matches
@@ -24,7 +24,7 @@ mixin match_table(matches)
           td: a(href="/matches/"+match.match_id)=match.match_id
           td
             if hero
-              img.img-md(src=hero.img, title=hero.localized_name)
+              img.img-sm(src=hero.img, title=hero.localized_name)
             else
               =match.hero_id
           td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "Won" : "Lost"
@@ -35,6 +35,6 @@ mixin match_table(matches)
           td=match.kills
           td=match.deaths
           td=match.assists
-          td=match.last_hits
-          td=match.gold_per_min
-          td=constants.parse_status[match.parse_status] || match.parse_status
+          //td=match.last_hits
+          //td=match.gold_per_min
+          //td=constants.parse_status[match.parse_status] || match.parse_status
