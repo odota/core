@@ -96,7 +96,6 @@ function getJob() {
                 request.post({
                     url: remote,
                     json: parsed_data,
-                    timeout: 30000
                 }, function(err, resp, body) {
                     if (err || body.error) {
                         console.error("error occurred while submitting work: %s", err || body.error);
