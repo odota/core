@@ -24,6 +24,6 @@ We're also added new features:
 * Match graphs are now zoomable.
 * The [http://yasp.co/matches/1903993653/vision](vision tab) has a new look!
 
-There have also be various bug fixes around the site.
+We've also made various bug fixes around the site.
 
 Thanks for your continued support! Like what we're doing? Consider some <a href="/carry">cheese</a>!
