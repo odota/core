@@ -28,7 +28,7 @@ MongoClient.connect(url, function(err, db) {
     if (args[0] === "matches") {
         cursor = db.collection('matches').find({
             match_id: {
-                $gt: start_id
+                $gt: Number(start_id)
             }
         }).sort({
             match_id: 1
