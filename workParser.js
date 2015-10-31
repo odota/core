@@ -70,7 +70,8 @@ function getJob() {
     console.log("contacting server for work: %s", remote);
     request({
         url: remote,
-        json: true
+        json: true,
+        timeout: 30000
     }, function(err, resp, job) {
         if (err) {
             //wait interval, then get another job
