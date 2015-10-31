@@ -159,7 +159,7 @@ MongoClient.connect(url, function(err, db) {
                 pg('player_ratings').insert(elem).asCallback(function(err) {
                     //next doc
                     if (err) {
-                        fs.appendFile(fileName, err, cb)
+                        fs.appendFile(fileName, err + "\n", cb)
                     } else {
                         cb();    
                     }
