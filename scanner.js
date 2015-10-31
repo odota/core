@@ -1,63 +1,69 @@
 var utility = require('./utility');
 var config = require('./config');
 var getData = utility.getData;
-var r = require('./redis');
-var redis = r.client;
+var db = require('./db');
+var redis = require('./redis');
+var queue = require('./queue');
 var logger = utility.logger;
 var generateJob = utility.generateJob;
 var async = require('async');
-var operations = require('./operations');
-var insertMatch = operations.insertMatch;
-var queueReq = operations.queueReq;
+var insertMatch = require('./queries').insertMatch;
+var queueReq = utility.queueReq;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var trackedPlayers;
 var userPlayers;
 var ratingPlayers;
-start();
+buildSets(db, redis, function(err) {
+    if (err) {
+        throw err;
+    }
+    start();
+});
 
 function start() {
-    buildSets(function() {
-        if (config.START_SEQ_NUM === "REDIS") {
-            redis.get("match_seq_num", function(err, result) {
-                if (err || !result) {
-                    console.log('failed to get match_seq_num from redis, retrying');
-                    return setTimeout(start, 10000);
-                }
-                result = Number(result);
-                scanApi(result);
-            });
-        }
-        else if (config.START_SEQ_NUM) {
-            scanApi(config.START_SEQ_NUM);
-        }
-        else {
-            var container = generateJob("api_history", {});
-            getData(container.url, function(err, data) {
-                if (err) {
-                    console.log("failed to get sequence number from webapi");
-                    return start();
-                }
-                scanApi(data.result.matches[0].match_seq_num);
-            });
-        }
-    });
+    if (config.START_SEQ_NUM === "REDIS") {
+        redis.get("match_seq_num", function(err, result) {
+            if (err || !result) {
+                console.log('failed to get match_seq_num from redis, retrying');
+                return setTimeout(start, 10000);
+            }
+            result = Number(result);
+            scanApi(result);
+        });
+    }
+    else if (config.START_SEQ_NUM) {
+        scanApi(config.START_SEQ_NUM);
+    }
+    else {
+        var container = generateJob("api_history", {});
+        getData(container.url, function(err, data) {
+            if (err) {
+                console.log("failed to get sequence number from webapi");
+                return start();
+            }
+            scanApi(data.result.matches[0].match_seq_num);
+        });
+    }
 }
 
 function scanApi(seq_num) {
     var container = generateJob("api_sequence", {
         start_at_match_seq_num: seq_num
     });
-    queries.getSets(function(err, result) {
+    queries.getSets(redis, function(err, result) {
         if (err) {
             console.log("failed to getSets from redis");
             return scanApi(seq_num);
         }
         //set local vars
         trackedPlayers = result.trackedPlayers;
-        ratingPlayers = result.ratingPlayers;
+        //ratingPlayers = result.ratingPlayers;
         userPlayers = result.userPlayers;
-        getData(container.url, function(err, data) {
+        getData({
+            url: container.url,
+            delay: 1000
+        }, function(err, data) {
             if (err) {
                 return scanApi(seq_num);
             }
@@ -75,23 +81,24 @@ function scanApi(seq_num) {
                 async.each(match.players, function(p, cb) {
                     if (p.account_id in trackedPlayers) {
                         //queued
-                        redis.setex("parsed_match:" + match.match_id, 60 * 60 * 24, "1");
                         match.parse_status = 0;
                     }
                     if (p.account_id in userPlayers && match.parse_status !== 0) {
                         //skipped, but only if not already queued
                         match.parse_status = 3;
                     }
-                    if (p.account_id in userPlayers && match.lobby_type === 7) {
+                    if (match.lobby_type === 7) {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
                         var retrieverArr = config.RETRIEVER_HOST.split(",");
-                        queueReq("mmr", {
+                        queueReq(queue, "mmr", {
                             match_id: match.match_id,
                             account_id: p.account_id,
                             //url: ratingPlayers[p.account_id]
                             url: retrieverArr.map(function(r) {
                                 return "http://" + r + "?key=" + config.RETRIEVER_SECRET + "&account_id=" + p.account_id;
                             })[p.account_id % retrieverArr.length]
+                        }, {
+                            attempts: 1
                         }, cb);
                     }
                     else {
@@ -100,7 +107,9 @@ function scanApi(seq_num) {
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
                         redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
-                        insertMatch(match, close);
+                        insertMatch(db, redis, queue, match, {
+                            type: "api"
+                        }, close);
                     }
                     else {
                         close(err);

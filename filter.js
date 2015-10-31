@@ -1,8 +1,8 @@
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;
-module.exports = function filter(matches, filters) {
+module.exports = function filter(matches, groups, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
     var conditions = {
@@ -24,39 +24,37 @@ module.exports = function filter(matches, filters) {
             return m.lobby_type === key;
         },
         hero_id: function(m, key) {
-            return m.players[0].hero_id === key;
+            return m.hero_id === key;
         },
         isRadiant: function(m, key) {
-            return Number(m.players[0].isRadiant) === key;
+            return Number(m.isRadiant) === key;
         },
         lane_role: function(m, key) {
-            return m.players[0].parsedPlayer.lane_role === key;
+            return m.lane_role === key;
         },
         purchased_item: function(m, key) {
             var item = constants.item_ids[key];
-            var pt = m.players[0].parsedPlayer.purchase_time;
+            var pt = m.purchase_time;
             return pt && item in pt;
         },
-        //GETFULLPLAYERDATA: we need to iterate over match.all_players
-        //ensure all array elements fit the condition
         included_account_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.all_players.some(function(p) {
+                return groups[m.match_id].some(function(p) {
                     return p.account_id === k;
                 });
             });
         },
         with_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m.players[0]));
+                return groups[m.match_id].some(function(p) {
+                    return (p.hero_id === k && isRadiant(p) === isRadiant(m));
                 });
             });
         },
         against_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.all_players.some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m.players[0]));
+                return groups[m.match_id].some(function(p) {
+                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m));
                 });
             });
         }
@@ -70,6 +68,7 @@ module.exports = function filter(matches, filters) {
                 //earlier, we arrayified everything
                 //pass the first element, as well as the full array
                 //check that it passes all filters
+                //pass the player_match, the first element of array, and the array itself
                 include = include && conditions[key](matches[i], filters[key][0], filters[key]);
             }
         }
@@ -79,4 +78,4 @@ module.exports = function filter(matches, filters) {
         }
     }
     return filtered;
-}
+};

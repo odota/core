@@ -1,15 +1,16 @@
 var utility = require('./utility');
-var invokeInterval = utility.invokeInterval;
 var async = require('async');
+var constants = require("./constants.js");
 var db = require('./db');
-var constants = require("./constants.json");
-var updatePlayerCaches = require('./updatePlayerCaches');
+var redis = require('./redis');
+var queue = require('./queue');
+var insertMatch = require('./queries').insertMatch;
 var results = {};
 var added = {};
 var config = require('./config.js');
 var api_keys = config.STEAM_API_KEY.split(",");
 var parallelism = Math.min(4, api_keys.length);
-//TODO use cluster to spawn a separate worker for each skill level?
+//TODO use cluster to spawn a separate worker for each skill level for greater throughput?
 var skills = [1, 2, 3];
 var heroes = Object.keys(constants.heroes);
 var permute = [];
@@ -62,7 +63,7 @@ function getPageData(start, options, cb) {
                 skill: options.skill
             };
             //results[m.match_id] = 1;
-            updatePlayerCaches({
+            insertMatch(db, redis, queue, {
                 match_id: data.match_id,
                 skill: data.skill
             }, {

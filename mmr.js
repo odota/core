@@ -1,7 +1,26 @@
-var processMmr = require('./processMmr');
 var utility = require('./utility');
-var r = require('./redis');
-var kue = r.kue;
-var jobs = r.jobs;
-jobs.process('mmr', 10, processMmr);
-utility.cleanup(jobs, kue, "mmr");
+var queue = require('./queue');
+var db = require('./db');
+var getData = utility.getData;
+var queries = require('./queries');
+queue.mmr.process(10, processMmr);
+
+function processMmr(job, cb) {
+    getData({
+        url: job.data.url,
+        noRetry: true
+    }, function(err, data) {
+        if (err) {
+            console.error(err);
+            return cb(err);
+        }
+        if (data.solo_competitive_rank || data.competitive_rank) {
+            data.match_id = job.data.payload.match_id;
+            data.time = new Date();
+            queries.insertPlayerRating(db, data, cb);
+        }
+        else {
+            cb();
+        }
+    });
+}

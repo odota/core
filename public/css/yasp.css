@@ -31,25 +31,24 @@ h3 img {
     padding-right: 1em;
 }
 
-.img-text {
-    float: left;
-    text-align: center;
-    font-size: 11px;
-}
-
-.img-small {
+.img-sm {
     margin: 1px;
     height: 24px;
 }
 
 .img-md {
     margin: 1px;
-    height: 28px;
+    height: 32px;
 }
 
-.pickban {
-    margin: 0px;
-    height: 24px;
+.img-text {
+    float: left;
+    text-align: center;
+    font-size: 11px;
+}
+
+.img-text img {
+    height: 22px;
 }
 
 .tooltip-inner {
@@ -352,6 +351,11 @@ table tfoot * {
 
 .c3 {
     color: #000;
+}
+
+.c3-chart-arcs-title
+{
+    color: #FFF;
 }
 
 .c3-axis path,

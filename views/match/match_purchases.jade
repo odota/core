@@ -18,17 +18,16 @@ block match_content
                 th: abbr(title=tooltips.purchase_buyback) Buybacks
              tr(class = player.isRadiant ? "radiant" : "dire")
                - var hero = constants.heroes[player.hero_id]
-               - var p = player.parsedPlayer
                +hero_td(player)
-               - p.purchase = p.purchase || {}
-               td #{p.purchase.tpscroll || "-"}
-               td #{p.purchase.ward_observer || "-"}
-               td #{p.purchase.ward_sentry || "-"}
-               td #{p.purchase.smoke_of_deceit || "-"}
-               td #{p.purchase.dust || "-"}
-               td #{p.purchase.gem || "-"}
-               td #{p.purchase.rapier || "-"}
-               td #{p.buyback_log && p.buyback_log.length ? p.buyback_log.length : "-"}
+               - player.purchase = player.purchase || {}
+               td #{player.purchase.tpscroll || "-"}
+               td #{player.purchase.ward_observer || "-"}
+               td #{player.purchase.ward_sentry || "-"}
+               td #{player.purchase.smoke_of_deceit || "-"}
+               td #{player.purchase.dust || "-"}
+               td #{player.purchase.gem || "-"}
+               td #{player.purchase.rapier || "-"}
+               td #{player.buyback_log && player.buyback_log.length ? player.buyback_log.length : "-"}
     
     +ad("banner2")
     

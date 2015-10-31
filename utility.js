@@ -100,33 +100,22 @@ function generateJob(type, payload) {
             };
         },
         "request": function() {
-            payload.attempts = 1;
             return {
                 url: api_url + "/IDOTA2Match_570/GetMatchDetails/V001/?key=" + api_key + "&match_id=" + payload.match_id,
                 title: [type, payload.match_id].join(),
                 type: type,
+                request: true,
                 payload: payload
             };
         },
         "fullhistory": function() {
-            payload.attempts = 1;
             return {
                 title: [type, payload.account_id].join(),
                 type: type,
-                payload: payload
-            };
-        },
-        "shorthistory": function() {
-            payload.attempts = 1;
-            return {
-                title: [type, payload.account_id].join(),
-                type: type,
-                short_history: true,
                 payload: payload
             };
         },
         "mmr": function() {
-            payload.attempts = 1;
             return {
                 title: [type, payload.match_id, payload.account_id].join(),
                 type: type,
@@ -140,6 +129,7 @@ function generateJob(type, payload) {
 
 function getData(url, cb) {
     var u;
+    var delay = 1000;
     if (url.constructor === Array) {
         //select a random element if array
         u = url[Math.floor(Math.random() * url.length)];
@@ -147,6 +137,7 @@ function getData(url, cb) {
     else if (typeof url === "object") {
         //options object
         u = url.url;
+        delay = url.delay || delay;
     }
     else {
         u = url;
@@ -174,7 +165,6 @@ function getData(url, cb) {
     }
     var target = urllib.format(parse);
     logger.info("getData: %s", target);
-    var delay = 1000;
     return setTimeout(function() {
         request({
             proxy: proxy,
@@ -237,11 +227,15 @@ function convert32to64(id) {
 }
 
 function isRadiant(player) {
-    return player.player_slot < 127;
+    return player.player_slot < 128;
 }
 
 function mergeObjects(merge, val) {
     for (var attr in val) {
+        //NaN test
+        if (Number.isNaN(val[attr])){
+            val[attr] = 0;
+        }
         //does property exist?
         if (!merge[attr]) {
             merge[attr] = val[attr];
@@ -253,7 +247,7 @@ function mergeObjects(merge, val) {
             mergeObjects(merge[attr], val[attr]);
         }
         else {
-            merge[attr] += val[attr];
+            merge[attr] += Number(val[attr]);
         }
     }
 }
@@ -277,7 +271,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 13,
+        "version": 14,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -291,13 +285,11 @@ function getParseSchema() {
                     value: 0
                 },
                 "times": [],
-                "gold": [],
-                "lh": [],
-                "xp": [],
-                //"pos_log": [],
+                "gold_t": [],
+                "lh_t": [],
+                "xp_t": [],
                 "obs_log": [],
                 "sen_log": [],
-                "hero_log": [],
                 "purchase_log": [],
                 "kills_log": [],
                 "buyback_log": [],
@@ -305,13 +297,12 @@ function getParseSchema() {
                 "lane_pos": {},
                 "obs": {},
                 "sen": {},
-                //"CHAT_MESSAGE_HERO_KILL":{},
                 "actions": {},
                 "pings": {},
                 "purchase": {},
                 "gold_reasons": {},
                 "xp_reasons": {},
-                "kills": {},
+                "killed": {},
                 "item_uses": {},
                 "ability_uses": {},
                 "hero_hits": {},
@@ -321,12 +312,10 @@ function getParseSchema() {
                 "runes": {},
                 "killed_by": {},
                 "modifier_applied": {},
-                //"modifier_lost": {},
-                //"ability_trigger": {}
                 "kill_streaks": {},
                 "multi_kills": {},
                 "healing": {},
-                "hero_id": "", // the hero id of this player
+                /*
                 "kill_streaks_log": [], // an array of kill streak values
                 //     where each kill streak is an array of kills where
                 //         where each kill is an object that contains
@@ -335,6 +324,7 @@ function getParseSchema() {
                 //             - the team fight id of this kill
                 //             - the time of this kill
                 "multi_kill_id_vals": [] // an array of multi kill values (the length of each multi kill)
+                */
             };
         })
     };
@@ -363,22 +353,26 @@ function generatePositionData(d, p) {
 }
 
 function isSignificant(constants, m) {
-    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced);
+    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined);
 }
 
 function reduceMatch(match) {
-    //returns only the minimum of data required for display
-    //we can delete match.parsed_data since we generate parsedPlayers from it
-    delete match.parsed_data;
-    //we can delete the following if we are only caching aggregations
-    delete match.my_word_counts;
-    delete match.all_word_counts;
-    delete match.all_players;
-    delete match.parsedPlayers;
-    if (match.players) {
-        delete match.players[0].ability_upgrades;
-        delete match.players[0].parsedPlayer;
-    }
+    //trim down the size of a player_match so cache.data isn't so big
+    match = {
+        hero_id: match.hero_id,
+        game_mode: match.game_mode,
+        kills: match.kills,
+        deaths: match.deaths,
+        assists: match.assists,
+        last_hits: match.last_hits,
+        gold_per_min: match.gold_per_min,
+        parse_status: match.parse_status,
+        skill: match.skill,
+        match_id: match.match_id,
+        player_win: match.player_win,
+        start_time: match.start_time,
+        duration: match.duration
+    };
     return match;
 }
 
@@ -404,60 +398,15 @@ function invokeInterval(func, delay) {
     })();
 }
 
-function cleanup(queue, kue, type) {
-    process.once('SIGTERM', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGTERM');
-        });
+function queueReq(queue, type, payload, options, cb) {
+    var job = generateJob(type, payload);
+    queue[job.type].add(job, {attempts: options.attempts || 15, backoff: {
+        delay: 60 * 1000,
+        type: 'exponential'
+    }}).then(function(queuejob) {
+        console.log("created jobId: %s", queuejob.jobId);
+        cb(null, queuejob);
     });
-    process.once('SIGINT', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGINT');
-        });
-    });
-    process.once('SIGUSR2', function() {
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid, 'SIGUSR2');
-        });
-    });
-    process.once('uncaughtException', function(err) {
-        console.error(err.stack);
-        clearActiveJobs(function(err) {
-            if (err) {
-                console.error(err);
-            }
-            process.kill(process.pid);
-        });
-    });
-
-    function clearActiveJobs(cb) {
-        queue.active(function(err, ids) {
-            if (err) {
-                return cb(err);
-            }
-            async.mapSeries(ids, function(id, cb) {
-                kue.Job.get(id, function(err, job) {
-                    if (job && job.type === type) {
-                        console.log("requeued job %s", id);
-                        job.inactive();
-                    }
-                    cb(err);
-                });
-            }, function(err) {
-                console.log("cleared active jobs");
-                cb(err);
-            });
-        });
-    }
 }
 module.exports = {
     tokenize: tokenize,
@@ -476,5 +425,5 @@ module.exports = {
     max: max,
     min: min,
     invokeInterval: invokeInterval,
-    cleanup: cleanup
+    queueReq: queueReq
 };

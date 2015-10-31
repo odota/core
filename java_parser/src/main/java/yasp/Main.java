@@ -40,6 +40,7 @@ public class Main {
     EventStream es = new EventStream();
     int[] validIndices = new int[numPlayers];
     boolean init = false;
+    int gameStartTime = 0;
     //Set<Integer> seenEntities = new HashSet<Integer>();
 
     //@OnMessage(GeneratedMessage.class)
@@ -185,6 +186,10 @@ public class Main {
             entry.type = "state";
             es.output(entry);
         }
+        
+        if (cle.getType().ordinal() > 18) {
+            System.err.println(cle);
+        }
     }
 
     @OnEntityEntered
@@ -226,6 +231,15 @@ public class Main {
             //dota_gamerules_data.m_iGameMode = 22
             //dota_gamerules_data.m_unMatchID64 = 1193091757
             time = Math.round((float) getEntityProperty(grp, "m_pGameRules.m_fGameTime", null));
+            //alternate to combat log for getting game zero time (looks like this is set at the same time as the game start, so it's not any better for streaming)
+            /*
+            int currGameStartTime = Math.round( (float) grp.getProperty("m_pGameRules.m_flGameStartTime"));
+            if (currGameStartTime != gameStartTime){
+                gameStartTime = currGameStartTime;
+                System.err.println(gameStartTime);
+                System.err.println(time);
+            }
+            */
         }
         if (pr != null) {
             //Radiant coach shows up in vecPlayerTeamData as position 5
@@ -240,6 +254,8 @@ public class Main {
                 while (added < numPlayers && i < 100) {
                     //check each m_vecPlayerData to ensure the player's team is radiant or dire
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
+                    //Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
+                    //System.err.format("%s: %s: %s\n", i, playerTeam, steamid);
                     if (playerTeam == 2 || playerTeam == 3) {
                         //if so, add it to validIndices, add 1 to added
                         validIndices[added] = i;
@@ -256,7 +272,6 @@ public class Main {
                 for (int i = 0; i < numPlayers; i++) {
                     Integer hero = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
                     int handle = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
-                    //Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", validIndices[i]);
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
                     int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
                     //System.err.format("hero:%s i:%s teamslot:%s playerteam:%s\n", hero, i, teamSlot, playerTeam);

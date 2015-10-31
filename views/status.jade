@@ -4,7 +4,7 @@ block content
   h1 Status
   .row
     .col-md-3
-      h3 Statistics
+      h3 Counts
       table.table
         thead
           tr
@@ -42,16 +42,19 @@ block content
               td=moment.unix(match.start_time + match.duration).fromNow()
     .col-md-3
       h3 Queue
-      table.table
+      //pre=JSON.stringify(result.queue)
+      table.table.table-condensed
         thead
           tr
             th Type
-            th Count
+            each val, key in result.queue[Object.keys(result.queue)[0]] || {}
+              th=key
         tbody
-          each val, key in result.kue
+          each val, key in result.queue
             tr
               td=key
-              td(id="kue_"+key)=val
+              each val2, key2 in val
+                td(id=["queue",key, key2].join('_'))=val2
 
 append footer_assets
   //-
@@ -64,9 +67,9 @@ append footer_assets
       function statusHandler(data){
       console.log(data);
       for (var prop in data) {
-        if (prop==="kue"){
+        if (prop==="queue"){
           for (var key in data[prop]){
-              $("#kue_" + key).html(data[prop][key]);
+              $("#queue_" + key).html(data[prop][key]);
           }
         }
         else if (typeof data[prop] === "object") {

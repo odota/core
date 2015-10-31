@@ -72,7 +72,7 @@ async.each(a, function(i, cb) {
     var client = new Steam.SteamClient();
     client.steamUser = new Steam.SteamUser(client);
     client.steamFriends = new Steam.SteamFriends(client);
-    client.Dota2 = new Dota2.Dota2Client(client, true, false);
+    client.Dota2 = new Dota2.Dota2Client(client, false, false);
     var user = users[i];
     var pass = passes[i];
     var logOnDetails = {
@@ -181,7 +181,7 @@ function genStats() {
 }
 
 function getMMStats(idx, cb) {
-    steamObj[idx].Dota2.matchmakingStatsRequest();
+    steamObj[idx].Dota2.requestMatchmakingStats();
     steamObj[idx].Dota2.once('matchmakingStatsData', function(waitTimes, searchingPlayers, disabledGroups, raw) {
         cb(null, raw.searching_players_by_group_source2);
     });

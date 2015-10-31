@@ -1,0 +1,35 @@
+{
+  "index": {
+    "name": "Overview"
+  },
+  "performances": {
+    "name": "Performances"
+  },
+  "purchases": {
+    "name": "Purchases"
+  },
+  "farm": {
+    "name": "Farm"
+  },
+  "combat": {
+    "name": "Combat"
+  },
+  "graphs": {
+    "name": "Graphs"
+  },
+  "vision": {
+    "name": "Vision"
+  },
+  "objectives": {
+    "name": "Objectives"
+  },
+  "teamfights": {
+    "name": "Teamfights"
+  },
+  "actions": {
+    "name": "Actions"
+  },
+  "chat": {
+    "name": "Chat"
+  }
+}

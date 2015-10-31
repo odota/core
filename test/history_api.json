@@ -1,0 +1,430 @@
+ {
+   "result": {
+     "status": 1,
+     "num_results": 7,
+     "total_results": 7,
+     "results_remaining": 0,
+     "matches": [
+       {
+         "match_id": 346632222,
+         "match_seq_num": 315871431,
+         "start_time": 1381883398,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 68444050,
+             "player_slot": 0,
+             "hero_id": 54
+            },
+           {
+             "account_id": 105820841,
+             "player_slot": 1,
+             "hero_id": 53
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 2,
+             "hero_id": 40
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 3,
+             "hero_id": 37
+            },
+           {
+             "account_id": 105859454,
+             "player_slot": 4,
+             "hero_id": 2
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 128,
+             "hero_id": 1
+            },
+           {
+             "account_id": 84615922,
+             "player_slot": 129,
+             "hero_id": 11
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 130,
+             "hero_id": 51
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 131,
+             "hero_id": 26
+            },
+           {
+             "account_id": 108972116,
+             "player_slot": 132,
+             "hero_id": 71
+            }
+          ]
+        },
+       {
+         "match_id": 340377950,
+         "match_seq_num": 310106607,
+         "start_time": 1381446123,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 114188766,
+             "player_slot": 0,
+             "hero_id": 92
+            },
+           {
+             "account_id": 116245091,
+             "player_slot": 1,
+             "hero_id": 102
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 2,
+             "hero_id": 14
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 3,
+             "hero_id": 1
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 4,
+             "hero_id": 83
+            },
+           {
+             "account_id": 45169418,
+             "player_slot": 128,
+             "hero_id": 79
+            },
+           {
+             "account_id": 128215800,
+             "player_slot": 129,
+             "hero_id": 93
+            },
+           {
+             "account_id": 86866056,
+             "player_slot": 130,
+             "hero_id": 6
+            },
+           {
+             "account_id": 45518185,
+             "player_slot": 131,
+             "hero_id": 65
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 132,
+             "hero_id": 42
+            }
+          ]
+        },
+       {
+         "match_id": 338225402,
+         "match_seq_num": 308121488,
+         "start_time": 1381272515,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 60922497,
+             "player_slot": 0,
+             "hero_id": 53
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 1,
+             "hero_id": 75
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 2,
+             "hero_id": 14
+            },
+           {
+             "account_id": 73013044,
+             "player_slot": 3,
+             "hero_id": 8
+            },
+           {
+             "account_id": 110351345,
+             "player_slot": 4,
+             "hero_id": 92
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 128,
+             "hero_id": 1
+            },
+           {
+             "account_id": 81963394,
+             "player_slot": 129,
+             "hero_id": 23
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 130,
+             "hero_id": 88
+            },
+           {
+             "account_id": 100736187,
+             "player_slot": 131,
+             "hero_id": 80
+            },
+           {
+             "account_id": 5247336,
+             "player_slot": 132,
+             "hero_id": 50
+            }
+          ]
+        },
+       {
+         "match_id": 335732391,
+         "match_seq_num": 305828335,
+         "start_time": 1381075698,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 77444588,
+             "player_slot": 0,
+             "hero_id": 53
+            },
+           {
+             "account_id": 36028737,
+             "player_slot": 1,
+             "hero_id": 50
+            },
+           {
+             "account_id": 76452427,
+             "player_slot": 2,
+             "hero_id": 97
+            },
+           {
+             "account_id": 123837700,
+             "player_slot": 3,
+             "hero_id": 43
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 4,
+             "hero_id": 9
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 128,
+             "hero_id": 1
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 129,
+             "hero_id": 85
+            },
+           {
+             "account_id": 115935904,
+             "player_slot": 130,
+             "hero_id": 39
+            },
+           {
+             "account_id": 55192560,
+             "player_slot": 131,
+             "hero_id": 81
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 132,
+             "hero_id": 20
+            }
+          ]
+        },
+       {
+         "match_id": 334159013,
+         "match_seq_num": 304427380,
+         "start_time": 1380982331,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 55933303,
+             "player_slot": 0,
+             "hero_id": 53
+            },
+           {
+             "account_id": 112716237,
+             "player_slot": 1,
+             "hero_id": 14
+            },
+           {
+             "account_id": 72092306,
+             "player_slot": 2,
+             "hero_id": 60
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 3,
+             "hero_id": 1
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 4,
+             "hero_id": 21
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 128,
+             "hero_id": 12
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 129,
+             "hero_id": 2
+            },
+           {
+             "account_id": 39408241,
+             "player_slot": 130,
+             "hero_id": 86
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 131,
+             "hero_id": 76
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 132,
+             "hero_id": 69
+            }
+          ]
+        },
+       {
+         "match_id": 122442004,
+         "match_seq_num": 112561826,
+         "start_time": 1360563388,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 4016268,
+             "player_slot": 0,
+             "hero_id": 74
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 1,
+             "hero_id": 56
+            },
+           {
+             "account_id": 84503928,
+             "player_slot": 2,
+             "hero_id": 9
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 3,
+             "hero_id": 49
+            },
+           {
+             "account_id": 110900156,
+             "player_slot": 4,
+             "hero_id": 53
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 128,
+             "hero_id": 1
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 129,
+             "hero_id": 2
+            },
+           {
+             "account_id": 35315151,
+             "player_slot": 130,
+             "hero_id": 42
+            },
+           {
+             "account_id": 522326,
+             "player_slot": 131,
+             "hero_id": 72
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 132,
+             "hero_id": 84
+            }
+          ]
+        },
+       {
+         "match_id": 57751374,
+         "match_seq_num": 55139380,
+         "start_time": 1352007474,
+         "lobby_type": 0,
+         "radiant_team_id": 0,
+         "dire_team_id": 0,
+         "players": [
+           {
+             "account_id": 71313111,
+             "player_slot": 0,
+             "hero_id": 12
+            },
+           {
+             "account_id": 50736250,
+             "player_slot": 1,
+             "hero_id": 4
+            },
+           {
+             "account_id": 102344608,
+             "player_slot": 2,
+             "hero_id": 57
+            },
+           {
+             "account_id": 88367253,
+             "player_slot": 3,
+             "hero_id": 1
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 4,
+             "hero_id": 20
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 128,
+             "hero_id": 87
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 129,
+             "hero_id": 96
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 130,
+             "hero_id": 8
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 131,
+             "hero_id": 74
+            },
+           {
+             "account_id": 4294967295,
+             "player_slot": 132,
+             "hero_id": 7
+            }
+          ]
+        }
+      ]
+   }
+ }

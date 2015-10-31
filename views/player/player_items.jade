@@ -24,12 +24,12 @@ block playercontent
             tr 
               td
                 if item
-                  img.img-small.item(src=item.img, title=key)
+                  img.img-sm.item(src=item.img, title=key)
                   =item.dname
                 else
                   =key
               td=player.aggData.purchase.counts[key]
-              td=player.aggData.item_usage.counts[key]
+              td=player.aggData.item_usage.counts[key] 
               td=player.aggData.item_uses.counts[key]
               td=player.aggData.item_uses.counts[key] ? (player.aggData.item_uses.counts[key]/player.aggData.item_usage.counts[key]).toFixed(2) : ""
               td=val/player.aggData.purchase.counts[key]

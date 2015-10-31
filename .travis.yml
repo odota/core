@@ -2,11 +2,12 @@ language: node_js
 after_success:
 - npm run coveralls
 node_js:
-- '0.12'
+- '5.0.0'
 notifications:
   email:
   - howardc93@gmail.com
   - aqc2109@columbia.edu
 services:
-- mongodb
 - redis-server
+addons:
+  postgresql: "9.4"

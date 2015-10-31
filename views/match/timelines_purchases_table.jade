@@ -1,7 +1,6 @@
 +data_table({id:"build_times",heading:"Build Times"})
   - var bucket = 300
   each player, ind in match.players
-    - var p = player.parsedPlayer
     +data_table_header(ind, match) 
       th: abbr(title=tooltips.hero_id) Hero
       - for (var d = 0; d <= match.duration + bucket; d+=bucket)
@@ -11,12 +10,12 @@
         +hero_td(player)
         - for (var d = 0; d <= match.duration + bucket; d+=bucket)
           td
-            each entry in p.purchase_log || []
+            each entry in player.purchase_log || []
               if entry.time < d && entry.time >= d-bucket
                 - var item = constants.items[entry.key]                 
                 if item
                   span.img-text
-                    img.img-small.item(src=item.img, title=entry.key)
+                    img.img-sm.item(src=item.img, title=entry.key)
                     div.format-seconds(data-format-seconds=entry.time)=entry.time
                 else
                   =entry.key

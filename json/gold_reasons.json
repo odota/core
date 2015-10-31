@@ -1,0 +1,42 @@
+{
+  "0": {
+    "name": "Other",
+    "tooltip": "Starting gold, gold from abilities, bounty runes, etc"
+  },
+  "1": {
+    "name": "Death",
+    "tooltip": "Gold lost from deaths"
+  },
+  "2": {
+    "name": "Buyback",
+    "tooltip": "Gold spent on buybacks"
+  },
+  "5": {
+    "name": "Abandon",
+    "tooltip": "Gold from abandoned teammates"
+  },
+  "6": {
+    "name": "Sell",
+    "tooltip": "Gold from selling items"
+  },
+  "11": {
+    "name": "Structure",
+    "tooltip": "Gold from destroying buildings"
+  },
+  "12": {
+    "name": "Hero",
+    "tooltip": "Gold from hero kills and assists"
+  },
+  "13": {
+    "name": "Creep",
+    "tooltip": "Gold from killing creeps"
+  },
+  "14": {
+    "name": "Roshan",
+    "tooltip": "Gold from killing Roshan"
+  },
+  "15": {
+    "name": "Courier",
+    "tooltip": "Gold from killing couriers"
+  }
+}

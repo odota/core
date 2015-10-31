@@ -14,8 +14,8 @@ mixin teammate_table(rows)
     each teammate in rows
       tr
         td.text-left
-          img.img-small(src=teammate.avatar)
-          if (teammate.last_visited)
+          img.img-sm(src=teammate.avatar)
+          if (teammate.last_login)
             img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
           a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
         td=teammate.last_played

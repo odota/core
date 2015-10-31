@@ -2,19 +2,19 @@ mixin hero_td(player)
   - var hero = constants.heroes[player.hero_id]
   - var slot_color = constants.player_colors[player.player_slot]
   td(style="padding:1px")
-    .img-text(style="float:initial;")
+    .img-text.img-text-lg(style="float:initial;")
       if hero
         img.img-md(src=hero.img, title="#{hero.localized_name}", style="border-left-color:#{slot_color}").player-color
       else
         =player.hero_id
       div(class=(player.isRadiant || player.team) ? "text-success" : "text-danger")
-        if (player.account_id === constants.anonymous_account_id)
+        if (Number(player.account_id) === constants.anonymous_account_id)
           ="Anonymous"
         else if (player.account_id)
           a(href='/players/#{player.account_id}')= player.personaname || player.account_id
         else if ("team" in player)
           =player.team ? "The Radiant" : "The Dire"
         else if (!player.account_id && !player.personaname)
-          ="Bot"
+          ="Unknown"
         else
           =player.personaname

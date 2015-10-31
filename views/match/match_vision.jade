@@ -1,0 +1,59 @@
+extend match
+
+block match_content
+  .row
+    .col-md-4
+      +data_table({id:"observers", summable: true, heading:"Observers"})
+        each player, ind in match.players
+          +data_table_header(ind, match)      
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.purchase_ward_observer) Bought
+              th: abbr(title=tooltips.used_ward_observer) Placed
+              th: abbr(title=tooltips.farm_observers) Destroyed
+          tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="obs").activate
+            +hero_td(player)
+            td.lane-position #{player.purchase.ward_observer || "-"}
+            td.lane-position #{player.obs_log.length || "-"}
+            td.lane-position #{player.observer_kills || "-"}
+    
+    .col-md-4
+      +data_table({id:"sentries", summable: true, heading:"Sentries"})
+        each player, ind in match.players
+          +data_table_header(ind, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.purchase_ward_sentry) Bought
+              th: abbr(title=tooltips.used_ward_sentry) Placed
+              th: abbr(title=tooltips.farm_sentries) Destroyed
+          tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="sen").activate
+            +hero_td(player)
+            td.lane-position #{player.purchase.ward_sentry || "-"}
+            td.lane-position #{player.sen_log.length || "-"}
+            td.lane-position #{player.sentry_kills || "-"}
+        
+    .col-md-4
+      h3 Placement Map
+      #map.table-responsive
+        img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+
+
+append footer_assets
+  script.
+    var width = document.getElementById('map').clientWidth;
+    var heatmap = h337.create({
+      container: document.getElementById('map'),
+      radius: 15*(width/600)
+    });
+
+    // scale points by width/127 units to fit to size of map
+    // offset points by 25 units to increase visibility
+    var posData = !{JSON.stringify(match.posData)}
+    adjustHeatmapData(posData, width/127, null, 25);
+
+    $(".activate").on("mouseenter", function(){
+      var pData = posData[Number($(this).attr('data-index'))]
+      var data = pData[$(this).attr('data-type')];
+      console.log("mouseover", pData, data);
+      heatmap.setData(data);
+    })

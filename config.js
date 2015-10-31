@@ -15,16 +15,16 @@ var defaults = {
     "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
     "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
+    "WORK_URL": "http://localhost:5400", //url to request work from (for worker nodes)
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
-    "KUE_USER": "user",
-    "KUE_PASS": "pass",
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
     "WEB_PORT": "5000",
     "RETRIEVER_PORT": "5100",
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",
-    "MONGO_URL": "mongodb://localhost/dota",
+    "WORK_PORT": "5400",
+    "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
     "PARSER_HOST": "localhost:5200",
@@ -38,7 +38,10 @@ var defaults = {
     "DISABLE_ADS": "", //disable ads
     "PARSER_PARALLELISM": 8,
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
+    "ENABLE_MATCH_CACHE": "",
+    "ENABLE_PLAYER_CACHE": "",
     //the following are deprecated
+    "MONGO_URL": "mongodb://localhost/dota",
     "AWS_S3_BUCKET": "",
     "AWS_ACCESS_KEY_ID": "",
     "AWS_SECRET_ACCESS_KEY": "",

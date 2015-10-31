@@ -3,30 +3,78 @@ var rc_public = config.RECAPTCHA_PUBLIC_KEY;
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var utility = require('./utility');
 var request = require('request');
-var queueReq = require('./operations').queueReq;
-var r = require('./redis');
-var redis = r.client;
-var kue = r.kue;
-var db = require('./db');
+var queueReq = utility.queueReq;
+var redis = require('./redis');
+var queue = require('./queue');
 var logger = utility.logger;
 var compression = require('compression');
 var session = require('cookie-session');
 //var session = require('express-session');
 //var RedisStore = require('connect-redis')(session);
-var passport = require('./passport');
 var status = require('./status');
-var auth = require('http-auth');
 var path = require('path');
 var moment = require('moment');
 var bodyParser = require('body-parser');
 var async = require('async');
 var fs = require('fs');
 var goal = Number(config.GOAL);
-var queries = require('./queries');
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 var express = require('express');
 var app = express();
-var example_match = JSON.parse(fs.readFileSync('./matches/1408333834.json'));
+var example_match = JSON.parse(fs.readFileSync('./matches/frontpage.json'));
+var passport = require('passport');
+var config = require('./config');
+var api_key = config.STEAM_API_KEY.split(",")[0];
+var db = require('./db');
+var SteamStrategy = require('passport-steam').Strategy;
+var host = config.ROOT_URL;
+var queries = require('./queries');
+var buildSets = require('./buildSets');
+var matches = require('./routes/matches');
+var players = require('./routes/players');
+var api = require('./routes/api');
+var donate = require('./routes/donate');
+var mmstats = require('./routes/mmstats');
+//PASSPORT config
+passport.serializeUser(function(user, done) {
+    done(null, user.account_id);
+});
+passport.deserializeUser(function(account_id, done) {
+    console.log(account_id);
+    db.first().from('players').where({
+        account_id: account_id
+    }).asCallback(function(err, player) {
+        redis.setex("visit:" + account_id, 60 * 60 * 24 * config.UNTRACK_DAYS, account_id);
+        done(err, player);
+    });
+});
+passport.use(new SteamStrategy({
+    returnURL: host + '/return',
+    realm: host,
+    apiKey: api_key
+}, function initializeUser(identifier, profile, cb) {
+    var player = profile._json;
+    player.last_login = new Date();
+    queries.insertPlayer(db, player, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        if (player.profileurl) {
+            var s = player.profileurl.split('/');
+            var vanityUrl = s[s.length - 2];
+            redis.set("vanity:" + vanityUrl, player.account_id);
+        }
+        buildSets(db, redis, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            queueReq(queue, "fullhistory", player, {}, function(err) {
+                return cb(err, player);
+            });
+        });
+    });
+}));
+//APP config
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.locals.moment = moment;
@@ -35,13 +83,6 @@ app.locals.tooltips = constants.tooltips;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
-var basic = auth.basic({
-    realm: "Kue"
-}, function(username, password, callback) { // Custom authentication method.
-    callback(username === config.KUE_USER && password === config.KUE_PASS);
-});
-app.use("/kue", auth.connect(basic));
-app.use("/kue", kue.app);
 app.use("/public", express.static(path.join(__dirname, '/public')));
 /*
 var sessOptions = {
@@ -97,14 +138,14 @@ poet.watch(function() {
 }).init().then(function() {
     // Ready to go!
 });
-poet.addRoute('/blog/:id?', function (req, res) {
-  var max = poet.helpers.getPostCount();
-  var id = Number(req.params.id) || max;
-  res.render('blog', {
-    posts: poet.helpers.getPosts(max-id, max-id+1),
-    id: id,
-    max: max
-  });
+poet.addRoute('/blog/:id?', function(req, res) {
+    var max = poet.helpers.getPostCount();
+    var id = Number(req.params.id) || max;
+    res.render('blog', {
+        posts: poet.helpers.getPosts(max - id, max - id + 1),
+        id: id,
+        max: max
+    });
 });
 app.get('/robots.txt', function(req, res) {
     res.type('text/plain');
@@ -128,7 +169,7 @@ app.route('/request').get(function(req, res) {
     });
 });
 app.route('/status').get(function(req, res, next) {
-    status(function(err, result) {
+    status(db, redis, queue, function(err, result) {
         if (err) {
             return next(err);
         }
@@ -142,13 +183,32 @@ app.route('/faq').get(function(req, res) {
         questions: poet.helpers.postsWithTag("faq").reverse()
     });
 });
-app.use('/matches', require('./routes/matches'));
-app.use('/players', require('./routes/players'));
-app.use('/api', require('./routes/api'));
-app.use('/', require('./routes/auth'));
-app.use('/', require('./routes/donate'));
-app.use('/', require('./routes/mmstats'))
-//post/get a request
+app.route('/login').get(passport.authenticate('steam', {
+    failureRedirect: '/'
+}));
+app.route('/return').get(passport.authenticate('steam', {
+    failureRedirect: '/'
+}), function(req, res, next) {
+    res.redirect('/players/' + req.user.account_id);
+});
+app.route('/logout').get(function(req, res) {
+    req.logout();
+    req.session = null;
+    res.redirect('/');
+});
+app.use('/matches', matches(db, redis));
+app.use('/players', players(db, redis));
+app.use('/names/:vanityUrl', function(req, res, cb) {
+    redis.get("vanity:" + req.params.vanityUrl, function(err, result) {
+        if (err || !result) {
+            return cb(err || "no matching player found");
+        }
+        res.redirect('/players/' + Number(result));
+    });
+});
+app.use('/api', api);
+app.use('/', donate(db, redis));
+app.use('/', mmstats(redis));
 app.route('/request_job').post(function(req, res) {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
         form: {
@@ -166,9 +226,7 @@ app.route('/request_job').post(function(req, res) {
         }
         var match_id = req.body.match_id;
         match_id = Number(match_id);
-        if (!body.success && config.NODE_ENV !== "test"
-            // if the DISABLE_RECAPTCHA env var has been set, ignore a bad body.success
-            && !config.DISABLE_RECAPTCHA) {
+        if (!body.success && !config.DISABLE_RECAPTCHA) {
             console.log('failed recaptcha');
             res.json({
                 error: "Recaptcha Failed!"
@@ -181,51 +239,39 @@ app.route('/request_job').post(function(req, res) {
             });
         }
         else {
-            queueReq("request", {
-                match_id: match_id,
-                request: true
+            queueReq(queue, "request", {
+                match_id: match_id
+            }, {
+                attempts: 1
             }, function(err, job) {
                 res.json({
                     error: err,
-                    job: job
+                    job: {
+                        jobId: job.jobId,
+                        data: job.data
+                    }
                 });
             });
         }
     });
 }).get(function(req, res) {
-    kue.Job.get(req.query.id, function(err, job) {
-        res.json({
-            error: err,
-            job: job ? job.toJSON() : null
-        });
+    queue.request.getJob(req.query.id).then(function(job) {
+        if (job) {
+            job.getState().then(function(state) {
+                res.json({
+                    jobId: job.jobId,
+                    data: job.data,
+                    state: state
+                });
+            });
+        }
+        else {
+            res.json({
+                state: "failed"
+            });
+        }
     });
 });
-/*
-app.route('/preferences').post(function(req, res) {
-    if (req.user) {
-        for (var key in req.body) {
-            //convert string to boolean
-            req.body[key] = req.body[key] === "true";
-        }
-        db.players.update({
-            account_id: req.user.account_id
-        }, {
-            $set: req.body
-        }, function(err, num) {
-            var success = !(err || !num);
-            res.json({
-                prefs: req.body,
-                sync: success
-            });
-        });
-    }
-    else {
-        res.json({
-            sync: false
-        });
-    }
-});
-*/
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;

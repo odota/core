@@ -20,9 +20,9 @@ block match_content
       h3 Gold Sources
       #chart-gold-breakdown
       //#chart-gold-treemap
-      //-
+      .row
         each g, i in match.incomeData.goldCols
-          .col-md-6
+          .col-md-3
             div(id="chart-pie-"+i)
       
 append footer_assets
@@ -53,18 +53,21 @@ append footer_assets
             }
         }
     });
+    
     /*
     console.log(data);
     data.goldCols.forEach(function(g, i){
         c3.generate({
         bindto: "#chart-pie-"+i,
           data: {
-              columns: data.goldCols.map(function(gc){return [gc[0], gc[i+1]]}),
+              columns: data.goldCols.map(function(gc){return [gc[0], Math.max(gc[i+1], 0)]}),
               type : 'donut'
           },
           donut: {
-              //TODO use a picture?
               title: data.cats[i]
+          },
+          legend: {
+            show: false
           }
       });
     });

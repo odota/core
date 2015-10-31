@@ -14,9 +14,8 @@ block match_content
           tbody
             each player, ind in match.players.slice(0,match.players.length/2)
               - var hero = constants.heroes[player.hero_id]
-              - var p = player.parsedPlayer
-              - p.kills = p.kills || {}
-              - p.killed_by = p.killed_by || {}
+              - player.killed = player.killed || {}
+              - player.killed_by = player.killed_by || {}
               tr
                 +hero_td(player)
                 each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
@@ -25,8 +24,8 @@ block match_content
                   if hero1 && hero2
                     - var hero1name = hero1.localized_name
                     - var hero2name = hero2.localized_name
-                    - var p1 = p.kills[hero2.name] || 0
-                    - var p2 = p.killed_by[hero2.name] || 0
+                    - var p1 = player.killed[hero2.name] || 0
+                    - var p2 = player.killed_by[hero2.name] || 0
                   td
                     abbr.blackunderline(title=hero1name+" killed "+hero2name+" "+p1+" time"+(p1===1?"":"s")+".<br>"+hero2name+" killed "+hero1name+" "+p2+" time"+(p2===1?"":"s")+".")
                       span(class=p1>p2 ? "text-success" : "") #{p1}
@@ -45,9 +44,8 @@ block match_content
           tbody
             each player, ind in match.players.slice(0,match.players.length/2)
               - var hero = constants.heroes[player.hero_id]
-              - var p = player.parsedPlayer
-              - p.damage = p.damage || {}
-              - p.damage_taken = p.damage_taken || {}
+              - player.damage = player.damage || {}
+              - player.damage_taken = player.damage_taken || {}
               tr
                   +hero_td(player)
                   each player2, ind2 in match.players.slice(match.players.length/2, match.players.length)
@@ -56,8 +54,8 @@ block match_content
                     if hero1 && hero2
                       - var hero1name = hero1.localized_name;
                       - var hero2name = hero2.localized_name;
-                      - var p1 = p.damage[hero2.name] || 0
-                      - var p2 = p.damage_taken[hero2.name] || 0                          
+                      - var p1 = player.damage[hero2.name] || 0
+                      - var p2 = player.damage_taken[hero2.name] || 0                          
                     td
                       abbr.blackunderline(title=hero1name+" did "+p1+" damage to "+hero2name+".<br>"+hero2name+" did "+p2+" damage to "+hero1name+".")
                         span(class="format" class=p1>p2 ? "text-success" : "") #{p1}
@@ -74,11 +72,10 @@ block match_content
                 th: abbr(title=val) #{key}
           tr(class = player.isRadiant ? "radiant" : "dire")
            - var hero = constants.heroes[player.hero_id]
-           - var p = player.parsedPlayer
-           - p.multi_kills = p.multi_kills || {}
+           - player.multi_kills = player.multi_kills || {}
            +hero_td(player)
            each val,key in constants.multi_kills
-             td #{p.multi_kills[key] || "-"}
+             td #{player.multi_kills[key] || "-"}
     .col-md-6
       +data_table({id:"kill_streaks", summable:true, heading:"Kill Streaks"})
         each player, i in match.players
@@ -89,11 +86,10 @@ block match_content
                 th: abbr(title=val) #{key}
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
-            - var p = player.parsedPlayer
-            - p.kill_streaks = p.kill_streaks || {}
+            - player.kill_streaks = player.kill_streaks || {}
             +hero_td(player)
             each val, key in constants.kill_streaks
-              td #{p.kill_streaks[key] || "-"}
+              td #{player.kill_streaks[key] || "-"}
               
   +ad("banner2")
   
@@ -102,7 +98,6 @@ block match_content
       +data_table({id:"kill_times", heading:"Kill Times"})
         - var bucket = 300
         each player, ind in match.players
-          - var p = player.parsedPlayer
           +data_table_header(ind, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
@@ -112,12 +107,12 @@ block match_content
             +hero_td(player)            
             - for (var i = 0; i <= match.duration + bucket; i+=bucket)
               td
-                each entry in p.kills_log || []
+                each entry in player.kills_log || []
                   if entry.time < i && entry.time >= i-bucket
                     - var dmg = constants.hero_names[entry.key]                 
                     if dmg
                       span.img-text
-                        img.img-small(src=dmg.img, title=dmg.localized_name)
+                        img.img-sm(src=dmg.img, title=dmg.localized_name)
                         div.format-seconds(data-format-seconds=entry.time)=entry.time
                     else
                       //=entry.key          

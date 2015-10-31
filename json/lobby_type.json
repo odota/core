@@ -1,0 +1,48 @@
+{
+  "0": {
+    "id": 0,
+    "name": "Public MM",
+    "balanced": true
+  },
+  "1": {
+    "id": 1,
+    "name": "Practice",
+    "balanced": true
+  },
+  "2": {
+    "id": 2,
+    "name": "Tournament",
+    "balanced": true
+  },
+  "3": {
+    "id": 3,
+    "name": "Tutorial"
+  },
+  "4": {
+    "id": 4,
+    "name": "Co-Op with Bots"
+  },
+  "5": {
+    "id": 5,
+    "name": "Ranked Team MM",
+    "balanced": true
+  },
+  "6": {
+    "id": 6,
+    "name": "Solo MM",
+    "balanced": true
+  },
+  "7": {
+    "id": 7,
+    "name": "Ranked MM",
+    "balanced": true
+  },
+  "8": {
+    "id": 8,
+    "name": "1v1 Mid"
+  },
+  "-1": {
+    "id": -1,
+    "name": "Invalid"
+  }
+}

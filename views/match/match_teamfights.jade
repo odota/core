@@ -1,34 +1,26 @@
+include /mixins/progress_bar
 extend match
 
 block match_content
 
-  - var parsed_data = match.parsed_data
-  - var teamfights = parsed_data.teamfights || []
+  - var teamfights = match.teamfights || []
 
   .row
     .col-md-12
       h2 Teamfights 
         small where 3+ heroes died
-  //-
-    .row
-      .col-md-12
-        h3 Participation
-        table.table.table-condensed
-          tr
-            each player in match.players
-              - var hero = constants.heroes[player.hero_id]
-              td(class=(player.isRadiant?"success":"danger"))
-                if hero
-                  img(src=hero.img, title=hero.localized_name)
-                else
-                  =player.hero_id
-                - var pct = (player.teamfights_participated*100/teamfights.length)
-                .progress
-                  .progress-bar(class=pct >= 75 ? "progress-bar-success" : pct >=50 ? "progress-bar-warning" : "progress-bar-danger" style="width: #{pct}%") #{pct.toFixed(2)}%
 
   .row
+    .col-md-12
+      h3 Participation
+      each player in match.players
+        .col-md-1
+          +hero_td(player)
+          +progress_bar((player.teamfights_participated || 0), teamfights.length)
+  hr
+  
+  .row
     .col-md-4
-      //pre=JSON.stringify(match.parsed_data.teamfights)
       h3 Fights 
         small Click a row to display
       table.table.table-condensed.table-hover
@@ -116,7 +108,7 @@ block match_content
                   - var ability = constants.abilities[key]
                   span.img-text
                     if ability
-                      img.img-small.ability(src=ability.img, title=key)
+                      img.img-sm.ability(src=ability.img, title=key)
                     else
                       //=key
                     div #{val}
@@ -125,115 +117,97 @@ block match_content
                   - var item = constants.items[key]
                   span.img-text
                     if item
-                      img.img-small.item(src=item.img, title=key)
+                      img.img-sm.item(src=item.img, title=key)
                       div #{val}
                     else
                       =key
               td
-                each val, key in player.kills || {}
+                each val, key in player.killed || {}
                   - var hero = constants.hero_names[key]
                   span.img-text
                     if hero
-                      img.img-small(src=hero.img, title=hero.localized_name)
+                      img.img-sm(src=hero.img, title=hero.localized_name)
                       div #{val}
                     else
                       //=key
 
-
-  if parsed_data.version >= 10
-    .row
-      .col-md-12
-
-        h3
-          abbr(title=tooltips.killstreak_multikill) Kill Streaks / Multi Kills
-
-        .table-responsive
-          table.table.table-hover(style="text-align:center; vertical-align:middle;")
-            - var max_row_size = 9
-  
-            thead
-              tr
-                td Streak By
-                td(colspan=max_row_size) Heroes Killed In Streak
-  
-            tbody
-              - var player_num = 0
-              each player in parsed_data.players
-                - player_num = player_num + 1
-                
-                - var hero_id = player.hero_id
-                - var hero = constants.heroes[hero_id]
-  
-                each streak in player.kill_streaks_log
-  
-                  - var num_rows = Math.ceil(streak.length / max_row_size)
-                  - var kills_in_other_rows = Math.ceil(streak.length / num_rows)
-                  - var kills_in_first_row = streak.length - (num_rows - 1) * kills_in_other_rows
-  
-                  - var first = true
-                  - var kill_num = -1
-                  - for (var row_num = 0; row_num < num_rows; row_num++)
-                    tr
-  
-                      if first
-                        td(class = (player_num <= 5 ? "text-success" : "text-danger"), rowspan=num_rows)
-  
-                          if hero
-                            img(src=hero.img, title=hero.localized_name)
-                          else
-                            = hero_id
-  
-                          - var streak_size = streak.length > 10 ? 10 : streak.length
-                          - var streak_name = constants.kill_streaks[streak_size]
-                          - var article = streak_size === 6 ? "an " : "a "
-                          - var popup = "These " + streak.length + " kills counted as " + article + streak_name + " streak."
-                          div
-                            abbr(title=popup) #{streak_name}
-  
-                          - var streak_duration = streak[streak.length - 1].time - streak[0].time
-                          div
-                            span=" Duration: "
-                            span.format-seconds(data-format-seconds=streak_duration)
-  
-                          div(style="visibility: hidden;")="-"
-  
-                      - var num_kills_in_row = first ? kills_in_first_row : kills_in_other_rows
-                      - for (var kill_num_in_row = 0; kill_num_in_row < num_kills_in_row; kill_num_in_row++)
-                        td(class = (player_num <= 5 ? "text-danger" : "text-success"))
-                          - kill_num = kill_num + 1
-                          - var kill = streak[kill_num]
-  
-                          - var killed_id = kill.hero_id
-                          - var killed = constants.heroes[killed_id]
-                          if killed
-                            img(src=killed.img, title=killed.localized_name)
-                          else
-                            = killed_id
-  
-                          div 
-                            //span Kill #{kill_num + 1} 
-                            span.format-seconds(data-format-seconds=kill.time)
-  
-                          - var multi_id = kill.multi_kill_id
-                          - var multi_size = player.multi_kill_id_vals[multi_id]
-                          if multi_size >= 2
-                            - var multi_name = constants.multi_kills[multi_size]
-                            - var article = multi_size === 4 ? "an " : "a "
-                            - var popup = "These " + multi_size + " kills counted as " + article + multi_name + "."
+    //-
+      .row
+        .col-md-12
+          h3
+            abbr(title=tooltips.killstreak_multikill) Kill Streaks / Multi Kills
+          .table-responsive
+            table.table.table-hover(style="text-align:center; vertical-align:middle;")
+              - var max_row_size = 9
+              thead
+                tr
+                  td Streak By
+                  td(colspan=max_row_size) Heroes Killed In Streak
+              tbody
+                - var player_num = 0
+                each player in match.players
+                  - player_num = player_num + 1
+                  
+                  - var hero_id = player.hero_id
+                  - var hero = constants.heroes[hero_id]
+                  each streak in player.kill_streaks_log || []
+                    - var num_rows = Math.ceil(streak.length / max_row_size)
+                    - var kills_in_other_rows = Math.ceil(streak.length / num_rows)
+                    - var kills_in_first_row = streak.length - (num_rows - 1) * kills_in_other_rows
+                    - var first = true
+                    - var kill_num = -1
+                    - for (var row_num = 0; row_num < num_rows; row_num++)
+                      tr
+                        if first
+                          td(class = (player_num <= 5 ? "text-success" : "text-danger"), rowspan=num_rows)
+                            if hero
+                              img(src=hero.img, title=hero.localized_name)
+                            else
+                              = hero_id
+                            - var streak_size = streak.length > 10 ? 10 : streak.length
+                            - var streak_name = constants.kill_streaks[streak_size]
+                            - var article = streak_size === 6 ? "an " : "a "
+                            - var popup = "These " + streak.length + " kills counted as " + article + streak_name + " streak."
                             div
-                              abbr(title=popup) #{multi_name}
-                          else
-                            div(style="visibility: hidden;")="-"
-                          - var tf_id = kill.team_fight_id
-                          if tf_id
-                            - var tf_name = "Teamfight " + tf_id
-                            - var popup = "This kill occurred during " + tf_name + "."
+                              abbr(title=popup) #{streak_name}
+                            - var streak_duration = streak[streak.length - 1].time - streak[0].time
                             div
-                              abbr(title=popup) #{tf_name}
-                          else
+                              span=" Duration: "
+                              span.format-seconds(data-format-seconds=streak_duration)
                             div(style="visibility: hidden;")="-"
-  
-                      - first = false
+                        - var num_kills_in_row = first ? kills_in_first_row : kills_in_other_rows
+                        - for (var kill_num_in_row = 0; kill_num_in_row < num_kills_in_row; kill_num_in_row++)
+                          td(class = (player_num <= 5 ? "text-danger" : "text-success"))
+                            - kill_num = kill_num + 1
+                            - var kill = streak[kill_num]
+                            - var killed_id = kill.hero_id
+                            - var killed = constants.heroes[killed_id]
+                            if killed
+                              img(src=killed.img, title=killed.localized_name)
+                            else
+                              = killed_id
+                            div 
+                              //span Kill #{kill_num + 1} 
+                              span.format-seconds(data-format-seconds=kill.time)
+                            - var multi_id = kill.multi_kill_id
+                            - var multi_size = player.multi_kill_id_vals[multi_id]
+                            if multi_size >= 2
+                              - var multi_name = constants.multi_kills[multi_size]
+                              - var article = multi_size === 4 ? "an " : "a "
+                              - var popup = "These " + multi_size + " kills counted as " + article + multi_name + "."
+                              div
+                                abbr(title=popup) #{multi_name}
+                            else
+                              div(style="visibility: hidden;")="-"
+                            - var tf_id = kill.team_fight_id
+                            if tf_id
+                              - var tf_name = "Teamfight " + tf_id
+                              - var popup = "This kill occurred during " + tf_name + "."
+                              div
+                                abbr(title=popup) #{tf_name}
+                            else
+                              div(style="visibility: hidden;")="-"
+                        - first = false
 
 append footer_assets
   script.

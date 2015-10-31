@@ -15,11 +15,12 @@ block match_content
                   th: abbr(title=tooltips[val])= display_types[val]
               th: abbr(title=tooltips.pings) Pings (Map)
           tr(class = player.isRadiant ? "radiant" : "dire")
-            - var p = player.parsedPlayer
             +hero_td(player)
-            td #{p.actions_per_min || "-"}
+            - player.actions = player.actions || {}
+            - player.pings = player.pings || {}
+            td #{player.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
             each val, key in constants.order_types
               if val in display_types
-                td #{p.actions[key] || "-"}
-            td #{p.pings[0] || "-"}
+                td #{player.actions[key] || "-"}
+            td #{player.pings[0] || "-"}

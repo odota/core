@@ -2,12 +2,12 @@ var request = require('request');
 var config = require('./config');
 var rc_secret = config.RECAPTCHA_SECRET_KEY;
 var queueReq = require('./operations').queueReq;
-var r = require('./redis');
-var redis = r.client;
+var redis = require('./redis');
 var status = require('./status');
+var socketio = require('socket.io');
 
 module.exports = function(server) {
-    var io = require('socket.io')(server);
+    var io = socketio(server);
     /*
     setInterval(function() {
         status(function(err, res) {
@@ -52,7 +52,6 @@ module.exports = function(server) {
                             return socket.emit('err', err);
                         }
                         job.on('progress', function(prog, data) {
-                            //kue now allows emitting additional data so we can capture api start, api finish, match expired, parse start, parse finish
                             socket.emit('prog', prog);
                             if (data){
                                 socket.emit('log', data);

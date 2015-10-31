@@ -1,12 +1,9 @@
 var async = require('async');
-var db = require('./db');
-var r = require('./redis');
-var redis = r.client;
 var config = require('./config');
 var retrieverConfig = config.RETRIEVER_HOST;
 var parserConfig = config.PARSER_HOST;
 var secret = config.RETRIEVER_SECRET;
-module.exports = function buildSets(cb) {
+module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");
     async.parallel({
         //players in this set have their matches parsed
@@ -23,15 +20,7 @@ module.exports = function buildSets(cb) {
         },
         //users in this set have their matches added
         "userPlayers": function(cb) {
-            db.players.find({
-                last_visited: {
-                    $ne: null
-                }
-            }, {
-                fields: {
-                    "account_id": 1
-                }
-            }, function(err, docs) {
+            db.select(['account_id']).from('players').whereNotNull('last_login').asCallback(function(err, docs) {
                 if (err) {
                     return cb(err);
                 }
@@ -45,15 +34,7 @@ module.exports = function buildSets(cb) {
         },
         //users in this set are added to the trackedPlayers set
         "donators": function(cb) {
-            db.players.find({
-                cheese: {
-                    $gt: 0
-                }
-            }, {
-                fields: {
-                    "account_id": 1
-                }
-            }, function(err, docs) {
+            db.select(['account_id']).from('players').where('cheese', '>', 0).asCallback(function(err, docs) {
                 if (err) {
                     return cb(err);
                 }

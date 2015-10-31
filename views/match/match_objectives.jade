@@ -10,7 +10,7 @@ block match_content
             th Objective
             th Achieved By
         tbody
-          each entry in match.parsed_data.objectives || []
+          each entry in match.objectives || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
             - var objective = constants.objectives[entry.subtype] || entry.subtype
             - var p = match.players[adjSlot] || {}
@@ -33,14 +33,13 @@ block match_content
                th: abbr(title=constants.tooltips["rune_"+val.name])=val.name  
           tr(class = player.isRadiant ? "radiant" : "dire")
             - var hero = constants.heroes[player.hero_id]
-            - var p = player.parsedPlayer
             +hero_td(player)
             each val, key in constants.runes
-              td #{p.runes[key] || "-"}
+              td #{player.runes[key] || "-"}
       +ad("skyscraper")
 
 append footer_assets
   //-
    script.
-     var objectives = !{JSON.stringify(match.parsed_data.objectives)}
+     var objectives = !{JSON.stringify(match.objectives)}
      timeline(objectives);

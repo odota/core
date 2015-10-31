@@ -1,9 +1,9 @@
 web: nodemon web.js
 retriever: nodemon retriever.js
-parser: nodemon parser.js
+workParser: nodemon workParser.js
 proxy: nodemon proxy.js
+workServer: nodemon workServer.js
 worker: nodemon worker.js
-parseManager: nodemon parseManager.js
 scanner: nodemon scanner.js
 skill: nodemon skill.js
 mmr: nodemon mmr.js

@@ -10,11 +10,10 @@ block match_content
             th Time
             th Message
         tbody
-          each entry in match.parsed_data.chat || []
+          each entry in match.chat || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
             - var p = match.players[adjSlot] || {}
             - var hero = constants.heroes[p.hero_id]
-            - p.personaname = p.personaname || entry.unit
             tr
               +hero_td(p)
               td.format-seconds(data-format-seconds=entry.time)=entry.time

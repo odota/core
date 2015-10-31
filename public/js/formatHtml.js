@@ -1,4 +1,4 @@
-module.exports = function formatHtml() {
+window.formatHtml = function formatHtml() {
     $('table.summable').each(function(i, table) {
         //iterate through rows
         var sums = {

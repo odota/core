@@ -1,163 +1,167 @@
-var constants = require('./constants.json');
+var constants = require('./constants.js');
 var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var isSignificant = utility.isSignificant;
-module.exports = function aggregator(matches, fields, existing) {
+module.exports = function aggregator(matches, groups, fields, existing) {
     var types = {
         "heroes": {
             type: "api",
-            agg: aggHeroes
+            agg: function(key, m) {
+                aggHeroes(key, m, groups);
+            }
         },
         "teammates": {
             type: "api",
-            agg: aggTeammates
+            agg: function(key, m) {
+                aggTeammates(key, m, groups);
+            }
         },
         //w/l counts
         "win": {
             type: "api",
-            agg: function(key, m, p) {
-                aggData[key] += (isRadiant(p) === m.radiant_win) ? 1 : 0;
+            agg: function(key, m) {
+                aggData[key] += (isRadiant(m) === m.radiant_win) ? 1 : 0;
             }
         },
         "lose": {
             type: "api",
-            agg: function(key, m, p) {
-                aggData[key] += (isRadiant(p) === m.radiant_win) ? 0 : 1;
+            agg: function(key, m) {
+                aggData[key] += (isRadiant(m) === m.radiant_win) ? 0 : 1;
             }
         },
         "games": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 aggData[key] += 1;
             }
         },
         //match values
         "match_ids": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 aggData[key][m.match_id] = 1;
             }
         },
         "start_time": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.start_time, m);
             }
         },
         "duration": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.duration, m);
             }
         },
         "cluster": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.cluster, m);
             }
         },
         "region": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.region, m);
             }
         },
         "patch": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.patch, m);
             }
         },
         "first_blood_time": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.first_blood_time, m);
             }
         },
         "lobby_type": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.lobby_type, m);
             }
         },
         "game_mode": {
             type: "api",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.game_mode, m);
             }
         },
         //player numeric values
         "level": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.level, m);
+            agg: function(key, m) {
+                standardAgg(key, m.level, m);
             }
         },
         "kills": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.kills, m);
             }
         },
         "deaths": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.deaths, m);
+            agg: function(key, m) {
+                standardAgg(key, m.deaths, m);
             }
         },
         "assists": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.assists, m);
+            agg: function(key, m) {
+                standardAgg(key, m.assists, m);
             }
         },
         "kda": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.kda, m);
+            agg: function(key, m) {
+                standardAgg(key, m.kda, m);
             }
         },
         "last_hits": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.last_hits, m);
+            agg: function(key, m) {
+                standardAgg(key, m.last_hits, m);
             }
         },
         "denies": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.denies, m);
+            agg: function(key, m) {
+                standardAgg(key, m.denies, m);
             }
         },
         "total_gold": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.total_gold, m);
+            agg: function(key, m) {
+                standardAgg(key, m.total_gold, m);
             }
         },
         "total_xp": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.total_xp, m);
+            agg: function(key, m) {
+                standardAgg(key, m.total_xp, m);
             }
         },
         "hero_damage": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.hero_damage, m);
+            agg: function(key, m) {
+                standardAgg(key, m.hero_damage, m);
             }
         },
         "tower_damage": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.tower_damage, m);
+            agg: function(key, m) {
+                standardAgg(key, m.tower_damage, m);
             }
         },
         "hero_healing": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.hero_healing, m);
+            agg: function(key, m) {
+                standardAgg(key, m.hero_healing, m);
             }
         },
         //per minute values
@@ -207,285 +211,275 @@ module.exports = function aggregator(matches, fields, existing) {
         */
         "gold_per_min": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.gold_per_min, m);
+            agg: function(key, m) {
+                standardAgg(key, m.gold_per_min, m);
             }
         },
         "xp_per_min": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.xp_per_min, m);
+            agg: function(key, m) {
+                standardAgg(key, m.xp_per_min, m);
             }
         },
         //categorical values
         "hero_id": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.hero_id, m);
+            agg: function(key, m) {
+                standardAgg(key, m.hero_id, m);
             }
         },
         "leaver_status": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, p.leaver_status, m);
+            agg: function(key, m) {
+                standardAgg(key, m.leaver_status, m);
             }
         },
         "isRadiant": {
             type: "api",
-            agg: function(key, m, p) {
-                standardAgg(key, isRadiant(p), m);
+            agg: function(key, m) {
+                standardAgg(key, isRadiant(m), m);
             }
         },
         //PARSED data aggregations below
         /*
-        //ward uses no longer accurate in 6.84 due to ability to use wards from stack
+        //ward uses no longer accurate >6.84 due to ability to use wards from stack
         //alternatives include counting purchases or checking length of ward positions object
-        "observer_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.observer_uses, m);
+        "observer_uses": function(key, m) {
+            standardAgg(key, m.observer_uses, m);
         },
-        "sentry_uses": function(key, m, p) {
-            standardAgg(key, p.parsedPlayer.sentry_uses, m);
+        "sentry_uses": function(key, m) {
+            standardAgg(key, m.sentry_uses, m);
         },
         */
         "parsed_match_ids": {
             type: "parsed",
-            agg: function(key, m, p) {
-                if (m.parsed_data) {
+            agg: function(key, m) {
+                if (m.version) {
                     aggData[key][m.match_id] = 1;
                 }
             }
         },
         "stuns": {
             type: "parsed",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 //double invert to convert the float to an int so we can bucket better
-                standardAgg(key, p.parsedPlayer.stuns ? ~~p.parsedPlayer.stuns : undefined, m);
+                standardAgg(key, (typeof m.stuns === "number") ? ~~m.stuns : undefined, m);
             }
         },
         "courier_kills": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.courier_kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.courier_kills, m);
             }
         },
         "tower_kills": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.tower_kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.tower_kills, m);
             }
         },
         "neutral_kills": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.neutral_kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.neutral_kills, m);
             }
         },
         "buyback_count": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.buyback_count, m);
+            agg: function(key, m) {
+                standardAgg(key, m.buyback_count, m);
             }
         },
         "lane": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.lane, m);
+            agg: function(key, m) {
+                standardAgg(key, m.lane, m);
             }
         },
         "lane_role": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.lane_role, m);
+            agg: function(key, m) {
+                standardAgg(key, m.lane_role, m);
             }
         },
         //lifetime ward positions
         "obs": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.obs, m);
+            agg: function(key, m) {
+                standardAgg(key, m.obs, m);
             }
         },
         "sen": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.sen, m);
+            agg: function(key, m) {
+                standardAgg(key, m.sen, m);
             }
         },
         //lifetime rune counts
         "runes": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.runes, m);
+            agg: function(key, m) {
+                standardAgg(key, m.runes, m);
             }
         },
         //lifetime item uses
         "item_uses": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.item_uses, m);
+            agg: function(key, m) {
+                standardAgg(key, m.item_uses, m);
             }
         },
         //track sum of purchase times and counts to get average build time
         "purchase_time": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase_time, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase_time, m);
             }
         },
         "item_usage": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.item_usage, m);
+            agg: function(key, m) {
+                standardAgg(key, m.item_usage, m);
             }
         },
         "item_win": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.item_win, m);
+            agg: function(key, m) {
+                standardAgg(key, m.item_win, m);
             }
-        },
-        "item_matches": {
-            type: "parsed",
-            agg: function(key, m, p) {}
         },
         //lifetime item purchases
         "purchase": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase, m);
             }
         },
         //lifetime skill accuracy
         "ability_uses": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.ability_uses, m);
+            agg: function(key, m) {
+                standardAgg(key, m.ability_uses, m);
             }
         },
         "hero_hits": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.hero_hits, m);
+            agg: function(key, m) {
+                standardAgg(key, m.hero_hits, m);
             }
         },
         "kills_count": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.kills, m);
             }
         },
         "gold_reasons": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.gold_reasons, m);
+            agg: function(key, m) {
+                standardAgg(key, m.gold_reasons, m);
             }
         },
         "xp_reasons": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.xp_reasons, m);
+            agg: function(key, m) {
+                standardAgg(key, m.xp_reasons, m);
             }
         },
         "multi_kills": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.multi_kills, m);
+            agg: function(key, m) {
+                standardAgg(key, m.multi_kills, m);
             }
         },
         "kill_streaks": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.kill_streaks, m);
+            agg: function(key, m) {
+                standardAgg(key, m.kill_streaks, m);
             }
         },
         "all_word_counts": {
             type: "parsed",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.all_word_counts, m);
             }
         },
         "my_word_counts": {
             type: "parsed",
-            agg: function(key, m, p) {
+            agg: function(key, m) {
                 standardAgg(key, m.my_word_counts, m);
             }
         },
         "purchase_tpscroll": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.tpscroll || 0) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase ? (m.purchase.tpscroll || 0) : undefined, m);
             }
         },
         "purchase_ward_observer": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_observer || 0) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase ? (m.purchase.ward_observer || 0) : undefined, m);
             }
         },
         "purchase_ward_sentry": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.ward_sentry * 2 || 0) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase ? (m.purchase.ward_sentry * 2 || 0) : undefined, m);
             }
         },
         "purchase_gem": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.gem || 0) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase ? (m.purchase.gem || 0) : undefined, m);
             }
         },
         "purchase_rapier": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.purchase ? (p.parsedPlayer.purchase.rapier || 0) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.purchase ? (m.purchase.rapier || 0) : undefined, m);
             }
         },
         "pings": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.pings ? (p.parsedPlayer.pings[0] || 0) : undefined, m);
-            }
-        },
-        "pick_order": {
-            type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.pick_order, m);
+            agg: function(key, m) {
+                standardAgg(key, m.pings ? (m.pings[0] || 0) : undefined, m);
             }
         },
         "throw": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.throw, m);
+            agg: function(key, m) {
+                standardAgg(key, m.throw, m);
             }
         },
         "comeback": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.comeback, m);
+            agg: function(key, m) {
+                standardAgg(key, m.comeback, m);
             }
         },
         "stomp": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.stomp, m);
+            agg: function(key, m) {
+                standardAgg(key, m.stomp, m);
             }
         },
         "loss": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.loss, m);
+            agg: function(key, m) {
+                standardAgg(key, m.loss, m);
             }
         },
         "lane_efficiency": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.lane_efficiency ? ~~(p.parsedPlayer.lane_efficiency * 100) : undefined, m);
+            agg: function(key, m) {
+                standardAgg(key, m.lane_efficiency ? ~~(m.lane_efficiency * 100) : undefined, m);
             }
         },
         "actions_per_min": {
             type: "parsed",
-            agg: function(key, m, p) {
-                standardAgg(key, p.parsedPlayer.actions_per_min, m);
+            agg: function(key, m) {
+                standardAgg(key, m.actions_per_min, m);
             }
         }
     };
@@ -534,16 +528,15 @@ module.exports = function aggregator(matches, fields, existing) {
     }
     //sort ascending to support trends
     matches.sort(function(a, b) {
-        return a.match_id - b.match_id;
+        return Number(a.match_id) - Number(b.match_id);
     });
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         if (isSignificant(constants, m)) {
-            var p = m.players[0];
             for (var key in fields) {
                 //execute the aggregation function for each specified field
                 if (types[key]) {
-                    types[key].agg(key, m, p);
+                    types[key].agg(key, m);
                 }
             }
         }
@@ -553,7 +546,7 @@ module.exports = function aggregator(matches, fields, existing) {
     function standardAgg(key, value, match) {
         var aggObj = aggData[key];
         //console.log(key, aggObj);
-        if (typeof value === "undefined") {
+        if (typeof value === "undefined" || value === null) {
             return;
         }
         aggObj.n += 1;
@@ -578,14 +571,14 @@ module.exports = function aggregator(matches, fields, existing) {
                 aggObj.max_match = {
                     match_id: match.match_id,
                     start_time: match.start_time,
-                    hero_id: match.players[0].hero_id
+                    hero_id: match.hero_id
                 };
             }
             /*
             aggObj.avgs.push({
                 //match_id: match.match_id,
                 start_time: match.start_time,
-                hero_id: m.players[0].hero_id,
+                hero_id: m.hero_id,
                 val: value,
                 avg: ~~(aggObj.sum / aggObj.n * 100) / 100
             });
@@ -594,7 +587,7 @@ module.exports = function aggregator(matches, fields, existing) {
         }
     }
 
-    function aggHeroes(key, m, p) {
+    function aggHeroes(key, m, groups) {
         var heroes = aggData.heroes;
         if (Object.keys(heroes).length !== Object.keys(constants.heroes).length) {
             //prefill heroes with every hero
@@ -612,16 +605,16 @@ module.exports = function aggregator(matches, fields, existing) {
                 heroes[hero_id] = heroes[hero_id] || hero;
             }
         }
-        var p = m.players[0];
-        var player_win = isRadiant(p) === m.radiant_win;
-        for (var j = 0; j < m.all_players.length; j++) {
-            var tm = m.all_players[j];
+        var player_win = isRadiant(m) === m.radiant_win;
+        var group = groups[m.match_id];
+        for (var j = 0; j < group.length; j++) {
+            var tm = group[j];
             var tm_hero = tm.hero_id;
+            //don't count invalid heroes
             if (tm_hero in heroes) {
-                //don't count invalid heroes
-                if (isRadiant(tm) === isRadiant(p)) {
+                if (isRadiant(tm) === isRadiant(m)) {
                     //count teammate heroes
-                    if (tm.account_id === p.account_id) {
+                    if (tm.account_id === m.account_id) {
                         //console.log("self %s", tm_hero);
                         heroes[tm_hero].games += 1;
                         heroes[tm_hero].win += player_win ? 1 : 0;
@@ -645,12 +638,12 @@ module.exports = function aggregator(matches, fields, existing) {
         }
     }
 
-    function aggTeammates(key, m, p) {
+    function aggTeammates(key, m, groups) {
         var teammates = aggData.teammates;
-        var p = m.players[0];
-        var player_win = isRadiant(p) === m.radiant_win;
-        for (var j = 0; j < m.all_players.length; j++) {
-            var tm = m.all_players[j];
+        var player_win = isRadiant(m) === m.radiant_win;
+        var group = groups[m.match_id];
+        for (var j = 0; j < group.length; j++) {
+            var tm = group[j];
             //count teammate players
             if (!teammates[tm.account_id]) {
                 teammates[tm.account_id] = {
@@ -670,7 +663,7 @@ module.exports = function aggregator(matches, fields, existing) {
             //played with
             teammates[tm.account_id].games += 1;
             teammates[tm.account_id].win += player_win ? 1 : 0;
-            if (isRadiant(tm) === isRadiant(p)) {
+            if (isRadiant(tm) === isRadiant(m)) {
                 //played with
                 teammates[tm.account_id].with_games += 1;
                 teammates[tm.account_id].with_win += player_win ? 1 : 0;
