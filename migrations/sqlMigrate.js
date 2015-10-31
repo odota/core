@@ -155,8 +155,8 @@ MongoClient.connect(url, function(err, db) {
                 return cb(err);
             }
             
-            async.each(ratings, function(cb) {
-                pg('player_ratings').insert(ratings).asCallback(function(err) {
+            async.each(ratings, function(elem, cb) {
+                pg('player_ratings').insert(elem).asCallback(function(err) {
                     //next doc
                     if (err) {
                         fs.appendFile(fileName, err, cb)
