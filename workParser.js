@@ -621,6 +621,8 @@ function runParse(data, cb) {
         else {
             exit(response.statusCode.toString());
         }
+    }).on('error', function(err){
+        exit(err);
     });
 
     function exit(err) {
