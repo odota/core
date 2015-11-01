@@ -1,18 +1,19 @@
 include /mixins/progress_bar
 
-mixin hero_table(rows)
+mixin hero_table(rows, short)
   h3 Heroes
-  table.table.table-condensed#heroes.table-striped
+  table.table.table-condensed#heroes.table-striped.rankable
     thead
       tr
         th: abbr(title=tooltips.hero_id) Hero
         th.fromNow: abbr(title=tooltips.last_played) Last
         th: abbr(title=tooltips.played_as) As
         th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_with) With
-        th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_against) Against
-        th: abbr(title=tooltips.win_pct) Win%
+        if !short
+          th: abbr(title=tooltips.played_with) With
+          th: abbr(title=tooltips.win_pct) Win%
+          th: abbr(title=tooltips.played_against) Against
+          th: abbr(title=tooltips.win_pct) Win%
     each h in rows
       - var hero = constants.heroes[h.hero_id]
       tr
@@ -20,12 +21,13 @@ mixin hero_table(rows)
           img.img-sm(src=hero.img, title=hero.localized_name)
           =hero.localized_name
         td=h.last_played
-        td=h.games
+        td.rankable=h.games
         td
           +progress_bar(h.win, h.games)
-        td=h.with_games
-        td
-          +progress_bar(h.with_win, h.with_games)
-        td=h.against_games
-        td
-          +progress_bar(h.against_win, h.against_games)
+        if !short
+          td.rankable=h.with_games
+          td
+            +progress_bar(h.with_win, h.with_games)
+          td.rankable=h.against_games
+          td
+            +progress_bar(h.against_win, h.against_games)

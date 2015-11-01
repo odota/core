@@ -3,7 +3,7 @@ extend match
 block match_content
   .row
     .col-md-12
-      +data_table({id:"actions",summable:true, heading: "Actions"})
+      +data_table({id:"actions",summable:true, heading: "Actions", rankable: true})
         each player, i in match.players
           +data_table_header(i, match)
             tr
@@ -18,9 +18,9 @@ block match_content
             +hero_td(player)
             - player.actions = player.actions || {}
             - player.pings = player.pings || {}
-            td #{player.actions_per_min || "-"}
+            td.rankable #{player.actions_per_min || "-"}
             //td #{p.clicks[0] || "-"}
             each val, key in constants.order_types
               if val in display_types
-                td #{player.actions[key] || "-"}
-            td #{player.pings[0] || "-"}
+                td.rankable #{player.actions[key] || "-"}
+            td.rankable #{player.pings[0] || "-"}

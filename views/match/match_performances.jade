@@ -3,7 +3,7 @@ extend match
 block match_content
   .row
     .col-md-6
-      +data_table({id:"performances",summable:true, heading: "Performances"})
+      +data_table({id:"performances",summable:true, heading: "Performances", rankable: true})
         each player, i in match.players
           +data_table_header(i, match)
             tr
@@ -19,9 +19,9 @@ block match_content
             td #{constants.lane_ids[player.lane] || "-"} (#{constants.lane_role[player.lane_role] || "-"})
             //td.activate(data-index=i, data-type="obs") #{player.obs_log.length || "-"}
             //td.activate(data-index=i, data-type="sen") #{player.sen_log.length || "-"}
-            td #{(Number(player.lane_efficiency)*100).toFixed(2)}
-            td #{player.lh_t[10]}
-            td #{Number(player.stuns).toFixed(2)}
+            td.rankable #{(Number(player.lane_efficiency)*100).toFixed(2)}
+            td.rankable #{player.lh_t[10]}
+            td.rankable #{Number(player.stuns).toFixed(2)}
     .col-md-6
       h3 Laning Map
       #map.table-responsive

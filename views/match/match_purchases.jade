@@ -3,7 +3,7 @@ extend match
 block match_content
     .row
       .col-md-12
-        +data_table({id:"purchases",summable:true, heading: "Purchases"})
+        +data_table({id:"purchases",summable:true, heading: "Purchases", rankable: true})
           each player, i in match.players
             +data_table_header(i, match)
               tr
@@ -20,14 +20,14 @@ block match_content
                - var hero = constants.heroes[player.hero_id]
                +hero_td(player)
                - player.purchase = player.purchase || {}
-               td #{player.purchase.tpscroll || "-"}
-               td #{player.purchase.ward_observer || "-"}
-               td #{player.purchase.ward_sentry || "-"}
-               td #{player.purchase.smoke_of_deceit || "-"}
-               td #{player.purchase.dust || "-"}
-               td #{player.purchase.gem || "-"}
-               td #{player.purchase.rapier || "-"}
-               td #{player.buyback_log && player.buyback_log.length ? player.buyback_log.length : "-"}
+               td.rankable #{player.purchase.tpscroll || "-"}
+               td.rankable #{player.purchase.ward_observer || "-"}
+               td.rankable #{player.purchase.ward_sentry || "-"}
+               td.rankable #{player.purchase.smoke_of_deceit || "-"}
+               td.rankable #{player.purchase.dust || "-"}
+               td.rankable #{player.purchase.gem || "-"}
+               td.rankable #{player.purchase.rapier || "-"}
+               td.rankable #{player.buyback_log && player.buyback_log.length ? player.buyback_log.length : "-"}
     
     +ad("banner2")
     

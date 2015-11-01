@@ -151,6 +151,7 @@ h3 img {
 .progress-bar {
     color: #FFF;
     text-shadow: 0px 0px 5px #000000;
+    visibility: visible;
 }
 
 .progress_text {
@@ -159,6 +160,12 @@ h3 img {
 
 .progress {
     margin: 0 auto;
+    visibility: hidden;
+    
+}
+
+.progress.progress-short {
+    height: 4px;
 }
 
 #messages {

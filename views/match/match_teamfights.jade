@@ -9,14 +9,7 @@ block match_content
     .col-md-12
       h2 Teamfights 
         small where 3+ heroes died
-
-  .row
-    .col-md-12
-      h3 Participation
-      each player in match.players
-        .col-md-1
-          +hero_td(player)
-          +progress_bar((player.teamfights_participated || 0), teamfights.length)
+        
   hr
   
   .row
@@ -65,9 +58,20 @@ block match_content
             each death in entry.posData
               i(fight=ind, class="small-hero-icon d2mh hero-"+death.hero_id style="position: absolute; top: "+death.y/1.27+"%; left: "+death.x/1.27+"%;")
 
+      h3 Participation
+      table.table-condensed
+        tr
+          th Hero
+          th Participation
+        each player in match.players
+          tr
+            +hero_td(player)
+            td
+              +progress_bar((player.teamfights_participated || 0), teamfights.length)
+            
     .col-md-8
       each entry, ind in teamfights
-        +data_table({id:"recap-"+ind, summable: true, heading:"Recap"})
+        +data_table({id:"recap-"+ind, summable: true, heading:"Recap", rankable: true})
           each player, num in entry.players
             +data_table_header(num, entry)
               tr
@@ -100,9 +104,9 @@ block match_content
                   | #{player.level_start}
               //td=player.deaths
               //td=player.buybacks
-              td=player.damage
-              td=player.gold_delta
-              td=player.xp_delta
+              td.rankable=player.damage
+              td.rankable=player.gold_delta
+              td.rankable=player.xp_delta
               td
                 each val, key in player.ability_uses || {}
                   - var ability = constants.abilities[key]

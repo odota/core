@@ -109,4 +109,115 @@ append footer_assets
     $("#patch").selectize({maxItems: 1});
     $("#game_mode").selectize({maxItems: 1});
     $("#lobby_type").selectize({maxItems: 1});
+    
+    $('#matches').dataTable({
+        "order": [
+                [0, "desc"]
+            ],
+        paging: #{route === "matches"},
+        pageLength: 20,
+        lengthChange: false,
+        searching: false,
+        "drawCallback":function(){
+            formatHtml();
+            tooltips();
+        },
+        columnDefs: [
+            {
+                "targets": "fromNow",
+                render: function(data, type) {
+                    if (type === "display") {
+                        return moment.unix(data).fromNow();
+                    }
+                    return data;
+                }
+            },
+            {
+                "targets": "seconds",
+                render: function(data, type) {
+                    if (type === "display") {
+                        return formatSeconds(data);
+                    }
+                    return data;
+                }
+            }
+            ]
+    });
 
+    $('#heroes').dataTable({
+        "paging": false,
+        "searching": false,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback":function(){
+            tooltips();
+        },
+        "columnDefs": [{
+            targets: "fromNow",
+            render: function(data, type) {
+                if (type === "display") {
+                    if (!Number(data)){
+                        return "never";
+                    }
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
+    });
+
+    $('#teammates').dataTable({
+        "paging": false,
+        "searching": false,
+        "order": [
+            [2, "desc"]
+        ],
+        "drawCallback":function(){
+            window.tooltips();
+        },
+        "columnDefs": [{
+            targets: "fromNow",
+            render: function(data, type) {
+                if (type === "display") {
+                    if (!Number(data)){
+                        return "never";
+                    }
+                    return moment.unix(data).fromNow();
+                }
+                return data;
+            }
+        }]
+    });
+    
+    var builds = $('#builds').dataTable({
+        "searching": false,
+        "paging": false,
+        "order": [
+            [1, "desc"]
+        ],
+        "drawCallback": function() {
+            window.tooltips();
+        },
+        "columnDefs": [{
+            targets: "seconds",
+            render: function(data, type) {
+                if (type === "display") {
+                    return formatSeconds(data);
+                }
+                return data;
+            }
+        }]
+    });
+    
+    var accuracy = $('#accuracy').dataTable({
+        "searching": false,
+        "paging": false,
+        "order": [
+            [1, "desc"]
+        ],
+        "drawCallback": function() {
+            window.tooltips();
+        },
+        "columnDefs": []
+    });

@@ -8,8 +8,8 @@
   "heroes": {
     "name": "Heroes"
   },
-  "playedwith": {
-    "name": "Played With"
+  "peers": {
+    "name": "Peers"
   },
   "activity": {
     "name": "Activity"
@@ -43,8 +43,5 @@
   },
   "rating": {
     "name": "Rating"
-  },
-  "compare": {
-    "name": "Compare"
   }
 }

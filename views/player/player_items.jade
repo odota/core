@@ -6,7 +6,7 @@ block playercontent
     .col-md-12
       h3 Items 
         small (#{player.aggData.purchase_time.n} matches)
-      table.table#builds.table-striped
+      table.table#builds.table-striped.rankable
         thead
           tr
             th: abbr(title=tooltips.items_name) Name
@@ -28,11 +28,11 @@ block playercontent
                   =item.dname
                 else
                   =key
-              td=player.aggData.purchase.counts[key]
-              td=player.aggData.item_usage.counts[key] 
-              td=player.aggData.item_uses.counts[key]
-              td=player.aggData.item_uses.counts[key] ? (player.aggData.item_uses.counts[key]/player.aggData.item_usage.counts[key]).toFixed(2) : ""
-              td=val/player.aggData.purchase.counts[key]
+              td.rankable=player.aggData.purchase.counts[key]
+              td.rankable=player.aggData.item_usage.counts[key] 
+              td.rankable=player.aggData.item_uses.counts[key]
+              td.rankable=player.aggData.item_uses.counts[key] ? (player.aggData.item_uses.counts[key]/player.aggData.item_usage.counts[key]).toFixed(2) : ""
+              td.rankable=val/player.aggData.purchase.counts[key]
               td
                 +progress_bar(player.aggData.item_usage.counts[key],player.aggData.item_usage.n)
               td
@@ -40,22 +40,3 @@ block playercontent
 
 append footer_assets
   script.
-    var builds = $('#builds').dataTable({
-        //"searching": false,
-        //"paging": false,
-        "order": [
-            [1, "desc"]
-        ],
-        "drawCallback": function() {
-            window.tooltips();
-        },
-        "columnDefs": [{
-            targets: "seconds",
-            render: function(data, type) {
-                if (type === "display") {
-                    return formatSeconds(data);
-                }
-                return data;
-            }
-        }]
-    });

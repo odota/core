@@ -1,7 +1,9 @@
 mixin data_table_header(i, match)
-  if !(i%(match.players.length/2))
-    //empty row to force striping to line up
-    tr
-    tr
-      td.lead(class=i ? "text-danger":"text-success")= i ? "Dire" : "Radiant"
+  if !(i%(match.players.length/2)) && i === 0
     block
+    //-
+      //empty row to force striping to line up
+      tr
+      tr
+        td.lead(class=i ? "text-danger":"text-success")= i ? "Dire" : "Radiant"
+      block
