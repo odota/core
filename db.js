@@ -6,6 +6,10 @@ pg.types.setTypeParser(20, function(val) {
 });
 var db = require('knex')({
   client: 'pg',
-  connection: config.POSTGRES_URL
+  connection: config.POSTGRES_URL,
+  pool: {
+    min: 1,
+    max: 3
+  }
 });
 module.exports = db;
