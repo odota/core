@@ -582,11 +582,11 @@ function runParse(data, cb) {
             populate(e);
         }
     };
-    inStream = progress(request.get({
+    inStream = request({
         url: url,
         encoding: null,
-        timeout: 30000
-    })).on('progress', function(state) {
+        timeout: 15000
+    }).on('progress', function(state) {
         console.log(JSON.stringify({
             url: url,
             percent: state.percent
@@ -621,7 +621,7 @@ function runParse(data, cb) {
         else {
             exit(response.statusCode.toString());
         }
-    });
+    }).on('error', exit);
 
     function exit(err) {
         err = err || error;
