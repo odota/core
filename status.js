@@ -61,10 +61,10 @@ module.exports = function getStatus(db, redis, queue, cb) {
         },
         */
         last_added: function(cb) {
-            db.from('matches').orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            db.from('matches').select(['match_id','duration','start_time']).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         last_parsed: function(cb) {
-            db.from('matches').where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            db.from('matches').select(['match_id','duration','start_time']).where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         queue: function(cb) {
             console.time('queue');
@@ -104,9 +104,6 @@ module.exports = function getStatus(db, redis, queue, cb) {
                     }
                 }, cb);
             }
-        },
-        parser_status: function(cb) {
-            redis.get("parsers-status", cb);
         }
     }, function(err, results) {
         console.timeEnd('status');
