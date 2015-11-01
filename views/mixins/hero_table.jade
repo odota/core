@@ -14,20 +14,21 @@ mixin hero_table(rows, short)
           th: abbr(title=tooltips.win_pct) Win%
           th: abbr(title=tooltips.played_against) Against
           th: abbr(title=tooltips.win_pct) Win%
-    each h in rows
-      - var hero = constants.heroes[h.hero_id]
-      tr
-        td.text-left
-          img.img-sm(src=hero.img, title=hero.localized_name)
-          =hero.localized_name
-        td=h.last_played
-        td.rankable=h.games
-        td.rankable
-          +progress_bar(h.win, h.games)
-        if !short
-          td.rankable=h.with_games
+    tbody.small
+      each h in rows
+        - var hero = constants.heroes[h.hero_id]
+        tr
+          td.text-left
+            img.img-sm(src=hero.img, title=hero.localized_name)
+            =hero.localized_name
+          td=h.last_played
+          td.rankable=h.games
           td.rankable
-            +progress_bar(h.with_win, h.with_games)
-          td.rankable=h.against_games
-          td.rankable
-            +progress_bar(h.against_win, h.against_games)
+            +progress_bar(h.win, h.games)
+          if !short
+            td.rankable=h.with_games
+            td.rankable
+              +progress_bar(h.with_win, h.with_games)
+            td.rankable=h.against_games
+            td.rankable
+              +progress_bar(h.against_win, h.against_games)
