@@ -66,7 +66,7 @@ block match_content
         each player in match.players
           tr
             +hero_td(player)
-            td
+            td.rankable
               +progress_bar((player.teamfights_participated || 0), teamfights.length)
             
     .col-md-8

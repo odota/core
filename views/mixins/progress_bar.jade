@@ -4,5 +4,6 @@ mixin progress_bar(num, total)
     .progress
       .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct,100)}%") #{pct.toFixed(2)}
   div=pct.toFixed(2)
-  .progress.progress-short
-    .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct,100)}%")
+  //-
+    .progress.progress-short
+      .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct,100)}%")

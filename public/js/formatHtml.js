@@ -55,7 +55,7 @@ window.formatHtml = function formatHtml() {
         }
         $(table).append(tfoot);
     });
-    var classes = ["progress-bar-primary", "progress-bar-warning", "progress-bar-info"];
+    var classes = ["progress-bar-success", "progress-bar-danger", "progress-bar-warning", "progress-bar-info"];
     $("table.rankable").each(function() {
         var table = $(this);
         table.first("tr").find("th").each(function(columnIndex) {

@@ -22,12 +22,12 @@ mixin hero_table(rows, short)
           =hero.localized_name
         td=h.last_played
         td.rankable=h.games
-        td
+        td.rankable
           +progress_bar(h.win, h.games)
         if !short
           td.rankable=h.with_games
-          td
+          td.rankable
             +progress_bar(h.with_win, h.with_games)
           td.rankable=h.against_games
-          td
+          td.rankable
             +progress_bar(h.against_win, h.against_games)

@@ -18,5 +18,5 @@ block playercontent
               tr
                 td=constants[key] ? (constants[key][key2] ? constants[key][key2].name || constants[key][key2] : JSON.stringify(constants[key])) : key2
                 td.rankable=val2
-                td
+                td.rankable
                   +progress_bar(player.aggData[key].win_counts[key2], val2)

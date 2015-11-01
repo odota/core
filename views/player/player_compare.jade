@@ -17,7 +17,7 @@ block playercontent
           td: abbr(title=tooltips[key])=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
           each player in compare_data.slice(1)
             td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : 0
-            td
+            td.rankable
               //pre= JSON.stringify(compare_data[0].aggData[key].counts, null, 2)
               +progress_bar(player.aggData[key].percentile, 1)
   #chart
