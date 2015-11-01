@@ -8,8 +8,8 @@ var db = require('knex')({
   client: 'pg',
   connection: config.POSTGRES_URL,
   pool: {
-    min: 1,
-    max: 3
+    min: 0,
+    max: 1
   }
 });
 module.exports = db;
