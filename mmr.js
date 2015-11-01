@@ -15,6 +15,7 @@ function processMmr(job, cb) {
             return cb(err);
         }
         if (data.solo_competitive_rank || data.competitive_rank) {
+            data.account_id = job.data.payload.account_id;
             data.match_id = job.data.payload.match_id;
             data.time = new Date();
             queries.insertPlayerRating(db, data, cb);
