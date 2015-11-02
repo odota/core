@@ -108,7 +108,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
         for (var key in row) {
             if (!(key in columnInfo.matches)) {
                 delete row[key];
-                console.error(key);
+                //console.error(key);
             }
         }
         //TODO use psql upsert when available
@@ -184,52 +184,60 @@ function insertMatch(db, redis, queue, match, options, cb) {
     }
 
     function updatePlayerCaches(cb) {
-        //we want to update player caches for skill from options.players
-        async.each(players || options.players, function(player_match, cb) {
-            //put match fields into each player to form player_match
-            for (var key in match) {
-                player_match[key] = match[key];
+        var match_id = match.match_id;
+        db.select().from('player_matches').where({
+            "player_matches.match_id": Number(match_id)
+        }).innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, player_matches) {
+            if (err) {
+                return cb(err);
             }
-            redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
-                if (err) {
-                    return cb(err);
-                }
-                //if player cache doesn't exist, skip
-                var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                if (cache) {
-                    if (options.type !== "skill") {
-                        var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
-                        var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
-                        if (!reInsert && !reParse) {
-                            computePlayerMatchData(player_match);
-                            var group = {};
-                            group[player_match.match_id] = players;
-                            cache.aggData = aggregator([player_match], group, options.type, cache.aggData);
-                        }
-                    }
-                    //reduce match to save cache space--we only need basic data per match for matches tab
-                    player_match = reduceMatch(player_match);
-                    var identifier = [player_match.match_id, player_match.player_slot].join(':');
-                    var orig = cache.data[identifier];
-                    if (!orig) {
-                        cache.data[identifier] = player_match;
-                    }
-                    else {
-                        //iterate instead of setting directly to avoid clobbering existing data
-                        for (var key in player_match) {
-                            orig[key] = player_match[key];
-                        }
-                    }
-                    redis.ttl("player:" + player_match.account_id, function(err, ttl) {
+            async.each(player_matches, function(player_match, cb) {
+                if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id) {
+                    redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
                         if (err) {
                             return cb(err);
                         }
-                        redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                        //if player cache doesn't exist, skip
+                        var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                        if (cache) {
+                            if (options.type !== "skill") {
+                                var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
+                                var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
+                                if (!reInsert && !reParse) {
+                                    computePlayerMatchData(player_match);
+                                    var group = {};
+                                    group[player_match.match_id] = players;
+                                    cache.aggData = aggregator([player_match], group, options.type, cache.aggData);
+                                }
+                            }
+                            //reduce match to save cache space--we only need basic data per match for matches tab
+                            player_match = reduceMatch(player_match);
+                            var identifier = [player_match.match_id, player_match.player_slot].join(':');
+                            var orig = cache.data[identifier];
+                            if (!orig) {
+                                cache.data[identifier] = player_match;
+                            }
+                            else {
+                                //iterate instead of setting directly to avoid clobbering existing data
+                                for (var key in player_match) {
+                                    orig[key] = player_match[key];
+                                }
+                            }
+                            redis.ttl("player:" + player_match.account_id, function(err, ttl) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                            });
+                        }
+                        return cb();
                     });
                 }
-                return cb();
-            });
-        }, cb);
+                else {
+                    return cb();
+                }
+            }, cb);
+        });
     }
 
     function clearMatchCache(cb) {
