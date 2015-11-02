@@ -8,6 +8,9 @@ var renderMatch = compute.renderMatch;
 var constants = require('../constants.js');
 var matchPages = constants.match_pages;
 module.exports = function(db, redis) {
+    if (req.query.json) {
+        return res.status(500).json({error: "currently disabled"});
+    }
     matches.get('/:match_id/:info?', function(req, res, next) {
         console.time("match page");
         prepareMatch(req.params.match_id, function(err, match) {
@@ -17,8 +20,7 @@ module.exports = function(db, redis) {
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json) {
-                return res.status(500).json({error: "currently disabled"});
-                //return res.json(match);
+                return res.json(match);
             }
             res.render("match/match_" + info, {
                 route: info,
