@@ -42,6 +42,7 @@ function start() {
         console.log('client requested work');
         var job = queued_jobs[Object.keys(queued_jobs)[0]];
         if (!job) {
+            console.log('no work available');
             return res.status(500).json({
                 error: "no work available"
             });
@@ -51,8 +52,9 @@ function start() {
         delete queued_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         var expire = setTimeout(function() {
-            delete active_jobs[job.jobId];
+            console.log('job %s expired', job.jobId);
             cb("timeout");
+            delete active_jobs[job.jobId];
         }, 180 * 1000);
         console.log('server assigned jobid %s', job.jobId);
         var match_id = job.data.payload.match_id;
