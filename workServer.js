@@ -95,8 +95,9 @@ function start() {
                     }, function(err) {
                         console.timeEnd("parse " + match_id);
                         clearTimeout(expire);
+                        cb(err);
                         delete active_jobs[job.jobId];
-                        return cb(err);
+                        return;
                     });
                 });
             }
