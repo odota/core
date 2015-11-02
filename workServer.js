@@ -22,7 +22,8 @@ buildSets(db, redis, function(err) {
 });
 
 function start() {
-    queue.parse.process(100, function(job, cb) {
+    var pool_size = 200;
+    queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
         job.ee = new EventEmitter();
