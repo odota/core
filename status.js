@@ -5,13 +5,21 @@ module.exports = function getStatus(db, redis, queue, cb) {
         matches: function(cb) {
             //db.from('matches').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='matches';").asCallback(function(err, count) {
-                extractCount(err, count.rows, cb);
+                if(err) {
+                    cb(err);
+                } else {
+                    extractCount(err, count.rows, cb);
+                }
             });
         },
         players: function(cb) {
             //db.from('players').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count) {
-                extractCount(err, count.rows, cb);
+                if(err) {
+                    cb(err);
+                } else {
+                    extractCount(err, count.rows, cb);
+                }
             });
         },
         user_players: function(cb) {
