@@ -1,4 +1,4 @@
-var utility = require('./utility');
+var utility = require('../utility');
 var getData = utility.getData;
 var async = require('async');
 var fs = require('fs');
@@ -19,7 +19,7 @@ async.each(Object.keys(urls), function(key, cb) {
     var val = urls[key];
     //grab raw data from each url and save
     getData(val, function(err, result) {
-        fs.writeFileSync('./json/' + key + ".json", JSON.stringify(result, null, 2));
+        fs.writeFileSync('../json/' + key + ".json", JSON.stringify(result, null, 2));
         cb(err);
     });
 }, function(err) {
