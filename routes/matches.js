@@ -17,7 +17,8 @@ module.exports = function(db, redis) {
             console.timeEnd("match page");
             var info = matchPages[req.params.info] ? req.params.info : "index";
             if (req.query.json) {
-                return res.json(match);
+                return res.status(500).json({error: "currently disabled"});
+                //return res.json(match);
             }
             res.render("match/match_" + info, {
                 route: info,
