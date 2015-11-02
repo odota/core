@@ -124,7 +124,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                     }).asCallback(cb);
                 }
                 else {
-                    cb();
+                    cb(err);
                 }
             });
         }
@@ -160,7 +160,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         }).asCallback(cb);
                     }
                     else {
-                        cb();
+                        cb(err);
                     }
                 });
             }
