@@ -70,7 +70,7 @@ MongoClient.connect(url, function(err, db) {
 
     function processMatch(m, cb) {
         //compute match radiant gold/xp adv for matches that don't have it
-        if (m.parsed_data && !m.parsed_data.radiant_gold_adv && m.parsed_data.players) {
+        if (m.parsed_data && !m.parsed_data.radiant_gold_adv && m.parsed_data.players && m.parsed_data.players.times) {
             m.parsed_data.radiant_gold_adv = [];
             m.parsed_data.radiant_xp_adv = [];
             for (var i = 0; i < m.parsed_data.players[0].times.length; i++) {
