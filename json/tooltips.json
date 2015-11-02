@@ -104,8 +104,8 @@
   "played_as": "Number of games played as this hero",
   "played_with": "Number of games with this player/hero on the team",
   "played_against": "Number of games with this player/hero on the opposing team",
-  "win_pct_as": "Win percentage as this hero"
-  "win_pct_with": "Win percentage with this player/hero"
+  "win_pct_as": "Win percentage as this hero",
+  "win_pct_with": "Win percentage with this player/hero",
   "win_pct_against": "Win percentage against this player/hero"
 
 }
