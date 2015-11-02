@@ -212,7 +212,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                     var identifier = [player_match.match_id, player_match.player_slot].join(':');
                     var orig = cache.data[identifier];
                     if (!orig) {
-                        cache.data[player_match.match_id] = player_match;
+                        cache.data[identifier] = player_match;
                     }
                     else {
                         //iterate instead of setting directly to avoid clobbering existing data

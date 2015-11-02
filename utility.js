@@ -359,6 +359,7 @@ function isSignificant(constants, m) {
 function reduceMatch(player_match) {
     //trim down the size of a player_match so cache.data isn't so big
     player_match = {
+        match_id: player_match.match_id,
         player_slot: player_match.player_slot,
         hero_id: player_match.hero_id,
         game_mode: player_match.game_mode,
@@ -369,7 +370,6 @@ function reduceMatch(player_match) {
         gold_per_min: player_match.gold_per_min,
         parse_status: player_match.parse_status,
         skill: player_match.skill,
-        match_id: player_match.match_id,
         player_win: player_match.player_win,
         start_time: player_match.start_time,
         duration: player_match.duration
