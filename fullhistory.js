@@ -27,6 +27,7 @@ if (cluster.isMaster && config.NODE_ENV !== "test") {
         }
     }
     cluster.on('exit', function(worker, code, signal) {
+        console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
         cluster.fork();
     });
 }

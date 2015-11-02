@@ -4,7 +4,10 @@ var config = require('./config');
 var args = process.argv.slice(2);
 var services = require("./deploy.json");
 var apps = services.apps;
-if (config.ROLE === "parser" || config.ROLE === "core") {
+if (config.ROLE === "retriever" || config.ROLE == "proxy") {
+    require('./' + config.ROLE + ".js");
+}
+else {
     pm2.connect(function() {
         //TODO reload if procs exist, or just manually do pm2 reload all after intial deploy
         /*
@@ -24,7 +27,4 @@ if (config.ROLE === "parser" || config.ROLE === "core") {
             process.exit(0);
         });
     });
-}
-else {
-    require('./' + config.ROLE + ".js");
 }

@@ -230,7 +230,7 @@ function getGCReplayUrl(idx, match_id, cb) {
     var Dota2 = steamObj[idx].Dota2;
     console.log("[DOTA] requesting replay %s, numusers: %s, requests: %s", match_id, users.length, replayRequests);
     replayRequests += 1;
-    if (replayRequests >= 500) {
+    if (replayRequests >= 500 && config.NODE_ENV !== "development") {
         selfDestruct();
     }
     steamObj[idx].replays += 1;

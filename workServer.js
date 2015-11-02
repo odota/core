@@ -22,7 +22,9 @@ buildSets(db, redis, function(err) {
 });
 
 function start() {
-    queue.parse.process(100, function(job, cb) {
+    var pool_size = 200;
+    queue.parse.process(pool_size, function(job, cb) {
+        console.log('loaded job %s into pool', job.jobId);
         //save the callback for this job
         job.cb = cb;
         job.ee = new EventEmitter();
@@ -41,6 +43,7 @@ function start() {
         console.log('client requested work');
         var job = queued_jobs[Object.keys(queued_jobs)[0]];
         if (!job) {
+            console.log('no work available');
             return res.status(500).json({
                 error: "no work available"
             });
@@ -50,8 +53,9 @@ function start() {
         delete queued_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         var expire = setTimeout(function() {
-            delete active_jobs[job.jobId];
+            console.log('job %s expired', job.jobId);
             cb("timeout");
+            delete active_jobs[job.jobId];
         }, 180 * 1000);
         console.log('server assigned jobid %s', job.jobId);
         var match_id = job.data.payload.match_id;
@@ -91,8 +95,9 @@ function start() {
                     }, function(err) {
                         console.timeEnd("parse " + match_id);
                         clearTimeout(expire);
+                        cb(err);
                         delete active_jobs[job.jobId];
-                        return cb(err);
+                        return;
                     });
                 });
             }

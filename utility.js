@@ -356,24 +356,25 @@ function isSignificant(constants, m) {
     return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined);
 }
 
-function reduceMatch(match) {
+function reduceMatch(player_match) {
     //trim down the size of a player_match so cache.data isn't so big
-    match = {
-        hero_id: match.hero_id,
-        game_mode: match.game_mode,
-        kills: match.kills,
-        deaths: match.deaths,
-        assists: match.assists,
-        last_hits: match.last_hits,
-        gold_per_min: match.gold_per_min,
-        parse_status: match.parse_status,
-        skill: match.skill,
-        match_id: match.match_id,
-        player_win: match.player_win,
-        start_time: match.start_time,
-        duration: match.duration
+    player_match = {
+        match_id: player_match.match_id,
+        player_slot: player_match.player_slot,
+        hero_id: player_match.hero_id,
+        game_mode: player_match.game_mode,
+        kills: player_match.kills,
+        deaths: player_match.deaths,
+        assists: player_match.assists,
+        last_hits: player_match.last_hits,
+        gold_per_min: player_match.gold_per_min,
+        parse_status: player_match.parse_status,
+        skill: player_match.skill,
+        player_win: player_match.player_win,
+        start_time: player_match.start_time,
+        duration: player_match.duration
     };
-    return match;
+    return player_match;
 }
 
 function max(array) {

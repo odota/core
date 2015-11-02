@@ -50,11 +50,12 @@ if (cluster.isMaster) {
     if (config.NODE_ENV !== "test") {
         // Fork workers.
         for (var i = 0; i < capacity; i++) {
-            var worker = cluster.fork();
-            worker.on('exit', function() {
-                cluster.fork();
-            });
+            cluster.fork();
         }
+        cluster.on('exit', function(worker, code, signal) {
+            console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
+            cluster.fork();
+        });
     }
     else {
         getJob();
@@ -97,7 +98,7 @@ function getJob() {
                     url: remote,
                     method: "POST",
                     json: parsed_data,
-                    timeout: 15000
+                    timeout: 30000
                 }, function(err, resp, body) {
                     if (err || body.error) {
                         console.error("error occurred while submitting work: %s", err || body.error);
@@ -585,7 +586,7 @@ function runParse(data, cb) {
     inStream = request({
         url: url,
         encoding: null,
-        timeout: 15000
+        timeout: 30000
     }).on('progress', function(state) {
         console.log(JSON.stringify({
             url: url,
