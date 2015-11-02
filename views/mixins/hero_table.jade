@@ -8,12 +8,12 @@ mixin hero_table(rows, short)
         th: abbr(title=tooltips.hero_id) Hero
         th.fromNow: abbr(title=tooltips.last_played) Last
         th: abbr(title=tooltips.played_as) As
-        th: abbr(title=tooltips.win_pct) Win%
+        th: abbr(title=tooltips.win_pct_as) Win%
         if !short
           th: abbr(title=tooltips.played_with) With
-          th: abbr(title=tooltips.win_pct) Win%
+          th: abbr(title=tooltips.win_pct_with) Win%
           th: abbr(title=tooltips.played_against) Against
-          th: abbr(title=tooltips.win_pct) Win%
+          th: abbr(title=tooltips.win_pct_against) Win%
     tbody.small
       each h in rows
         - var hero = constants.heroes[h.hero_id]
