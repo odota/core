@@ -280,7 +280,8 @@ module.exports = function(db, redis) {
     }
 
     function countPlayer(account_id, cb) {
-        if (!isNaN(account_id)) {
+        //10% chance to verify cache
+        if (!isNaN(account_id) && Math.random() > 0.9) {
             console.time("count");
             db('player_matches').count('match_id').where({
                 account_id: Number(account_id)
@@ -294,7 +295,8 @@ module.exports = function(db, redis) {
             });
         }
         else {
-            cb(null, 0);
+            //don't return a count (always valid)
+            cb(null);
         }
     }
 
@@ -316,46 +318,26 @@ module.exports = function(db, redis) {
                 account_id: account_id,
                 personaname: account_id
             };
-            //check count of matches to validate cache
-            countPlayer(account_id, function(err, count) {
-                if (err) {
-                    return cb(err);
-                }
-                //full match cache code
-                //mongocaching doesn't work with "all" players since there is a conflict in account_id/match_id combination.
-                //we end up only saving 200 matches to the cache, rather than the expanded set
-                //additionally the count validation will always fail since a non-number account_id will return 0 results
-                /*
-                db.player_matches.find({
-                    account_id: account_id
-                }, {
-                    sort: {
-                        match_id: 1
+            redis.get(new Buffer("player:" + account_id), function(err, result) {
+                console.time('inflate');
+                cache = result && !err ? JSON.parse(zlib.inflateSync(result)) : null;
+                console.timeEnd('inflate');
+                //unpack cache.data into an array
+                if (cache && cache.data) {
+                    var arr = [];
+                    for (var key in cache.data) {
+                        arr.push(cache.data[key]);
                     }
-                }, function(err, results) {
+                    cache.data = arr;
+                }
+                account_id = Number(account_id);
+                //check count of matches to validate cache
+                countPlayer(account_id, function(err, count) {
                     if (err) {
                         return cb(err);
                     }
-                    cache = {
-                        data: results
-                    };
-                */
-                redis.get(new Buffer("player:" + account_id), function(err, result) {
-                    console.time('inflate');
-                    cache = result && !err ? JSON.parse(zlib.inflateSync(result)) : null;
-                    console.timeEnd('inflate');
-                    //unpack cache.data into an array
-                    if (cache && cache.data) {
-                        var arr = [];
-                        for (var key in cache.data) {
-                            arr.push(cache.data[key]);
-                        }
-                        cache.data = arr;
-                    }
-                    account_id = Number(account_id);
                     //we return a count of 0 if the account_id is string (all/professional)
-                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || isNaN(account_id));
-                    console.log(count, cache ? cache.data.length : null);
+                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
                     var filter_exists = Object.keys(options.query.js_select).length;
                     if (cacheValid && !filter_exists) {

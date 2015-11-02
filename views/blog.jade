@@ -24,10 +24,11 @@ block content
                   each tag in post.tags
                       a(href=tagUrl(tag))
                           span.label.label-info #{tag}
-      ul.pagination.pull-right
+      ul.pagination.pull-left
         if id<max
           li: a(href="/blog/"+(id+1)) Newer
-        if id>0
+      ul.pagination.pull-right
+        if id>1
           li: a(href="/blog/"+(id-1)) Older
     //-
       .col-md-2
