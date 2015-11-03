@@ -94,7 +94,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
     //we want to insert into matches, then insert into player_matches for each entry in players
     async.series([
     function(cb) {
-            getColumnInfo(db, cb);
+      getColumnInfo(db, cb);
     },
     insertMatchTable,
     insertPlayerMatchesTable,
@@ -184,6 +184,9 @@ function insertMatch(db, redis, queue, match, options, cb) {
     }
 
     function updatePlayerCaches(cb) {
+        if (!config.ENABLE_PLAYER_CACHE){
+            return cb();
+        }
         var match_id = match.match_id;
         db.select().from('player_matches').where({
             "player_matches.match_id": Number(match_id)
