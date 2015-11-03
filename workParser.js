@@ -103,6 +103,9 @@ function getJob() {
                     if (err || body.error) {
                         console.error("error occurred while submitting work: %s", err || body.error);
                     }
+                    if (parsed_data.error) {
+                        process.exit(1);
+                    }
                     //get another job
                     return getJob();
                 });
