@@ -99,8 +99,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
     insertMatchTable,
     insertPlayerMatchesTable,
     //ensurePlayers,
-    updatePlayerCaches,
-    clearMatchCache
+    //updatePlayerCaches,
+    //clearMatchCache
     ], decideParse);
 
     function insertMatchTable(cb) {
