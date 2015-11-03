@@ -27,7 +27,6 @@ var defaults = {
     "POSTGRES_URL": "postgresql://yasp:yasp@localhost/yasp",
     "REDIS_URL": "redis://127.0.0.1:6379/0",
     "RETRIEVER_HOST": "localhost:5100",
-    "PARSER_HOST": "localhost:5200",
     "UNTRACK_DAYS": 7,
     "GOAL": 5,
     "PROXY_URLS": "", //comma separated list of proxy urls to use
@@ -41,6 +40,7 @@ var defaults = {
     "ENABLE_MATCH_CACHE": "",
     "ENABLE_PLAYER_CACHE": "",
     //the following are deprecated
+    "PARSER_HOST": "localhost:5200",
     "MONGO_URL": "mongodb://localhost/dota",
     "AWS_S3_BUCKET": "",
     "AWS_ACCESS_KEY_ID": "",

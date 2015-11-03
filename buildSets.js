@@ -1,7 +1,6 @@
 var async = require('async');
 var config = require('./config');
 var retrieverConfig = config.RETRIEVER_HOST;
-var parserConfig = config.PARSER_HOST;
 var secret = config.RETRIEVER_SECRET;
 module.exports = function buildSets(db, redis, cb) {
     console.log("rebuilding sets");
@@ -49,12 +48,6 @@ module.exports = function buildSets(db, redis, cb) {
         "retrievers": function(cb) {
             var ps = retrieverConfig.split(",").map(function(r) {
                 return "http://" + r + "?key=" + secret;
-            });
-            cb(null, ps);
-        },
-        "parsers": function(cb) {
-            var ps = parserConfig.split(",").map(function(p) {
-                return "http://" + p + "?key=" + secret;
             });
             cb(null, ps);
         }
