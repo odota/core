@@ -7,7 +7,7 @@
     "start": "node deploy",
     "dev": "nf -j Procfile.dev start",
     "dev2": "pm2-dev deploy.json",
-    "test": "rm -rf testfiles && git clone https://github.com/yasp-dota/testfiles && npm run build && istanbul cover _mocha --report lcovonly -- -R spec",
+    "test": "test/run.sh",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "constants": "node constantsUpdate.js",
     "update": "npm-check-updates -u",

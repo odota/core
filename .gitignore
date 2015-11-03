@@ -14,6 +14,6 @@ java_parser/target
 /bin/
 Thumbs.db
 public/build
-testfiles
+/test/testfiles
 ecosystem.json
 *.swp
