@@ -5,13 +5,13 @@ module.exports = function getStatus(db, redis, queue, cb) {
         matches: function(cb) {
             //db.from('matches').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='matches';").asCallback(function(err, count) {
-                extractCount(err, count.rows, cb);
+                extractCount(err, count, cb);
             });
         },
         players: function(cb) {
             //db.from('players').count().asCallback(function(err, count) {
             db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='players';").asCallback(function(err, count) {
-                extractCount(err, count.rows, cb);
+                extractCount(err, count, cb);
             });
         },
         user_players: function(cb) {
@@ -113,6 +113,10 @@ module.exports = function getStatus(db, redis, queue, cb) {
     function extractCount(err, count, cb) {
         if (err) {
             return cb(err);
+        }
+        // We need the property "rows" for "matches" and "players". Others just need count
+        if(count.hasOwnProperty("rows")) {
+            count = count.rows;
         }
         //psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them
         cb(err, Number(count[0].count));
