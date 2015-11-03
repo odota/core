@@ -12,7 +12,7 @@ Features
 
 We provide free, open source replay parsing for the Dota 2 Community. This includes item timelines, gold/LH graphs, ward positions, and position heatmaps.
 
-See [here](http://yasp.co/matches/1912366402) for an example of our match analysis. For a full list of our features on the [wiki](https://github.com/yasp-dota/yasp/wiki/Features)
+See [here](http://yasp.co/matches/1912366402) for an example of our match analysis. For a full list of our features, see the [wiki](https://github.com/yasp-dota/yasp/wiki/Features).
 
 Tech
 ----
@@ -39,6 +39,7 @@ Sample Data
 
 Developer's Guide
 ----
+
 * The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
 * Build step.  `npm run build` executes the following.
     * `npm install` Downloads and installs the Node dependencies from npm.
