@@ -220,7 +220,7 @@ app.route('/request_job').post(function(req, res) {
             body = JSON.parse(body);
         }
         catch (err) {
-            res.render({
+            return res.render({
                 error: err
             });
         }
