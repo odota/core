@@ -106,12 +106,12 @@ MongoClient.connect(url, function(err, db) {
         if (m.players) {
             m.players = m.players.map(function(pm) {
                 var parseSlot = pm.player_slot % (128 - 5);
-                var pp = m.parsed_data ? m.parsed_data.players[parseSlot] : null;
-                pm.gold_t = pp ? pp.gold : null;
-                pm.xp_t = pp ? pp.xp : null;
-                pm.lh_t = pp ? pp.lh : null;
-                pm.killed = pp ? pp.kills : null;
+                var pp = m.parsed_data && m.parsed_data.players ? m.parsed_data.players[parseSlot] : null;
                 if (pp) {
+                    pm.gold_t = pp.gold;
+                    pm.xp_t = pp.xp;
+                    pm.lh_t = pp.lh;
+                    pm.killed = pp.kills;
                     for (var key in pp) {
                         if (!(key in pm) && pp && pp[key]) {
                             pm[key] = pp[key];
