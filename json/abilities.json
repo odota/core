@@ -168,10 +168,10 @@
     "bloodseeker_thirst": {
       "dname": "Thirst",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Enables Bloodseeker to sense enemy Heroes whose health is below a certain percentage wherever they are, giving him True Sight on that unit, increasing his movement speed, and increasing the attack damage he deals to that hero based on how much health they are missing. Bonuses stack per Hero.",
-      "notes": "Not triggered by Illusions.",
+      "desc": "Bloodseeker is invigorated by the wounds of his enemies, gaining bonus movement speed and attack damage whenever an enemy hero's health falls below 75%, with the bonuses increasing as their health falls further. If an enemy hero's health falls below 25%, he will also gain vision and True Sight of that hero. Bonuses stack per hero.",
+      "notes": "Not triggered by Illusions.<br />Max movement speed and attack damage bonuses occur when an enemy's health is at or below 25%.",
       "dmg": "",
-      "attrib": "MAX BONUS MOVE SPEED: <span class=\"attribVal\">10% / 20% / 30% / 40%</span><br />\nMAX THIRST BONUS DAMAGE: <span class=\"attribVal\">10 / 20 / 30 / 40</span><br />\nVISIBILITY HEALTH: <span class=\"attribVal\">25%</span>",
+      "attrib": "THIRST HEALTH THRESHHOLD: <span class=\"attribVal\">75%</span><br />\nMAX THIRST MOVE SPEED: <span class=\"attribVal\">10% / 20% / 30% / 40%</span><br />\nMAX THIRST DAMAGE: <span class=\"attribVal\">10 / 20 / 30 / 40</span><br />\nVISIBILITY HEALTH THRESHHOLD: <span class=\"attribVal\">25%</span>",
       "cmb": "",
       "lore": "Strygwyr becomes frenzied when blood is spilled.",
       "hurl": "Bloodseeker"
@@ -278,7 +278,7 @@
     "earthshaker_fissure": {
       "dname": "Fissure",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Slams the ground with a mighty totem, creating an impassible ridge of stone while stunning and damaging enemy units in a line.",
+      "desc": "Slams the ground with a mighty totem, creating an impassable ridge of stone while stunning and damaging enemy units along its line.",
       "notes": "Creeps will wait for Fissure to disappear. They will not attempt to walk around it.<br />Fissure is not blocked by Linken's Sphere.",
       "dmg": "DAMAGE: <span class=\"attribVal\">110 / 160 / 210 / 260</span><br />",
       "attrib": "FISSURE RANGE: <span class=\"attribVal\">1400</span><br />\nFISSURE DURATION: <span class=\"attribVal\">8</span><br />\nSTUN DURATION: <span class=\"attribVal\">1 / 1.25 / 1.5 / 1.75</span>",
@@ -366,7 +366,7 @@
     "mirana_starfall": {
       "dname": "Starstorm",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Calls down a wave of meteors to damage nearby enemy units. The closesest enemy unit to Mirana in a 425 radius will be struck a second time for 75% of the damage.",
+      "desc": "Calls down a wave of meteors to damage nearby enemy units. The closest enemy unit to Mirana in a 425 radius will be struck a second time for 75% of the damage.",
       "notes": "Starstorm is not blocked by Linken's Sphere.<br />Starstorm cannot hit invisible units.<br />Starstorm will choose a new target for the second star if the first died before impact.",
       "dmg": "DAMAGE: <span class=\"attribVal\">75 / 150 / 225 / 300</span><br />",
       "attrib": "RADIUS: <span class=\"attribVal\">625</span>",
@@ -377,7 +377,7 @@
     "mirana_arrow": {
       "dname": "Sacred Arrow",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Fires an long-range arrow with deadly precision, which stuns and damages the first enemy unit it strikes. The stun duration ranges from 0.01 to 5 seconds, with bonus damage up to 140 added, based on the distance the arrow travels to its target.",
+      "desc": "Fires a long-range arrow with deadly precision, which stuns and damages the first enemy unit it strikes. The stun duration ranges from 0.01 to 5 seconds, with bonus damage up to 140 added, based on the distance the arrow travels to its target.",
       "notes": "For every 150 distance the arrow travels, the stun duration upon impact increases by 0.5 seconds, and the bonus damage added increases by 14.<br />Sacred Arrow can hit invisible units.",
       "dmg": "DAMAGE: <span class=\"attribVal\">50 / 140 / 230 / 320</span><br />",
       "attrib": "RANGE: <span class=\"attribVal\">3000</span><br />\nMINIMUM STUN: <span class=\"attribVal\">0.01</span><br />\nMAXIMUM STUN: <span class=\"attribVal\">5</span><br />\nMAXIMUM BONUS DAMAGE: <span class=\"attribVal\">140</span>",
@@ -619,7 +619,7 @@
     "puck_dream_coil": {
       "dname": "Dream Coil",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Creates a coil of volatile magic that latches onto enemy Heroes, stunning them for .5 seconds and damaging them.  If the enemy hero stretches the coil by moving too far away, it snaps, stunning and dealing additional damage.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "desc": "Creates a coil of volatile magic that latches onto enemy Heroes, stunning them for 0.5 seconds and damaging them.  If the enemy hero stretches the coil by moving too far away, it snaps, stunning and dealing additional damage.\r\n\r\nUpgradable by Aghanim's Scepter.",
       "notes": "",
       "dmg": "",
       "attrib": "COIL DURATION: <span class=\"attribVal\">6 / 6 / 6</span><br />\nINITIAL DAMAGE: <span class=\"attribVal\">100 / 150 / 200</span><br />\nBREAK RADIUS: <span class=\"attribVal\">600 / 600 / 600</span><br />\nBREAK STUN DURATION: <span class=\"attribVal\">1.5 / 2.25 / 3</span><br />\nBREAK DAMAGE: <span class=\"attribVal\">100 / 150 / 200</span><br />\n<span class=\"scepterVal\">SCEPTER COIL DURATION:</span> <span class=\"attribVal\">8</span><br />\n<span class=\"scepterVal\">SCEPTER BREAK DAMAGE:</span> <span class=\"attribVal\">200 / 250 / 300</span><br />\n<span class=\"scepterVal\">SCEPTER BREAK STUN DURATION:</span> <span class=\"attribVal\">1.5 / 3 / 4.5</span>",
@@ -696,7 +696,7 @@
     "razor_unstable_current": {
       "dname": "Unstable Current",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Razor moves with increased speed, and any abilites targeted at him are instantly countered with a jolt of electricity which damages, slows, and purges buffs from enemies.",
+      "desc": "Razor moves with increased speed, and any abilities targeted at him are instantly countered with a jolt of electricity which damages, slows, and purges buffs from enemies.",
       "notes": "Damage activates when the spell cast on Razor.<br />Only activates if the caster is a hero unit.",
       "dmg": "DAMAGE: <span class=\"attribVal\">40 / 70 / 100 / 130</span><br />",
       "attrib": "BONUS SPEED: <span class=\"attribVal\">4% / 8% / 12% / 16%</span><br />\nSLOW DURATION: <span class=\"attribVal\">0.5 / 1 / 1.5 / 2</span>",
@@ -795,7 +795,7 @@
     "storm_spirit_ball_lightning": {
       "dname": "Ball Lightning",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Storm Spirit becomes volatile electricity, charging across the battlefield until he depletes his mana or reaches his target. The activation mana cost is 30+8% of his total mana pool, and the cost per 100 units traveled is 12+0.75% of his total mana pool.  Damage is expressed in damage per 100 units traveled.",
+      "desc": "Storm Spirit becomes volatile electricity, charging across the battlefield until he depletes his mana or reaches his target. The activation mana cost is 30+8% of his total mana pool, and the cost per 100 units traveled is 12+0.7% of his total mana pool.  Damage is expressed in damage per 100 units traveled.",
       "notes": "Instant cast abilities can be used while traveling.<br />This ability will destroy trees.<br />Storm Spirit is invulnerable during Ball Lightning.",
       "dmg": "DAMAGE: <span class=\"attribVal\">8 / 12 / 16</span><br />",
       "attrib": "SPEED: <span class=\"attribVal\">1250 / 1875 / 2500</span><br />\nRADIUS: <span class=\"attribVal\">125 / 200 / 275</span><br />\nMANA DRAIN PER UNIT: <span class=\"attribVal\">0.7%</span>",
@@ -861,7 +861,7 @@
     "tiny_toss": {
       "dname": "Toss",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Grabs the nearest unit in a 275 radius around Tiny, ally or enemy, and launches it at the target unit or rune to deal damage where they land.  If the tossed unit is an enemy, it will take an extra 20% damage. Toss does more damage with each level in Growth.",
+      "desc": "Grabs the nearest unit in a 275 radius around Tiny, ally or enemy, and launches it at the target unit or rune to deal damage where they land.  If the tossed unit is an enemy, it will take an extra 20% damage. Toss does more damage with each level in Grow.",
       "notes": "If a unit is hit by Avalanche then Tossed, it can be hit a second time by Avalanche if it lands in the area of effect before Avalanche ends.<br />You can toss allies, but they don't take damage.<br />Toss deals 33% of its damage to buildings.",
       "dmg": "",
       "attrib": "RADIUS: <span class=\"attribVal\">275 / 275 / 275 / 275</span><br />\nRANGE: <span class=\"attribVal\">1300</span><br />\nDAMAGE: <span class=\"attribVal\">75 / 150 / 225 / 300</span>",
@@ -971,7 +971,7 @@
     "windrunner_focusfire": {
       "dname": "Focus Fire",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target</span><br />AFFECTS: <span class=\"attribVal\">Enemy Units</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Windranger channels the wind to gain 500 additional attack speed against a single enemy unit or structure, though with reductions to her attack damage.  Extra damage from secondary item effects is not reduced.  Lasts 20 seconds.\r\n\r\nUpgradable with Aghanim's Scepter.",
+      "desc": "Windranger channels the wind to gain 500 additional attack speed against a single enemy unit or structure, though with a reduction to her attack damage.  Extra damage from secondary item effects is not reduced.  Lasts 20 seconds.\r\n\r\nUpgradable with Aghanim's Scepter.",
       "notes": "Can target buildings and Spell Immune units.",
       "dmg": "",
       "attrib": "BONUS ATTACK SPEED: <span class=\"attribVal\">500</span><br />\nDAMAGE REDUCTION: <span class=\"attribVal\">50% / 40% / 30%</span><br />\nDURATION: <span class=\"attribVal\">20</span><br />\n<span class=\"scepterVal\">SCEPTER COOLDOWN:</span> <span class=\"attribVal\">15 / 15 / 15</span><br />\n<span class=\"scepterVal\">SCEPTER DAMAGE REDUCTION:</span> <span class=\"attribVal\">30% / 15% / 0%</span>",
@@ -1378,8 +1378,8 @@
     "witch_doctor_death_ward": {
       "dname": "Death Ward",
       "affects": "ABILITY: <span class=\"attribVal\">Channeled, Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\"><font color=\"#71a9ea\">Physical</font></span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "CHANNELED - Summons a deadly ward to attack enemy heroes.  The Death Ward has attack range of 700, and attacks every .22 seconds.  Lasts 8 seconds.\r\n\r\nUpgradable by Aghanim's Scepter.",
-      "notes": "The Death Ward is invulnerable, and is only destroyed if Witch Doctor is interrupted or its duration expires.<br />The Death Ward can be controlled, and made to attack a specific target.",
+      "desc": "CHANNELED - Summons a deadly ward to attack enemy heroes within 700 range. Lasts a maximum of 8 seconds.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "notes": "The Death Ward is invulnerable, and is only destroyed if Witch Doctor is interrupted or its duration expires.<br />The Death Ward can be controlled, and made to attack a specific target.<br />Death Ward attacks once every 0.22 seconds.",
       "dmg": "",
       "attrib": "DAMAGE: <span class=\"attribVal\">60 / 105 / 150</span><br />\nSCEPTER BOUNCES: <span class=\"attribVal\">4 / 4 / 4</span>",
       "cmb": "<div class=\"cooldownMana\"><div class=\"mana\"><img alt=\"Mana Cost\" title=\"Mana Cost\" class=\"manaImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/mana.png\" width=\"16\" height=\"16\" border=\"0\" /> 200/200/200</div><div class=\"cooldown\"><img alt=\"Cooldown\" title=\"Cooldown\" class=\"cooldownImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png\" width=\"16\" height=\"16\" border=\"0\" /> 80</div><br clear=\"left\" /></div>",
@@ -1587,7 +1587,7 @@
     "necrolyte_sadist": {
       "dname": "Sadist",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />",
-      "desc": "Necrophos gains health and mana regeneration for every unit he kills. Hero kills grant 10x the regen bonus.",
+      "desc": "Necrophos gains health and mana regeneration for every unit he kills. Hero kills grant 10 times the regen bonus.",
       "notes": "Sadist is also triggered by denies.<br />Stacks independently with itself.",
       "dmg": "",
       "attrib": "MANA REGEN: <span class=\"attribVal\">2 / 4 / 6 / 12</span><br />\nHEALTH REGEN: <span class=\"attribVal\">1 / 2 / 3 / 6</span><br />\nDURATION: <span class=\"attribVal\">6</span>",
@@ -2192,7 +2192,7 @@
     "dragon_knight_elder_dragon_form": {
       "dname": "Elder Dragon Form",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Dragon Knight takes the form of one of three powerful elder dragons, increasing his damage, speed, and Dragon Tail's range, while granting him new powers.\r\n<font color=\"#9acd32\">LEVEL 1 Green Dragon</font> - Corrosive Breath: attacks deal 20 poison damage over 5 seconds. Works on structures.\r\n<font color=\"#ff0000\">LEVEL 2 Red Dragon</font> - Splash Attack: attacks damage all enemy units in a 300 radius, with Corrosive Breath added to the primary target.\r\n<font color=\"#87ceeb\">LEVEL 3 Blue Dragon</font> - Frost Breath: slows movement speed by 30% and attack speed by 20 of enemy units in Splash Attack range for 3 seconds, with Corrosive Breath added to the primary target.",
+      "desc": "Dragon Knight takes the form of one of three powerful elder dragons, increasing his damage, speed, and Dragon Tail's range, while granting him new powers.\r\n<font color=\"#9acd32\">LEVEL 1 Green Dragon</font> - Corrosive Breath: attacks deal 20 poison damage per second for 5 seconds. Works on structures.\r\n<font color=\"#ff0000\">LEVEL 2 Red Dragon</font> - Splash Attack: attacks damage all enemy units in a 300 radius, with Corrosive Breath added to the primary target.\r\n<font color=\"#87ceeb\">LEVEL 3 Blue Dragon</font> - Frost Breath: slows movement speed by 30% and attack speed by 20 of enemy units in Splash Attack range for 3 seconds, with Corrosive Breath added to the primary target.",
       "notes": "Corrosive Breath poison damage is lethal.<br />Splash Attack deals 100/75/50% damage in a 150/225/300 radius. Splash damage does not affect buildings.<br />Frost Breath stacks with Unique Attack Modifiers.<br />Manta Style's cooldown time will be based on whether Dragon Knight was in his ranged or melee form when the item was used.",
       "dmg": "",
       "attrib": "DURATION: <span class=\"attribVal\">60 / 60 / 60</span><br />\nBONUS MOVE SPEED: <span class=\"attribVal\">25 / 25 / 25</span><br />\nBONUS ATTACK RANGE: <span class=\"attribVal\">372 / 372 / 372</span>",
@@ -2379,7 +2379,7 @@
     "life_stealer_rage": {
       "dname": "Rage",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />",
-      "desc": "Launch into a maddened rage, becoming Spell Immune, 100% resistant magic damage and gaining increased attack speed.",
+      "desc": "Launch into a maddened rage, becoming Spell Immune, 100% resistant to magic damage, and gaining increased attack speed.",
       "notes": "Upon casting, many buffs and debuffs will be removed.",
       "dmg": "",
       "attrib": "ATTACK SPEED BONUS: <span class=\"attribVal\">30 / 45 / 60 / 80</span><br />\nDURATION: <span class=\"attribVal\">3 / 4 / 5 / 6</span>",
@@ -2434,7 +2434,7 @@
     "life_stealer_infest": {
       "dname": "Infest",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Lifestealer infests the body of a target unit, becoming undetectable inside. He can then explode from the host body, dealing damage to nearby enemies. If the infested unit is an enemy creep or a neutral creep, he can take control of the unit's ability to move and attack, and when consumed the creep will heal Lifestealer's health equal to the creep's current health.  Does not work on enemy Heroes.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "desc": "Lifestealer infests the body of a target unit, becoming undetectable inside. He can then explode from the host body, dealing damage to nearby enemies. If the infested unit is an enemy creep or a neutral creep, he can take control of the unit's ability to move and attack, and when consumed the creep will heal Lifestealer's health equal to the creep's current health.  Does not work on enemy heroes.\r\n\r\nUpgradable by Aghanim's Scepter.",
       "notes": "If the infested unit dies before Lifestealer consumes it, no health is gained.<br />Lifestealer gains experience while under the effects of Infest.<br />Creeps that are controlled while Infested share Lifestealer's movement speed.<br />Can be used on Ancient creeps.",
       "dmg": "",
       "attrib": "DAMAGE RADIUS: <span class=\"attribVal\">700 / 700 / 700</span><br />\nDAMAGE: <span class=\"attribVal\">150 / 275 / 400</span>",
@@ -2842,7 +2842,7 @@
       "dname": "Geminate Attack",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
       "desc": "Allows Weaver to dispatch two attacks at once.",
-      "notes": "The second attack will never trigger attack effects such as bash or critical strike.<br />The second attack leaves Weaver 0.25 seconds after the first, and has no range limit.",
+      "notes": "The second attack leaves Weaver 0.25 seconds after the first, and has no range limit.",
       "dmg": "",
       "attrib": "",
       "cmb": "<div class=\"cooldownMana\"><div class=\"cooldown\"><img alt=\"Cooldown\" title=\"Cooldown\" class=\"cooldownImg\" src=\"http://cdn.dota2.com/apps/dota2/images/tooltips/cooldown.png\" width=\"16\" height=\"16\" border=\"0\" /> 6/5/4/3</div><br clear=\"left\" /></div>",
@@ -3072,7 +3072,7 @@
     "doom_bringer_scorched_earth": {
       "dname": "Scorched Earth",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Carpets the nearby earth in flames, damaging enemies while Doom gains bonus HP regen and increased movement speed.",
+      "desc": "Carpets the nearby earth in flames which damage enemies and heal Doom, while also granting him increased movement speed.",
       "notes": "Scorched Earth follows Doom, centered on his location.<br />Other units Doom controls also benefit from Scorched Earth.",
       "dmg": "",
       "attrib": "DAMAGE/REGEN: <span class=\"attribVal\">12 / 24 / 36 / 48</span><br />\nRADIUS: <span class=\"attribVal\">600 / 600 / 600 / 600</span><br />\nBONUS MOVE SPEED: <span class=\"attribVal\">16% / 16% / 16% / 16%</span><br />\nDURATION: <span class=\"attribVal\">10 / 12 / 14 / 16</span>",
@@ -3820,7 +3820,7 @@
     "chaos_knight_chaos_strike": {
       "dname": "Chaos Strike",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />",
-      "desc": "Each of Chaos Knight's attacks has a chance to deal bonus damage and reduce the target's armor by 5 by for 8 seconds.",
+      "desc": "Each of Chaos Knight's attacks has a chance to deal bonus damage and reduce the target's armor by 5 for 8 seconds.",
       "notes": "The armor reduction debuff is applied before the damage occurs, similar to Desolator.<br />Illusions can apply the armor reduction debuff, however it does not stack.",
       "dmg": "",
       "attrib": "CRITICAL CHANCE: <span class=\"attribVal\">10% / 10% / 10% / 10%</span><br />\nCRITICAL DAMAGE: <span class=\"attribVal\">125% / 175% / 225% / 275%</span><br />\nARMOR REDUCTION: <span class=\"attribVal\">5</span><br />\nREDUCTION DURATION: <span class=\"attribVal\">8</span>",
@@ -3908,7 +3908,7 @@
     "treant_living_armor": {
       "dname": "Living Armor",
       "affects": "ABILITY: <span class=\"attribVal\">Unit Target, Point Target</span><br />AFFECTS: <span class=\"attribVal\">Allied Units</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\"><font color=\"#70EA72\">Yes</font></span><br />",
-      "desc": "Infuses the target hero or structure with a protective coating which grants bonus regeneration. Also blocks some damage from all sources . Dispels when a number of damage instances are taken.",
+      "desc": "Infuses the target hero or structure with a protective coating which grants bonus regeneration. Also blocks some damage from all sources. Dispels when a number of damage instances are taken.",
       "notes": "Can be cast through the minimap.",
       "dmg": "",
       "attrib": "DAMAGE INSTANCES: <span class=\"attribVal\">4 / 5 / 6 / 7</span><br />\nREGEN: <span class=\"attribVal\">4 / 7 / 10 / 13</span><br />\nBLOCK: <span class=\"attribVal\">20 / 40 / 60 / 80</span><br />\nDURATION: <span class=\"attribVal\">15</span>",
@@ -3985,10 +3985,10 @@
     "ogre_magi_multicast": {
       "dname": "Multicast",
       "affects": "ABILITY: <span class=\"attribVal\">Passive</span><br />",
-      "desc": "Enables the Ogre Magi to rapidly cast his spells, giving them greater potency. Gives a chance to cast a spell multiple times in one cast. Increases Fireblast's mana cost and decreases its cooldown, adds an area of effect to Ignite and reduces Bloodlust's cooldown and gives it a chance to cast on random allies around Ogre Magi.\r\n\r\nUpgradable by Aghanim's Scepter.",
+      "desc": "Enables Ogre Magi to cast his spells multiple times with each use, while also granting his spells greater potency:\r\n<font color=\"#EEF10D\">Fireblast</font> has its cooldown decreased, its range increased, and its mana cost increased.\r\n<font color=\"#DE8930\">Ignite</font> hits enemies in an area, its range is increased, and it may be cast onto random nearby enemies when used.\r\n<font color=\"#E34F4F\">Bloodlust</font> has its cooldown reduced, and may be cast on random nearby allies when used.\r\n\r\nUpgradable by Aghanim's Scepter.",
       "notes": "",
       "dmg": "",
-      "attrib": "FIREBLAST MANA INCREASE: <span class=\"attribVal\">20 / 40 / 60</span><br />\nFIREBLAST COOLDOWN REDUCTION: <span class=\"attribVal\">2 / 4 / 6</span><br />\nIGNITE RADIUS: <span class=\"attribVal\">150 / 300 / 450</span><br />\nIGNITE CAST RANGE INCREASE: <span class=\"attribVal\">150 / 300 / 450</span><br />\nBLOODLUST RADIUS: <span class=\"attribVal\">575</span><br />\nBLOODLUST COOLDOWN REDUCTION: <span class=\"attribVal\">5 / 10 / 15</span><br />\n2X CHANCE: <span class=\"attribVal\">40% / 50% / 60%</span><br />\n3X CHANCE: <span class=\"attribVal\">0% / 20% / 25%</span><br />\n4X CHANCE: <span class=\"attribVal\">0% / 0% / 12.5%</span>",
+      "attrib": "FIREBLAST MANA INCREASE: <span class=\"attribVal\">20 / 40 / 60</span><br />\nFIREBLAST COOLDOWN REDUCTION: <span class=\"attribVal\">2 / 4 / 6</span><br />\nIGNITE RADIUS: <span class=\"attribVal\">150 / 300 / 450</span><br />\nIGNITE CAST RANGE INCREASE: <span class=\"attribVal\">150 / 300 / 450</span><br />\nBLOODLUST RADIUS: <span class=\"attribVal\">575</span><br />\nBLOODLUST COOLDOWN REDUCTION: <span class=\"attribVal\">5 / 10 / 15</span><br />\n2X CAST CHANCE: <span class=\"attribVal\">40% / 50% / 60%</span><br />\n3X CAST CHANCE: <span class=\"attribVal\">0% / 20% / 25%</span><br />\n4X CAST CHANCE: <span class=\"attribVal\">0% / 0% / 12.5%</span>",
       "cmb": "",
       "lore": "Despite being largely incapacitated by his IQ, the Ogre Magi's success in battle is attributed to pure skill.",
       "hurl": "Ogre_Magi"
@@ -4172,7 +4172,7 @@
     "nyx_assassin_burrow": {
       "dname": "Burrow",
       "affects": "ABILITY: <span class=\"attribVal\">No Target</span><br />",
-      "desc": "Nyx Assasssin buries himself beneath the battlefield over 1 second. Once burrowed, Spiked Carapace instantly stuns nearby enemies when cast, the range of Mana Burn and Impale by is increased by 75%, and Impale's cooldown is decreased. While Burrowed, Nyx Assassin is stationary, unable to attack, and invisible. His health and mana regeneration are also increased, and he gains 40% damage reduction.",
+      "desc": "Nyx Assassin buries himself beneath the battlefield over 1 second. Once burrowed, Spiked Carapace instantly stuns nearby enemies when cast, the range of Mana Burn and Impale is increased by 75%, and Impale's cooldown is decreased. While burrowed, Nyx Assassin is stationary, unable to attack, and invisible. His health and mana regeneration are also increased, and he gains 40% damage reduction.",
       "notes": "Casting Vendetta will cancel burrow.",
       "dmg": "",
       "attrib": "BURROW HEALTH/MANA REGEN: <span class=\"attribVal\">1.5%</span><br />\nBURROW DAMAGE REDUCTION: <span class=\"attribVal\">40%</span><br />\nBURROW MANA BURN RANGE: <span class=\"attribVal\">1050</span><br />\nBURROW IMPALE RANGE: <span class=\"attribVal\">1225</span><br />\nBURROW IMPALE COOLDOWN: <span class=\"attribVal\">7</span><br />\nBURROW SPIKED CARAPACE RANGE: <span class=\"attribVal\">300</span>",
@@ -5140,7 +5140,7 @@
     "earth_spirit_rolling_boulder": {
       "dname": "Rolling Boulder",
       "affects": "ABILITY: <span class=\"attribVal\">Point Target</span><br />DAMAGE TYPE: <span class=\"attribVal\">Magical</span><br />PIERCES SPELL IMMUNITY: <span class=\"attribVal\">No</span><br />",
-      "desc": "Earth Spirit gathers himself into a boulder and, after a 0.6s delay, rolls toward the target location, damaging enemy units. He will stop if he collides with a hero or is stunned. If he rolls over a Stone Remnant, he will travel further and faster, and enemies hit by the boulder will have their movement speed slowed.",
+      "desc": "Earth Spirit gathers himself into a boulder and, after a 0.6s delay, rolls toward the target location, damaging enemy units. He will stop if he collides with an enemy hero or is stunned. If he rolls over a Stone Remnant, he will travel further and faster, and enemies hit by the boulder will have their movement speed slowed.",
       "notes": "Rolling over a Stone Remnant will destroy the Remnant.<br />The boulder has a radius of 150.",
       "dmg": "",
       "attrib": "SPEED: <span class=\"attribVal\">800</span><br />\nSPEED (REMNANT): <span class=\"attribVal\">1600</span><br />\nDISTANCE: <span class=\"attribVal\">800</span><br />\nDISTANCE (REMNANT): <span class=\"attribVal\">1600</span><br />\nDAMAGE: <span class=\"attribVal\">100</span><br />\nMOVEMENT SLOW: <span class=\"attribVal\">80%</span><br />\nSLOW DURATION: <span class=\"attribVal\">2</span>",

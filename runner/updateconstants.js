@@ -12,13 +12,13 @@ var urls = {
     }).url,
     //"leagues": utility.generateJob("api_leagues").url
 };
-async.each(Object.keys(urls), function(key, cb) {
-    var val = urls[key];
-    //grab raw data from each url and save
-    getData(val, function(err, result) {
-        fs.writeFileSync('../json/' + key + ".json", JSON.stringify(result, null, 2));
-        cb(err);
-    });
-}, function(err) {
-    process.exit(Number(err));
-});
+module.exports = function(cb) {
+    async.each(Object.keys(urls), function(key, cb) {
+        var val = urls[key];
+        //grab raw data from each url and save
+        getData(val, function(err, result) {
+            fs.writeFileSync('./json/' + key + ".json", JSON.stringify(result, null, 2));
+            cb(err);
+        });
+    }, cb);
+};
