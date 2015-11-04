@@ -9,53 +9,10 @@ YASP - YASP: Another Stats Page
 
 Features
 ----
-* Replay Parsing: Parses replays of Dota 2 matches to provide in-depth statistics for matches.
-  * Item build times
-  * Pick order
-  * Number of pings
-  * Stun/disable time
-  * Consumables bought
-  * Runes picked up
-  * Laning position heatmap
-  * Ward placement map
-  * LHs per min table
-  * Radiant advantage/Gold/XP/LH graphs per min
-  * Teamfight summary
-  * Objective times
-  * Largest hit on a hero
-  * Ability uses/hits
-  * Item uses
-  * Gold/XP breakdown
-  * Damage/Kills crosstables
-  * Multikills/Kill streaks
-  * All chat
-* Advanced Querying: Supports flexible querying and aggregation with the following criteria:
-  * Player(s) in game (account ID)
-  * Team composition (heroes)
-  * Opponent composition (heroes)
-  * Standard filters: patch, game mode, hero, etc.
-* Aggregations:
-  * Result count, win rate
-  * Win rate by hour/day of week
-  * Histograms (number of matches across Duration, LH, HD, TD, K, D, A, etc.)
-  * Hero Matchups (win rate when playing as, with, against a hero)
-  * Teammates/Opponents (win rate playing with/against particular players)
-  * Max/N/Sum on multiple stat categories
-  * Mean item build times
-  * Skill accuracy
-  * Records
-  * Multikills/Kill Streaks
-  * Laning
-  * Ward Maps
-  * Trends
-  * Comparison against other users
-  * Word Clouds (text said and read in all chat)
-* Rating Tracker: Keep track of MMR by adding a Steam account as a friend
-* Pro Games: Optionally parses professional matches: `leagueid>0`
-* Modular: Microservice architecture, with pieces that can be used independently
-* Scalable: Designed to scale to thousands of users.
-* Free: No "premium" features.  All data is available for free to users.
-* Open Source: All code is publicly available for feedback and contributions from the Dota 2 developer community.
+
+We provide free, open source replay parsing for the Dota 2 Community. This includes item timelines, gold/LH graphs, ward positions, and position heatmaps.
+
+See [here](http://yasp.co/matches/1912366402) for an example of our match analysis. For a full list of our features, see the [wiki](https://github.com/yasp-dota/yasp/wiki/Features).
 
 Tech
 ----
@@ -65,13 +22,15 @@ Tech
 
 Quickstart
 ----
-* Install dependencies.  If on Debian/Ubuntu: `sudo bash init.sh`  Otherwise, you're responsible for figuring out how to install dependencies yourself.
+* Install dependencies: `sudo bash init.sh`. For other platforms, please have a look at the [wiki](https://github.com/yasp-dota/yasp/wiki/Installation-for-other-platforms).
 * Create .env file with required config values in KEY=VALUE format (see config.js for a full listing of options) `cp .env_example .env`
   * Note: If you have Steam Guard activated on your account you will
     either have to deactivate it or create a new account for use with
     the retriever (recommended).
 * Build `npm run build`
-* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`.  You can also start individual services: `npm run dev web,parser`
+* Run `npm test` to make sure your install works correctly
+* Run all services in dev mode (this will run under nodemon so file changes automatically restart the server): `npm run dev`. You can also start individual services: `npm run dev web,parser`
+
 
 Sample Data
 ----
@@ -80,6 +39,7 @@ Sample Data
 
 Developer's Guide
 ----
+
 * The project uses a microservice architecture, in order to promote modularity and allow different pieces to scale on different machines.
 * Build step.  `npm run build` executes the following.
     * `npm install` Downloads and installs the Node dependencies from npm.
