@@ -5,15 +5,12 @@ var fs = require('fs');
 var urls = {
     "items": "http://www.dota2.com/jsfeed/itemdata?l=english",
     "abilities": "http://www.dota2.com/jsfeed/abilitydata?l=english",
-    /*
     "heropickerdata": "http://www.dota2.com/jsfeed/heropickerdata?l=english",
-    "herodata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
-    //these require an API key!
+    "heropediadata": "http://www.dota2.com/jsfeed/heropediadata?feeds=herodata",
     "heroes": utility.generateJob("api_heroes", {
         language: "en-us"
     }).url,
-    "leagues": utility.generateJob("api_leagues").url
-    */
+    //"leagues": utility.generateJob("api_leagues").url
 };
 async.each(Object.keys(urls), function(key, cb) {
     var val = urls[key];
