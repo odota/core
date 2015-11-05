@@ -12,6 +12,7 @@ append footer_assets
     var names = data.map(function(d){return d.bin_name});
     var options = {
         bindto: "#mmr",
+        size: {height: 600},
         data: {
             columns: [['Players'].concat(bins)],
             type: 'bar'

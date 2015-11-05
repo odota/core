@@ -208,17 +208,34 @@ app.use('/names/:vanityUrl', function(req, res, cb) {
 });
 var mmrDistQuery = fs.readFileSync('./sql/mmrDist.sql', "utf8");
 app.use('/distribution', function(req, res, next) {
-    db.raw(mmrDistQuery).asCallback(function(err, results) {
+    redis.get('distribution:mmr', function(err, result) {
         if (err) {
             return next(err);
         }
-        var sum = results.rows.reduce(function(prev, current) {
-            return {count: prev.count + current.count};
-        }, {count: 0});
-        res.render('distribution', {
-            sum: sum,
-            data: results.rows
-        });
+        if (result) {
+            result = JSON.parse(result);
+            res.render('distribution', result);
+        }
+        else {
+            db.raw(mmrDistQuery).asCallback(function(err, results) {
+                if (err) {
+                    return next(err);
+                }
+                var sum = results.rows.reduce(function(prev, current) {
+                    return {
+                        count: prev.count + current.count
+                    };
+                }, {
+                    count: 0
+                });
+                var result = {
+                    sum: sum,
+                    data: results.rows
+                };
+                redis.set('distribution:mmr', JSON.stringify(result));
+                res.render('distribution', result);
+            });
+        }
     });
 });
 app.use('/api', api);

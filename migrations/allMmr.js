@@ -9,7 +9,7 @@ var retrieverArr = config.RETRIEVER_HOST.split(",");
 var count = 0;
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
-db.select('account_id').from('players').where('account_id', '>', start_id).orderBy('account_id', 'asc').asCallback(function(err, players) {
+db.select('account_id').from('players').where('account_id', '>', start_id).orderByRaw(start_id ? 'acount_id asc' : 'random()').asCallback(function(err, players) {
     if (err) {
         process.exit(1);
     }
