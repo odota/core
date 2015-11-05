@@ -8,14 +8,27 @@ block content
 append footer_assets
   script.
     var data = !{JSON.stringify(data)};
+    var count = !{sum.count};
     var bins = data.map(function(d){return d.count;});
+    var max = Math.max.apply(null, bins);
     var names = data.map(function(d){return d.bin_name});
+    var pcts = data.map(function(d){return d.cumulative_sum/count*100;});
     var options = {
         bindto: "#mmr",
         size: {height: 600},
         data: {
-            columns: [['Players'].concat(bins)],
-            type: 'bar'
+            columns: [
+            ['Players'].concat(bins),
+            ['Percentile'].concat(pcts)
+            ],
+            types: {
+            "Players": "bar",
+            "Percentile": "spline"
+            },
+            axes: {
+            "Players":"y",
+            "Percentile":"y2"
+            }
         },
         bar: {
             width: {
@@ -33,12 +46,18 @@ append footer_assets
             },
             y: {
                 label: "# Players"
+            },
+            y2:{
+                show:true
             }
         },
         tooltip: {
             format: {
                 value: function(value, ratio, id, ind) {
-                    return value;
+                    if (id==="Percentile"){
+                        return value.toFixed(2);
+                    }
+                    return value.toFixed(2);
                 }
             }
         }

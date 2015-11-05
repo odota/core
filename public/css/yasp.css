@@ -365,11 +365,14 @@ table tfoot * {
     color: #FFF;
 }
 
+g
 .c3-axis path,
 .c3-axis line {
     stroke: rgb(199, 199, 199);
 }
 
+.c3-axis-y2 .tick,
+.c3.axis-y2-label,
 .c3-axis-y .tick,
 .c3-axis-x .tick,
 .c3-axis-x-label,
