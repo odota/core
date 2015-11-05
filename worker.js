@@ -31,9 +31,8 @@ invokeInterval(function(cb) {
 //process requests (api call, waits for parse to complete)
 queue.request.process(numCPUs, processApi);
 //updatenames queues an api request, probably should have name updating occur in a separate service
-//jobs.process('api', processApi);
 //invokeInterval(updateNames, 60 * 1000);
-//invokeInterval(constants, 15 * 60 * 1000);
+//jobs.process('api', processApi);
 function processApi(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, body) {

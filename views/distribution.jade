@@ -9,16 +9,19 @@ append footer_assets
   script.
     var data = !{JSON.stringify(data)};
     var count = !{sum.count};
-    var bins = data.map(function(d){return d.count;});
-    var max = Math.max.apply(null, bins);
+    var counts = data.map(function(d){return d.count;});
     var names = data.map(function(d){return d.bin_name});
     var pcts = data.map(function(d){return d.cumulative_sum/count*100;});
+    var max = Math.max.apply(null, counts);
+    var counts2 = [];
     var options = {
         bindto: "#mmr",
         size: {height: 600},
         data: {
+            x: 'MMR',
             columns: [
-            ['Players'].concat(bins),
+            ['MMR'].concat(names),
+            ['Players'].concat(counts),
             ['Percentile'].concat(pcts)
             ],
             types: {
@@ -39,7 +42,7 @@ append footer_assets
             x: {
                 tick: {
                     format: function(t) {
-                        return t*100;
+                        return t;
                     }
                 },
                 label: "MMR"
@@ -57,7 +60,7 @@ append footer_assets
                     if (id==="Percentile"){
                         return value.toFixed(2);
                     }
-                    return value.toFixed(2);
+                    return value;
                 }
             }
         }
