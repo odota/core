@@ -206,6 +206,21 @@ app.use('/names/:vanityUrl', function(req, res, cb) {
         res.redirect('/players/' + Number(result));
     });
 });
+var mmrDistQuery = fs.readFileSync('./sql/mmrDist.sql', "utf8");
+app.use('/distribution', function(req, res, next) {
+    db.raw(mmrDistQuery).asCallback(function(err, results) {
+        if (err) {
+            return next(err);
+        }
+        var sum = results.rows.reduce(function(prev, current) {
+            return {count: prev.count + current.count};
+        }, {count: 0});
+        res.render('distribution', {
+            sum: sum,
+            data: results.rows
+        });
+    });
+});
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));

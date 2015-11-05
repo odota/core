@@ -1,14 +1,16 @@
 var db = require('../db');
-for (var i = 0; i < 5000; i++) {
-    db.players.insert({
-        account_id: i,
-        ratings: [
-            {
-                "match_id": 1238535235 + i,
-                "account_id": i,
-                "solo_competitive_rank": i,
-                "competitive_rank": i * 2,
-                "time": new Date(i)
-        }]
+var async = require('async');
+
+db.from('players').asCallback(function(err, players) {
+    async.each(players, function(p, cb) {
+        db.insert({
+            "match_id": p.account_id,
+            "account_id": p.account_id,
+            "solo_competitive_rank": p.account_id % 8000,
+            "competitive_rank": p.account_id % 8000,
+            "time": new Date()
+        }).into('player_ratings').asCallback(cb);
+    }, function(err) {
+        process.exit(Number(err));
     });
-}
+});

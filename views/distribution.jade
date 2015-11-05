@@ -1,0 +1,45 @@
+extend layout
+
+block content
+  h3 Solo MMR Distribution 
+    small Data from #{sum.count} players sharing MMR on Dota profile
+  #mmr
+
+append footer_assets
+  script.
+    var data = !{JSON.stringify(data)};
+    var bins = data.map(function(d){return d.count;});
+    var names = data.map(function(d){return d.bin_name});
+    var options = {
+        bindto: "#mmr",
+        data: {
+            columns: [['Players'].concat(bins)],
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.8
+            }
+        },
+        axis: {
+            x: {
+                tick: {
+                    format: function(t) {
+                        return t*100;
+                    }
+                },
+                label: "MMR"
+            },
+            y: {
+                label: "# Players"
+            }
+        },
+        tooltip: {
+            format: {
+                value: function(value, ratio, id, ind) {
+                    return value;
+                }
+            }
+        }
+    };
+    c3.generate(options);
