@@ -62,6 +62,7 @@ function processApi(job, cb) {
                     var poll = setInterval(function() {
                         queue.parse.getJob(job2.jobId).then(function(job) {
                             job.getState().then(function(state) {
+                                console.log(state);
                                 if (state === "completed") {
                                     clearInterval(poll);
                                     return cb();
