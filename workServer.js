@@ -26,7 +26,11 @@ buildSets(db, redis, function(err) {
             }
         });
         return;
-    }).then(start);
+    })
+    .catch(function(err) {
+        console.log(err);
+    })
+    .finally(start);
 });
 
 function start() {
