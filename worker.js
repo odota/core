@@ -59,7 +59,6 @@ function processApi(job, cb) {
             }, function(err, job2) {
                 //job2 is the parse job
                 if (job.data.request && job2) {
-                    //TODO set timeout?
                     var poll = setInterval(function() {
                         queue.parse.getJob(job2.jobId).then(function(job) {
                             if (job) {
@@ -73,6 +72,10 @@ function processApi(job, cb) {
                                         return cb("failed");
                                     }
                                 });
+                            }
+                            else {
+                                clearInterval(poll);
+                                return cb("failed");
                             }
                         });
                     }, 3000);
