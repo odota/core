@@ -62,21 +62,18 @@ function processApi(job, cb) {
                     var poll = setInterval(function() {
                         queue.parse.getJob(job2.jobId).then(function(job) {
                             job.getState().then(function(state) {
-                                console.log(state);
+                                console.log(job.jobId, state);
                                 if (state === "completed") {
                                     clearInterval(poll);
                                     return cb();
                                 }
-                                if (state === "failed") {
+                                else if (state !== "active" && state !== "waiting") {
                                     clearInterval(poll);
                                     return cb("failed");
                                 }
                             });
-                        }).catch(function(err) {
-                            clearInterval(poll);
-                            return cb(err);
                         });
-                    }, 3000);
+                    }, 2000);
                 }
                 else {
                     cb(err);
