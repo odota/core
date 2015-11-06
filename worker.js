@@ -29,7 +29,7 @@ invokeInterval(function(cb) {
     }
 }, 60 * 60 * 1000);
 //process requests (api call, waits for parse to complete)
-queue.request.process(numCPUs, processApi);
+queue.request.process(numCPUs * 3, processApi);
 //updatenames queues an api request, probably should have name updating occur in a separate service
 //invokeInterval(updateNames, 60 * 1000);
 //jobs.process('api', processApi);
