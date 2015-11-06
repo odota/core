@@ -69,7 +69,9 @@ function start() {
         }, 180 * 1000);
         var cb = function cb(err) {
             console.timeEnd("parse " + match_id);
-            clearTimeout(expire);
+            if (err !== "timeout") {
+                clearTimeout(expire);
+            }
             delete active_jobs[job.jobId];
             /*
             if (err) {
