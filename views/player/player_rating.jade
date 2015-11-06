@@ -17,14 +17,4 @@ append footer_assets
       indexBased = !indexBased;
       ratingsChart(ratings, indexBased);
     };
-    ratings.push({
-    time: new Date().setDate(new Date().getDate() + 7),
-    solo_competitive_rank: 7000,
-    competitive_rank: null
-     });
-         ratings.push({
-    time: new Date().setDate(new Date().getDate() + 14),
-    solo_competitive_rank: 7000,
-    competitive_rank: 4000
-     });
     ratingsChart(ratings, indexBased);
