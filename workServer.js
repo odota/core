@@ -22,7 +22,7 @@ buildSets(db, redis, function(err) {
 });
 
 function start() {
-    var pool_size = 200;
+    var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
         console.log('loaded job %s into pool', job.jobId);
         //save the callback for this job
