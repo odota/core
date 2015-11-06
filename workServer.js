@@ -12,7 +12,7 @@ var express = require('express');
 var EventEmitter = require('events');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
-var queued_jobs = {};
+//var queued_jobs = {};
 var active_jobs = {};
 buildSets(db, redis, function(err) {
     if (err) {
@@ -22,6 +22,7 @@ buildSets(db, redis, function(err) {
 });
 
 function start() {
+    /*
     var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
         console.log('loaded job %s into pool', job.jobId);
@@ -31,6 +32,7 @@ function start() {
         //put it in the queue
         queued_jobs[job.jobId] = job;
     });
+    */
     app.use(bodyParser.json({
         limit: '1mb'
     }));
@@ -41,65 +43,69 @@ function start() {
             });
         }
         console.log('client requested work');
-        var job = queued_jobs[Object.keys(queued_jobs)[0]];
-        if (!job) {
-            console.log('no work available');
-            return res.status(500).json({
-                error: "no work available"
-            });
-        }
-        var cb = job.cb;
-        //remove job from pool
-        delete queued_jobs[job.jobId];
-        active_jobs[job.jobId] = job;
-        var expire = setTimeout(function() {
-            console.log('job %s expired', job.jobId);
-            cb("timeout");
-            delete active_jobs[job.jobId];
-        }, 180 * 1000);
-        console.log('server assigned jobid %s', job.jobId);
-        var match_id = job.data.payload.match_id;
-        var match = job.data.payload;
-        //TODO non-valve urls don't expire, we can try using them
-        if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
-            console.log("replay too old, url expired");
-            return cb();
-        }
-        //get the replay url and save it
-        getReplayUrl(db, redis, match, function(err) {
-            if (err) {
-                return cb(err);
+        queue.parse.getNextJob().then(function(job) {
+            job.ee = new EventEmitter();
+            active_jobs[job.jobId] = job;
+            var expire = setTimeout(function() {
+                console.log('job %s expired', job.jobId);
+                return cb("timeout");
+            }, 180 * 1000);
+            console.log('server assigned jobid %s', job.jobId);
+            var match_id = job.data.payload.match_id;
+            var match = job.data.payload;
+            //TODO non-valve urls don't expire, we can try using them
+            if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
+                console.log("replay too old, url expired");
+                return cb();
             }
-            else {
-                console.time("parse " + match_id);
-                console.log('server sent jobid %s', job.jobId);
-                res.json({jobId: job.jobId, data: job.data});
-                job.ee.on('submitwork', function(parsed_data) {
-                    if (parsed_data.error) {
-                        return cb(parsed_data.error);
-                    }
-                    delete parsed_data.key;
-                    delete parsed_data.jobId;
-                    //extend match object with parsed data, keep existing data if key conflict (match_id)
-                    //match.players was deleted earlier during insertion of api data
-                    for (var key in parsed_data) {
-                        match[key] = match[key] || parsed_data[key];
-                    }
-                    match.players.forEach(function(p, i) {
-                        p.player_slot = i < match.players.length / 2 ? i : i + (128 - 5);
+            //get the replay url and save it
+            getReplayUrl(db, redis, match, function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                else {
+                    console.time("parse " + match_id);
+                    console.log('server sent jobid %s', job.jobId);
+                    res.json({
+                        jobId: job.jobId,
+                        data: job.data
                     });
-                    match.parse_status = 2;
-                    //fs.writeFileSync("output.json", JSON.stringify(match));
-                    insertMatch(db, redis, queue, match, {
-                        type: "parsed"
-                    }, function(err) {
-                        console.timeEnd("parse " + match_id);
-                        clearTimeout(expire);
-                        cb(err);
-                        delete active_jobs[job.jobId];
-                        return;
+                    job.ee.on('submitwork', function(parsed_data) {
+                        if (parsed_data.error) {
+                            return cb(parsed_data.error);
+                        }
+                        delete parsed_data.key;
+                        delete parsed_data.jobId;
+                        //extend match object with parsed data, keep existing data if key conflict (match_id)
+                        //match.players was deleted earlier during insertion of api data
+                        for (var key in parsed_data) {
+                            match[key] = match[key] || parsed_data[key];
+                        }
+                        match.players.forEach(function(p, i) {
+                            p.player_slot = i < match.players.length / 2 ? i : i + (128 - 5);
+                        });
+                        match.parse_status = 2;
+                        //fs.writeFileSync("output.json", JSON.stringify(match));
+                        insertMatch(db, redis, queue, match, {
+                            type: "parsed"
+                        }, function(err) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            console.timeEnd("parse " + match_id);
+                            clearTimeout(expire);
+                            cb(err);
+                        });
                     });
-                });
+                }
+            });
+
+            function cb(err) {
+                delete active_jobs[job.jobId];
+                if (err) {
+                    return job.moveToFailed(err);
+                }
+                return job.moveToCompleted();
             }
         });
     });

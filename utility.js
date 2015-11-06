@@ -401,7 +401,9 @@ function invokeInterval(func, delay) {
 
 function queueReq(queue, type, payload, options, cb) {
     var job = generateJob(type, payload);
-    queue[job.type].add(job, {attempts: options.attempts || 15, backoff: {
+    queue[job.type].add(job, {attempts: options.attempts || 15, 
+    timeout: 180 * 1000,
+    backoff: {
         delay: 60 * 1000,
         type: 'exponential'
     }}).then(function(queuejob) {
