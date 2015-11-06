@@ -21,7 +21,9 @@ buildSets(db, redis, function(err) {
         console.log('clearing actives');
         //requeue currently active jobs
         actives.forEach(function(job) {
-            job.moveToFailed("shutdown");
+            if (job) {
+                job.moveToFailed("shutdown");
+            }
         });
         return;
     }).then(start);
