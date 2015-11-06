@@ -24,11 +24,9 @@ buildSets(db, redis, function(err) {
             job.moveToFailed("shutdown");
         });
         return;
-    })
-    .catch(function(err) {
+    }).catch(function(err) {
         console.log(err);
-    })
-    .finally(start);
+    }).finally(start);
 });
 
 function start() {
@@ -88,16 +86,14 @@ function start() {
                         //fs.writeFileSync("output.json", JSON.stringify(match));
                         insertMatch(db, redis, queue, match, {
                             type: "parsed"
-                        }, function(err) {
-                            console.timeEnd("parse " + match_id);
-                            clearTimeout(expire);
-                            cb(err);
-                        });
+                        }, cb);
                     });
                 }
             });
 
             function cb(err) {
+                console.timeEnd("parse " + match_id);
+                clearTimeout(expire);
                 delete active_jobs[job.jobId];
                 if (err) {
                     return job.moveToFailed(err);
