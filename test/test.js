@@ -205,7 +205,7 @@ describe("parser", function() {
             };
             queueReq(queue, "parse", match, {}, function(err, job) {
                 assert(job && !err);
-                queue.parse.once('completed', function(job2, result) {
+                queue.parse.once('completed', function(job2) {
                     if (job.jobId === job2.jobId) {
                         return done();
                     }

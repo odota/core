@@ -97,6 +97,7 @@ function start() {
                 if (err) {
                     return job.moveToFailed(err);
                 }
+                queue.parse.emit('completed', job);
                 return job.moveToCompleted();
             }
         }).catch(function(err) {
