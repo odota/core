@@ -68,7 +68,6 @@ function start() {
             return cb("timeout");
         }, 180 * 1000);
         var cb = function cb(err) {
-            console.timeEnd("parse " + match_id);
             clearTimeout(expire);
             delete active_jobs[job.jobId];
             /*
@@ -117,6 +116,7 @@ function start() {
                     });
                     match.parse_status = 2;
                     //fs.writeFileSync("output.json", JSON.stringify(match));
+                    console.timeEnd("parse " + match_id);
                     insertMatch(db, redis, queue, match, {
                         type: "parsed"
                     }, cb);
