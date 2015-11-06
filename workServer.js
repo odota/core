@@ -12,27 +12,22 @@ var express = require('express');
 var EventEmitter = require('events');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
-//var queued_jobs = {};
 var active_jobs = {};
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
     }
-    start();
+    queue.parse.getActive().then(function(actives) {
+        console.log('clearing actives');
+        //requeue currently active jobs
+        actives.forEach(function(job) {
+            job.moveToFailed("shutdown");
+        });
+        return;
+    }).then(start);
 });
 
 function start() {
-    /*
-    var pool_size = 100;
-    queue.parse.process(pool_size, function(job, cb) {
-        console.log('loaded job %s into pool', job.jobId);
-        //save the callback for this job
-        job.cb = cb;
-        job.ee = new EventEmitter();
-        //put it in the queue
-        queued_jobs[job.jobId] = job;
-    });
-    */
     app.use(bodyParser.json({
         limit: '1mb'
     }));
@@ -89,9 +84,6 @@ function start() {
                         insertMatch(db, redis, queue, match, {
                             type: "parsed"
                         }, function(err) {
-                            if (err) {
-                                return cb(err);
-                            }
                             console.timeEnd("parse " + match_id);
                             clearTimeout(expire);
                             cb(err);
@@ -107,6 +99,11 @@ function start() {
                 }
                 return job.moveToCompleted();
             }
+        }).catch(function(err) {
+            err = err || "no work available";
+            return res.json({
+                error: err
+            });
         });
     });
     app.post('/parse', function(req, res) {
