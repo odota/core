@@ -75,7 +75,7 @@ function processApi(job, cb) {
                                 });
                             }
                         });
-                    }, 1000);
+                    }, 3000);
                 }
                 else {
                     cb(err);
