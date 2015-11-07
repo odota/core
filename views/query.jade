@@ -59,7 +59,7 @@ h2.inline-header
         .form-group
           label Patch
           select.form-control(multiple name="patch" placeholder="Any Patch")#patch
-            each entry, i in constants.patch
+            each entry, i in constants.patch.reverse()
               option(value=i, selected=(q["patch"] && q["patch"][0]===i))=entry.name
         .form-group
           label Game Mode

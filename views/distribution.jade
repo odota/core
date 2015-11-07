@@ -4,7 +4,7 @@ block content
   .row
     .col-md-12
       h3 Solo MMR Distribution 
-        small Data from #{mmr.sum.count} players sharing MMR on Dota profile
+        small Data from #{mmr.sum.count} players sharing solo MMR on Dota profile
       #mmr
   .row
     .col-md-6
@@ -35,14 +35,17 @@ append footer_assets
             ['Players'].concat(counts),
             ['Percentile'].concat(pcts)
             ],
+            type: "bar",
             types: {
-            "Players": "bar",
             "Percentile": "spline"
             },
             axes: {
             "Players":"y",
             "Percentile":"y2"
-            }
+            },
+            groups: [
+            ['Players','Percentile']
+            ]
         },
         bar: {
             width: {
@@ -51,11 +54,6 @@ append footer_assets
         },
         axis: {
             x: {
-                tick: {
-                    format: function(t) {
-                        return t;
-                    }
-                },
                 label: "MMR"
             },
             y: {

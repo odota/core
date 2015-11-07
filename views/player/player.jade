@@ -112,6 +112,7 @@ append footer_assets
         "order": [
                 [0, "desc"]
             ],
+        info: #{route === "matches"},
         paging: #{route === "matches"},
         pageLength: 20,
         lengthChange: false,
@@ -143,6 +144,7 @@ append footer_assets
     });
 
     $('#heroes').dataTable({
+        info: false,
         "paging": false,
         "searching": false,
         "order": [
@@ -166,6 +168,7 @@ append footer_assets
     });
 
     $('#teammates').dataTable({
+        info: false,
         "paging": false,
         "searching": false,
         "order": [
