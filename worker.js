@@ -27,6 +27,7 @@ invokeInterval(function(cb) {
         queue[key].clean(24 * 60 * 60 * 1000, 'completed');
         queue[key].clean(24 * 60 * 60 * 1000, 'failed');
     }
+    return cb();
 }, 60 * 60 * 1000);
 //process requests (api call, waits for parse to complete)
 queue.request.process(numCPUs * 3, processApi);
