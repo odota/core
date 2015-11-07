@@ -9,9 +9,11 @@ var constants = require('../constants.js');
 var matchPages = constants.match_pages;
 module.exports = function(db, redis) {
     matches.get('/:match_id/:info?', function(req, res, next) {
+        /*
         if (req.query.json) {
             return res.status(500).json({error: "currently disabled"});
         }
+        */
         console.time("match page");
         prepareMatch(req.params.match_id, function(err, match) {
             if (err) {

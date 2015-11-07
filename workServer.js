@@ -9,7 +9,6 @@ var insertMatch = require('./queries').insertMatch;
 var buildSets = require('./buildSets');
 var bodyParser = require('body-parser');
 var express = require('express');
-var EventEmitter = require('events');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
 var active_jobs = {};
@@ -60,7 +59,6 @@ function start() {
             });
         }
         //queue.parse.getNextJob().then(function(job) {
-        job.ee = new EventEmitter();
         delete queued_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         var expire = setTimeout(function() {
@@ -99,7 +97,7 @@ function start() {
                     jobId: job.jobId,
                     data: job.data
                 });
-                job.ee.on('submitwork', function(parsed_data) {
+                job.submitWork = function(parsed_data) {
                     if (parsed_data.error) {
                         return cb(parsed_data.error);
                     }
@@ -120,7 +118,7 @@ function start() {
                     insertMatch(db, redis, queue, match, {
                         type: "parsed"
                     }, cb);
-                });
+                }
             }
         });
         //})
@@ -144,7 +142,7 @@ function start() {
         console.log('received submitted work');
         if (active_jobs[req.body.jobId]) {
             var job = active_jobs[req.body.jobId];
-            job.ee.emit('submitwork', req.body);
+            job.submitWork(req.body);
             return res.json({
                 error: null
             });
