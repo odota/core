@@ -110,6 +110,14 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(function(req, res, next) {
+    if (req.headers.host.match(/^www/) !== null) {
+        res.redirect(req.protocol + '://' + req.headers.host.replace(/^www\./, '') + req.url);
+    }
+    else {
+        next();
+    }
+});
+app.use(function(req, res, next) {
     async.parallel({
         banner: function(cb) {
             redis.get("banner", cb);
