@@ -91,7 +91,6 @@ function start() {
                 return cb(err);
             }
             else {
-                console.time("parse " + match_id);
                 console.log('server sent jobid %s', job.jobId);
                 res.json({
                     jobId: job.jobId,
@@ -114,7 +113,6 @@ function start() {
                     });
                     match.parse_status = 2;
                     //fs.writeFileSync("output.json", JSON.stringify(match));
-                    console.timeEnd("parse " + match_id);
                     insertMatch(db, redis, queue, match, {
                         type: "parsed"
                     }, cb);

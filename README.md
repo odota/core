@@ -1,4 +1,4 @@
-YASP - YASP: Another Stats Page
+YASP (Yet Another Stats Page)
 ====
 [![Build Status](https://travis-ci.org/yasp-dota/yasp.svg)](https://travis-ci.org/yasp-dota/yasp)
 [![Code Climate](https://codeclimate.com/github/yasp-dota/yasp/badges/gpa.svg)](https://codeclimate.com/github/yasp-dota/yasp)
