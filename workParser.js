@@ -72,6 +72,7 @@ function getJob() {
     request({
         url: remote,
         json: true,
+        timeout: 30000
     }, function(err, resp, job) {
         if (err) {
             //wait interval, then get another job

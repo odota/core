@@ -1,5 +1,6 @@
 var utility = require('./utility');
 var config = require('./config');
+var moment = require('moment');
 var getData = utility.getData;
 module.exports = function getReplayUrl(db, redis, match, cb) {
     if (match.url) {
@@ -18,6 +19,10 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
             console.log("replay url in db");
             match.url = doc.url;
             return cb(err);
+        }
+        //TODO non-valve urls don't expire, we can try using them
+        if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
+            return cb("Replay expired");
         }
         else {
             redis.get("retrievers", function(err, result) {
