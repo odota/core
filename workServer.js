@@ -50,7 +50,8 @@ function start() {
                 error: "invalid key"
             });
         }
-        console.log('client requested work');
+        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        console.log('client %s requested work', ip);
         var job = queued_jobs[Object.keys(queued_jobs)[0]];
         if (!job) {
             console.log('no work available');
