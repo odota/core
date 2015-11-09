@@ -32,12 +32,10 @@ function scanSkill() {
         var start = null;
         getPageData(start, object, cb);
     }, function(err) {
-        if (err){
-            console.error(err);
+        if (err) {
+            throw err;
         }
-        process.nextTick(function(){
-            scanSkill();
-        });
+        return scanSkill();
     });
 }
 
@@ -79,6 +77,9 @@ function getPageData(start, options, cb) {
                 return cb(err);
             });
         }, function(err) {
+            if (err) {
+                return cb(err);
+            }
             console.log("total results: %s, added: %s", Object.keys(results).length, Object.keys(added).length);
             //repeat until results_remaining===0
             if (data.result.results_remaining === 0) {
