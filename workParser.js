@@ -81,10 +81,8 @@ function getJob() {
         }
         console.log(job);
         if (job.jobId && job.data && job.data.payload && job.data.payload.url) {
-            var payload = job.data.payload;
-            var url = job.data.payload.url;
-            console.log("got work from server, jobid: %s, url: %s", job.jobId, url);
-            runParse(payload, function(err, parsed_data) {
+            console.log("got work from server, jobid: %s, url: %s", job.jobId, job.data.payload.url);
+            runParse(job.data.payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
                     parsed_data = {
@@ -118,9 +116,9 @@ function getJob() {
     });
 }
 
-function runParse(data, cb) {
+function runParse(match, cb) {
     var print_multi_kill_streak_debugging = false;
-    var url = data.url;
+    var url = match.url;
     var error = "incomplete";
     var inStream;
     var parseStream;
@@ -130,7 +128,7 @@ function runParse(data, cb) {
     var entries = [];
     var hero_to_slot = {};
     var hero_to_id = {};
-    var curr_player_hero = {};
+    //var curr_player_hero = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
@@ -153,6 +151,10 @@ function runParse(data, cb) {
         }
     };
     var types = {
+        "player_slot": function(e) {
+            parsed_data.players[e.key].player_slot = e.value;
+            console.log(e);
+        },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
         },
@@ -685,6 +687,8 @@ function runParse(data, cb) {
                     xptotal -= p.xp_t[i];
                     goldtotal -= p.gold_t[i];
                 }
+                //use player slot to id mapping sent from server to fill in account_ids (for determining player cache updates on insert)
+                p.account_id = match.slot_to_id[p.player_slot];
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);

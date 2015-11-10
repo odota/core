@@ -25,7 +25,6 @@ function computeMatchData(match) {
  **/
 function computePlayerMatchData(player_match) {
     computeMatchData(player_match);
-    console.log(player_match.patch);
     player_match.player_win = (isRadiant(player_match) === player_match.radiant_win); //did the player win?
     player_match.isRadiant = isRadiant(player_match);
     player_match.total_gold = ~~(player_match.gold_per_min * player_match.duration / 60);

@@ -79,7 +79,6 @@ function start() {
                 match[key] = match[key] || parsed_data[key];
             }
             match.players.forEach(function(p, i) {
-                p.player_slot = i < match.players.length / 2 ? i : i + (128 - 5);
                 p.account_id = match.slot_to_id[p.player_slot];
             });
             match.parse_status = 2;

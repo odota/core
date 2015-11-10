@@ -71,6 +71,8 @@ function processApi(job, cb) {
                                     clearInterval(poll);
                                     return cb("failed");
                                 }
+                            }).catch(function(err) {
+                                return cb(err);
                             });
                         });
                     }, 2000);

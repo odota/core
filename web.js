@@ -326,7 +326,7 @@ app.route('/request_job').post(function(req, res) {
         }
         var match_id = req.body.match_id;
         match_id = Number(match_id);
-        if (!body.success && !config.DISABLE_RECAPTCHA) {
+        if (!body.success && config.ENABLE_RECAPTCHA) {
             console.log('failed recaptcha');
             res.json({
                 error: "Recaptcha Failed!"

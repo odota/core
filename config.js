@@ -32,13 +32,12 @@ var defaults = {
     "PROXY_URLS": "", //comma separated list of proxy urls to use
     "STEAM_API_HOST": "api.steampowered.com",
     "ROLE": "", //for specifying a node type
-    "DISABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page,
-    "DISABLE_PRO_PARSING": "", // set to disable parsing pro matches from sequential API
-    "DISABLE_ADS": "", //disable ads
-    "PARSER_PARALLELISM": 8,
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
-    "ENABLE_MATCH_CACHE": "",
-    "ENABLE_PLAYER_CACHE": "",
+    "ENABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page,
+    "ENABLE_ADS": "", //disable ads
+    "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
+    "ENABLE_MATCH_CACHE": "", // set to enable caching matches
+    "ENABLE_PLAYER_CACHE": "", // set to enable caching players
     //the following are deprecated
     "PARSER_HOST": "localhost:5200",
     "MONGO_URL": "mongodb://localhost/dota",
