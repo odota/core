@@ -60,7 +60,8 @@ h2.inline-header
           label Patch
           select.form-control(multiple name="patch" placeholder="Any Patch")#patch
             each entry, i in JSON.parse(JSON.stringify(constants.patch)).reverse()
-              option(value=i, selected=(q["patch"] && q["patch"][0]===i))=entry.name
+              - var revValue = (constants.patch.length - (i+1));
+              option(value=revValue, selected=(q["patch"] && q["patch"][0]===revValue))=entry.name
         .form-group
           label Game Mode
           select.form-control(multiple name="game_mode" placeholder="Any Mode")#game_mode
