@@ -89,6 +89,11 @@ function getColumnInfo(db, cb) {
 
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
+    if (players) {
+        players.sort(function(a, b) {
+            return a.player_slot - b.player_slot;
+        });
+    }
     delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
@@ -261,6 +266,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             }
             else {
                 //slot to id map so after parse we can figure out the player ids for each slot
+                //do this at the end so it doesn't get deleted during match insertion step
                 if (players) {
                     match.slot_to_id = {};
                     players.forEach(function(p) {
