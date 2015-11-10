@@ -10,60 +10,43 @@ var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
-var cluster = require('cluster');
+//var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
-if (cluster.isMaster) {
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
+});
+app.use(bodyParser.json());
+app.get('/', function(req, res) {
+    res.json({
+        capacity: capacity,
+        version: utility.getParseSchema().version
     });
-    app.use(bodyParser.json());
-    app.get('/', function(req, res) {
-        res.json({
-            capacity: capacity,
-            version: utility.getParseSchema().version
+});
+app.post('/deploy', function(req, res) {
+    var err = false;
+    //TODO verify the POST is from github/secret holder
+    if (req.body.ref === "refs/heads/master") {
+        console.log(req.body);
+        //run the deployment command
+        var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error) {
+                console.log('exec error: ' + error);
+            }
         });
-    });
-    app.post('/deploy', function(req, res) {
-        var err = false;
-        //TODO verify the POST is from github/secret holder
-        if (req.body.ref === "refs/heads/master") {
-            console.log(req.body);
-            //run the deployment command
-            var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                if (error) {
-                    console.log('exec error: ' + error);
-                }
-            });
-            child.unref();
-            console.log(child);
-        }
-        else {
-            err = "not passing deploy conditions";
-        }
-        res.json({
-            error: err
-        });
-    });
-    if (config.NODE_ENV !== "test") {
-        // Fork workers.
-        for (var i = 0; i < capacity; i++) {
-            cluster.fork();
-        }
-        cluster.on('exit', function(worker, code, signal) {
-            console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
-            cluster.fork();
-        });
+        child.unref();
+        console.log(child);
     }
     else {
-        getJob();
+        err = "not passing deploy conditions";
     }
-}
-else {
-    getJob();
-}
+    res.json({
+        error: err
+    });
+});
+getJob();
 
 function getJob() {
     //get from endpoint asking for replay url
@@ -588,11 +571,11 @@ function runParse(match, cb) {
             populate(e);
         }
     };
-    inStream = request({
+    inStream = progress(request({
         url: url,
         encoding: null,
         timeout: 30000
-    }).on('progress', function(state) {
+    })).on('progress', function(state) {
         console.log(JSON.stringify({
             url: url,
             percent: state.percent

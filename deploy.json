@@ -1,44 +1,48 @@
 {
-    "apps": [{
-            "script": "skill.js",
-            "role": "core"
+  "apps": [{
+      "script": "skill.js",
+      "role": "core"
       },
-        {
-            "script": "mmr.js",
-            "role": "core"
+    {
+      "script": "mmr.js",
+      "role": "core"
       },
-        {
-            "script": "workParser.js",
-            "role": "parser"
+    {
+      "script": "workParser.js",
+      "role": "parser",
+      "exec_mode": "cluster",
+      "instances": 0
       },
-        {
-            "script": "scanner.js",
-            "role": "core"
+    {
+      "script": "scanner.js",
+      "role": "core"
       },
-        {
-            "script": "worker.js",
-            "role": "core"
+    {
+      "script": "worker.js",
+      "role": "core"
       },
-        {
-            "script": "fullhistory.js",
-            "role": "core"
+    {
+      "script": "fullhistory.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 0
       },
-        {
-            "script": "workServer.js",
-            "role": "core"
+    {
+      "script": "workServer.js",
+      "role": "core"
       },
-        {
-            "script": "retriever.js",
-            "role": "retriever"
+    {
+      "script": "retriever.js",
+      "role": "retriever"
       },
-        {
-            "script": "proxy.js",
-            "role": "proxy"
+    {
+      "script": "proxy.js",
+      "role": "proxy"
       },
-        {
-            "script": "web.js",
-            "role": "core",
-            "exec_mode": "cluster",
-            "instances": 0
+    {
+      "script": "web.js",
+      "role": "core",
+      "exec_mode": "cluster",
+      "instances": 0
       }]
 }
