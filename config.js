@@ -33,8 +33,8 @@ var defaults = {
     "STEAM_API_HOST": "api.steampowered.com",
     "ROLE": "", //for specifying a node type
     "MMSTATS_DATA_INTERVAL": 3, //minutes between requests for MMStats data
-    "ENABLE_RECAPTCHA": "", // set to disable the recaptcha on the Request page,
-    "ENABLE_ADS": "", //disable ads
+    "ENABLE_RECAPTCHA": "", //set to enable the recaptcha on the Request page
+    "ENABLE_ADS": "", //set to turn on ads
     "ENABLE_PRO_PARSING": "", // set to parse pro matches from sequential API
     "ENABLE_MATCH_CACHE": "", // set to enable caching matches
     "ENABLE_PLAYER_CACHE": "", // set to enable caching players

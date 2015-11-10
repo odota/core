@@ -4,10 +4,6 @@ var constants = {};
 cfs.forEach(function(f) {
     constants[f.split(".")[0]] = require('./json/' + f);
 });
-
-//Remove regions nesting
-constants.regions = constants.regions.regions;
-
 var heroes = constants.heroes.result.heroes;
 //key heroes by id
 constants.heroes = {};
@@ -75,7 +71,7 @@ for (var i = 0; i < 128; i++) {
     }
 }
 var cluster = {};
-var regions = constants.regions;
+var regions = constants.regions.regions;
 for (var key in regions) {
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
