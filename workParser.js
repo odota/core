@@ -136,7 +136,6 @@ function runParse(match, cb) {
     var types = {
         "player_slot": function(e) {
             parsed_data.players[e.key].player_slot = e.value;
-            console.log(e);
         },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
