@@ -54,7 +54,7 @@
     "moment": "^2.10.6",
     "ndjson": "^1.4.3",
     "numeral": "^1.5.3",
-    "passport": "0.3.0",
+    "passport": "0.2.2",
     "passport-steam": "0.1.6",
     "paypal-rest-sdk": "~1.6",
     "pg": "^4.4.3",

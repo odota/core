@@ -390,21 +390,7 @@ app.use(function(err, req, res, next) {
 });
 module.exports = app;
 var port = config.PORT || config.WEB_PORT;
-var num_processes = require('os').cpus().length;
-var cluster = require('cluster');
-//vanilla node clustering, doesn't work with socket.io
-//disable this if block for single web process or pm2 clustering
-if (cluster.isMaster && config.NODE_ENV !== "test" && false) {
-    for (var i = 0; i < num_processes; i++) {
-        cluster.fork();
-    }
-    cluster.on('exit', function(worker, code, signal) {
-        cluster.fork();
-    });
-}
-else {
-    var server = app.listen(port, function() {
-        console.log('[WEB] listening on %s', port);
-    });
-    //require('./socket.js')(server);
-}
+app.listen(port, function() {
+    console.log('[WEB] listening on %s', port);
+});
+//require('./socket.js')(server);

@@ -61,7 +61,7 @@ function start() {
             }, 180 * 1000);
             job.submitWork = submitWork;
             console.log('server sent jobid %s', job.jobId);
-            res.json({
+            return res.json({
                 jobId: job.jobId,
                 data: job.data
             });
@@ -83,7 +83,7 @@ function start() {
             });
             match.parse_status = 2;
             //fs.writeFileSync("output.json", JSON.stringify(match));
-            insertMatch(db, redis, queue, match, {
+            return insertMatch(db, redis, queue, match, {
                 type: "parsed"
             }, exit);
         }
@@ -91,7 +91,7 @@ function start() {
         function exit(err) {
             clearTimeout(job.expire);
             delete active_jobs[job.jobId];
-            job.cb(err);
+            return job.cb(err);
         }
     });
     app.post('/parse', function(req, res) {
