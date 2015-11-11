@@ -57,20 +57,12 @@ function getJob() {
         json: true,
         timeout: 30000
     }, function(err, resp, job) {
-        if (err) {
-            //wait interval, then get another job
-            console.log("error occurred while requesting work: %s", JSON.stringify(err));
-            return setTimeout(getJob, 5 * 1000);
-        }
-        console.log(job);
-        if (job.jobId && job.data && job.data.payload && job.data.payload.url) {
+        if (!err && resp.statusCode === 200 && job && job.jobId && job.data && job.data.payload && job.data.payload.url) {
             console.log("got work from server, jobid: %s, url: %s", job.jobId, job.data.payload.url);
             runParse(job.data.payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
-                    parsed_data = {
-                        error: err
-                    };
+                    parsed_data.error = err;
                 }
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
@@ -93,7 +85,8 @@ function getJob() {
             });
         }
         else {
-            console.error('got invalid job from server');
+            //wait interval, then get another job
+            console.log("error occurred while requesting work: %s", JSON.stringify(err));
             return setTimeout(getJob, 5 * 1000);
         }
     });
@@ -605,6 +598,7 @@ function runParse(match, cb) {
             //});
             parseStream.on('data', handleStream);
             parseStream.on('end', exit);
+            parseStream.on('error', exit);
         }
         else {
             exit(response.statusCode.toString());
