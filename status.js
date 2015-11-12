@@ -80,13 +80,6 @@ module.exports = function getStatus(db, redis, queue, cb) {
 
             function getQueueCounts(type, cb) {
                 async.series({
-                    /*
-                    "queued": function(cb) {
-                        queue[type].count().then(function(count) {
-                            cb(null, count);
-                        });
-                    },
-                    */
                     "wait": function(cb) {
                         redis.llen(queue[type].toKey("wait"), cb);
                     },

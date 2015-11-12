@@ -354,23 +354,23 @@ app.route('/request_job').post(function(req, res) {
             });
         }
     });
-}).get(function(req, res) {
+}).get(function(req, res, next) {
     queue.request.getJob(req.query.id).then(function(job) {
         if (job) {
             job.getState().then(function(state) {
-                res.json({
+                return res.json({
                     jobId: job.jobId,
                     data: job.data,
                     state: state
                 });
-            });
+            }).catch(next);
         }
         else {
             res.json({
                 state: "failed"
             });
         }
-    });
+    }).catch(next);
 });
 app.use(function(req, res, next) {
     var err = new Error("Not Found");
