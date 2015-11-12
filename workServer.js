@@ -8,10 +8,13 @@ var insertMatch = require('./queries').insertMatch;
 var buildSets = require('./buildSets');
 var bodyParser = require('body-parser');
 var express = require('express');
+var moment = require('moment');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
 var active_jobs = {};
 var pooled_jobs = {};
+var startedAt = moment();
+
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
@@ -31,6 +34,12 @@ function start() {
     app.use(bodyParser.json({
         limit: '1mb'
     }));
+    app.get("/", function(req, res) {
+        res.json({
+            started_at: startedAt.format(),
+            started_ago: moment.fromNow()
+        });
+    });
     app.get('/parse', function(req, res) {
         if (config.RETRIEVER_SECRET && req.query.key !== config.RETRIEVER_SECRET) {
             return res.status(500).json({
@@ -80,9 +89,13 @@ function start() {
             for (var key in parsed_data) {
                 match[key] = match[key] || parsed_data[key];
             }
-            match.players.forEach(function(p, i) {
-                p.account_id = match.slot_to_id[p.player_slot];
-            });
+            
+            //For some reason match.players could not exist
+            if (Array.isArray(match.players)) {
+                match.players.forEach(function(p, i) {
+                    p.account_id = match.slot_to_id[p.player_slot];
+                });
+            }
             match.parse_status = 2;
             //fs.writeFileSync("output.json", JSON.stringify(match));
             return insertMatch(db, redis, queue, match, {
