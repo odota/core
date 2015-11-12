@@ -39,6 +39,8 @@ function start() {
         }
         console.log('client requested work');
         var job = pooled_jobs[Object.keys(pooled_jobs)[0]];
+        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        console.log('client %s requested work', ip);
         if (!job) {
             console.log('no work available');
             return res.status(500).json({
