@@ -216,7 +216,7 @@ app.use('/names/:vanityUrl', function(req, res, cb) {
 var mmrDistQuery = fs.readFileSync('./sql/mmrDist.sql', 'utf8');
 var gameModeQuery = fs.readFileSync('./sql/gameModeDist.sql', 'utf8');
 var lobbyTypeQuery = fs.readFileSync('./sql/lobbyTypeDist.sql', 'utf8');
-app.use('/distribution', function(req, res, next) {
+app.use('/distributions', function(req, res, next) {
     var expire = 86400;
     async.parallel({
         "game_mode": function(cb) {
