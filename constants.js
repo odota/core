@@ -73,7 +73,7 @@ for (var i = 0; i < 128; i++) {
 var cluster = {};
 //Remove regions nesting
 constants.regions = constants.regions.regions;
-var regions = constants.regions.regions;
+var regions = constants.regions;
 for (var key in regions) {
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
