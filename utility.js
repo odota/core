@@ -271,7 +271,7 @@ function mode(array) {
 
 function getParseSchema() {
     return {
-        "version": 14,
+        "version": 15,
         "match_id": 0,
         "teamfights": [],
         "objectives": [],
@@ -280,6 +280,7 @@ function getParseSchema() {
         "radiant_xp_adv": [],
         "players": Array.apply(null, new Array(10)).map(function() {
             return {
+                "player_slot": 0,
                 "stuns": 0,
                 "max_hero_hit": {
                     value: 0

@@ -75,7 +75,7 @@ function scanApi(seq_num) {
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
             async.each(resp, function(match, cb) {
-                if (match.leagueid && !config.DISABLE_PRO_PARSING) {
+                if (match.leagueid && config.ENABLE_PRO_PARSING) {
                     //parse tournament games
                     match.parse_status = 0;
                 }

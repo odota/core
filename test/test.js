@@ -201,7 +201,7 @@ describe("parser", function() {
             var match = {
                 match_id: tests[key],
                 start_time: moment().format('X'),
-                //url: "http://replay1.valve.net/"
+                slot_to_id: {}
             };
             queueReq(queue, "parse", match, {}, function(err, job) {
                 assert(job && !err);

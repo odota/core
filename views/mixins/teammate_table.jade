@@ -1,27 +1,30 @@
 include /mixins/progress_bar
 
-mixin teammate_table(rows)
-  h3 Played with
-  table.table.table-condensed#teammates.table-striped
+mixin teammate_table(rows, short)
+  h3 Peers
+  table.table.table-condensed#teammates.table-striped.rankable
     thead
       tr
         th Player
         th.fromNow: abbr(title=tooltips.last_played) Last
-        th: abbr(title=tooltips.played_with) Played With
-        th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_against) Played Against
-        th: abbr(title=tooltips.win_pct) Win%
-    each teammate in rows
-      tr
-        td.text-left
-          img.img-sm(src=teammate.avatar)
-          if (teammate.last_login)
-            img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
-          a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
-        td=teammate.last_played
-        td= teammate.with_games
-        td
-          +progress_bar(teammate.with_win, teammate.with_games)
-        td= teammate.against_games
-        td
-          +progress_bar(teammate.against_win, teammate.against_games)
+        th: abbr(title=tooltips.played_with) With
+        th: abbr(title=tooltips.win_pct_with) Win%
+        if !short
+          th: abbr(title=tooltips.played_against) Against
+          th: abbr(title=tooltips.win_pct_against) Win%
+    tbody.small
+      each teammate in rows
+        tr
+          td.text-left
+            img.img-sm(src=teammate.avatar)
+            if (teammate.last_login)
+              img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
+            a(href='/players/#{teammate.account_id}')=teammate.personaname || teammate.account_id
+          td=teammate.last_played
+          td.rankable= teammate.with_games
+          td.rankable
+            +progress_bar(teammate.with_win, teammate.with_games)
+          if !short
+            td.rankable= teammate.against_games
+            td.rankable
+              +progress_bar(teammate.against_win, teammate.against_games)

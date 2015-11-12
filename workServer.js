@@ -3,7 +3,6 @@ var queue = require('./queue');
 var utility = require('./utility');
 var config = require('./config');
 var getReplayUrl = require('./getReplayUrl');
-var moment = require('moment');
 var db = require('./db');
 var insertMatch = require('./queries').insertMatch;
 var buildSets = require('./buildSets');
@@ -12,30 +11,18 @@ var express = require('express');
 var app = express();
 var port = config.PORT || config.WORK_PORT;
 var active_jobs = {};
-var queued_jobs = {};
+var pooled_jobs = {};
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
     }
-    /*
-    queue.parse.getActive().then(function(actives) {
-        console.log('clearing actives');
-        //requeue currently active jobs
-        actives.forEach(function(job) {
-            job.moveToFailed("shutdown");
-        });
-        return;
-    }).catch(function(err) {
-        console.log(err);
-    }).finally(start);
-    */
     var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
         console.log('loaded job %s into pool', job.jobId);
         //save the callback for this job
         job.cb = cb;
-        //put it in the queue
-        queued_jobs[job.jobId] = job;
+        //put it in the pool
+        pooled_jobs[job.jobId] = job;
     });
     start();
 });
@@ -50,87 +37,64 @@ function start() {
                 error: "invalid key"
             });
         }
+        console.log('client requested work');
+        var job = pooled_jobs[Object.keys(pooled_jobs)[0]];
         var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         console.log('client %s requested work', ip);
-        var job = queued_jobs[Object.keys(queued_jobs)[0]];
         if (!job) {
             console.log('no work available');
             return res.status(500).json({
                 error: "no work available"
             });
         }
-        //queue.parse.getNextJob().then(function(job) {
-        delete queued_jobs[job.jobId];
+        delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
-        var expire = setTimeout(function() {
-            console.log('job %s expired', job.jobId);
-            return cb("timeout");
-        }, 180 * 1000);
-        var cb = function cb(err) {
-            clearTimeout(expire);
-            delete active_jobs[job.jobId];
-            /*
-            if (err) {
-                return job.moveToFailed(err);
-            }
-            queue.parse.emit('completed', job);
-            return job.moveToCompleted();
-            */
-            job.cb(err);
-        };
         console.log('server assigned jobid %s', job.jobId);
-        var match_id = job.data.payload.match_id;
         var match = job.data.payload;
-        //TODO non-valve urls don't expire, we can try using them
-        if (match.start_time < moment().subtract(7, 'days').format('X') && !(match.leagueid > 0)) {
-            console.log("replay too old, url expired");
-            return cb();
-        }
         //get the replay url and save it
         getReplayUrl(db, redis, match, function(err) {
             if (err) {
-                return cb(err);
+                //server won't send back a job in this case, let client timeout
+                return exit(err);
             }
-            else {
-                console.time("parse " + match_id);
-                console.log('server sent jobid %s', job.jobId);
-                res.json({
-                    jobId: job.jobId,
-                    data: job.data
-                });
-                job.submitWork = function(parsed_data) {
-                    if (parsed_data.error) {
-                        return cb(parsed_data.error);
-                    }
-                    delete parsed_data.key;
-                    delete parsed_data.jobId;
-                    //extend match object with parsed data, keep existing data if key conflict (match_id)
-                    //match.players was deleted earlier during insertion of api data
-                    for (var key in parsed_data) {
-                        match[key] = match[key] || parsed_data[key];
-                    }
-                    match.players.forEach(function(p, i) {
-                        p.player_slot = i < match.players.length / 2 ? i : i + (128 - 5);
-                        //p.account_id = match.slot_to_id[p.player_slot];
-                    });
-                    match.parse_status = 2;
-                    //fs.writeFileSync("output.json", JSON.stringify(match));
-                    console.timeEnd("parse " + match_id);
-                    insertMatch(db, redis, queue, match, {
-                        type: "parsed"
-                    }, cb);
-                }
-            }
-        });
-        //})
-        /*
-        .catch(function(err) {
-            err = err || "no work available";
+            job.expire = setTimeout(function() {
+                console.log('job %s expired', job.jobId);
+                return exit("timeout");
+            }, 180 * 1000);
+            job.submitWork = submitWork;
+            console.log('server sent jobid %s', job.jobId);
             return res.json({
-                error: err
+                jobId: job.jobId,
+                data: job.data
             });
         });
-        */
+
+        function submitWork(parsed_data) {
+            if (parsed_data.error) {
+                return exit(parsed_data.error);
+            }
+            delete parsed_data.key;
+            delete parsed_data.jobId;
+            //extend match object with parsed data, keep existing data if key conflict (match_id)
+            //match.players was deleted earlier during insertion of api data
+            for (var key in parsed_data) {
+                match[key] = match[key] || parsed_data[key];
+            }
+            match.players.forEach(function(p, i) {
+                p.account_id = match.slot_to_id[p.player_slot];
+            });
+            match.parse_status = 2;
+            //fs.writeFileSync("output.json", JSON.stringify(match));
+            return insertMatch(db, redis, queue, match, {
+                type: "parsed"
+            }, exit);
+        }
+
+        function exit(err) {
+            clearTimeout(job.expire);
+            delete active_jobs[job.jobId];
+            return job.cb(err);
+        }
     });
     app.post('/parse', function(req, res) {
         //validate request

@@ -10,60 +10,43 @@ var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
-var cluster = require('cluster');
+//var cluster = require('cluster');
 var port = config.PORT || config.PARSER_PORT;
-if (cluster.isMaster) {
-    var server = app.listen(port, function() {
-        var host = server.address().address;
-        console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
+});
+app.use(bodyParser.json());
+app.get('/', function(req, res) {
+    res.json({
+        capacity: capacity,
+        version: utility.getParseSchema().version
     });
-    app.use(bodyParser.json());
-    app.get('/', function(req, res) {
-        res.json({
-            capacity: capacity,
-            version: utility.getParseSchema().version
+});
+app.post('/deploy', function(req, res) {
+    var err = false;
+    //TODO verify the POST is from github/secret holder
+    if (req.body.ref === "refs/heads/master") {
+        console.log(req.body);
+        //run the deployment command
+        var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error) {
+                console.log('exec error: ' + error);
+            }
         });
-    });
-    app.post('/deploy', function(req, res) {
-        var err = false;
-        //TODO verify the POST is from github/secret holder
-        if (req.body.ref === "refs/heads/master") {
-            console.log(req.body);
-            //run the deployment command
-            var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                if (error) {
-                    console.log('exec error: ' + error);
-                }
-            });
-            child.unref();
-            console.log(child);
-        }
-        else {
-            err = "not passing deploy conditions";
-        }
-        res.json({
-            error: err
-        });
-    });
-    if (config.NODE_ENV !== "test") {
-        // Fork workers.
-        for (var i = 0; i < capacity; i++) {
-            cluster.fork();
-        }
-        cluster.on('exit', function(worker, code, signal) {
-            console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
-            cluster.fork();
-        });
+        child.unref();
+        console.log(child);
     }
     else {
-        getJob();
+        err = "not passing deploy conditions";
     }
-}
-else {
-    getJob();
-}
+    res.json({
+        error: err
+    });
+});
+getJob();
 
 function getJob() {
     //get from endpoint asking for replay url
@@ -74,22 +57,12 @@ function getJob() {
         json: true,
         timeout: 30000
     }, function(err, resp, job) {
-        if (err) {
-            //wait interval, then get another job
-            console.log("error occurred while requesting work: %s", JSON.stringify(err));
-            return setTimeout(getJob, 5 * 1000);
-        }
-        console.log(job);
-        if (job.jobId && job.data && job.data.payload && job.data.payload.url) {
-            var payload = job.data.payload;
-            var url = job.data.payload.url;
-            console.log("got work from server, jobid: %s, url: %s", job.jobId, url);
-            runParse(payload, function(err, parsed_data) {
+        if (!err && resp.statusCode === 200 && job && job.jobId && job.data && job.data.payload && job.data.payload.url) {
+            console.log("got work from server, jobid: %s, url: %s", job.jobId, job.data.payload.url);
+            runParse(job.data.payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
-                    parsed_data = {
-                        error: err
-                    };
+                    parsed_data.error = err;
                 }
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
@@ -112,15 +85,16 @@ function getJob() {
             });
         }
         else {
-            console.error('got invalid job from server');
+            //wait interval, then get another job
+            console.log("error occurred while requesting work: %s", JSON.stringify(err));
             return setTimeout(getJob, 5 * 1000);
         }
     });
 }
 
-function runParse(data, cb) {
+function runParse(match, cb) {
     var print_multi_kill_streak_debugging = false;
-    var url = data.url;
+    var url = match.url;
     var error = "incomplete";
     var inStream;
     var parseStream;
@@ -130,7 +104,7 @@ function runParse(data, cb) {
     var entries = [];
     var hero_to_slot = {};
     var hero_to_id = {};
-    var curr_player_hero = {};
+    //var curr_player_hero = {};
     var game_zero = 0;
     var curr_teamfight;
     var teamfights = [];
@@ -153,6 +127,9 @@ function runParse(data, cb) {
         }
     };
     var types = {
+        "player_slot": function(e) {
+            parsed_data.players[e.key].player_slot = e.value;
+        },
         "match_id": function(e) {
             parsed_data.match_id = e.value;
         },
@@ -586,11 +563,11 @@ function runParse(data, cb) {
             populate(e);
         }
     };
-    inStream = request({
+    inStream = progress(request({
         url: url,
         encoding: null,
         timeout: 30000
-    }).on('progress', function(state) {
+    })).on('progress', function(state) {
         console.log(JSON.stringify({
             url: url,
             percent: state.percent
@@ -621,6 +598,7 @@ function runParse(data, cb) {
             //});
             parseStream.on('data', handleStream);
             parseStream.on('end', exit);
+            parseStream.on('error', exit);
         }
         else {
             exit(response.statusCode.toString());
@@ -685,6 +663,8 @@ function runParse(data, cb) {
                     xptotal -= p.xp_t[i];
                     goldtotal -= p.gold_t[i];
                 }
+                //use player slot to id mapping sent from server to fill in account_ids (for determining player cache updates on insert)
+                p.account_id = match.slot_to_id[p.player_slot];
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);

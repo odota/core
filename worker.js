@@ -32,9 +32,8 @@ invokeInterval(function(cb) {
 //process requests (api call, waits for parse to complete)
 queue.request.process(numCPUs * 3, processApi);
 //updatenames queues an api request, probably should have name updating occur in a separate service
-//jobs.process('api', processApi);
 //invokeInterval(updateNames, 60 * 1000);
-//invokeInterval(constants, 15 * 60 * 1000);
+//jobs.process('api', processApi);
 function processApi(job, cb) {
     var payload = job.data.payload;
     getData(job.data.url, function(err, body) {
@@ -63,7 +62,7 @@ function processApi(job, cb) {
                     var poll = setInterval(function() {
                         queue.parse.getJob(job2.jobId).then(function(job) {
                             job.getState().then(function(state) {
-                                console.log(job.jobId, state);
+                                console.log("waiting for parse job %s, currently in %s", job.jobId, state);
                                 if (state === "completed") {
                                     clearInterval(poll);
                                     return cb();
@@ -72,6 +71,8 @@ function processApi(job, cb) {
                                     clearInterval(poll);
                                     return cb("failed");
                                 }
+                            }).catch(function(err) {
+                                return cb(err);
                             });
                         });
                     }, 2000);

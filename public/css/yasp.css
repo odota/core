@@ -151,6 +151,7 @@ h3 img {
 .progress-bar {
     color: #FFF;
     text-shadow: 0px 0px 5px #000000;
+    visibility: visible;
 }
 
 .progress_text {
@@ -159,6 +160,12 @@ h3 img {
 
 .progress {
     margin: 0 auto;
+    visibility: hidden;
+    
+}
+
+.progress.progress-short {
+    height: 4px;
 }
 
 #messages {
@@ -358,15 +365,18 @@ table tfoot * {
     color: #FFF;
 }
 
+g
 .c3-axis path,
 .c3-axis line {
     stroke: rgb(199, 199, 199);
 }
 
-.c3-axis-y .tick,
 .c3-axis-x .tick,
+.c3-axis-y .tick,
+.c3-axis-y2 .tick,
 .c3-axis-x-label,
 .c3-axis-y-label,
+.c3-axis-y2-label,
 .c3-legend-item {
     fill: rgb(199, 199, 199);
 }

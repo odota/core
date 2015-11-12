@@ -1,0 +1,96 @@
+extend layout
+
+block content
+  .row
+    .col-md-12
+      h3 Solo MMR Distribution 
+        small Data from #{mmr.sum.count} players sharing solo MMR on Dota profile
+      #mmr
+  .row
+    .col-md-6
+      h3 Game Mode 
+      #game_mode
+    .col-md-6
+      h3 Lobby Type 
+      #lobby_type
+
+append footer_assets
+  script.
+    var mmr = !{JSON.stringify(mmr.rows)};
+    var count = !{mmr.sum.count};
+    var counts = mmr.map(function(d){return d.count;});
+    var names = mmr.map(function(d){return d.bin_name});
+    var pcts = mmr.map(function(d){return d.cumulative_sum/count*100;});
+    var max = Math.max.apply(null, counts);
+    var counts2 = [];
+    var options = {
+        bindto: "#mmr",
+        size: {height: 500},
+        data: {
+            x: 'MMR',
+            columns: [
+            ['MMR'].concat(names),
+            ['Players'].concat(counts),
+            ['Percentile'].concat(pcts)
+            ],
+            type: "bar",
+            types: {
+            "Percentile": "spline"
+            },
+            axes: {
+            "Players":"y",
+            "Percentile":"y2"
+            },
+            groups: [
+            ['Players','Percentile']
+            ]
+        },
+        bar: {
+            width: {
+                ratio: 0.8
+            }
+        },
+        axis: {
+            x: {
+                label: "MMR"
+            },
+            y: {
+                label: "# Players"
+            },
+            y2: {
+                show:true,
+                label: "Percentile"
+            }
+        },
+        tooltip: {
+            format: {
+                value: function(value, ratio, id, ind) {
+                    if (id==="Percentile"){
+                        return value.toFixed(2);
+                    }
+                    return value;
+                }
+            }
+        }
+    };
+    c3.generate(options);
+    var game_mode = !{JSON.stringify(game_mode)};
+    var lobby_type = !{JSON.stringify(lobby_type)};
+    c3.generate({
+        bindto: "#game_mode",
+        data: {
+            columns: game_mode.rows.map(function(r){
+                return [r.display_name, r.count];
+            }),
+            type: 'pie'
+        }
+    });
+    c3.generate({
+        bindto: "#lobby_type",
+        data: {
+            columns: lobby_type.rows.map(function(r){
+                return [r.display_name, r.count];
+            }),
+            type: 'pie'
+        }
+    });

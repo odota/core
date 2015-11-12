@@ -1,31 +1,34 @@
 include /mixins/progress_bar
 
-mixin hero_table(rows)
+mixin hero_table(rows, short)
   h3 Heroes
-  table.table.table-condensed#heroes.table-striped
+  table.table.table-condensed#heroes.table-striped.rankable
     thead
       tr
         th: abbr(title=tooltips.hero_id) Hero
         th.fromNow: abbr(title=tooltips.last_played) Last
-        th: abbr(title=tooltips.played_as) Played As
-        th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_with) Played With
-        th: abbr(title=tooltips.win_pct) Win%
-        th: abbr(title=tooltips.played_against) Played Against
-        th: abbr(title=tooltips.win_pct) Win%
-    each h in rows
-      - var hero = constants.heroes[h.hero_id]
-      tr
-        td.text-left
-          img.img-md(src=hero.img, title=hero.localized_name)
-          =hero.localized_name
-        td=h.last_played
-        td=h.games
-        td
-          +progress_bar(h.win, h.games)
-        td=h.with_games
-        td
-          +progress_bar(h.with_win, h.with_games)
-        td=h.against_games
-        td
-          +progress_bar(h.against_win, h.against_games)
+        th: abbr(title=tooltips.played_as) As
+        th: abbr(title=tooltips.win_pct_as) Win%
+        if !short
+          th: abbr(title=tooltips.played_with) With
+          th: abbr(title=tooltips.win_pct_with) Win%
+          th: abbr(title=tooltips.played_against) Against
+          th: abbr(title=tooltips.win_pct_against) Win%
+    tbody.small
+      each h in rows
+        - var hero = constants.heroes[h.hero_id]
+        tr
+          td.text-left
+            img.img-sm(src=hero.img, title=hero.localized_name)
+            =hero.localized_name
+          td=h.last_played
+          td.rankable=h.games
+          td.rankable
+            +progress_bar(h.win, h.games)
+          if !short
+            td.rankable=h.with_games
+            td.rankable
+              +progress_bar(h.with_win, h.with_games)
+            td.rankable=h.against_games
+            td.rankable
+              +progress_bar(h.against_win, h.against_games)

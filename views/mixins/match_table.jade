@@ -1,6 +1,6 @@
 mixin match_table(matches)
   h3 Matches
-  table.table.table-condensed#matches.table-striped
+  table.table.table-condensed#matches.table-striped.rankable
     thead
       tr
         th: abbr(title=tooltips.match_id) ID
@@ -8,33 +8,42 @@ mixin match_table(matches)
         th: abbr(title=tooltips.result) Result
         th: abbr(title=tooltips.game_mode) Mode
         th: abbr(title=tooltips.skill) Skill
-        th.seconds: abbr(title=tooltips.duration) Duration
         th.fromNow: abbr(title=tooltips.ended) Ended
+        th.seconds: abbr(title=tooltips.duration) Duration
         th: abbr(title=tooltips.kills) K
         th: abbr(title=tooltips.deaths) D
         th: abbr(title=tooltips.assists) A
-        th: abbr(title=tooltips.last_hits) LH
-        th: abbr(title=tooltips.gold_per_min) GPM
-        th: abbr(title=tooltips.status) Status
+        //th: abbr(title=tooltips.last_hits) LH
+        //th: abbr(title=tooltips.gold_per_min) GPM
+        //th: abbr(title=tooltips.status) Status
+        th
 
-    tbody
+    tbody.small
       each match in matches
         - var hero = constants.heroes[match.hero_id]
         tr 
           td: a(href="/matches/"+match.match_id)=match.match_id
           td
             if hero
-              img.img-md(src=hero.img, title=hero.localized_name)
+              img.img-sm(src=hero.img, title=hero.localized_name)
             else
               =match.hero_id
           td(class=match.player_win ? "text-success" : "text-danger")=match.player_win ? "Won" : "Lost"
           td=constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
           td=constants.skill[match.skill] || match.skill
-          td=match.duration
           td=match.start_time+match.duration
-          td=match.kills
-          td=match.deaths
-          td=match.assists
-          td=match.last_hits
-          td=match.gold_per_min
-          td=constants.parse_status[match.parse_status] || match.parse_status
+          td.rankable=match.duration
+          td.rankable=match.kills
+          td.rankable=match.deaths
+          td.rankable=match.assists
+          //td=match.last_hits
+          //td=match.gold_per_min
+          //td=constants.parse_status[match.parse_status] || match.parse_status
+          td
+            abbr(title=constants.tooltips["status_"+match.parse_status])
+              if match.parse_status===0
+                i.fa.fa-cog.fa-spin
+              if match.parse_status===2
+                i.fa.fa-bar-chart
+              if match.parse_status===3
+                i.fa.fa-eye-slash

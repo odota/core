@@ -5,6 +5,12 @@
   "matches": {
     "name": "Matches"
   },
+  "heroes": {
+    "name": "Heroes"
+  },
+  "peers": {
+    "name": "Peers"
+  },
   "activity": {
     "name": "Activity"
   },
@@ -37,8 +43,5 @@
   },
   "rating": {
     "name": "Rating"
-  },
-  "compare": {
-    "name": "Compare"
   }
 }

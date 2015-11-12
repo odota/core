@@ -9,14 +9,15 @@ var sentiment = require('sentiment');
 
 function computeMatchData(match) {
     var date = new Date(match.start_time * 1000);
-    for (var i = 0; i < constants.patch.length; i++) {
+    for (var i = 1; i < constants.patch.length; i++) {
         var pd = new Date(constants.patch[i].date);
-        //stop when patch date is less than the start time
-        if (pd < date) {
+        //stop when patch date is past the start time
+        if (pd > date) {
             break;
         }
     }
-    match.patch = i;
+    //use the value of i before the break, started at 1 to avoid negative index
+    match.patch = i - 1;
     match.region = constants.cluster[match.cluster];
 }
 /**

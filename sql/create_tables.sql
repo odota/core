@@ -135,7 +135,7 @@ CREATE TABLE player_matches (
 );
 
 CREATE TABLE player_ratings (
-  PRIMARY KEY(account_id, match_id),
+  PRIMARY KEY(account_id, time),
   account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
   match_id bigint,
   solo_competitive_rank integer,

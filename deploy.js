@@ -5,19 +5,18 @@ var args = process.argv.slice(2);
 var services = require("./deploy.json");
 var apps = services.apps;
 if (config.ROLE === "retriever" || config.ROLE == "proxy") {
+    //don't use pm2 for these node types
     require('./' + config.ROLE + ".js");
 }
 else {
     pm2.connect(function() {
-        //TODO reload if procs exist, or just manually do pm2 reload all after intial deploy
-        /*
-        pm2.list(function(err, list){
-            console.log(list);
-        })
-        */
         async.each(apps, function(app, cb) {
             if (args[0] === "all" || app.role === config.ROLE || app.role === args[0]) {
-                pm2.start(app, cb);
+                if (app.role === "fullhistory") {
+                    //scale fh worker based on number of steam proxies
+                    app.instances = config.STEAM_API_HOST.split(",").length;
+                }
+                pm2.gracefulReload(app, cb);
             }
             else {
                 cb();

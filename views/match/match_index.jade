@@ -17,7 +17,7 @@ mixin picks_bans_row(picks_bans, team_int)
 block match_content
   .row
     .col-md-12
-      +data_table({id:"index",summable:true, heading: "Overview"})
+      +data_table({id:"index",summable:true, heading: "Overview", rankable: true})
         each player, i in match.players
           +data_table_header(i, match)
             tr
@@ -43,18 +43,18 @@ block match_content
               //img.img-sm(src=player.avatar)
               if (player.last_login)
                 img.user(src='/public/images/favicon-16x16.png', title="This user is registered!")
-            td= player.level
-            td= player.kills
-            td.negative= player.deaths
-            td= player.assists
-            td= player.last_hits
-            td= player.denies
-            td.format= player.total_gold
-            td= player.gold_per_min
-            td= player.xp_per_min
-            td.format= player.hero_damage
-            td.format= player.tower_damage
-            td.format= player.hero_healing
+            td.rankable= player.level
+            td.rankable= player.kills
+            td.rankable.negative= player.deaths
+            td.rankable= player.assists
+            td.rankable= player.last_hits
+            td.rankable= player.denies
+            td.rankable.format= player.total_gold
+            td.rankable= player.gold_per_min
+            td.rankable= player.xp_per_min
+            td.rankable.format= player.hero_damage
+            td.rankable.format= player.tower_damage
+            td.rankable.format= player.hero_healing
             td.text-left
               each val, index in player
                 if (index.slice(0, 5)==="item_")

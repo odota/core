@@ -21,7 +21,6 @@
 //window.h337 = require('../../node_modules/heatmap.js/build/heatmap.js');
 //window.moment = require('moment');
 //window.numeral = require('numeral');
-//require("./playerMatches.js")
 //require("./tooltips.js")
 //require("./formatHtml.js")
 //require("./buildMap.js")

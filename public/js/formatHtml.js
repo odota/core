@@ -41,7 +41,6 @@ window.formatHtml = function formatHtml() {
                     td.addClass('format');
                 }
                 td.text(sum[index]);
-                
                 //mark if this team  "won" this category
                 var other = (key === "Radiant") ? "Dire" : "Radiant";
                 var greaterThan = sum[index] > sums[other][index];
@@ -50,23 +49,62 @@ window.formatHtml = function formatHtml() {
                 if (greaterThan) {
                     td.addClass((key === "Radiant") ? 'success' : 'danger');
                 }
-                
                 tr.append(td);
             }
             tfoot.append(tr);
         }
         $(table).append(tfoot);
     });
+    var classes = ["progress-bar-success", "progress-bar-danger", "progress-bar-warning", "progress-bar-info"];
+    $("table.rankable").each(function() {
+        var table = $(this);
+        table.first("tr").find("th").each(function(columnIndex) {
+            var maxValue = 0;
+            var currentValue = 0;
+            var $trs = table.find("tr");
+            //first pass, get the max
+            $trs.each(function(index, element) {
+                var $td = $(element).find("td:eq(" + columnIndex + ")");
+                currentValue = parseFloat($td.text());
+                if (currentValue > maxValue && $td.hasClass("rankable")) {
+                    maxValue = currentValue;
+                }
+            });
+            //second pass, create the bars
+            $trs.each(function(index, element) {
+                var $td = $(element).find("td:eq(" + columnIndex + ")");
+                currentValue = parseFloat($td.text());
+                if ($td.hasClass("rankable")) {
+                    var pct = currentValue / maxValue * 100;
+                    var bar = document.createElement("div");
+                    bar.className = "progress progress-short";
+                    var innerBar = document.createElement("div");
+                    innerBar.className = "progress-bar " + classes[columnIndex % classes.length];
+                    innerBar.style.width = pct + "%";
+                    bar.appendChild(innerBar);
+                    //create a new child div with format class name preserved
+                    var textdiv = document.createElement("div");
+                    textdiv.innerHTML = $td.text();
+                    textdiv.className += $td.hasClass('format') ? "format" : "";
+                    $td.removeClass("format");
+                    $td.html(textdiv.outerHTML + bar.outerHTML);
+                }
+            });
+        });
+    });
     $('.format').each(function() {
         var orig = $(this).text();
-        var result = format(orig);
-        //don't reformat since it's not a number anymore
-        $(this).text(result).removeClass("format");
+        if (orig) {
+            var result = format(orig);
+            $(this).text(result);
+        }
     });
     $('.format-seconds').each(function() {
         //format the data attribute rather than the text so we don't lose the original value if we want to reformat (like when paging in datatables)
         $(this).text(formatSeconds($(this).attr('data-format-seconds')));
     });
     //disable clicks on disabled elements
-    $('.disabled').click(function() { return false; });
+    $('.disabled').click(function() {
+        return false;
+    });
 }

@@ -40,7 +40,6 @@ passport.serializeUser(function(user, done) {
     done(null, user.account_id);
 });
 passport.deserializeUser(function(account_id, done) {
-    console.log(account_id);
     db.first().from('players').where({
         account_id: account_id
     }).asCallback(function(err, player) {
@@ -110,6 +109,14 @@ app.use(passport.session());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.use(function(req, res, next) {
+    if (req.headers.host.match(/^www/) !== null) {
+        res.redirect(req.protocol + '://' + req.headers.host.replace(/^www\./, '') + req.url);
+    }
+    else {
+        next();
+    }
+});
 app.use(function(req, res, next) {
     async.parallel({
         banner: function(cb) {
@@ -206,6 +213,99 @@ app.use('/names/:vanityUrl', function(req, res, cb) {
         res.redirect('/players/' + Number(result));
     });
 });
+var mmrDistQuery = fs.readFileSync('./sql/mmrDist.sql', 'utf8');
+var gameModeQuery = fs.readFileSync('./sql/gameModeDist.sql', 'utf8');
+var lobbyTypeQuery = fs.readFileSync('./sql/lobbyTypeDist.sql', 'utf8');
+app.use('/distributions', function(req, res, next) {
+    var expire = 86400;
+    async.parallel({
+        "game_mode": function(cb) {
+            redis.get('distribution:game_mode', function(err, result) {
+                if (err) {
+                    return next(err);
+                }
+                if (result && config.NODE_ENV === "production") {
+                    result = JSON.parse(result);
+                    return cb(err, result);
+                }
+                db.raw(gameModeQuery).asCallback(function(err, results) {
+                    if (err) {
+                        return next(err);
+                    }
+                    results.rows.map(function(r) {
+                        r.display_name = constants.game_mode[r.game_mode] ? constants.game_mode[r.game_mode].name : r.game_mode;
+                        return r;
+                    });
+                    redis.setex('distribution:game_mode', expire, JSON.stringify(results));
+                    cb(err, results);
+                });
+            });
+        },
+        "lobby_type": function(cb) {
+            redis.get('distribution:lobby_type', function(err, result) {
+                if (err) {
+                    return next(err);
+                }
+                if (result && config.NODE_ENV === "production") {
+                    result = JSON.parse(result);
+                    return cb(err, result);
+                }
+                db.raw(lobbyTypeQuery).asCallback(function(err, results) {
+                    if (err) {
+                        return next(err);
+                    }
+                    results.rows.map(function(r) {
+                        r.display_name = constants.lobby_type ? constants.lobby_type[r.lobby_type].name : r.lobby_type;
+                        return r;
+                    });
+                    redis.setex('distribution:lobby_type', expire, JSON.stringify(results));
+                    cb(err, results);
+                });
+            });
+        },
+        "mmr": function(cb) {
+            redis.get('distribution:mmr', function(err, result) {
+                if (err) {
+                    return next(err);
+                }
+                if (result && config.NODE_ENV === "production") {
+                    result = JSON.parse(result);
+                    return cb(err, result);
+                }
+                db.raw(mmrDistQuery).asCallback(function(err, results) {
+                    if (err) {
+                        return next(err);
+                    }
+                    var sum = results.rows.reduce(function(prev, current) {
+                        return {
+                            count: prev.count + current.count
+                        };
+                    }, {
+                        count: 0
+                    });
+                    results.rows = results.rows.map(function(r, i) {
+                        r.cumulative_sum = results.rows.slice(0, i + 1).reduce(function(prev, current) {
+                            return {
+                                count: prev.count + current.count
+                            };
+                        }, {
+                            count: 0
+                        }).count;
+                        return r;
+                    });
+                    results.sum = sum;
+                    redis.setex('distribution:mmr', expire, JSON.stringify(results));
+                    cb(err, results);
+                });
+            });
+        }
+    }, function(err, result) {
+        if (err) {
+            return next(err);
+        }
+        res.render('distributions', result);
+    });
+});
 app.use('/api', api);
 app.use('/', donate(db, redis));
 app.use('/', mmstats(redis));
@@ -226,7 +326,7 @@ app.route('/request_job').post(function(req, res) {
         }
         var match_id = req.body.match_id;
         match_id = Number(match_id);
-        if (!body.success && !config.DISABLE_RECAPTCHA) {
+        if (!body.success && config.ENABLE_RECAPTCHA) {
             console.log('failed recaptcha');
             res.json({
                 error: "Recaptcha Failed!"
@@ -290,21 +390,7 @@ app.use(function(err, req, res, next) {
 });
 module.exports = app;
 var port = config.PORT || config.WEB_PORT;
-var num_processes = require('os').cpus().length;
-var cluster = require('cluster');
-//vanilla node clustering, doesn't work with socket.io
-//disable this if block for single web process or pm2 clustering
-if (cluster.isMaster && config.NODE_ENV !== "test" && false) {
-    for (var i = 0; i < num_processes; i++) {
-        cluster.fork();
-    }
-    cluster.on('exit', function(worker, code, signal) {
-        cluster.fork();
-    });
-}
-else {
-    var server = app.listen(port, function() {
-        console.log('[WEB] listening on %s', port);
-    });
-    //require('./socket.js')(server);
-}
+app.listen(port, function() {
+    console.log('[WEB] listening on %s', port);
+});
+//require('./socket.js')(server);

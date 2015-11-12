@@ -6,7 +6,7 @@ block playercontent
     .col-md-12
       h3 Skills 
         small (#{player.aggData.hero_hits.n} matches)
-      table.table#accuracy.table-striped
+      table.table#accuracy.table-striped.rankable
         thead
           tr
             th: abbr(title=tooltips.skills_name) Name
@@ -25,21 +25,10 @@ block playercontent
                   =ability.dname
                 else
                   =key
-              td=casts
-              td=hits
-              td
+              td.rankable=casts
+              td.rankable=hits
+              td.rankable
                 +progress_bar(hits, casts)
                 
 append footer_assets
   script.
-    var accuracy = $('#accuracy').dataTable({
-        //"searching": false,
-        //"paging": false,
-        "order": [
-            [1, "desc"]
-        ],
-        "drawCallback": function() {
-            window.tooltips();
-        },
-        "columnDefs": []
-    });

@@ -254,10 +254,17 @@ public class Main {
                 while (added < numPlayers && i < 100) {
                     //check each m_vecPlayerData to ensure the player's team is radiant or dire
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", i);
-                    //Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
-                    //System.err.format("%s: %s: %s\n", i, playerTeam, steamid);
+                    int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", i);
+                    Long steamid = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerSteamID", i);
+                    //System.err.format("%s %s %s: %s\n", i, playerTeam, teamSlot, steamid);
                     if (playerTeam == 2 || playerTeam == 3) {
-                        //if so, add it to validIndices, add 1 to added
+                        //output the player_slot based on team and teamslot
+                        Entry entry = new Entry(time);
+                        entry.type = "player_slot";
+                        entry.key = String.valueOf(added);
+                        entry.value = (playerTeam == 2 ? 0 : 128) + teamSlot;
+                        es.output(entry);
+                        //add it to validIndices, add 1 to added
                         validIndices[added] = i;
                         added += 1;
                     }

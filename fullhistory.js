@@ -1,7 +1,6 @@
 var utility = require('./utility');
 var redis = require('./redis');
 var queue = require('./queue');
-var cluster = require('cluster');
 var config = require('./config');
 var utility = require('./utility');
 var async = require('async');
@@ -13,31 +12,11 @@ var constants = require('./constants.js');
 var urllib = require('url');
 var generateJob = utility.generateJob;
 var config = require('./config');
-var steam_hosts = config.STEAM_API_HOST.split(",");
 var api_keys = config.STEAM_API_KEY.split(",");
+//number of api requests to send at once
 var parallelism = Math.min(10, api_keys.length);
-if (cluster.isMaster && config.NODE_ENV !== "test") {
-    console.log("[FULLHISTORY] starting master");
-    for (var i = 0; i < steam_hosts.length; i++) {
-        if (true) {
-            cluster.fork();
-        }
-        else {
-            runWorker();
-        }
-    }
-    cluster.on('exit', function(worker, code, signal) {
-        console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
-        cluster.fork();
-    });
-}
-else {
-    runWorker();
-}
 
-function runWorker() {
-    queue.fullhistory.process(1, processFullHistory);
-}
+queue.fullhistory.process(1, processFullHistory);
 
 function processFullHistory(job, cb) {
     var player = job.data.payload;

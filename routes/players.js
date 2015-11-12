@@ -102,7 +102,7 @@ module.exports = function(db, redis) {
                     return next(err);
                 }
                 player.teammate_list = lists.teammate_list;
-                var teammate_ids = lists.all_teammate_list || lists.teammate_list;
+                var teammate_ids = JSON.parse(JSON.stringify(lists.all_teammate_list || lists.teammate_list));
                 //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
                 var ids = {};
                 teammate_ids.forEach(function(t) {
@@ -280,12 +280,8 @@ module.exports = function(db, redis) {
     }
 
     function countPlayer(account_id, cb) {
-        //10% chance to autorefresh cache in production
-        if (Math.random() < (config.NODE_ENV === "production" ? 0.1 : 0)) {
-            //return a 0 count (always invalid)
-            cb(null, 0);
-        }
-        else if (!isNaN(account_id)) {
+        //only verify with 10% chance in prod
+        if (!isNaN(account_id) && Math.random() < (config.NODE_ENV === "production" ? 0.1 : 1)) {
             console.time("count");
             db('player_matches').count('match_id').where({
                 account_id: Number(account_id)

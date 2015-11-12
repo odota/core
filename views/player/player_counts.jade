@@ -7,7 +7,7 @@ block playercontent
       .col-md-6
         h3=key.split("_").join(" ")
           small  (#{player.aggData[key].n} matches)
-        table.table.table-striped
+        table.table.table-striped.rankable
           thead
             tr
               th Category
@@ -17,6 +17,6 @@ block playercontent
             each val2, key2 in player.aggData[key].counts
               tr
                 td=constants[key] ? (constants[key][key2] ? constants[key][key2].name || constants[key][key2] : JSON.stringify(constants[key])) : key2
-                td=val2
-                td
+                td.rankable=val2
+                td.rankable
                   +progress_bar(player.aggData[key].win_counts[key2], val2)

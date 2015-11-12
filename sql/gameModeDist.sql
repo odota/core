@@ -1,0 +1,1 @@
+select game_mode, count(*) from (select game_mode from matches order by match_id desc limit 100000) recent group by game_mode;

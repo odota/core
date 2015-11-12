@@ -3,7 +3,7 @@ extend match
 block match_content
   .row
     .col-md-4
-      +data_table({id:"observers", summable: true, heading:"Observers"})
+      +data_table({id:"observers", summable: true, heading:"Observers", rankable: true})
         each player, ind in match.players
           +data_table_header(ind, match)      
             tr
@@ -13,12 +13,12 @@ block match_content
               th: abbr(title=tooltips.farm_observers) Destroyed
           tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="obs").activate
             +hero_td(player)
-            td.lane-position #{player.purchase.ward_observer || "-"}
-            td.lane-position #{player.obs_log.length || "-"}
-            td.lane-position #{player.observer_kills || "-"}
+            td.rankable.lane-position #{player.purchase.ward_observer || "-"}
+            td.rankable.lane-position #{player.obs_log.length || "-"}
+            td.rankable.lane-position #{player.observer_kills || "-"}
     
     .col-md-4
-      +data_table({id:"sentries", summable: true, heading:"Sentries"})
+      +data_table({id:"sentries", summable: true, heading:"Sentries", rankable: true})
         each player, ind in match.players
           +data_table_header(ind, match)
             tr
@@ -28,9 +28,9 @@ block match_content
               th: abbr(title=tooltips.farm_sentries) Destroyed
           tr(class = player.isRadiant ? "radiant" : "dire", data-index=ind, data-type="sen").activate
             +hero_td(player)
-            td.lane-position #{player.purchase.ward_sentry || "-"}
-            td.lane-position #{player.sen_log.length || "-"}
-            td.lane-position #{player.sentry_kills || "-"}
+            td.rankable.lane-position #{player.purchase.ward_sentry || "-"}
+            td.rankable.lane-position #{player.sen_log.length || "-"}
+            td.rankable.lane-position #{player.sentry_kills || "-"}
         
     .col-md-4
       h3 Placement Map
