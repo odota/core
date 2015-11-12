@@ -12,7 +12,7 @@ else {
     pm2.connect(function() {
         async.each(apps, function(app, cb) {
             if (args[0] === "all" || app.role === config.ROLE || app.role === args[0]) {
-                if (app.role === "fullhistory") {
+                if (app.script === "fullhistory.js") {
                     //scale fh worker based on number of steam proxies
                     app.instances = config.STEAM_API_HOST.split(",").length;
                 }
