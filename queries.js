@@ -98,7 +98,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
         },
         insertMatchTable,
         insertPlayerMatchesTable,
-        commit,
         ensurePlayers,
         updatePlayerCaches,
         clearMatchCache
