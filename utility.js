@@ -409,7 +409,8 @@ function queueReq(queue, type, payload, options, cb) {
     }}).then(function(queuejob) {
         console.log("created jobId: %s", queuejob.jobId);
         cb(null, queuejob);
-    });
+    })
+    .catch(cb);
 }
 module.exports = {
     tokenize: tokenize,

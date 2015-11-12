@@ -12,9 +12,9 @@ var queueReq = utility.queueReq;
 var queries = require('./queries');
 var buildSets = require('./buildSets');
 var constants = require('./constants');
+var retrieverArr = config.RETRIEVER_HOST.split(",");
 var trackedPlayers;
 var userPlayers;
-var ratingPlayers;
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
@@ -59,7 +59,6 @@ function scanApi(seq_num) {
         }
         //set local vars
         trackedPlayers = result.trackedPlayers;
-        //ratingPlayers = result.ratingPlayers;
         userPlayers = result.userPlayers;
         getData({
             url: container.url,
@@ -90,7 +89,6 @@ function scanApi(seq_num) {
                     }
                     if (match.lobby_type === 7 && p.account_id !== constants.anonymous_account_id && p.account_id in userPlayers) {
                         //could possibly pick up MMR change for matches we don't add, this is probably ok
-                        var retrieverArr = config.RETRIEVER_HOST.split(",");
                         queueReq(queue, "mmr", {
                             match_id: match.match_id,
                             account_id: p.account_id,
@@ -126,6 +124,7 @@ function scanApi(seq_num) {
             }, function(err) {
                 if (err) {
                     //something bad happened, retry this page
+                    console.error(err);
                     return scanApi(seq_num);
                 }
                 else {
