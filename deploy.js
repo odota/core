@@ -16,7 +16,7 @@ else {
                     //scale fh worker based on number of steam proxies
                     app.instances = config.STEAM_API_HOST.split(",").length;
                 }
-                pm2.gracefulReload(app, cb);
+                pm2.reload(app, cb);
             }
             else {
                 cb();
