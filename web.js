@@ -303,7 +303,7 @@ app.use('/distributions', function(req, res, next) {
         if (err) {
             return next(err);
         }
-        res.render('distribution', result);
+        res.render('distributions', result);
     });
 });
 app.use('/api', api);
