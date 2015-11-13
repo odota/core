@@ -78,7 +78,7 @@ function scanApi(seq_num) {
                     //parse tournament games
                     match.parse_status = 0;
                 }
-                async.each(match.players, function(p, cb) {
+                async.eachSeries(match.players, function(p, cb) {
                     if (p.account_id in trackedPlayers) {
                         //queued
                         match.parse_status = 0;
