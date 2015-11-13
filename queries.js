@@ -246,7 +246,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
         function decideParse(err) {
             if (err) {
-                trx.rollback();
+                trx.rollback(err);
                 return cb(err);
             }
             trx.commit();
