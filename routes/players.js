@@ -280,8 +280,7 @@ module.exports = function(db, redis) {
     }
 
     function countPlayer(account_id, cb) {
-        //only verify with 10% chance in prod
-        if (!isNaN(account_id) && Math.random() < (config.NODE_ENV === "production" ? 0.1 : 1)) {
+        if (!isNaN(account_id)) {
             console.time("count");
             db('player_matches').count('match_id').where({
                 account_id: Number(account_id)
