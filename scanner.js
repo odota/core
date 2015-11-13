@@ -35,7 +35,7 @@ app.route("/").get(function(res, req) {
 
 var server = app.listen(port, function() {
     var host = server.address().address;
-    console.log('[WORKSERVER] listening at http://%s:%s', host, port);
+    console.log('[SCANNER] listening at http://%s:%s', host, port);
 });
 
 buildSets(db, redis, function(err) {
