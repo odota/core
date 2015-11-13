@@ -92,6 +92,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
     delete match.players;
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
+    //db.transaction(function(trx) {
     async.series([
         function(cb) {
             getColumnInfo(db, cb);
@@ -112,6 +113,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             }
         }
         //TODO use psql upsert when available
+        //TODO this breaks transactions, transaction will refuse to complete if error occurred during insert
         //upsert on api, update only otherwise
         if (options.type === "api") {
             db('matches').insert(row).where({
@@ -245,8 +247,10 @@ function insertMatch(db, redis, queue, match, options, cb) {
 
     function decideParse(err) {
         if (err) {
+            //trx.rollback(err);
             return cb(err);
         }
+        //trx.commit();
         if (match.parse_status !== 0) {
             //not parsing this match
             //this isn't a error, although we want to report that we refused to parse back to user if it was a request
@@ -267,6 +271,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
             });
         }
     }
+    /*
+    });
+    .catch(function(err){
+        console.error(err);
+    });
+    */
 }
 
 function insertPlayer(db, player, cb) {
