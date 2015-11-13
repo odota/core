@@ -471,12 +471,6 @@ module.exports = function(db, redis) {
                 return cb(err);
             }
             console.timeEnd('getting player_matches');
-            console.time('computing aggregations');
-            //compute, filter, agg should act on player_matches joined with matches
-            player_matches.forEach(function(m) {
-                //post-process the match to get additional stats
-                computePlayerMatchData(m);
-            });
             console.time('getting fellows');
             //get fellow players and pass to aggregator/filter
             db.select(['match_id', 'account_id', 'hero_id', 'player_slot']).from('player_matches').whereIn('match_id', player_matches.map(function(pm) {
@@ -493,6 +487,12 @@ module.exports = function(db, redis) {
                         groups[f.match_id] = [];
                     }
                     groups[f.match_id].push(f);
+                });
+                console.time('computing aggregations');
+                //compute, filter, agg should act on player_matches joined with matches
+                player_matches.forEach(function(m) {
+                    //post-process the match to get additional stats
+                    computePlayerMatchData(m);
                 });
                 var filtered = filter(player_matches, groups, query.js_select);
                 //filtered = sort(filtered, options.js_sort);
