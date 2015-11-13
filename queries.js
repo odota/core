@@ -270,6 +270,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 });
             }
         }
+    }).catch(function(err){
+        console.error(err);
     });
 }
 
