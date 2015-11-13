@@ -15,6 +15,29 @@ var constants = require('./constants');
 var retrieverArr = config.RETRIEVER_HOST.split(",");
 var trackedPlayers;
 var userPlayers;
+
+// Used to create endpoint for monitoring
+var express = require('express');
+var moment = require('moment');
+var app = express();
+var port = config.PORT || config.SCANNER_PORT;
+var startedAt = moment();
+
+app.route("/").get(function(res, req) {
+    redis.get("match_seq_num", function(err, result) {
+        res.json({
+            started_at: startedAt.format(),
+            started_ago: moment.fromNow(),
+            match_seq_num: result || "NOT FOUND"
+        })
+    })
+})
+
+var server = app.listen(port, function() {
+    var host = server.address().address;
+    console.log('[WORKSERVER] listening at http://%s:%s', host, port);
+});
+
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
