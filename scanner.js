@@ -73,12 +73,12 @@ function scanApi(seq_num) {
                 next_seq_num = resp[resp.length - 1].match_seq_num + 1;
             }
             logger.info("[API] seq_num:%s, matches:%s", seq_num, resp.length);
-            async.each(resp, function(match, cb) {
+            async.eachSeries(resp, function(match, cb) {
                 if (match.leagueid && config.ENABLE_PRO_PARSING) {
                     //parse tournament games
                     match.parse_status = 0;
                 }
-                async.eachSeries(match.players, function(p, cb) {
+                async.each(match.players, function(p, cb) {
                     if (p.account_id in trackedPlayers) {
                         //queued
                         match.parse_status = 0;
