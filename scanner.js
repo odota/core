@@ -27,7 +27,7 @@ app.route("/").get(function(res, req) {
     redis.get("match_seq_num", function(err, result) {
         res.json({
             started_at: startedAt.format(),
-            started_ago: moment.fromNow(),
+            started_ago: startedAt.fromNow(),
             match_seq_num: result || "NOT FOUND"
         })
     })

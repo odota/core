@@ -37,7 +37,7 @@ function start() {
     app.get("/", function(req, res) {
         res.json({
             started_at: startedAt.format(),
-            started_ago: moment.fromNow()
+            started_ago: startedAt.fromNow()
         });
     });
     app.get('/parse', function(req, res) {
