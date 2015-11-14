@@ -232,18 +232,19 @@ function insertMatch(db, redis, queue, match, options, cb) {
                             }
                         }
                         //reduce match to save cache space--we only need basic data per match for matches tab
-                        player_match = reduceMatch(player_match);
+                        var reduced_player_match = reduceMatch(player_match);
                         var identifier = [player_match.match_id, player_match.player_slot].join(':');
                         var orig = cache.data[identifier];
                         if (!orig) {
-                            cache.data[identifier] = player_match;
+                            cache.data[identifier] = reduced_player_match;
                         }
                         else {
                             //iterate instead of setting directly to avoid clobbering existing data
-                            for (var key in player_match) {
-                                orig[key] = player_match[key];
+                            for (var key in reduced_player_match) {
+                                orig[key] = reduced_player_match[key];
                             }
                         }
+                        //console.log(player_match.account_id, Object.keys(cache.data).length);
                         redis.ttl("player:" + player_match.account_id, function(err, ttl) {
                             if (err) {
                                 return cb(err);

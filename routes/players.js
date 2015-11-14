@@ -282,7 +282,7 @@ module.exports = function(db, redis) {
     function countPlayer(account_id, cb) {
         if (!isNaN(account_id)) {
             console.time("count");
-            db('player_matches').count('match_id').where({
+            db('player_matches').count().where({
                 account_id: Number(account_id)
             }).asCallback(function(err, count) {
                 if (err) {
@@ -335,8 +335,12 @@ module.exports = function(db, redis) {
                     if (err) {
                         return cb(err);
                     }
-                    //we return a count of 0 if the account_id is string (all/professional)
-                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
+                    //we return undefined count if the account_id is string (all/professional)
+                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length >= count) || count === undefined);
+                    cacheValid = true;
+                    if (cache.data) {
+                        console.log('expected %s matches, found %s matches', count, cache.data.length);
+                    }
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
                     var filter_exists = Object.keys(options.query.js_select).length;
                     if (cacheValid && !filter_exists) {
@@ -435,7 +439,7 @@ module.exports = function(db, redis) {
                             }, cb);
                         }
                         */
-                        if (!cacheValid && !filter_exists && account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
+                        if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
                             //pack data into hash for cache
                             var match_ids = {};
                             player.data.forEach(function(m) {
