@@ -241,7 +241,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         else {
                             //iterate instead of setting directly to avoid clobbering existing data
                             for (var key in reduced_player_match) {
-                                orig[key] = reduced_player_match[key];
+                                orig[key] = reduced_player_match[key] || orig[key];
                             }
                         }
                         //console.log(player_match.account_id, Object.keys(cache.data).length);
