@@ -90,6 +90,18 @@ function getColumnInfo(db, cb) {
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     delete match.players;
+    //build match.group so after parse we can figure out the player ids for each slot (for caching update without db read)
+    //do this at the end so it doesn't get deleted during match insertion step
+    if (players && options.type === "api") {
+        match.group = {};
+        players.forEach(function(p, i) {
+            match.group[p.player_slot] = {
+                account_id: p.account_id,
+                hero_id: p.hero_id,
+                player_slot: p.player_slot
+            };
+        });
+    }
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
@@ -255,14 +267,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            //slot to id map so after parse we can figure out the player ids for each slot (for caching update without db read)
-            //do this at the end so it doesn't get deleted during match insertion step
-            if (players) {
-                match.slot_to_id = {};
-                players.forEach(function(p, i) {
-                    match.slot_to_id[p.player_slot] = p.account_id;
-                });
-            }
             //queue it and finish, callback with the queued parse job
             return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);
