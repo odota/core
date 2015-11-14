@@ -11,6 +11,7 @@ var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
 //var cluster = require('cluster');
+var startedAt = new Date();
 var port = config.PORT || config.PARSER_PORT;
 var server = app.listen(port, function() {
     var host = server.address().address;
@@ -20,7 +21,8 @@ app.use(bodyParser.json());
 app.get('/', function(req, res) {
     res.json({
         capacity: capacity,
-        version: utility.getParseSchema().version
+        version: utility.getParseSchema().version,
+        started_at: startedAt
     });
 });
 app.post('/deploy', function(req, res) {
