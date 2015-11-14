@@ -202,7 +202,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
         if (!config.ENABLE_PLAYER_CACHE) {
             return cb();
         }
-        if (slot_to_id) {
+        if (slot_to_id && players) {
             players.forEach(function(p) {
                 //add account id to each player so we know what caches to update
                 p.account_id = slot_to_id[p.player_slot];
