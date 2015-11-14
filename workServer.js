@@ -89,15 +89,6 @@ function start() {
             for (var key in parsed_data) {
                 match[key] = match[key] || parsed_data[key];
             }
-            
-            //For some reason match.players could not exist
-            if (!Array.isArray(match.players)) {
-                return exit("match.players is not an array");
-            }
-            
-            match.players.forEach(function(p, i) {
-                p.account_id = match.slot_to_id[p.player_slot];
-            });
 
             match.parse_status = 2;
             //fs.writeFileSync("output.json", JSON.stringify(match));

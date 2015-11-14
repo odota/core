@@ -89,7 +89,10 @@ function getColumnInfo(db, cb) {
 
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
-    delete match.players;
+    //this will be undefined on api insertion, so we build it
+    //this will be defined on parse insertion, so we use it
+    //slot to id map so after parse we can figure out the player ids for each slot (for caching update without db read)
+    var slot_to_id = match.slot_to_id ? JSON.parse(JSON.stringify(match.slot_to_id)) : buildSlotMap();
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
@@ -103,6 +106,16 @@ function insertMatch(db, redis, queue, match, options, cb) {
         updatePlayerCaches,
         clearMatchCache
         ], decideParse);
+
+    function buildSlotMap() {
+        var slot_to_id = {};
+        if (players) {
+            players.forEach(function(p, i) {
+                slot_to_id[p.player_slot] = p.account_id;
+            });
+        }
+        return slot_to_id;
+    }
 
     function insertMatchTable(cb) {
         var row = match;
@@ -189,6 +202,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
         if (!config.ENABLE_PLAYER_CACHE) {
             return cb();
         }
+        if (slot_to_id) {
+            players.forEach(function(p) {
+                //add account id to each player so we know what caches to update
+                p.account_id = slot_to_id[p.player_slot];
+            });
+        }
         async.each(players || options.players, function(player_match, cb) {
             //join player with match to form player_match
             for (var key in match) {
@@ -257,14 +276,8 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            //slot to id map so after parse we can figure out the player ids for each slot (for caching update without db read)
-            //do this at the end so it doesn't get deleted during match insertion step
-            if (players) {
-                match.slot_to_id = {};
-                players.forEach(function(p, i) {
-                    match.slot_to_id[p.player_slot] = p.account_id;
-                });
-            }
+            //put slot_to_id into match so we have it when parse job inserts
+            match.slot_to_id = slot_to_id;
             //queue it and finish, callback with the queued parse job
             return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);

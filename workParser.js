@@ -654,8 +654,7 @@ function runParse(match, cb) {
             var goldtotal = 0;
             var xptotal = 0;
             parsed_data.players.forEach(function(p, j) {
-                //just use index to determine radiant/dire since parsed_data players is invariantly 10 players
-                if (j < parsed_data.players.length / 2) {
+                if (utility.isRadiant(p)) {
                     goldtotal += p.gold_t[i];
                     xptotal += p.xp_t[i];
                 }
@@ -663,8 +662,6 @@ function runParse(match, cb) {
                     xptotal -= p.xp_t[i];
                     goldtotal -= p.gold_t[i];
                 }
-                //use player slot to id mapping sent from server to fill in account_ids (for determining player cache updates on insert)
-                p.account_id = match.slot_to_id[p.player_slot];
             });
             parsed_data.radiant_gold_adv.push(goldtotal);
             parsed_data.radiant_xp_adv.push(xptotal);
