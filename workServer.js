@@ -21,7 +21,7 @@ buildSets(db, redis, function(err) {
     }
     var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
-        console.log('loaded job %s into pool', job.jobId);
+        console.log('loaded job %s into pool, %s jobs in pool', job.jobId, Object.keys(pooled_jobs).length);
         //save the callback for this job
         job.cb = cb;
         //put it in the pool
@@ -88,13 +88,6 @@ function start() {
             //match.players was deleted earlier during insertion of api data
             for (var key in parsed_data) {
                 match[key] = match[key] || parsed_data[key];
-            }
-            
-            //For some reason match.players could not exist
-            if (Array.isArray(match.players)) {
-                match.players.forEach(function(p) {
-                    p.account_id = match.group[p.player_slot].account_id;
-                });
             }
             match.parse_status = 2;
             //fs.writeFileSync("output.json", JSON.stringify(match));

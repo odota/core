@@ -89,10 +89,9 @@ function getColumnInfo(db, cb) {
 
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
-    delete match.players;
     //build match.group so after parse we can figure out the player ids for each slot (for caching update without db read)
-    //do this at the end so it doesn't get deleted during match insertion step
-    if (players && options.type === "api") {
+    //TODO how to handle jobs currently in queue (no match.group?)
+    if (players && !match.group) {
         match.group = {};
         players.forEach(function(p, i) {
             match.group[p.player_slot] = {
@@ -200,6 +199,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
     function updatePlayerCaches(cb) {
         if (!config.ENABLE_PLAYER_CACHE) {
             return cb();
+        }
+        if (match.group) {
+            players.forEach(function(p) {
+                //add account id to each player so we know what caches to update
+                p.account_id = match.group[p.player_slot].account_id;
+            });
         }
         async.each(players || options.players, function(player_match, cb) {
             //join player with match to form player_match
