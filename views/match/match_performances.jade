@@ -28,7 +28,7 @@ block match_content
         img.mapContainer(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
 
   +ad("banner2")
-  
+
   .row
     .col-md-12
       +data_table({id:"utilization", heading: "Utilization"})
@@ -55,12 +55,12 @@ block match_content
                   span: img.img-sm.item(src=item.img, title=player.max_hero_hit.inflictor)
                 else
                   span: img.img-sm(src="/public/images/default_attack.png", title="Auto Attack/Other")
-                div #{player.max_hero_hit.value}                    
+                div #{player.max_hero_hit.value}
               if hero
                 span.img-text: img.img-md(src=hero.img, title=hero.localized_name)
               else
                 =player.max_hero_hit.key
-              
+
             td.table-img
               each ability in player.ability_uses_arr || []
                 span.img-text
@@ -77,23 +77,15 @@ block match_content
                 span.img-text
                   img.img-sm(class=item.className src=item.img, title=item.name)
                   div.format #{item.val}
-                  
+
 append footer_assets
   script.
-    var width = document.getElementById('map').clientWidth;
-    var heatmap = h337.create({
-      container: document.getElementById('map'),
-      radius: 15*(width/600)
+    $(document).ready(function() {
+      window.resize.initResizableHeatmap($('#map'), !{JSON.stringify(match.posData)},
+        'mouseenter', $('.activate'), function(elem, posData) {
+          var pData = posData[Number(elem.attr('data-index'))]
+          var data = pData[elem.attr('data-type')];
+          return data;
+      });
     });
 
-    // scale points by width/127 units to fit to size of map
-    // offset points by 25 units to increase visibility
-    var posData = !{JSON.stringify(match.posData)}
-    adjustHeatmapData(posData, width/127, null, 25);
-
-    $(".activate").on("mouseenter", function(){
-      var pData = posData[Number($(this).attr('data-index'))]
-      var data = pData[$(this).attr('data-type')];
-      console.log("mouseover", pData, data);
-      heatmap.setData(data);
-    })

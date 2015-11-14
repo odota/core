@@ -3,28 +3,26 @@ extend player
 block playercontent
   .row
     .col-md-6
-      h3 Observers 
+      h3 Observers
         small (#{player.aggData.obs.n} matches)
-      #map.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+      #mapObs.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="observer wards map")
     .col-md-6
-      h3 Sentries 
+      h3 Sentries
         small (#{player.aggData.sen.n} matches)
-      #map2.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
-    
+      #mapSen.mapContainer.mapContainer-small
+        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="sentry wards map")
+
 append footer_assets
   script.
-    var posData = !{JSON.stringify(player.posData)};
-    adjustHeatmapData(posData, document.getElementById('map').clientWidth/127);
-    var heatmap = h337.create({
-      container: document.getElementById('map'),
-      radius: 15
+    $(document).ready(function() {
+      var posData = !{JSON.stringify(player.posData)};
+      window.resize.initResizableHeatmap($('#mapObs'), posData, null, null,
+        function(elem, posData) {
+          return posData[0]["obs"];
+      });
+      window.resize.initResizableHeatmap($('#mapSen'), posData, null, null,
+        function(elem, posData) {
+          return posData[0]["sen"];
+      });
     });
-    var heatmap2 = h337.create({
-      container: document.getElementById('map2'),
-      radius: 15
-    });
-    heatmap.setData(posData[0]["obs"]);
-    heatmap2.setData(posData[0]["sen"]);
-          
