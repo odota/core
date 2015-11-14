@@ -21,7 +21,7 @@ buildSets(db, redis, function(err) {
     }
     var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
-        console.log('loaded job %s into pool, %s jobsin pool', job.jobId, Object.keys(pooled_jobs).length);
+        console.log('loaded job %s into pool, %s jobs in pool', job.jobId, Object.keys(pooled_jobs).length);
         //save the callback for this job
         job.cb = cb;
         //put it in the pool
