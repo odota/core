@@ -23,7 +23,7 @@ var app = express();
 var port = config.PORT || config.SCANNER_PORT;
 var startedAt = moment();
 
-app.route("/").get(function(res, req) {
+app.route("/").get(function(req, res) {
     redis.get("match_seq_num", function(err, result) {
         res.json({
             started_at: startedAt.format(),
