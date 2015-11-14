@@ -337,7 +337,7 @@ module.exports = function(db, redis) {
                     }
                     //we return undefined count if the account_id is string (all/professional)
                     var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length >= count) || count === undefined);
-                    if (cache.data) {
+                    if (cache && cache.data) {
                         console.log('expected %s matches, found %s matches', count, cache.data.length);
                     }
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
