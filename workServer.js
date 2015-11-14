@@ -92,8 +92,8 @@ function start() {
             
             //For some reason match.players could not exist
             if (Array.isArray(match.players)) {
-                match.players.forEach(function(p, i) {
-                    p.account_id = match.slot_to_id[p.player_slot];
+                match.players.forEach(function(p) {
+                    p.account_id = match.group[p.player_slot].account_id;
                 });
             }
             match.parse_status = 2;

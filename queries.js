@@ -207,9 +207,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                             var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
                             if (!reInsert && !reParse) {
                                 computePlayerMatchData(player_match);
-                                var group = {};
-                                group[player_match.match_id] = players;
-                                cache.aggData = aggregator([player_match], group, options.type, cache.aggData);
+                                cache.aggData = aggregator([player_match], options.type, cache.aggData);
                             }
                         }
                         //reduce match to save cache space--we only need basic data per match for matches tab
