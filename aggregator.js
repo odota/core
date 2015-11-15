@@ -606,7 +606,7 @@ module.exports = function aggregator(matches, fields, existing) {
             }
         }
         var player_win = isRadiant(m) === m.radiant_win;
-        var group = m.group;
+        var group = m.pgroup;
         for (var key in group) {
             var tm = group[key];
             var tm_hero = tm.hero_id;
@@ -641,7 +641,7 @@ module.exports = function aggregator(matches, fields, existing) {
     function aggTeammates(key, m, groups) {
         var teammates = aggData.teammates;
         var player_win = isRadiant(m) === m.radiant_win;
-        var group = m.group;
+        var group = m.pgroup;
         for (var key in group) {
             var tm = group[key];
             //count teammate players
