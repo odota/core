@@ -31,7 +31,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
             }
             count += 1;
             console.log(count, p.account_id);
-            if (data.solo_competitive_rank || data.competitive_rank) {
+            if (data && (data.solo_competitive_rank || data.competitive_rank)) {
                 console.log(data);
                 data.account_id = job.data.payload.account_id;
                 data.match_id = job.data.payload.match_id;
