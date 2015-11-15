@@ -6,7 +6,7 @@ var queueReq = require('../utility').queueReq;
  * Get all players who have visited and don't have full history, and queue for full history
  **/
 module.exports = function fullhistory(cb) {
-    db.from('players').whereNotNull('last_login').andWhereNull('full_history_time').asCallback(function(err, players) {
+    db.from('players').whereNotNull('last_login').whereNull('full_history_time').asCallback(function(err, players) {
         if (err) {
             return cb(err);
         }
