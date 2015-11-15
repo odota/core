@@ -68,11 +68,7 @@ function getPageData(start, options, cb) {
                 type: "skill",
                 //pass players in options since we don't want to insert skill players (overwrites details)
                 players: data.players
-            }, function(err, doc) {
-                if (doc) {
-                    //if doc exists, we modified an existing doc, so we added skill data
-                    //added[data.match_id] = 1;
-                }
+            }, function(err) {
                 //delete results[data.match_id];
                 return cb(err);
             });

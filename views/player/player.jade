@@ -4,20 +4,16 @@ include /mixins/progress_bar
 block content
   .row.match-top
     .col-xs-3
-      div(style="display:flex;")
+      div
         a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
           if player.avatar
             img(src='#{player.avatar}').img-thumbnail
-          //else
-            //i(style="font-size:30px;border:1px solid lightblue;border-radius:5px;").fa.fa-steam
-        div
-          h4
-            div #{player.personaname || player.account_id}
-          h4
-            if player.cheese
-              div
-                i.flaticon-1.small-cheese(style="display:inline-block")
-                small(style="margin-left:.5em") x #{' '} #{player.cheese}
+        h4(style="font-size:3vmin;word-wrap:break-word;") #{player.personaname || player.account_id}
+        h4
+          if player.cheese
+            div
+              i.flaticon-1.small-cheese(style="display:inline-block")
+              small(style="margin-left:.5em") x #{' '} #{player.cheese}
     .col-xs-3
           h4
             span.text-info.rating: abbr(title="Solo MMR")
