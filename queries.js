@@ -90,7 +90,6 @@ function getColumnInfo(db, cb) {
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
-    //TODO how to handle jobs currently in queue (no match.pgroup?)
     if (players && !match.pgroup) {
         match.pgroup = {};
         players.forEach(function(p, i) {
