@@ -80,7 +80,7 @@ function start() {
             return job.cb(err);
         };
         //get the replay url and save it
-        getReplayUrl(db, redis, match, function(err) {
+        return getReplayUrl(db, redis, match, function(err) {
             if (err) {
                 //server won't send back a job in this case, let client timeout
                 return job.exit(err);
