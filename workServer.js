@@ -57,6 +57,28 @@ function start() {
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         var match = job.data.payload;
+        job.submitWork = function submitWork(parsed_data) {
+            if (parsed_data.error) {
+                return job.exit(parsed_data.error);
+            }
+            delete parsed_data.key;
+            delete parsed_data.jobId;
+            //extend match object with parsed data, keep existing data if key conflict (match_id)
+            //match.players was deleted earlier during insertion of api data
+            for (var key in parsed_data) {
+                match[key] = match[key] || parsed_data[key];
+            }
+            match.parse_status = 2;
+            //fs.writeFileSync("output.json", JSON.stringify(match));
+            return insertMatch(db, redis, queue, match, {
+                type: "parsed"
+            }, job.exit);
+        };
+        job.exit = function exit(err) {
+            clearTimeout(job.expire);
+            delete active_jobs[job.jobId];
+            return job.cb(err);
+        };
         //get the replay url and save it
         getReplayUrl(db, redis, match, function(err) {
             if (err) {
@@ -67,28 +89,6 @@ function start() {
                 console.log('job %s expired', job.jobId);
                 return job.exit("timeout");
             }, 180 * 1000);
-            job.submitWork = function submitWork(parsed_data) {
-                if (parsed_data.error) {
-                    return job.exit(parsed_data.error);
-                }
-                delete parsed_data.key;
-                delete parsed_data.jobId;
-                //extend match object with parsed data, keep existing data if key conflict (match_id)
-                //match.players was deleted earlier during insertion of api data
-                for (var key in parsed_data) {
-                    match[key] = match[key] || parsed_data[key];
-                }
-                match.parse_status = 2;
-                //fs.writeFileSync("output.json", JSON.stringify(match));
-                return insertMatch(db, redis, queue, match, {
-                    type: "parsed"
-                }, job.exit);
-            };
-            job.exit = function exit(err) {
-                clearTimeout(job.expire);
-                delete active_jobs[job.jobId];
-                return job.cb(err);
-            };
             console.log('server sent jobid %s', job.jobId);
             return res.json({
                 jobId: job.jobId,
