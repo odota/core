@@ -13,7 +13,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
     if (err) {
         process.exit(1);
     }
-    async.eachSeries(players, function(p, cb) {
+    async.eachLimit(players, 5, function(p, cb) {
         var job = {
             data: generateJob("mmr", {
                 account_id: p.account_id,
