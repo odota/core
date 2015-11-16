@@ -1,3 +1,9 @@
+var to = setTimeout(function(){}, 1000);
+setTimeout(function(){
+    clearTimeout(to);
+}, 2000);
+
+/*
 var bull = require('bull');
 var queue = bull('parse', 6379, '127.0.0.1');
 queue.process(function(job, cb) {
@@ -6,11 +12,10 @@ queue.process(function(job, cb) {
         cb();
     }, 1000);
 });
-/*
+
 queue.getNextJob().then(function(job) {
     console.log("next job: %s", job.jobId);
 });
-*/
 setInterval(function() {
     queue.add({
         msg: "Hello"
@@ -33,3 +38,4 @@ setInterval(function() {
         console.log("failed:%s", count.length);
     });
 }, 1000);
+*/
