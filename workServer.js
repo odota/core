@@ -65,7 +65,7 @@ function start() {
             }
             job.expire = setTimeout(function() {
                 console.log('job %s expired', job.jobId);
-                return exit("timeout");
+                return job.exit("timeout");
             }, 180 * 1000);
             job.submitWork = function submitWork(parsed_data) {
                 if (parsed_data.error) {
