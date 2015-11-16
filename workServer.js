@@ -82,7 +82,7 @@ function start() {
                 //fs.writeFileSync("output.json", JSON.stringify(match));
                 return insertMatch(db, redis, queue, match, {
                     type: "parsed"
-                }, job.xit);
+                }, job.exit);
             };
             job.exit = function exit(err) {
                 clearTimeout(job.expire);
