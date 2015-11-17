@@ -15,8 +15,15 @@ var active_jobs = {};
 var pooled_jobs = {};
 var startedAt = moment();
 var memwatch = require('memwatch-next');
+var hd = new memwatch.HeapDiff();
 memwatch.on('leak', function(info) {
     console.error(info);
+});
+memwatch.on('stats', function(stats) {
+    var diff = hd.end();
+    console.error(JSON.stringify(diff));
+    hd = new memwatch.HeapDiff();
+    console.error(stats);
 });
 buildSets(db, redis, function(err) {
     if (err) {
