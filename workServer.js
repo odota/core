@@ -33,9 +33,16 @@ buildSets(db, redis, function(err) {
     queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
-        //put it in the pool
-        pooled_jobs[job.jobId] = job;
-        console.log('loaded job %s into pool, %s jobs in pool, %s jobs active', job.jobId, Object.keys(pooled_jobs).length, Object.keys(active_jobs).length);
+        var match = job.data.payload;
+        //get the replay url and save it to db
+        return getReplayUrl(db, redis, match, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            //put it in the pool
+            pooled_jobs[job.jobId] = job;
+            console.log('loaded job %s into pool, %s jobs in pool, %s jobs active', job.jobId, Object.keys(pooled_jobs).length, Object.keys(active_jobs).length);
+        });
     });
     start();
 });
@@ -89,25 +96,14 @@ function start() {
             delete active_jobs[job.jobId];
             return job.cb(err);
         };
-        //get the replay url and save it
-        return getReplayUrl(db, redis, match, function(err) {
-            if (err) {
-                res.status(500).json({
-                    error: "failed to get replay url"
-                });
-                return job.exit(err);
-            }
-            else {
-                job.expire = setTimeout(function() {
-                    console.log('job %s expired', job.jobId);
-                    return job.exit("timeout");
-                }, 180 * 1000);
-                console.log('server sent jobid %s', job.jobId);
-                return res.json({
-                    jobId: job.jobId,
-                    data: job.data
-                });
-            }
+        job.expire = setTimeout(function() {
+            console.log('job %s expired', job.jobId);
+            return job.exit("timeout");
+        }, 180 * 1000);
+        console.log('server sent jobid %s', job.jobId);
+        return res.json({
+            jobId: job.jobId,
+            data: job.data
         });
     });
     app.post('/parse', function(req, res) {
