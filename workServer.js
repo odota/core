@@ -29,7 +29,7 @@ buildSets(db, redis, function(err) {
     if (err) {
         throw err;
     }
-    var pool_size = 50;
+    var pool_size = 100;
     queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
