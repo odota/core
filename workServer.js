@@ -29,7 +29,7 @@ buildSets(db, redis, function(err) {
     if (err) {
         throw err;
     }
-    var pool_size = 100;
+    var pool_size = 200;
     queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
@@ -92,11 +92,9 @@ function start() {
         //get the replay url and save it
         return getReplayUrl(db, redis, match, function(err) {
             if (err) {
-                /*
                 res.status(500).json({
                     error: "failed to get replay url"
                 });
-                */
                 return job.exit(err);
             }
             else {
