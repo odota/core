@@ -64,8 +64,9 @@ function getJob() {
             runParse(job.data.payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
-                    parsed_data.error = err;
                 }
+                parsed_data = parsed_data || {};
+                parsed_data.error = err;
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
                 console.log("sending work to server, jobid: %s", job.jobId);
@@ -75,8 +76,8 @@ function getJob() {
                     json: parsed_data,
                     timeout: 30000
                 }, function(err, resp, body) {
-                    if (err || body.error) {
-                        console.error("error occurred while submitting work: %s", err || body.error);
+                    if (err || resp.statusCode !== 200 || body.error) {
+                        console.error("error occurred while submitting work");
                     }
                     if (parsed_data.error) {
                         process.exit(1);
@@ -88,7 +89,7 @@ function getJob() {
         }
         else {
             //wait interval, then get another job
-            console.log("error occurred while requesting work: %s", JSON.stringify(err));
+            console.log("error occurred while requesting work");
             return setTimeout(getJob, 5 * 1000);
         }
     });
