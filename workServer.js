@@ -92,18 +92,22 @@ function start() {
         //get the replay url and save it
         return getReplayUrl(db, redis, match, function(err) {
             if (err) {
-                //server won't send back a job in this case, let client timeout
+                res.status(500).json({
+                    error: "failed to get replay url"
+                });
                 return job.exit(err);
             }
-            job.expire = setTimeout(function() {
-                console.log('job %s expired', job.jobId);
-                return job.exit("timeout");
-            }, 180 * 1000);
-            console.log('server sent jobid %s', job.jobId);
-            return res.json({
-                jobId: job.jobId,
-                data: job.data
-            });
+            else {
+                job.expire = setTimeout(function() {
+                    console.log('job %s expired', job.jobId);
+                    return job.exit("timeout");
+                }, 180 * 1000);
+                console.log('server sent jobid %s', job.jobId);
+                return res.json({
+                    jobId: job.jobId,
+                    data: job.data
+                });
+            }
         });
     });
     app.post('/parse', function(req, res) {
