@@ -14,11 +14,15 @@ var port = config.PORT || config.WORK_PORT;
 var active_jobs = {};
 var pooled_jobs = {};
 var startedAt = moment();
+var memwatch = require('memwatch-next');
+memwatch.on('leak', function(info) {
+    console.error(info);
+});
 buildSets(db, redis, function(err) {
     if (err) {
         throw err;
     }
-    var pool_size = 100;
+    var pool_size = 50;
     queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
@@ -69,7 +73,6 @@ function start() {
                 match[key] = match[key] || parsed_data[key];
             }
             match.parse_status = 2;
-            //fs.writeFileSync("output.json", JSON.stringify(match));
             return insertMatch(db, redis, queue, match, {
                 type: "parsed"
             }, job.exit);
@@ -103,7 +106,6 @@ function start() {
                 error: "invalid key"
             });
         }
-        //got data from worker, signal the job with this match_id
         console.log('received submitted work');
         if (active_jobs[req.body.jobId]) {
             var job = active_jobs[req.body.jobId];
@@ -113,7 +115,7 @@ function start() {
             });
         }
         else {
-            return res.json({
+            return res.status(500).json({
                 error: "no active job with this jobid"
             });
         }

@@ -51,6 +51,7 @@
     "jade": "~1.11.0",
     "jquery": "^2.1.4",
     "knex": "^0.9.0",
+    "memwatch-next": "^0.2.10",
     "moment": "^2.10.6",
     "ndjson": "^1.4.3",
     "numeral": "^1.5.3",
