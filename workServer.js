@@ -92,9 +92,11 @@ function start() {
         //get the replay url and save it
         return getReplayUrl(db, redis, match, function(err) {
             if (err) {
+                /*
                 res.status(500).json({
                     error: "failed to get replay url"
                 });
+                */
                 return job.exit(err);
             }
             else {
