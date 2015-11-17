@@ -23,6 +23,9 @@ module.exports = function filter(matches, groups, filters) {
         lobby_type: function(m, key) {
             return m.lobby_type === key;
         },
+        date: function(m, key) {
+            return m.start_time > Math.floor(Date.now() / 1000) - constants.date[key].duration;
+        },
         hero_id: function(m, key) {
             return m.hero_id === key;
         },
