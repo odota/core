@@ -62,7 +62,7 @@ module.exports = function filter(matches, groups, filters) {
             });
         }
     };
-    var curtime = Math.floor(Date.now() / 86400000);
+    var curtime = Math.floor(Date.now() / 1000);
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
         var include = true;
