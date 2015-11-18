@@ -24,7 +24,7 @@ module.exports = function filter(matches, groups, filters) {
             return m.lobby_type === key;
         },
         date: function(m, key) {
-            return m.start_time / 86400 > curtime - key;
+            return m.start_time > curtime - (key * 86400);
         },
         hero_id: function(m, key) {
             return m.hero_id === key;
