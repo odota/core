@@ -75,9 +75,9 @@ h2.inline-header
         .form-group
           label Date
           select.form-control(multiple name="date" placeholder="Any Date")#date
-            - var date_list = {"7":{"id":"7","name":"Last 1 Week"},"30":{"id":"30","name":"Last 1 Month"},"90":{"id":"90","name":"Last 3 Months"},"180":{"id":"180","name":"Last 6 Months"}}
-            each entry in date_list
-              option(value=entry.id, selected=(q.date && q.date[0]===Number(entry.id)))=entry.name
+            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
+            each name, id in date_list
+              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
     //-
       if compare
         .row
