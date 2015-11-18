@@ -13,6 +13,7 @@ var capacity = require('os').cpus().length;
 //var cluster = require('cluster');
 var startedAt = new Date();
 var port = config.PORT || config.PARSER_PORT;
+var os = require('os');
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
@@ -69,6 +70,7 @@ function getJob() {
                 parsed_data.error = err;
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
+                parsed_data.hostname = os.hostname();
                 console.log("sending work to server, jobid: %s", job.jobId);
                 request({
                     url: remote,
