@@ -24,7 +24,9 @@ module.exports = function filter(matches, groups, filters) {
             return m.lobby_type === key;
         },
         region: function(m, key) {
-          return constants.regions[constants.regions_id[key]].clusters.indexOf(m.cluster.toString()) != -1;
+          if (constants.regions_id[key] && constants.regions[constants.regions_id[key]] && constants.regions[constants.regions_id[key]].clusters)
+            return constants.regions[constants.regions_id[key]].clusters.indexOf(m.cluster.toString()) != -1;
+          //else return false;
         },
         hero_id: function(m, key) {
             return m.hero_id === key;
