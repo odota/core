@@ -91,7 +91,7 @@ function start() {
             counts[hostname] += 1;
             console.log(JSON.stringify(counts));
             */
-            redis.zadd("parse:"+hostname, moment().format('X'), match.match_id);
+            redis.zadd("parser:"+hostname, moment().format('X'), match.match_id);
             delete parsed_data.key;
             delete parsed_data.jobId;
             delete parsed_data.hostname;

@@ -61,8 +61,8 @@ module.exports = function getStatus(db, redis, queue, cb) {
         last_parsed: function(cb) {
             db.from('matches').select(['match_id', 'duration', 'start_time']).where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
-        cluster: function(cb) {
-            redis.keys("parse:*", function(err, result) {
+        parser: function(cb) {
+            redis.keys("parser:*", function(err, result) {
                 if (err) {
                     return cb(err);
                 }
@@ -76,7 +76,30 @@ module.exports = function getStatus(db, redis, queue, cb) {
                                 return cb(err);
                             }
                             return cb(err, {
-                                hostname: zset.substring("parse:".length),
+                                hostname: zset.substring("parser:".length),
+                                count: cnt
+                            });
+                        });
+                    });
+                }, cb);
+            });
+        },
+        retriever: function(cb) {
+            redis.keys("retriever:*", function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                async.map(result, function(zset, cb) {
+                    redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'), function(err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        redis.zcard(zset, function(err, cnt) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            return cb(err, {
+                                hostname: zset.substring("retriever:".length),
                                 count: cnt
                             });
                         });

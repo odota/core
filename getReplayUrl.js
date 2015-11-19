@@ -34,7 +34,7 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
                 var urls = result.map(function(r) {
                     return r + "&match_id=" + match.match_id;
                 });
-                getData(urls, function(err, body) {
+                getData(urls, function(err, body, metadata) {
                     if (err || !body || !body.match || !body.match.replay_salt) {
                         //non-retryable error
                         return cb("invalid body or error");
@@ -43,6 +43,10 @@ module.exports = function getReplayUrl(db, redis, match, cb) {
                     //remove bz2 if test
                     url = config.NODE_ENV === 'test' ? url.slice(0, -4) : url;
                     match.url = url;
+                    //count retriever calls
+                    if (body.match.replay_salt) {
+                        redis.zadd("retriever:" + metadata.hostname.split('.')[0], moment().format('X'), match.match_id);
+                    }
                     //save replay url in db
                     db('matches').update({
                         url: url
