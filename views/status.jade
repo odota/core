@@ -63,8 +63,9 @@ block content
             th Count
         tbody
           each entry in result.cluster
-            td=entry.hostname
-            td=entry.count
+            tr
+              td=entry.hostname
+              td=entry.count
 
 append footer_assets
   //-
