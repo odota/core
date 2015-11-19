@@ -128,7 +128,7 @@ function scanApi(seq_num) {
                     }
                 }, function(err) {
                     if (match.parse_status === 0 || match.parse_status === 3) {
-                        redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
+                        //redis.setex("added_match:" + match.match_id, 60 * 60 * 24, "1");
                         redis.zadd("added_match", moment().format('X'), match.match_id);
                         insertMatch(db, redis, queue, match, {
                             type: "api"
