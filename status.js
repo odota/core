@@ -1,4 +1,5 @@
 var async = require('async');
+var moment = require('moment');
 module.exports = function getStatus(db, redis, queue, cb) {
     console.time('status');
     async.series({
@@ -42,29 +43,46 @@ module.exports = function getStatus(db, redis, queue, cb) {
             });
         },
         matches_last_day: function(cb) {
+            redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'), function(err) {
+                if (err) {
+                    return cb(err);
+                }
+                redis.zcard("added_match", cb);
+            });
+            /*
             redis.keys("added_match:*", function(err, result) {
                 cb(err, result.length);
             });
+            */
         },
-        /*
-        parsed_last_day: function(cb) {
-            redis.keys("parsed_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
-        */
-        /*
-        requested_last_day: function(cb) {
-            redis.keys("requested_match:*", function(err, result) {
-                cb(err, result.length);
-            });
-        },
-        */
         last_added: function(cb) {
-            db.from('matches').select(['match_id','duration','start_time']).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            db.from('matches').select(['match_id', 'duration', 'start_time']).orderBy('match_id', 'desc').limit(10).asCallback(cb);
         },
         last_parsed: function(cb) {
-            db.from('matches').select(['match_id','duration','start_time']).where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+            db.from('matches').select(['match_id', 'duration', 'start_time']).where('version', '>', 0).orderBy('match_id', 'desc').limit(10).asCallback(cb);
+        },
+        cluster: function(cb) {
+            redis.keys("parse:*", function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                async.map(result, function(zset, cb) {
+                    redis.zremrangebyscore(zset, 0, moment().subtract(1, 'day').format('X'), function(err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        redis.zcard(zset, function(err, cnt) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            return cb(err, {
+                                hostname: zset.substring("parse:".length),
+                                count: cnt
+                            });
+                        });
+                    });
+                }, cb);
+            });
         },
         queue: function(cb) {
             console.time('queue');
@@ -108,7 +126,7 @@ module.exports = function getStatus(db, redis, queue, cb) {
             return cb(err);
         }
         // We need the property "rows" for "matches" and "players". Others just need count
-        if(count.hasOwnProperty("rows")) {
+        if (count.hasOwnProperty("rows")) {
             count = count.rows;
         }
         //psql counts are returned as [{count:'string'}].  If we want to do math with them we need to numberify them

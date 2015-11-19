@@ -81,9 +81,11 @@ function getJob() {
                     if (err || resp.statusCode !== 200 || body.error) {
                         console.error("error occurred while submitting work");
                     }
+                    /*
                     if (parsed_data.error) {
                         process.exit(1);
                     }
+                    */
                     //get another job
                     return getJob();
                 });

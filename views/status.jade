@@ -55,6 +55,16 @@ block content
               td=key
               each val2, key2 in val
                 td(id=["queue",key, key2].join('_'))=val2
+      h3 Cluster
+      table.table.table-condensed
+        thead
+          tr
+            th Node
+            th Count
+        tbody
+          each entry in result.cluster
+            td=entry.hostname
+            td=entry.count
 
 append footer_assets
   //-

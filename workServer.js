@@ -81,17 +81,20 @@ function start() {
             if (parsed_data.error) {
                 return job.exit(parsed_data.error);
             }
+            var match = job.data.payload;
             var hostname = parsed_data.hostname;
+            /*
             //track replays parsed by each node
             if (!counts[hostname]) {
                 counts[hostname] = 0;
             }
             counts[hostname] += 1;
             console.log(JSON.stringify(counts));
+            */
+            redis.zadd("parse:"+hostname, moment().format('X'), match.match_id);
             delete parsed_data.key;
             delete parsed_data.jobId;
             delete parsed_data.hostname;
-            var match = job.data.payload;
             //extend match object with parsed data, keep existing data if key conflict (match_id)
             //match.players was deleted earlier during insertion of api data
             for (var key in parsed_data) {
