@@ -88,7 +88,6 @@ for (var key in regions) {
 }
 cluster["121"] = "US EAST";
 constants.regions_id = regions_id;
-console.log(constants.regions_id);
 constants.cluster = cluster;
 constants.anonymous_account_id = 4294967295;
 module.exports = constants;
