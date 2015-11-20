@@ -75,8 +75,8 @@ h2.inline-header
         .form-group
           label Region
           select.form-control(multiple name="region" placeholder="Any Region")#region
-            each name, id in constants.regions_id
-              option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
+            each reg, name in constants.regions
+              option(value=reg.region, selected=(q.region && q.region[0]===Number(reg.region)))=name
     //-
       if compare
         .row

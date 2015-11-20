@@ -71,13 +71,10 @@ for (var i = 0; i < 128; i++) {
     }
 }
 var cluster = {};
-var regions_id = {};
 //Remove regions nesting
 constants.regions = constants.regions.regions;
 var regions = constants.regions;
 for (var key in regions) {
-    var id = regions[key].region;
-    regions_id[id] = key;
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
             cluster[c] = {"region_id":regions[key].region,"region_name":key};
@@ -85,7 +82,6 @@ for (var key in regions) {
     }
 }
 cluster["121"] = {"region_id":"2","region_name":"USEast"};
-constants.regions_id = regions_id;
 constants.cluster = cluster;
 constants.anonymous_account_id = 4294967295;
 module.exports = constants;
