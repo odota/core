@@ -80,13 +80,11 @@ for (var key in regions) {
     regions_id[id] = key;
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
-            cluster[c] = regions[key].display_name.slice("#dota_region_".length).split("_").map(function(s) {
-                return s.toUpperCase();
-            }).join(" ");
+            cluster[c] = {"region_id":regions[key].region,"region_name":key};
         });
     }
 }
-cluster["121"] = "US EAST";
+cluster["121"] = {"region_id":"2","region_name":"USEast"};
 constants.regions_id = regions_id;
 constants.cluster = cluster;
 constants.anonymous_account_id = 4294967295;
