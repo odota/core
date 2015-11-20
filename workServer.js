@@ -112,7 +112,8 @@ function start() {
         job.exit = function exit(err) {
             clearTimeout(job.expire);
             delete active_jobs[job.jobId];
-            return job.cb(err);
+            job.cb(err);
+            job = null;
         };
         console.log('server sent jobid %s', job.jobId);
         return res.json({
