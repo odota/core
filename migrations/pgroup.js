@@ -9,15 +9,19 @@ var stream = db.select('match_id').from('matches').where('match_id', '>=', start
 stream.on('end', done);
 stream.pipe(JSONStream.parse());
 
-function done() {
-    process.exit(0);
+function done(err) {
+    if (err){
+        console.error(err);
+    }
+    process.exit(Number(err));
 }
 stream.on('data', function(m) {
+    stream.pause();
     db.select(["account_id", "hero_id", "player_slot"]).from('player_matches').where({
         match_id: m.match_id
     }).asCallback(function(err, pms) {
         if (err) {
-            return cb(err);
+            return done(err);
         }
         var pgroup = {};
         pms.forEach(function(p) {
@@ -31,5 +35,10 @@ stream.on('data', function(m) {
         }).asCallback(cb);
     });
     
-    function cb(){}
+    function cb(err){
+        if (err){
+            return done(err);
+        }
+        stream.resume();
+    }
 });
