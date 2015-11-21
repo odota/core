@@ -3,7 +3,7 @@ var async = require('async');
 var args = process.argv.slice(2);
 var start_id = Number(args[0]) || 0;
 //ALTER TABLE matches ADD COLUMN pgroup json;
-db.select('match_id').from('matches').where('match_id', '>=', start_id).andWhereNull("pgroup").orderBy("match_id","asc").asCallback(function(err, matches) {
+db.select('match_id').from('matches').where('match_id', '>=', start_id).whereNull("pgroup").orderBy("match_id","asc").asCallback(function(err, matches) {
     if (err) {
         console.error(err);
         process.exit(1);
