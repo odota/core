@@ -19,7 +19,7 @@ function computeMatchData(match) {
     //use the value of i before the break, started at 1 to avoid negative index
     match.patch = i - 1;
     match.region_id = constants.cluster[match.cluster].region_id;
-    match.region = constants.cluster[match.cluster].region_name;
+    match.region = constants.cluster[match.cluster].region;
 }
 /**
  * Computes additional stats from stored data for a player_match
