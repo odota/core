@@ -15,6 +15,7 @@ var active_jobs = {};
 var pooled_jobs = {};
 var startedAt = moment();
 var counts = {};
+var schema = utility.getParseSchema();
 /*
 var memwatch = require('memwatch-next');
 var hd = new memwatch.HeapDiff();
@@ -91,7 +92,7 @@ function start() {
             counts[hostname] += 1;
             console.log(JSON.stringify(counts));
             */
-            redis.zadd("parser:"+hostname, moment().format('X'), match.match_id);
+            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
             delete parsed_data.key;
             delete parsed_data.jobId;
             delete parsed_data.hostname;
@@ -126,6 +127,11 @@ function start() {
         if (config.RETRIEVER_SECRET && req.body.key !== config.RETRIEVER_SECRET) {
             return res.status(500).json({
                 error: "invalid key"
+            });
+        }
+        if (req.body.version !== schema.version) {
+            return res.status(500).json({
+                error: "version mismatch"
             });
         }
         console.log('received submitted work');
