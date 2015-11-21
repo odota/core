@@ -30,6 +30,7 @@ function computePlayerMatchData(player_match) {
     player_match.total_gold = ~~(player_match.gold_per_min * player_match.duration / 60);
     player_match.total_xp = ~~(player_match.xp_per_min * player_match.duration / 60);
     player_match.kda = ~~((player_match.kills + player_match.assists) / (player_match.deaths + 1));
+    var self_hero = constants.heroes[player_match.hero_id];
     if (player_match.chat) {
         // word counts for this player and all players
         // aggregation of all words in all chat this player has experienced
@@ -38,12 +39,10 @@ function computePlayerMatchData(player_match) {
         player_match.my_word_counts = count_words(player_match, player_match);
     }
     if (player_match.kills_log) {
-        //remove meepo/meepo kills
-        if (player_match.hero_id === 82) {
-            player_match.kills_log = player_match.kills_log.filter(function(k) {
-                return k.key !== "npc_dota_hero_meepo";
-            });
-        }
+        //remove self kills
+        player_match.kills_log = player_match.kills_log.filter(function(k) {
+            return k.key !== self_hero.name;
+        });
     }
     if (player_match.killed) {
         player_match.neutral_kills = 0;
@@ -64,7 +63,9 @@ function computePlayerMatchData(player_match) {
                 player_match.sentry_kills += player_match.killed[key];
             }
             if (key.indexOf("npc_dota_hero") === 0) {
-                player_match.hero_kills += player_match.killed[key];
+                if (self_hero.name !== key) {
+                    player_match.hero_kills += player_match.killed[key];
+                }
             }
             if (key.indexOf("npc_dota_neutral") === 0) {
                 player_match.neutral_kills += player_match.killed[key];
