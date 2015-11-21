@@ -12,6 +12,7 @@ var preprocessQuery = require('../preprocessQuery');
 var filter = require('../filter');
 var aggregator = require('../aggregator');
 var compute = require('../compute');
+var querystring = require('querystring');
 var computePlayerMatchData = compute.computePlayerMatchData;
 var histograms = {
     "kills": 1,
@@ -104,6 +105,8 @@ module.exports = function(db, redis) {
                 player.teammate_list = lists.teammate_list;
                 var teammate_ids = JSON.parse(JSON.stringify(lists.all_teammate_list || lists.teammate_list));
                 //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
+                //remove self account id from query
+                delete req.query.account_id;
                 var ids = {};
                 teammate_ids.forEach(function(t) {
                     ids[t.account_id] = 1;
@@ -144,6 +147,7 @@ module.exports = function(db, redis) {
                     }
                     res.render("player/player_" + info, {
                         q: req.query,
+                        querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
                         route: info,
                         tabs: playerPages,
                         player: player,

@@ -1,6 +1,6 @@
 h2.inline-header
   button.btn.btn-sm.btn-dark.toggle-button(style="float: right;" data-toggle="collapse" data-target="#filter_collapse", aria-expanded="false") Apply A Filter
-#filter_collapse.collapse
+#filter_collapse.collapse(class=querystring ? "in" : "")
   form#query(action="" method="GET")
     if config.NODE_ENV==="development"
       pre=JSON.stringify(q)
@@ -90,5 +90,9 @@ h2.inline-header
                   option(value=entry.account_id, selected=q.compare_account_id && q.compare_account_id.indexOf(entry.account_id)!==-1)=entry.personaname
 
     .row
-      .col-md-12.text-center
-        button.btn.btn-query(type="submit") Do the Thing
+      .col-md-6.text-center
+        span: button.btn.btn-query(type="submit") Do the Thing
+      .col-md-6.text-center
+        span: a.btn.btn-danger(href="#" onclick="window.location = window.location.pathname;") Reset the Thing
+
+hr
