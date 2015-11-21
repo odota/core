@@ -8,7 +8,7 @@ block content
         a(href=player.profileurl || "#", target="_blank", style="display:inline-block; margin-right:10px;")
           if player.avatar
             img(src='#{player.avatar}').img-thumbnail
-        h4(style="font-size:3vmin;word-wrap:break-word;") #{player.personaname || player.account_id}
+        h4(style="word-wrap:break-word;") #{player.personaname || player.account_id}
         h4
           if player.cheese
             div
