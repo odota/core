@@ -72,6 +72,12 @@ h2.inline-header
           select.form-control(multiple name="lobby_type" placeholder="Any Lobby")#lobby_type
             each entry in constants.lobby_type
               option(value=entry.id, selected=(q.lobby_type && q.lobby_type[0]===entry.id))=entry.name
+        .form-group
+          label Date
+          select.form-control(multiple name="date" placeholder="Any Date")#date
+            - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
+            each name, id in date_list
+              option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
     //-
       if compare
         .row
