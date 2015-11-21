@@ -55,7 +55,29 @@ block content
               td=key
               each val2, key2 in val
                 td(id=["queue",key, key2].join('_'))=val2
-
+      h3 Parsers
+      table.table.table-condensed
+        thead
+          tr
+            th Node
+            th Count
+        tbody
+          each entry in result.parser
+            tr
+              td=entry.hostname
+              td=entry.count
+      h3 Retrievers
+      table.table.table-condensed
+        thead
+          tr
+            th Node
+            th Count
+        tbody
+          each entry in result.retriever
+            tr
+              td=entry.hostname
+              td=entry.count
+              
 append footer_assets
   //-
     script(src="/socket.io/socket.io.js")

@@ -205,7 +205,9 @@ function getData(url, cb) {
                     }
                 }
             }
-            return cb(null, body);
+            return cb(null, body, {
+                hostname: parse.host
+            });
         });
     }, delay);
 }
@@ -233,7 +235,7 @@ function isRadiant(player) {
 function mergeObjects(merge, val) {
     for (var attr in val) {
         //NaN test
-        if (Number.isNaN(val[attr])){
+        if (Number.isNaN(val[attr])) {
             val[attr] = 0;
         }
         //does property exist?
@@ -402,15 +404,16 @@ function invokeInterval(func, delay) {
 
 function queueReq(queue, type, payload, options, cb) {
     var job = generateJob(type, payload);
-    queue[job.type].add(job, {attempts: options.attempts || 15, 
-    backoff: {
-        delay: 60 * 1000,
-        type: 'exponential'
-    }}).then(function(queuejob) {
+    queue[job.type].add(job, {
+        attempts: options.attempts || 15,
+        backoff: {
+            delay: 60 * 1000,
+            type: 'exponential'
+        }
+    }).then(function(queuejob) {
         console.log("created jobId: %s", queuejob.jobId);
         cb(null, queuejob);
-    })
-    .catch(cb);
+    }).catch(cb);
 }
 module.exports = {
     tokenize: tokenize,

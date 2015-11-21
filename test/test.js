@@ -225,34 +225,38 @@ describe("web", function() {
                     done(err);
                 });
         });
+        it('/distributions', function(done) {
+            supertest(app).get('/distributions')
+                .expect(200).end(function(err, res) {
+                    done(err);
+                });
+        });
+        it('/mmstats', function(done) {
+            supertest(app).get('/mmstats')
+                .expect(200).end(function(err, res) {
+                    done(err);
+                });
+        });
         it('/status', function(done) {
             supertest(app).get('/status')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
                 .expect(200).expect(/Status/).end(function(err, res) {
                     done(err);
                 });
         });
         it('/faq', function(done) {
             supertest(app).get('/faq')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
                 .expect(200).expect(/FAQ/).end(function(err, res) {
                     done(err);
                 });
         });
         it('/carry', function(done) {
             supertest(app).get('/carry')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
                 .expect(200).expect(/Carry/).end(function(err, res) {
                     done(err);
                 });
         });
         it('/:invalid', function(done) {
             supertest(app).get('/asdf')
-                //.expect('Content-Type', /json/)
-                //.expect('Content-Length', '20')
                 .expect(404).end(function(err, res) {
                     done(err);
                 });

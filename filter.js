@@ -23,6 +23,9 @@ module.exports = function filter(matches, groups, filters) {
         lobby_type: function(m, key) {
             return m.lobby_type === key;
         },
+        date: function(m, key) {
+            return m.start_time > (curtime - (key * 86400));
+        },
         hero_id: function(m, key) {
             return m.hero_id === key;
         },
@@ -59,6 +62,7 @@ module.exports = function filter(matches, groups, filters) {
             });
         }
     };
+    var curtime = Math.floor(Date.now() / 1000);
     var filtered = [];
     for (var i = 0; i < matches.length; i++) {
         var include = true;

@@ -13,7 +13,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
     if (err) {
         process.exit(1);
     }
-    async.eachSeries(players, function(p, cb) {
+    async.eachLimit(players, 5, function(p, cb) {
         var job = {
             data: generateJob("mmr", {
                 account_id: p.account_id,
@@ -31,7 +31,7 @@ db.select('account_id').from('players').where('account_id', '>', start_id).order
             }
             count += 1;
             console.log(count, p.account_id);
-            if (data.solo_competitive_rank || data.competitive_rank) {
+            if (data && (data.solo_competitive_rank || data.competitive_rank)) {
                 console.log(data);
                 data.account_id = job.data.payload.account_id;
                 data.match_id = job.data.payload.match_id;

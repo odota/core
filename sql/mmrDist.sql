@@ -8,5 +8,6 @@ INNER JOIN
 ON pr.account_id = grouped.account_id
 AND pr.time = grouped.MaxTime
 WHERE solo_competitive_rank IS NOT NULL
+AND solo_competitive_rank > 0
 GROUP BY bin
 ORDER BY bin;

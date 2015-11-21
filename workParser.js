@@ -13,6 +13,7 @@ var capacity = require('os').cpus().length;
 //var cluster = require('cluster');
 var startedAt = new Date();
 var port = config.PORT || config.PARSER_PORT;
+var os = require('os');
 var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
@@ -64,10 +65,12 @@ function getJob() {
             runParse(job.data.payload, function(err, parsed_data) {
                 if (err) {
                     console.error("error occurred on parse: %s", err);
-                    parsed_data.error = err;
                 }
+                parsed_data = parsed_data || {};
+                parsed_data.error = err;
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
+                parsed_data.hostname = os.hostname();
                 console.log("sending work to server, jobid: %s", job.jobId);
                 request({
                     url: remote,
@@ -75,12 +78,14 @@ function getJob() {
                     json: parsed_data,
                     timeout: 30000
                 }, function(err, resp, body) {
-                    if (err || body.error) {
-                        console.error("error occurred while submitting work: %s", err || body.error);
+                    if (err || resp.statusCode !== 200 || body.error) {
+                        console.error("error occurred while submitting work");
                     }
+                    
                     if (parsed_data.error) {
                         process.exit(1);
                     }
+                    
                     //get another job
                     return getJob();
                 });
@@ -88,7 +93,7 @@ function getJob() {
         }
         else {
             //wait interval, then get another job
-            console.log("error occurred while requesting work: %s", JSON.stringify(err));
+            console.log("error occurred while requesting work");
             return setTimeout(getJob, 5 * 1000);
         }
     });

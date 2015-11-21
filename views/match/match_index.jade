@@ -17,7 +17,7 @@ mixin picks_bans_row(picks_bans, team_int)
 block match_content
   .row
     .col-md-12
-      +data_table({id:"index",summable:true, heading: "Overview", rankable: true})
+      +data_table({id:"index",summable:true, heading: "Overview"})
         each player, i in match.players
           +data_table_header(i, match)
             tr
