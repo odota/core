@@ -77,11 +77,11 @@ var regions = constants.regions;
 for (var key in regions) {
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
-            cluster[c] = {"region_id":regions[key].region,"region":key};
+            cluster[c] = regions[key].region;
         });
     }
 }
-cluster["121"] = {"region_id":"2","region":"USEast"};
+cluster["121"] = "2";
 constants.cluster = cluster;
 constants.anonymous_account_id = 4294967295;
 module.exports = constants;
