@@ -78,7 +78,7 @@ function start() {
         }
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
-        job.submitWork = function submitWork(parsed_data) {
+        job.submitWork = function(parsed_data) {
             if (parsed_data.error) {
                 return job.exit(parsed_data.error);
             }
@@ -102,7 +102,6 @@ function start() {
                 match[key] = match[key] || parsed_data[key];
             }
             match.parse_status = 2;
-            job.submitWork = null;
             return insertMatch(db, redis, queue, match, {
                 type: "parsed"
             }, job.exit);
@@ -111,11 +110,9 @@ function start() {
             console.log('job %s expired', job.jobId);
             return job.exit("timeout");
         }, 180 * 1000);
-        job.exit = function exit(err) {
+        job.exit = function(err) {
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
-            job.expire = null;
-            job.exit = null;
             job.cb(err);
         };
         console.log('server sent jobid %s', job.jobId);
