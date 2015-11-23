@@ -102,6 +102,7 @@ function start() {
                 match[key] = match[key] || parsed_data[key];
             }
             match.parse_status = 2;
+            job.submitWork = null;
             return insertMatch(db, redis, queue, match, {
                 type: "parsed"
             }, job.exit);
@@ -111,10 +112,11 @@ function start() {
             return job.exit("timeout");
         }, 180 * 1000);
         job.exit = function exit(err) {
-            clearTimeout(job.expire);
             delete active_jobs[job.jobId];
+            clearTimeout(job.expire);
+            job.expire = null;
+            job.exit = null;
             job.cb(err);
-            job = null;
         };
         console.log('server sent jobid %s', job.jobId);
         return res.json({
