@@ -78,7 +78,7 @@ var regions = constants.regions;
 for (var key in regions) {
     region[regions[key].region] = regions[key].display_name.slice("#dota_region_".length).split("_").map(function(s) {
       return s.toUpperCase();
-    }).join(" ");;
+    }).join(" ");
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
             cluster[c] = regions[key].region;
