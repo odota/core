@@ -26,6 +26,7 @@
     "url": "http://github.com/yasp-dota/yasp"
   },
   "dependencies": {
+    "JSONStream": "^1.0.7",
     "async": "1.5.0",
     "big-number": "0.3.1",
     "body-parser": "1.14.1",
@@ -58,6 +59,7 @@
     "passport-steam": "0.1.6",
     "paypal-rest-sdk": "~1.6",
     "pg": "^4.4.3",
+    "pg-query-stream": "^1.0.0",
     "pm2": "^0.15.10",
     "poet": "~2.0.1",
     "qTip2": "yasp-dota/qtip2",

@@ -205,7 +205,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 p.account_id = match.pgroup[p.player_slot].account_id;
             });
         }
-        async.each(players || options.players, function(player_match, cb) {
+        async.eachSeries(players || options.players, function(player_match, cb) {
             //join player with match to form player_match
             for (var key in match) {
                 player_match[key] = match[key];

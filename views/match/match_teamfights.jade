@@ -218,6 +218,7 @@ append footer_assets
     var all_icons = $("#map i");
     $("#teamfights tr").click(function(event) {
       var show =$(this).attr("target");
+      location.hash = show;
       $(this).addClass("glow");
       $(this).siblings().removeClass("glow");
       $(this).siblings().find("i").removeClass("fa-eye");
@@ -232,4 +233,5 @@ append footer_assets
     $("#show_all").click(function(event) {
       all_icons.show();
     });
-    $("table tr[target='0']").trigger("click");
+    var hash = location.hash ? location.hash.substring(1) : 0;
+    $("table tr[target='"+hash+"']").trigger("click");

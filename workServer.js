@@ -78,7 +78,7 @@ function start() {
         }
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
-        job.submitWork = function submitWork(parsed_data) {
+        job.submitWork = function(parsed_data) {
             if (parsed_data.error) {
                 return job.exit(parsed_data.error);
             }
@@ -110,9 +110,9 @@ function start() {
             console.log('job %s expired', job.jobId);
             return job.exit("timeout");
         }, 180 * 1000);
-        job.exit = function exit(err) {
-            clearTimeout(job.expire);
+        job.exit = function(err) {
             delete active_jobs[job.jobId];
+            clearTimeout(job.expire);
             job.cb(err);
             job = null;
         };
@@ -138,6 +138,7 @@ function start() {
         if (active_jobs[req.body.jobId]) {
             var job = active_jobs[req.body.jobId];
             job.submitWork(req.body);
+            job = null;
             return res.json({
                 error: null
             });

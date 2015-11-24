@@ -38,7 +38,7 @@ function computePlayerMatchData(player_match) {
         // aggregation of only the words in all chat this player said themselves
         player_match.my_word_counts = count_words(player_match, player_match);
     }
-    if (player_match.kills_log) {
+    if (player_match.kills_log && self_hero) {
         //remove self kills
         player_match.kills_log = player_match.kills_log.filter(function(k) {
             return k.key !== self_hero.name;
@@ -63,7 +63,7 @@ function computePlayerMatchData(player_match) {
                 player_match.sentry_kills += player_match.killed[key];
             }
             if (key.indexOf("npc_dota_hero") === 0) {
-                if (self_hero.name !== key) {
+                if (!self_hero || self_hero.name !== key) {
                     player_match.hero_kills += player_match.killed[key];
                 }
             }
