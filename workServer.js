@@ -137,7 +137,7 @@ function start() {
         console.log('received submitted work');
         if (active_jobs[req.body.jobId]) {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body)
+            job.submitWork(req.body);
             job = null;
             return res.json({
                 error: null
