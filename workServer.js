@@ -114,7 +114,6 @@ function start() {
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
-            job = null;
         };
         console.log('server sent jobid %s', job.jobId);
         return res.json({
@@ -138,7 +137,6 @@ function start() {
         if (active_jobs[req.body.jobId]) {
             var job = active_jobs[req.body.jobId];
             job.submitWork(req.body);
-            job = null;
             return res.json({
                 error: null
             });
