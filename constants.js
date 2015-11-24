@@ -81,7 +81,7 @@ for (var key in regions) {
     }).join(" ");
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
-            cluster[c] = regions[key].region;
+            cluster[c] = Number(regions[key].region);
         });
     }
 }

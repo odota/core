@@ -24,7 +24,7 @@ module.exports = function filter(matches, groups, filters) {
             return m.lobby_type === key;
         },
         region: function(m, key) {
-          return Number(m.region) === key;
+          return m.region === key;
         },
         hero_id: function(m, key) {
             return m.hero_id === key;
