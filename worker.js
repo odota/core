@@ -6,7 +6,6 @@ var utility = require('./utility');
 var getData = utility.getData;
 var getMMStats = require("./getMMStats");
 var invokeInterval = utility.invokeInterval;
-var numCPUs = require('os').cpus().length;
 var config = require('./config');
 var async = require('async');
 var queries = require('./queries');
@@ -30,7 +29,7 @@ invokeInterval(function(cb) {
     return cb();
 }, 60 * 60 * 1000);
 //process requests (api call, waits for parse to complete)
-queue.request.process(numCPUs * 3, processApi);
+queue.request.process(100, processApi);
 //updatenames queues an api request, probably should have name updating occur in a separate service
 //invokeInterval(updateNames, 60 * 1000);
 //jobs.process('api', processApi);
