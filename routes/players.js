@@ -458,8 +458,6 @@ module.exports = function(db, redis) {
                             console.time("deflate");
                             redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
                             console.timeEnd("deflate");
-                            var fs = require('fs');
-                            fs.writeFileSync("output.json", JSON.stringify(cache));
                             return cb(null, player);
                         }
                         else {
