@@ -36,6 +36,43 @@ buildSets(db, redis, function(err) {
     queue.parse.process(pool_size, function(job, cb) {
         //save the callback for this job
         job.cb = cb;
+        job.submitWork = function(parsed_data) {
+            if (parsed_data.error) {
+                return job.exit(parsed_data.error);
+            }
+            var match = job.data.payload;
+            var hostname = parsed_data.hostname;
+            /*
+            //track replays parsed by each node
+            if (!counts[hostname]) {
+                counts[hostname] = 0;
+            }
+            counts[hostname] += 1;
+            console.log(JSON.stringify(counts));
+            */
+            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+            delete parsed_data.key;
+            delete parsed_data.jobId;
+            delete parsed_data.hostname;
+            //extend match object with parsed data, keep existing data if key conflict (match_id)
+            //match.players was deleted earlier during insertion of api data
+            for (var key in parsed_data) {
+                match[key] = match[key] || parsed_data[key];
+            }
+            match.parse_status = 2;
+            return insertMatch(db, redis, queue, match, {
+                type: "parsed"
+            }, job.exit);
+        };
+        job.expire = setTimeout(function() {
+            console.log('job %s expired', job.jobId);
+            return job.exit("timeout");
+        }, 180 * 1000);
+        job.exit = function(err) {
+            delete active_jobs[job.jobId];
+            clearTimeout(job.expire);
+            job.cb(err);
+        };
         var match = job.data.payload;
         //get the replay url and save it to db
         return getReplayUrl(db, redis, match, function(err) {
@@ -77,45 +114,6 @@ function start() {
         }
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
-        job.submitWork = function(parsed_data) {
-            if (parsed_data.error) {
-                return job.exit(parsed_data.error);
-            }
-            var match = job.data.payload;
-            var hostname = parsed_data.hostname;
-            /*
-            //track replays parsed by each node
-            if (!counts[hostname]) {
-                counts[hostname] = 0;
-            }
-            counts[hostname] += 1;
-            console.log(JSON.stringify(counts));
-            */
-            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-            delete parsed_data.key;
-            delete parsed_data.jobId;
-            delete parsed_data.hostname;
-            //extend match object with parsed data, keep existing data if key conflict (match_id)
-            //match.players was deleted earlier during insertion of api data
-            for (var key in parsed_data) {
-                match[key] = match[key] || parsed_data[key];
-            }
-            match.parse_status = 2;
-            return insertMatch(db, redis, queue, match, {
-                type: "parsed"
-            }, job.exit);
-        };
-        /*
-        job.expire = setTimeout(function() {
-            console.log('job %s expired', job.jobId);
-            return job.exit("timeout");
-        }, 180 * 1000);
-        */
-        job.exit = function(err) {
-            delete active_jobs[job.jobId];
-            clearTimeout(job.expire);
-            job.cb(err);
-        };
         console.log('server sent jobid %s', job.jobId);
         return res.json({
             jobId: job.jobId,
