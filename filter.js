@@ -23,6 +23,9 @@ module.exports = function filter(matches, groups, filters) {
         lobby_type: function(m, key) {
             return m.lobby_type === key;
         },
+        region: function(m, key) {
+          return m.region === key;
+        },
         date: function(m, key) {
             return m.start_time > (curtime - (key * 86400));
         },
