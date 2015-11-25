@@ -15,7 +15,6 @@ var active_jobs = {};
 var pooled_jobs = {};
 var startedAt = moment();
 var schema = utility.getParseSchema();
-var heapdump = require('heapdump');
 /*
 var memwatch = require('memwatch-next');
 var hd = new memwatch.HeapDiff();
