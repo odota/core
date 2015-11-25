@@ -89,10 +89,17 @@ function getColumnInfo(db, cb) {
 
 function insertMatch(db, redis, queue, match, options, cb) {
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
-    //this will be undefined on api insertion, so we build it
-    //this will be defined on parse insertion, so we use it
-    //slot to id map so after parse we can figure out the player ids for each slot (for caching update without db read)
-    var slot_to_id = match.slot_to_id ? JSON.parse(JSON.stringify(match.slot_to_id)) : buildSlotMap();
+    //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
+    if (players && !match.pgroup) {
+        match.pgroup = {};
+        players.forEach(function(p, i) {
+            match.pgroup[p.player_slot] = {
+                account_id: p.account_id,
+                hero_id: p.hero_id,
+                player_slot: p.player_slot
+            };
+        });
+    }
     //options specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
@@ -106,16 +113,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
         updatePlayerCaches,
         clearMatchCache
         ], decideParse);
-
-    function buildSlotMap() {
-        var slot_to_id = {};
-        if (players) {
-            players.forEach(function(p, i) {
-                slot_to_id[p.player_slot] = p.account_id;
-            });
-        }
-        return slot_to_id;
-    }
 
     function insertMatchTable(cb) {
         var row = match;
@@ -202,10 +199,12 @@ function insertMatch(db, redis, queue, match, options, cb) {
         if (!config.ENABLE_PLAYER_CACHE) {
             return cb();
         }
-        if (slot_to_id && players) {
+        if (match.pgroup && players) {
             players.forEach(function(p) {
                 //add account id to each player so we know what caches to update
-                p.account_id = slot_to_id[p.player_slot];
+                p.account_id = match.pgroup[p.player_slot].account_id;
+                //add hero_id to each player so we update records with hero played
+                p.hero_id = match.pgroup[p.player_slot].hero_id;
             });
         }
         async.eachSeries(players || options.players, function(player_match, cb) {
@@ -230,9 +229,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                             var reParse = player_match.match_id in cache.aggData.parsed_match_ids && options.type === "parsed";
                             if (!reInsert && !reParse) {
                                 computePlayerMatchData(player_match);
-                                var group = {};
-                                group[player_match.match_id] = players;
-                                cache.aggData = aggregator([player_match], group, options.type, cache.aggData);
+                                cache.aggData = aggregator([player_match], options.type, cache.aggData);
                             }
                         }
                         //reduce match to save cache space--we only need basic data per match for matches tab
@@ -281,8 +278,6 @@ function insertMatch(db, redis, queue, match, options, cb) {
             return cb();
         }
         else {
-            //put slot_to_id into match so we have it when parse job inserts
-            match.slot_to_id = slot_to_id;
             //queue it and finish, callback with the queued parse job
             return queueReq(queue, "parse", match, options, function(err, job2) {
                 cb(err, job2);

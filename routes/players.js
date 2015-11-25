@@ -299,6 +299,7 @@ module.exports = function(db, redis) {
             });
         }
         else {
+            //non-integer account_id (all/professional)
             //don't return a count (always valid)
             cb(null);
         }
@@ -486,41 +487,23 @@ module.exports = function(db, redis) {
                 return cb(err);
             }
             console.timeEnd('getting player_matches');
-            console.time('getting fellows');
-            //get fellow players and pass to aggregator/filter
-            db.select(['match_id', 'account_id', 'hero_id', 'player_slot']).from('player_matches').whereIn('match_id', player_matches.map(function(pm) {
-                return pm.match_id;
-            })).asCallback(function(err, fellows) {
-                if (err) {
-                    return cb(err);
-                }
-                console.timeEnd('getting fellows');
-                //group the fellows by match_id, map to array of players in that match
-                var groups = {};
-                fellows.forEach(function(f) {
-                    if (!groups[f.match_id]) {
-                        groups[f.match_id] = [];
-                    }
-                    groups[f.match_id].push(f);
-                });
-                console.time('computing aggregations');
-                //compute, filter, agg should act on player_matches joined with matches
-                player_matches.forEach(function(m) {
-                    //post-process the match to get additional stats
-                    computePlayerMatchData(m);
-                });
-                var filtered = filter(player_matches, groups, query.js_select);
-                //filtered = sort(filtered, options.js_sort);
-                var aggData = aggregator(filtered, groups, query.js_agg);
-                var result = {
-                    aggData: aggData,
-                    page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-                    data: filtered,
-                    unfiltered: player_matches
-                };
-                console.timeEnd('computing aggregations');
-                cb(err, result);
+            console.time('computing aggregations');
+            //compute, filter, agg should act on player_matches joined with matches
+            player_matches.forEach(function(m) {
+                //post-process the match to get additional stats
+                computePlayerMatchData(m);
             });
+            var filtered = filter(player_matches, query.js_select);
+            //filtered = sort(filtered, options.js_sort);
+            var aggData = aggregator(filtered, query.js_agg);
+            var result = {
+                aggData: aggData,
+                page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+                data: filtered,
+                unfiltered: player_matches
+            };
+            console.timeEnd('computing aggregations');
+            cb(err, result);
         });
     }
 };
