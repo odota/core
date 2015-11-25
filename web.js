@@ -80,6 +80,7 @@ app.set('view engine', 'jade');
 app.locals.moment = moment;
 app.locals.constants = constants;
 app.locals.tooltips = constants.tooltips;
+app.locals.qs = querystring;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
