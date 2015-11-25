@@ -106,10 +106,12 @@ function start() {
                 type: "parsed"
             }, job.exit);
         };
+        /*
         job.expire = setTimeout(function() {
             console.log('job %s expired', job.jobId);
             return job.exit("timeout");
         }, 180 * 1000);
+        */
         job.exit = function(err) {
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
