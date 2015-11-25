@@ -222,7 +222,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                     }
                     //if player cache doesn't exist, skip
                     //var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                    var cache = result.cache;
+                    var cache = result ? result.cache : null;
                     if (cache) {
                         if (options.type !== "skill") {
                             var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";

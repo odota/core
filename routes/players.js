@@ -332,7 +332,7 @@ module.exports = function(db, redis) {
                 }
                 //redis.get(new Buffer("player:" + account_id), function(err, result) {
                 //cache = result && !err ? JSON.parse(zlib.inflateSync(result)) : null;
-                cache = result.cache;
+                cache = result ? result.cache : null;
                 console.timeEnd('readcache');
                 //unpack cache.data into an array
                 if (cache && cache.data) {
