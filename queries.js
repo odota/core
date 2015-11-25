@@ -214,12 +214,16 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 player_match[key] = match[key];
             }
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id) {
-                redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
+                db.from('player_caches').first('cache').where({
+                    account_id: player_match.account_id
+                }).asCallback(function(err, result) {
+                    //redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
                     if (err) {
                         return cb(err);
                     }
                     //if player cache doesn't exist, skip
-                    var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                    //var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                    var cache = result.cache;
                     if (cache) {
                         if (options.type !== "skill") {
                             var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
@@ -329,9 +333,31 @@ function insertPlayer(db, player, cb) {
 function insertPlayerRating(db, row, cb) {
     db('player_ratings').insert(row).asCallback(cb);
 }
+
+function insertPlayerCache(db, player, cache, cb) {
+    //TODO upsert
+    db('player_caches').insert({
+        account_id: player.account_id,
+        cache: cache
+    }).asCallback(function(err) {
+        if (err && err.detail.indexOf("already exists") !== -1) {
+            db('player_caches').update({
+                cache: cache
+            }).where({
+                account_id: player.account_id
+            }).asCallback(function(err) {
+                return cb(err, player);
+            });
+        }
+        else {
+            return cb(err, player);
+        }
+    });
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
-    insertPlayerRating: insertPlayerRating
+    insertPlayerRating: insertPlayerRating,
+    insertPlayerCache: insertPlayerCache
 };

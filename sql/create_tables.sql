@@ -143,6 +143,11 @@ CREATE TABLE player_ratings (
   time timestamp with time zone
 );
 
+CREATE TABLE player_caches (
+  account_id bigint REFERENCES players(account_id) ON DELETE CASCADE PRIMARY KEY,
+  cache json
+);
+
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
