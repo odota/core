@@ -18,7 +18,6 @@ module.exports = function filter(matches, filters) {
             return m.patch === key;
         },
         game_mode: function(m, key) {
-            console.log(m.game_mode, key);
             return m.game_mode === key;
         },
         lobby_type: function(m, key) {
@@ -72,7 +71,6 @@ module.exports = function filter(matches, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
-            console.log(key);
             if (conditions[key]) {
                 //earlier, we arrayified everything
                 //pass the first element, as well as the full array
