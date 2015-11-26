@@ -247,7 +247,9 @@ function insertMatch(db, redis, queue, match, options, cb) {
                         }
                         insertPlayerCache(db, player_match, cache, cb);
                     }
-                    return cb();
+                    else {
+                        return cb();
+                    }
                 });
             }
             else {
