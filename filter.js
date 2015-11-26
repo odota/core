@@ -45,23 +45,32 @@ module.exports = function filter(matches, filters) {
         },
         included_account_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.pgroup[m.match_id].some(function(p) {
-                    return p.account_id === k;
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].account_id === k){
+                        return true;
+                    }
+                }
+                return false;
             });
         },
         with_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.pgroup[m.match_id].some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m));
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) === isRadiant(m)){
+                        return true;
+                    }
+                }
+                return false;
             });
         },
         against_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return m.pgroup[m.match_id].some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m));
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) !== isRadiant(m)){
+                        return true;
+                    }
+                }
+                return false;
             });
         }
     };
