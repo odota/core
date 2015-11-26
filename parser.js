@@ -26,7 +26,7 @@ app.get('/', function(req, res) {
         started_at: startedAt
     });
 });
-var queue = require(',/queue');
+var queue = require('./queue');
 var getReplayUrl = require('./getReplayUrl');
 var db = require('./db');
 var redis = require('./redis');
