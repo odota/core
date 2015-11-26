@@ -10,6 +10,8 @@ var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
+var secret = config.RETRIEVER_SECRET;
+var retrieverConfig = config.RETRIEVER_HOST;
 //var cluster = require('cluster');
 var startedAt = new Date();
 var port = config.PORT || config.PARSER_PORT;
@@ -65,6 +67,7 @@ queue.parse.process(capacity, function(job, cb) {
         });
     });
 });
+
 function runParse(match, cb) {
     var print_multi_kill_streak_debugging = false;
     var url = match.url;
