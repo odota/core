@@ -30,7 +30,7 @@ var queue = require('./queue');
 var getReplayUrl = require('./getReplayUrl');
 var db = require('./db');
 var redis = require('./redis');
-var moment = require('./moment');
+var moment = require('moment');
 var queries = require('./queries');
 var insertMatch = queries.insertMatch;
 queue.parse.process(capacity, function(job, cb) {
