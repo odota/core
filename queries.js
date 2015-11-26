@@ -245,10 +245,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
                                 orig[key] = reduced_player_match[key] || orig[key];
                             }
                         }
-                        insertPlayerCache(db, player_match, cache, function(err, player) {
-                            console.timeEnd("writecache");
-                            return cb(err, player);
-                        });
+                        insertPlayerCache(db, player_match, cache, cb);
                     }
                     return cb();
                 });
