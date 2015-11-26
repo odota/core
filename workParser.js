@@ -26,79 +26,45 @@ app.get('/', function(req, res) {
         started_at: startedAt
     });
 });
-app.post('/deploy', function(req, res) {
-    var err = false;
-    //TODO verify the POST is from github/secret holder
-    if (req.body.ref === "refs/heads/master") {
-        console.log(req.body);
-        //run the deployment command
-        var child = exec('npm run deploy-parser', function(error, stdout, stderr) {
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
-            if (error) {
-                console.log('exec error: ' + error);
+var queue = require(',/queue');
+var getReplayUrl = require('./getReplayUrl');
+var db = require('./db');
+var redis = require('./redis');
+var moment = require('./moment');
+var queries = require('./queries');
+var insertMatch = queries.insertMatch;
+queue.parse.process(capacity, function(job, cb) {
+    var expire = setTimeout(function() {
+        console.log('job %s expired', job.jobId);
+        return cb("timeout");
+    }, 180 * 1000);
+    var match = job.data.payload;
+    getReplayUrl(db, redis, match, function(err) {
+        if (err) {
+            return cb(err);
+        }
+        runParse(match, function(err, parsed_data) {
+            if (err || parsed_data.error) {
+                return cb(err || parsed_data.error);
             }
+            var match = job.data.payload;
+            var hostname = os.hostname;
+            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+            //extend match object with parsed data, keep existing data if key conflict (match_id)
+            //match.players was deleted earlier during insertion of api data
+            for (var key in parsed_data) {
+                match[key] = match[key] || parsed_data[key];
+            }
+            match.parse_status = 2;
+            return insertMatch(db, redis, queue, match, {
+                type: "parsed"
+            }, function(err) {
+                clearTimeout(expire);
+                return cb(err);
+            });
         });
-        child.unref();
-        console.log(child);
-    }
-    else {
-        err = "not passing deploy conditions";
-    }
-    res.json({
-        error: err
     });
 });
-getJob();
-
-function getJob() {
-    //get from endpoint asking for replay url
-    var remote = config.WORK_URL + "/parse" + "?key=" + config.RETRIEVER_SECRET;
-    console.log("contacting server for work: %s", remote);
-    request({
-        url: remote,
-        json: true,
-        timeout: 30000
-    }, function(err, resp, job) {
-        if (!err && resp.statusCode === 200 && job && job.jobId && job.data && job.data.payload && job.data.payload.url) {
-            console.log("got work from server, jobid: %s, url: %s", job.jobId, job.data.payload.url);
-            runParse(job.data.payload, function(err, parsed_data) {
-                if (err) {
-                    console.error("error occurred on parse: %s", err);
-                }
-                parsed_data = parsed_data || {};
-                parsed_data.error = err;
-                parsed_data.jobId = job.jobId;
-                parsed_data.key = config.RETRIEVER_SECRET;
-                parsed_data.hostname = os.hostname();
-                console.log("sending work to server, jobid: %s", job.jobId);
-                request({
-                    url: remote,
-                    method: "POST",
-                    json: parsed_data,
-                    timeout: 30000
-                }, function(err, resp, body) {
-                    if (err || resp.statusCode !== 200 || body.error) {
-                        console.error("error occurred while submitting work");
-                    }
-                    
-                    if (parsed_data.error) {
-                        process.exit(1);
-                    }
-                    
-                    //get another job
-                    return getJob();
-                });
-            });
-        }
-        else {
-            //wait interval, then get another job
-            console.log("error occurred while requesting work");
-            return setTimeout(getJob, 5 * 1000);
-        }
-    });
-}
-
 function runParse(match, cb) {
     var print_multi_kill_streak_debugging = false;
     var url = match.url;

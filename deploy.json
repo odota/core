@@ -28,10 +28,6 @@
       "instances": 0
       },
     {
-      "script": "workServer.js",
-      "role": "core"
-      },
-    {
       "script": "retriever.js",
       "role": "retriever"
       },
