@@ -245,12 +245,9 @@ function insertMatch(db, redis, queue, match, options, cb) {
                                 orig[key] = reduced_player_match[key] || orig[key];
                             }
                         }
-                        //console.log(player_match.account_id, Object.keys(cache.data).length);
-                        redis.ttl("player:" + player_match.account_id, function(err, ttl) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                        insertPlayerCache(db, player_match, cache, function(err, player) {
+                            console.timeEnd("writecache");
+                            return cb(err, player);
                         });
                     }
                     return cb();
