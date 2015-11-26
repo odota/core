@@ -2,7 +2,7 @@ var constants = require('./constants.js');
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;
-module.exports = function filter(matches, groups, filters) {
+module.exports = function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
     var conditions = {
@@ -18,6 +18,7 @@ module.exports = function filter(matches, groups, filters) {
             return m.patch === key;
         },
         game_mode: function(m, key) {
+            console.log(m.game_mode, key);
             return m.game_mode === key;
         },
         lobby_type: function(m, key) {
@@ -45,21 +46,21 @@ module.exports = function filter(matches, groups, filters) {
         },
         included_account_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
+                return m.pgroup[m.match_id].some(function(p) {
                     return p.account_id === k;
                 });
             });
         },
         with_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
+                return m.pgroup[m.match_id].some(function(p) {
                     return (p.hero_id === k && isRadiant(p) === isRadiant(m));
                 });
             });
         },
         against_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
+                return m.pgroup[m.match_id].some(function(p) {
                     return (p.hero_id === k && isRadiant(p) !== isRadiant(m));
                 });
             });
@@ -71,6 +72,7 @@ module.exports = function filter(matches, groups, filters) {
         var include = true;
         //verify the match passes each filter test
         for (var key in filters) {
+            console.log(key);
             if (conditions[key]) {
                 //earlier, we arrayified everything
                 //pass the first element, as well as the full array
