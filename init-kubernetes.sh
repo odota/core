@@ -17,7 +17,7 @@ wget -q -O - https://get.k8s.io | bash
 bash ./cluster/config/openshift-origin/create.sh
 
 #login to openshift
-oc login https://os.yasp.co
+oc login http://os.yasp.co
 #create a new project
 oc new-project yasp
 
@@ -29,4 +29,4 @@ oc secrets add serviceaccount/default secrets/api-keys
 bash create-secrets.sh < .env | oc create -f -
 
 #add yasp services to cluster, redis, postgres
-oc create -f ./cluster/config/
+oc create -f ./cluster/config/yasp

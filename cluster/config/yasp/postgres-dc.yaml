@@ -2,14 +2,14 @@ apiVersion: v1
 kind: DeploymentConfig
 metadata:
   labels:
-    app: web
-  name: web
+    app: postgres
+  name: postgres
 spec:
   replicas: 1
   selector:
-    app: web
-    deploymentconfig: web
-    tier: frontend
+    app: postgres
+    deploymentconfig: postgres
+    tier: backend
   strategy:
     resources: {}
     rollingParams:
@@ -22,38 +22,23 @@ spec:
   template:
     metadata:
       labels:
-        app: web
-        deploymentconfig: web
+        app: redis
+        deploymentconfig: redis
         tier: frontend
     spec:
       volumes:
-      - name: api-keys
-        secret:
-          secretName: api-keys
+      - name: postgres
       containers:
-      - args: [ "web.js" ]
-        # This line gets updated automatically, so ignore it.
-        image: 10.0.5.122:5000/yasp/yasp
+      - args: [ "postgres" ]
+        image: 
         imagePullPolicy: Always
-        name: yasp
+        name: postgres
         ports:
-        - containerPort: 5000
-          name: web
         volumeMounts:
-        # mount the secrets
-        - name: api-keys
-          readOnly: true
-          mountPath: /etc/yasp-api-keys
+        - name: postgres
+          mountPath: /var/lib/postgresql/data
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
   triggers:
   - type: ConfigChange
-  - imageChangeParams:
-      automatic: true
-      containerNames:
-      - yasp
-      from:
-        kind: ImageStreamTag
-        name: yasp:latest
-    type: ImageChange
