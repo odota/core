@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: yasp-web
+  name: yasp-web
+spec:
+  replicas: 1
+  selector:
+    app: yasp-web
+    deploymentconfig: yasp-web
+    tier: frontend
+  strategy:
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 2
+      maxUnavailable: 1
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        app: yasp-web
+        deploymentconfig: yasp-web
+        tier: frontend
+    spec:
+      containers:
+      - command: [ "web.js" ]
+        env:
+        - name: ROLE
+          value: web
+        # This line gets updated automatically, so ignore it.
+        image: 10.0.187.9:5000/yasp/yasp@sha256:a2b045decb7895a7d49529ad25e323f019643f10dde9f68633885bfad3cd3c32
+        imagePullPolicy: Always
+        name: yasp
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+          name: web
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - yasp
+      from:
+        kind: ImageStreamTag
+        name: yasp:latest
+    type: ImageChange
