@@ -28,8 +28,6 @@ invokeInterval(function cleanup(cb) {
         queue[key].clean(24 * 60 * 60 * 1000, 'failed');
     }
     redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("load_times", 0, moment().subtract(1, 'day').format('X'));
-    redis.zremrangebyscore("parse_delay", 0, moment().subtract(1, 'day').format('X'));
     redis.zremrangebyscore("error_500", 0, moment().subtract(1, 'day').format('X'));
     redis.keys("parser:*", function(err, result) {
         if (err) {
