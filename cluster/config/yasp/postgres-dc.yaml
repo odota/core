@@ -30,7 +30,7 @@ spec:
       - name: postgres
       containers:
       - args: [ "postgres" ]
-        image: 
+        image: postgres/9
         imagePullPolicy: Always
         name: postgres
         ports:

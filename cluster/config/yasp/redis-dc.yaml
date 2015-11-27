@@ -30,7 +30,7 @@ spec:
       - name: redis
       containers:
       - args: [ "redis-server" ]
-        image: 
+        image: redis/3
         imagePullPolicy: Always
         name: redis
         ports:
