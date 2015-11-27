@@ -8,7 +8,7 @@
       "role": "core"
       },
     {
-      "script": "workParser.js",
+      "script": "parser.js",
       "role": "parser",
       "exec_mode": "cluster",
       "instances": 0
@@ -26,10 +26,6 @@
       "role": "core",
       "exec_mode": "cluster",
       "instances": 0
-      },
-    {
-      "script": "workServer.js",
-      "role": "core"
       },
     {
       "script": "retriever.js",
