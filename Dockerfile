@@ -8,7 +8,7 @@ RUN echo "" > /root/.bashrc && \
     . /root/.bashrc && \
     nvm install $NODE_VERSION && \
     nvm alias default $NODE_VERSION && \
-    nvm use 5.1.0 && \
+    nvm use $NODE_VERSION && \
     npm install -g npm
 ADD package.json /usr/src/yasp/
 RUN . /root/.bashrc && npm install
