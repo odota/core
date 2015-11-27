@@ -120,6 +120,21 @@ app.use(function(req, res, next) {
     }
 });
 app.use(function(req, res, next) {
+    var timeStart = new Date();
+    res.once('finish', function() {
+        var timeEnd = new Date();
+        /*
+        var obj = JSON.stringify({
+            path: req.originalUrl,
+            time: timeEnd - timeStart
+        };
+        */
+        redis.lpush("load_times", timeEnd - timeStart);
+        redis.ltrim("load_times", 0, 10000);
+    });
+    next();
+});
+app.use(function(req, res, next) {
     async.parallel({
         banner: function(cb) {
             redis.get("banner", cb);
@@ -382,6 +397,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     console.log(err);
+    redis.zadd("error_500", moment().format('X'), req.originalUrl);
     if (config.NODE_ENV !== "development") {
         return res.render('error/' + (err.status === 404 ? '404' : '500'), {
             error: err

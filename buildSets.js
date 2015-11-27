@@ -44,12 +44,6 @@ module.exports = function buildSets(db, redis, cb) {
                 //console.log(t);
                 cb(err, t);
             });
-        },
-        "retrievers": function(cb) {
-            var ps = retrieverConfig.split(",").map(function(r) {
-                return "http://" + r + "?key=" + secret;
-            });
-            cb(null, ps);
         }
     }, function(err, result) {
         if (err) {

@@ -10,6 +10,8 @@ var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
+var secret = config.RETRIEVER_SECRET;
+var retrieverConfig = config.RETRIEVER_HOST;
 //var cluster = require('cluster');
 var startedAt = new Date();
 var port = config.PORT || config.PARSER_PORT;
@@ -48,8 +50,6 @@ queue.parse.process(capacity, function(job, cb) {
                 return cb(err || parsed_data.error);
             }
             var match = job.data.payload;
-            var hostname = os.hostname;
-            redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
             //extend match object with parsed data, keep existing data if key conflict (match_id)
             //match.players was deleted earlier during insertion of api data
             for (var key in parsed_data) {
@@ -60,11 +60,16 @@ queue.parse.process(capacity, function(job, cb) {
                 type: "parsed"
             }, function(err) {
                 clearTimeout(expire);
+                var hostname = os.hostname;
+                redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
+                redis.lpush("parse_delay", new Date() - (match.start_time + match.duration)*1000);
+                redis.ltrim("parse_delay", 0, 10000);
                 return cb(err);
             });
         });
     });
 });
+
 function runParse(match, cb) {
     var print_multi_kill_streak_debugging = false;
     var url = match.url;
