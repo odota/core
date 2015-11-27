@@ -2,15 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: yasp-web
     tier: frontend
-  name: yasp-web
+  name: web
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: web
   selector:
-    app: yasp-web
+    app: web
     tier: frontend
   type: NodePort

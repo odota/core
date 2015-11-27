@@ -1,5 +1,5 @@
 bower_components
-.env
+*.env
 node_modules
 replays*
 *.log*
@@ -17,3 +17,4 @@ public/build
 /test/testfiles
 ecosystem.json
 *.swp
+secret.yaml

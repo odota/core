@@ -22,4 +22,7 @@ spec:
         name: baseimage:0.9.17
     type: Docker
   triggers:
-  - type: ConfigChange
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: secret101
