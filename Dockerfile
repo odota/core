@@ -16,5 +16,5 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Now that the npm install is cached add everything
 ADD . /usr/src/yasp
-ENTRYPOINT ["/usr/src/yasp/docker_init.bash"]
-CMD ["web.js"]
+ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
+CMD [ "web.js" ]
