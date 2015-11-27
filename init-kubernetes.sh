@@ -31,6 +31,10 @@ bash create-secrets.sh < .env | oc create -f -
 #add yasp services to cluster, redis, postgres
 oc create -f ./cluster/config/yasp
 
+#mount redis data/config to /var/lib/postgres/data
+
+#mount redis data/config to /var/lib/redis
+
 #set up redis password
 redis-cli config set requirepass yasp
 

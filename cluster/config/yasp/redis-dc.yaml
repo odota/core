@@ -29,7 +29,7 @@ spec:
       volumes:
       - name: redis
       containers:
-      - args: [ "redis-server" ]
+      - args: [ "redis-server /var/lib/redis/redis.conf" ]
         image: redis/3
         imagePullPolicy: Always
         name: redis
