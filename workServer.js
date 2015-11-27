@@ -69,6 +69,7 @@ buildSets(db, redis, function(err) {
             return job.exit("timeout");
         }, 180 * 1000);
         job.exit = function(err) {
+            delete pooled_jobs[job.jobId];
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
