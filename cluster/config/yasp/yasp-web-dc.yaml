@@ -26,19 +26,26 @@ spec:
         deploymentconfig: yasp-web
         tier: frontend
     spec:
+      volumes:
+      - name: api-keys
+        secret:
+          secretName: api-keys
       containers:
-      - command: [ "web.js" ]
+      - args: [ "web.js" ]
         env:
         - name: ROLE
           value: web
         # This line gets updated automatically, so ignore it.
-        image: 10.0.187.9:5000/yasp/yasp@sha256:a2b045decb7895a7d49529ad25e323f019643f10dde9f68633885bfad3cd3c32
+        image: 10.0.5.122:5000/yasp/yasp
         imagePullPolicy: Always
         name: yasp
         ports:
         - containerPort: 5000
-          protocol: TCP
           name: web
+        volumeMounts:
+        - name: api-keys
+          readOnly: true
+          mountPath: /etc/yasp-api-keys
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
