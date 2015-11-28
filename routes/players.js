@@ -4,6 +4,7 @@ var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../queries");
 var insertPlayerCache = queries.insertPlayerCache;
+var getPlayerMatches = queries.getPlayerMatches;
 var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
@@ -69,15 +70,8 @@ module.exports = function(db, redis) {
             "sets": function(cb) {
                 queries.getSets(redis, cb);
             },
-            "ratings": function getPlayerRatings(cb) {
-                if (!isNaN(account_id)) {
-                    db.from('player_ratings').where({
-                        account_id: Number(account_id)
-                    }).orderBy('time', 'asc').asCallback(cb);
-                }
-                else {
-                    cb();
-                }
+            "ratings": function(cb){
+                queries.getPlayerRatings(db, account_id, cb);
             }
         }, function(err, result) {
             if (err) {
@@ -128,6 +122,8 @@ module.exports = function(db, redis) {
                         });
                     }
                 }
+                render();
+                /*
                 if (info === "compare") {
                     doCompare(qCopy, req.params.account_id.toString(), function(err, results) {
                         if (err) {
@@ -140,6 +136,7 @@ module.exports = function(db, redis) {
                 else {
                     render();
                 }
+                */
 
                 function render() {
                     console.timeEnd("player " + req.params.account_id);
@@ -170,8 +167,9 @@ module.exports = function(db, redis) {
             });
         });
     });
+    //return router
     return players;
-
+/*
     function doCompare(query, account_id, cb) {
         var account_ids = ["all", account_id];
         //var compareIds = query.compare_account_id;
@@ -187,12 +185,10 @@ module.exports = function(db, redis) {
                 console.log("computing averages %s", player.account_id);
                 //create array of results.aggData for each account_id
                 for (var key in histograms) {
-                    /*
                     //mean
-                    if (player.aggData[key].sum && player.aggData[key].n) {
-                        player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
-                    }
-                    */
+                    //if (player.aggData[key].sum && player.aggData[key].n) {
+                    //    player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
+                    //}
                     //median
                     var arr = [];
                     for (var value in player.aggData[key].counts) {
@@ -234,7 +230,7 @@ module.exports = function(db, redis) {
             return cb(err, results);
         });
     }
-
+*/
     function generateTeammateArrayFromHash(input, player, cb) {
         if (!input) {
             return cb();
@@ -273,7 +269,7 @@ module.exports = function(db, redis) {
         });
     }
 
-    function findPlayer(account_id, cb) {
+    function getPlayer(account_id, cb) {
         if (!isNaN(account_id)) {
             db.first().from('players').where({
                 account_id: Number(account_id)
@@ -315,7 +311,7 @@ module.exports = function(db, redis) {
             return cb("invalid account_id");
         }
         //try to find player in db
-        findPlayer(account_id, function(err, player) {
+        getPlayer(account_id, function(err, player) {
             if (err) {
                 return cb(err);
             }
@@ -384,7 +380,7 @@ module.exports = function(db, redis) {
                     */
                     else {
                         console.log("player cache miss %s", player.account_id);
-                        advQuery(options.query, processResults);
+                        getPlayerMatches(options.query, processResults);
                     }
 
                     function processResults(err, results) {
@@ -481,34 +477,6 @@ module.exports = function(db, redis) {
                     }
                 });
             });
-        });
-    }
-
-    function advQuery(query, cb) {
-        console.log(query);
-        console.time('getting player_matches');
-        db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
-            if (err) {
-                return cb(err);
-            }
-            console.timeEnd('getting player_matches');
-            console.time('computing aggregations');
-            //compute, filter, agg should act on player_matches joined with matches
-            player_matches.forEach(function(m) {
-                //post-process the match to get additional stats
-                computePlayerMatchData(m);
-            });
-            var filtered = filter(player_matches, query.js_select);
-            //filtered = sort(filtered, options.js_sort);
-            var aggData = aggregator(filtered, query.js_agg);
-            var result = {
-                aggData: aggData,
-                page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-                data: filtered,
-                unfiltered: player_matches
-            };
-            console.timeEnd('computing aggregations');
-            cb(err, result);
         });
     }
 };

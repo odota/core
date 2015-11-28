@@ -7,6 +7,8 @@ var computePlayerMatchData = compute.computePlayerMatchData;
 var renderMatch = compute.renderMatch;
 var constants = require('../constants.js');
 var matchPages = constants.match_pages;
+var queries = require('../queries');
+var getMatch = queries.getMatch;
 module.exports = function(db, redis) {
     matches.get('/:match_id/:info?', function(req, res, next) {
         /*
@@ -77,43 +79,23 @@ module.exports = function(db, redis) {
             }
             else {
                 console.log("Cache miss for match " + match_id);
-                db.first().from('matches').where({
-                    match_id: Number(match_id)
-                }).asCallback(function(err, match) {
+                getMatch(db, match_id, function(err, match) {
                     if (err) {
                         return cb(err);
                     }
-                    else if (!match) {
-                        return cb("match not found");
-                    }
-                    else {
-                        //join to get personaname, last_login, avatar
-                        db.select().from('player_matches').where({
-                            "player_matches.match_id": Number(match_id)
-                        }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players) {
-                            if (err) {
-                                return cb(err);
-                            }
-                            players.forEach(function(p) {
-                                computePlayerMatchData(p);
-                            });
-                            match.players = players;
-                            computeMatchData(match);
-                            renderMatch(match);
-                            //remove some columns from match.players to reduce JSON size and duplication
-                            if (match.players) {
-                                match.players.forEach(function(p) {
-                                    delete p.chat;
-                                    delete p.objectives;
-                                    delete p.teamfights;
-                                });
-                            }
-                            if (match.version && config.ENABLE_MATCH_CACHE) {
-                                redis.setex(key, 3600, JSON.stringify(match));
-                            }
-                            return cb(err, match);
+                    renderMatch(match);
+                    //remove some columns from match.players to reduce JSON size and duplication
+                    if (match.players) {
+                        match.players.forEach(function(p) {
+                            delete p.chat;
+                            delete p.objectives;
+                            delete p.teamfights;
                         });
                     }
+                    if (match.version && config.ENABLE_MATCH_CACHE) {
+                        redis.setex(key, 3600, JSON.stringify(match));
+                    }
+                    return cb(err, match);
                 });
             }
         });
