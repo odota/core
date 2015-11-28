@@ -13,7 +13,9 @@ notifications:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
+# This is an attempt to make caching work
 before_script:
+- sudo docker pull yasp/yasp:latest
 - sudo docker build -t "yasp/yasp:latest" .
 script:
 - sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --privileged=true --net=host -i yasp/yasp:latest npm run test
