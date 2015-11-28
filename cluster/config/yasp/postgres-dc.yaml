@@ -14,7 +14,7 @@ spec:
     resources: {}
     rollingParams:
       intervalSeconds: 1
-      maxSurge: 2
+      maxSurge: 0
       maxUnavailable: 1
       timeoutSeconds: 600
       updatePeriodSeconds: 1
@@ -28,15 +28,23 @@ spec:
     spec:
       volumes:
       - name: postgres
+        gcePersistentDisk:
+          pdName: disk-postgres
+          fsType: ext4
+      - name: postgres-config
+        secret:
+          secretName: postgres-config
       containers:
-      - args: [ "postgres" ]
-        image: postgres/9
+      - name: postgres
+        image: postgres:9
+        command: [ "sh", "-c", "postgres -D config_file=/etc/postgres/postgresql.conf hba_file=/etc/postgres/pg_hba.conf" ]
         imagePullPolicy: Always
-        name: postgres
         ports:
         volumeMounts:
         - name: postgres
           mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgres
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
