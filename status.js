@@ -37,13 +37,11 @@ module.exports = function getStatus(db, redis, queue, cb) {
                 cb(err, res);
             });
         },
-        /*
         cached_players: function(cb) {
             redis.keys("player:*", function(err, result) {
                 cb(err, result.length);
             });
         },
-        */
         matches_last_day: function(cb) {
             redis.zremrangebyscore("added_match", 0, moment().subtract(1, 'day').format('X'), function(err) {
                 if (err) {
