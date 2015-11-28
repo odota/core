@@ -4,7 +4,9 @@ var constants = require("./constants.js");
 var db = require('./db');
 var redis = require('./redis');
 var queue = require('./queue');
-var insertMatch = require('./queries').insertMatch;
+var queries = require('./queries');
+var insertMatch = queries.insertMatch;
+var insertMatchSkill = queries.insertMatchSkill;
 var results = {};
 var added = {};
 var config = require('./config.js');
@@ -55,6 +57,8 @@ function getPageData(start, options, cb) {
         //data is in data.result.matches
         var matches = data.result.matches;
         async.eachSeries(matches, function(m, cb) {
+            insertMatchSkill(db, {match_id: m.match_id, skill: options.skill}, cb);
+            /*
             var data = {
                 match_id: m.match_id,
                 players: m.players,
@@ -72,6 +76,7 @@ function getPageData(start, options, cb) {
                 //delete results[data.match_id];
                 return cb(err);
             });
+            */
         }, function(err) {
             if (err) {
                 return cb(err);

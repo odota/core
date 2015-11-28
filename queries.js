@@ -330,7 +330,7 @@ function insertPlayer(db, player, cb) {
                 }).asCallback(cb);
             }
             else {
-                return cb();
+                return cb(err);
             }
         });
     });
@@ -357,6 +357,20 @@ function insertPlayerCache(db, player, cache, cb) {
         }
         else {
             return cb(err, player);
+        }
+    });
+}
+
+function insertMatchSkill(db, row, cb) {
+    //TODO upsert
+    db('match_skill').insert(row).asCallback(function(err) {
+        if (err && err.detail.indexOf("already exists") !== -1) {
+            db('match_skill').update(row).where({
+                match_id: row.match_id
+            }).asCallback(cb);
+        }
+        else {
+            return cb(err);
         }
     });
 }
@@ -393,7 +407,7 @@ function getMatch(db, match_id, cb) {
 function getPlayerMatches(db, query, cb) {
     console.log(query);
     console.time('getting player_matches');
-    db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
+    db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, player_matches) {
         if (err) {
             return cb(err);
         }
@@ -434,6 +448,7 @@ module.exports = {
     insertMatch: insertMatch,
     insertPlayerRating: insertPlayerRating,
     insertPlayerCache: insertPlayerCache,
+    insertMatchSkill: insertMatchSkill,
     getMatch: getMatch,
     getPlayerMatches: getPlayerMatches,
     getPlayerRatings: getPlayerRatings
