@@ -15,7 +15,7 @@ notifications:
 before_script:
 - docker build -t "yasp/yasp:${TRAVIS_COMMIT}" .
 script:
-- docker run -e "TEST_SKIP_BUILD=y" --net=host -i yasp/yasp:${TRAVIS_COMMIT} test/run.sh
+- docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:${TRAVIS_COMMIT} test/run.sh
 after_success:
 - docker run -i --net=host yasp/yasp:${TRAVIS_COMMIT} npm run coveralls
 before_deploy:
