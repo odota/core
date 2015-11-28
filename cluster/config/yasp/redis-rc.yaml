@@ -26,7 +26,6 @@ spec:
       - name: redis
         image: redis:3
         command: [ "sh", "-c", "redis-server /etc/redis/redis.conf" ]
-        #command: ["/bin/sleep", "Inf"]
         imagePullPolicy: Always
         ports:
         - containerPort: 6379
