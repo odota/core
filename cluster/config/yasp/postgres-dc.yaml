@@ -37,7 +37,7 @@ spec:
       containers:
       - name: postgres
         image: postgres:9
-        command: [ "sh", "-c", "postgres -D config_file=/etc/postgres/postgresql.conf hba_file=/etc/postgres/pg_hba.conf" ]
+        command: [ "sh", "-c", "postgres -D config_file=/etc/postgres/postgresql.conf hba_file=/etc/postgres/hba.conf" ]
         imagePullPolicy: Always
         ports:
         volumeMounts:

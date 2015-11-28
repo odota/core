@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   postgresql.conf: {{conf}}
-  pg_hba.conf: {{hba}}
+  hba.conf: {{hba}}
 kind: Secret
 metadata:
   name: postgres-config
