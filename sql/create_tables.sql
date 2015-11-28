@@ -28,8 +28,6 @@ CREATE TABLE matches (
   --dire_team_complete integer,
   --radiant_team_id integer,
   --dire_team_id integer,
-  --from skill api
-  skill integer,
   --parsed data below
   parse_status integer,
   url varchar(255),
@@ -147,6 +145,11 @@ CREATE TABLE player_ratings (
 CREATE TABLE player_caches (
   account_id bigint REFERENCES players(account_id) ON DELETE CASCADE PRIMARY KEY,
   cache json
+);
+
+CREATE TABLE match_skill (
+  match_id bigint,
+  skill integer
 );
 
 CREATE INDEX on player_matches(account_id);
