@@ -35,7 +35,7 @@ var redis = require('./redis');
 var moment = require('moment');
 var queries = require('./queries');
 var insertMatch = queries.insertMatch;
-queue.parse.process(capacity, function(job, cb) {
+queue.parse.process(function(job, cb) {
     var expire = setTimeout(function() {
         console.log('job %s expired', job.jobId);
         return cb("timeout");
@@ -47,6 +47,7 @@ queue.parse.process(capacity, function(job, cb) {
         }
         runParse(match, function(err, parsed_data) {
             if (err || parsed_data.error) {
+                console.log(err || parsed_data.error);
                 return cb(err || parsed_data.error);
             }
             var match = job.data.payload;
@@ -62,7 +63,7 @@ queue.parse.process(capacity, function(job, cb) {
                 clearTimeout(expire);
                 var hostname = os.hostname;
                 redis.zadd("parser:" + hostname, moment().format('X'), match.match_id);
-                redis.lpush("parse_delay", new Date() - (match.start_time + match.duration)*1000);
+                redis.lpush("parse_delay", new Date() - (match.start_time + match.duration) * 1000);
                 redis.ltrim("parse_delay", 0, 10000);
                 return cb(err);
             });
@@ -558,7 +559,7 @@ function runParse(match, cb) {
                     "java_parser/target/stats-0.1.0.jar"
                 ], {
                 //we may want to ignore stderr so the child doesn't stay open
-                stdio: ['pipe', 'pipe', 'ignore'],
+                stdio: ['pipe', 'pipe', 'pipe'],
                 encoding: 'utf8'
             });
             parseStream = ndjson.parse();
@@ -571,9 +572,9 @@ function runParse(match, cb) {
                 inStream.pipe(parser.stdin);
             }
             parser.stdout.pipe(parseStream);
-            //parser.stderr.on('data', function(data) {
-            //    console.log(data.toString());
-            //});
+            parser.stderr.on('data', function(data) {
+                console.log(data.toString());
+            });
             parseStream.on('data', handleStream);
             parseStream.on('end', exit);
             parseStream.on('error', exit);

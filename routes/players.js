@@ -10,14 +10,14 @@ var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
 var config = require('../config');
 var zlib = require('zlib');
-var preprocessQuery = require('../preprocessQuery');
+var preprocessQuery = utility.preprocessQuery;
 var filter = require('../filter');
 var aggregator = require('../aggregator');
 var compute = require('../compute');
 var querystring = require('querystring');
 var moment = require('moment');
 var computePlayerMatchData = compute.computePlayerMatchData;
-var histograms = {
+var subkeys = {
     "kills": 1,
     "deaths": 1,
     "assists": 1,
@@ -49,22 +49,55 @@ var histograms = {
     "loss": 1,
     "actions_per_min": 1
 };
+//optimize by only projecting certain columns based on tab?  set query.project based on info
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'skill', 'parse_status', 'radiant_win', 'version'];
+var advanced = ['last_hits','denies','gold_per_min','xp_per_min','gold_t','first_blood_time','level','hero_damage','tower_damage','hero_healing','stuns','killed','purchase','pings','radiant_gold_adv','actions'];
+var projections = {
+    index: basic.concat('pgroup'),
+    matches: basic,
+    heroes: basic,
+    peers: basic,
+    activity: basic,
+    histograms: basic.concat(advanced),
+    records: basic,
+    counts: basic,
+    trends: basic.concat(advanced),
+    sprees: basic.concat(['kill_streaks','multi_kills']),
+    wardmap: basic.concat(['obs','sen']),
+    items: basic.concat(['purchase_log','purchase','item_uses']),
+    skills: basic.concat(['hero_hits','ability_uses']),
+    wordcloud: basic.concat('chat'),
+    rating: basic
+};
 var playerPages = constants.player_pages;
 module.exports = function(db, redis) {
+    players.get('/:account_id/sqltest/:info?/:subkey?', function(req, res, next) {
+        var account_id = req.params.account_id;
+        db.raw('select hero_id, count(*) from player_matches where account_id = ? group by hero_id', [account_id]).asCallback(function(err, resp) {
+            if (err) {
+                return next(err);
+            }
+            res.json(resp);
+        });
+    });
     players.get('/:account_id/:info?/:subkey?', function(req, res, next) {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
         var query = req.query;
         var compare_data;
+        if (Number(account_id) === constants.anonymous_account_id) {
+            return next("cannot generate profile for anonymous account_id");
+        }
         //copy the query in case we need the original for compare passing
         var qCopy = JSON.parse(JSON.stringify(query));
         async.series({
             "player": function(cb) {
                 fillPlayerData(account_id, {
                     info: info,
-                    query: {
-                        select: req.query
+                    queryObj: {
+                        select: req.query,
+                        project: config.ENABLE_PLAYER_CACHE ? null : projections[info]
                     }
                 }, cb);
             },
@@ -152,7 +185,7 @@ module.exports = function(db, redis) {
                         trackedPlayers: result.sets.trackedPlayers,
                         //bots: result.sets.bots,
                         //ratingPlayers: result.sets.ratingPlayers,
-                        histograms: histograms,
+                        histograms: subkeys,
                         subkey: req.params.subkey || "kills",
                         times: {
                             "duration": 1,
@@ -303,13 +336,11 @@ module.exports = function(db, redis) {
 
     function fillPlayerData(account_id, options, cb) {
         //options.info, the tab the player is on
-        //options.query, the query object to use
+        //options.queryObj, the query object to use
         var cache;
-        options.query.select.account_id = account_id;
-        options.query = preprocessQuery(options.query);
-        if (!options.query) {
-            return cb("invalid account_id");
-        }
+        //select player_matches with this account_id
+        options.queryObj.select.account_id = account_id;
+        options.queryObj = preprocessQuery(options.queryObj, constants);
         //try to find player in db
         getPlayer(account_id, function(err, player) {
             if (err) {
@@ -350,12 +381,12 @@ module.exports = function(db, redis) {
                         return cb(err);
                     }
                     //we return undefined count if the account_id is string (all/professional)
-                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
+                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined) && config.ENABLE_PLAYER_CACHE;
                     if (cache && cache.data) {
                         console.log('expected %s matches, found %s matches', count, cache.data.length);
                     }
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
-                    var filter_exists = Object.keys(options.query.js_select).length;
+                    var filter_exists = Object.keys(options.queryObj.js_select).length;
                     if (cacheValid && !filter_exists) {
                         console.log("player cache hit %s", player.account_id);
                         //fill in skill data from table
@@ -386,23 +417,9 @@ module.exports = function(db, redis) {
                             });
                         });
                     }
-                    /*
-                    //full match cache code
-                    if (cacheValid) {
-                        console.log("player cache hit %s", player.account_id);
-                        //cached data should come in ascending match order
-                        var filtered = filter(cache.data, options.query.js_select);
-                        cache.aggData = aggregator(filtered, null);
-                        processResults(err, {
-                            data: filtered,
-                            aggData: cache.aggData,
-                            unfiltered: cache.data
-                        });
-                    }
-                    */
                     else {
                         console.log("player cache miss %s", player.account_id);
-                        getPlayerMatches(db, options.query, processResults);
+                        getPlayerMatches(db, options.queryObj, processResults);
                     }
 
                     function processResults(err, results) {
