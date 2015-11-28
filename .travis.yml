@@ -1,8 +1,8 @@
 language: generic
 sudo: required
 services:
-- docker
 - redis-server
+- docker
 addons:
   postgresql: "9.4"
 deploy:
@@ -12,13 +12,13 @@ notifications:
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
-- docker build -t "yasp/yasp:latest" .
+- sudo docker build -t "yasp/yasp:latest" .
 script:
-- docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
+- sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --privileged=true --net=host -i yasp/yasp:latest npm run test
 after_success:
-- docker run -i --net=host yasp/yasp:latest npm run coveralls
+- sudo docker run -i --privileged=true --net=host yasp/yasp:latest npm run coveralls
 before_deploy:
-- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- sudo docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
   provider: script
   skip_cleanup: true
