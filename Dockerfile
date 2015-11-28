@@ -1,6 +1,6 @@
 FROM phusion/baseimage:0.9.17
 # install git/maven
-RUN apt-get update && apt-get install git maven -y
+RUN apt-get update && apt-get install git maven openjdk-7-jdk -y
 WORKDIR /usr/src/yasp
 # install node/npm
 ENV NODE_VERSION 5.1.0
