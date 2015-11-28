@@ -26,7 +26,7 @@ oc secrets add serviceaccount/default secrets/api-keys
 
 #put secrets in .env (KEY=VALUE, one per line)
 #set up secrets
-bash create-secrets.sh < .env | oc create -f -
+bash ./cluster/scripts/create-secrets.sh < .env | oc create -f -
 
 #add yasp services to cluster, redis, postgres
 oc create -f ./cluster/config/yasp
