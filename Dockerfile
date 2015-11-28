@@ -17,6 +17,8 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin
+
 # Just add package.json to get the NPM install cached.
 ADD package.json /usr/src/yasp/
 RUN . /root/.bashrc && npm install
