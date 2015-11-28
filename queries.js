@@ -91,6 +91,7 @@ function getColumnInfo(db, cb) {
 }
 
 function insertMatch(db, redis, queue, match, options, cb) {
+    console.log('asdf')
     var players = match.players ? JSON.parse(JSON.stringify(match.players)) : undefined;
     //build match.pgroup so after parse we can figure out the player ids for each slot (for caching update without db read)
     if (players && !match.pgroup) {
