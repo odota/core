@@ -29,4 +29,4 @@ deploy:
   skip_cleanup: true
   on:
     branch: k8s
-  script: scripts/docker_hub_push.bash
+  script: sudo scripts/docker_hub_push.bash
