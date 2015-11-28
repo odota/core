@@ -5,15 +5,20 @@ services:
 - redis-server
 addons:
   postgresql: "9.4"
+deploy:
+  skip_cleanup: true
 notifications:
   email:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
-script:
+before_script:
 - docker build -t "yasp/yasp:${TRAVIS_COMMIT}" .
+script:
 - docker run -e "TEST_SKIP_BUILD=y" --net=host -i yasp/yasp:${TRAVIS_COMMIT} test/run.sh
 after_success:
 - docker run -i --net=host yasp/yasp:${TRAVIS_COMMIT} npm run coveralls
+before_deploy:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+deploy:
 - docker push yasp/yasp:${TRAVIS_COMMIT}
