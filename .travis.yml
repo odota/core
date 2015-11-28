@@ -18,7 +18,7 @@ before_script:
 - sudo docker pull yasp/yasp:latest
 - sudo docker build -t "yasp/yasp:latest" .
 script:
-- sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --privileged=true --net=host -i yasp/yasp:latest /root/.bashrc && npm run test
+- sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
 after_success:
 - sudo docker run -i --privileged=true --net=host yasp/yasp:latest npm run coveralls
 before_deploy:
