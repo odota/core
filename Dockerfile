@@ -1,10 +1,14 @@
+# Settings and base image.
+# For possible NODE_VERSION values,
+# install nvm and run "nvm ls-remote"
 FROM phusion/baseimage:0.9.17
-# install git/maven/node
-RUN apt-get update && apt-get install git maven openjdk-7-jdk -y
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-WORKDIR /usr/src/yasp
-# install node/npm
 ENV NODE_VERSION 5.1.0
+# install git/maven
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update && \
+    apt-get install -y git maven openjdk-8-jdk && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
     . /root/.bashrc && \
@@ -18,15 +22,17 @@ ADD package.json /usr/src/yasp/
 RUN . /root/.bashrc && npm install
 
 # Add and build the java parser
-ADD java_parser /usr/src/yasp/
+ADD java_parser /usr/src/yasp/java_parser
 RUN . /root/.bashrc && npm run maven
 
 # Add and build webpack
-ADD public /usr/src/yasp/
+ADD webpack.config.js /usr/src/yasp/
+ADD public /usr/src/yasp/public
 RUN . /root/.bashrc && npm run webpack
 
 # Add everything else
 ADD . /usr/src/yasp
+#RUN . /root/.bashrc && npm run build
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]
