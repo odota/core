@@ -14,7 +14,7 @@ spec:
     resources: {}
     rollingParams:
       intervalSeconds: 1
-      maxSurge: 2
+      maxSurge: 0
       maxUnavailable: 1
       timeoutSeconds: 600
       updatePeriodSeconds: 1
@@ -34,7 +34,7 @@ spec:
       containers:
       - name: redis
         image: redis:3
-        args: [ "redis-server /etc/redis/redis.conf" ]
+        command: [ "sh", "-c", "redis-server /etc/redis/redis.conf" ]
         imagePullPolicy: Always
         ports:
         - containerPort: 6379
