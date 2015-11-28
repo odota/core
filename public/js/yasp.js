@@ -1,7 +1,7 @@
 require('./ga.js');
 require('../../node_modules/font-awesome/css/font-awesome.css');
 require('../../node_modules/dota2-minimap-hero-sprites/assets/stylesheets/dota2minimapheroes.css');
-//require('../../node_modules/bootstrap/dist/css/bootstrap.css');
+require('../../node_modules/bootstrap/dist/css/bootstrap.css');
 require('../../node_modules/bootswatch/darkly/bootstrap.css');
 require('jquery');
 require('../../node_modules/datatables/media/js/jquery.dataTables.js');
