@@ -1,19 +1,19 @@
-language: generic
 sudo: required
+language: node_js
 services:
 - docker
+- redis-server
+node_js:
+- '5.0'
 addons:
   postgresql: "9.4"
+install: true
 notifications:
   email:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
-- sudo add-apt-repository -y ppa:chris-lea/redis-server
-- sudo apt-get update
-- sudo apt-get install -y redis-server
-- sudo service redis-server start
 - sudo docker build -t "yasp/yasp:latest" .
 script:
 - sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --privileged=true --net=host -i yasp/yasp:latest npm run test
