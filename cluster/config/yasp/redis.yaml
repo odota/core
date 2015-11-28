@@ -5,6 +5,8 @@ metadata:
     tier: backend
   name: redis
 spec:
+  selector:
+    app: redis
   ports:
   - port: 6379
     protocol: TCP

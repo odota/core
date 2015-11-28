@@ -29,20 +29,31 @@ spec:
       volumes:
       - name: redis
         gcePersistentDisk:
-        pdName: disk-redis
-        fsType: ext4
+          pdName: disk-redis
+          fsType: ext4
       containers:
-      - args: [ "redis-server /var/lib/redis/redis.conf" ]
-        image: redis/3
+      - name: redis
+        image: redis:3
+        args: [ "redis-server /etc/redis/redis.conf" ]
         imagePullPolicy: Always
-        name: redis
         ports:
+        - containerPort: 6379
+          name: redis
         volumeMounts:
-        - name: redis
+        - name: redis-persistent-storage
           mountPath: /var/lib/redis
+        - name: redis-config
+          mountPath: /etc/redis
+      volumes:
+      - name: redis-persistent-storage
+        gcePersistentDisk:
+          pdName: disk-redis
+          fsType: ext4
+      - name: redis-config
+        secret:
+          secretName: redis-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
   triggers:
   - type: ConfigChange
-  
