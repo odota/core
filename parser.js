@@ -558,7 +558,7 @@ function runParse(match, cb) {
                     "java_parser/target/stats-0.1.0.jar"
                 ], {
                 //we may want to ignore stderr so the child doesn't stay open
-                stdio: ['pipe', 'pipe', 'ignore'],
+                stdio: ['pipe', 'pipe', 'pipe'],
                 encoding: 'utf8'
             });
             parseStream = ndjson.parse();
