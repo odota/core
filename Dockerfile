@@ -6,7 +6,7 @@ ENV NODE_VERSION 5.1.0
 # install git/maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y git maven openjdk-8-jdk && \
+    apt-get install -y git openjdk-8-jdk maven && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \
@@ -17,7 +17,7 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
-ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin
+#ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin
 
 # Just add package.json to get the NPM install cached.
 ADD package.json /usr/src/yasp/
