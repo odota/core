@@ -12,6 +12,7 @@ notifications:
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
+- sudo redis-server /etc/redis/redis.conf --port 6379
 - sudo docker build -t "yasp/yasp:latest" .
 script:
 - sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --privileged=true --net=host -i yasp/yasp:latest npm run test
