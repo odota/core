@@ -17,6 +17,7 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
+RUN ls /usr/lib/jvm
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/bin
 
 # Just add package.json to get the NPM install cached.
