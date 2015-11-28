@@ -31,9 +31,10 @@ bash create-secrets.sh < .env | oc create -f -
 #add yasp services to cluster, redis, postgres
 oc create -f ./cluster/config/yasp
 
-#mount redis data/config to /var/lib/postgres/data
+#put redis data/config in GCE disk "disk-redis"
+#put postgres data/config in GCE disk "disk-postgres"
 
-#mount redis data/config to /var/lib/redis
+#connect to master kubernetes node, then:
 
 #set up redis password
 redis-cli config set requirepass yasp

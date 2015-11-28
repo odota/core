@@ -38,14 +38,9 @@ module.exports = function getStatus(db, redis, queue, cb) {
             });
         },
         cached_players: function(cb) {
-            db.raw("SELECT reltuples::bigint AS count FROM pg_class where relname='player_caches';").asCallback(function(err, count) {
-                extractCount(err, count, cb);
-            });
-            /*
             redis.keys("player:*", function(err, result) {
                 cb(err, result.length);
             });
-            */
         },
         error_500: function(cb) {
             redis.zcard("error_500", cb);

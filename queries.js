@@ -213,16 +213,21 @@ function insertMatch(db, redis, queue, match, options, cb) {
                 player_match[key] = match[key];
             }
             if (player_match.account_id && player_match.account_id !== constants.anonymous_account_id) {
+                /*
                 db.from('player_caches').first('cache').where({
                     account_id: player_match.account_id
                 }).asCallback(function(err, result) {
-                    //redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
                     if (err) {
-                        return cb(err);
+                        console.log(err);
                     }
-                    //if player cache doesn't exist, skip
-                    //var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
                     var cache = result ? result.cache : null;
+                */
+                redis.get(new Buffer("player:" + player_match.account_id), function(err, result) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    var cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
+                    //if player cache doesn't exist, skip
                     if (cache) {
                         if (options.type !== "skill") {
                             var reInsert = player_match.match_id in cache.aggData.match_ids && options.type === "api";
@@ -245,7 +250,14 @@ function insertMatch(db, redis, queue, match, options, cb) {
                                 orig[key] = reduced_player_match[key] || orig[key];
                             }
                         }
-                        insertPlayerCache(db, player_match, cache, cb);
+                        //insertPlayerCache(db, player_match, cache, cb);
+                        redis.ttl("player:" + player_match.account_id, function(err, ttl) {
+                            if (err) {
+                                return cb(err);
+                            }
+                            redis.setex(new Buffer("player:" + player_match.account_id), Number(ttl) > 0 ? Number(ttl) : 24 * 60 * 60 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                            cb(err);
+                        });
                     }
                     else {
                         return cb();

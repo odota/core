@@ -324,15 +324,20 @@ module.exports = function(db, redis) {
                 personaname: account_id
             };
             console.time('readcache');
+            /*
             db.from('player_caches').first('cache').where({
                 account_id: account_id
             }).asCallback(function(err, result) {
                 if (err) {
-                    return cb(err);
+                    console.log(err);
                 }
-                //redis.get(new Buffer("player:" + account_id), function(err, result) {
-                //cache = result && !err ? JSON.parse(zlib.inflateSync(result)) : null;
                 cache = result ? result.cache : null;
+                */
+            redis.get(new Buffer("player:" + account_id), function(err, result) {
+                if (err) {
+                    console.log(err);
+                }
+                cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
                 console.timeEnd('readcache');
                 //unpack cache.data into an array
                 if (cache && cache.data) {
@@ -464,11 +469,11 @@ module.exports = function(db, redis) {
                             };
                             console.log("saving player cache %s", player.account_id);
                             console.time("writecache");
-                            //redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
-                            insertPlayerCache(db, player, cache, function(err, player) {
-                                console.timeEnd("writecache");
-                                return cb(err, player);
-                            });
+                            redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                            //insertPlayerCache(db, player, cache, function(err, player) {
+                            console.timeEnd("writecache");
+                            return cb(err, player);
+                            //});
                         }
                         else {
                             return cb(null);
