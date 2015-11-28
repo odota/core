@@ -17,7 +17,7 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 
 # Just add package.json to get the NPM install cached.
 ADD package.json /usr/src/yasp/
