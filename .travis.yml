@@ -15,18 +15,18 @@ notifications:
   - aqc2109@columbia.edu
 # This is an attempt to make caching work
 before_script:
-- sudo docker pull yasp/yasp:latest
-- sudo docker build -t "yasp/yasp:latest" .
+- docker pull yasp/yasp:latest
+- docker build -t "yasp/yasp:latest" .
 script:
-- sudo docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
+- docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
 #- npm run test
 after_success:
 - npm run coveralls
 before_deploy:
-- sudo docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
   provider: script
   skip_cleanup: true
   on:
     branch: k8s
-  script: sudo scripts/docker_hub_push.bash
+  script: scripts/docker_hub_push.bash
