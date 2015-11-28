@@ -24,7 +24,7 @@ spec:
       labels:
         app: postgres
         deploymentconfig: postgres
-        tier: frontend
+        tier: backend
     spec:
       volumes:
       - name: postgres
