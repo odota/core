@@ -22,8 +22,8 @@ spec:
   template:
     metadata:
       labels:
-        app: redis
-        deploymentconfig: redis
+        app: postgres
+        deploymentconfig: postgres
         tier: frontend
     spec:
       volumes:
