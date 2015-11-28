@@ -21,7 +21,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ADD . /usr/src/yasp
 
 # Run the maven build and webpack build
-RUN npm run maven && npm run webpack
+RUN . /root/.bashrc && npm run maven && npm run webpack
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]
