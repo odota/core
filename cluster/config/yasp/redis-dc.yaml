@@ -28,6 +28,9 @@ spec:
     spec:
       volumes:
       - name: redis
+        gcePersistentDisk:
+        pdName: disk-redis
+        fsType: ext4
       containers:
       - args: [ "redis-server /var/lib/redis/redis.conf" ]
         image: redis/3
