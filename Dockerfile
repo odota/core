@@ -3,12 +3,11 @@
 # install nvm and run "nvm ls-remote"
 FROM phusion/baseimage:0.9.17
 ENV NODE_VERSION 5.1.0
-
 # install git/maven
-RUN apt-get update && \
-    apt-get install -y git maven openjdk-7-jdk && \
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update && \
+    apt-get install -y git maven openjdk-8-jdk && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
@@ -22,11 +21,18 @@ RUN echo "" > /root/.bashrc && \
 ADD package.json /usr/src/yasp/
 RUN . /root/.bashrc && npm install
 
-# Now that the npm install is cached add everything
-ADD . /usr/src/yasp
+# Add and build the java parser
+ADD java_parser /usr/src/yasp/java_parser
+RUN . /root/.bashrc && npm run maven
 
-# Run the maven build and webpack build
-RUN . /root/.bashrc && npm run maven && npm run webpack
+# Add and build webpack
+ADD webpack.config.js /usr/src/yasp/
+ADD public /usr/src/yasp/public
+RUN . /root/.bashrc && npm run webpack
+
+# Add everything else
+ADD . /usr/src/yasp
+#RUN . /root/.bashrc && npm run build
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]

@@ -2,12 +2,15 @@ var async = require('async');
 var utility = require('./utility');
 var convert64to32 = utility.convert64to32;
 var queueReq = utility.queueReq;
-var computePlayerMatchData = require('./compute').computePlayerMatchData;
+var compute = require('./compute');
+var computePlayerMatchData = compute.computePlayerMatchData;
+var computeMatchData = compute.computeMatchData;
 var zlib = require('zlib');
 var aggregator = require('./aggregator');
 var reduceMatch = utility.reduceMatch;
 var config = require('./config');
 var constants = require('./constants');
+var filter = require('./filter');
 var columnInfo = null;
 
 function getSets(redis, cb) {
@@ -327,7 +330,7 @@ function insertPlayer(db, player, cb) {
                 }).asCallback(cb);
             }
             else {
-                return cb();
+                return cb(err);
             }
         });
     });
@@ -357,10 +360,96 @@ function insertPlayerCache(db, player, cache, cb) {
         }
     });
 }
+
+function insertMatchSkill(db, row, cb) {
+    //TODO upsert
+    db('match_skill').insert(row).asCallback(function(err) {
+        if (err && err.detail.indexOf("already exists") !== -1) {
+            db('match_skill').update(row).where({
+                match_id: row.match_id
+            }).asCallback(cb);
+        }
+        else {
+            return cb(err);
+        }
+    });
+}
+
+function getMatch(db, match_id, cb) {
+    db.first().from('matches').where({
+        match_id: Number(match_id)
+    }).asCallback(function(err, match) {
+        if (err) {
+            return cb(err);
+        }
+        else if (!match) {
+            return cb("match not found");
+        }
+        else {
+            //join to get personaname, last_login, avatar
+            db.select().from('player_matches').where({
+                "player_matches.match_id": Number(match_id)
+            }).leftJoin('players', 'player_matches.account_id', 'players.account_id').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').orderBy("player_slot", "asc").asCallback(function(err, players) {
+                if (err) {
+                    return cb(err);
+                }
+                players.forEach(function(p) {
+                    computePlayerMatchData(p);
+                });
+                match.players = players;
+                computeMatchData(match);
+                return cb(err, match);
+            });
+        }
+    });
+}
+
+function getPlayerMatches(db, query, cb) {
+    console.log(query);
+    console.time('getting player_matches');
+    db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').leftJoin('match_skill', 'player_matches.match_id', 'match_skill.match_id').asCallback(function(err, player_matches) {
+        if (err) {
+            return cb(err);
+        }
+        console.timeEnd('getting player_matches');
+        console.time('computing aggregations');
+        //compute, filter, agg should act on player_matches joined with matches
+        player_matches.forEach(function(m) {
+            //post-process the match to get additional stats
+            computePlayerMatchData(m);
+        });
+        var filtered = filter(player_matches, query.js_select);
+        //filtered = sort(filtered, options.js_sort);
+        var aggData = aggregator(filtered, query.js_agg);
+        var result = {
+            aggData: aggData,
+            page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
+            data: filtered,
+            unfiltered: player_matches
+        };
+        console.timeEnd('computing aggregations');
+        cb(err, result);
+    });
+}
+
+function getPlayerRatings(db, account_id, cb) {
+    if (!isNaN(account_id)) {
+        db.from('player_ratings').where({
+            account_id: Number(account_id)
+        }).orderBy('time', 'asc').asCallback(cb);
+    }
+    else {
+        cb();
+    }
+}
 module.exports = {
     getSets: getSets,
     insertPlayer: insertPlayer,
     insertMatch: insertMatch,
     insertPlayerRating: insertPlayerRating,
-    insertPlayerCache: insertPlayerCache
+    insertPlayerCache: insertPlayerCache,
+    insertMatchSkill: insertMatchSkill,
+    getMatch: getMatch,
+    getPlayerMatches: getPlayerMatches,
+    getPlayerRatings: getPlayerRatings
 };
