@@ -2,6 +2,7 @@ FROM phusion/baseimage:0.9.17
 
 RUN apt-get update && apt-get install git -y
 WORKDIR /usr/src/yasp
+# install node/npm
 ENV NODE_VERSION 5.1.0
 RUN echo "" > /root/.bashrc && \
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash && \
@@ -10,11 +11,15 @@ RUN echo "" > /root/.bashrc && \
     nvm alias default $NODE_VERSION && \
     nvm use $NODE_VERSION && \
     npm install -g npm
-ADD package.json /usr/src/yasp/
-RUN . /root/.bashrc && npm install
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# install maven/java
+RUN apt-get install maven
+ADD . /usr/src/yasp
+RUN npm run build
+#ADD package.json /usr/src/yasp/
+#RUN . /root/.bashrc && npm install
+#RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Now that the npm install is cached add everything
-ADD . /usr/src/yasp
+#ADD . /usr/src/yasp
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]
