@@ -17,6 +17,7 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
+RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 
 # Just add package.json to get the NPM install cached.
