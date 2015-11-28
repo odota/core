@@ -1,13 +1,21 @@
 language: node_js
-after_success:
-- npm run coveralls
+sudo: required
+services:
+- docker
+- redis-server
+addons:
+  postgresql: "9.4"
 node_js:
 - '5.0'
 notifications:
   email:
   - howardc93@gmail.com
+  - christian@paral.in
   - aqc2109@columbia.edu
-services:
-- redis-server
-addons:
-  postgresql: "9.4"
+script:
+- docker build -t "yasp/yasp:${TRAVIS_COMMIT}" .
+- docker run --net=host -i yasp/yasp:${TRAVIS_COMMIT} test/run.sh
+after_success:
+- docker run -i --net=host yasp/yasp:${TRAVIS_COMMIT} npm run coveralls
+- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- docker push yasp/yasp:${TRAVIS_COMMIT}

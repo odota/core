@@ -2,4 +2,4 @@
 echo "Initializing..."
 source /root/.bashrc
 
-node $@
+eval "$@"
