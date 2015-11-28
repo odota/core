@@ -18,3 +18,5 @@ public/build
 ecosystem.json
 *.swp
 secret.yaml
+redis-config.yaml
+postgres-config.yaml
