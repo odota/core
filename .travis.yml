@@ -1,12 +1,10 @@
-language: node_js
+language: generic
 sudo: required
 services:
 - docker
 - redis-server
 addons:
   postgresql: "9.4"
-node_js:
-- '5.0'
 notifications:
   email:
   - howardc93@gmail.com
