@@ -1,8 +1,9 @@
 var cp = require('child_process');
 var services = require('../../deploy.json');
 var apps = services.apps;
-var kubeBin = "./test/testfiles/kubectl";
-cp.execSync("ls ./test/testfiles");
+var kubeBin = process.env.TRAVIS_BUILD_DIR || "." + "/test/testfiles/kubectl";
+console.log(kubeBin);
+process.exit(0);
 apps.forEach(function(app)
 {
     if (app.role === "core")
