@@ -29,7 +29,7 @@ block content
             th Region
             th Duration
             th Ended
-            th Skill
+            //th Skill
         tbody
           tr
             //td= constants.parse_status[match.parse_status]
@@ -37,7 +37,7 @@ block content
             td= constants.region[match.region] ? constants.region[match.region] : match.region
             td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
             td: abbr(title=moment.unix(match.start_time+match.duration).format("ddd D MMMM YYYY, HH:mm:ss Z"))= moment.unix(match.start_time + match.duration).fromNow()
-            td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
+            //td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
     
   .row(style="margin-top:1em;")
     .col-md-12.table-responsive

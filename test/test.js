@@ -124,8 +124,7 @@ before(function(done) {
                 queries.insertPlayer(db, p, cb);
             }, cb);
         }], function(err) {
-        require('../workServer');
-        require('../workParser');
+        require('../parser');
         done(err);
     });
 });

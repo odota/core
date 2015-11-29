@@ -638,7 +638,7 @@ module.exports = function aggregator(matches, fields, existing) {
         }
     }
 
-    function aggTeammates(key, m, groups) {
+    function aggTeammates(key, m) {
         var teammates = aggData.teammates;
         var player_win = isRadiant(m) === m.radiant_win;
         var group = m.pgroup || {};

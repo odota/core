@@ -356,7 +356,7 @@ function generatePositionData(d, p) {
 }
 
 function isSignificant(constants, m) {
-    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined);
+    return Boolean(constants.game_mode[m.game_mode] && constants.game_mode[m.game_mode].balanced && constants.lobby_type[m.lobby_type] && constants.lobby_type[m.lobby_type].balanced && m.radiant_win !== undefined && m.duration > 60 * 5);
 }
 
 function reduceMatch(player_match) {
@@ -415,6 +415,60 @@ function queueReq(queue, type, payload, options, cb) {
         cb(null, queuejob);
     }).catch(cb);
 }
+
+function preprocessQuery(query, constants) {
+    //check if we already processed to ensure idempotence
+    if (query.processed) {
+        return;
+    }
+    //select,the query received, build the mongo query and the js filter based on this
+    query.db_select = {};
+    query.js_select = {};
+    var dbAble = {
+        "account_id": 1,
+        "leagueid": 1
+    };
+    //reserved keywords, don't treat these as filters
+    var exceptions = {
+        "json": 1,
+        "compare_account_id": 1
+    };
+    var whitelist = {
+        "all": 5000
+    };
+    for (var key in query.select) {
+        //arrayify the element
+        query.select[key] = [].concat(query.select[key]).map(function(e) {
+            if (typeof e === "object") {
+                //just return the object if it's an array or object
+                return e;
+            }
+            //numberify this element if not keyword
+            if (e in whitelist) {
+                return e;
+            }
+            else {
+                return Number(e);
+            }
+        });
+        if (dbAble[key]) {
+            //get the first element
+            if (query.select[key][0] in whitelist) {
+                query.limit = whitelist[query.select[key][0]];
+            }
+            else {
+                query.db_select[key] = query.select[key][0];
+            }
+        }
+        else if (!exceptions[key]) {
+            query.js_select[key] = query.select[key];
+        }
+    }
+    //mark this query processed
+    query.processed = true;
+    console.log(query);
+    return query;
+}
 module.exports = {
     tokenize: tokenize,
     logger: logger,
@@ -432,5 +486,6 @@ module.exports = {
     max: max,
     min: min,
     invokeInterval: invokeInterval,
-    queueReq: queueReq
+    queueReq: queueReq,
+    preprocessQuery: preprocessQuery
 };

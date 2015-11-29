@@ -4,18 +4,20 @@ var async = require('async');
 var constants = require('../constants.js');
 var queries = require("../queries");
 var insertPlayerCache = queries.insertPlayerCache;
+var getPlayerMatches = queries.getPlayerMatches;
 var utility = require('../utility');
 var generatePositionData = utility.generatePositionData;
 var reduceMatch = utility.reduceMatch;
 var config = require('../config');
 var zlib = require('zlib');
-var preprocessQuery = require('../preprocessQuery');
+var preprocessQuery = utility.preprocessQuery;
 var filter = require('../filter');
 var aggregator = require('../aggregator');
 var compute = require('../compute');
 var querystring = require('querystring');
+var moment = require('moment');
 var computePlayerMatchData = compute.computePlayerMatchData;
-var histograms = {
+var subkeys = {
     "kills": 1,
     "deaths": 1,
     "assists": 1,
@@ -47,37 +49,63 @@ var histograms = {
     "loss": 1,
     "actions_per_min": 1
 };
+//optimize by only projecting certain columns based on tab?  set query.project based on info
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'skill', 'parse_status', 'radiant_win', 'version'];
+var advanced = ['last_hits','denies','gold_per_min','xp_per_min','gold_t','first_blood_time','level','hero_damage','tower_damage','hero_healing','stuns','killed','purchase','pings','radiant_gold_adv','actions'];
+var projections = {
+    index: basic.concat('pgroup'),
+    matches: basic,
+    heroes: basic,
+    peers: basic,
+    activity: basic,
+    histograms: basic.concat(advanced),
+    records: basic,
+    counts: basic,
+    trends: basic.concat(advanced),
+    sprees: basic.concat(['kill_streaks','multi_kills']),
+    wardmap: basic.concat(['obs','sen']),
+    items: basic.concat(['purchase_log','purchase','item_uses']),
+    skills: basic.concat(['hero_hits','ability_uses']),
+    wordcloud: basic.concat('chat'),
+    rating: basic
+};
 var playerPages = constants.player_pages;
 module.exports = function(db, redis) {
+    players.get('/:account_id/sqltest/:info?/:subkey?', function(req, res, next) {
+        var account_id = req.params.account_id;
+        db.raw('select hero_id, count(*) from player_matches where account_id = ? group by hero_id', [account_id]).asCallback(function(err, resp) {
+            if (err) {
+                return next(err);
+            }
+            res.json(resp);
+        });
+    });
     players.get('/:account_id/:info?/:subkey?', function(req, res, next) {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
         var query = req.query;
         var compare_data;
+        if (Number(account_id) === constants.anonymous_account_id) {
+            return next("cannot generate profile for anonymous account_id");
+        }
         //copy the query in case we need the original for compare passing
         var qCopy = JSON.parse(JSON.stringify(query));
         async.series({
             "player": function(cb) {
                 fillPlayerData(account_id, {
                     info: info,
-                    query: {
-                        select: req.query
+                    queryObj: {
+                        select: req.query,
+                        project: config.ENABLE_PLAYER_CACHE ? null : projections[info]
                     }
                 }, cb);
             },
             "sets": function(cb) {
                 queries.getSets(redis, cb);
             },
-            "ratings": function getPlayerRatings(cb) {
-                if (!isNaN(account_id)) {
-                    db.from('player_ratings').where({
-                        account_id: Number(account_id)
-                    }).orderBy('time', 'asc').asCallback(cb);
-                }
-                else {
-                    cb();
-                }
+            "ratings": function(cb) {
+                queries.getPlayerRatings(db, account_id, cb);
             }
         }, function(err, result) {
             if (err) {
@@ -128,6 +156,8 @@ module.exports = function(db, redis) {
                         });
                     }
                 }
+                render();
+                /*
                 if (info === "compare") {
                     doCompare(qCopy, req.params.account_id.toString(), function(err, results) {
                         if (err) {
@@ -140,7 +170,7 @@ module.exports = function(db, redis) {
                 else {
                     render();
                 }
-
+                */
                 function render() {
                     console.timeEnd("player " + req.params.account_id);
                     if (req.query.json) {
@@ -155,7 +185,7 @@ module.exports = function(db, redis) {
                         trackedPlayers: result.sets.trackedPlayers,
                         //bots: result.sets.bots,
                         //ratingPlayers: result.sets.ratingPlayers,
-                        histograms: histograms,
+                        histograms: subkeys,
                         subkey: req.params.subkey || "kills",
                         times: {
                             "duration": 1,
@@ -170,71 +200,70 @@ module.exports = function(db, redis) {
             });
         });
     });
+    //return router
     return players;
-
-    function doCompare(query, account_id, cb) {
-        var account_ids = ["all", account_id];
-        //var compareIds = query.compare_account_id;
-        //compareIds = compareIds ? [].concat(compareIds) : [];
-        //account_ids = account_ids.concat(compareIds).slice(0, 6);
-        async.map(account_ids, function(account_id, cb) {
-            //pass a copy of the original query, saved from before
-            fillPlayerData(account_id, {
-                query: {
-                    select: JSON.parse(JSON.stringify(query))
-                }
-            }, function(err, player) {
-                console.log("computing averages %s", player.account_id);
-                //create array of results.aggData for each account_id
-                for (var key in histograms) {
-                    /*
-                    //mean
-                    if (player.aggData[key].sum && player.aggData[key].n) {
-                        player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
+    /*
+        function doCompare(query, account_id, cb) {
+            var account_ids = ["all", account_id];
+            //var compareIds = query.compare_account_id;
+            //compareIds = compareIds ? [].concat(compareIds) : [];
+            //account_ids = account_ids.concat(compareIds).slice(0, 6);
+            async.map(account_ids, function(account_id, cb) {
+                //pass a copy of the original query, saved from before
+                fillPlayerData(account_id, {
+                    query: {
+                        select: JSON.parse(JSON.stringify(query))
                     }
-                    */
-                    //median
-                    var arr = [];
-                    for (var value in player.aggData[key].counts) {
-                        for (var i = 0; i < player.aggData[key].counts[value]; i++) {
-                            arr.push(Number(value));
+                }, function(err, player) {
+                    console.log("computing averages %s", player.account_id);
+                    //create array of results.aggData for each account_id
+                    for (var key in histograms) {
+                        //mean
+                        //if (player.aggData[key].sum && player.aggData[key].n) {
+                        //    player.aggData[key].avg = player.aggData[key].sum / player.aggData[key].n;
+                        //}
+                        //median
+                        var arr = [];
+                        for (var value in player.aggData[key].counts) {
+                            for (var i = 0; i < player.aggData[key].counts[value]; i++) {
+                                arr.push(Number(value));
+                            }
                         }
+                        arr.sort(function(a, b) {
+                            return a - b;
+                        });
+                        player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
                     }
-                    arr.sort(function(a, b) {
-                        return a - b;
-                    });
-                    player.aggData[key].avg = arr[Math.floor(arr.length / 2)];
+                    cb(err, player);
+                });
+            }, function(err, results) {
+                if (err) {
+                    return cb(err);
                 }
-                cb(err, player);
-            });
-        }, function(err, results) {
-            if (err) {
-                return cb(err);
-            }
-            console.time("computing percentiles");
-            //compute percentile for each stat
-            //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
-            results.forEach(function(r, i) {
-                for (var key in histograms) {
-                    var avg = results[i].aggData[key].avg;
-                    var allCounts = results[0].aggData[key].counts;
-                    var gt = 0;
-                    var total = 0;
-                    for (var value in allCounts) {
-                        var valueCount = allCounts[value];
-                        if (avg >= Number(value)) {
-                            gt += valueCount;
+                console.time("computing percentiles");
+                //compute percentile for each stat
+                //for each stat average in each player's aggdata, iterate through all's stat counts and determine whether this average is gt/lt key, then add count to appropriate bucket. percentile is gt/(gt+lt)
+                results.forEach(function(r, i) {
+                    for (var key in histograms) {
+                        var avg = results[i].aggData[key].avg;
+                        var allCounts = results[0].aggData[key].counts;
+                        var gt = 0;
+                        var total = 0;
+                        for (var value in allCounts) {
+                            var valueCount = allCounts[value];
+                            if (avg >= Number(value)) {
+                                gt += valueCount;
+                            }
+                            total += valueCount;
                         }
-                        total += valueCount;
+                        results[i].aggData[key].percentile = total ? (gt / total) : 0;
                     }
-                    results[i].aggData[key].percentile = total ? (gt / total) : 0;
-                }
+                });
+                console.timeEnd("computing percentiles");
+                return cb(err, results);
             });
-            console.timeEnd("computing percentiles");
-            return cb(err, results);
-        });
-    }
-
+        }
+    */
     function generateTeammateArrayFromHash(input, player, cb) {
         if (!input) {
             return cb();
@@ -273,7 +302,7 @@ module.exports = function(db, redis) {
         });
     }
 
-    function findPlayer(account_id, cb) {
+    function getPlayer(account_id, cb) {
         if (!isNaN(account_id)) {
             db.first().from('players').where({
                 account_id: Number(account_id)
@@ -307,15 +336,13 @@ module.exports = function(db, redis) {
 
     function fillPlayerData(account_id, options, cb) {
         //options.info, the tab the player is on
-        //options.query, the query object to use
+        //options.queryObj, the query object to use
         var cache;
-        options.query.select.account_id = account_id;
-        options.query = preprocessQuery(options.query);
-        if (!options.query) {
-            return cb("invalid account_id");
-        }
+        //select player_matches with this account_id
+        options.queryObj.select.account_id = account_id;
+        options.queryObj = preprocessQuery(options.queryObj, constants);
         //try to find player in db
-        findPlayer(account_id, function(err, player) {
+        getPlayer(account_id, function(err, player) {
             if (err) {
                 return cb(err);
             }
@@ -354,37 +381,45 @@ module.exports = function(db, redis) {
                         return cb(err);
                     }
                     //we return undefined count if the account_id is string (all/professional)
-                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
+                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined) && config.ENABLE_PLAYER_CACHE;
                     if (cache && cache.data) {
                         console.log('expected %s matches, found %s matches', count, cache.data.length);
                     }
                     var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
-                    var filter_exists = Object.keys(options.query.js_select).length;
+                    var filter_exists = Object.keys(options.queryObj.js_select).length;
                     if (cacheValid && !filter_exists) {
                         console.log("player cache hit %s", player.account_id);
-                        processResults(err, {
-                            data: cache.data,
-                            aggData: cache.aggData,
-                            unfiltered: cache.data
+                        //fill in skill data from table
+                        console.time('fillskill');
+                        //get skill data for matches within cache expiry (might not have skill data)
+                        var recents = cache.data.filter(function(m) {
+                            return moment().diff(moment().unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                        });
+                        var skillMap = {};
+                        async.eachSeries(recents, function(match, cb) {
+                            db.first(['skill']).from('match_skill').where({
+                                match_id: match.match_id
+                            }).asCallback(function(err, row) {
+                                if (row && row.skill) {
+                                    skillMap[match.match_id] = row.skill;
+                                }
+                                return cb(err);
+                            });
+                        }, function(err) {
+                            cache.data.forEach(function(m) {
+                                m.skill = m.skill || skillMap[m.match_id];
+                            });
+                            console.timeEnd('fillskill');
+                            processResults(err, {
+                                data: cache.data,
+                                aggData: cache.aggData,
+                                unfiltered: cache.data
+                            });
                         });
                     }
-                    /*
-                    //full match cache code
-                    if (cacheValid) {
-                        console.log("player cache hit %s", player.account_id);
-                        //cached data should come in ascending match order
-                        var filtered = filter(cache.data, options.query.js_select);
-                        cache.aggData = aggregator(filtered, null);
-                        processResults(err, {
-                            data: filtered,
-                            aggData: cache.aggData,
-                            unfiltered: cache.data
-                        });
-                    }
-                    */
                     else {
                         console.log("player cache miss %s", player.account_id);
-                        advQuery(options.query, processResults);
+                        getPlayerMatches(db, options.queryObj, processResults);
                     }
 
                     function processResults(err, results) {
@@ -481,34 +516,6 @@ module.exports = function(db, redis) {
                     }
                 });
             });
-        });
-    }
-
-    function advQuery(query, cb) {
-        console.log(query);
-        console.time('getting player_matches');
-        db.from('player_matches').where(query.db_select).limit(query.limit).orderBy('player_matches.match_id', 'desc').innerJoin('matches', 'player_matches.match_id', 'matches.match_id').asCallback(function(err, player_matches) {
-            if (err) {
-                return cb(err);
-            }
-            console.timeEnd('getting player_matches');
-            console.time('computing aggregations');
-            //compute, filter, agg should act on player_matches joined with matches
-            player_matches.forEach(function(m) {
-                //post-process the match to get additional stats
-                computePlayerMatchData(m);
-            });
-            var filtered = filter(player_matches, query.js_select);
-            //filtered = sort(filtered, options.js_sort);
-            var aggData = aggregator(filtered, query.js_agg);
-            var result = {
-                aggData: aggData,
-                page: filtered.slice(query.js_skip, query.js_skip + query.js_limit),
-                data: filtered,
-                unfiltered: player_matches
-            };
-            console.timeEnd('computing aggregations');
-            cb(err, result);
         });
     }
 };
