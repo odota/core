@@ -25,7 +25,7 @@ spec:
           secretName: api-keys
       containers:
       - name: yasp
-        image: yasp/yasp:8c3dece
+        image: yasp/yasp:latest
         args: [ "node", "web.js" ]
         imagePullPolicy: Always
         ports:

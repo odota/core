@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: yasp
-        image: yasp/yasp:8c3dece
+        image: yasp/yasp:latest
         args: [ "node", "worker.js" ]
         imagePullPolicy: Always
       restartPolicy: Always

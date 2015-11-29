@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: yasp
-        image: yasp/yasp:8c3dece
+        image: yasp/yasp:latest
         args: [ "node", "mmr.js" ]
         imagePullPolicy: Always
       restartPolicy: Always
