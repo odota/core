@@ -1,25 +1,16 @@
-var config = require('./config');
 var express = require('express');
 var request = require('request');
 var cp = require('child_process');
 var utility = require('./utility');
 var ndjson = require('ndjson');
 var spawn = cp.spawn;
-var exec = cp.exec;
 var bodyParser = require('body-parser');
 var progress = require('request-progress');
 var app = express();
 var capacity = require('os').cpus().length;
-var secret = config.RETRIEVER_SECRET;
-var retrieverConfig = config.RETRIEVER_HOST;
 //var cluster = require('cluster');
 var startedAt = new Date();
-var port = config.PORT || config.PARSER_PORT;
 var os = require('os');
-var server = app.listen(port, function() {
-    var host = server.address().address;
-    console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
-});
 app.use(bodyParser.json());
 app.get('/', function(req, res) {
     res.json({
