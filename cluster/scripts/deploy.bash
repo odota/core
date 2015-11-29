@@ -19,5 +19,6 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
 fi
 
 if [ -n "$KUBERNETES_HOST" ]; then
-  node cluster/scripts/kubernetes.js
+  export PATH="$TRAVIS_BUILD_DIR/test/testfiles:$PATH"
+  npm run deploy
 fi
