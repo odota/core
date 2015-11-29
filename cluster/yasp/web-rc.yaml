@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    app: web
+    tier: frontend
+    deplotment: yasp
+  name: web
+  namespace: yasp
+spec:
+  replicas: 1
+  selector:
+    app: web
+    tier: frontend
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: frontend
+    spec:
+      volumes:
+      - name: api-keys
+        secret:
+          secretName: api-keys
+      containers:
+      - name: yasp
+        image: yasp/yasp:8c3dece
+        args: [ "node", "web.js" ]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          name: web
+        volumeMounts:
+        - name: api-keys
+          readOnly: true
+          mountPath: /etc/yasp-api-keys
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
