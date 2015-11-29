@@ -49,9 +49,11 @@ var subkeys = {
     "loss": 1,
     "actions_per_min": 1
 };
-//optimize by only projecting certain columns based on tab?  set query.project based on info
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version'];
+//optimize by only projecting certain columns based on tab  set query.project based on info
+var basic = ['matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'purchase', 'pings', 'radiant_gold_adv', 'actions'];
+var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'purchase', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic.concat('pgroup'),
     matches: basic,
@@ -97,7 +99,7 @@ module.exports = function(db, redis) {
                     info: info,
                     queryObj: {
                         select: req.query,
-                        project: config.ENABLE_PLAYER_CACHE ? null : projections[info]
+                        project: config.ENABLE_PLAYER_CACHE ? everything : projections[info]
                     }
                 }, cb);
             },
@@ -339,10 +341,10 @@ module.exports = function(db, redis) {
         //options.queryObj, the query object to use
         var cache;
         var cacheValid = false;
-        var filter_exists = Object.keys(options.queryObj.js_select).length;
         //select player_matches with this account_id
         options.queryObj.select.account_id = account_id;
         options.queryObj = preprocessQuery(options.queryObj, constants);
+        var filter_exists = Object.keys(options.queryObj.js_select).length;
         //try to find player in db
         getPlayer(account_id, function(err, player) {
             if (err) {
@@ -479,23 +481,6 @@ module.exports = function(db, redis) {
             }
 
             function saveCache(cb) {
-                //full match cache code, needs ref to unfiltered data to save
-                /*
-                if (!cacheValid && account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
-                    results.unfiltered.forEach(reduceMatch);
-                    console.log("saving cache with length: %s", results.unfiltered.length);
-                    async.each(results.unfiltered, function(match_copy, cb) {
-                        db.player_matches.update({
-                            account_id: account_id,
-                            match_id: match_copy.match_id
-                        }, {
-                            $set: match_copy
-                        }, {
-                            upsert: true
-                        }, cb);
-                    }, cb);
-                }
-                */
                 if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
                     //pack data into hash for cache
                     var match_ids = {};
@@ -507,6 +492,7 @@ module.exports = function(db, redis) {
                         data: match_ids,
                         aggData: player.aggData
                     };
+                    //console.log(Object.keys(cache.data).length);
                     console.log("saving player cache %s", player.account_id);
                     console.time("writecache");
                     redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
@@ -516,7 +502,7 @@ module.exports = function(db, redis) {
                     //});
                 }
                 else {
-                    return cb(null);
+                    return cb(null, player);
                 }
             }
         });
