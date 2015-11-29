@@ -4,7 +4,7 @@ metadata:
   labels:
     app: web
     tier: frontend
-    deployment: yasp
+    deployment: web
   name: web-1
 spec:
   replicas: 1

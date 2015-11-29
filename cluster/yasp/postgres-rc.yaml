@@ -3,6 +3,7 @@ kind: ReplicationController
 metadata:
   labels:
     app: postgres
+    tier: backend
   name: postgres
 spec:
   replicas: 1
