@@ -34,7 +34,7 @@ buildSets(db, redis, function(err)
     {
         throw err;
     }
-    var pool_size = 200;
+    var pool_size = 1000;
     queue.parse.process(pool_size, function(job, cb)
     {
         //save the callback for this job
@@ -132,7 +132,7 @@ function start()
         {
             console.log('job %s expired', job.jobId);
             return job.exit("timeout");
-        }, 300 * 1000);
+        }, 60 * 1000);
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         console.log('server sent jobid %s', job.jobId);
