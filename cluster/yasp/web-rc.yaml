@@ -3,21 +3,19 @@ kind: ReplicationController
 metadata:
   labels:
     app: web
-    tier: frontend
+    tier: backend
     deployment: web
   name: web
 spec:
   replicas: 1
   selector:
     app: web
-    tier: frontend
-    version: "1"
+    tier: backend
   template:
     metadata:
       labels:
         app: web
-        tier: frontend
-        version: "1"
+        tier: backend
     spec:
       volumes:
       - name: api-keys

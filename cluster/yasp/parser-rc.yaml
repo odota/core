@@ -12,13 +12,11 @@ spec:
   selector:
     app: parser
     tier: backend
-    version: v1
   template:
     metadata:
       labels:
         app: parser
         tier: backend
-        version: v1
     spec:
       volumes:
       - name: api-keys

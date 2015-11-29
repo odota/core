@@ -1,4 +1,3 @@
-process.exit(0);
 var cp = require('child_process');
 var services = require('../../deploy.json');
 var apps = services.apps;
