@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: yasp
+spec:
+  rules:
+  - host: deploy.test.yasp.paral.in
+    http:
+      paths:
+      - backend:
+          serviceName: yasp-deploy
+          servicePort: 80

@@ -5,18 +5,20 @@ metadata:
     app: parser
     tier: backend
     deployment: parser
-  name: parser
+  name: parser-1
   namespace: yasp
 spec:
   replicas: 1
   selector:
     app: parser
     tier: backend
+    version: v1
   template:
     metadata:
       labels:
         app: parser
         tier: backend
+        version: v1
     spec:
       volumes:
       - name: api-keys
