@@ -1,7 +1,7 @@
 var cp = require('child_process');
 var services = require('../../deploy.json');
 var apps = services.apps;
-var kubeBin = process.env.TRAVIS_BUILD_DIR || "." + "/test/testfiles/kubectl";
+var kubeBin = (process.env.TRAVIS_BUILD_DIR || ".") + "/test/testfiles/kubectl";
 console.log(kubeBin);
 apps.forEach(function(app)
 {
