@@ -19,8 +19,5 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
 fi
 
 if [ -n "$KUBERNETES_HOST" ]; then
-  kubectl config set-cluster yasp --server=https://$KUBERNETES_HOST
-  kubectl config set-credentials --token=$KUBERNETES_TOKEN
-  kubectl config set-context --namespace=yasp
   node ./cluster/scripts/kubernetes.js
 fi
