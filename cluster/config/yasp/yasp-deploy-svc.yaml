@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yasp-deploy
+  name: yasp-deploy
+spec:
+  ports:
+  - name: api
+    port: 80
+    targetPort: api
+  selector:
+    app: yasp-deploy
+    tier: infra
+  type: NodePort

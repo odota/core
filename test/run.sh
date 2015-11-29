@@ -3,7 +3,11 @@ echo "NPM version: $(npm -v)"
 echo "Node version: $(node -v)"
 if [ ! -d "test/testfiles" ]; then
   cd test
-  git clone https://github.com/yasp-dota/testfiles
+  if [ -n "$CI" ]; then
+    git clone https://github.com/yasp-dota/testfiles --depth=1
+  else
+    git clone https://github.com/yasp-dota/testfiles
+  fi
   cd ..
 else
   cd test/testfiles
