@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ImageStream
-metadata:
-  annotations:
-  labels:
-    app: yasp
-  name: yasp
-spec: {}
