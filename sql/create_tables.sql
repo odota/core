@@ -148,7 +148,7 @@ CREATE TABLE player_caches (
 );
 
 CREATE TABLE match_skill (
-  match_id bigint,
+  match_id bigint PRIMARY KEY,
   skill integer
 );
 
