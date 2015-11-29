@@ -55,7 +55,7 @@ var advanced = ['last_hits','denies','gold_per_min','xp_per_min','gold_t','first
 var projections = {
     index: basic.concat('pgroup'),
     matches: basic,
-    heroes: basic,
+    heroes: basic.concat('pgroup'),
     peers: basic,
     activity: basic,
     histograms: basic.concat(advanced),
