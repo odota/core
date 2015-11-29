@@ -56,7 +56,7 @@ var projections = {
     index: basic.concat('pgroup'),
     matches: basic,
     heroes: basic.concat('pgroup'),
-    peers: basic,
+    peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced),
     records: basic,
