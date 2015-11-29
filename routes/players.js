@@ -50,13 +50,13 @@ var subkeys = {
     "actions_per_min": 1
 };
 //optimize by only projecting certain columns based on tab?  set query.project based on info
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'skill', 'parse_status', 'radiant_win', 'version'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'version'];
 var advanced = ['last_hits','denies','gold_per_min','xp_per_min','gold_t','first_blood_time','level','hero_damage','tower_damage','hero_healing','stuns','killed','purchase','pings','radiant_gold_adv','actions'];
 var projections = {
     index: basic.concat('pgroup'),
     matches: basic,
-    heroes: basic,
-    peers: basic,
+    heroes: basic.concat('pgroup'),
+    peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced),
     records: basic,
