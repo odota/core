@@ -10,14 +10,14 @@ source ./cluster/setup/gce.env
 #set up kubernetes cluster
 wget -q -O - https://get.k8s.io | bash
 
+#create namespace
+kubectl create -f ./cluster/yasp/namespace.yaml
+
 #put secrets in prod.env (KEY=VALUE, one per line)
 #write secrets/config to kubernetes secret resource
 bash ./cluster/scripts/create-secrets.sh < prod.env | kubectl create -f -
 bash ./cluster/scripts/create-postgres-config.sh | kubectl create -f -
 bash ./cluster/scripts/create-redis-config.sh | kubectl create -f -
-
-#create namespace
-kubectl create -f ./cluster/yasp/namespace.yaml
 
 #add yasp services to cluster, redis, postgres
 kubectl create -f ./cluster/yasp
