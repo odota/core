@@ -12,3 +12,8 @@ echo "Pushing to yasp/yasp:${TAG}"
 docker tag yasp/yasp:latest yasp/yasp:${TAG}
 docker push yasp/yasp:${TAG}
 docker push yasp/yasp:latest
+
+if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
+  echo "Hitting deploy webhook URL..."
+  curl $DEPLOY_WEBHOOK_URL/$DEPLOY_WEBHOOK_SECRET/$TRAVIS_BUILD_ID > /dev/null
+fi
