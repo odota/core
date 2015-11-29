@@ -11,3 +11,4 @@ fi
 echo "Pushing to yasp/yasp:${TAG}"
 docker tag yasp/yasp:latest yasp/yasp:${TAG}
 docker push yasp/yasp:${TAG}
+docker push yasp/yasp:latest
