@@ -5,7 +5,7 @@ metadata:
     app: worker
     tier: backend
     deployment: worker
-  name: worker-1
+  name: worker
   namespace: yasp
 spec:
   replicas: 1

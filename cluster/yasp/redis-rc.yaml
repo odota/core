@@ -9,12 +9,12 @@ spec:
   replicas: 1
   selector:
     app: redis
-    tier: backend
+    tier: infra
   template:
     metadata:
       labels:
         app: redis
-        tier: backend
+        tier: infra
     spec:
       volumes:
       - name: redis

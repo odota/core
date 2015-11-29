@@ -5,7 +5,7 @@ metadata:
     app: parser
     tier: backend
     deployment: parser
-  name: parser-1
+  name: parser
   namespace: yasp
 spec:
   replicas: 1

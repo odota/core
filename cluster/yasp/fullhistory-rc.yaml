@@ -5,7 +5,7 @@ metadata:
     app: fullhistory
     tier: backend
     deployment: fullhistory
-  name: fullhistory-1
+  name: fullhistory
   namespace: yasp
 spec:
   replicas: 1

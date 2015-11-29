@@ -4,7 +4,7 @@ metadata:
   labels:
     tier: backend
     deployment: mmr
-  name: mmr-1
+  name: mmr
   namespace: yasp
 spec:
   replicas: 1

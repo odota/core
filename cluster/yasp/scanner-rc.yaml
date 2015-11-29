@@ -4,7 +4,7 @@ metadata:
   labels:
     tier: backend
     deployment: scanner
-  name: scanner-1
+  name: scanner
   namespace: yasp
 spec:
   replicas: 1

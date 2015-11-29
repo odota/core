@@ -3,19 +3,19 @@ kind: ReplicationController
 metadata:
   labels:
     app: postgres
-    tier: backend
+    tier: infra
   name: postgres
 spec:
   replicas: 1
   selector:
     app: postgres
-    tier: backend
+    tier: infra
   template:
     metadata:
       labels:
         app: postgres
         deploymentconfig: postgres
-        tier: backend
+        tier: infra
     spec:
       volumes:
       - name: postgres

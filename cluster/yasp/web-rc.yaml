@@ -5,7 +5,7 @@ metadata:
     app: web
     tier: frontend
     deployment: web
-  name: web-1
+  name: web
 spec:
   replicas: 1
   selector:

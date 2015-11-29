@@ -3,7 +3,8 @@
   "description": "Open source Dota 2 replay parsing and statistics",
   "version": "5.0.0",
   "main": "index.js",
-  "scripts": {
+  "scripts":
+  {
     "start": "node deploy",
     "dev": "nf -j Procfile.dev start",
     "dev2": "pm2-dev deploy.json",
@@ -18,14 +19,17 @@
     "startup": "sudo pm2 startup ubuntu -u yasp",
     "create": "bash sql/create.sh",
     "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
+    "deploy": "kubectl get rc -o name | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:latest",
     "deploy-core": "git pull origin master && npm run build && node deploy core",
     "deploy-parser": "git pull origin master && npm run maven && node deploy parser"
   },
-  "repository": {
+  "repository":
+  {
     "type": "git",
     "url": "http://github.com/yasp-dota/yasp"
   },
-  "dependencies": {
+  "dependencies":
+  {
     "JSONStream": "^1.0.7",
     "async": "1.5.0",
     "big-number": "0.3.1",
@@ -71,7 +75,8 @@
     "winston": "2.1.1",
     "wordcloud": "1.0.1"
   },
-  "devDependencies": {
+  "devDependencies":
+  {
     "coveralls": "2.11.4",
     "css-loader": "^0.23.0",
     "database-cleaner": "~0.10.1",
@@ -86,7 +91,8 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.12.9"
   },
-  "engines": {
+  "engines":
+  {
     "node": "5.0.0"
   }
 }
