@@ -19,6 +19,7 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
 fi
 
 if [ -n "$KUBERNETES_HOST" ]; then
-  export PATH="$TRAVIS_BUILD_DIR/test/testfiles:$PATH"
+  export PATH="$PATH:$TRAVIS_BUILD_DIR/test/testfiles"
+  echo $PATH
   npm run deploy
 fi
