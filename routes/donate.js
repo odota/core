@@ -14,6 +14,27 @@ paypal.configure({
     'client_id': paypal_id,
     'client_secret': paypal_secret
 });
+
+var create_webhook_json = {
+    "url": root_url.replace("http", "https") + "/paypal_webhook",
+    "event_types": [
+        {
+            "name": "PAYMENT.AUTHORIZATION.CREATED"
+        }
+    ]
+};
+
+console.log(create_webhook_json);
+paypal.notification.webhook.create(create_webhook_json, function (error, webhook) {
+    if (error) {
+        console.log(error.response);
+        throw error;
+    } else {
+        console.log("Create webhook Response");
+        console.log(webhook);
+    }
+});
+
 module.exports = function(db, redis) {
     donate.route('/carry').get(function(req, res, next) {
         db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc').asCallback(function(err, results) {
@@ -84,7 +105,7 @@ module.exports = function(db, redis) {
                     var billingAgreementAttributes = {
                         "name": "YASP Cheese Agreement",
                         "description": "Agreement for a Monthly Cheese Subscription",
-                        "start_date": moment().add(1, 'h').format("YYYY-MM-DD[T]HH:mm:ss[Z]"),
+                        "start_date": moment().add(1, 'd').format("YYYY-MM-DD[T]HH:mm:ss[Z]"),
                         "plan": {
                             "id": billingPlan.id
                         },
@@ -93,6 +114,7 @@ module.exports = function(db, redis) {
                         }
                     };
 
+                    console.log(billingAgreementAttributes);
                     // Create the billing agreement
                     paypal.billingAgreement.create(billingAgreementAttributes, function (err, billingAgreement) {
                         if (err) {
@@ -216,11 +238,30 @@ module.exports = function(db, redis) {
             clearPaymentSessions(req);
             res.render("cancel");
         }
+    }).post(function(req, res, next) {
+        var paymentToken = req.session.paymentToken;
+        if (!paymentToken) {
+            clearPaymentSessions(req);
+            return next("No payment token.");
+        }
         
-    })
+        paypal.billingAgreement.execute(paymentToken, {}, function (err, billingAgreement) {
+            if (err) {
+                clearPaymentSessions(req);
+                return next(err);
+            }
+            
+            res.redirect("/thanks");
+            
+            clearPaymentSessions(req);
+        });
+    });
+    donate.route("/paypal_webhook").post(function(req, res, next) {
+  
+    });
     donate.route('/thanks').get(function(req, res) {
-        var cheeseCount = req.session.cheeseAmount;
-        var cheeseTotal = req.user.cheese;
+        var cheeseCount = req.session.cheeseAmount || 0;
+        var cheeseTotal = req.user ? (req.user.cheese || cheeseCount) : cheeseCount;
         clearPaymentSessions(req);
         res.render("thanks", {
             cheese: cheeseCount,
