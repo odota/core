@@ -19,5 +19,5 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
 fi
 
 if [ -n "$KUBERNETES_HOST" ]; then
-  node ./cluster/scripts/kubernetes.js
+  node cluster/scripts/kubernetes.js
 fi

@@ -2,6 +2,7 @@ var cp = require('child_process');
 var services = require('../../deploy.json');
 var apps = services.apps;
 var kubeBin = "./test/testfiles/kubectl";
+cp.execSync("ls ./test/testfiles");
 apps.forEach(function(app)
 {
     if (app.role === "core")
