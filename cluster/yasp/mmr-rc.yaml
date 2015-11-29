@@ -3,7 +3,7 @@ kind: ReplicationController
 metadata:
   labels:
     tier: backend
-    deployment: yasp
+    deployment: mmr
   name: mmr-1
   namespace: yasp
 spec:

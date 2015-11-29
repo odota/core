@@ -3,7 +3,7 @@ kind: ReplicationController
 metadata:
   labels:
     tier: backend
-    deployment: yasp
+    deployment: scanner
   name: scanner-1
   namespace: yasp
 spec:

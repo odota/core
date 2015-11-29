@@ -4,7 +4,7 @@ metadata:
   labels:
     app: parser
     tier: backend
-    deployment: yasp
+    deployment: parser
   name: parser
   namespace: yasp
 spec:
