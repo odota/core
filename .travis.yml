@@ -21,7 +21,7 @@ script:
 - docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
 #- npm run test
 after_success:
-- npm run coveralls
+- docker run --net=host -i yasp/yasp:latest npm run coveralls
 before_deploy:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
