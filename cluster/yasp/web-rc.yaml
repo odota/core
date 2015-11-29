@@ -4,19 +4,20 @@ metadata:
   labels:
     app: web
     tier: frontend
-    deplotment: yasp
-  name: web
-  namespace: yasp
+    deployment: yasp
+  name: web-1
 spec:
   replicas: 1
   selector:
     app: web
     tier: frontend
+    version: "1"
   template:
     metadata:
       labels:
         app: web
         tier: frontend
+        version: "1"
     spec:
       volumes:
       - name: api-keys
