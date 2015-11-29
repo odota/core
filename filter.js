@@ -2,7 +2,7 @@ var constants = require('./constants.js');
 var utility = require('./utility');
 var isSignificant = utility.isSignificant;
 var isRadiant = utility.isRadiant;
-module.exports = function filter(matches, groups, filters) {
+module.exports = function filter(matches, filters) {
     //accept a hash of filters, run all the filters in the hash in series
     //console.log(filters);
     var conditions = {
@@ -23,6 +23,9 @@ module.exports = function filter(matches, groups, filters) {
         lobby_type: function(m, key) {
             return m.lobby_type === key;
         },
+        region: function(m, key) {
+          return m.region === key;
+        },
         date: function(m, key) {
             return m.start_time > (curtime - (key * 86400));
         },
@@ -42,23 +45,32 @@ module.exports = function filter(matches, groups, filters) {
         },
         included_account_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
-                    return p.account_id === k;
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].account_id === k){
+                        return true;
+                    }
+                }
+                return false;
             });
         },
         with_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) === isRadiant(m));
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) === isRadiant(m)){
+                        return true;
+                    }
+                }
+                return false;
             });
         },
         against_hero_id: function(m, key, arr) {
             return arr.every(function(k) {
-                return groups[m.match_id].some(function(p) {
-                    return (p.hero_id === k && isRadiant(p) !== isRadiant(m));
-                });
+                for (var key in m.pgroup){
+                    if (m.pgroup[key].hero_id === k && isRadiant(m.pgroup[key]) !== isRadiant(m)){
+                        return true;
+                    }
+                }
+                return false;
             });
         }
     };

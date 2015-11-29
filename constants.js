@@ -71,19 +71,22 @@ for (var i = 0; i < 128; i++) {
     }
 }
 var cluster = {};
+var region = {};
 //Remove regions nesting
 constants.regions = constants.regions.regions;
 var regions = constants.regions;
 for (var key in regions) {
+    region[regions[key].region] = regions[key].display_name.slice("#dota_region_".length).split("_").map(function(s) {
+      return s.toUpperCase();
+    }).join(" ");
     if (regions[key].clusters) {
         regions[key].clusters.forEach(function(c) {
-            cluster[c] = regions[key].display_name.slice("#dota_region_".length).split("_").map(function(s) {
-                return s.toUpperCase();
-            }).join(" ");
+            cluster[c] = Number(regions[key].region);
         });
     }
 }
-cluster["121"] = "US EAST";
+cluster["121"] = constants.regions['USEast'].region;
 constants.cluster = cluster;
+constants.region = region;
 constants.anonymous_account_id = 4294967295;
 module.exports = constants;

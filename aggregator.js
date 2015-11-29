@@ -3,18 +3,18 @@ var utility = require('./utility');
 var isRadiant = utility.isRadiant;
 var mergeObjects = utility.mergeObjects;
 var isSignificant = utility.isSignificant;
-module.exports = function aggregator(matches, groups, fields, existing) {
+module.exports = function aggregator(matches, fields, existing) {
     var types = {
         "heroes": {
             type: "api",
             agg: function(key, m) {
-                aggHeroes(key, m, groups);
+                aggHeroes(key, m);
             }
         },
         "teammates": {
             type: "api",
             agg: function(key, m) {
-                aggTeammates(key, m, groups);
+                aggTeammates(key, m);
             }
         },
         //w/l counts
@@ -587,7 +587,7 @@ module.exports = function aggregator(matches, groups, fields, existing) {
         }
     }
 
-    function aggHeroes(key, m, groups) {
+    function aggHeroes(key, m) {
         var heroes = aggData.heroes;
         if (Object.keys(heroes).length !== Object.keys(constants.heroes).length) {
             //prefill heroes with every hero
@@ -606,9 +606,9 @@ module.exports = function aggregator(matches, groups, fields, existing) {
             }
         }
         var player_win = isRadiant(m) === m.radiant_win;
-        var group = groups[m.match_id];
-        for (var j = 0; j < group.length; j++) {
-            var tm = group[j];
+        var group = m.pgroup || {};
+        for (var key in group) {
+            var tm = group[key];
             var tm_hero = tm.hero_id;
             //don't count invalid heroes
             if (tm_hero in heroes) {
@@ -638,12 +638,12 @@ module.exports = function aggregator(matches, groups, fields, existing) {
         }
     }
 
-    function aggTeammates(key, m, groups) {
+    function aggTeammates(key, m) {
         var teammates = aggData.teammates;
         var player_win = isRadiant(m) === m.radiant_win;
-        var group = groups[m.match_id];
-        for (var j = 0; j < group.length; j++) {
-            var tm = group[j];
+        var group = m.pgroup || {};
+        for (var key in group) {
+            var tm = group[key];
             //count teammate players
             if (!teammates[tm.account_id]) {
                 teammates[tm.account_id] = {

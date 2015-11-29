@@ -78,6 +78,11 @@ h2.inline-header
             - var date_list = {7:"Last 1 Week",30:"Last 1 Month",90:"Last 3 Months",180:"Last 6 Months"}
             each name, id in date_list
               option(value=id, selected=(q.date && q.date[0]===Number(id)))=name
+        .form-group
+          label Region
+          select.form-control(multiple name="region" placeholder="Any Region")#region
+            each name, id in constants.region
+              option(value=id, selected=(q.region && q.region[0]===Number(id)))=name
     //-
       if compare
         .row
@@ -93,6 +98,6 @@ h2.inline-header
       .col-md-6.text-center
         span: button.btn.btn-query(type="submit") Do the Thing
       .col-md-6.text-center
-        span: a.btn.btn-danger(href="#" onclick="window.location = window.location.pathname;") Reset the Thing
+        span: a.btn.btn-danger(href="./"+player.account_id) Reset the Thing
 
   hr

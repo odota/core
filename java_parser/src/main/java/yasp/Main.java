@@ -187,7 +187,7 @@ public class Main {
             es.output(entry);
         }
         
-        if (cle.getType().ordinal() > 18) {
+        if (cle.getType().ordinal() > 19) {
             System.err.println(cle);
         }
     }

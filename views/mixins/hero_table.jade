@@ -2,7 +2,7 @@ include /mixins/progress_bar
 
 mixin hero_table(rows, short)
   h3 Heroes
-  table.table.table-condensed#heroes.table-striped.rankable
+  table.table.table-condensed#heroes.table-striped.rankable(style="border:1px solid #666;")
     thead
       tr
         th: abbr(title=tooltips.hero_id) Hero
