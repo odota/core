@@ -13,10 +13,7 @@ notifications:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
-# This is an attempt to make caching work
 before_script:
-- docker pull yasp/yasp:latest
-- docker build -t "yasp/yasp:latest" .
 - npm install -g npm
 script:
 #run test outside container
