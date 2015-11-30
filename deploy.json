@@ -9,7 +9,7 @@
       },
     {
       "script": "parser.js",
-      "role": "parser",
+      "role": "core",
       "exec_mode": "cluster",
       "instances": 0
       },
