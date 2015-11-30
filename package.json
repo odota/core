@@ -3,8 +3,7 @@
   "description": "Open source Dota 2 replay parsing and statistics",
   "version": "5.0.0",
   "main": "index.js",
-  "scripts":
-  {
+  "scripts": {
     "start": "node deploy",
     "dev": "nf -j Procfile.dev start",
     "dev2": "pm2-dev deploy.json",
@@ -23,13 +22,11 @@
     "deploy-core": "git pull origin master && npm run build && node deploy core",
     "deploy-parser": "git pull origin master && npm run maven && node deploy parser"
   },
-  "repository":
-  {
+  "repository": {
     "type": "git",
     "url": "http://github.com/yasp-dota/yasp"
   },
-  "dependencies":
-  {
+  "dependencies": {
     "JSONStream": "^1.0.7",
     "async": "1.5.0",
     "big-number": "0.3.1",
@@ -37,6 +34,7 @@
     "bootstrap": "^3.3.6",
     "bootswatch": "^3.3.6",
     "bull": "yasp-dota/bull",
+    "c3": "^0.4.10",
     "cal-heatmap": "^3.5.4",
     "compression": "^1.6.0",
     "connect-redis": "^3.0.1",
@@ -70,13 +68,13 @@
     "redis": "2.4.2",
     "request": "~2.67.0",
     "request-progress": "^0.4.0",
+    "selectize": "^0.12.1",
     "sentiment": "^1.0.2",
     "steam": "1.3.0",
     "winston": "2.1.1",
     "wordcloud": "1.0.1"
   },
-  "devDependencies":
-  {
+  "devDependencies": {
     "coveralls": "2.11.4",
     "css-loader": "^0.23.0",
     "database-cleaner": "~0.10.1",
@@ -91,8 +89,7 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.12.9"
   },
-  "engines":
-  {
+  "engines": {
     "node": "5.0.0"
   }
 }
