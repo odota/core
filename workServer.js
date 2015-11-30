@@ -136,7 +136,7 @@ function start()
         job.expire = setTimeout(function()
         {
             console.log('job %s expired', job.jobId);
-            return job.exit("timeout");
+            return job.exit("timeout", function(){});
         }, 120 * 1000);
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
