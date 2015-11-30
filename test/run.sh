@@ -19,4 +19,4 @@ fi
 if [ -z "$TEST_SKIP_BUILD" ]; then
   npm run build
 fi
-istanbul cover _mocha --report lcovonly -- -R spec && (npm run coveralls || true)
+istanbul cover _mocha --report lcovonly -- -R spec
