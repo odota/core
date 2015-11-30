@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#push image to docker hub
 if [ -n "$DOCKER_EMAIL" ]; then
   docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   TAG=
@@ -23,8 +24,7 @@ fi
 
 if [ -n "$KUBERNETES_TOKEN" ]; then
   export PATH="$PATH:$TRAVIS_BUILD_DIR/test/testfiles"
-  echo $PATH
-  #kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT --token=$KUBERNETES_TOKEN --server=$KUBERNETES_HOST:443
+  kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT --token=$KUBERNETES_TOKEN --server=$KUBERNETES_HOST:443
 else
   kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:latest
 fi
