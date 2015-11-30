@@ -17,9 +17,17 @@ spec:
         app: scanner
         tier: backend
     spec:
+      volumes:
+      - name: api-keys
+        secret:
+          secretName: api-keys
       containers:
       - name: yasp
         image: yasp/yasp:latest
         args: [ "node", "scanner.js" ]
         imagePullPolicy: Always
+        volumeMounts:
+        - name: api-keys
+          readOnly: true
+          mountPath: /etc/yasp-api-keys
       restartPolicy: Always
