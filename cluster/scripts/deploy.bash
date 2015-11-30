@@ -3,7 +3,7 @@
 #push image to docker hub
 if [ -n "$DOCKER_EMAIL" ]; then
   # This is an attempt to make caching work
-  docker pull yasp/yasp:latest
+  #docker pull yasp/yasp:latest
   docker build -t "yasp/yasp:latest" .
   docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   TAG=
