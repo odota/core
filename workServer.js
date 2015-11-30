@@ -43,7 +43,7 @@ buildSets(db, redis, function(err)
         {
             if (parsed_data.error)
             {
-                return job.exit(parsed_data.error);
+                return job.exit(parsed_data.error, cb);
             }
             var match = job.data.payload;
             var hostname = parsed_data.hostname;
@@ -71,16 +71,17 @@ buildSets(db, redis, function(err)
                 type: "parsed"
             }, function(err){
                 cb(err);
-                job.exit(err);
+                job.exit(err, cb);
             });
         };
-        job.exit = function(err)
+        job.exit = function(err, cb)
         {
             delete pooled_jobs[job.jobId];
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
             job = null;
+            cb();
         };
         var match = job.data.payload;
         //get the replay url and save it to db
@@ -167,7 +168,7 @@ function start()
         if (active_jobs[req.body.jobId])
         {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body,function(err){
+            job.submitWork(req.body, function(err){
                 return res.json(
                 {
                     error: err
