@@ -5,7 +5,7 @@ curl https://sdk.cloud.google.com | bash
 gcloud init
 
 #source cluster config to env
-source ./cluster/setup/gce.env
+source ./cluster/scripts/gce.env
 
 #set up kubernetes cluster
 wget -q -O - https://get.k8s.io | bash
@@ -27,9 +27,9 @@ kubectl create -f ./cluster/yasp
 
 #secure remote connections to redis/postgres
 #set up redis password
-redis-cli config set requirepass yasp
+#redis-cli config set requirepass yasp
 #set up postgres password
-psql -c "ALTER USER yasp with password yasp"
+#psql -c "ALTER USER yasp with password yasp"
 
 #to update the cluster
 #npm run deploy
