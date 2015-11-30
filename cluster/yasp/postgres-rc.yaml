@@ -28,7 +28,7 @@ spec:
       containers:
       - name: postgres
         image: postgres:9
-        args: [ "postgres", "-D", "/etc/postgresql", "--data-directory", "/var/lib/postgresql/data"]
+        args: [ "postgres", "-D", "/etc/postgresql", "--data-directory=/var/lib/postgresql/data"]
         imagePullPolicy: Always
         ports:
         volumeMounts:
