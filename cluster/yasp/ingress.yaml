@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: yasp
+spec:
+  rules:
+  - host: stage.yasp.co
+    http:
+      paths:
+      - backend:
+          serviceName: web
+          servicePort: 80
