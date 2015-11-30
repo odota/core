@@ -15,9 +15,7 @@ else
   git pull -f --all
   cd ../..
 fi
-if [ -n "$TEST_INSTALL_GLOBAL" ]; then
-  npm install istanbul -g
-fi
+
 if [ -z "$TEST_SKIP_BUILD" ]; then
   npm run build
 fi
