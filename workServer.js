@@ -169,10 +169,12 @@ function start()
         {
             var job = active_jobs[req.body.jobId];
             job.submitWork(req.body, function(err){
-                return res.json(
-                {
-                    error: err
-                });                
+                if (!res.headersSent) {
+                    return res.json(
+                    {
+                        error: err
+                    });
+                }
             });
         }
         else
