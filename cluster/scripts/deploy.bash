@@ -28,6 +28,4 @@ fi
 if [ -n "$KUBERNETES_TOKEN" ]; then
   export PATH="$PATH:$TRAVIS_BUILD_DIR/test/testfiles"
   kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT --token=$KUBERNETES_TOKEN --server=$KUBERNETES_HOST:443
-else
-  kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:latest
 fi
