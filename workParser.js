@@ -18,11 +18,12 @@ var server = app.listen(port, function() {
     var host = server.address().address;
     console.log('[PARSECLIENT] listening at http://%s:%s', host, port);
 });
+var version = utility.getParseSchema().version;
 app.use(bodyParser.json());
 app.get('/', function(req, res) {
     res.json({
         capacity: capacity,
-        version: utility.getParseSchema().version,
+        version: version,
         started_at: startedAt
     });
 });
@@ -70,6 +71,7 @@ function getJob() {
                 parsed_data.error = err;
                 parsed_data.jobId = job.jobId;
                 parsed_data.key = config.RETRIEVER_SECRET;
+                parsed_data.version = version;
                 parsed_data.hostname = os.hostname();
                 console.log("sending work to server, jobid: %s", job.jobId);
                 request({
