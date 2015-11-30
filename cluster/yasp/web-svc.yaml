@@ -6,8 +6,8 @@ metadata:
   name: web
 spec:
   ports:
-  - port: 80
-    protocol: TCP
+  - nodePort: 30246
+    port: 80
     targetPort: web
   selector:
     app: web
