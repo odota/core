@@ -408,7 +408,7 @@ app.use(function(err, req, res, next) {
 });
 module.exports = app;
 var port = config.PORT || config.WEB_PORT;
-app.listen(port, function() {
+app.listen(port, config.HOST, function() {
     console.log('[WEB] listening on %s', port);
 });
 //require('./socket.js')(server);

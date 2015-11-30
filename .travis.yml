@@ -22,8 +22,6 @@ script:
 #- npm run test
 after_success:
 - docker run --net=host -i yasp/yasp:latest npm run coveralls
-before_deploy:
-- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
   provider: script
   skip_cleanup: true
