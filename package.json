@@ -78,6 +78,7 @@
     "coveralls": "2.11.4",
     "css-loader": "^0.23.0",
     "database-cleaner": "~0.10.1",
+    "expose-loader": "^0.7.1",
     "file-loader": "^0.8.5",
     "istanbul": "~0.4.1",
     "json-loader": "^0.5.4",
