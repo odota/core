@@ -61,7 +61,7 @@ var projections = {
     peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced),
-    records: basic,
+    records: basic.concat(advanced),
     counts: basic,
     trends: basic.concat(advanced),
     sprees: basic.concat(['kill_streaks', 'multi_kills']),
