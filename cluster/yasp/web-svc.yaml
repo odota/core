@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     tier: backend
-  name: front
+  name: web
 spec:
   ports:
   - nodePort: 30246
