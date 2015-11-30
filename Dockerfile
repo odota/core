@@ -3,7 +3,8 @@
 # install nvm and run "nvm ls-remote"
 FROM phusion/baseimage:0.9.17
 ENV NODE_VERSION 5.1.0
-# install git/maven
+# install git/java
+# if building, need jdk and maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
     apt-get install -y git openjdk-8-jre-headless build-essential && \
