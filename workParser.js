@@ -79,7 +79,7 @@ function getJob() {
                     timeout: 30000
                 }, function(err, resp, body) {
                     if (err || resp.statusCode !== 200 || body.error) {
-                        console.error("error occurred while submitting work: %s", err || resp.statusCode || body.error);
+                        console.error("error occurred while submitting work: %s, status: %s", err || JSON.stringify(body), resp.statusCode);
                     }
                     
                     if (parsed_data.error) {
