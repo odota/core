@@ -3,17 +3,15 @@ extend player
 block playercontent
   .row
     .col-md-12
-
-      h2 Word Clouds 
-        small (#{player.aggData.all_word_counts.n} matches)
-
-      h3="Words said by this player in all chat"
+      h3 Words said by this player in all chat
+        small (#{player.aggData.my_word_counts.n} matches)
       #mywordcontainer
         canvas()#mywordcounts
       
       +ad("banner2")
       
-      h3="Words read by this player in all chat"
+      h3 Words read by this player in all chat
+        small (#{player.aggData.all_word_counts.n} matches)
       #allwordcontainer
         canvas()#allwordcounts
       
