@@ -14,7 +14,7 @@ notifications:
   - christian@paral.in
   - aqc2109@columbia.edu
 before_script:
-- npm install -g npm
+- npm install -g npm && docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
 #run test outside container
 - npm run test && (npm run coveralls || true)

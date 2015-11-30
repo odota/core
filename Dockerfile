@@ -7,7 +7,7 @@ ENV NODE_VERSION 5.1.0
 # if building, need jdk and maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y git openjdk-8-jre-headless build-essential && \
+    apt-get install -y git openjdk-8-jdk maven build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \
@@ -18,21 +18,21 @@ RUN echo "" > /root/.bashrc && \
     nvm use $NODE_VERSION && \
     npm install -g npm
 
-#RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
-#RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" 1
+RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
 
 # Just add package.json to get the NPM install cached.
-#ADD package.json /usr/src/yasp/
-#RUN . /root/.bashrc && npm install
+ADD package.json /usr/src/yasp/
+RUN . /root/.bashrc && npm install
 
 # Add and build the java parser
-#ADD java_parser /usr/src/yasp/java_parser
-#RUN . /root/.bashrc && npm run maven
+ADD java_parser /usr/src/yasp/java_parser
+RUN . /root/.bashrc && npm run maven
 
 # Add and build webpack
-#ADD webpack.config.js /usr/src/yasp/
-#ADD public /usr/src/yasp/public
-#RUN . /root/.bashrc && npm run webpack
+ADD webpack.config.js /usr/src/yasp/
+ADD public /usr/src/yasp/public
+RUN . /root/.bashrc && npm run webpack
 
 # Add everything else
 ADD . /usr/src/yasp
