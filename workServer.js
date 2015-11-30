@@ -39,7 +39,7 @@ buildSets(db, redis, function(err)
     {
         //save the callback for this job
         job.cb = cb;
-        job.submitWork = function(parsed_data)
+        job.submitWork = function(parsed_data, cb)
         {
             if (parsed_data.error)
             {
@@ -69,7 +69,10 @@ buildSets(db, redis, function(err)
             return insertMatch(db, redis, queue, match,
             {
                 type: "parsed"
-            }, job.exit);
+            }, function(err){
+                cb(err);
+                job.exit(err);
+            });
         };
         job.exit = function(err)
         {
@@ -77,6 +80,7 @@ buildSets(db, redis, function(err)
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
+            job = null;
         };
         var match = job.data.payload;
         //get the replay url and save it to db
@@ -132,7 +136,7 @@ function start()
         {
             console.log('job %s expired', job.jobId);
             return job.exit("timeout");
-        }, 60 * 1000);
+        }, 120 * 1000);
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         console.log('server sent jobid %s', job.jobId);
@@ -163,10 +167,11 @@ function start()
         if (active_jobs[req.body.jobId])
         {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body);
-            return res.json(
-            {
-                error: null
+            job.submitWork(req.body,function(err){
+                return res.json(
+                {
+                    error: err
+                });                
             });
         }
         else
