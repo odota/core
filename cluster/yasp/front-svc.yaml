@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     tier: backend
-  name: web
+  name: front
 spec:
   ports:
   - port: 80
