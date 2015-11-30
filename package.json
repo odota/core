@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Open source Dota 2 replay parsing and statistics",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "main": "index.js",
   "scripts": {
     "start": "node deploy",
