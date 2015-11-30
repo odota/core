@@ -40,8 +40,8 @@ module.exports = function filter(matches, filters) {
         },
         purchased_item: function(m, key) {
             var item = constants.item_ids[key];
-            var pt = m.purchase_time;
-            return pt && item in pt;
+            var p = m.purchase;
+            return p && item in p;
         },
         included_account_id: function(m, key, arr) {
             return arr.every(function(k) {

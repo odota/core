@@ -50,9 +50,10 @@ var subkeys = {
     "actions_per_min": 1
 };
 //optimize by only projecting certain columns based on tab  set query.project based on info
-var basic = ['matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster'];
+//basic must contain anything a filter might use!
+var basic = ['matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster', 'purchase', 'lane_pos'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'purchase', 'pings', 'radiant_gold_adv', 'actions'];
-var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'purchase', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic.concat('pgroup'),
@@ -62,55 +63,69 @@ var projections = {
     activity: basic,
     histograms: basic.concat(advanced),
     records: basic.concat(advanced),
-    counts: basic.concat(advanced).concat('lane_pos'),
+    counts: basic.concat(advanced),
     trends: basic.concat(advanced),
     sprees: basic.concat(['kill_streaks', 'multi_kills']),
     wardmap: basic.concat(['obs', 'sen']),
-    items: basic.concat(['purchase_log', 'purchase', 'item_uses']),
+    items: basic.concat(['purchase_log', 'item_uses']),
     skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
     rating: basic
 };
 var playerPages = constants.player_pages;
-module.exports = function(db, redis) {
-    players.get('/:account_id/sqltest/:info?/:subkey?', function(req, res, next) {
+module.exports = function(db, redis)
+{
+    players.get('/:account_id/sqltest/:info?/:subkey?', function(req, res, next)
+    {
         var account_id = req.params.account_id;
-        db.raw('select hero_id, count(*) from player_matches where account_id = ? group by hero_id', [account_id]).asCallback(function(err, resp) {
-            if (err) {
+        db.raw('select hero_id, count(*) from player_matches where account_id = ? group by hero_id', [account_id]).asCallback(function(err, resp)
+        {
+            if (err)
+            {
                 return next(err);
             }
             res.json(resp);
         });
     });
-    players.get('/:account_id/:info?/:subkey?', function(req, res, next) {
+    players.get('/:account_id/:info?/:subkey?', function(req, res, next)
+    {
         console.time("player " + req.params.account_id);
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
         var query = req.query;
         var compare_data;
-        if (Number(account_id) === constants.anonymous_account_id) {
+        if (Number(account_id) === constants.anonymous_account_id)
+        {
             return next("cannot generate profile for anonymous account_id");
         }
         //copy the query in case we need the original for compare passing
         var qCopy = JSON.parse(JSON.stringify(query));
-        async.series({
-            "player": function(cb) {
-                fillPlayerData(account_id, {
+        async.series(
+        {
+            "player": function(cb)
+            {
+                fillPlayerData(account_id,
+                {
                     info: info,
-                    queryObj: {
+                    queryObj:
+                    {
                         select: req.query,
                         project: config.ENABLE_PLAYER_CACHE ? everything : projections[info]
                     }
                 }, cb);
             },
-            "sets": function(cb) {
+            "sets": function(cb)
+            {
                 queries.getSets(redis, cb);
             },
-            "ratings": function(cb) {
+            "ratings": function(cb)
+            {
                 queries.getPlayerRatings(db, account_id, cb);
             }
-        }, function(err, result) {
-            if (err) {
+        }, function(err, result)
+        {
+            if (err)
+            {
                 return next(err);
             }
             var player = result.player;
@@ -119,9 +134,11 @@ module.exports = function(db, redis) {
             player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
             player.ratings = ratings;
             var aggData = player.aggData;
-            async.parallel({
+            async.parallel(
+            {
                 //the array of teammates under the filter condition
-                teammate_list: function(cb) {
+                teammate_list: function(cb)
+                {
                     generateTeammateArrayFromHash(aggData.teammates, player, cb);
                 },
                 /*
@@ -129,8 +146,10 @@ module.exports = function(db, redis) {
                     generateTeammateArrayFromHash(player.all_teammates, player, cb);
                 }
                 */
-            }, function(err, lists) {
-                if (err) {
+            }, function(err, lists)
+            {
+                if (err)
+                {
                     return next(err);
                 }
                 player.teammate_list = lists.teammate_list;
@@ -139,17 +158,23 @@ module.exports = function(db, redis) {
                 //remove self account id from query
                 delete req.query.account_id;
                 var ids = {};
-                teammate_ids.forEach(function(t) {
+                teammate_ids.forEach(function(t)
+                {
                     ids[t.account_id] = 1;
                 });
-                for (var key in req.query) {
-                    if (key.indexOf("account_id") !== -1 && req.query[key].constructor === Array) {
-                        req.query[key].forEach(function(id) {
+                for (var key in req.query)
+                {
+                    if (key.indexOf("account_id") !== -1 && req.query[key].constructor === Array)
+                    {
+                        req.query[key].forEach(function(id)
+                        {
                             //iterate through array
                             //check for duplicates
                             //append to teammate_ids
-                            if (!ids[id]) {
-                                teammate_ids.unshift({
+                            if (!ids[id])
+                            {
+                                teammate_ids.unshift(
+                                {
                                     account_id: Number(id),
                                     personaname: id
                                 });
@@ -173,12 +198,15 @@ module.exports = function(db, redis) {
                     render();
                 }
                 */
-                function render() {
+                function render()
+                {
                     console.timeEnd("player " + req.params.account_id);
-                    if (req.query.json) {
+                    if (req.query.json)
+                    {
                         return res.json(result.player);
                     }
-                    res.render("player/player_" + info, {
+                    res.render("player/player_" + info,
+                    {
                         q: req.query,
                         querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
                         route: info,
@@ -189,7 +217,8 @@ module.exports = function(db, redis) {
                         //ratingPlayers: result.sets.ratingPlayers,
                         histograms: subkeys,
                         subkey: req.params.subkey || "kills",
-                        times: {
+                        times:
+                        {
                             "duration": 1,
                             "first_blood_time": 1
                         },
@@ -266,31 +295,40 @@ module.exports = function(db, redis) {
             });
         }
     */
-    function generateTeammateArrayFromHash(input, player, cb) {
-        if (!input) {
+    function generateTeammateArrayFromHash(input, player, cb)
+    {
+        if (!input)
+        {
             return cb();
         }
         console.time('teammate list');
         var teammates_arr = [];
         var teammates = input;
-        for (var id in teammates) {
+        for (var id in teammates)
+        {
             var tm = teammates[id];
             id = Number(id);
             //don't include if anonymous, self or if few games together
-            if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5)) {
+            if (id !== Number(player.account_id) && id !== constants.anonymous_account_id && (tm.games >= 5))
+            {
                 teammates_arr.push(tm);
             }
         }
-        teammates_arr.sort(function(a, b) {
+        teammates_arr.sort(function(a, b)
+        {
             return b.games - a.games;
         });
         //limit to 200 max players
         teammates_arr = teammates_arr.slice(0, 200);
-        async.each(teammates_arr, function(t, cb) {
-            db.first().from('players').where({
+        async.each(teammates_arr, function(t, cb)
+        {
+            db.first().from('players').where(
+            {
                 account_id: t.account_id
-            }).asCallback(function(err, row) {
-                if (err || !row) {
+            }).asCallback(function(err, row)
+            {
+                if (err || !row)
+                {
                     return cb(err);
                 }
                 t.personaname = row.personaname;
@@ -298,30 +336,40 @@ module.exports = function(db, redis) {
                 t.avatar = row.avatar;
                 cb(err);
             });
-        }, function(err) {
+        }, function(err)
+        {
             console.timeEnd('teammate list');
             cb(err, teammates_arr);
         });
     }
 
-    function getPlayer(account_id, cb) {
-        if (!isNaN(account_id)) {
-            db.first().from('players').where({
+    function getPlayer(account_id, cb)
+    {
+        if (!isNaN(account_id))
+        {
+            db.first().from('players').where(
+            {
                 account_id: Number(account_id)
             }).asCallback(cb);
         }
-        else {
+        else
+        {
             cb(null);
         }
     }
 
-    function countPlayer(account_id, cb) {
-        if (!isNaN(account_id)) {
+    function countPlayer(account_id, cb)
+    {
+        if (!isNaN(account_id))
+        {
             console.time("count");
-            db('player_matches').count().where({
+            db('player_matches').count().where(
+            {
                 account_id: Number(account_id)
-            }).asCallback(function(err, count) {
-                if (err) {
+            }).asCallback(function(err, count)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
                 count = Number(count[0].count);
@@ -329,14 +377,16 @@ module.exports = function(db, redis) {
                 return cb(err, count);
             });
         }
-        else {
+        else
+        {
             //non-integer account_id (all/professional)
             //don't return a count (always valid)
             cb(null);
         }
     }
 
-    function fillPlayerData(account_id, options, cb) {
+    function fillPlayerData(account_id, options, cb)
+    {
         //options.info, the tab the player is on
         //options.queryObj, the query object to use
         var cache;
@@ -346,98 +396,125 @@ module.exports = function(db, redis) {
         options.queryObj = preprocessQuery(options.queryObj, constants);
         var filter_exists = Object.keys(options.queryObj.js_select).length;
         //try to find player in db
-        getPlayer(account_id, function(err, player) {
-            if (err) {
+        getPlayer(account_id, function(err, player)
+        {
+            if (err)
+            {
                 return cb(err);
             }
-            player = player || {
+            player = player ||
+            {
                 account_id: account_id,
                 personaname: account_id
             };
             console.time('readcache');
-            if (config.ENABLE_PLAYER_CACHE) {
+            if (config.ENABLE_PLAYER_CACHE)
+            {
                 getCache();
             }
-            else {
+            else
+            {
                 cacheMiss();
             }
 
-            function getCache() {
-                redis.get(new Buffer("player:" + account_id), function(err, result) {
-                    if (err) {
+            function getCache()
+            {
+                redis.get(new Buffer("player:" + account_id), function(err, result)
+                {
+                    if (err)
+                    {
                         console.log(err);
                     }
                     cache = result && config.ENABLE_PLAYER_CACHE ? JSON.parse(zlib.inflateSync(result)) : null;
                     console.timeEnd('readcache');
                     account_id = Number(account_id);
                     //unpack cache.data into an array
-                    if (cache && cache.data) {
+                    if (cache && cache.data)
+                    {
                         var arr = [];
-                        for (var key in cache.data) {
+                        for (var key in cache.data)
+                        {
                             arr.push(cache.data[key]);
                         }
                         cache.data = arr;
                         //check count of matches to validate cache
-                        countPlayer(account_id, function(err, count) {
-                            if (err) {
+                        countPlayer(account_id, function(err, count)
+                        {
+                            if (err)
+                            {
                                 return cb(err);
                             }
                             //we return undefined count if the account_id is string (all/professional)
                             cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
                             //var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
-                            if (cacheValid && !filter_exists) {
+                            if (cacheValid && !filter_exists)
+                            {
                                 console.log("player cache hit %s", player.account_id);
                                 //fill in skill data from table
                                 console.time('fillskill');
                                 //get skill data for matches within cache expiry (might not have skill data)
-                                var recents = cache.data.filter(function(m) {
+                                var recents = cache.data.filter(function(m)
+                                {
                                     return moment().diff(moment().unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
                                 });
                                 var skillMap = {};
-                                async.eachSeries(recents, function(match, cb) {
-                                    db.first(['skill']).from('match_skill').where({
+                                async.eachSeries(recents, function(match, cb)
+                                {
+                                    db.first(['skill']).from('match_skill').where(
+                                    {
                                         match_id: match.match_id
-                                    }).asCallback(function(err, row) {
-                                        if (row && row.skill) {
+                                    }).asCallback(function(err, row)
+                                    {
+                                        if (row && row.skill)
+                                        {
                                             skillMap[match.match_id] = row.skill;
                                         }
                                         return cb(err);
                                     });
-                                }, function(err) {
-                                    cache.data.forEach(function(m) {
+                                }, function(err)
+                                {
+                                    cache.data.forEach(function(m)
+                                    {
                                         m.skill = m.skill || skillMap[m.match_id];
                                     });
                                     console.timeEnd('fillskill');
-                                    processResults(err, {
+                                    processResults(err,
+                                    {
                                         data: cache.data,
                                         aggData: cache.aggData,
                                         unfiltered: cache.data
                                     });
                                 });
                             }
-                            else {
+                            else
+                            {
                                 cacheMiss();
                             }
                         });
                     }
-                    else {
+                    else
+                    {
                         cacheMiss();
                     }
                 });
             }
 
-            function cacheMiss() {
+            function cacheMiss()
+            {
                 console.log("player cache miss %s", player.account_id);
                 getPlayerMatches(db, options.queryObj, processResults);
             }
 
-            function processResults(err, results) {
-                if (err) {
+            function processResults(err, results)
+            {
+                if (err)
+                {
                     return cb(err);
                 }
                 console.log("results: %s", results.data.length);
                 //sort matches by descending match id for display
-                results.data.sort(function(a, b) {
+                results.data.sort(function(a, b)
+                {
                     return Number(b.match_id) - Number(a.match_id);
                 });
                 //reduce matches to only required data for display
@@ -446,19 +523,23 @@ module.exports = function(db, redis) {
                 //player.all_teammates = cachedTeammates;
                 //convert heroes hash to array and sort
                 var aggData = player.aggData;
-                if (aggData.heroes) {
+                if (aggData.heroes)
+                {
                     var heroes_arr = [];
                     var heroes = aggData.heroes;
-                    for (var id in heroes) {
+                    for (var id in heroes)
+                    {
                         var h = heroes[id];
                         heroes_arr.push(h);
                     }
-                    heroes_arr.sort(function(a, b) {
+                    heroes_arr.sort(function(a, b)
+                    {
                         return b.games - a.games;
                     });
                     player.heroes_list = heroes_arr;
                 }
-                if (aggData.obs) {
+                if (aggData.obs)
+                {
                     //generally position data function is used to generate heatmap data for each player in a natch
                     //we use it here to generate a single heatmap for aggregated counts
                     player.obs = aggData.obs.counts;
@@ -472,19 +553,24 @@ module.exports = function(db, redis) {
                 }
                 //compute abandons
                 player.abandons = 0;
-                for (var key in player.aggData.leaver_status.counts) {
-                    if (Number(key) >= 2) {
+                for (var key in player.aggData.leaver_status.counts)
+                {
+                    if (Number(key) >= 2)
+                    {
                         player.abandons += player.aggData.leaver_status.counts[key];
                     }
                 }
                 saveCache(cb);
             }
 
-            function saveCache(cb) {
-                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
+            function saveCache(cb)
+            {
+                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE)
+                {
                     //pack data into hash for cache
                     var match_ids = {};
-                    player.data.forEach(function(m) {
+                    player.data.forEach(function(m)
+                    {
                         var identifier = [m.match_id, m.player_slot].join(':');
                         match_ids[identifier] = m;
                     });
@@ -501,7 +587,8 @@ module.exports = function(db, redis) {
                     return cb(err, player);
                     //});
                 }
-                else {
+                else
+                {
                     return cb(null, player);
                 }
             }
