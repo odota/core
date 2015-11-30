@@ -6,7 +6,7 @@ ENV NODE_VERSION 5.1.0
 # install git/maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y git openjdk-8-jdk maven build-essential && \
+    apt-get install -y git openjdk-8-jre-headless maven build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \

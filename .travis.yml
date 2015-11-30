@@ -17,6 +17,7 @@ notifications:
 before_script:
 - docker pull yasp/yasp:latest
 - docker build -t "yasp/yasp:latest" .
+- npm install -g npm
 script:
 #run test outside container
 - npm run test && (npm run coveralls || true)
