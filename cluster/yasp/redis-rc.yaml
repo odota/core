@@ -38,7 +38,6 @@ spec:
           mountPath: /var/lib/redis
         - name: redis-config
           mountPath: /etc/redis
-      volumes:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

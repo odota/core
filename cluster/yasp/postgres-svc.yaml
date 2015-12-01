@@ -6,9 +6,10 @@ metadata:
     tier: backend
   name: postgres
 spec:
-  ports:
-  - port: 5432
-    targetPort: 5432
   selector:
     app: postgres
     tier: backend
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: redis
