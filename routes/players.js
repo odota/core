@@ -49,23 +49,25 @@ var subkeys = {
     "loss": 1,
     "actions_per_min": 1
 };
-//optimize by only projecting certain columns based on tab?  set query.project based on info
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'skill', 'parse_status', 'radiant_win', 'version'];
-var advanced = ['last_hits','denies','gold_per_min','xp_per_min','gold_t','first_blood_time','level','hero_damage','tower_damage','hero_healing','stuns','killed','purchase','pings','radiant_gold_adv','actions'];
+//optimize by only projecting certain columns based on tab  set query.project based on info
+var basic = ['matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version'];
+var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'purchase', 'pings', 'radiant_gold_adv', 'actions'];
+var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'purchase', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
+var everything = basic.concat(advanced).concat(others);
 var projections = {
     index: basic.concat('pgroup'),
     matches: basic,
-    heroes: basic,
-    peers: basic,
+    heroes: basic.concat('pgroup'),
+    peers: basic.concat('pgroup'),
     activity: basic,
     histograms: basic.concat(advanced),
     records: basic,
     counts: basic,
     trends: basic.concat(advanced),
-    sprees: basic.concat(['kill_streaks','multi_kills']),
-    wardmap: basic.concat(['obs','sen']),
-    items: basic.concat(['purchase_log','purchase','item_uses']),
-    skills: basic.concat(['hero_hits','ability_uses']),
+    sprees: basic.concat(['kill_streaks', 'multi_kills']),
+    wardmap: basic.concat(['obs', 'sen']),
+    items: basic.concat(['purchase_log', 'purchase', 'item_uses']),
+    skills: basic.concat(['hero_hits', 'ability_uses']),
     wordcloud: basic.concat('chat'),
     rating: basic
 };
@@ -97,7 +99,7 @@ module.exports = function(db, redis) {
                     info: info,
                     queryObj: {
                         select: req.query,
-                        project: config.ENABLE_PLAYER_CACHE ? null : projections[info]
+                        project: config.ENABLE_PLAYER_CACHE ? everything : projections[info]
                     }
                 }, cb);
             },
@@ -338,9 +340,11 @@ module.exports = function(db, redis) {
         //options.info, the tab the player is on
         //options.queryObj, the query object to use
         var cache;
+        var cacheValid = false;
         //select player_matches with this account_id
         options.queryObj.select.account_id = account_id;
         options.queryObj = preprocessQuery(options.queryObj, constants);
+        var filter_exists = Object.keys(options.queryObj.js_select).length;
         //try to find player in db
         getPlayer(account_id, function(err, player) {
             if (err) {
@@ -351,171 +355,156 @@ module.exports = function(db, redis) {
                 personaname: account_id
             };
             console.time('readcache');
-            /*
-            db.from('player_caches').first('cache').where({
-                account_id: account_id
-            }).asCallback(function(err, result) {
-                if (err) {
-                    console.log(err);
-                }
-                cache = result ? result.cache : null;
-                */
-            redis.get(new Buffer("player:" + account_id), function(err, result) {
-                if (err) {
-                    console.log(err);
-                }
-                cache = result ? JSON.parse(zlib.inflateSync(result)) : null;
-                console.timeEnd('readcache');
-                //unpack cache.data into an array
-                if (cache && cache.data) {
-                    var arr = [];
-                    for (var key in cache.data) {
-                        arr.push(cache.data[key]);
-                    }
-                    cache.data = arr;
-                }
-                account_id = Number(account_id);
-                //check count of matches to validate cache
-                countPlayer(account_id, function(err, count) {
+            if (config.ENABLE_PLAYER_CACHE) {
+                getCache();
+            }
+            else {
+                cacheMiss();
+            }
+
+            function getCache() {
+                redis.get(new Buffer("player:" + account_id), function(err, result) {
                     if (err) {
-                        return cb(err);
+                        console.log(err);
                     }
-                    //we return undefined count if the account_id is string (all/professional)
-                    var cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined) && config.ENABLE_PLAYER_CACHE;
+                    cache = result && config.ENABLE_PLAYER_CACHE ? JSON.parse(zlib.inflateSync(result)) : null;
+                    console.timeEnd('readcache');
+                    account_id = Number(account_id);
+                    //unpack cache.data into an array
                     if (cache && cache.data) {
-                        console.log('expected %s matches, found %s matches', count, cache.data.length);
-                    }
-                    var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
-                    var filter_exists = Object.keys(options.queryObj.js_select).length;
-                    if (cacheValid && !filter_exists) {
-                        console.log("player cache hit %s", player.account_id);
-                        //fill in skill data from table
-                        console.time('fillskill');
-                        //get skill data for matches within cache expiry (might not have skill data)
-                        var recents = cache.data.filter(function(m) {
-                            return moment().diff(moment().unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
-                        });
-                        var skillMap = {};
-                        async.eachSeries(recents, function(match, cb) {
-                            db.first(['skill']).from('match_skill').where({
-                                match_id: match.match_id
-                            }).asCallback(function(err, row) {
-                                if (row && row.skill) {
-                                    skillMap[match.match_id] = row.skill;
-                                }
+                        var arr = [];
+                        for (var key in cache.data) {
+                            arr.push(cache.data[key]);
+                        }
+                        cache.data = arr;
+                        //check count of matches to validate cache
+                        countPlayer(account_id, function(err, count) {
+                            if (err) {
                                 return cb(err);
-                            });
-                        }, function(err) {
-                            cache.data.forEach(function(m) {
-                                m.skill = m.skill || skillMap[m.match_id];
-                            });
-                            console.timeEnd('fillskill');
-                            processResults(err, {
-                                data: cache.data,
-                                aggData: cache.aggData,
-                                unfiltered: cache.data
-                            });
+                            }
+                            //we return undefined count if the account_id is string (all/professional)
+                            cacheValid = cache && cache.data && ((cache.data.length && cache.data.length === count) || count === undefined);
+                            //var cachedTeammates = cache && cache.aggData && cacheValid ? cache.aggData.teammates : null;
+                            if (cacheValid && !filter_exists) {
+                                console.log("player cache hit %s", player.account_id);
+                                //fill in skill data from table
+                                console.time('fillskill');
+                                //get skill data for matches within cache expiry (might not have skill data)
+                                var recents = cache.data.filter(function(m) {
+                                    return moment().diff(moment().unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                                });
+                                var skillMap = {};
+                                async.eachSeries(recents, function(match, cb) {
+                                    db.first(['skill']).from('match_skill').where({
+                                        match_id: match.match_id
+                                    }).asCallback(function(err, row) {
+                                        if (row && row.skill) {
+                                            skillMap[match.match_id] = row.skill;
+                                        }
+                                        return cb(err);
+                                    });
+                                }, function(err) {
+                                    cache.data.forEach(function(m) {
+                                        m.skill = m.skill || skillMap[m.match_id];
+                                    });
+                                    console.timeEnd('fillskill');
+                                    processResults(err, {
+                                        data: cache.data,
+                                        aggData: cache.aggData,
+                                        unfiltered: cache.data
+                                    });
+                                });
+                            }
+                            else {
+                                cacheMiss();
+                            }
                         });
                     }
                     else {
-                        console.log("player cache miss %s", player.account_id);
-                        getPlayerMatches(db, options.queryObj, processResults);
-                    }
-
-                    function processResults(err, results) {
-                        if (err) {
-                            return cb(err);
-                        }
-                        console.log("results: %s", results.data.length);
-                        //sort matches by descending match id for display
-                        results.data.sort(function(a, b) {
-                            return Number(b.match_id) - Number(a.match_id);
-                        });
-                        //reduce matches to only required data for display
-                        player.data = results.data.map(reduceMatch);
-                        player.aggData = results.aggData;
-                        player.all_teammates = cachedTeammates;
-                        //convert heroes hash to array and sort
-                        var aggData = player.aggData;
-                        if (aggData.heroes) {
-                            var heroes_arr = [];
-                            var heroes = aggData.heroes;
-                            for (var id in heroes) {
-                                var h = heroes[id];
-                                heroes_arr.push(h);
-                            }
-                            heroes_arr.sort(function(a, b) {
-                                return b.games - a.games;
-                            });
-                            player.heroes_list = heroes_arr;
-                        }
-                        if (aggData.obs) {
-                            //generally position data function is used to generate heatmap data for each player in a natch
-                            //we use it here to generate a single heatmap for aggregated counts
-                            player.obs = aggData.obs.counts;
-                            player.sen = aggData.sen.counts;
-                            var d = {
-                                "obs": true,
-                                "sen": true
-                            };
-                            generatePositionData(d, player);
-                            player.posData = [d];
-                        }
-                        //compute abandons
-                        player.abandons = 0;
-                        for (var key in player.aggData.leaver_status.counts) {
-                            if (Number(key) >= 2) {
-                                player.abandons += player.aggData.leaver_status.counts[key];
-                            }
-                        }
-                        async.series([saveCache], function(err) {
-                            cb(err, player);
-                        });
-                    }
-
-                    function saveCache(cb) {
-                        //full match cache code, needs ref to unfiltered data to save
-                        /*
-                        if (!cacheValid && account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
-                            results.unfiltered.forEach(reduceMatch);
-                            console.log("saving cache with length: %s", results.unfiltered.length);
-                            async.each(results.unfiltered, function(match_copy, cb) {
-                                db.player_matches.update({
-                                    account_id: account_id,
-                                    match_id: match_copy.match_id
-                                }, {
-                                    $set: match_copy
-                                }, {
-                                    upsert: true
-                                }, cb);
-                            }, cb);
-                        }
-                        */
-                        if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
-                            //pack data into hash for cache
-                            var match_ids = {};
-                            player.data.forEach(function(m) {
-                                var identifier = [m.match_id, m.player_slot].join(':');
-                                match_ids[identifier] = m;
-                            });
-                            cache = {
-                                data: match_ids,
-                                aggData: player.aggData
-                            };
-                            console.log("saving player cache %s", player.account_id);
-                            console.time("writecache");
-                            redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
-                            //insertPlayerCache(db, player, cache, function(err, player) {
-                            console.timeEnd("writecache");
-                            return cb(err, player);
-                            //});
-                        }
-                        else {
-                            return cb(null);
-                        }
+                        cacheMiss();
                     }
                 });
-            });
+            }
+
+            function cacheMiss() {
+                console.log("player cache miss %s", player.account_id);
+                getPlayerMatches(db, options.queryObj, processResults);
+            }
+
+            function processResults(err, results) {
+                if (err) {
+                    return cb(err);
+                }
+                console.log("results: %s", results.data.length);
+                //sort matches by descending match id for display
+                results.data.sort(function(a, b) {
+                    return Number(b.match_id) - Number(a.match_id);
+                });
+                //reduce matches to only required data for display
+                player.data = results.data.map(reduceMatch);
+                player.aggData = results.aggData;
+                //player.all_teammates = cachedTeammates;
+                //convert heroes hash to array and sort
+                var aggData = player.aggData;
+                if (aggData.heroes) {
+                    var heroes_arr = [];
+                    var heroes = aggData.heroes;
+                    for (var id in heroes) {
+                        var h = heroes[id];
+                        heroes_arr.push(h);
+                    }
+                    heroes_arr.sort(function(a, b) {
+                        return b.games - a.games;
+                    });
+                    player.heroes_list = heroes_arr;
+                }
+                if (aggData.obs) {
+                    //generally position data function is used to generate heatmap data for each player in a natch
+                    //we use it here to generate a single heatmap for aggregated counts
+                    player.obs = aggData.obs.counts;
+                    player.sen = aggData.sen.counts;
+                    var d = {
+                        "obs": true,
+                        "sen": true
+                    };
+                    generatePositionData(d, player);
+                    player.posData = [d];
+                }
+                //compute abandons
+                player.abandons = 0;
+                for (var key in player.aggData.leaver_status.counts) {
+                    if (Number(key) >= 2) {
+                        player.abandons += player.aggData.leaver_status.counts[key];
+                    }
+                }
+                saveCache(cb);
+            }
+
+            function saveCache(cb) {
+                if (!cacheValid && !filter_exists && player.account_id !== constants.anonymous_account_id && config.ENABLE_PLAYER_CACHE) {
+                    //pack data into hash for cache
+                    var match_ids = {};
+                    player.data.forEach(function(m) {
+                        var identifier = [m.match_id, m.player_slot].join(':');
+                        match_ids[identifier] = m;
+                    });
+                    cache = {
+                        data: match_ids,
+                        aggData: player.aggData
+                    };
+                    //console.log(Object.keys(cache.data).length);
+                    console.log("saving player cache %s", player.account_id);
+                    console.time("writecache");
+                    redis.setex(new Buffer("player:" + player.account_id), 60 * 60 * 24 * config.UNTRACK_DAYS, zlib.deflateSync(JSON.stringify(cache)));
+                    //insertPlayerCache(db, player, cache, function(err, player) {
+                    console.timeEnd("writecache");
+                    return cb(err, player);
+                    //});
+                }
+                else {
+                    return cb(null, player);
+                }
+            }
         });
     }
 };

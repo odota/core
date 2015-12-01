@@ -28,17 +28,22 @@ memwatch.on('stats', function(stats) {
     console.log(stats);
 });
 */
-buildSets(db, redis, function(err) {
-    if (err) {
+buildSets(db, redis, function(err)
+{
+    if (err)
+    {
         throw err;
     }
-    var pool_size = 100;
-    queue.parse.process(pool_size, function(job, cb) {
+    var pool_size = 300;
+    queue.parse.process(pool_size, function(job, cb)
+    {
         //save the callback for this job
         job.cb = cb;
-        job.submitWork = function(parsed_data) {
-            if (parsed_data.error) {
-                return job.exit(parsed_data.error);
+        job.submitWork = function(parsed_data, cb)
+        {
+            if (parsed_data.error)
+            {
+                return job.exit(parsed_data.error, cb);
             }
             var match = job.data.payload;
             var hostname = parsed_data.hostname;
@@ -56,28 +61,34 @@ buildSets(db, redis, function(err) {
             delete parsed_data.hostname;
             //extend match object with parsed data, keep existing data if key conflict (match_id)
             //match.players was deleted earlier during insertion of api data
-            for (var key in parsed_data) {
+            for (var key in parsed_data)
+            {
                 match[key] = match[key] || parsed_data[key];
             }
             match.parse_status = 2;
-            return insertMatch(db, redis, queue, match, {
+            return insertMatch(db, redis, queue, match,
+            {
                 type: "parsed"
-            }, job.exit);
+            }, function(err){
+                cb(err);
+                job.exit(err, cb);
+            });
         };
-        job.expire = setTimeout(function() {
-            console.log('job %s expired', job.jobId);
-            return job.exit("timeout");
-        }, 180 * 1000);
-        job.exit = function(err) {
+        job.exit = function(err, cb)
+        {
             delete pooled_jobs[job.jobId];
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
+            job = null;
+            cb();
         };
         var match = job.data.payload;
         //get the replay url and save it to db
-        return getReplayUrl(db, redis, match, function(err) {
-            if (err) {
+        return getReplayUrl(db, redis, match, function(err)
+        {
+            if (err)
+            {
                 return cb(err);
             }
             //put it in the pool
@@ -88,66 +99,94 @@ buildSets(db, redis, function(err) {
     start();
 });
 
-function start() {
-    app.use(bodyParser.json({
+function start()
+{
+    app.use(bodyParser.json(
+    {
         limit: '1mb'
     }));
-    app.get("/", function(req, res) {
-        res.json({
+    app.get("/", function(req, res)
+    {
+        res.json(
+        {
             started_at: startedAt.format(),
             started_ago: startedAt.fromNow()
         });
     });
-    app.get('/parse', function(req, res) {
-        if (config.RETRIEVER_SECRET && req.query.key !== config.RETRIEVER_SECRET) {
-            return res.status(500).json({
+    app.get('/parse', function(req, res)
+    {
+        if (config.RETRIEVER_SECRET && req.query.key !== config.RETRIEVER_SECRET)
+        {
+            return res.status(500).json(
+            {
                 error: "invalid key"
             });
         }
         var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         console.log('client %s requested work', ip);
         var job = pooled_jobs[Object.keys(pooled_jobs)[0]];
-        if (!job) {
+        if (!job)
+        {
             console.log('no work available');
-            return res.status(500).json({
+            return res.status(500).json(
+            {
                 error: "no work available"
             });
         }
+        job.expire = setTimeout(function()
+        {
+            console.log('job %s expired', job.jobId);
+            return job.exit("timeout", function(){});
+        }, 120 * 1000);
         delete pooled_jobs[job.jobId];
         active_jobs[job.jobId] = job;
         console.log('server sent jobid %s', job.jobId);
-        return res.json({
+        return res.json(
+        {
             jobId: job.jobId,
             data: job.data
         });
     });
-    app.post('/parse', function(req, res) {
+    app.post('/parse', function(req, res)
+    {
         //validate request
-        if (config.RETRIEVER_SECRET && req.body.key !== config.RETRIEVER_SECRET) {
-            return res.status(500).json({
+        if (config.RETRIEVER_SECRET && req.body.key !== config.RETRIEVER_SECRET)
+        {
+            return res.status(500).json(
+            {
                 error: "invalid key"
             });
         }
-        if (req.body.version !== schema.version) {
-            return res.status(500).json({
+        if (req.body.version !== schema.version)
+        {
+            return res.status(500).json(
+            {
                 error: "version mismatch"
             });
         }
         console.log('received submitted work');
-        if (active_jobs[req.body.jobId]) {
+        if (active_jobs[req.body.jobId])
+        {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body);
-            return res.json({
-                error: null
+            job.submitWork(req.body, function(err){
+                if (!res.headersSent) {
+                    return res.json(
+                    {
+                        error: err
+                    });
+                }
             });
         }
-        else {
-            return res.status(500).json({
+        else
+        {
+            return res.status(500).json(
+            {
                 error: "no active job with this jobid"
             });
         }
     });
-    var server = app.listen(port, function() {
+    var server = app.listen(port, function()
+    {
         var host = server.address().address;
         console.log('[WORKSERVER] listening at http://%s:%s', host, port);
     });
