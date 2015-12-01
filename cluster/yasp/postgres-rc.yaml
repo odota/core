@@ -33,7 +33,7 @@ spec:
         ports:
         volumeMounts:
         - name: postgres
-          mountPath: /var/lib/postgresql/data
+          mountPath: /var/lib/postgresql
         - name: postgres-config
           mountPath: /etc/postgresql
       dnsPolicy: ClusterFirst
