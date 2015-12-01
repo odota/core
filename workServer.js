@@ -80,7 +80,6 @@ buildSets(db, redis, function(err)
             delete active_jobs[job.jobId];
             clearTimeout(job.expire);
             job.cb(err);
-            job = null;
             cb();
         };
         var match = job.data.payload;
