@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: redis
-    tier: backend
+    tier: infra
   name: redis
 spec:
   selector:
