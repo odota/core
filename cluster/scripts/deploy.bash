@@ -25,6 +25,8 @@ fi
 if [ -n "$KUBECONFIG" ]; then
   mkdir ~/.kube
   echo "$KUBECONFIG" | base64 --decode > ~/.kube/config
-  export PATH="$PATH:$TRAVIS_BUILD_DIR/test/testfiles"
+  curl -O https://github.com/yasp-dota/testfiles/raw/master/kubectl
+  chmod +x kubectl
+  export PATH="$PATH:$TRAVIS_BUILD_DIR"
   kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT
 fi
