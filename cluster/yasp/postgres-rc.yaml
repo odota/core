@@ -28,7 +28,7 @@ spec:
       containers:
       - name: postgres
         image: postgres:9
-        args: [ "postgres", "-c" "config_file=/etc/postgresql/postgresql.conf", "-c" "hba_file=/etc/postgresql/hba.conf", "-c", "data_directory=/var/lib/postgresql/data"]
+        args: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/hba.conf", "-c", "data_directory=/var/lib/postgresql/data"]
         imagePullPolicy: Always
         ports:
         volumeMounts:
