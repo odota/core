@@ -11,13 +11,11 @@ spec:
   selector:
     app: mmr
     tier: backend
-    role: core
   template:
     metadata:
       labels:
         app: mmr
         tier: backend
-        role: core
     spec:
       volumes:
       - name: api-keys
