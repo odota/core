@@ -28,12 +28,12 @@ spec:
       containers:
       - name: postgres
         image: postgres:9
-        args: [ "postgres", "-D", "/etc/postgresql", "--data-directory=/var/lib/postgresql/data"]
+        args: [ "postgres", "-c" "config_file=/etc/postgresql/postgresql.conf", "-c" "hba_file=/etc/postgresql/hba.conf", "-c", "data_directory=/var/lib/postgresql/data"]
         imagePullPolicy: Always
         ports:
         volumeMounts:
         - name: postgres
-          mountPath: /var/lib/postgresql
+          mountPath: /var/lib/postgresql/data
         - name: postgres-config
           mountPath: /etc/postgresql
       dnsPolicy: ClusterFirst
