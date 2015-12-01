@@ -26,4 +26,4 @@ deploy:
   skip_cleanup: true
   on:
     branch: k8s
-  script: cluster/scripts/deploy.bash
+  script: cluster/scripts/deploy.sh

@@ -23,8 +23,12 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
 fi
 
 if [ -n "$KUBECONFIG" ]; then
+  #generation
+  #cat ~/.kube/config | base64 -w 0
+  #decode
   mkdir ~/.kube
   echo "$KUBECONFIG" | base64 --decode > ~/.kube/config
+  #download kubectl
   wget https://github.com/yasp-dota/testfiles/raw/master/kubectl
   chmod +x kubectl
   export PATH="$PATH:$TRAVIS_BUILD_DIR"
