@@ -27,7 +27,7 @@ if [ -n "$KUBECONFIG" ]; then
   #cat ~/.kube/config | base64 -w 0
   #decode
   mkdir ~/.kube
-  echo "$KUBECONFIG" | base64 --decode - > ~/.kube/config
+  echo "$KUBECONFIG" | base64 --decode -f - > ~/.kube/config
   #download kubectl
   wget https://github.com/yasp-dota/testfiles/raw/master/kubectl
   chmod +x kubectl
