@@ -11,7 +11,7 @@ source ./cluster/scripts/gce.env
 wget -q -O - https://get.k8s.io | bash
 
 #create namespace
-kubectl create -f ./cluster/yasp/namespace.yaml
+kubectl create -f ./cluster/setup/namespace.yaml
 
 #put secrets in prod.env (KEY=VALUE, one per line)
 #write secrets/config to kubernetes secret resource
