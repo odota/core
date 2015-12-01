@@ -28,6 +28,7 @@ memwatch.on('stats', function(stats) {
     console.log(stats);
 });
 */
+setTimeout(function(){process.exit(0);}, 120*60*1000);
 buildSets(db, redis, function(err)
 {
     if (err)
@@ -167,11 +168,11 @@ function start()
         if (active_jobs[req.body.jobId])
         {
             var job = active_jobs[req.body.jobId];
-            job.submitWork(req.body, function(err){
+            job.submitWork(req.body, function(){
                 if (!res.headersSent) {
                     return res.json(
                     {
-                        error: err
+                        error: null
                     });
                 }
             });
