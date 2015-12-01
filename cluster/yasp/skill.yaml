@@ -4,7 +4,6 @@ metadata:
   labels:
     app: skill
     tier: backend
-    deployment: skill
   name: skill
   namespace: yasp
 spec:
@@ -12,11 +11,13 @@ spec:
   selector:
     app: skill
     tier: backend
+    role: core
   template:
     metadata:
       labels:
         app: skill
         tier: backend
+        role: core
     spec:
       volumes:
       - name: api-keys

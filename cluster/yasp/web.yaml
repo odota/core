@@ -3,19 +3,20 @@ kind: ReplicationController
 metadata:
   labels:
     app: web
-    tier: backend
-    deployment: web
+    tier: frontend
   name: web
 spec:
   replicas: 1
   selector:
     app: web
-    tier: backend
+    tier: frontend
+    role: core
   template:
     metadata:
       labels:
         app: web
-        tier: backend
+        tier: frontend
+        role: core
     spec:
       volumes:
       - name: api-keys
@@ -46,7 +47,7 @@ metadata:
 spec:
   selector:
     app: web
-    tier: backend
+    tier: frontend
   ports:
   - nodePort: 30246
     port: 80
