@@ -28,7 +28,8 @@ spec:
       containers:
       - name: postgres
         image: postgres:9
-        command: ["postgres", "-u", "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+        # pass args to run as user postgres and with config file
+        args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
