@@ -3,6 +3,7 @@ kind: ReplicationController
 metadata:
   labels:
     app: redis
+    tier: infra
   name: redis
   namespace: yasp
 spec:
@@ -21,6 +22,9 @@ spec:
         gcePersistentDisk:
           pdName: disk-redis
           fsType: ext4
+      - name: redis-config
+        secret:
+          secretName: redis-config
       containers:
       - name: redis
         image: redis:3
@@ -30,18 +34,11 @@ spec:
         - containerPort: 6379
           name: redis
         volumeMounts:
-        - name: redis-persistent-storage
+        - name: redis
           mountPath: /var/lib/redis
         - name: redis-config
           mountPath: /etc/redis
       volumes:
-      - name: redis-persistent-storage
-        gcePersistentDisk:
-          pdName: disk-redis
-          fsType: ext4
-      - name: redis-config
-        secret:
-          secretName: redis-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
