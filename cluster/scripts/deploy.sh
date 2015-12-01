@@ -22,12 +22,12 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
   curl $DEPLOY_WEBHOOK_URL/$DEPLOY_WEBHOOK_SECRET/$TRAVIS_BUILD_ID > /dev/null
 fi
 
-if [ -n "$KUBECONFIG" ]; then
+if [ -n "$KUBECONFIGDATA" ]; then
   #generation
   #cat ~/.kube/config | base64 -w 0
   #decode
   mkdir ~/.kube
-  base64 --decode  <<< $KUBECONFIG > ~/.kube/config
+  base64 --decode  <<< $KUBECONFIGDATA > ~/.kube/config
   #download kubectl
   wget https://github.com/yasp-dota/testfiles/raw/master/kubectl
   chmod +x kubectl
