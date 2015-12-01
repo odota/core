@@ -32,5 +32,5 @@ if [ -n "$KUBECONFIGDATA" ]; then
   wget https://github.com/yasp-dota/testfiles/raw/master/kubectl
   chmod +x kubectl
   export PATH="$PATH:$TRAVIS_BUILD_DIR"
-  kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:`git rev-parse HEAD`
+  #kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs -n1 kubectl rolling-update --image=yasp/yasp:`git rev-parse HEAD`
 fi
