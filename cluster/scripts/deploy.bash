@@ -22,7 +22,9 @@ if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
   curl $DEPLOY_WEBHOOK_URL/$DEPLOY_WEBHOOK_SECRET/$TRAVIS_BUILD_ID > /dev/null
 fi
 
-if [ -n "$KUBERNETES_TOKEN" ]; then
+if [ -n "$KUBECONFIG" ]; then
+  mkdir ~/.kube
+  echo "$KUBECONFIG" | base64 --decode > ~/.kube/config
   export PATH="$PATH:$TRAVIS_BUILD_DIR/test/testfiles"
-  #kubectl get rc -o name --selector tier=backend --token="$KUBERNETES_TOKEN" --server="$KUBERNETES_HOST:443" | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT --token="$KUBERNETES_TOKEN" --server="$KUBERNETES_HOST:443"
+  kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:$TRAVIS_COMMIT
 fi
