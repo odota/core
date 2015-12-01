@@ -5,11 +5,11 @@ metadata:
     tier: backend
   name: web
 spec:
+  selector:
+    app: web
+    tier: backend
   ports:
   - nodePort: 30246
     port: 80
     targetPort: web
-  selector:
-    app: web
-    tier: backend
   type: NodePort

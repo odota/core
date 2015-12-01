@@ -11,5 +11,4 @@ spec:
     tier: backend
   ports:
   - port: 5432
-    targetPort: 5432
-    name: postgres
+    targetPort: postgres
