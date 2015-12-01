@@ -41,3 +41,18 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
+----
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis
+    tier: infra
+  name: redis
+spec:
+  selector:
+    app: redis
+    tier: backend
+  ports:
+  - port: 6379
+    targetPort: redis

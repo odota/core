@@ -18,7 +18,6 @@
     "startup": "sudo pm2 startup ubuntu -u yasp",
     "create": "bash sql/create.sh",
     "psql": "psql -d postgresql://yasp:yasp@localhost/yasp",
-    "deploy": "kubectl get rc -o name --selector tier=backend | cut -d '/' -f2 | xargs kubectl rolling-update --image=yasp/yasp:latest",
     "deploy-core": "git pull origin master && npm run build && node deploy core",
     "deploy-parser": "git pull origin master && npm run maven && node deploy parser"
   },
