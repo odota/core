@@ -10,8 +10,8 @@ var defaults = {
     "STEAM_PASS": "", //make sure to wrap in double quotes if it contains special characters
     "RECAPTCHA_PUBLIC_KEY": "", //for preventing automated requests, in web
     "RECAPTCHA_SECRET_KEY": "",
-    "PAYPAL_ID": "", //for donations, in web
-    "PAYPAL_SECRET": "",
+    "STRIPE_SECRET": "", //for donations, in web
+    "STRIPE_PUBLIC": "",
     "RETRIEVER_SECRET": "", //string to use as shared secret with retriever/parser
     "SESSION_SECRET": "secret to encrypt cookies with", //string to encrypt cookies
     "ROOT_URL": "http://localhost:5000", //base url to redirect to after steam oauth login
