@@ -1,4 +1,0 @@
-config/
-secret.json
-*.log
-etcd-controller.yaml

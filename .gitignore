@@ -1,5 +1,6 @@
 bower_components
-*.env
+.env
+prod.env
 node_modules
 replays*
 *.log*

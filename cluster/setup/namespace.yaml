@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: yasp
   labels:
-    name: yasp-production
+    name: yasp
