@@ -108,6 +108,7 @@ var sessOptions = {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));

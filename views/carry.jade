@@ -6,6 +6,7 @@ block content
     p.lead Buy some Cheese. Help pay for servers.
     hr
     .row
+      #error.alert.alert-danger(role="alert", style="display:none;")
       .col-md-4(style="font-size:24px;")
         h4 YASP is completely community funded. We have no ads or paid employees. 
         h4 We run through your support!
@@ -45,7 +46,7 @@ block content
       .col-md-4
         em $1/Cheese. It's worth it. Payment processing is done through Stripe. We never see your credit card information. <br>
         br
-        p Stipe also accepts Bitcoin and Alipay! <br> All transactions are final.
+        p Stripe also accepts Bitcoin and Alipay! <br> All transactions are final.
         if user
           strong You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
         else  
@@ -65,7 +66,7 @@ block content
         span.fa.fa-heart-o.fa-5x
         p.text You're awesome.
     .row
-      p.lead Cheese buyers are also indefinitely tracked. <br> All your games will be parsed, whether you visit or not.
+      p.lead Cheese buyers are also indefinitely tracked. <br> All your games from now on will be parsed, whether you visit or not.
     hr
     .row
       p.lead More Cheese features to come. Or not. Who knows.
@@ -95,45 +96,6 @@ append footer_assets
      .img-thumbnail { width: 40px;}
    script(src="https://checkout.stripe.com/checkout.js")
    script.
-       $('#subscription').change(function(){
-          if(this.checked) {
-            $("#cancel-info").show();
-          } else {
-            $("#cancel-info").hide();
-          }
-       });
-      
-       var handler = StripeCheckout.configure({
-          key: "#{stripe_public}",
-          image: '/public/images/android-chrome-192x192.png',
-          locale: 'auto',
-          token: function(token) {
-            var data = {
-              amount: $('#amount').find(":selected").text(),
-              subscription: document.getElementById("subscription").checked,
-              token: token
-            };
-            
-            $.post("/carry", data, function(data) {
-              console.log(data);
-            })
-          }
-        });
-        
-        $('#thething').on('click', function(e) {
-          // Open Checkout with further options
-          handler.open({
-            name: 'yasp.co',
-            description: $('#amount').find(":selected").text() + " cheese!",
-            amount: $('#amount').find(":selected").text()*100,
-            bitcoin: true,
-            alipay: true
-          });
-          e.preventDefault();
-        });
-      
-        // Close Checkout on page navigation
-        $(window).on('popstate', function() {
-          handler.close();
-        });
+    var stripe_public = "#{stripe_public}";
+   script(src="/public/js/donate.js")
         
