@@ -6,14 +6,29 @@ block content
     p.lead Buy some Cheese. Help pay for servers.
     hr
     .row
-      if sub
-        .col-md-4.col-md-offset-4
-          p You're currently subscribed for #{sub.amount} cheese/month ($#{sub.amount}/month).
-          p Thanks so much for your support!
-          p To cancel your subscription, click a(href="/cancel") here
-            | .
-          
-      #error.alert.alert-danger(role="alert", style="display:none;")
+      if subscription && subscription.length > 0
+        .row
+          .col-md-8.col-md-offset-2
+            if subscription.length > 1
+              table.table
+                tbody
+                  tr 
+                    th Amount
+                    each s in subscription
+                      td= s.amount
+                  tr
+                    th Renewal
+                    each s in subscription
+                      td= moment(subscription.active_until).format("MMM Do YYYY")
+            else
+              - var sub = subscription[0];
+              p You're currently subscribed for #{sub.amount} cheese/month ($#{sub.amount}/month).
+                | This is set to renew on #{moment(sub.active_until).format("dddd, MMMM Do YYYY")}.
+            p Thanks so much for your support!
+            p To cancel your subscription, click #[a(href="/cancel") here]. 
+              | Questions about your subscription? Check #[a(href="/faq") here].
+        hr
+      #alert.alert.alert-danger(role="alert", style="display:none;")
       .col-md-4(style="font-size:24px;")
         h4 YASP is completely community funded. We have no ads or paid employees. 
         h4 We run through your support!
@@ -53,7 +68,7 @@ block content
       .col-md-4
         em $1/Cheese. It's worth it. Payment processing is done through Stripe. We never see your credit card information. <br>
         br
-        p Stripe also accepts Bitcoin and Alipay! <br> All transactions are final.
+        p Stripe also accepts <i class="fa fa-btc"></i> Bitcoin and Alipay! <br> All transactions are final.
         if user
           strong You are logged in! Your contribution will be public. Logout if you wish to remain anonymous.
         else  

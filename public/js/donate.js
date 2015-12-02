@@ -23,7 +23,6 @@ var handler = StripeCheckout.configure({
         };
 
         $.post("/carry", data, function(data) {
-            console.log(data);
             if (data == "OK") window.location = "/thanks";
             else {
                 $alert.text(data);
