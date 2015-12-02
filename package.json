@@ -1,7 +1,7 @@
 {
   "name": "yasp",
   "description": "Open source Dota 2 replay parsing and statistics",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "main": "index.js",
   "scripts": {
     "start": "node deploy",
@@ -33,11 +33,12 @@
     "bootstrap": "^3.3.6",
     "bootswatch": "^3.3.6",
     "bull": "yasp-dota/bull",
+    "c3": "^0.4.10",
     "cal-heatmap": "^3.5.4",
     "compression": "^1.6.0",
     "connect-redis": "^3.0.1",
     "cookie-session": "^2.0.0-alpha",
-    "d3": "^3.5.9",
+    "d3": "^3.5.10",
     "datatables": "^1.10.9",
     "datatables-bootstrap3-plugin": "^0.4.0",
     "dota2": "~1.0.1",
@@ -65,7 +66,8 @@
     "qTip2": "yasp-dota/qtip2",
     "redis": "2.4.2",
     "request": "~2.67.0",
-    "request-progress": "^0.3.1",
+    "request-progress": "^0.4.0",
+    "selectize": "^0.12.1",
     "sentiment": "^1.0.2",
     "steam": "1.3.0",
     "winston": "2.1.1",
@@ -75,6 +77,7 @@
     "coveralls": "2.11.4",
     "css-loader": "^0.23.0",
     "database-cleaner": "~0.10.1",
+    "expose-loader": "^0.7.1",
     "file-loader": "^0.8.5",
     "istanbul": "~0.4.1",
     "json-loader": "^0.5.4",
@@ -87,6 +90,6 @@
     "webpack": "^1.12.9"
   },
   "engines": {
-    "node": "5.0.0"
+    "node": "5.1.0"
   }
 }

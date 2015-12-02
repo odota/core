@@ -4,7 +4,7 @@ block playercontent
   .row
     - var counts = {"leaver_status":1,"game_mode":1,"lobby_type":1,"lane_role":1,"region":1,"patch":1}
     each val, key in counts
-      .col-md-6
+      .col-md-4
         h3=key.split("_").join(" ")
           small  (#{player.aggData[key].n} matches)
         table.table.table-striped.rankable

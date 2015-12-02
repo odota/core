@@ -19,7 +19,7 @@ var defaults = {
     "START_SEQ_NUM": "", //REDIS: use redis number, truthy: use sequence number, else: use auto
     "NODE_ENV": "development",
     "LANG": "en_US.UTF-8", //this value ensures that encoding is set properly on the parser (LANG is not present when running under upstart)
-    "WEB_PORT": "5000",
+    "FRONTEND_PORT": "5000",
     "RETRIEVER_PORT": "5100",
     "PARSER_PORT": "5200",
     "PROXY_PORT": "5300",

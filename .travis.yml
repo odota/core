@@ -4,7 +4,7 @@ services:
 - docker
 - redis-server
 node_js:
-- '5.0'
+- 'stable'
 addons:
   postgresql: "9.4"
 install: true
@@ -13,20 +13,17 @@ notifications:
   - howardc93@gmail.com
   - christian@paral.in
   - aqc2109@columbia.edu
-# This is an attempt to make caching work
 before_script:
-- docker pull yasp/yasp:latest
-- docker build -t "yasp/yasp:latest" .
+#- npm install -g npm
+- docker pull yasp/yasp:latest && docker build -t "yasp/yasp:latest" .
 script:
-- docker run -e "TEST_SKIP_BUILD=y" -e "TEST_INSTALL_GLOBAL=y" --net=host -i yasp/yasp:latest npm run test
-#- npm run test
-after_success:
-- npm run coveralls
-before_deploy:
-- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+#run test outside container
+#- npm run test && (npm run coveralls || true)
+# run test inside container, don't need to build since the docker image already built
+- docker run -e "TEST_SKIP_BUILD=y" -e "COVERALLS_SERVICE_NAME=travis-ci" -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN --net=host -i yasp/yasp:latest "npm run test && (npm run coveralls || true)"
 deploy:
   provider: script
   skip_cleanup: true
   on:
-    branch: k8s
-  script: scripts/docker_hub_push.bash
+    branch: master
+  script: cluster/scripts/deploy.sh

@@ -1,36 +1,30 @@
 apiVersion: v1
-kind: DeploymentConfig
+kind: ReplicationController
 metadata:
   labels:
     app: redis
+    tier: infra
   name: redis
+  namespace: yasp
 spec:
   replicas: 1
   selector:
     app: redis
-    deploymentconfig: redis
-    tier: backend
-  strategy:
-    resources: {}
-    rollingParams:
-      intervalSeconds: 1
-      maxSurge: 0
-      maxUnavailable: 1
-      timeoutSeconds: 600
-      updatePeriodSeconds: 1
-    type: Rolling
+    tier: infra
   template:
     metadata:
       labels:
         app: redis
-        deploymentconfig: redis
-        tier: backend
+        tier: infra
     spec:
       volumes:
       - name: redis
         gcePersistentDisk:
           pdName: disk-redis
           fsType: ext4
+      - name: redis-config
+        secret:
+          secretName: redis-config
       containers:
       - name: redis
         image: redis:3
@@ -40,20 +34,25 @@ spec:
         - containerPort: 6379
           name: redis
         volumeMounts:
-        - name: redis-persistent-storage
+        - name: redis
           mountPath: /var/lib/redis
         - name: redis-config
           mountPath: /etc/redis
-      volumes:
-      - name: redis-persistent-storage
-        gcePersistentDisk:
-          pdName: disk-redis
-          fsType: ext4
-      - name: redis-config
-        secret:
-          secretName: redis-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
-  triggers:
-  - type: ConfigChange
+----
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis
+    tier: infra
+  name: redis
+spec:
+  selector:
+    app: redis
+    tier: backend
+  ports:
+  - port: 6379
+    targetPort: redis

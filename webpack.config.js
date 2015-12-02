@@ -1,14 +1,17 @@
 var webpack = require('webpack');
 module.exports = {
-    entry: {
+    entry:
+    {
         'yasp': './public/js/yasp.js'
     },
-    output: {
+    output:
+    {
         filename: '[name].min.js',
         path: './public/build/',
         publicPath: "/public/build/"
     },
-    module: {
+    module:
+    {
         loaders: [
             {
                 test: /\.css$/,
@@ -25,14 +28,15 @@ module.exports = {
             {
                 test: /\.(json)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "json-loader"
-                }
+                },
+            {
+                test: /jquery\.js$/,
+                loader: 'expose?$'
+            },
+            {
+                test: /jquery\.js$/,
+                loader: 'expose?jQuery'
+            }
         ]
-    },
-    plugins: [
-new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery",
-            "window.jQuery": "jquery"
-        })
-    ]
+    }
 };

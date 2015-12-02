@@ -3,10 +3,11 @@
 # install nvm and run "nvm ls-remote"
 FROM phusion/baseimage:0.9.17
 ENV NODE_VERSION 5.1.0
-# install git/maven
+# install git/java
+# if building, need jdk and maven
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y git openjdk-8-jdk maven && \
+    apt-get install -y git openjdk-8-jdk maven build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 WORKDIR /usr/src/yasp
 RUN echo "" > /root/.bashrc && \
@@ -35,7 +36,6 @@ RUN . /root/.bashrc && npm run webpack
 
 # Add everything else
 ADD . /usr/src/yasp
-#RUN . /root/.bashrc && npm run build
 
 ENTRYPOINT [ "/usr/src/yasp/docker_init.bash" ]
 CMD [ "web.js" ]
