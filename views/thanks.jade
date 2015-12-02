@@ -2,7 +2,9 @@ extend layout
   
 block content
   .page-header.text-center
-    if cheese
+    if cancel
+      p.lead Your subscription has been canceled. Thanks for your support.
+    else if cheese
       h1(style='font-weight: 700;') Thanks.
       p.lead We mean it.
       if subscription
@@ -12,7 +14,7 @@ block content
         p You can look at your subscription information on the
           a(href="/carry") carry page
           | .
-      if subscription == 2
+      else if subscription == 2
         p.
           You weren't logged in when completing your subscription.
           To cancel your subscription, send us an email at support@yasp.co.

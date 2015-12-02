@@ -151,6 +151,7 @@ CREATE TABLE subscriptions (
   PRIMARY KEY(customer_id),
   account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
   customer_id varchar(255),
+  amount int,
   active_until date
 );
 

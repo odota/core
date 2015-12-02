@@ -13,10 +13,24 @@ module.exports = function(db, redis) {
         db.from('players').where('cheese', '>', 0).limit(50).orderBy('cheese', 'desc')
         .asCallback(function(err, results) {
             if (err) return next(err);
-            res.render("carry", {
-                users: results,
-                stripe_public: stripe_public
-            });
+            if (req.user) {
+                db.from("subscriptions").where({
+                    account_id: req.user.account_id
+                }).asCallback(function(err, sub) {
+                    if (err) return next(err);
+                    
+                    res.render("carry", {
+                        users: results,
+                        stripe_public: stripe_public,
+                        sub: sub
+                    })
+                })
+            } else {
+                res.render("carry", {
+                    users: results,
+                    stripe_public: stripe_public
+                });
+            }
         });
     }).post(function(req, res, next) {
         console.log(req.body);
@@ -47,6 +61,7 @@ module.exports = function(db, redis) {
                     db('subscriptions').insert({
                         account_id: req.user.account_id,
                         customer_id: customer.id,
+                        amount: amount,
                         active_until: moment().add(1, "M").format("YYYY-MM-DD")
                     }).asCallback(function(err) {
                         if (err) return res.status(500).send(
@@ -115,6 +130,41 @@ module.exports = function(db, redis) {
             subscription: subscription
         });
     });
+    donate.route("/cancel").get(function(req, res, next) {
+        if (!req.user) return res.render("/cancel", {
+            sub: false
+        });
+        
+        db("subscriptions")
+        .where({
+            account_id: req.user.account_id
+        })
+        .asCallback(function(err, sub) {
+            if (err) return next(err);
+            var sub = false;
+            
+            if (sub) {
+                sub = true;
+            }
+            
+            res.render("/cancel", {
+                sub: true
+            })
+        })
+    }).post(function(req, res, next) {
+        db("subscriptions")
+        .where({
+            account_id: req.user.account_id
+        })
+        .del()
+        .asCallback(function(err) {
+            if (err) return next(err);
+            
+            res.redict("thanks", {
+                cancel: true
+            })
+        })
+    })
     donate.route("/stripe_endpoint").post(function(req, res, next) {
         var id = req.body.id;
         console.log("Got a event from Stripe, id %s", id);
@@ -130,16 +180,18 @@ module.exports = function(db, redis) {
             // Check that we haven't seen this before
             redis.lrange("stripe:events", 0, 1000, function(err, result) {
                 if (err) return res.sendStatus(400); // Redis is derping, have Stripe send back later
-                
+
                 for (var e in result) {
+                    
                     if (e == id) {
+                        console.log("Found event %s in redis.", id);
                         return res.sendStatus(200);
                     }
                 }
                 
                 // New event
                 if (event.type === "charge.succeeded") {
-                    var amount = event.data.object.amount;
+                    var amount = event.data.object.amount/100;
                     
                     console.log("Event %s: Charge succeeded for %s.", id, amount);
                     
@@ -162,6 +214,7 @@ module.exports = function(db, redis) {
                                 
                                 // Update the cheese amount and the subscription
                                 if (sub) {
+                                    console.log("Event %s: Found customer %s.", id, customer);
                                      db('players')
                                     .increment("cheese", amount || 0)
                                     .where({
@@ -179,6 +232,8 @@ module.exports = function(db, redis) {
                                     
                                     addEventAndRespond(id, res);
                                     
+                                } else {
+                                    console.log("Event %s: Did not find customer %s.", id, customer);
                                 }
                             })
                         } else {

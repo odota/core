@@ -6,6 +6,13 @@ block content
     p.lead Buy some Cheese. Help pay for servers.
     hr
     .row
+      if sub
+        .col-md-4.col-md-offset-4
+          p You're currently subscribed for #{sub.amount} cheese/month ($#{sub.amount}/month).
+          p Thanks so much for your support!
+          p To cancel your subscription, click a(href="/cancel") here
+            | .
+          
       #error.alert.alert-danger(role="alert", style="display:none;")
       .col-md-4(style="font-size:24px;")
         h4 YASP is completely community funded. We have no ads or paid employees. 
