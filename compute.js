@@ -442,11 +442,26 @@ function renderMatch(m)
 }
 /**
  * Generates a player analysis for a player_match
- * Returns an object analysis that is keyed by category to an array of advice
+ * Returns an analysis as an array of advice
  **/
 function generatePlayerAnalysis(player_match)
 {
-    return {};
+    //LH/EFF
+    //Kill drought (gap in kill times) for a ganking hero
+    //farming drought (low gold earned delta over an interval) for a farming hero
+    //Flaming in all chat
+    //lack of warding/min
+    //Excessive pinging
+    //Courier feeding
+    //low ability accuracy (skillshots)
+    //unused item actives
+    //slow item timing (might have to be specific hero-item pairs)
+    //courier buy delay
+    //roshan opportunities
+    //rune control
+    //attack move
+    //stop command
+    return [];
 }
 /**
  * Generates data for c3 charts in a match
