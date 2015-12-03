@@ -10,7 +10,7 @@ constants.heroes = {};
 //key heroes by name
 constants.hero_names = {};
 heroes.forEach(function(h) {
-    h.img = "http://cdn.dota2.com/apps/dota2/images/heroes/" + h.name.replace("npc_dota_hero_", "") + "_sb.png";
+    h.img = "//cdn.dota2.com/apps/dota2/images/heroes/" + h.name.replace("npc_dota_hero_", "") + "_sb.png";
     constants.heroes[h.id] = h;
     constants.hero_names[h.name] = h;
 });
@@ -28,13 +28,13 @@ var items = constants.items.itemdata;
 constants.item_ids = {};
 for (var key in items) {
     constants.item_ids[items[key].id] = key;
-    items[key].img = "http://cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
+    items[key].img = "//cdn.dota2.com/apps/dota2/images/items/" + items[key].img;
 }
 constants.items = items;
 //abilities, already keyed by name
 var abilities = constants.abilities.abilitydata;
 for (var key2 in abilities) {
-    abilities[key2].img = "http://cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
+    abilities[key2].img = "//cdn.dota2.com/apps/dota2/images/abilities/" + key2 + "_md.png";
 }
 abilities.nevermore_shadowraze2 = abilities.nevermore_shadowraze1;
 abilities.nevermore_shadowraze3 = abilities.nevermore_shadowraze1;
