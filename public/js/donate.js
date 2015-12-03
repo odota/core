@@ -1,13 +1,13 @@
-var $canceInfo = $("#cancel-info");
+var $cancelInfo = $("#cancel-info");
 var $amount = $("#amount");
 var $alert = $("#alert");
 
 $('#subscription').change(function() {
     if (this.checked) {
-        $canceInfo.show();
+        $cancelInfo.show();
     }
     else {
-        $canceInfo.hide();
+        $cancelInfo.hide();
     }
 });
 

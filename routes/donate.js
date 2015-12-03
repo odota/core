@@ -32,10 +32,10 @@ module.exports = function(db, redis) {
         });
     }).post(function(req, res, next) {
         var amount = Number(req.body.amount);
-        var subscription = req.body.subscription != "false";
+        var subscription = req.body.subscription !== "false";
         var token = req.body.token;
         
-        if (!token || amount == "NaN") {
+        if (!token || isNaN(amount)) {
             return res.sendStatus(500);
         }
         
@@ -176,9 +176,8 @@ module.exports = function(db, redis) {
             redis.lrange("stripe:events", 0, 1000, function(err, result) {
                 if (err) return res.sendStatus(400); // Redis is derping, have Stripe send back later
 
-                for (var e in result) {
-                    
-                    if (e == id) {
+                for (var i = 0; i < result.length; i++) {
+                    if (result[i] === id) {
                         console.log("Found event %s in redis.", id);
                         return res.sendStatus(200);
                     }
