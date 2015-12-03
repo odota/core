@@ -109,8 +109,7 @@ module.exports = function(db, redis)
                     info: info,
                     queryObj:
                     {
-                        select: req.query,
-                        project: config.ENABLE_PLAYER_CACHE ? everything : projections[info]
+                        select: req.query
                     }
                 }, cb);
             },
@@ -502,6 +501,8 @@ module.exports = function(db, redis)
             function cacheMiss()
             {
                 console.log("player cache miss %s", player.account_id);
+                //we need to project everything to build a new cache, otherwise optimize and do a subset
+                options.queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[options.info];
                 getPlayerMatches(db, options.queryObj, processResults);
             }
 
