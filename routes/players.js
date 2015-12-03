@@ -450,17 +450,17 @@ module.exports = function(db, redis)
                             if (cacheValid && !filter_exists)
                             {
                                 console.log("player cache hit %s", player.account_id);
-                                //fill in skill data from table
+                                //fill in skill data from table since it is not cached
                                 console.time('fillskill');
                                 //get skill data for matches within cache expiry (might not have skill data)
                                 var recents = cache.data.filter(function(m)
                                 {
-                                    return moment().diff(moment().unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
+                                    return moment().diff(moment.unix(m.start_time), 'days') <= config.UNTRACK_DAYS;
                                 });
                                 var skillMap = {};
-                                async.eachSeries(recents, function(match, cb)
+                                async.each(recents, function(match, cb)
                                 {
-                                    db.first(['skill']).from('match_skill').where(
+                                    db.first(['match_id', 'skill']).from('match_skill').where(
                                     {
                                         match_id: match.match_id
                                     }).asCallback(function(err, row)

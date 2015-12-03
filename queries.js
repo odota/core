@@ -103,7 +103,7 @@ function insertMatch(db, redis, queue, match, options, cb) {
             };
         });
     }
-    //options specify api, parse, or skill
+    //options.type specify api, parse, or skill
     //we want to insert into matches, then insert into player_matches for each entry in players
     //db.transaction(function(trx) {
     async.series([
