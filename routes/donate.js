@@ -22,7 +22,7 @@ module.exports = function(db, redis) {
                         stripe_public: stripe_public,
                         subscription: sub
                     });
-                })
+                });
             } else {
                 res.render("carry", {
                     users: results,
@@ -66,14 +66,14 @@ module.exports = function(db, redis) {
                         req.session.cheeseAmount = amount;
                         req.session.subscription = 1; // Signed in
                         return res.sendStatus(200);
-                    })
+                    });
                     
                 } else {
                     req.session.cheeseAmount = amount;
                     req.session.subscription = 2; // Not signed in
                     return res.sendStatus(200);   
                 }
-            })
+            });
         
         } else {
             stripe.charges.create({
@@ -101,7 +101,7 @@ module.exports = function(db, redis) {
                     req.session.cheeseAmount = amount;
                     return res.sendStatus(200);
                 }
-            })
+            });
         }
     });
     donate.route('/thanks').get(function(req, res) {
@@ -131,8 +131,8 @@ module.exports = function(db, redis) {
             if (err) return next(err);
             res.render("cancel", {
                 sub: sub
-            })
-        })
+            });
+        });
     }).post(function(req, res, next) {
         db("subscriptions")
         .where({
@@ -157,8 +157,8 @@ module.exports = function(db, redis) {
                 
                 req.session.cancel = true;
                 res.redirect("/thanks");
-            })
-        })
+            });
+        });
     });
     donate.route("/stripe_endpoint").post(function(req, res, next) {
         var id = req.body.id;
@@ -226,14 +226,14 @@ module.exports = function(db, redis) {
                                     console.log("Event %s: Did not find customer %s.", id, customer);
                                     addEventAndRespond(id, res);
                                 }
-                            })
+                            });
                         } else {
                             addEventAndRespond(id, res);
                         }
-                    })
+                    });
                 } else if (event.type === "customer.subscription.deleted") {
                     // Our delete process should delete the subscription, but make sure.
-                    var customer = event.data.object.customer
+                    var customer = event.data.object.customer;
                     console.log("Event %s: Customer %s being deleted.", id, customer);
                     
                     db("subscriptions")
@@ -244,12 +244,12 @@ module.exports = function(db, redis) {
                         if (err) return res.sendStatus(400);
                         
                         addEventAndRespond(id, res);
-                    })
+                    });
                 } else { // Shouldn't happen
                     res.sendStatus(200);
                 }
             });
-        })
+        });
     });
     return donate;
     
