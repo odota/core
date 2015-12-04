@@ -450,7 +450,9 @@ function generatePlayerAnalysis(player_match)
     //Kill drought (gap in kill times) for a ganking hero
     //farming drought (low gold earned delta over an interval) for a farming hero
     //Flaming in all chat
-    //lack of warding/min
+    //lack of observer wards/min
+    //low wards destroyed
+    //low smokes
     //Excessive pinging
     //Courier feeding
     //low ability accuracy (skillshots)
