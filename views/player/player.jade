@@ -38,7 +38,7 @@ block content
               span.text-success.rating: abbr(title="Full history has been processed for this player.")
                 i.fa.fa-check
             small: abbr(title="A recorded match is a match for which we have data from the Steam WebAPI.<br> \
-              Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{Object.keys(player.aggData.match_ids).length} recorded 
+              Players signing in for the first time may not see all matches until their full history has been retrieved.<br>") #{player.counts.match_count} recorded 
               
           h4
             if !(player.account_id in trackedPlayers)
@@ -50,21 +50,21 @@ block content
             small: abbr(title="A parsed match is a match that has had its replay analyzed.<br> \
               Replay parsing is only available for matches within the last 7 days (prior to replay expiration).<br> \
               Many advanced statistics are only available for parsed matches.<br> \
-              Replays of active users and specifically requested matches are parsed.") #{Object.keys(player.aggData.parsed_match_ids).length} parsed 
+              Replays of active users and specifically requested matches are parsed.") #{player.counts.parsed_match_count} parsed 
 
     .col-xs-3
       h4
         span.text-primary
           i.fa.fa-trophy
           small(style="margin-left:.5em")
-            span.text-success(style="margin:0 4px;") #{(player.aggData.win)}
+            span.text-success(style="margin:0 4px;") #{(player.counts.win)}
             span -
-            span.text-danger(style="margin:0 4px;") #{player.aggData.lose}
-            span (#{(player.aggData.win/player.aggData.games*100).toFixed(2)}%)
+            span.text-danger(style="margin:0 4px;") #{player.counts.lose}
+            span (#{(player.counts.win/player.counts.match_count*100).toFixed(2)}%)
       h4
         span.text-primary
           i.fa.fa-sign-out
-          small(style="margin-left:.5em") #{player.abandons} abandons
+          small(style="margin-left:.5em") #{player.abandon_count} abandons
       
   .row.player-tabs(style="margin-top:1em;")
     .col-md-12.table-responsive

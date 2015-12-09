@@ -50,13 +50,13 @@ var subkeys = {
     "actions_per_min": 1
 };
 //optimize by only projecting certain columns based on tab  set query.project based on info
-//basic must contain anything a filter might use!
-var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster', 'purchase', 'lane_pos'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster'];
 var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
-var everything = basic.concat(advanced).concat(others);
+var filter = ['purchase', 'lane_pos'];
+var everything = basic.concat(advanced).concat(others).concat(filter);
 var projections = {
-    index: basic.concat('pgroup'),
+    index: basic,
     matches: basic,
     heroes: basic.concat('pgroup'),
     peers: basic.concat('pgroup'),
@@ -79,15 +79,42 @@ module.exports = function(db, redis)
     {
         var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
+        var query = req.query;
+        if (Number(account_id) === constants.anonymous_account_id)
+        {
+            return next("cannot generate profile for anonymous account_id");
+        }
+        //TODO
+        //last played
+        //significance check
+        //result for matches table
+        //make team/against filters work
+        //disable filters, purchases, lane, patch, region
+        //ag -i "aggData" views for more dependencies that need to be replaced
+        //make histograms/records/trends work
+        //get player db object
         async.parallel(
         {
-            peers: function(cb)
+            players_with: function(cb)
             {
-                db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
+                //db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
+                db.raw("select personaname, res.account_id, with_games, with_win from (select player_matches.account_id, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by player_matches.account_id order by with_games desc limit 100) res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
+            },
+            players_against: function(cb)
+            {
+                db.raw("select personaname, res.account_id, against_games, against_win from (select player_matches.account_id, count(*) as against_games, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where player_matches.account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by player_matches.account_id order by against_games desc limit 100) res left join players on players.account_id = res.account_id", [account_id]).asCallback(cb);
             },
             heroes: function(cb)
             {
-                db.raw("select hero_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ? group by hero_id order by games desc", [account_id]).asCallback(cb);
+                db.raw("select hero_id, count(*) as games, sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ? group by hero_id order by games desc", [account_id]).asCallback(cb);
+            },
+            heroes_with: function(cb)
+            {
+                db.raw("select hero_id, count(*) as with_games, sum(case when player_win then 1 else 0 end) as with_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) = player_radiant group by hero_id order by with_games desc", [account_id]).asCallback(cb);
+            },
+            heroes_against: function(cb)
+            {
+                db.raw("select hero_id, count(*) as against_games, sum(case when player_win then 1 else 0 end) as against_win from player_matches join (select player_matches.match_id, (player_slot < 64 = radiant_win) as player_win, (player_slot < 64) as player_radiant from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ?) pm on pm.match_id = player_matches.match_id where (player_slot < 64) != player_radiant group by hero_id order by against_games desc", [account_id]).asCallback(cb);
             },
             matches: function(cb)
             {
@@ -95,6 +122,18 @@ module.exports = function(db, redis)
                 {
                     account_id: account_id
                 }).orderBy('match_id', 'desc').limit(20).asCallback(cb);
+            },
+            counts: function(cb)
+            {
+                db.raw("select sum(case when radiant_win = player_slot < 64 then 1 else 0 end) as win, sum(case when radiant_win = player_slot < 64 then 0 else 1 end) as lose, sum(case when leaver_status > 1 then 1 else 0 end) as abandon_count, count(*) as match_count, sum(case when version > 0 then 1 else 0 end) as parsed_match_count from player_matches join matches on player_matches.match_id = matches.match_id where account_id = ?", [account_id]).asCallback(cb);
+            },
+            sets: function(cb)
+            {
+                queries.getSets(redis, cb);
+            },
+            ratings: function(cb)
+            {
+                queries.getPlayerRatings(db, account_id, cb);
             }
         }, function(err, result)
         {
@@ -105,20 +144,19 @@ module.exports = function(db, redis)
             //console.log(result)
             var player = {
                 account_id: account_id,
-                ratings: [],
+                ratings: result.ratings,
                 data: result.matches,
+                counts: result.counts.rows[0],
                 heroes_list: result.heroes.rows,
-                teammate_list: result.peers.rows,
-                aggData:
-                {
-                    match_ids:
-                    {},
-                    parsed_match_ids:
-                    {},
-                    heroes: result.heroes.rows,
-                    teammates: result.peers.rows
-                }
+                heroes_with: result.heroes_with.rows,
+                heroes_against: result.heroes_against.rows,
+                players_with: result.players_with.rows,
+                players_against: result.players_against.rows
             };
+            if (req.query.json)
+            {
+                return res.json(player);
+            }
             res.render("player/player_" + info,
             {
                 q: req.query,
@@ -126,8 +164,7 @@ module.exports = function(db, redis)
                 route: info,
                 tabs: playerPages,
                 player: player,
-                trackedPlayers:
-                {},
+                trackedPlayers: result.sets.trackedPlayers,
                 histograms: subkeys,
                 subkey: req.params.subkey || "kills",
                 times:
@@ -135,7 +172,7 @@ module.exports = function(db, redis)
                     "duration": 1,
                     "first_blood_time": 1
                 },
-                teammate_ids: [],
+                teammate_ids: player.players_with,
                 title: (player.personaname || player.account_id) + " - YASP"
             });
         });
@@ -181,10 +218,6 @@ module.exports = function(db, redis)
                 return next(err);
             }
             var player = result.player;
-            var ratings = result.ratings || [];
-            player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
-            player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
-            player.ratings = ratings;
             var aggData = player.aggData;
             async.parallel(
             {
@@ -206,9 +239,9 @@ module.exports = function(db, redis)
                 }
                 player.teammate_list = lists.teammate_list;
                 var teammate_ids = JSON.parse(JSON.stringify(lists.all_teammate_list || lists.teammate_list));
-                //add custom tagged elements to teammate_ids, but ensure there are no duplicates.
                 //remove self account id from query
                 delete req.query.account_id;
+                //add custom tagged elements to teammate_ids so they show up in field, but ensure there are no duplicates.
                 var ids = {};
                 teammate_ids.forEach(function(t)
                 {
@@ -257,6 +290,17 @@ module.exports = function(db, redis)
                     {
                         return res.json(result.player);
                     }
+                    var ratings = result.ratings || [];
+                    player.soloRating = ratings[0] ? ratings[ratings.length - 1].solo_competitive_rank : null;
+                    player.partyRating = ratings[0] ? ratings[ratings.length - 1].competitive_rank : null;
+                    player.ratings = ratings;
+                    player.counts = {
+                        match_count: Object.keys(player.aggData.match_ids).length,
+                        parsed_match_count: Object.keys(player.aggData.parsed_match_ids).length,
+                        abandon_count: player.aggData.abandons,
+                        win: player.aggData.win,
+                        lose: player.aggData.lose
+                    };
                     res.render("player/player_" + info,
                     {
                         q: req.query,
@@ -556,6 +600,7 @@ module.exports = function(db, redis)
                 console.log("player cache miss %s", player.account_id);
                 //we need to project everything to build a new cache, otherwise optimize and do a subset
                 options.queryObj.project = config.ENABLE_PLAYER_CACHE ? everything : projections[options.info];
+                options.queryObj.project = options.queryObj.project.concat(filter_exists ? filter : []);
                 getPlayerMatches(db, options.queryObj, processResults);
             }
 

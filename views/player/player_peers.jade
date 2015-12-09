@@ -5,6 +5,11 @@ block playercontent
   .row
     .col-md-12.table-responsive
       +teammate_table(player.teammate_list)
-
+  //-
+    .row
+      .col-md-6.table-responsive
+        +teammate_table(player.peers)
+      .col-md-6.table-responsive
+        +teammate_table(player.opponents)
 append footer_assets
   script.
