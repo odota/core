@@ -51,8 +51,8 @@ var subkeys = {
 };
 //optimize by only projecting certain columns based on tab  set query.project based on info
 //basic must contain anything a filter might use!
-var basic = ['matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster', 'purchase', 'lane_pos'];
-var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'purchase', 'pings', 'radiant_gold_adv', 'actions'];
+var basic = ['player_matches.match_id', 'hero_id', 'start_time', 'duration', 'kills', 'deaths', 'assists', 'player_slot', 'account_id', 'game_mode', 'lobby_type', 'match_skill.skill', 'parse_status', 'radiant_win', 'leaver_status', 'version', 'cluster', 'purchase', 'lane_pos'];
+var advanced = ['last_hits', 'denies', 'gold_per_min', 'xp_per_min', 'gold_t', 'first_blood_time', 'level', 'hero_damage', 'tower_damage', 'hero_healing', 'stuns', 'killed', 'pings', 'radiant_gold_adv', 'actions'];
 var others = ['pgroup', 'kill_streaks', 'multi_kills', 'obs', 'sen', 'purchase_log', 'item_uses', 'hero_hits', 'ability_uses', 'chat'];
 var everything = basic.concat(advanced).concat(others);
 var projections = {
@@ -75,16 +75,69 @@ var projections = {
 var playerPages = constants.player_pages;
 module.exports = function(db, redis)
 {
-    players.get('/:account_id/sqltest/:info?/:subkey?', function(req, res, next)
+    players.get('/sql/:account_id/:info?/:subkey?', function(req, res, next)
     {
+        var info = playerPages[req.params.info] ? req.params.info : "index";
         var account_id = req.params.account_id;
-        db.raw('select hero_id, count(*) from player_matches where account_id = ? group by hero_id', [account_id]).asCallback(function(err, resp)
+        async.parallel(
+        {
+            peers: function(cb)
+            {
+                db.raw("select js2.value as account_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id, json_each(pgroup) AS js, json_each_text(value) js2 where account_id = ? and js2.key = 'account_id' group by js2.value order by games desc", [account_id]).asCallback(cb);
+            },
+            heroes: function(cb)
+            {
+                db.raw("select hero_id, count(*) as games from player_matches join matches on matches.match_id = player_matches.match_id where account_id = ? group by hero_id order by games desc", [account_id]).asCallback(cb);
+            },
+            matches: function(cb)
+            {
+                db.select(basic).from('player_matches').join('matches', 'matches.match_id', 'player_matches.match_id').leftJoin('match_skill', 'player_matches.match_id', "match_skill.match_id").where(
+                {
+                    account_id: account_id
+                }).orderBy('match_id', 'desc').limit(20).asCallback(cb);
+            }
+        }, function(err, result)
         {
             if (err)
             {
                 return next(err);
             }
-            res.json(resp);
+            //console.log(result)
+            var player = {
+                account_id: account_id,
+                ratings: [],
+                data: result.matches,
+                heroes_list: result.heroes.rows,
+                teammate_list: result.peers.rows,
+                aggData:
+                {
+                    match_ids:
+                    {},
+                    parsed_match_ids:
+                    {},
+                    heroes: result.heroes.rows,
+                    teammates: result.peers.rows
+                }
+            };
+            res.render("player/player_" + info,
+            {
+                q: req.query,
+                querystring: Object.keys(req.query).length ? "?" + querystring.stringify(req.query) : "",
+                route: info,
+                tabs: playerPages,
+                player: player,
+                trackedPlayers:
+                {},
+                histograms: subkeys,
+                subkey: req.params.subkey || "kills",
+                times:
+                {
+                    "duration": 1,
+                    "first_blood_time": 1
+                },
+                teammate_ids: [],
+                title: (player.personaname || player.account_id) + " - YASP"
+            });
         });
     });
     players.get('/:account_id/:info?/:subkey?', function(req, res, next)
