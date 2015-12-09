@@ -174,8 +174,11 @@ module.exports = function(db, redis) {
             
             // Check that we haven't seen this before
             redis.lrange("stripe:events", 0, 1000, function(err, result) {
-                if (err) return res.sendStatus(400); // Redis is derping, have Stripe send back later
-
+                if (err) {
+                    console.log(err);
+                    return res.sendStatus(400); // Redis is derping, have Stripe send back later
+                }
+                
                 for (var i = 0; i < result.length; i++) {
                     if (result[i] === id) {
                         console.log("Found event %s in redis.", id);
@@ -191,7 +194,7 @@ module.exports = function(db, redis) {
                     
                     // Update cheese goal
                     redis.incrby("cheese_goal", amount, function(err, val) {
-                        if (!err && val == amount) {
+                        if (!err && val === Number(amount)) {
                             // this condition indicates the key is new
                             redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
                         }
