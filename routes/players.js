@@ -297,7 +297,7 @@ module.exports = function(db, redis)
                     player.counts = {
                         match_count: Object.keys(player.aggData.match_ids).length,
                         parsed_match_count: Object.keys(player.aggData.parsed_match_ids).length,
-                        abandon_count: player.aggData.abandons,
+                        abandon_count: player.abandons,
                         win: player.aggData.win,
                         lose: player.aggData.lose
                     };
