@@ -147,6 +147,14 @@ CREATE TABLE player_caches (
   cache json
 );
 
+CREATE TABLE subscriptions (
+  PRIMARY KEY(customer_id),
+  account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
+  customer_id varchar(255),
+  amount int,
+  active_until date
+);
+
 CREATE TABLE match_skill (
   match_id bigint PRIMARY KEY,
   skill integer
@@ -157,3 +165,5 @@ CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);
 CREATE INDEX on players(last_login);
 CREATE INDEX on players(cheese);
+CREATE INDEX on subscriptions(account_id);
+CREATE INDEX on subscriptions(customer_id);

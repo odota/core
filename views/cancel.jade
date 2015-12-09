@@ -2,7 +2,10 @@ extend layout
   
 block content
   .page-header.text-center
-    h1(style='font-weight: 700;') Maybe next time?
-    p.lead Buy some Cheese. Help pay for servers.
-    a(href="/carry")
-      button.btn.btn-warning BUY SOME CHEESE
+    if sub
+      h1(style='font-weight: 700;') You're canceling your subscription.
+      p.lead We appreciated your support.
+      form.form-inline(method="post", style="display:inline-block;")
+        button.btn.btn-warning(type="submit") Stop Supporting YASP
+    else
+      h3 I don't think you should be here...
