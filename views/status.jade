@@ -64,10 +64,31 @@ block content
             th Node
             th Count
         tbody
+          - var group = "workparser-group"
+          - var total = 0;
           each entry in result.parser
+            if entry.hostname.indexOf(group) === 0
+              - total += entry.count
+            else
+              tr
+                td=entry.hostname
+                td=entry.count
+          tr
+            td
+              a#collapse.panel-group(data-toggle="collapse", href="#group", aria-expanded="false" aria-controls="group") #{group}
+            td= total
+      .collapse#group
+        table.table.table-condensed
+          thead
             tr
-              td=entry.hostname
-              td=entry.count
+              th Node
+              th Count
+          tbody
+            each entry in result.parser
+              tr
+                if entry.hostname.indexOf(group) === 0
+                  td=entry.hostname
+                  td=entry.count
     .col-md-3
       h3 Retrievers
       table.table.table-condensed
@@ -87,7 +108,7 @@ block content
       h3 Parse Delay
       //pre=JSON.stringify(result.parse_delay)
       pre #{(result.parse_delay.map(function(a){return Number(a);}).reduce(function(a, b) { return a + b; }, 0)/result.parse_delay.length).toFixed(2)}ms
-              
+
 append footer_assets
   //-
     script(src="/socket.io/socket.io.js")
