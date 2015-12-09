@@ -196,7 +196,8 @@ module.exports = function(db, redis) {
                     redis.incrby("cheese_goal", amount, function(err, val) {
                         if (!err && val === Number(amount)) {
                             // this condition indicates the key is new
-                            redis.expire("cheese_goal", 86400 - moment().unix() % 86400);
+                            // Set TLL to end of the month
+                            redis.expire("cheese_goal", moment().endOf("month").unix() - moment().unix());
                         }
                         
                         var customer = event.data.object.customer;
