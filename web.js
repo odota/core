@@ -121,8 +121,8 @@ var sessOptions = {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(bodyParser.urlencoded(
-{
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(function(req, res, next)
