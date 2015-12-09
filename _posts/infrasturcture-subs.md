@@ -36,7 +36,7 @@ We're really excited about this change!
 
 We've also moved our payment service from Paypal to Stripe, and with that, we're now supporting
 [subscriptions and Bitcoin payments](/carry). We've always offered all of our match parsing for free, and this will never change. 
-We continue to operate in a not-for-profit manner. Devs are not paid, and all our revenut goes directly back to running the servers.
+We continue to operate in a not-for-profit manner. Devs are not paid, and all our revenue goes directly back to running the servers.
 Subscriptions give users no extra features beyond the normal cheese benefits. It's just a way for our extra generous users to give us
 reliable, monthly revenue. With a more reliable revenue stream, we can plan better for the future and continue to give our users the 
 best experience we can.
