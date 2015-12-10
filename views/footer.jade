@@ -3,16 +3,18 @@ footer.footer
     .row
       .col-md-4.text-center
         p Buy some cheese. Help pay for servers.
-        p Reaching the goal each day keeps us running.
+        p Reaching the goal every month keeps us running.
       .col-md-4.text-center
         .meter_wrapper
-          h3(style="font-weight:700; margin-top: 0;") Daily Cheese Goal
+          h3(style="font-weight:700; margin-top: 0;") Monthly Cheese Goal
           .meter
             span(style="width: #{cheese_goal}%;")
-          if cheese_goal >= 50 && cheese_goal < 100
-            small Getting there...
-          else if cheese_goal === 100
-            small Woo!!! We did it! Thanks guys!
+          small
+            if cheese_goal >= 50 && cheese_goal < 100
+              | Getting there... 
+            else if cheese_goal === 100
+              | Woo!!! We did it! Thanks guys! 
+            | Resets #{moment().endOf("month").fromNow()}.
       .col-md-4.text-center
         span.flaticon-1.medium-cheese(style="padding: 5px 11px;")
         a(href="/carry", target="_blank")
