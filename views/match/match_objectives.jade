@@ -12,7 +12,7 @@ block match_content
         tbody
           each entry in match.objectives || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
-            - var objective = constants.objectives[entry.subtype] || entry.subtype
+            - var objective = constants.objectives[entry.subtype || entry.type] || entry.subtype || entry.type
             - var p = match.players[adjSlot] || {}
             - var slot_color = constants.player_colors[p.player_slot]
             - p.team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant
