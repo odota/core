@@ -20,10 +20,11 @@ block content
               h6.blog-date By #{post.author} | #{moment(post.date).format("dddd, MMMM Do, YYYY")}
           .panel-body
               != post.content
-              .tags
+              //-
+                .tags
                   each tag in post.tags
-                      a(href=tagUrl(tag))
-                          span.label.label-info #{tag}
+                    a(href=tagUrl(tag))
+                      span.label.label-info #{tag}
       ul.pagination.pull-left
         if id<max
           li: a(href="/blog/"+(id+1)) Newer
