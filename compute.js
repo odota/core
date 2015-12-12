@@ -7,12 +7,15 @@ var isRadiant = utility.isRadiant;
 var constants = require('./constants.js');
 var sentiment = require('sentiment');
 
-function computeMatchData(match) {
+function computeMatchData(match)
+{
     var date = new Date(match.start_time * 1000);
-    for (var i = 1; i < constants.patch.length; i++) {
+    for (var i = 1; i < constants.patch.length; i++)
+    {
         var pd = new Date(constants.patch[i].date);
         //stop when patch date is past the start time
-        if (pd > date) {
+        if (pd > date)
+        {
             break;
         }
     }
@@ -23,7 +26,8 @@ function computeMatchData(match) {
 /**
  * Computes additional stats from stored data for a player_match
  **/
-function computePlayerMatchData(player_match) {
+function computePlayerMatchData(player_match)
+{
     computeMatchData(player_match);
     player_match.player_win = (isRadiant(player_match) === player_match.radiant_win); //did the player win?
     player_match.isRadiant = isRadiant(player_match);
@@ -31,20 +35,24 @@ function computePlayerMatchData(player_match) {
     player_match.total_xp = ~~(player_match.xp_per_min * player_match.duration / 60);
     player_match.kda = ~~((player_match.kills + player_match.assists) / (player_match.deaths + 1));
     var self_hero = constants.heroes[player_match.hero_id];
-    if (player_match.chat) {
+    if (player_match.chat)
+    {
         // word counts for this player and all players
         // aggregation of all words in all chat this player has experienced
         player_match.all_word_counts = count_words(player_match, null);
         // aggregation of only the words in all chat this player said themselves
         player_match.my_word_counts = count_words(player_match, player_match);
     }
-    if (player_match.kills_log && self_hero) {
+    if (player_match.kills_log && self_hero)
+    {
         //remove self kills
-        player_match.kills_log = player_match.kills_log.filter(function(k) {
+        player_match.kills_log = player_match.kills_log.filter(function(k)
+        {
             return k.key !== self_hero.name;
         });
     }
-    if (player_match.killed) {
+    if (player_match.killed)
+    {
         player_match.neutral_kills = 0;
         player_match.tower_kills = 0;
         player_match.courier_kills = 0;
@@ -52,40 +60,52 @@ function computePlayerMatchData(player_match) {
         player_match.hero_kills = 0;
         player_match.observer_kills = 0;
         player_match.sentry_kills = 0;
-        for (var key in player_match.killed) {
-            if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1) {
+        for (var key in player_match.killed)
+        {
+            if (key.indexOf("creep_goodguys") !== -1 || key.indexOf("creep_badguys") !== -1)
+            {
                 player_match.lane_kills += player_match.killed[key];
             }
-            if (key.indexOf("observer") !== -1) {
+            if (key.indexOf("observer") !== -1)
+            {
                 player_match.observer_kills += player_match.killed[key];
             }
-            if (key.indexOf("sentry") !== -1) {
+            if (key.indexOf("sentry") !== -1)
+            {
                 player_match.sentry_kills += player_match.killed[key];
             }
-            if (key.indexOf("npc_dota_hero") === 0) {
-                if (!self_hero || self_hero.name !== key) {
+            if (key.indexOf("npc_dota_hero") === 0)
+            {
+                if (!self_hero || self_hero.name !== key)
+                {
                     player_match.hero_kills += player_match.killed[key];
                 }
             }
-            if (key.indexOf("npc_dota_neutral") === 0) {
+            if (key.indexOf("npc_dota_neutral") === 0)
+            {
                 player_match.neutral_kills += player_match.killed[key];
             }
-            if (key.indexOf("_tower") !== -1) {
+            if (key.indexOf("_tower") !== -1)
+            {
                 player_match.tower_kills += player_match.killed[key];
             }
-            if (key.indexOf("courier") !== -1) {
+            if (key.indexOf("courier") !== -1)
+            {
                 player_match.courier_kills += player_match.killed[key];
             }
         }
     }
-    if (player_match.buyback_log) {
+    if (player_match.buyback_log)
+    {
         player_match.buyback_count = player_match.buyback_log.length;
     }
-    if (player_match.item_uses) {
+    if (player_match.item_uses)
+    {
         player_match.observer_uses = player_match.item_uses.ward_observer || 0;
         player_match.sentry_uses = player_match.item_uses.ward_sentry || 0;
     }
-    if (player_match.gold_t) {
+    if (player_match.gold_t)
+    {
         //lane efficiency: divide 10 minute gold by static amount based on standard creep spawn
         //var tenMinute = (43 * 60 + 48 * 20 + 74 * 2);
         //6.84 change
@@ -103,33 +123,41 @@ function computePlayerMatchData(player_match) {
     //p.explore = p.posData.pos.length / 128 / 128;
     //compute lanes
     var lanes = [];
-    for (var i = 0; i < player_match.posData.lane_pos.length; i++) {
+    for (var i = 0; i < player_match.posData.lane_pos.length; i++)
+    {
         var dp = player_match.posData.lane_pos[i];
-        for (var j = 0; j < dp.value; j++) {
+        for (var j = 0; j < dp.value; j++)
+        {
             lanes.push(constants.lanes[dp.y][dp.x]);
         }
     }
-    if (lanes.length) {
+    if (lanes.length)
+    {
         player_match.lane = mode(lanes);
         var radiant = player_match.isRadiant;
         var lane_roles = {
-            "1": function() {
+            "1": function()
+            {
                 //bot
                 return radiant ? 1 : 3;
             },
-            "2": function() {
+            "2": function()
+            {
                 //mid
                 return 2;
             },
-            "3": function() {
+            "3": function()
+            {
                 //top
                 return radiant ? 3 : 1;
             },
-            "4": function() {
+            "4": function()
+            {
                 //rjung
                 return 4;
             },
-            "5": function() {
+            "5": function()
+            {
                 //djung
                 return 4;
             }
@@ -137,18 +165,22 @@ function computePlayerMatchData(player_match) {
         player_match.lane_role = lane_roles[player_match.lane] ? lane_roles[player_match.lane]() : undefined;
     }
     //compute hashes of purchase time sums and counts from logs
-    if (player_match.purchase_log) {
+    if (player_match.purchase_log)
+    {
         //remove ward dispenser and recipes
-        player_match.purchase_log = player_match.purchase_log.filter(function(purchase) {
+        player_match.purchase_log = player_match.purchase_log.filter(function(purchase)
+        {
             return !(purchase.key.indexOf("recipe_") === 0 || purchase.key === "ward_dispenser");
         });
         player_match.purchase_time = {};
         player_match.item_win = {};
         player_match.item_usage = {};
-        for (var i = 0; i < player_match.purchase_log.length; i++) {
+        for (var i = 0; i < player_match.purchase_log.length; i++)
+        {
             var k = player_match.purchase_log[i].key;
             var time = player_match.purchase_log[i].time;
-            if (!player_match.purchase_time[k]) {
+            if (!player_match.purchase_time[k])
+            {
                 player_match.purchase_time[k] = 0;
             }
             player_match.purchase_time[k] += time;
@@ -156,20 +188,24 @@ function computePlayerMatchData(player_match) {
             player_match.item_win[k] = isRadiant(player_match) === player_match.radiant_win ? 1 : 0;
         }
     }
-    if (player_match.purchase) {
+    if (player_match.purchase)
+    {
         //account for stacks
         player_match.purchase.ward_sentry *= 2;
         player_match.purchase.dust *= 2;
     }
-    if (player_match.actions) {
+    if (player_match.actions)
+    {
         var actions_sum = 0;
-        for (var key in player_match.actions) {
+        for (var key in player_match.actions)
+        {
             actions_sum += player_match.actions[key];
         }
         player_match.actions_per_min = ~~(actions_sum / player_match.duration * 60);
     }
     //compute throw/comeback levels
-    if (player_match.radiant_gold_adv) {
+    if (player_match.radiant_gold_adv)
+    {
         var radiant_gold_advantage = player_match.radiant_gold_adv;
         player_match.throw = player_match.radiant_win !== isRadiant(player_match) ? (isRadiant(player_match) ? max(radiant_gold_advantage) : min(radiant_gold_advantage) * -1) : undefined;
         player_match.comeback = player_match.radiant_win === isRadiant(player_match) ? (isRadiant(player_match) ? min(radiant_gold_advantage) * -1 : max(radiant_gold_advantage)) : undefined;
@@ -182,15 +218,18 @@ function computePlayerMatchData(player_match) {
  * - messages: the messages to create the counts over
  * - player_filter: if non-null, only count that player's messages
  **/
-function count_words(player_match, player_filter) {
+function count_words(player_match, player_filter)
+{
     var messages = player_match.chat;
     // extract the message strings from the message objects
     // extract individual words from the message strings
     var chat_words = [];
-    messages.forEach(function(message) {
+    messages.forEach(function(message)
+    {
         // if there is no player_filter, or if the passed player's player_slot matches this message's parseSlot converted to player_slot, log it
         var messageParseSlot = message.slot < 5 ? message.slot : message.slot + (128 - 5);
-        if (!player_filter || (messageParseSlot === player_filter.player_slot)) {
+        if (!player_filter || (messageParseSlot === player_filter.player_slot))
+        {
             chat_words.push(message.key);
         }
     });
@@ -198,10 +237,13 @@ function count_words(player_match, player_filter) {
     var tokens = utility.tokenize(chat_words);
     // count how frequently each word occurs
     var counts = {};
-    for (var i = 0; i < tokens.length; i++) {
+    for (var i = 0; i < tokens.length; i++)
+    {
         //ignore the empty string
-        if (tokens[i]) {
-            if (!counts[tokens[i]]) {
+        if (tokens[i])
+        {
+            if (!counts[tokens[i]])
+            {
                 counts[tokens[i]] = 0;
             }
             counts[tokens[i]] += 1;
@@ -213,15 +255,20 @@ function count_words(player_match, player_filter) {
 /**
  * Renders display-only data for a match
  **/
-function renderMatch(m) {
+function renderMatch(m)
+{
     //do render-only processing (not needed for aggregation, only for match display)
-    m.players.forEach(function(p, i) {
+    m.players.forEach(function(player_match, i)
+    {
         //converts hashes to arrays and sorts them
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
-        targets.forEach(function(target) {
-            if (p[target]) {
+        targets.forEach(function(target)
+        {
+            if (player_match[target])
+            {
                 var t = [];
-                for (var key in p[target]) {
+                for (var key in player_match[target])
+                {
                     var a = constants.abilities[key];
                     var i = constants.items[key];
                     var def = {
@@ -231,36 +278,75 @@ function renderMatch(m) {
                     var result = {
                         img: def.img,
                         name: key === "undefined" ? "Auto Attack/Other" : key,
-                        val: p[target][key],
+                        val: player_match[target][key],
                         className: a ? "ability" : i ? "item" : "img-sm"
                     };
-                    if (p.hero_hits) {
-                        result.hero_hits = p.hero_hits[key];
+                    if (player_match.hero_hits)
+                    {
+                        result.hero_hits = player_match.hero_hits[key];
                     }
                     t.push(result);
                 }
-                t.sort(function(a, b) {
+                t.sort(function(a, b)
+                {
                     return b.val - a.val;
                 });
-                p[target + "_arr"] = t;
+                player_match[target + "_arr"] = t;
             }
         });
         //filter interval data to only be >= 0
-        if (p.times) {
+        if (player_match.times)
+        {
             var intervals = ["lh_t", "gold_t", "xp_t", "times"];
-            intervals.forEach(function(key) {
-                p[key] = p[key].filter(function(el, i) {
-                    return p.times[i] >= 0;
+            intervals.forEach(function(key)
+            {
+                player_match[key] = player_match[key].filter(function(el, i)
+                {
+                    return player_match.times[i] >= 0;
                 });
             });
         }
+        //compute damage to towers/rax/roshan
+        if (player_match.damage)
+        {
+            //npc_dota_goodguys_tower2_top
+            //npc_dota_goodguys_melee_rax_top
+            //npc_dota_roshan
+            //npc_dota_neutral_giant_wolf
+            //npc_dota_creep
+            player_match.objective_damage = {};
+            for (var key in player_match.damage)
+            {
+                var identifier = null;
+                if (key.indexOf("tower") !== -1)
+                {
+                    identifier = key.split("_").slice(3).join("_");
+                }
+                if (key.indexOf("rax") !== -1)
+                {
+                    identifier = key.split("_").slice(4).join("_");
+                }
+                if (key.indexOf("roshan") !== -1)
+                {
+                    identifier = "roshan";
+                }
+                if (key.indexOf("fort") !== -1)
+                {
+                    identifier = "fort";
+                }
+                player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
+            }
+        }
     });
-    if (m.chat) {
+    if (m.chat)
+    {
         //make a list of messages and join them all together for sentiment analysis
-        var chat_words = m.chat.map(function(message) {
+        var chat_words = m.chat.map(function(message)
+        {
             return message.key;
         }).join(' ');
-        m.sentiment = sentiment(chat_words, {
+        m.sentiment = sentiment(chat_words,
+        {
             "report": -2,
             "commend": 2,
             "noob": -2,
@@ -280,32 +366,40 @@ function renderMatch(m) {
         });
     }
     //create gold breakdown data
-    if (m.players[0].gold_reasons) {
+    if (m.players[0].gold_reasons)
+    {
         m.incomeData = generateIncomeData(m);
-        m.treeMapData = generateTreemapData(m);
+        //m.treeMapData = generateTreemapData(m);
     }
     //create graph data
-    if (m.players[0].gold_t) {
+    if (m.players[0].gold_t)
+    {
         m.graphData = generateGraphData(m);
     }
     //create heatmap data
-    m.posData = m.players.map(function(p) {
+    m.posData = m.players.map(function(p)
+    {
         return p.posData;
     });
     //process objectives
-    if (m.objectives) {
-        m.objectives.forEach(function(entry) {
+    if (m.objectives)
+    {
+        m.objectives.forEach(function(entry)
+        {
             entry.objective = constants.objectives[entry.subtype] || entry.subtype;
             var p = m.players[entry.slot];
-            if (p) {
+            if (p)
+            {
                 entry.team = entry.team === 2 || entry.key < 64 || p.isRadiant ? 0 : 1;
                 entry.hero_img = constants.heroes[p.hero_id] ? constants.heroes[p.hero_id].img : "";
             }
         });
     }
     //process teamfight data
-    if (m.teamfights) {
-        m.teamfights.forEach(function(tf) {
+    if (m.teamfights)
+    {
+        m.teamfights.forEach(function(tf)
+        {
             tf.posData = [];
             tf.radiant_gold_delta = 0;
             tf.radiant_xp_delta = 0;
@@ -313,14 +407,18 @@ function renderMatch(m) {
             tf.radiant_deaths = 0;
             tf.dire_participation = 0;
             tf.dire_deaths = 0;
-            tf.players.forEach(function(p) {
+            tf.players.forEach(function(p)
+            {
                 //lookup starting, ending level
                 p.level_start = getLevelFromXp(p.xp_start);
                 p.level_end = getLevelFromXp(p.xp_end);
 
-                function getLevelFromXp(xp) {
-                    for (var i = 0; i < constants.xp_level.length; i++) {
-                        if (constants.xp_level[i] > xp) {
+                function getLevelFromXp(xp)
+                {
+                    for (var i = 0; i < constants.xp_level.length; i++)
+                    {
+                        if (constants.xp_level[i] > xp)
+                        {
                             return i;
                         }
                     }
@@ -328,7 +426,8 @@ function renderMatch(m) {
                 }
             });
             //add player's hero_id to each teamfight participant
-            m.players.forEach(function(p, i) {
+            m.players.forEach(function(p, i)
+            {
                 var tfplayer = tf.players[p.player_slot % (128 - 5)];
                 tfplayer.hero_id = p.hero_id;
                 tfplayer.player_slot = p.player_slot;
@@ -336,30 +435,35 @@ function renderMatch(m) {
                 tfplayer.personaname = p.personaname;
                 tfplayer.account_id = p.account_id;
                 tfplayer.participate = tfplayer.deaths > 0 || tfplayer.damage > 0;
-                if (!p.teamfights_participated) {
+                if (!p.teamfights_participated)
+                {
                     p.teamfights_participated = 0;
                 }
                 p.teamfights_participated += tfplayer.participate ? 1 : 0;
                 //compute team gold/xp deltas
-                if (isRadiant(p)) {
+                if (isRadiant(p))
+                {
                     tf.radiant_gold_delta += tfplayer.gold_delta;
                     tf.radiant_xp_delta += tfplayer.xp_delta;
                     tf.radiant_participation += tfplayer.participate ? 1 : 0;
                     tf.radiant_deaths += tfplayer.deaths ? 1 : 0;
                 }
-                else {
+                else
+                {
                     tf.radiant_gold_delta -= tfplayer.gold_delta;
                     tf.radiant_xp_delta -= tfplayer.xp_delta;
                     tf.dire_participation += tfplayer.participate ? 1 : 0;
                     tf.dire_deaths += tfplayer.deaths ? 1 : 0;
                 }
                 //convert 2d hash to array
-                tfplayer.posData = generatePositionData({
+                tfplayer.posData = generatePositionData(
+                {
                     deaths_pos: 1
                 }, tfplayer);
                 //console.log(player);
                 //add player hero id to each death, push into teamfight death position array
-                tfplayer.posData.deaths_pos.forEach(function(pt) {
+                tfplayer.posData.deaths_pos.forEach(function(pt)
+                {
                     pt.hero_id = tfplayer.hero_id;
                     tf.posData.push(pt);
                 });
@@ -370,7 +474,8 @@ function renderMatch(m) {
 /**
  * Generates data for c3 charts in a match
  **/
-function generateGraphData(match) {
+function generateGraphData(match)
+{
     //compute graphs
     var goldDifference = ['Gold'];
     var xpDifference = ['XP'];
@@ -383,8 +488,10 @@ function generateGraphData(match) {
         xp: [time],
         lh: [time]
     };
-    match.players.forEach(function(p, i) {
-        var hero = constants.heroes[p.hero_id] || {};
+    match.players.forEach(function(p, i)
+    {
+        var hero = constants.heroes[p.hero_id] ||
+        {};
         hero = hero.localized_name;
         data.gold.push([hero].concat(p.gold_t));
         data.xp.push([hero].concat(p.xp_t));
@@ -393,26 +500,32 @@ function generateGraphData(match) {
     return data;
 }
 
-function generateIncomeData(match) {
+function generateIncomeData(match)
+{
     //data for income chart
     var gold_reasons = [];
     var columns = [];
     var categories = [];
     var imgs = [];
     var orderedPlayers = match.players.slice(0);
-    orderedPlayers.sort(function(a, b) {
+    orderedPlayers.sort(function(a, b)
+    {
         return b.gold_per_min - a.gold_per_min;
     });
-    orderedPlayers.forEach(function(player) {
-        var hero = constants.heroes[player.hero_id] || {};
+    orderedPlayers.forEach(function(player)
+    {
+        var hero = constants.heroes[player.hero_id] ||
+        {};
         categories.push(hero.localized_name);
         imgs.push(hero.img);
     });
-    for (var key in constants.gold_reasons) {
+    for (var key in constants.gold_reasons)
+    {
         var reason = constants.gold_reasons[key].name;
         gold_reasons.push(reason);
         var col = [reason];
-        orderedPlayers.forEach(function(player) {
+        orderedPlayers.forEach(function(player)
+        {
             var g = player.gold_reasons;
             col.push(g ? g[key] : 0);
         });
@@ -426,21 +539,28 @@ function generateIncomeData(match) {
     };
 }
 
-function generateTreemapData(match) {
+function generateTreemapData(match)
+{
     var data = [];
-    match.players.forEach(function(player) {
-        var hero = constants.heroes[player.hero_id] || {};
-        data.push({
+    match.players.forEach(function(player)
+    {
+        var hero = constants.heroes[player.hero_id] ||
+        {};
+        data.push(
+        {
             name: hero.localized_name,
             id: player.hero_id.toString(),
             value: ~~(player.gold_per_min * match.duration / 60)
         });
     });
-    for (var key in constants.gold_reasons) {
+    for (var key in constants.gold_reasons)
+    {
         var reason = constants.gold_reasons[key].name;
-        match.players.forEach(function(player) {
+        match.players.forEach(function(player)
+        {
             var g = player.gold_reasons;
-            data.push({
+            data.push(
+            {
                 name: reason,
                 parent: player.hero_id.toString(),
                 value: g[key] || 0
