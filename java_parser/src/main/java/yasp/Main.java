@@ -106,8 +106,7 @@ public class Main {
         Integer value = message.getValue();
         String type = String.valueOf(message.getType());
         Entry entry = new Entry(time);
-        entry.type = "chat_event";
-        entry.subtype = type;
+        entry.type = type;
         entry.player1 = player1;
         entry.player2 = player2;
         entry.value = value;
@@ -156,8 +155,7 @@ public class Main {
         time = Math.round(cle.getTimestamp());
         //create a new entry
         Entry combatLogEntry = new Entry(time);
-        combatLogEntry.type = "combat_log";
-        combatLogEntry.subtype = cle.getType().name();
+        combatLogEntry.type = cle.getType().name();
         //translate the fields using string tables if necessary (get*Name methods)
         combatLogEntry.attackername = cle.getAttackerName();
         combatLogEntry.targetname = cle.getTargetName();

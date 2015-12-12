@@ -3,7 +3,6 @@ package yasp;
 public class Entry {
     public Integer time;
     public String type;
-    public String subtype;
     public Integer team;
     public String unit;
     public String key;

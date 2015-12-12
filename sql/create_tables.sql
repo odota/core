@@ -165,12 +165,9 @@ CREATE TABLE match_logs (
   player_slot integer,
   time integer,
   type varchar(50),
-  subtype varchar(50),
-  team integer,
   unit varchar(50),
   key varchar(50),
   value integer,
-  slot integer,
   player1 integer,
   player2 integer,
   attackername varchar(50),
@@ -190,8 +187,7 @@ CREATE TABLE match_logs (
   xp int,
   x int,
   y int,
-  stuns real,
-  hero_id int
+  stuns real
 );
 
 CREATE INDEX on player_matches(account_id);
