@@ -39,11 +39,6 @@ var streamTypes = {
     },
      "interval": function(e)
         {
-            //store hero state at each interval for teamfight lookup
-            if (!intervalState[e.time])
-            {
-                intervalState[e.time] = {};
-            }
             intervalState[e.time][e.slot] = e;
             //check curr_teamfight status
             if (curr_teamfight && e.time - curr_teamfight.last_death >= teamfight_cooldown)

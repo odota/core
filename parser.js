@@ -197,22 +197,23 @@ function runParse(match, cb) {
                     //killed unit was a real hero
                     if (e.targethero && !e.targetillusion) {
                         //log this hero kill
-                        e.type = "kills_log";
-                        populate(e);
+                        var e2 = JSON.parse(JSON.stringify(e));
+                        e2.type = "kills_log";
+                        populate(e2);
                         //reverse and count as killed by
                         //if the killed unit isn't a hero, we don't care about killed_by
                         var r = {
-                            time: e.time,
-                            unit: e.key,
-                            key: e.unit,
+                            time: e2.time,
+                            unit: e2.key,
+                            key: e2.unit,
                             type: "killed_by"
                         };
                         getSlot(r);
                         //check teamfight state
                         curr_teamfight = curr_teamfight || {
-                            start: e.time - teamfight_cooldown,
+                            start: e2.time - teamfight_cooldown,
                             end: null,
-                            last_death: e.time,
+                            last_death: e2.time,
                             deaths: 0,
                             players: Array.apply(null, new Array(parsed_data.players.length)).map(function() {
                                 return {
@@ -229,7 +230,7 @@ function runParse(match, cb) {
                             })
                         };
                         //update the last_death time of the current fight
-                        curr_teamfight.last_death = e.time;
+                        curr_teamfight.last_death = e2.time;
                         curr_teamfight.deaths += 1;
                     }
                     break;
@@ -280,8 +281,9 @@ function runParse(match, cb) {
                     getSlot(e);
                     //don't include recipes in purchase logs
                     if (e.key.indexOf("recipe_") !== 0) {
-                        e.type = "purchase_log";
-                        getSlot(e);
+                        var e2 = JSON.parse(JSON.stringify(e));
+                        e2.type = "purchase_log";
+                        getSlot(e2);
                     }
                     break;
                 case "DOTA_COMBATLOG_BUYBACK":
@@ -378,19 +380,19 @@ function runParse(match, cb) {
                     //player2 killed player 1
                     //subsequent players assisted
                     //still not perfect as dota can award kills to players when they're killed by towers/creeps and chat event does not reflect this
-                    e.type = e.subtype;
-                    e.slot = e.player2;
-                    e.key = e.player1.toString();
+                    //e.type = e.subtype;
+                    //e.slot = e.player2;
+                    //e.key = e.player1.toString();
                     //currently disabled in favor of combat log kills
                     //populate(e);
                     break;
                 case "CHAT_MESSAGE_GLYPH_USED":
                     //team glyph
                     //player1 = team that used glyph (2/3, or 0/1?)
-                    e.team = e.player1;
+                    //e.team = e.player1;
                     break;
                 case "CHAT_MESSAGE_PAUSED":
-                    e.slot = e.player1;
+                    //e.slot = e.player1;
                     //player1 paused
                     break;
                 case "CHAT_MESSAGE_TOWER_KILL":
@@ -438,6 +440,7 @@ function runParse(match, cb) {
                     //case "CHAT_MESSAGE_BUYBACK"
                 default:
                     //console.log(e);
+                    break;
             }
         },
         "chat": function getChatSlot(e) {
@@ -460,6 +463,7 @@ function runParse(match, cb) {
                 //clear existing teamfight
                 curr_teamfight = null;
             }
+            //check if hero has been assigned to entity
             if (e.hero_id) {
                 //grab the end of the name, lowercase it
                 var ending = e.unit.slice("CDOTA_Unit_Hero_".length);
@@ -479,28 +483,30 @@ function runParse(match, cb) {
                 hero_to_id[combatLogName2] = e.hero_id;
             }
             if (e.time >= 0) {
-                e.type = "stuns";
-                e.value = e.stuns;
-                populate(e);
+                var e2 = JSON.parse(JSON.stringify(e));
+                e2.type = "stuns";
+                e2.value = e2.stuns;
+                populate(e2);
                 //if on minute, add to lh/gold/xp
                 if (e.time % 60 === 0) {
-                    e.interval = true;
-                    e.type = "times";
-                    e.value = e.time;
-                    populate(e);
-                    e.type = "gold_t";
-                    e.value = e.gold;
-                    populate(e);
-                    e.type = "xp_t";
-                    e.value = e.xp;
-                    populate(e);
-                    e.type = "lh_t";
-                    e.value = e.lh;
-                    populate(e);
-                    e.interval = false;
+                    var e3 = JSON.parse(JSON.stringify(e));
+                    e3.interval = true;
+                    e3.type = "times";
+                    e3.value = e3.time;
+                    populate(e3);
+                    e3.type = "gold_t";
+                    e3.value = e3.gold;
+                    populate(e3);
+                    e3.type = "xp_t";
+                    e3.value = e3.xp;
+                    populate(e3);
+                    e3.type = "lh_t";
+                    e3.value = e3.lh;
+                    populate(e3);
                 }
                 //add to positions
                 //not currently storing pos data
+                //make a copy if mutating
                 // if (e.x && e.y) {
                 //     e.type = "pos";
                 //     e.key = [e.x, e.y];
@@ -510,13 +516,15 @@ function runParse(match, cb) {
             }
             // store player position for the first 10 minutes
             if (e.time <= 600 && e.x && e.y) {
-                e.type = "lane_pos";
-                e.key = [e.x, e.y];
-                e.posData = true;
-                populate(e);
+                var e4 = JSON.parse(JSON.stringify(e));
+                e4.type = "lane_pos";
+                e4.key = [e4.x, e4.y];
+                e4.posData = true;
+                populate(e4);
             }
         },
         "obs": function(e) {
+            //key is a JSON array of position data
             e.key = JSON.parse(e.key);
             e.posData = true;
             populate(e);
@@ -574,21 +582,22 @@ function runParse(match, cb) {
             exit(response.statusCode.toString());
         }
     }).on('error', exit);
-
     function exit(err) {
         err = err || error;
         if (!err) {
             parsed_data = utility.getParseSchema();
             var message = "time spent on post-processing match ";
             console.time(message);
-            console.log("processing event buffer...");
+            console.log("processing event buffer");
             processEventBuffer();
-            console.log("processing team fights...");
+            console.log("processing team fights");
             processTeamfights();
-            //console.log("processing multi-kill-streaks...");
+            //console.log("processing multi-kill-streaks");
             //processMultiKillStreaks();
             console.log("processing all players data");
             processAllPlayers();
+            console.log("processing data reduce");
+            processReduce();
             console.timeEnd(message);
         }
         return cb(err, parsed_data);
@@ -660,13 +669,9 @@ function runParse(match, cb) {
             for (var j = 0; j < teamfights.length; j++) {
                 var tf = teamfights[j];
                 if (e.time >= tf.start && e.time <= tf.end) {
-                    //kills_log tracks only hero kills on non-illusions
-                    //we mutated the type in an earlier pass
-                    if (e.type === "kills_log") {
+                    if (e.type === "killed" && e.targethero && !e.targetillusion) {
                         //copy the entry
                         var e_cpy_1 = JSON.parse(JSON.stringify(e));
-                        //count toward kills
-                        e_cpy_1.type = "killed";
                         populate(e_cpy_1, tf);
                         //get slot of target
                         e.slot = hero_to_slot[e.key];
@@ -752,7 +757,7 @@ function runParse(match, cb) {
                 // bookmark this player's local bookkeeping
                 var local_info = players[killer_index];
                 // if this entry is a valid kill notification
-                if (entry.type === "kills_log") {
+                if (entry.type === "killed" && entry.targethero && !entry.targetillusion) {
                     // determine who was killed
                     var killed = entry.key;
                     var killed_index = hero_to_slot[killed];
@@ -846,6 +851,11 @@ function runParse(match, cb) {
             }
         }
     }
+    
+    function processReduce(){
+        
+    }
+    
     //strips off "item_" from strings
     function translate(input) {
         if (input != null) {
@@ -911,9 +921,6 @@ function runParse(match, cb) {
                 key: e.key
             };
             t.push(arrEntry);
-            if (print_multi_kill_streak_debugging && e.type == "kills_log") {
-                console.log("\t%s killed %s", e.unit, e.key);
-            }
         }
         else if (typeof t === "object") {
             //add it to hash of counts
