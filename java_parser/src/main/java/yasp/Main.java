@@ -176,16 +176,6 @@ public class Main {
             combatLogEntry.valuename = cle.getValueName();
         }
         es.output(combatLogEntry);
-
-        if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_GAME_STATE) {
-            //emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
-            //used to compute game zero time so we can display accurate timestamps
-            Entry entry = new Entry(time);
-            //if the value is out of bounds, just make it the value itself
-            entry.key = GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue() - 1);
-            entry.type = "state";
-            es.output(entry);
-        }
         
         if (cle.getType().ordinal() > 19) {
             System.err.println(cle);

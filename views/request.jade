@@ -39,7 +39,7 @@ append footer_assets
       $("#loading").css("display", "block");
       var field = document.getElementById("match_id");
       match_id = field.value;
-      field.value = "";    
+      //field.value = "";    
       $.ajax({
       method: "POST",
       url: "/request_job",
