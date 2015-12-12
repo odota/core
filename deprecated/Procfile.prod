@@ -1,9 +1,0 @@
-web: node web.js
-retriever: node retriever.js
-parser: node parser.js
-worker: node worker.js
-parseManager: node parseManager.js
-scanner: node scanner.js
-proxy: node proxy.js
-skill: node skill.js
-mmr: node mmr.js
