@@ -160,6 +160,36 @@ CREATE TABLE match_skill (
   skill integer
 );
 
+CREATE TABLE match_logs (
+  match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
+  player_slot integer,
+  time integer,
+  type varchar(50),
+  unit varchar(50),
+  key varchar(50),
+  value integer,
+  player1 integer,
+  player2 integer,
+  attackername varchar(50),
+  targetname varchar(50),
+  sourcename varchar(50),
+  targetsourcename varchar(50),
+  attackerhero boolean,
+  targethero boolean,
+  attackerillusion boolean,
+  targetillusion boolean,
+  inflictor varchar(50),
+  gold_reason int,
+  xp_reason int,
+  valuename varchar(50),
+  gold int,
+  lh int,
+  xp int,
+  x int,
+  y int,
+  stuns real
+);
+
 CREATE INDEX on player_matches(account_id);
 CREATE INDEX on matches(version);
 CREATE INDEX on players(full_history_time);

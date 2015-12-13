@@ -106,8 +106,7 @@ public class Main {
         Integer value = message.getValue();
         String type = String.valueOf(message.getType());
         Entry entry = new Entry(time);
-        entry.type = "chat_event";
-        entry.subtype = type;
+        entry.type = type;
         entry.player1 = player1;
         entry.player2 = player2;
         entry.value = value;
@@ -156,8 +155,7 @@ public class Main {
         time = Math.round(cle.getTimestamp());
         //create a new entry
         Entry combatLogEntry = new Entry(time);
-        combatLogEntry.type = "combat_log";
-        combatLogEntry.subtype = cle.getType().name();
+        combatLogEntry.type = cle.getType().name();
         //translate the fields using string tables if necessary (get*Name methods)
         combatLogEntry.attackername = cle.getAttackerName();
         combatLogEntry.targetname = cle.getTargetName();
@@ -176,16 +174,6 @@ public class Main {
             combatLogEntry.valuename = cle.getValueName();
         }
         es.output(combatLogEntry);
-
-        if (cle.getType() == DOTA_COMBATLOG_TYPES.DOTA_COMBATLOG_GAME_STATE) {
-            //emit game state change ("PLAYING, POST_GAME, etc.") (type 9)
-            //used to compute game zero time so we can display accurate timestamps
-            Entry entry = new Entry(time);
-            //if the value is out of bounds, just make it the value itself
-            entry.key = GameRulesStateType.values().length >= cle.getValue() ? GameRulesStateType.values()[cle.getValue() - 1].toString() : String.valueOf(cle.getValue() - 1);
-            entry.type = "state";
-            es.output(entry);
-        }
         
         if (cle.getType().ordinal() > 19) {
             System.err.println(cle);

@@ -257,16 +257,17 @@ function count_words(player_match, player_filter)
  **/
 function renderMatch(m)
 {
-    m.players.forEach(function(p, i)
+    //do render-only processing (not needed for aggregation, only for match display)
+    m.players.forEach(function(player_match, i)
     {
         //converts hashes to arrays and sorts them
         var targets = ["ability_uses", "item_uses", "damage_inflictor"];
         targets.forEach(function(target)
         {
-            if (p[target])
+            if (player_match[target])
             {
                 var t = [];
-                for (var key in p[target])
+                for (var key in player_match[target])
                 {
                     var a = constants.abilities[key];
                     var i = constants.items[key];
@@ -277,12 +278,12 @@ function renderMatch(m)
                     var result = {
                         img: def.img,
                         name: key === "undefined" ? "Auto Attack/Other" : key,
-                        val: p[target][key],
+                        val: player_match[target][key],
                         className: a ? "ability" : i ? "item" : "img-sm"
                     };
-                    if (p.hero_hits)
+                    if (player_match.hero_hits)
                     {
-                        result.hero_hits = p.hero_hits[key];
+                        result.hero_hits = player_match.hero_hits[key];
                     }
                     t.push(result);
                 }
@@ -290,22 +291,53 @@ function renderMatch(m)
                 {
                     return b.val - a.val;
                 });
-                p[target + "_arr"] = t;
+                player_match[target + "_arr"] = t;
             }
         });
         //filter interval data to only be >= 0
-        if (p.times)
+        if (player_match.times)
         {
             var intervals = ["lh_t", "gold_t", "xp_t", "times"];
             intervals.forEach(function(key)
             {
-                p[key] = p[key].filter(function(el, i)
+                player_match[key] = player_match[key].filter(function(el, i)
                 {
-                    return p.times[i] >= 0;
+                    return player_match.times[i] >= 0;
                 });
             });
         }
-        p.analysis = generatePlayerAnalysis(p);
+        //compute damage to towers/rax/roshan
+        if (player_match.damage)
+        {
+            //npc_dota_goodguys_tower2_top
+            //npc_dota_goodguys_melee_rax_top
+            //npc_dota_roshan
+            //npc_dota_neutral_giant_wolf
+            //npc_dota_creep
+            player_match.objective_damage = {};
+            for (var key in player_match.damage)
+            {
+                var identifier = null;
+                if (key.indexOf("tower") !== -1)
+                {
+                    identifier = key.split("_").slice(3).join("_");
+                }
+                if (key.indexOf("rax") !== -1)
+                {
+                    identifier = key.split("_").slice(4).join("_");
+                }
+                if (key.indexOf("roshan") !== -1)
+                {
+                    identifier = "roshan";
+                }
+                if (key.indexOf("fort") !== -1)
+                {
+                    identifier = "fort";
+                }
+                player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
+            }
+        }
+        player_match.analysis = generatePlayerAnalysis(m, player_match);
     });
     if (m.chat)
     {
@@ -338,7 +370,7 @@ function renderMatch(m)
     if (m.players[0].gold_reasons)
     {
         m.incomeData = generateIncomeData(m);
-        m.treeMapData = generateTreemapData(m);
+        //m.treeMapData = generateTreemapData(m);
     }
     //create graph data
     if (m.players[0].gold_t)
@@ -444,7 +476,7 @@ function renderMatch(m)
  * Generates a player analysis for a player_match
  * Returns an analysis as an array of advice
  **/
-function generatePlayerAnalysis(player_match)
+function generatePlayerAnalysis(match, player_match)
 {
     //LH/EFF
     //Kill drought (gap in kill times) for a ganking hero

@@ -12,9 +12,8 @@ block match_content
         tbody
           each entry in match.objectives || []
             - var adjSlot = match.players[entry.slot] ? entry.slot : entry.slot-4
-            - var objective = constants.objectives[entry.subtype] || entry.subtype
+            - var objective = constants.objectives[entry.subtype || entry.type] || entry.subtype || entry.type
             - var p = match.players[adjSlot] || {}
-            - var hero = constants.heroes[p.hero_id]
             - var slot_color = constants.player_colors[p.player_slot]
             - p.team = entry.team===2 || entry.team===0 || entry.key<64 || p.isRadiant
             - p.personaname = p.personaname
@@ -32,11 +31,25 @@ block match_content
              each val, key in constants.runes
                th: abbr(title=constants.tooltips["rune_"+val.name])=val.name  
           tr(class = player.isRadiant ? "radiant" : "dire")
-            - var hero = constants.heroes[player.hero_id]
             +hero_td(player)
             each val, key in constants.runes
               td.rankable #{player.runes[key] || "-"}
       +ad("skyscraper")
+      
+  .row
+    .col-md-12
+      - var columns = {tower1_top:"T1 Top",tower1_mid:"T1 Mid",tower1_bot:"T1 Bot",tower2_top:"T2 Top",tower2_mid:"T2 Mid",tower2_bot:"T2 Bot",tower3_top:"T3 Top",tower3_mid:"T3 Mid",tower3_bot:"T3 Bot",tower4:"T4",rax_top:"Rax Top",rax_mid:"Rax Mid",rax_bot:"Rax Bot",fort:"Ancient",roshan:"Roshan"}
+      +data_table({id:"objective_damage",heading:"Objective Damage", rankable: true, summable: true})      
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+             th: abbr(title=tooltips.hero_id) Hero
+             each val, key in columns
+               th=val
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player)
+            each val, key in columns
+              td.rankable #{player.objective_damage ? player.objective_damage[key] || "-" : "-"}     
 
 append footer_assets
   //-

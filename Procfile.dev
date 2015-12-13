@@ -6,3 +6,4 @@ scanner: nodemon scanner.js
 skill: nodemon skill.js
 mmr: nodemon mmr.js
 fullhistory: nodemon fullhistory.js
+parser: nodemon parser.js
