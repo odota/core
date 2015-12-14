@@ -25,10 +25,9 @@ var count = 0,
   
 jsstream.pipe(gzip).pipe(write);
 
-var stream = db.select("*").from("matches").where("parse_status", 2).orderBy("match_id", "asc").stream();
+var stream = db.select("*").from("matches").where("version", ">", 0).orderBy("match_id", "asc").stream();
 
 stream.on("data", function(match){
-    console.log(match.match_id);
     stream.pause()
     db.select().from('player_matches').where({
         "player_matches.match_id": Number(match.match_id)
