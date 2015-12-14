@@ -50,12 +50,8 @@ stream.on("data", function(match){
         jsstream.write(match);
         stream.resume();
 
-        if (count % 10000) {
+        if (count % 10000 === 0) {
             console.log("Exported %s, matchID %s", count, match.match_id);
-        }
-        
-        if (count > 10000) {
-            stream.end();
         }
     });
 })
@@ -70,9 +66,5 @@ jsstream.on("end", function() {
 
 gzip.on("end", function() {
     write.end();
-})
-
-write.on("end", function() {
     console.log("Done. Exported %s", count);
-    process.exit(0);
 })
