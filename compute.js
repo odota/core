@@ -337,7 +337,9 @@ function renderMatch(m)
                 player_match.objective_damage[identifier] = player_match.objective_damage[identifier] ? player_match.objective_damage[identifier] + player_match.damage[key] : player_match.damage[key];
             }
         }
+        console.time("generating player analysis");
         player_match.analysis = generatePlayerAnalysis(m, player_match);
+        console.timeEnd("generating player analysis");
     });
     if (m.chat)
     {
@@ -474,28 +476,43 @@ function renderMatch(m)
 }
 /**
  * Generates a player analysis for a player_match
- * Returns an analysis as an array of advice
+ * Returns an analysis object
  **/
 function generatePlayerAnalysis(match, player_match)
 {
-    //LH/EFF
-    //Kill drought (gap in kill times) for a ganking hero
-    //farming drought (low gold earned delta over an interval) for a farming hero
-    //Flaming in all chat
-    //lack of observer wards/min
-    //low wards destroyed
-    //low smokes
-    //Excessive pinging
-    //Courier feeding
-    //low ability accuracy (skillshots)
-    //unused item actives
-    //slow item timing (might have to be specific hero-item pairs)
-    //courier buy delay
-    //roshan opportunities
-    //rune control
-    //attack move
-    //stop command
-    return [];
+    //define condition check for each advice point
+    //returns advice object or null
+    //object: {category: "warning|danger|info|primary|default", "text":"string"}
+    //advice string is templated and formatted with string replace for specific data/hero names
+    var advice = {};
+    var checks = {
+        //LH
+        //EFF
+        //Kill drought (gap in kill times) for a ganking hero (custom list)
+        //farming drought (low gold earned delta over an interval) for a farming hero (no wards bought)
+        //if wards bought, consider as support
+        //INDIVIDUAL BASED
+        //Flaming in all chat
+        //Excessive pinging (threshold)
+        //Courier feeding (>2 couriers bought)
+        //low ability accuracy (custom list of skillshots)
+        //unused item actives
+        //slow item timing (might have to be specific hero-item pairs)
+        //courier buy delay
+        //roshan opportunities (specific heroes)
+        //rune control (mid player)
+        //attack move
+        //stop command
+        //TEAM BASED
+        //lack of observer wards/min
+        //low wards destroyed
+        //low smokes
+    };
+    for (var key in checks)
+    {
+        advice[key] = checks[key](match, player_match);
+    }
+    return advice;
 }
 /**
  * Generates data for c3 charts in a match

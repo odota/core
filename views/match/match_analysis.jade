@@ -1,0 +1,15 @@
+extend match
+
+block match_content
+  .row
+    .col-md-12
+      +data_table({id:"analysis", heading: "Analysis"})
+        each player, i in match.players
+          +data_table_header(i, match)
+            tr
+              th: abbr(title=tooltips.hero_id) Hero
+              th: abbr(title=tooltips.actions_per_min) Analysis
+          tr(class = player.isRadiant ? "radiant" : "dire")
+            +hero_td(player)
+            - player.actions = player.actions || {}
+            td=JSON.stringify(player.analysis)
