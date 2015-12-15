@@ -6,6 +6,7 @@ var generatePositionData = utility.generatePositionData;
 var isRadiant = utility.isRadiant;
 var constants = require('./constants.js');
 var sentiment = require('sentiment');
+var util = require('util');
 
 function computeMatchData(match)
 {
@@ -481,13 +482,24 @@ function renderMatch(m)
 function generatePlayerAnalysis(match, player_match)
 {
     //define condition check for each advice point
-    //returns advice object or null
-    //object: {category: "warning|danger|info|primary|default", "text":"string"}
+    //returns string or null
+    //template mappings
+    //category: "warning|danger|info|primary|default", 
+    //fa-icons:
+    //template string
     //advice string is templated and formatted with string replace for specific data/hero names
     var advice = {};
     var checks = {
-        //LH
-        //EFF
+        //LH@10, non-supports
+        lh: function(m, pm){
+          var t = "You only had <b>%s</b> last hits at 10 minutes.  Consider practicing your last-hitting in order to improve your farm.";
+          return pm.lh_t && pm.lh_t[10] < 50 ? util.format(t, pm.lh_t[10]) : null;
+        },
+        //EFF@10, non-supports
+        eff: function(m, pm){
+            var t = "Your efficiency at 10 minutes was <b>%s</b>.  If you're struggling in lane, consider asking for a rotation from your team.";
+            return pm.lane_efficiency && pm.lane_efficiency < 0.5 ? util.format(t, pm.lane_efficiency) : null;
+        }
         //Kill drought (gap in kill times) for a ganking hero (custom list)
         //farming drought (low gold earned delta over an interval) for a farming hero (no wards bought)
         //if wards bought, consider as support
@@ -498,7 +510,7 @@ function generatePlayerAnalysis(match, player_match)
         //low ability accuracy (custom list of skillshots)
         //unused item actives
         //slow item timing (might have to be specific hero-item pairs)
-        //courier buy delay
+        //courier buy delay (3 minute flying)
         //roshan opportunities (specific heroes)
         //rune control (mid player)
         //attack move

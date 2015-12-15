@@ -8,8 +8,11 @@ block match_content
           +data_table_header(i, match)
             tr
               th: abbr(title=tooltips.hero_id) Hero
-              th: abbr(title=tooltips.actions_per_min) Analysis
+              th Analysis
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             - player.actions = player.actions || {}
-            td=JSON.stringify(player.analysis)
+            td
+              each val, key in player.analysis
+                if val
+                  .alert(class="alert-"+"danger") !{val}
