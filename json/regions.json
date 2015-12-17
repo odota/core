@@ -1,4 +1,3 @@
-
 {
   "regions": {
     "unspecified": {
@@ -71,24 +70,6 @@
         "138"
       ]
     },
-    "Korea": {
-      "code": "icn",
-      "region": "4",
-      "matchgroup": "6",
-      "latitude": "37.566536",
-      "longitude": "126.977969",
-      "display_name": "#dota_region_korea",
-      "division": "se_asia",
-      "alert_at_capacity_s2": "0",
-      "ip_range": [
-        "125.141.153.128/27",
-        "222.122.133.0/24"
-      ],
-      "clusters": [
-        "142",
-        "143"
-      ]
-    },
     "Singapore": {
       "code": "sgp",
       "region": "5",
@@ -136,7 +117,8 @@
       "display_name": "#dota_region_pw_telecom_shanghai",
       "division": "china",
       "ip_range": [
-        "218.78.184.0/24"
+        "218.78.184.0/24",
+        "221.228.192.0/24"
       ],
       "ip_relay_peers": [
         "1.48.0.0/15",
@@ -645,6 +627,21 @@
       ],
       "clusters": [
         "223"
+      ]
+    },
+    "PerfectWorldTelecomWuhan": {
+      "code": "pww",
+      "matchgroup": "20",
+      "region": "20",
+      "latitude": "30.4",
+      "longitude": "114.2",
+      "display_name": "#dota_region_pw_telecom_wuhan",
+      "division": "china",
+      "ip_range": [
+        "116.211.132.0/24"
+      ],
+      "clusters": [
+        "227"
       ]
     },
     "PerfectWorldUnicom": {
