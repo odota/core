@@ -1,31 +1,31 @@
 var db = require("../db"),
     fs = require("fs"),
     zlib = require("zlib"),
+    moment = require("moment"),
     JSONStream = require("JSONStream");
     
-var fileName = "./export/yasp-dump.json.gz";
+var fileName = "./export/yasp-dump-" + moment().format("YYYY-MM-DD") + ".json.gz";
 
-// try {
-//     var stat = fs.statSync(fileName);
+try {
+    var stat = fs.statSync(fileName);
     
-//     if (stat.isFile()) {
-//         console.log("Export file already exists");
-//         process.exit(1);
-//     }
-// } catch (e) {
-//     console.log(e);
-// }
+    if (stat.isFile()) {
+        console.log("Export file already exists");
+        process.exit(1);
+    }
+} catch (e) {
+    console.log(e);
+}
 
 var count = 0,
-    max = 10000,
-    numWritten = 0,
+    max = 500000,
     jsstream = JSONStream.stringify(),
     gzip = zlib.createGzip(),
     write = fs.createWriteStream(fileName);
   
 jsstream.pipe(gzip).pipe(write);
 
-var stream = db.select("*").from("matches").where("version", ">", 0).orderBy("match_id", "asc").stream();
+var stream = db.select("*").from("matches").where("version", ">", 0).orderBy("match_id", "desc").stream();
 
 stream.on("data", function(match){
     stream.pause()
@@ -52,6 +52,10 @@ stream.on("data", function(match){
 
         if (count % 10000 === 0) {
             console.log("Exported %s, matchID %s", count, match.match_id);
+        }
+        
+        if (count > max) {
+            stream.end();
         }
     });
 })
