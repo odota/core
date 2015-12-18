@@ -491,34 +491,50 @@ function generatePlayerAnalysis(match, player_match)
     var advice = {};
     var checks = {
         //LH@10, non-supports
-        lh: function(m, pm){
-          var t = "You only had <b>%s</b> last hits at 10 minutes.  Consider practicing your last-hitting in order to improve your farm.";
-          return pm.lh_t && pm.lh_t[10] < 50 ? util.format(t, pm.lh_t[10]) : null;
+        lh: function(m, pm)
+        {
+            return {
+                short: "LH",
+                template: "Last hits at 10 minutes: <b>%s</b>",
+                value: pm.lh_t[10],
+                advice: "Consider practicing your last-hitting in order to improve your farm.",
+                category: "warning",
+                icon: "fa-usd",
+                condition: pm.lh_t[10] && pm.lh_t[10] < 50
+            };
         },
         //EFF@10, non-supports
-        eff: function(m, pm){
-            var t = "Your efficiency at 10 minutes was <b>%s</b>.  If you're struggling in lane, consider asking for a rotation from your team.";
-            return pm.lane_efficiency && pm.lane_efficiency < 0.5 ? util.format(t, pm.lane_efficiency) : null;
-        }
-        //Kill drought (gap in kill times) for a ganking hero (custom list)
-        //farming drought (low gold earned delta over an interval) for a farming hero (no wards bought)
-        //if wards bought, consider as support
-        //INDIVIDUAL BASED
-        //Flaming in all chat
-        //Excessive pinging (threshold)
-        //Courier feeding (>2 couriers bought)
-        //low ability accuracy (custom list of skillshots)
-        //unused item actives
-        //slow item timing (might have to be specific hero-item pairs)
-        //courier buy delay (3 minute flying)
-        //roshan opportunities (specific heroes)
-        //rune control (mid player)
-        //attack move
-        //stop command
-        //TEAM BASED
-        //lack of observer wards/min
-        //low wards destroyed
-        //low smokes
+        eff: function(m, pm)
+            {
+                return {
+                    short: "EFF",
+                    template: "Your efficiency at 10 minutes was <b>%s</b>.",
+                    value: (pm.lane_efficiency*100).toFixed(0),
+                    advice: "If you're struggling in lane, consider asking for a rotation from your team.",
+                    category: "warning",
+                    icon: "fa-usd",
+                    condition: pm.lane_efficiency && pm.lane_efficiency < 0.5
+                };
+            }
+            //Kill drought (gap in kill times) for a ganking hero (custom list)
+            //farming drought (low gold earned delta over an interval) for a farming hero (no wards bought)
+            //if wards bought, consider as support
+            //INDIVIDUAL BASED
+            //Flaming in all chat
+            //Excessive pinging (threshold)
+            //Courier feeding (>2 couriers bought)
+            //low ability accuracy (custom list of skillshots)
+            //unused item actives
+            //slow item timing (might have to be specific hero-item pairs)
+            //courier buy delay (3 minute flying)
+            //roshan opportunities (specific heroes)
+            //rune control (mid player)
+            //attack move
+            //stop command
+            //TEAM BASED
+            //lack of observer wards/min
+            //low wards destroyed
+            //low smokes
     };
     for (var key in checks)
     {

@@ -36,6 +36,7 @@ var api = require('./routes/api');
 var donate = require('./routes/donate');
 var mmstats = require('./routes/mmstats');
 var querystring = require('querystring');
+var util = require('util');
 //PASSPORT config
 passport.serializeUser(function(user, done)
 {
@@ -94,6 +95,7 @@ app.locals.moment = moment;
 app.locals.constants = constants;
 app.locals.tooltips = constants.tooltips;
 app.locals.qs = querystring;
+app.locals.util = util;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());

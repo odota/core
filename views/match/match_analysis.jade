@@ -14,5 +14,7 @@ block match_content
             - player.actions = player.actions || {}
             td
               each val, key in player.analysis
-                if val
-                  .alert.small(class="alert-"+"danger") !{val}
+                if val && val.condition
+                  span.btn(class="btn-"+val.category)
+                    span: abbr(title=util.format(val.template, val.value)+"<br>"+val.advice) #{val.value} !{val.short}
+                    //span.fa(style="margin:3px;", class=val.icon)
