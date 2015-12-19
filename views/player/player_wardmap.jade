@@ -6,12 +6,12 @@ block playercontent
       h3 Observers
         small (#{player.aggData.obs.n} matches)
       #mapObs.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="observer wards map")
+        img.map(src=constants.map_url, alt="observer wards map")
     .col-md-6
       h3 Sentries
         small (#{player.aggData.sen.n} matches)
       #mapSen.mapContainer.mapContainer-small
-        img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="sentry wards map")
+        img.map(src=constants.map_url, alt="sentry wards map")
 
 append footer_assets
   script.
