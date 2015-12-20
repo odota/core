@@ -10,7 +10,9 @@ var urls = {
     "heroes": utility.generateJob("api_heroes", {
         language: "en-us"
     }).url,
-    //"leagues": utility.generateJob("api_leagues").url
+    //"leagues": utility.generateJob("api_leagues").url,
+    "regions": "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/regions.json",
+    "npc_abilities": "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/npc/npc_abilities.json"
 };
 module.exports = function(cb) {
     async.each(Object.keys(urls), function(key, cb) {

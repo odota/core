@@ -29,7 +29,7 @@ block match_content
             tr
              th: abbr(title=tooltips.hero_id) Hero
              each val, key in constants.runes
-               th: abbr(title=constants.tooltips["rune_"+val.name])=val.name  
+               th: abbr(title=val.name)=val.short
           tr(class = player.isRadiant ? "radiant" : "dire")
             +hero_td(player)
             each val, key in constants.runes

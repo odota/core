@@ -10,6 +10,10 @@ footer.footer
           .meter
             span(style="width: #{cheese_goal}%;")
           small
+            - var today = moment()
+            - var difference = (today.date() / today.endOf("month").date()) * 100 - cheese_goal
+            if difference > 0
+              | Behind #{difference.toFixed(2)}%. 
             if cheese_goal >= 50 && cheese_goal < 100
               | Getting there... 
             else if cheese_goal === 100

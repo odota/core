@@ -38,12 +38,20 @@ for (var key2 in abilities) {
 }
 abilities.nevermore_shadowraze2 = abilities.nevermore_shadowraze1;
 abilities.nevermore_shadowraze3 = abilities.nevermore_shadowraze1;
-abilities.stats = {
-    dname: "Stats",
+abilities.attribute_bonus = {
+    dname: "Attribute Bonus",
     img: '../../public/images/Stats.png',
     attrib: "+2 All Attributes"
 };
 constants.abilities = abilities;
+var ability_ids = {};
+for (var key in constants.npc_abilities.DOTAAbilities){
+    var block = constants.npc_abilities.DOTAAbilities[key];
+    if (block && block.ID){
+        ability_ids[block.ID] = key;
+    }
+}
+constants.ability_ids = ability_ids;
 constants.lanes = [];
 for (var i = 0; i < 128; i++) {
     constants.lanes.push([]);
@@ -89,4 +97,5 @@ cluster["121"] = constants.regions['USEast'].region;
 constants.cluster = cluster;
 constants.region = region;
 constants.anonymous_account_id = 4294967295;
+constants.map_url = '/public/images/map.png';
 module.exports = constants;
