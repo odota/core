@@ -16,5 +16,5 @@ block match_content
               each val, key in player.analysis
                 if val && val.condition
                   span.btn(class="btn-"+val.category)
-                    span: abbr(title=util.format(val.template, val.value)+"<br>"+val.advice) #{val.value} !{val.short}
+                    span: abbr(title=util.format(val.template, val.value)+"<br>"+val.advice) #{val.value} !{val.abbr}
                     //span.fa(style="margin:3px;", class=val.icon)
