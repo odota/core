@@ -716,13 +716,13 @@
           "radius": 400
         },
         {
+          "split_count_scepter": 2
+        },
+        {
           "scepter_range": 375
         },
         {
-          "split_count": 2
-        },
-        {
-          "damage_reduction": 50
+          "damage_reduction_scepter": 50
         }
       ]
     },
@@ -2435,10 +2435,10 @@
         },
         {
           "damage_scepter": [
-            175,
-            275,
-            375,
-            475
+            180,
+            270,
+            360,
+            450
           ]
         }
       ]
@@ -3189,7 +3189,7 @@
           ]
         },
         {
-          "haunt_duration": 4
+          "haunt_duration": 5
         },
         {
           "movement_slow": [
@@ -5252,10 +5252,10 @@
       "AbilitySpecial": [
         {
           "damage_multiplier": [
-            0.4,
-            0.6,
-            0.8,
-            1
+            0.5,
+            0.75,
+            1,
+            1.25
           ]
         },
         {
@@ -5290,11 +5290,11 @@
       "AbilityType": "DOTA_ABILITY_TYPE_ULTIMATE",
       "AbilityCastPoint": "0.4",
       "AbilityChannelTime": "3 4 5",
-      "AbilityCooldown": "90 80 70",
+      "AbilityCooldown": "70",
       "AbilityManaCost": "75",
       "AbilitySpecial": [
         {
-          "range": 450
+          "range": 475
         },
         {
           "attack_count": [
@@ -6839,21 +6839,21 @@
       "AbilityManaCost": "50",
       "AbilitySpecial": [
         {
-          "radius": 650
+          "radius": 725
         },
         {
           "duration": [
-            6,
+            5.5,
             7,
-            8,
-            9
+            8.5,
+            10
           ]
         },
         {
           "slow": [
-            4,
-            6,
+            7,
             8,
+            9,
             10
           ]
         }
@@ -11004,7 +11004,7 @@
       "AbilityUnitTargetTeam": "DOTA_UNIT_TARGET_TEAM_ENEMY",
       "AbilityUnitTargetType": "DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC",
       "AbilityUnitTargetFlags": "DOTA_UNIT_TARGET_FLAG_MAGIC_IMMUNE_ENEMIES",
-      "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_YES",
+      "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
       "AbilityCooldown": "16 12 8 4",
       "AbilityManaCost": "40",
       "AbilityCastRange": "128",
@@ -12925,10 +12925,10 @@
         },
         {
           "int_steal": [
-            0,
             1,
             2,
-            3
+            3,
+            4
           ]
         },
         {
@@ -12945,7 +12945,7 @@
       "AbilityUnitDamageType": "DAMAGE_TYPE_MAGICAL",
       "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
       "AbilityDuration": "4.0",
-      "AbilityCooldown": "20 17 14 11",
+      "AbilityCooldown": "22 18 14 10",
       "AbilityCastRange": "450 500 550 600",
       "AbilityCastPoint": "0.25 0.25 0.25 0.25",
       "AbilityManaCost": "120 140 160 180",
