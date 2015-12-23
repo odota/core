@@ -11007,7 +11007,7 @@
       "SpellImmunityType": "SPELL_IMMUNITY_ENEMIES_NO",
       "AbilityCooldown": "16 12 8 4",
       "AbilityManaCost": "40",
-      "AbilityCastRange": "128",
+      "AbilityCastRange": "150",
       "AbilityCastPoint": "0.0 0.0 0.0 0.0",
       "AbilitySpecial": [
         {
