@@ -484,8 +484,7 @@ function generatePlayerAnalysis(match, player_match)
     //define condition check for each advice point
     var advice = {};
     var checks = {
-        //ROLE BASED
-        //LH@10, cores
+        //LH@10
         lh: function(m, pm)
         {
             return {
@@ -495,31 +494,98 @@ function generatePlayerAnalysis(match, player_match)
                 advice: "Consider practicing your last-hitting in order to improve your farm.  If you're struggling in lane, consider asking for a rotation from your team.",
                 category: "warning",
                 icon: "fa-usd",
-                condition: pm.lh_t[10] && pm.lh_t[10] < 50
+                condition: pm.lh_t[10] && pm.lh_t[10] < (isSupport(pm) ? 0 : 30)
             };
         },
-        //Kill drought (gap in kill times) for a ganking hero (custom list)
-        //farming drought (low gold earned delta over an interval), cores
-        //if wards bought, consider as support
-        //INDIVIDUAL BASED
+        //farming drought (low gold earned delta over an interval)
+        farm_drought: function(m, pm)
+        {
+            var delta = Number.MAX_VALUE;
+            var interval = 5;
+            var start = 0;
+            for (var i =0;i<pm.gold_t.length-interval;i++){
+                var diff = pm.gold_t[i+interval] - pm.gold_t[i];
+                delta = diff < delta ? diff : delta;
+                start = diff < delta ? i : start;
+            }
+            return {
+                abbr: "DROUGHT",
+                template: "GPM starting at minute <b>%s</b>: <b>%s</b>",
+                value: [start, delta/interval],
+                advice: "Keep finding ways to obtain farm in order to stay competitive with the opposing team.",
+                category: "warning",
+                icon: "fa-usd",
+                condition: Boolean(start) && delta < (isSupport(pm) ? 100*interval : 200*interval)
+            };
+        },
         //Flaming in all chat
-        //Excessive pinging (threshold)
-        //Courier feeding (>2 couriers bought)
+        flaming: function(m, pm)
+        {
+            var flames = 0;
+            var words = [
+                "fuck",
+                "shit"
+            ];
+            if (pm.my_word_counts)
+            {
+                for (var key in pm.my_word_counts)
+                {
+                    if (words.some(function(w){
+                        return key.indexOf(w) !== -1;
+                    }))
+                    {
+                        flames += pm.my_word_counts[key];
+                    }
+                }
+            }
+            return {
+                abbr: "FLAME",
+                template: "Profanities used: <b>%s</b>",
+                value: flames,
+                advice: "Keep calm in all chat in order to improve the overall game experience.",
+                category: "danger",
+                icon: "fa-fire",
+                condition: flames > 3
+            };
+        },
+        //Courier feeding
+        courier_feeding: function(m, pm)
+        {
+            return {
+                abbr: "CFEED",
+                template: "Couriers bought: <b>%s</b>",
+                value: pm.purchase.courier,
+                advice: "Try not to make your team's situation worse by buying and feeding couriers.  Comebacks are always possible!",
+                category: "danger",
+                icon: "fa-cutlery",
+                condition: pm.purchase && pm.purchase.courier > 2
+            };
+        },
         //low ability accuracy (custom list of skillshots)
-        //courier buy delay (3 minute flying)
-        //roshan opportunities (specific heroes)
-        //rune control (mid player)
-        //attack move
-        //stop command
-        //low obs wards/min
-        //unused item actives (multiple results?)
-        //slow item timing (might have to be specific hero-item pairs)
+        skillshot: function(m, pm)
+            {
+                if (pm.ability_uses)
+                {}
+            }
+            //courier buy delay (3 minute flying)
+            //roshan opportunities (specific heroes)
+            //rune control (mid player)
+            //attack move
+            //stop command
+            //low obs wards/min
+            //unused item actives (multiple results?)
     };
     for (var key in checks)
     {
         advice[key] = checks[key](match, player_match);
     }
     return advice;
+
+    function isSupport(pm)
+    {
+        //if wards bought, consider as support
+        return pm.purchase && pm.purchase.ward_observer >= 2;
+    }
 }
 /**
  * Generates data for c3 charts in a match
