@@ -8,7 +8,7 @@ footer.footer
         .meter_wrapper
           h3(style="font-weight:700; margin-top: 0;") Monthly Cheese Goal
           .meter
-            span(style="width: #{cheese_goal}%;")
+            span(style="width: #{cheese_goal}%;min-width:7.1%;") #{cheese_goal.toFixed(0)}%
           small
             - var today = moment()
             - var difference = (today.date() / today.endOf("month").date()) * 100 - cheese_goal

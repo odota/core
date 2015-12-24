@@ -99,6 +99,11 @@ app.locals.util = util;
 app.locals.config = config;
 app.locals.basedir = __dirname + '/views';
 app.use(compression());
+app.use("/apps/dota2/images/:group_name/:image_name", function(req, res)
+{
+    res.set('Cache-Control', 'max-age=604800, public');
+    request("http://cdn.dota2.com/apps/dota2/images/" + req.params.group_name + "/" + req.params.image_name).pipe(res);
+});
 app.use("/public", express.static(path.join(__dirname, '/public')));
 /*
 var sessOptions = {
@@ -124,7 +129,8 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
+app.use(bodyParser.urlencoded(
+{
     extended: true
 }));
 app.use(function(req, res, next)
