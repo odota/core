@@ -25,6 +25,10 @@ leagues.forEach(function(l) {
 */
 //items, already keyed by name
 var items = constants.items.itemdata;
+items["dragon_lance"].id = 234;
+items["aether_lens"].id = 232;
+items["iron_talon"].id = 239;
+items["faerie_fire"].id = 237;
 constants.item_ids = {};
 for (var key in items) {
     constants.item_ids[items[key].id] = key;

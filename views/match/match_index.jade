@@ -55,16 +55,17 @@ block match_content
             td.rankable.format= player.hero_damage
             td.rankable.format= player.tower_damage
             td.rankable.format= player.hero_healing
+            - var item_keys = {"item_0":1, "item_1":1, "item_2":1, "item_3":1, "item_4":1, "item_5":1}
             td.text-left
-              each val, index in player
-                if (index.slice(0, 5)==="item_")
+              each val, key in player
+                if key in item_keys && val
                   - var item = constants.items[constants.item_ids[val]]
                   if item
                     img.img-sm.item(src=item.img, title=constants.item_ids[val])
               if (player.hero_id === 80 && player.additional_units)
                 br
-                each val, index in player.additional_units[0]
-                  if (index.slice(0, 5)==="item_")
+                each val, key in player.additional_units[0]
+                  if key in item_keys && val
                     - var item = constants.items[constants.item_ids[val]]                             
                     if item
                       img.img-sm.item(src=item.img, title=constants.item_ids[val])
